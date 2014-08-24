@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import com.door43.translationstudio.util.SystemUiHider;
+import com.door43.translationstudio.util.TranslatorActivity;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -17,7 +18,7 @@ import android.view.View;
  *
  * @see SystemUiHider
  */
-public class MainActivity extends Activity {
+public class MainActivity extends TranslatorActivity {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -123,6 +124,26 @@ public class MainActivity extends Activity {
         // created, to briefly hint to the user that UI controls
         // are available.
 //        delayedHide(100);
+    }
+
+    public void clickLibrary(View v) {
+        app().setNotice("You clicked library!");
+    }
+
+    public void clickUser(View v) {
+        app().setNotice("You clicked user!");
+    }
+
+    public void clickShare(View v) {
+        app().setNotice("You clicked sharing!");
+    }
+
+    public void clickSettings(View v) {
+        app().setNotice("You clicked settings!");
+    }
+
+    public void clickResources(View v) {
+        app().setNotice("You clicked resources!");
     }
 
 

@@ -1,2 +1,2 @@
-TranslationStudio2.0
+Translation Studio 2.0
 ====================
