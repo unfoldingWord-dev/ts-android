@@ -1,6 +1,11 @@
 <resources>
 
     <color name="black_overlay">#66000000</color>
-    <color name="green_light">#aad000</color>
-    <color name="green_dark">#99cc00</color>
+    <color name="green">#99cc00</color>
+    <color name="blue">#0099cc</color>
+    <color name="purple">#9933cc</color>
+    <color name="tab_color">#0099cc</color>
+    <color name="white">#ffffff</color>
+    <color name="gray">#919191</color>
+    <color name="black">#000000</color>
 </resources>

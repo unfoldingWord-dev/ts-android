@@ -1,4 +1,4 @@
-package com.door43.translationstudio.util;
+package com.door43.translationstudio;
 
 import android.app.Activity;
 import android.app.Application;
@@ -11,12 +11,21 @@ import android.widget.Toast;
 public class MainApplication extends Application {
     private Activity mCurrentActivity = null;
     private Toast mToast = null;
+    private ProjectManager mProjectManager = new ProjectManager();
+
+    /**
+     * Returns the shared instance of the project manager
+     * @return
+     */
+    public ProjectManager getSharedProjectManager() {
+        return mProjectManager;
+    }
 
     /**
      * Sets the current activity so we can access it throughout the app.
      * @param mCurrentActivity
      */
-    public void setmCurrentActivity(Activity mCurrentActivity) {
+    public void setCurrentActivity(Activity mCurrentActivity) {
         this.mCurrentActivity = mCurrentActivity;
     }
 
@@ -24,12 +33,13 @@ public class MainApplication extends Application {
      * Returns the currently active activity
      * @return
      */
-    public Activity getmCurrentActivity() {
+    public Activity getCurrentActivity() {
         return mCurrentActivity;
     }
 
     /**
-     * Displays a standard toast message in the ui
+     * Displays a standard toast message in the ui.
+     * If a toast message is currently visible it will be replaced.
      * @param message The message to display to the user
      */
     public void setNotice(final String message) {
@@ -40,7 +50,7 @@ public class MainApplication extends Application {
                         mToast.cancel();
                     }
                     mToast = Toast.makeText(mCurrentActivity, message, Toast.LENGTH_SHORT);
-                    mToast.setGravity(Gravity.TOP, 0, 0);
+                    mToast.setGravity(Gravity.CENTER, 0, 0);
                     mToast.show();
                 }
             });

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="2" >
+
+    <dataSet config="20.0.0" >
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\build\intermediates\exploded-aar\com.android.support\support-v4\20.0.0\res" />
+    </dataSet>
+    <dataSet config="main" >
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\res" >
+            <file
+                path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\res\values\slidinglayer-attrs.xml"
+                qualifiers="" >
+                <declare-styleable name="SlidingLayer" >
+                    <attr
+                        name="shadowDrawable"
+                        format="boolean" />
+                    <attr
+                        name="shadowWidth"
+                        format="dimension" />
+                    <attr
+                        name="closeOnTapEnabled"
+                        format="boolean" />
+                    <attr
+                        name="openOnTapEnabled"
+                        format="boolean" />
+                    <attr
+                        name="offsetWidth"
+                        format="dimension" />
+                    <attr
+                        name="stickTo"
+                        format="enum" >
+                        <enum
+                            name="auto"
+                            value="0" />
+                        <enum
+                            name="right"
+                            value="-1" />
+                        <enum
+                            name="left"
+                            value="-2" />
+                        <enum
+                            name="middle"
+                            value="-3" />
+                        <enum
+                            name="top"
+                            value="-4" />
+                        <enum
+                            name="bottom"
+                            value="-5" />
+                    </attr>
+                </declare-styleable>
+            </file>
+        </source>
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\build\generated\res\rs\debug" />
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\build\generated\res\generated\debug" />
+    </dataSet>
+    <dataSet config="debug" >
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\src\debug\res" />
+    </dataSet>
+
+</merger>

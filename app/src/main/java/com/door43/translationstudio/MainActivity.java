@@ -1,181 +1,215 @@
 package com.door43.translationstudio;
 
-import com.door43.translationstudio.util.SystemUiHider;
-import com.door43.translationstudio.util.TranslatorActivity;
+import com.door43.translationstudio.panes.left.LeftPaneFragment;
+import com.door43.translationstudio.panes.RightPaneFragment;
+import com.door43.translationstudio.panes.TopPaneFragment;
+import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.slidinglayer.SlidingLayer;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.os.Build;
+
+import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
+public class MainActivity extends TranslatorBaseActivity {
+    // content panes
+    private LeftPaneFragment mLeftPane;
+    private RightPaneFragment mRightPane;
+    private TopPaneFragment mTopPane;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- *
- * @see SystemUiHider
- */
-public class MainActivity extends TranslatorActivity {
-    /**
-     * Whether or not the system UI should be auto-hidden after
-     * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
-     */
-//    private static final boolean AUTO_HIDE = true;
-
-    /**
-     * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
-     * user interaction before hiding the system UI.
-     */
-//    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
-
-    /**
-     * If set, will toggle the system UI visibility upon interaction. Otherwise,
-     * will show the system UI visibility upon interaction.
-     */
-//    private static final boolean TOGGLE_ON_CLICK = true;
-
-    /**
-     * The flags to pass to {@link SystemUiHider#getInstance}.
-     */
-//    private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
-
-    /**
-     * The instance of the {@link SystemUiHider} for this activity.
-     */
-//    private SystemUiHider mSystemUiHider;
+    // sliding layers
+    private SlidingLayer mLeftSlidingLayer;
+    private SlidingLayer mRightSlidingLayer;
+    private SlidingLayer mTopSlidingLayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
-//        final View controlsView = findViewById(R.id.fullscreen_content_controls);
-//        final View contentView = findViewById(R.id.fullscreen_content);
+        LinearLayout centerPane = (LinearLayout)findViewById(R.id.centerPane);
 
-        // Set up an instance of SystemUiHider to control the system UI for
-        // this activity.
-//        mSystemUiHider = SystemUiHider.getInstance(this, contentView, HIDER_FLAGS);
-//        mSystemUiHider.setup();
-//        mSystemUiHider
-//                .setOnVisibilityChangeListener(new SystemUiHider.OnVisibilityChangeListener() {
-//                    // Cached values.
-//                    int mControlsHeight;
-//                    int mShortAnimTime;
-//
-//                    @Override
-//                    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-//                    public void onVisibilityChange(boolean visible) {
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-//                            // If the ViewPropertyAnimator API is available
-//                            // (Honeycomb MR2 and later), use it to animate the
-//                            // in-layout UI controls at the bottom of the
-//                            // screen.
-//                            if (mControlsHeight == 0) {
-//                                mControlsHeight = controlsView.getHeight();
-//                            }
-//                            if (mShortAnimTime == 0) {
-//                                mShortAnimTime = getResources().getInteger(
-//                                        android.R.integer.config_shortAnimTime);
-//                            }
-//                            controlsView.animate()
-//                                    .translationY(visible ? 0 : mControlsHeight)
-//                                    .setDuration(mShortAnimTime);
-//                        } else {
-//                            // If the ViewPropertyAnimator APIs aren't
-//                            // available, simply show or hide the in-layout UI
-//                            // controls.
-//                            controlsView.setVisibility(visible ? View.VISIBLE : View.GONE);
-//                        }
-//
-//                        if (visible && AUTO_HIDE) {
-//                            // Schedule a hide().
-//                            delayedHide(AUTO_HIDE_DELAY_MILLIS);
-//                        }
-//                    }
-//                });
+        // close the side panes when the center content is clicked
+        centerPane.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mLeftSlidingLayer != null) mLeftSlidingLayer.closeLayer(true);
+                if(mRightSlidingLayer != null) mRightSlidingLayer.closeLayer(true);
+                if(mTopSlidingLayer != null) mTopSlidingLayer.closeLayer(true);
+            }
+        });
 
-        // Set up the user interaction to manually show or hide the system UI.
-//        contentView.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (TOGGLE_ON_CLICK) {
-//                    mSystemUiHider.toggle();
-//                } else {
-//                    mSystemUiHider.show();
-//                }
-//            }
-//        });
-
-        // Upon interacting with UI controls, delay any scheduled hide()
-        // operations to prevent the jarring behavior of controls going away
-        // while interacting with the UI.
-//        findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
+        initTestData();
+        initSlidingLayers();
+        initPanes();
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-
-        // Trigger the initial hide() shortly after the activity has been
-        // created, to briefly hint to the user that UI controls
-        // are available.
-//        delayedHide(100);
     }
 
-    public void clickLibrary(View v) {
-        app().setNotice("You clicked library!");
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
-
-    public void clickUser(View v) {
-        app().setNotice("You clicked user!");
-    }
-
-    public void clickShare(View v) {
-        app().setNotice("You clicked sharing!");
-    }
-
-    public void clickSettings(View v) {
-        app().setNotice("You clicked settings!");
-    }
-
-    public void clickResources(View v) {
-        app().setNotice("You clicked resources!");
-    }
-
 
     /**
-     * Touch listener to use for in-layout UI controls to delay hiding the
-     * system UI. This is to prevent the jarring behavior of controls going away
-     * while interacting with activity UI.
+     * Sets up the sliding effect between panes. Mostly just closing others when one opens
      */
-//    View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-//        @Override
-//        public boolean onTouch(View view, MotionEvent motionEvent) {
-//            if (AUTO_HIDE) {
-//                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-//            }
-//            return false;
-//        }
-//    };
+    public void initSlidingLayers() {
+        mTopSlidingLayer = (SlidingLayer)findViewById(R.id.topPane);
+        mLeftSlidingLayer = (SlidingLayer)findViewById(R.id.leftPane);
+        mRightSlidingLayer = (SlidingLayer)findViewById(R.id.rightPane);
 
-//    Handler mHideHandler = new Handler();
-//    Runnable mHideRunnable = new Runnable() {
-//        @Override
-//        public void run() {
-//            mSystemUiHider.hide();
-//        }
-//    };
+        // set up pane grips
+        final ImageButton leftGrip = (ImageButton)findViewById(R.id.buttonGripLeft);
+        final ImageButton rightGrip = (ImageButton)findViewById(R.id.buttonGripRight);
+        final ImageButton topGrip = (ImageButton)findViewById(R.id.buttonGripTop);
+
+        topGrip.setColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.SRC_ATOP);
+        rightGrip.setColorFilter(getResources().getColor(R.color.purple), PorterDuff.Mode.SRC_ATOP);
+        leftGrip.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
+
+        topGrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mTopSlidingLayer.openLayer(true);
+            }
+        });
+        rightGrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mRightSlidingLayer.openLayer(true);
+            }
+        });
+        leftGrip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mLeftSlidingLayer.openLayer(true);
+            }
+        });
+
+        // set up opening/closing
+        mTopSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
+            @Override
+            public void onOpen() {
+                // bring self to front first to cover grip
+                mTopSlidingLayer.bringToFront();
+
+                mLeftSlidingLayer.closeLayer(true);
+                mLeftSlidingLayer.bringToFront();
+                mRightSlidingLayer.closeLayer(true);
+                mRightSlidingLayer.bringToFront();
+                leftGrip.bringToFront();
+                rightGrip.bringToFront();
+            }
+
+            @Override
+            public void onClose() {
+
+            }
+
+            @Override
+            public void onOpened() {
+
+            }
+
+            @Override
+            public void onClosed() {
+
+            }
+        });
+        mLeftSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
+            @Override
+            public void onOpen() {
+                // bring self to front first to cover grip
+                mLeftSlidingLayer.bringToFront();
+
+                mTopSlidingLayer.closeLayer(true);
+                mTopSlidingLayer.bringToFront();
+                mRightSlidingLayer.closeLayer(true);
+                mRightSlidingLayer.bringToFront();
+                topGrip.bringToFront();
+                rightGrip.bringToFront();
+            }
+
+            @Override
+            public void onClose() {
+
+            }
+
+            @Override
+            public void onOpened() {
+
+            }
+
+            @Override
+            public void onClosed() {
+
+            }
+        });
+        mRightSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
+            @Override
+            public void onOpen() {
+                // bring self to front first to cover grip
+                mRightSlidingLayer.bringToFront();
+
+                mLeftSlidingLayer.closeLayer(true);
+                mLeftSlidingLayer.bringToFront();
+                mTopSlidingLayer.closeLayer(true);
+                mTopSlidingLayer.bringToFront();
+                leftGrip.bringToFront();
+                topGrip.bringToFront();
+            }
+
+            @Override
+            public void onClose() {
+
+            }
+
+            @Override
+            public void onOpened() {
+
+            }
+
+            @Override
+            public void onClosed() {
+
+            }
+        });
+    }
 
     /**
-     * Schedules a call to hide() in [delay] milliseconds, canceling any
-     * previously scheduled calls.
+     * set up the content panes
      */
-//    private void delayedHide(int delayMillis) {
-//        mHideHandler.removeCallbacks(mHideRunnable);
-//        mHideHandler.postDelayed(mHideRunnable, delayMillis);
-//    }
+    private void initPanes() {
+        mTopPane = new TopPaneFragment();
+        mLeftPane = new LeftPaneFragment();
+        mRightPane = new RightPaneFragment();
+
+
+        getFragmentManager().beginTransaction().replace(R.id.topPaneContent, mTopPane).commit();
+        getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
+        getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
+    }
+
+    private void initTestData() {
+
+        app().getSharedProjectManager().add(new Project("Open Bible Stories", "Unfolding Word"));
+        app().getSharedProjectManager().add(new Project("Bible Translation", "Some fun description"));
+        app().getSharedProjectManager().add(new Project("Hello world", "oh hi"));
+        app().getSharedProjectManager().add(new Project("Another project", "Unfolding Word"));
+        app().getSharedProjectManager().add(new Project("One more project", "Some fun description"));
+        app().getSharedProjectManager().add(new Project("Something", "oh hi"));
+        app().getSharedProjectManager().add(new Project("Another Something", "oh hi"));
+        app().getSharedProjectManager().add(new Project("One more something", "oh hi"));
+        app().getSharedProjectManager().add(new Project("Bla bla bla", "oh hi"));
+        app().getSharedProjectManager().add(new Project("Hi guys", "oh hi"));
+        app().getSharedProjectManager().add(new Project("Hello!", "oh hi"));
+        app().getSharedProjectManager().add(new Project("What?g", "oh hi"));
+
+    }
 }

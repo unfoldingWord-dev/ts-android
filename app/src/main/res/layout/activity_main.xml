@@ -1,135 +1,170 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0099cc"
-    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
-
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
-
+    <!-- Center content pane -->
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/navBar"
-        android:background="@color/green_dark"
-        android:gravity="center"
-        android:weightSum="3"
-        android:padding="5dp">
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/centerPane">
 
-
-        <LinearLayout
-            android:orientation="horizontal"
+        <RelativeLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:id="@+id/navLeft"
-            android:gravity="left|bottom">
+            android:layout_height="fill_parent">
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/buttonLibrary"
-                android:background="@drawable/ic_icon_library"
-                android:onClick="clickLibrary" />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/buttonUser"
-                android:background="@drawable/ic_icon_user"
-                android:layout_marginLeft="20dp"
-                android:onClick="clickUser" />
+                <FrameLayout android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:fitsSystemWindows="true"
+                    android:layout_weight="1"
+                    android:background="#eee"
+                    android:id="@+id/contentLeft">
 
-        </LinearLayout>
+                </FrameLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:id="@+id/navCenter"
-            android:gravity="center">
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:paddingLeft="2dp"
+                    android:background="#dee2d0"
+                    android:id="@+id/contentRight">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text="@string/app_name"
-                android:id="@+id/textView"
-                android:textSize="30sp"
-                android:textIsSelectable="true" />
-        </LinearLayout>
+                    <ScrollView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/scrollView"
+                        android:background="@drawable/sketchpad_background"
+                        android:fillViewport="true" />
+                </FrameLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:id="@+id/navRight"
-            android:gravity="bottom|right">
+            </LinearLayout>
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/buttonShare"
-                android:background="@drawable/ic_icon_share"
-                android:onClick="clickShare" />
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/buttonSettings"
-                android:background="@drawable/ic_icon_settings"
-                android:layout_marginLeft="20dp"
-                android:onClick="clickSettings" />
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/buttonResources"
-                android:background="@drawable/ic_icon_resources"
-                android:layout_marginLeft="20dp"
-                android:onClick="clickResources" />
-
-        </LinearLayout>
+            <!--<Button-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:text="New Button"-->
+                <!--android:id="@+id/button3"-->
+                <!--android:layout_centerHorizontal="true"-->
+                <!--android:layout_alignParentBottom="true"/>-->
+        </RelativeLayout>
     </LinearLayout>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+    <!-- Left content pane -->
+    <com.slidinglayer.SlidingLayer
+        xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/leftPane"
+        android:layout_width="@dimen/sliding_layer_width"
+        android:layout_height="match_parent"
+        slidingLayer:offsetWidth="@dimen/offset_width"
+        slidingLayer:stickTo="left"
+        slidingLayer:openOnTapEnabled="false"
+        slidingLayer:closeOnTapEnabled="false">
 
-        <FrameLayout android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            android:layout_weight="1"
-            android:background="#eee"
-            android:id="@+id/contentLeft">
-
-        </FrameLayout>
-
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:paddingLeft="2dp"
-            android:background="#dee2d0"
-            android:id="@+id/contentRight">
+            android:paddingRight="@dimen/offset_width"
+            android:background="@color/blue"
+            android:id="@+id/leftPaneContent">
+        </RelativeLayout>
 
-            <ScrollView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:id="@+id/scrollView"
-                android:background="@drawable/sketchpad_background"
-                android:fillViewport="true" />
-        </FrameLayout>
-    </LinearLayout>
+    </com.slidinglayer.SlidingLayer>
 
-</LinearLayout>
+    <!-- Right content pane -->
+    <com.slidinglayer.SlidingLayer
+        xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/rightPane"
+        android:layout_width="@dimen/sliding_layer_width"
+        android:layout_height="match_parent"
+        slidingLayer:offsetWidth="@dimen/offset_width"
+        slidingLayer:stickTo="right"
+        slidingLayer:closeOnTapEnabled="false"
+        android:layout_alignParentEnd="true"
+        slidingLayer:openOnTapEnabled="false"
+        android:layout_alignParentRight="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/offset_width"
+            android:background="@color/purple"
+            android:id="@+id/rightPaneContent">
+        </RelativeLayout>
+
+    </com.slidinglayer.SlidingLayer>
+
+    <!-- Top content pane -->
+    <com.slidinglayer.SlidingLayer
+        xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/topPane"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sliding_layer_width_narrow"
+        slidingLayer:offsetWidth="@dimen/offset_width"
+        slidingLayer:stickTo="top"
+        slidingLayer:openOnTapEnabled="false"
+        slidingLayer:closeOnTapEnabled="false">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/green"
+            android:paddingBottom="@dimen/offset_width"
+            android:id="@+id/topPaneContent">
+        </RelativeLayout>
+    </com.slidinglayer.SlidingLayer>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonGripLeft"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_grip_left"
+        android:background="@null"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonGripRight"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_grip_right"
+        android:background="@null"/>
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/buttonGripTop"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/ic_grip_top"
+        android:background="@null"/>
+
+    <!-- Bottom content pane -->
+    <!--<com.slidinglayer.SlidingLayer-->
+        <!--xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"-->
+        <!--android:id="@+id/topPane"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="@dimen/layer_width"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--slidingLayer:offsetWidth="@dimen/offset_width"-->
+        <!--slidingLayer:stickTo="bottom"-->
+        <!--slidingLayer:closeOnTapEnabled="false">-->
+
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:background="@color/green"-->
+            <!--android:paddingTop="@dimen/offset_width"-->
+            <!--android:id="@+id/topPaneContent">-->
+        <!--</RelativeLayout>-->
+    <!--</com.slidinglayer.SlidingLayer>-->
+</RelativeLayout>
