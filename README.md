@@ -27,6 +27,10 @@ Now you are ready to develop! Run the app in debug mode (the bug button) and wat
 ###Third Party Libraries
 * [Sliding Layer] by 6Wunderkinder
 
+###REST API
+Translation Studio 2.0 utilizes a REST API to suppliment the resources packaged with the distributed apk. If an active internet connection exists the app will look for updates using this api, otherwise it will continue to use the packaged resources.
+The API specification can be viewed at the [Unfolding Word API](https://door43.org/en/dev/api/unfoldingword)
+
 ###Object Organization
 Below is an explaination of some of the primary objects within the app.
 
