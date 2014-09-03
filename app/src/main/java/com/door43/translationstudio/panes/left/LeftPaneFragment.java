@@ -25,4 +25,12 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
 
         return rootView;
     }
+
+    /**
+     * Changes the selected tab
+     * @param index
+     */
+    public void selectTab(int index) {
+        mTabsPager.selectTab(index);
+    }
 }

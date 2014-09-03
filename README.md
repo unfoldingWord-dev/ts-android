@@ -27,6 +27,18 @@ Now you are ready to develop! Run the app in debug mode (the bug button) and wat
 ###Third Party Libraries
 * [Sliding Layer] by 6Wunderkinder
 
+###Object Organization
+Below is an explaination of some of the primary objects within the app.
+
+####Project
+A project encapsulates a specific translation effort regardless of language. The app has a set of predefined projects including starting data that will be augmented by data found on the server (if an active internect connection is available). Projects may contain 0 or more Chapters.
+
+####Chapter
+A chapter encapsulates a specific set translation Frames regardless of of language. Chapters mostly act to better organize the translation effort into sections for better navigation. Chapters may containe 0 or more frames.
+
+####Frame
+A frame encapsulates a specific piece of translated work. Frames include additional translation information such as language. This is the lowest level of translation (just above the text file).
+
 [Virtual Box]:https://www.virtualbox.org/
 [Genymotion Android Studio Plugin]:https://cloud.genymotion.com/page/doc/#collapse-intellij
 [Adding SDK Packages]:http://developer.android.com/sdk/installing/adding-packages.html

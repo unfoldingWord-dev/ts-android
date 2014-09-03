@@ -13,6 +13,9 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 public class MainActivity extends TranslatorBaseActivity {
     // content panes
     private LeftPaneFragment mLeftPane;
@@ -41,7 +44,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         });
 
-        initTestData();
+        initData();
         initSlidingLayers();
         initPanes();
     }
@@ -54,6 +57,14 @@ public class MainActivity extends TranslatorBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    /**
+     * Returns the left pane fragment
+     * @return
+     */
+    public LeftPaneFragment getLeftPane() {
+        return mLeftPane;
     }
 
     /**
@@ -196,20 +207,24 @@ public class MainActivity extends TranslatorBaseActivity {
         getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
     }
 
-    private void initTestData() {
+    /**
+     * This methods handles all of the pre-populated data within the app.
+     * The information defined within may be augmented by updates from the server or (eventually) peers.
+     */
+    private void initData() {
+        ArrayList<Chapter> chapterSet1 = new ArrayList<Chapter>();
+        chapterSet1.add(new Chapter("1. The Creation", "A Bible story from: Genesis 1-2"));
+        chapterSet1.add(new Chapter("2. Sin Enters the world", "A Bible story from: Genesis 3"));
+        chapterSet1.add(new Chapter("3. The Flood", "A Bible story from: Genesis 6-8"));
+        // project 1
+        app().getSharedProjectManager().add(new Project("Open Bible Stories", "obs", "Unfolding Word", chapterSet1));
 
-        app().getSharedProjectManager().add(new Project("Open Bible Stories", "Unfolding Word"));
-        app().getSharedProjectManager().add(new Project("Bible Translation", "Some fun description"));
-        app().getSharedProjectManager().add(new Project("Hello world", "oh hi"));
-        app().getSharedProjectManager().add(new Project("Another project", "Unfolding Word"));
-        app().getSharedProjectManager().add(new Project("One more project", "Some fun description"));
-        app().getSharedProjectManager().add(new Project("Something", "oh hi"));
-        app().getSharedProjectManager().add(new Project("Another Something", "oh hi"));
-        app().getSharedProjectManager().add(new Project("One more something", "oh hi"));
-        app().getSharedProjectManager().add(new Project("Bla bla bla", "oh hi"));
-        app().getSharedProjectManager().add(new Project("Hi guys", "oh hi"));
-        app().getSharedProjectManager().add(new Project("Hello!", "oh hi"));
-        app().getSharedProjectManager().add(new Project("What?g", "oh hi"));
+        // project 2
+        ArrayList<Chapter> chapterSet2 = new ArrayList<Chapter>();
+        chapterSet2.add(new Chapter("Chapter 1", "Some stuff happens"));
+        chapterSet2.add(new Chapter("Chapter 2", "More stuff happens"));
+        chapterSet2.add(new Chapter("Chapter 3", "End of the story"));
+        app().getSharedProjectManager().add(new Project("Bible Translation", "bt", "Some fun description", chapterSet2));
 
     }
 }

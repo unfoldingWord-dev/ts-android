@@ -11,16 +11,17 @@ import android.view.ViewGroup;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.panes.left.tabs.ChaptersTabFragment;
 import com.door43.translationstudio.panes.left.tabs.ProjectsTabFragment;
-import com.door43.translationstudio.panes.left.tabs.StoriesTabFragment;
+import com.door43.translationstudio.panes.left.tabs.FramesTabFragment;
 import com.door43.translationstudio.util.StringFragmentKeySet;
 import com.door43.translationstudio.util.TabbedViewPagerAdapter;
-import com.example.android.common.view.SlidingTabLayout;
+import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.slidingtabs.SlidingTabLayout;
 
 import java.util.ArrayList;
 
 
 /**
- * Created by joel on 8/7/2014.
+ * This class handles the tabbing for projects, chapters, and frames.
  */
 public class LeftPaneSlidingTabsFragment extends Fragment {
     private ViewPager mViewPager;
@@ -36,9 +37,9 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
 
         if(tabs.size() == 0) {
             // Tabs
-            tabs.add(new StringFragmentKeySet("Projects", new ProjectsTabFragment()));
-            tabs.add(new StringFragmentKeySet("Stories", new StoriesTabFragment()));
-            tabs.add(new StringFragmentKeySet("Chapters", new ChaptersTabFragment()));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.projects), new ProjectsTabFragment()));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.chapters), new ChaptersTabFragment()));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.frames), new FramesTabFragment()));
         }
 
         // ViewPager
@@ -65,7 +66,12 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
      */
     public void selectTab(int i) {
         if(mViewPager != null) {
-            mViewPager.setCurrentItem(i);
+            if(tabs.size() > i && i >= 0) {
+                // select the tab
+                mViewPager.setCurrentItem(i);
+                // notify the tab list adapter that it should reload
+                ((TabsFragmentAdapterNotification)tabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
+            }
         } else {
             defaultPage = i;
         }

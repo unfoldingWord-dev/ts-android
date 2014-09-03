@@ -16,6 +16,7 @@
         android:id="@+id/textView"
         android:textSize="30sp"
         android:textIsSelectable="true"
+        android:textColor="@color/white"
         android:layout_gravity="center_horizontal" />
 
     <LinearLayout

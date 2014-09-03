@@ -7,7 +7,7 @@
     android:orientation="vertical"
     >
 
-    <com.example.android.common.view.SlidingTabLayout
+    <com.door43.slidingtabs.SlidingTabLayout
         android:id="@+id/sliding_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

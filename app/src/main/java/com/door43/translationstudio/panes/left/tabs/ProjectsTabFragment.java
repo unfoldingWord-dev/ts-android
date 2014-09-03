@@ -7,14 +7,17 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.Project;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.panes.left.LeftPaneSlidingTabsFragment;
+import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectsTabFragment extends TranslatorBaseFragment {
+public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private ProjectsTabFragment me = this;
     private ProjectItemAdapter mProjectItemAdapter;
 
@@ -31,16 +34,18 @@ public class ProjectsTabFragment extends TranslatorBaseFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // TODO: select the project
-                Project p = app().getSharedProjectManager().get(i);
-                if(p != null) {
-                    me.app().setNotice("You selected "+p.getTitle());
-                } else{
-                    app().setNotice("oops! we could not find that project");
-                }
+                // select the project
+                app().getSharedProjectManager().setSelectedProject(i);
+                // open up the chapters tab
+                ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);
             }
         });
 
         return view;
+    }
+
+    @Override
+    public void NotifyAdapterDataSetChanged() {
+        mProjectItemAdapter.notifyDataSetChanged();
     }
 }

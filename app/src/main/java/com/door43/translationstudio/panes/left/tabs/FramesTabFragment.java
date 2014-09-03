@@ -6,12 +6,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
  * Created by joel on 8/29/2014.
  */
-public class StoriesTabFragment extends TranslatorBaseFragment{
+public class FramesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -20,5 +21,10 @@ public class StoriesTabFragment extends TranslatorBaseFragment{
         // TODO: set up stories item adapter
 
         return view;
+    }
+
+    @Override
+    public void NotifyAdapterDataSetChanged() {
+        // TODO: notify adapter that the data set has changed
     }
 }
