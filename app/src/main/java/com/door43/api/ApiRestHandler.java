@@ -6,16 +6,21 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -50,6 +55,8 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
                 return HTTPget(params[0]);
             } else if(params[1].compareTo("image") == 0) {
                 return HTTPgetImage(params[0]);
+            } else if(params[1].compareTo("file") == 0) {
+                return HTTPgetFile(params[0]);
             }
         }
         return "";
@@ -123,6 +130,81 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
             return e.getMessage();
         }
         this.result = sb.toString();
+        return "";
+    }
+
+    /**
+     * Downloads a file from the server.
+     * @param urlString
+     * @return
+     */
+    private String HTTPgetFile(String urlString) {
+        String filepath = "";
+        // build the url request
+        URL url;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException e) {
+            // bad url
+            return e.getMessage();
+        }
+
+        Log.d("api", "get file request: "+ urlString.toString());
+
+        // request the file
+        BufferedInputStream bis;
+        ByteArrayBuffer bab = new ByteArrayBuffer(64);
+        int current = 0;
+        try {
+            bis = new BufferedInputStream(url.openStream());
+        } catch (IOException e) {
+            // error connecting to the server
+            return e.getMessage();
+        }
+        try {
+            while((current = bis.read()) != -1) {
+                bab.append((byte)current);
+            }
+        } catch (IOException e) {
+            return e.getMessage();
+        }
+
+        // open file
+        FileOutputStream fos;
+        try {
+            fos = new FileOutputStream(new File(filepath));
+        } catch (FileNotFoundException e) {
+            return e.getMessage();
+        }
+
+        // save to file
+        try {
+            fos.write(bab.toByteArray());
+            fos.close();
+        } catch (IOException e) {
+            try {
+                fos.close();
+            } catch (IOException e1) {
+                return e.getMessage();
+            }
+            return e.getMessage();
+        }
+
+        this.result = filepath;
+
+        // prepare response
+        JSONObject json = new JSONObject();
+        JSONObject values = new JSONObject();
+        try {
+            values.put("path", filepath);
+            json.put("v", "0");
+            json.put("t", "0");
+            json.put("ok", values);
+        } catch (JSONException e) {
+            return e.getMessage();
+        }
+
+        this.result = json.toString();
         return "";
     }
 

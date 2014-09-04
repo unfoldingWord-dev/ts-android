@@ -8,9 +8,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
-import com.door43.translationstudio.Project;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.panes.left.LeftPaneSlidingTabsFragment;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 

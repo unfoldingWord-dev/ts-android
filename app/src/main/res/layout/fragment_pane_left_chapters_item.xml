@@ -25,7 +25,7 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Project Title"
+            android:text="Chapter Title"
             android:id="@+id/chapterTitle"
             android:textSize="@dimen/h4"
             android:textColor="@color/black" />
@@ -33,7 +33,7 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Project Description"
+            android:text="Chapter Description"
             android:id="@+id/chapterDescription" />
     </LinearLayout>
 </LinearLayout>

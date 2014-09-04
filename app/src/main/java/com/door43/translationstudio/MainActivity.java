@@ -212,19 +212,33 @@ public class MainActivity extends TranslatorBaseActivity {
      * The information defined within may be augmented by updates from the server or (eventually) peers.
      */
     private void initData() {
+
+
         ArrayList<Chapter> chapterSet1 = new ArrayList<Chapter>();
-        chapterSet1.add(new Chapter("1. The Creation", "A Bible story from: Genesis 1-2"));
-        chapterSet1.add(new Chapter("2. Sin Enters the world", "A Bible story from: Genesis 3"));
-        chapterSet1.add(new Chapter("3. The Flood", "A Bible story from: Genesis 6-8"));
+        chapterSet1.add(new Chapter(1, "1. The Creation", "A Bible story from: Genesis 1-2"));
+        chapterSet1.add(new Chapter(2, "2. Sin Enters the world", "A Bible story from: Genesis 3"));
+        chapterSet1.add(new Chapter(3, "3. The Flood", "A Bible story from: Genesis 6-8"));
         // project 1
         app().getSharedProjectManager().add(new Project("Open Bible Stories", "obs", "Unfolding Word", chapterSet1));
 
         // project 2
         ArrayList<Chapter> chapterSet2 = new ArrayList<Chapter>();
-        chapterSet2.add(new Chapter("Chapter 1", "Some stuff happens"));
-        chapterSet2.add(new Chapter("Chapter 2", "More stuff happens"));
-        chapterSet2.add(new Chapter("Chapter 3", "End of the story"));
+        chapterSet2.add(new Chapter(1, "Chapter 1", "Some stuff happens"));
+        chapterSet2.add(new Chapter(2, "Chapter 2", "More stuff happens"));
+        chapterSet2.add(new Chapter(3, "Chapter 3", "End of the story"));
         app().getSharedProjectManager().add(new Project("Bible Translation", "bt", "Some fun description", chapterSet2));
 
+    }
+
+    public void closeTopPane() {
+        mTopSlidingLayer.closeLayer(true);
+    }
+
+    public void closeLeftPane() {
+        mLeftSlidingLayer.closeLayer(true);
+    }
+
+    public void closeRightPane() {
+        mRightSlidingLayer.closeLayer(true);
     }
 }

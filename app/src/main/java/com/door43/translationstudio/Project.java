@@ -52,6 +52,10 @@ public class Project {
         return mDescription;
     }
 
+    /**
+     * Returns the number of chapters in this project
+     * @return
+     */
     public int numChapters() {
         return mChapters.size();
     }
@@ -88,7 +92,7 @@ public class Project {
      * Gets the currently selected chapter in the application
      * @return
      */
-    public int getSelectedChapter() {
-        return mSelectedChapter;
+    public Chapter getSelectedChapter() {
+        return getChapter(mSelectedChapter);
     }
 }
