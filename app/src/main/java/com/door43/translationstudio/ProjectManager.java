@@ -1,13 +1,28 @@
 package com.door43.translationstudio;
 
+import android.util.Log;
+
+import com.door43.delegate.DelegateListener;
+import com.door43.delegate.DelegateResponse;
+import com.door43.translationstudio.datastore.DataStore;
+import com.door43.translationstudio.datastore.DataStoreDelegateResponse;
+
 import java.util.ArrayList;
 
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectManager {
+public class ProjectManager implements DelegateListener {
+    private DataStore mDataStore = new DataStore();
     private static ArrayList<Project> mProjects = new ArrayList<Project>();
     private static int mSelectedIndex;
+
+    public ProjectManager() {
+        // register to receive async messages from the datastore
+        mDataStore.registerDelegateListener(this);
+        // begin loading projects
+        mDataStore.fetchProjectCatalog();
+    }
 
     /**
      * Adds a project to the manager
@@ -66,5 +81,26 @@ public class ProjectManager {
      */
     public int size() {
         return mProjects.size();
+    }
+
+    @Override
+    public void onDelegateResponse(String id, DelegateResponse response) {
+        DataStoreDelegateResponse message = (DataStoreDelegateResponse)response;
+        if(message.getType() == DataStoreDelegateResponse.MessageType.PROJECT) {
+            // TODO: load the projects from the json and load the languages
+//            mDataStore.fetchLanguageCatalog();
+        } else if(message.getType() == DataStoreDelegateResponse.MessageType.LANGUAGE) {
+            // TODO: load the languages from the json and load the source text
+//            mDataStore.fetchSourceText();
+        } else if(message.getType() == DataStoreDelegateResponse.MessageType.SOURCE) {
+            // TODO: load source from the json and load the images and audio
+        } else if(message.getType() == DataStoreDelegateResponse.MessageType.IMAGES) {
+
+        } else if(message.getType() == DataStoreDelegateResponse.MessageType.AUDIO) {
+
+        } else {
+            // Unknown message type
+            Log.w("ProjectManager", "Unknown delegate message type "+message.getType());
+        }
     }
 }

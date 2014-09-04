@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import com.door43.translationstudio.datastore.DataStore;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.RightPaneFragment;
 import com.door43.translationstudio.panes.TopPaneFragment;
@@ -12,9 +13,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 
 public class MainActivity extends TranslatorBaseActivity {
     // content panes
@@ -44,7 +42,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         });
 
-        initData();
+//        initData();
         initSlidingLayers();
         initPanes();
     }
@@ -208,27 +206,28 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     /**
-     * This methods handles all of the pre-populated data within the app.
-     * The information defined within may be augmented by updates from the server or (eventually) peers.
+     * This methods starts the data population within the app.
      */
-    private void initData() {
+//    private void initData() {
+//        app().getSharedProjectManager().loadProjects();
 
 
-        ArrayList<Chapter> chapterSet1 = new ArrayList<Chapter>();
-        chapterSet1.add(new Chapter(1, "1. The Creation", "A Bible story from: Genesis 1-2"));
-        chapterSet1.add(new Chapter(2, "2. Sin Enters the world", "A Bible story from: Genesis 3"));
-        chapterSet1.add(new Chapter(3, "3. The Flood", "A Bible story from: Genesis 6-8"));
-        // project 1
-        app().getSharedProjectManager().add(new Project("Open Bible Stories", "obs", "Unfolding Word", chapterSet1));
 
-        // project 2
-        ArrayList<Chapter> chapterSet2 = new ArrayList<Chapter>();
-        chapterSet2.add(new Chapter(1, "Chapter 1", "Some stuff happens"));
-        chapterSet2.add(new Chapter(2, "Chapter 2", "More stuff happens"));
-        chapterSet2.add(new Chapter(3, "Chapter 3", "End of the story"));
-        app().getSharedProjectManager().add(new Project("Bible Translation", "bt", "Some fun description", chapterSet2));
+//        ArrayList<Chapter> chapterSet1 = new ArrayList<Chapter>();
+//        chapterSet1.add(new Chapter(1, "1. The Creation", "A Bible story from: Genesis 1-2"));
+//        chapterSet1.add(new Chapter(2, "2. Sin Enters the world", "A Bible story from: Genesis 3"));
+//        chapterSet1.add(new Chapter(3, "3. The Flood", "A Bible story from: Genesis 6-8"));
+//        // project 1
+//        app().getSharedProjectManager().add(new Project("Open Bible Stories", "obs", "Unfolding Word", chapterSet1));
+//
+//        // project 2
+//        ArrayList<Chapter> chapterSet2 = new ArrayList<Chapter>();
+//        chapterSet2.add(new Chapter(1, "Chapter 1", "Some stuff happens"));
+//        chapterSet2.add(new Chapter(2, "Chapter 2", "More stuff happens"));
+//        chapterSet2.add(new Chapter(3, "Chapter 3", "End of the story"));
+//        app().getSharedProjectManager().add(new Project("Bible Translation", "bt", "Some fun description", chapterSet2));
 
-    }
+//    }
 
     public void closeTopPane() {
         mTopSlidingLayer.closeLayer(true);

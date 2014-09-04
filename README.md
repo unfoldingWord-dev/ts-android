@@ -33,16 +33,22 @@ Translation Studio 2.0 utilizes a REST API to suppliment the resources packaged 
 The API specification can be viewed at the [Unfolding Word API](https://door43.org/en/dev/api/unfoldingword)
 
 ###Object Organization
-Below is an explaination of some of the primary objects within the app.
+Below is an explaination of some of the primary objects/classes within the app.
+
+####ProjectManager
+The project manager maintains a list of projects within the app and provides easy access to any project within the app.
 
 ####Project
-A project encapsulates a specific translation effort regardless of language. The app has a set of predefined projects including starting data that will be augmented by data found on the server (if an active internect connection is available). Projects may contain 0 or more Chapters.
+A project encapsulates the source text for a specific translation effort regardless of language. This source text is subdivided into Chapters and Frames. The app has a set of predefined projects including starting data that will be augmented by data found on the server (if an active internect connection is available).
 
 ####Chapter
-A chapter encapsulates a specific set translation Frames regardless of of language. Chapters mostly act to better organize the translation effort into sections for better navigation. Chapters may containe 0 or more frames.
+A chapter encapsulates a specific set of translation Frames regardless of of language. Chapters mostly act to better organize the translation effort into sections for better navigation. Chapters may containe 0 or more frames.
 
 ####Frame
 A frame encapsulates a specific piece of translated work. Frames include additional translation information such as language. This is the lowest level of translation (just above the text file).
+
+####DataStore
+The data stores acts as a buffer between the app and the source text and media files. This allows objects within the app to remain agnostic towards the actual data source, which enables the app to easily fetch content from local storage or from a remote server.
 
 [Virtual Box]:https://www.virtualbox.org/
 [Genymotion Android Studio Plugin]:https://cloud.genymotion.com/page/doc/#collapse-intellij
