@@ -13,12 +13,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class MainActivity extends TranslatorBaseActivity {
     // content panes
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
     private TopPaneFragment mTopPane;
+    private LinearLayout mCenterPane;
 
     // sliding layers
     private SlidingLayer mLeftSlidingLayer;
@@ -30,10 +32,10 @@ public class MainActivity extends TranslatorBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        LinearLayout centerPane = (LinearLayout)findViewById(R.id.centerPane);
+        mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
 
         // close the side panes when the center content is clicked
-        centerPane.setOnClickListener(new View.OnClickListener() {
+        mCenterPane.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(mLeftSlidingLayer != null) mLeftSlidingLayer.closeLayer(true);
@@ -238,6 +240,8 @@ public class MainActivity extends TranslatorBaseActivity {
 
     public void closeLeftPane() {
         mLeftSlidingLayer.closeLayer(true);
+        TextView sourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
+        sourceText.setText(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getText());
     }
 
     public void closeRightPane() {

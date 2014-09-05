@@ -24,9 +24,24 @@
                     android:layout_height="match_parent"
                     android:fitsSystemWindows="true"
                     android:layout_weight="1"
-                    android:background="#eee"
-                    android:id="@+id/contentLeft">
+                    android:scrollbars="vertical"
+                    android:background="#eee">
 
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/scrollView" >
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/sourceText"
+                            android:textSize="@dimen/h4"
+                            android:paddingLeft="30dp"
+                            android:paddingTop="20dp"
+                            android:paddingRight="20dp"
+                            android:paddingBottom="20dp" />
+                    </ScrollView>
                 </FrameLayout>
 
                 <FrameLayout
@@ -34,15 +49,19 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:paddingLeft="2dp"
-                    android:background="#dee2d0"
-                    android:id="@+id/contentRight">
+                    android:background="#dee2d0">
 
-                    <ScrollView
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:id="@+id/scrollView"
-                        android:background="@drawable/sketchpad_background"
-                        android:fillViewport="true" />
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/inputText"
+                        android:inputType="textNoSuggestions|textCapSentences|text|textMultiLine"
+                        android:enabled="true"
+                        android:gravity="top"
+                        android:paddingLeft="20dp"
+                        android:paddingTop="20dp"
+                        android:paddingRight="30dp"
+                        android:paddingBottom="20dp" />
                 </FrameLayout>
 
             </LinearLayout>

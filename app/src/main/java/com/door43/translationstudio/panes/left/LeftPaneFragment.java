@@ -38,7 +38,6 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
      * Triggered whenever the pane is opened
      */
     public void onOpen() {
-        // always start with the first tab
-        selectTab(0);
+
     }
 }
