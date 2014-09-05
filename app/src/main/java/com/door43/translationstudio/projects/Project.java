@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.projects;
 
 import java.util.ArrayList;
 
@@ -21,11 +21,10 @@ public class Project {
      * @param slug The machine readable slug identifying the project.
      * @param description A short description of the project.
      */
-    public Project(String title, String slug, String description, ArrayList<Chapter> chapters) {
+    public Project(String title, String slug, String description) {
         mTitle = title;
         mSlug = slug;
         mDescription = description;
-        mChapters = chapters;
     }
 
     /**
@@ -94,5 +93,20 @@ public class Project {
      */
     public Chapter getSelectedChapter() {
         return getChapter(mSelectedChapter);
+    }
+
+    /**
+     * Adds a chapter to the project
+     * @param c the chapter to add
+     * @return
+     */
+    public Chapter addChapter(Chapter c) {
+        if(!this.mChapters.contains(c)) {
+            this.mChapters.add(c);
+            return c;
+        } else {
+            // TODO: is this nessesary? need to double check that the object signatures are different. If they are the same we should just always return the input chapter.
+            return getChapter(this.mChapters.indexOf(c));
+        }
     }
 }

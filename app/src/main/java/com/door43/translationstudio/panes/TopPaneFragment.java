@@ -62,4 +62,11 @@ public class TopPaneFragment extends TranslatorBaseFragment {
 
         return rootView;
     }
+
+    /**
+     * Triggered whenever the pane is opened
+     */
+    public void onOpen() {
+
+    }
 }

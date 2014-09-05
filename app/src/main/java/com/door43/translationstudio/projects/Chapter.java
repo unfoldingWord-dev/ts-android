@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.projects;
 
 import java.util.ArrayList;
 
@@ -91,5 +91,19 @@ public class Chapter {
      */
     public Frame getSelectedFrame() {
         return getFrame(mSelectedFrame);
+    }
+
+    /**
+     * Add a new frame to the chapter
+     * @param f the frame to add
+     */
+    public Frame addFrame(Frame f) {
+        if(!this.mFrames.contains(f)) {
+            this.mFrames.add(f);
+            return f;
+        } else {
+            // TODO: is this nessesary? need to double check that the object signatures are different. If they are the same we should just always return the input frame.
+            return getFrame(this.mFrames.indexOf(f));
+        }
     }
 }

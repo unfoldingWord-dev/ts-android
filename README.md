@@ -29,6 +29,7 @@ Now you are ready to develop! Run the app in debug mode (the bug button) and wat
 
 ###REST API
 > This feature is not yet implimented. Right now the app only loads the packaged json data.
+
 Translation Studio 2.0 utilizes a REST API to suppliment the resources packaged with the distributed apk. If an active internet connection exists the app will look for updates using this api, otherwise it will continue to use the packaged resources.
 The API specification can be viewed at the [Unfolding Word API](https://door43.org/en/dev/api/unfoldingword)
 

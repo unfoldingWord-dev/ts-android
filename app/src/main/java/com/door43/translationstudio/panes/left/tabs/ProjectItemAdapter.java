@@ -36,7 +36,7 @@ public class ProjectItemAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int i) {
-        return context.getSharedProjectManager().get(i);
+        return context.getSharedProjectManager().getProject(i);
     }
 
     @Override
@@ -61,11 +61,11 @@ public class ProjectItemAdapter extends BaseAdapter {
 
         // title
         TextView projectTitle = (TextView)projectItemView.findViewById(R.id.projectTitle);
-        projectTitle.setText(context.getSharedProjectManager().get(i).getTitle());
+        projectTitle.setText(context.getSharedProjectManager().getProject(i).getTitle());
 
         // description
         TextView projectDescription = (TextView)projectItemView.findViewById(R.id.projectDescription);
-        projectDescription.setText(context.getSharedProjectManager().get(i).getDescription());
+        projectDescription.setText(context.getSharedProjectManager().getProject(i).getDescription());
 
         return projectItemView;
     }

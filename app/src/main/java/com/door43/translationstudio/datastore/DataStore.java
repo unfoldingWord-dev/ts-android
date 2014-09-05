@@ -1,23 +1,32 @@
 package com.door43.translationstudio.datastore;
 
 import com.door43.delegate.DelegateSender;
+import com.door43.translationstudio.MainApplication;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * The data store handles all of the text and media resources within the app.
  * This class will look for data locally as well as on the server.
  */
 public class DataStore extends DelegateSender {
+    private static MainApplication mContext;
+
+    public DataStore(MainApplication context) {
+        mContext = context;
+    }
 
     /**
      * Returns a json array of valid source projects
      * @return
      */
     public void fetchProjectCatalog() {
-        // TODO: do some processing then notify listeners that we have the data
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.PROJECT, ""));
+        // TODO: check for updates on the server
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.PROJECT, loadJSONAsset("projects.json")));
     }
 
     /**
@@ -25,8 +34,10 @@ public class DataStore extends DelegateSender {
      * @param projectSlug the slug of the project for which languages will be returned
      * @return
      */
-    public void fetchLanguageCatalog(String projectSlug) {
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.LANGUAGE, ""));
+    public void fetchLanguageCatalog(String projectSlug, int projectIndex) {
+        // TODO: check for updates on the server
+        String path = projectSlug+"/languages.json";
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.LANGUAGE, loadJSONAsset(path), projectIndex));
     }
 
     /**
@@ -35,7 +46,33 @@ public class DataStore extends DelegateSender {
      * @param languageCode the language code for which the source text will be returned
      * @return
      */
-    public void fetchSourceText(String projectSlug, String languageCode) {
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, ""));
+    public void fetchSourceText(String projectSlug, String languageCode, int projectIndex, int languageIndex) {
+        // TODO: check for updates on the server
+        String path = projectSlug+"/"+languageCode+"/source.json";
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectIndex, languageIndex));
     }
+
+    /**
+     * Load json from the local assets
+     * @param path path to the json file within the assets directory
+     * @return the string contents of the json file
+     */
+    private String loadJSONAsset(String path) {
+        path = "sourceTranslations/"+path;
+        String json;
+        try {
+            InputStream is = mContext.getAssets().open(path);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return json;
+    }
+
+
 }

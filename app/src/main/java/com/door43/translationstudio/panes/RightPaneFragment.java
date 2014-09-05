@@ -17,4 +17,11 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         View rootView = inflater.inflate(R.layout.fragment_pane_right, container, false);
         return rootView;
     }
+
+    /**
+     * Triggered whenever the pane is opened
+     */
+    public void onOpen() {
+
+    }
 }

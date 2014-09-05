@@ -5,13 +5,19 @@ import android.app.Application;
 import android.view.Gravity;
 import android.widget.Toast;
 
+import com.door43.translationstudio.projects.ProjectManager;
+
 /**
  * Custom application class so we can effectively handle state accross activities and other classes
  */
 public class MainApplication extends Application {
     private Activity mCurrentActivity = null;
     private Toast mToast = null;
-    private ProjectManager mProjectManager = new ProjectManager();
+    private ProjectManager mProjectManager;
+
+    public void onCreate() {
+        mProjectManager = new ProjectManager(this);
+    }
 
     /**
      * Returns the shared instance of the project manager

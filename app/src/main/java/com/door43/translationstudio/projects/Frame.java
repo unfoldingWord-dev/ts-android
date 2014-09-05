@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.projects;
 
 import java.util.ArrayList;
 
@@ -7,24 +7,24 @@ import java.util.ArrayList;
  */
 public class Frame {
     private String mId;
-    private String mDescription;
+    private String mText;
 
     /**
      * Creates a new frame.
      * @param id the frame id. This is a combination of the chapter id and frame id. e.g. 01-02 for chapter 1 frame 2.
-     * @param description a short description of the frame
+     * @param text a short description of the frame
      */
-    public Frame(String id, String description) {
+    public Frame(String id, String text) {
         mId = id;
-        mDescription = description;
+        mText = text;
     }
 
     /**
      * Get the frame description
      * @return
      */
-    public String getDescription() {
-        return mDescription;
+    public String getText() {
+        return mText;
     }
 
     /**

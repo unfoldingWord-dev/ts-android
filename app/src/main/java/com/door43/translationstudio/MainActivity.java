@@ -107,6 +107,7 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onOpen() {
                 // bring self to front first to cover grip
                 mTopSlidingLayer.bringToFront();
+                mTopPane.onOpen();
 
                 mLeftSlidingLayer.closeLayer(true);
                 mLeftSlidingLayer.bringToFront();
@@ -136,6 +137,7 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onOpen() {
                 // bring self to front first to cover grip
                 mLeftSlidingLayer.bringToFront();
+                mLeftPane.onOpen();
 
                 mTopSlidingLayer.closeLayer(true);
                 mTopSlidingLayer.bringToFront();
@@ -165,6 +167,7 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onOpen() {
                 // bring self to front first to cover grip
                 mRightSlidingLayer.bringToFront();
+                mRightPane.onOpen();
 
                 mLeftSlidingLayer.closeLayer(true);
                 mLeftSlidingLayer.bringToFront();

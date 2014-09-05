@@ -5,14 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
-
-import java.util.Date;
 
 /**
  * Created by joel on 8/29/2014.
@@ -65,7 +62,7 @@ public class FrameItemAdapter extends BaseAdapter {
 
         // description
         TextView frameDescription = (TextView)frameItemView.findViewById(R.id.frameDescription);
-        frameDescription.setText(context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(i).getDescription());
+        frameDescription.setText(context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(i).getText());
 
         return frameItemView;
     }
