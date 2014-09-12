@@ -34,11 +34,11 @@
             android:id="@+id/navLeft"
             android:gravity="top|left">
 
-            <ImageButton
+            <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/buttonLibrary"
-                android:background="@drawable/ic_icon_library"/>
+                android:id="@+id/buttonSync"
+                android:text="Sync" />
 
             <ImageButton
                 android:layout_width="wrap_content"

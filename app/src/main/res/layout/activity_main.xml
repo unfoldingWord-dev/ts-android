@@ -27,21 +27,29 @@
                     android:scrollbars="vertical"
                     android:background="#eee">
 
-                    <ScrollView
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Choose some source text from the left tab to get started"
+                        android:id="@+id/helpTextView"
+                        android:textSize="@dimen/h3"
+                        android:padding="50dp"
+                        android:layout_gravity="center"
+                        android:textColor="@color/gray"
+                        android:textStyle="bold" />
+
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:id="@+id/scrollView" >
+                        android:id="@+id/sourceText"
+                        android:textSize="@dimen/h4"
+                        android:paddingLeft="30dp"
+                        android:maxLines="9999"
+                        android:scrollbars="vertical"
+                        android:paddingTop="20dp"
+                        android:paddingRight="20dp"
+                        android:paddingBottom="20dp" />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:id="@+id/sourceText"
-                            android:textSize="@dimen/h4"
-                            android:paddingLeft="30dp"
-                            android:paddingTop="20dp"
-                            android:paddingRight="20dp"
-                            android:paddingBottom="20dp" />
-                    </ScrollView>
                 </FrameLayout>
 
                 <FrameLayout

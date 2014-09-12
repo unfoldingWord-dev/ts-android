@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Frame;
 
 /**
  * Created by joel on 8/29/2014.
@@ -33,7 +34,7 @@ public class FrameItemAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int i) {
-        return context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(i);
+        return getFrameItem(i);
     }
 
     @Override
@@ -58,12 +59,17 @@ public class FrameItemAdapter extends BaseAdapter {
 
         // title
         TextView frameId = (TextView)frameItemView.findViewById(R.id.frameId);
-        frameId.setText(context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(i).getID());
+        frameId.setText(getFrameItem(i).getChapterFrameId());
 
         // description
         TextView frameDescription = (TextView)frameItemView.findViewById(R.id.frameDescription);
-        frameDescription.setText(context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(i).getText());
+        frameDescription.setText(getFrameItem(i).getText());
 
         return frameItemView;
+    }
+
+    private Frame getFrameItem(int i) {
+        String key = (String)context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFramesKeySet().get(i);
+        return context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(key);
     }
 }

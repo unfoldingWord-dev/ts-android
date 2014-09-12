@@ -5,14 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
-
-import java.util.Date;
+import com.door43.translationstudio.projects.Project;
 
 /**
  * Created by joel on 8/29/2014.
@@ -31,12 +29,12 @@ public class ProjectItemAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return context.getSharedProjectManager().size();
+        return context.getSharedProjectManager().numProjects();
     }
 
     @Override
     public Object getItem(int i) {
-        return context.getSharedProjectManager().getProject(i);
+        return getProjectItem(i);
     }
 
     @Override
@@ -61,12 +59,17 @@ public class ProjectItemAdapter extends BaseAdapter {
 
         // title
         TextView projectTitle = (TextView)projectItemView.findViewById(R.id.projectTitle);
-        projectTitle.setText(context.getSharedProjectManager().getProject(i).getTitle());
+        projectTitle.setText(getProjectItem(i).getTitle());
 
         // description
         TextView projectDescription = (TextView)projectItemView.findViewById(R.id.projectDescription);
-        projectDescription.setText(context.getSharedProjectManager().getProject(i).getDescription());
+        projectDescription.setText(getProjectItem(i).getDescription());
 
         return projectItemView;
+    }
+
+    private Project getProjectItem(int i) {
+        String key = (String)context.getSharedProjectManager().getProjectsKeySet().get(i);
+        return context.getSharedProjectManager().getProject(key);
     }
 }

@@ -1,10 +1,7 @@
-package com.door43.translationstudio.datastore;
+package com.door43.translationstudio.projects.datastore;
 
 import com.door43.delegate.DelegateSender;
 import com.door43.translationstudio.MainApplication;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,22 +31,23 @@ public class DataStore extends DelegateSender {
      * @param projectSlug the slug of the project for which languages will be returned
      * @return
      */
-    public void fetchLanguageCatalog(String projectSlug, int projectIndex) {
+    public void fetchLanguageCatalog(String projectSlug) {
         // TODO: check for updates on the server
         String path = projectSlug+"/languages.json";
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.LANGUAGE, loadJSONAsset(path), projectIndex));
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.LANGUAGE, loadJSONAsset(path), projectSlug));
     }
 
     /**
      * Returns a json object of source text for a specific project and language
      * @param projectSlug the slug of the project for which the source text will be returned
      * @param languageCode the language code for which the source text will be returned
+     * @param languageIndex
      * @return
      */
-    public void fetchSourceText(String projectSlug, String languageCode, int projectIndex, int languageIndex) {
+    public void fetchSourceText(String projectSlug, String languageCode, int languageIndex) {
         // TODO: check for updates on the server
         String path = projectSlug+"/"+languageCode+"/source.json";
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectIndex, languageIndex));
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectSlug, languageIndex));
     }
 
     /**

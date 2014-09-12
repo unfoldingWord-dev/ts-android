@@ -33,7 +33,8 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // select the project
-                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
+                String key = (String)app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getFramesKeySet().get(i);
+                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(key);
                 // we're ready to begin translating. close the left pane
                 ((MainActivity)me.getActivity()).closeLeftPane();
             }

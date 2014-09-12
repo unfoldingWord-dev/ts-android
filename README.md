@@ -51,6 +51,17 @@ A frame encapsulates a specific piece of translated work. Frames include additio
 ####DataStore
 The data stores acts as a buffer between the app and the source text and media files. This allows objects within the app to remain agnostic towards the actual data source, which enables the app to easily fetch content from local storage or from a remote server.
 
+####TranslationManager
+> work in progress
+
+manages the retrieval and storage of translated content by utilizing the GitSync class
+
+####GitSync
+> work in progress
+
+handles the git side of the translation storage. 
+
+
 [Virtual Box]:https://www.virtualbox.org/
 [Genymotion Android Studio Plugin]:https://cloud.genymotion.com/page/doc/#collapse-intellij
 [Adding SDK Packages]:http://developer.android.com/sdk/installing/adding-packages.html

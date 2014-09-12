@@ -11,7 +11,6 @@ import java.util.ArrayList;
 
 /**
  * This is an adapter class that allows you to create a generic tabbed view pager with a custom set of tabs.
- * Created by joel on 8/7/2014.
  */
 public class TabbedViewPagerAdapter extends FragmentPagerAdapter {
     private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();

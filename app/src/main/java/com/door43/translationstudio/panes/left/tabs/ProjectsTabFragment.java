@@ -33,7 +33,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // select the project
-                app().getSharedProjectManager().setSelectedProject(i);
+                String key = (String)app().getSharedProjectManager().getProjectsKeySet().get(i);
+                app().getSharedProjectManager().setSelectedProject(key);
                 // open up the chapters tab
                 ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);
             }

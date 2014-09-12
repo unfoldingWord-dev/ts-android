@@ -7,5 +7,7 @@
     <string name="projects">Projects</string>
     <string name="chapters">Chapters</string>
     <string name="frames">Frames</string>
+    <string name="git_repository_dir">git</string>
+    <string name="git_server">gitolite3@us.door43.org</string>
 
 </resources>

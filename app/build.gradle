@@ -27,4 +27,6 @@ dependencies {
     compile files('libs/json-simple-1.1.1.jar')
     compile 'com.loopj.android:android-async-http:1.4.5'
     compile 'com.google.code.gson:gson:2.3'
+    compile 'org.eclipse.jgit:org.eclipse.jgit:3.5.0.201409071800-rc1'
+    compile 'com.jcraft:jsch:0.1.51'
 }

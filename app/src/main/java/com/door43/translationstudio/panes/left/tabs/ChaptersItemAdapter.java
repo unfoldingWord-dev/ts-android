@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Chapter;
 
 /**
  * Created by joel on 9/2/2014.
@@ -33,7 +34,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int i) {
-        return context.getSharedProjectManager().getSelectedProject().getChapter(i);
+        return getChaptertItem(i);
     }
 
     @Override
@@ -58,12 +59,17 @@ public class ChaptersItemAdapter extends BaseAdapter {
 
         // title
         TextView chapterTitle = (TextView)chapterItemView.findViewById(R.id.chapterTitle);
-        chapterTitle.setText(context.getSharedProjectManager().getSelectedProject().getChapter(i).getTitle());
+        chapterTitle.setText(getChaptertItem(i).getTitle());
 
         // description
         TextView chapterDescription = (TextView)chapterItemView.findViewById(R.id.chapterDescription);
-        chapterDescription.setText(context.getSharedProjectManager().getSelectedProject().getChapter(i).getDescription());
+        chapterDescription.setText(getChaptertItem(i).getDescription());
 
         return chapterItemView;
+    }
+
+    private Chapter getChaptertItem(int i) {
+        Integer key = (Integer)context.getSharedProjectManager().getSelectedProject().getChaptersKeySet().get(i);
+        return context.getSharedProjectManager().getSelectedProject().getChapter(key);
     }
 }

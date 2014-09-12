@@ -1,17 +1,21 @@
 package com.door43.translationstudio.projects;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by joel on 9/2/2014.
  */
 public class Chapter {
 
-    private ArrayList<Frame> mFrames = new ArrayList<Frame>();
-    private int mId;
+    private Map<String, Frame> mFrames = new HashMap<String, Frame>();
+    private ArrayList<String> mFrameIndex = new ArrayList<String>();
+    private Integer mId;
     private String mTitle;
     private String mDescription;
-    private int mSelectedFrame;
+    private String mSelectedFrame;
 
     /**
      * Creates a new chapter.
@@ -29,7 +33,7 @@ public class Chapter {
      * Get the chapter id. This is effectively the chapter number.
      * @return
      */
-    public int getId() {
+    public Integer getId() {
         return mId;
     }
 
@@ -51,12 +55,12 @@ public class Chapter {
 
     /**
      * Sets the currently selected frame in the application
-     * @param i
+     * @param id
      * @return boolean return true of the index is valid
      */
-    public boolean setSelectedFrame(int i) {
-        if (mFrames.size() > i && i >= 0) {
-            mSelectedFrame = i;
+    public boolean setSelectedFrame(String id) {
+        if (mFrames.containsKey(id)) {
+            mSelectedFrame = id;
             return true;
         } else {
             return false;
@@ -65,12 +69,12 @@ public class Chapter {
 
     /**
      * Gets a frame by index
-     * @param i the index of the frame
+     * @param id the id of the frame
      * @return
      */
-    public Frame getFrame(int i) {
-        if(mFrames.size() > i && i >= 0) {
-            return mFrames.get(i);
+    public Frame getFrame(String id) {
+        if(mFrames.containsKey(id)) {
+            return mFrames.get(id);
         } else {
             // out of bounds
             return null;
@@ -90,7 +94,15 @@ public class Chapter {
      * @return
      */
     public Frame getSelectedFrame() {
-        return getFrame(mSelectedFrame);
+        Frame selectedFrame = getFrame(mSelectedFrame);;
+        if(selectedFrame == null) {
+            // atuo select the first project if no other project has been selected yet.
+            String key = (String) getFramesKeySet().get(0);
+            setSelectedFrame(key);
+            return getFrame(key);
+        } else {
+            return selectedFrame;
+        }
     }
 
     /**
@@ -98,12 +110,21 @@ public class Chapter {
      * @param f the frame to add
      */
     public Frame addFrame(Frame f) {
-        if(!this.mFrames.contains(f)) {
-            this.mFrames.add(f);
+        if(!this.mFrames.containsKey(f.getFrameId())) {
+            mFrameIndex.add(f.getFrameId());
+            this.mFrames.put(f.getFrameId(), f);
             return f;
         } else {
             // TODO: is this nessesary? need to double check that the object signatures are different. If they are the same we should just always return the input frame.
-            return getFrame(this.mFrames.indexOf(f));
+            return getFrame(f.getFrameId());
         }
+    }
+
+    /**
+     * Returns a keyset of frame keys so list adapters can use indexes to identify frames.
+     * @return
+     */
+    public List getFramesKeySet() {
+        return mFrameIndex;
     }
 }
