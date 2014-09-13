@@ -44,6 +44,14 @@ public class MainActivity extends TranslatorBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // TODO: we should display a splash screen until the project manager has finished loading.
+        // we should also not load the project manager when initialized but manually in the splash loader.
+        // we should also generate the keys in the splash loader
+        // Generate the ssh keys
+        if(!app().hasKeys()) {
+            app().generateKeys();
+        }
+
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
 
         initSlidingLayers();

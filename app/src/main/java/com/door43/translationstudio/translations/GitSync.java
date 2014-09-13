@@ -6,6 +6,7 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -13,6 +14,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.RepositoryBuilder;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RefSpec;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,6 +60,29 @@ public class GitSync {
      */
     public void pushToRemote(String remote) {
         Log.d(TAG, "need to push the repo to the server");
+
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        File f = new File(mRepoPath+"/.git");
+        Repository db = null;
+        try {
+            db = builder.setGitDir(f)
+                    .findGitDir() // scan up the file system tree
+                    .build();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Git git = new Git(db);
+
+        PushCommand pushCommand = git.push().setPushTags().setRemote(remote);
+//                .setProgressMonitor(new BasicProgressMonitor())
+//                .setTransportConfigCallback(new TransportCallback())
+
+//        if (mPushAll) {
+            pushCommand.setPushAll();
+//        } else {
+//            RefSpec spec = new RefSpec(mRepo.getBranchName());
+//            pushCommand.setRefSpecs(spec);
+//        }
     }
 
     /**

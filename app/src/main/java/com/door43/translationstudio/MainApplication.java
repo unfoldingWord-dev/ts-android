@@ -3,14 +3,16 @@ package com.door43.translationstudio;
 import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.provider.Settings;
 import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.KeyPair;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes
@@ -158,5 +160,36 @@ public class MainApplication extends Application {
      */
     public boolean pauseAutoSave() {
         return mPauseAutoSave;
+    }
+
+    /**
+     * Checks if the ssh keys have already been generated
+     * @return
+     */
+    public boolean hasKeys() {
+        String keysDirPath = getFilesDir() + "/" + getResources().getString(R.string.keys_dir) + "/";
+        File privFile = new File(keysDirPath+"id_rsa");
+        File pubFile = new File(keysDirPath+"id_rsa.pub");
+        return privFile.exists() && pubFile.exists();
+    }
+
+    public void generateKeys() {
+        JSch jsch = new JSch();
+        int type = KeyPair.RSA;
+        String keysDirPath = getFilesDir() + "/" + getResources().getString(R.string.keys_dir) + "/";
+        String privateKeyPath = keysDirPath + "id_rsa";
+        String publicKeyPath = keysDirPath + "id_rsa.pub";
+        String udid = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        try{
+            KeyPair kpair=KeyPair.genKeyPair(jsch, type);
+            kpair.writePrivateKey(privateKeyPath);
+            kpair.writePublicKey(publicKeyPath, udid);
+            System.out.println("Finger print: "+kpair.getFingerPrint());
+            kpair.dispose();
+        }
+        catch(Exception e){
+            System.out.println(e);
+        }
     }
 }

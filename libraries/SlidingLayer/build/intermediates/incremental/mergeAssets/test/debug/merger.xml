@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="2" >
+
+    <dataSet config="20.0.0" >
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\build\intermediates\exploded-aar\com.android.support\support-v4\20.0.0\assets" />
+    </dataSet>
+    <dataSet config="debug" >
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\build\intermediates\bundles\debug\assets" />
+    </dataSet>
+    <dataSet config="main" >
+        <source path="C:\Users\joel\git\TranslationStudio\libraries\SlidingLayer\src\androidTest\assets" />
+    </dataSet>
+
+</merger>
