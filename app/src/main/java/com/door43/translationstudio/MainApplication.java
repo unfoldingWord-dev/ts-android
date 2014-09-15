@@ -1,18 +1,22 @@
 package com.door43.translationstudio;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Application;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.translations.TranslationManager;
+import com.door43.translationstudio.util.DummyDialogListener;
+import com.door43.translationstudio.util.MainContextLink;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes
@@ -26,6 +30,9 @@ public class MainApplication extends Application {
     private boolean mPauseAutoSave = false;
 
     public void onCreate() {
+        // initialize basic functions with link to main application
+        new MainContextLink(this);
+
         mProjectManager = new ProjectManager(this);
         mTranslationManager = new TranslationManager(this);
     }
@@ -69,19 +76,53 @@ public class MainApplication extends Application {
      * If a toast message is currently visible it will be replaced.
      * @param message The message to display to the user
      */
-    public void setNotice(final String message) {
+    public void showToastMessage(final String message) {
         if(mCurrentActivity != null) {
             mCurrentActivity.runOnUiThread(new Runnable() {
                 public void run() {
                     if(mToast != null) {
                         mToast.cancel();
                     }
-                    mToast = Toast.makeText(mCurrentActivity, message, Toast.LENGTH_SHORT);
+                    mToast = Toast.makeText(mCurrentActivity, message, Toast.LENGTH_LONG);
                     mToast.setGravity(Gravity.CENTER, 0, 0);
                     mToast.show();
                 }
             });
         }
+    }
+
+    public void showToastMessage(int resId) {
+        showToastMessage(getString(resId));
+    }
+
+    public void showMessageDialog(int title, int msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
+        showMessageDialog(title, getString(msg), positiveBtn, R.string.label_cancel, positiveListenerr, new DummyDialogListener());
+    }
+
+    public void showMessageDialog(int title, String msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
+        showMessageDialog(title, msg, positiveBtn, R.string.label_cancel, positiveListenerr, new DummyDialogListener());
+    }
+
+    public void showMessageDialog(int title, String msg, int positiveBtn, int negativeBtn, DialogInterface.OnClickListener positiveListener, DialogInterface.OnClickListener negativeListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title).setMessage(msg)
+                .setPositiveButton(positiveBtn, positiveListener)
+                .setNegativeButton(negativeBtn, negativeListener).show();
+    }
+
+    public void showMessageDialog(int title, String msg) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getCurrentActivity());
+        builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
+    }
+
+    public void showException(Throwable t) {
+        showToastMessage(t.getMessage());
+        t.printStackTrace();
+    }
+
+    public void showException(Throwable t, int res) {
+        showToastMessage(res);
+        t.printStackTrace();
     }
 
     /**
@@ -167,18 +208,33 @@ public class MainApplication extends Application {
      * @return
      */
     public boolean hasKeys() {
-        String keysDirPath = getFilesDir() + "/" + getResources().getString(R.string.keys_dir) + "/";
-        File privFile = new File(keysDirPath+"id_rsa");
-        File pubFile = new File(keysDirPath+"id_rsa.pub");
+        File keysDir = getKeysFolder();
+        File privFile = new File(keysDir.getAbsolutePath()+"/id_rsa");
+        File pubFile = new File(keysDir.getAbsolutePath()+"/id_rsa.pub");
         return privFile.exists() && pubFile.exists();
     }
 
+    /**
+     * Returns the directory in which the ssh keys are stored
+     * @return
+     */
+    public File getKeysFolder() {
+        File folder = new File(getFilesDir() + "/" + getResources().getString(R.string.keys_dir) + "/");
+        if(!folder.exists()) {
+            folder.mkdir();
+        }
+        return folder;
+    }
+
+    /**
+     * Generates a new RSA key pair for use with ssh
+     */
     public void generateKeys() {
         JSch jsch = new JSch();
         int type = KeyPair.RSA;
-        String keysDirPath = getFilesDir() + "/" + getResources().getString(R.string.keys_dir) + "/";
-        String privateKeyPath = keysDirPath + "id_rsa";
-        String publicKeyPath = keysDirPath + "id_rsa.pub";
+        File keysDir = getKeysFolder();
+        String privateKeyPath = keysDir.getAbsolutePath() + "/id_rsa";
+        String publicKeyPath = keysDir.getAbsolutePath() + "/id_rsa.pub";
         String udid = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         try{

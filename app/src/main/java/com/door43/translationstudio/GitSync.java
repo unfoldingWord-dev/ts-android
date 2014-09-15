@@ -1,4 +1,4 @@
-package com.door43.translationstudio.translations;
+package com.door43.translationstudio;
 
 import android.util.Log;
 
@@ -63,22 +63,27 @@ public class GitSync {
 
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         File f = new File(mRepoPath+"/.git");
-        Repository db = null;
+
+//        Repository db = null;
+
         try {
-            db = builder.setGitDir(f)
-                    .findGitDir() // scan up the file system tree
-                    .build();
+            Git git = Git.open(f);
+            PushCommand pushCommand = git.push().setPushTags().setRemote(remote);
+            pushCommand.setPushAll();
+//            db = builder.setGitDir(f)
+//                    .findGitDir() // scan up the file system tree
+//                    .build();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Git git = new Git(db);
+//        Git git = new Git(db);
 
-        PushCommand pushCommand = git.push().setPushTags().setRemote(remote);
+//        PushCommand pushCommand = git.push().setPushTags().setRemote(remote);
 //                .setProgressMonitor(new BasicProgressMonitor())
 //                .setTransportConfigCallback(new TransportCallback())
 
 //        if (mPushAll) {
-            pushCommand.setPushAll();
+//            pushCommand.setPushAll();
 //        } else {
 //            RefSpec spec = new RefSpec(mRepo.getBranchName());
 //            pushCommand.setRefSpecs(spec);

@@ -10,6 +10,17 @@
     <string name="git_repository_dir">git</string>
     <string name="git_server">neutrinog@neutrinographics.net:ts</string>
     <string name="git_server_prod">gitolite3@us.door43.org</string>
-    <string name="keys_dir">keys</string>
+    <string name="keys_dir">ssh</string>
+    <string name="label_ok">ok</string>
+    <string name="label_cancel">cancel</string>
+    <string name="error_task_running">A task is already running</string>
+    <string name="dialog_push_result">Push Result</string>
+    <string name="error_out_of_memory">Out of memory</string>
+    <string name="error_repository_not_found">Repository Not Found</string>
+    <string name="error_can_not_open_file">Cannot open file</string>
+    <string name="push_msg_init">Sending to server...</string>
+    <string name="error_can_not_save_file">The file could not be saved</string>
+    <string name="progress_left_init">0%</string>
+    <string name="progress_right_init">0/0</string>
 
 </resources>

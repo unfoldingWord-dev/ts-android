@@ -1,15 +1,15 @@
-package com.door43.translationstudio.translations;
+package com.door43.translationstudio;
 
 import android.util.Log;
 
-import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.repo.PushTask;
+import com.door43.translationstudio.repo.Repo;
+import com.door43.translationstudio.util.ProgressCallback;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -54,8 +54,7 @@ public class TranslationManager {
             // save the file
             mGitSync.updateFile(translation, path);
         } else {
-            Log.d(TAG, "the fild could not be saved");
-            // TODO: notify the user that the file could not be saved
+            mContext.showToastMessage(R.string.error_can_not_save_file);
         }
     }
 
@@ -63,31 +62,38 @@ public class TranslationManager {
      * Initiates sharing with nearby devices. Or a simple file export that can be emailed, shared over external storage, etc.
      */
     public void share() {
-        Log.d(TAG, "need to share stuff!");
+        mContext.showToastMessage("Sharing hasn't been set up yet!");
     }
 
     /**
-     * Initiates a git sync with the server. This will pull down updates as well as push local changes.
-     * Conflicts will need to be handled by the client before pushing to the server.
+     * Initiates a git sync with the server. This will forcebly push all local changes to the server
+     * and discard any discrepencies.
      */
     public void sync() {
-        sync(false);
+        sync(true);
     }
 
     /**
-     * Initiates a git sync with the server. This will pull down updates as well as push local changes.
-     * Conflicts will need to be handled by the client before pushing to the server.
-     * Syncing is not cheap and should only be done on a schedule or manually.
+     * Initiates a git sync with the server. This will attempt to push local changes to the server
+     * but will fail if there are any pending changes on the server.
      * @param forcePush if set to true the app will perform a forced push to the server overriding any changes on the server and avoiding merge conflicts
      */
     public void sync(boolean forcePush) {
-        // TODO: need to handle pulls and conflicts
-        mGitSync.pushToRemote(mContext.getResources().getString(R.string.git_server));
+        String repoPath = buildRepositoryFilePath("obs", "en");
+        Repo repo = new Repo(repoPath);
+        try {
+            repo.setRemote("origin", mContext.getResources().getString(R.string.git_server));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        PushTask push = new PushTask(repo, mContext.getResources().getString(R.string.git_server), true, forcePush, new ProgressCallback(R.string.push_msg_init));
+        push.executeTask();
     }
 
     /**
      * Returns the translated content for a given frame
      * @param projectSlug the project in which the translation exists
+     * @param langCode the language code
      * @param chapterFrameId the chapter and frame in which the translation exists e.g. 01-02 is chapter 1 frame 2.
      * @return
      */

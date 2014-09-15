@@ -1,9 +1,19 @@
 package com.door43.translationstudio.util;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.support.v7.app.ActionBarActivity;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.repo.GitSyncAsyncTask;
 
 /**
  * Custom activity class to provide some of the heavy lifting.
@@ -34,7 +44,6 @@ public class TranslatorBaseActivity extends ActionBarActivity {
     public MainApplication app() {
         return ((MainApplication) this.getApplication());
     }
-
 
     /**
      * Removes references to self to avoid memory leaks

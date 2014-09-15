@@ -39,25 +39,25 @@ public class TopPaneFragment extends TranslatorBaseFragment {
         mButtonResources.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                app().setNotice("You clicked resources!");
+                app().showToastMessage("You clicked resources!");
             }
         });
         mButtonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                app().setNotice("You clicked settings!");
+                app().showToastMessage("You clicked settings!");
             }
         });
         mButtonShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                app().setNotice("You clicked share!");
+                app().showToastMessage("You clicked share!");
             }
         });
         mButtonUser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                app().setNotice("You clicked user!");
+                app().showToastMessage("You clicked user!");
             }
         });
 
