@@ -1,6 +1,8 @@
-package com.door43.translationstudio.repo;
+package com.door43.translationstudio.translations.tasks.repo;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.translations.tasks.StopTaskException;
+import com.door43.translationstudio.translations.Repo;
 import com.door43.translationstudio.ssh.TransportCallback;
 import com.door43.translationstudio.util.MainContextLink;
 

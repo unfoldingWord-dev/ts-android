@@ -312,7 +312,9 @@ public class MainActivity extends TranslatorBaseActivity {
         if (mLeftSlidingLayer != null) {
             mLeftSlidingLayer.closeLayer(true);
         }
+        app().pauseAutoSave(true);
         reloadCenterPane();
+        app().pauseAutoSave(false);
     }
 
     /**

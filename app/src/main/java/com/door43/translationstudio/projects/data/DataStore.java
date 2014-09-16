@@ -1,4 +1,4 @@
-package com.door43.translationstudio.projects.datastore;
+package com.door43.translationstudio.projects.data;
 
 import com.door43.delegate.DelegateSender;
 import com.door43.translationstudio.MainApplication;

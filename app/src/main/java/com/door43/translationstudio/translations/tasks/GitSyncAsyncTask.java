@@ -1,4 +1,4 @@
-package com.door43.translationstudio.repo;
+package com.door43.translationstudio.translations.tasks;
 
 import android.os.AsyncTask;
 

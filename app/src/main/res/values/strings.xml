@@ -22,5 +22,7 @@
     <string name="error_can_not_save_file">The file could not be saved</string>
     <string name="progress_left_init">0%</string>
     <string name="progress_right_init">0/0</string>
+    <string name="error_could_not_create_repository">Could not create repository</string>
+    <string name="success_auto_save">Changes where saved</string>
 
 </resources>

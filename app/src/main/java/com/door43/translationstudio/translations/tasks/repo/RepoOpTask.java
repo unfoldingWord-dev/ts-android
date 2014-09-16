@@ -1,6 +1,8 @@
-package com.door43.translationstudio.repo;
+package com.door43.translationstudio.translations.tasks.repo;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.translations.tasks.GitSyncAsyncTask;
+import com.door43.translationstudio.translations.Repo;
 import com.door43.translationstudio.util.MainContextLink;
 
 import org.eclipse.jgit.lib.ProgressMonitor;

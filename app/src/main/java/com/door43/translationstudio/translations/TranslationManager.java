@@ -1,10 +1,12 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.translations;
 
 import android.util.Log;
 
-import com.door43.translationstudio.repo.PushTask;
-import com.door43.translationstudio.repo.Repo;
-import com.door43.translationstudio.util.ProgressCallback;
+import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.translations.tasks.repo.AddTask;
+import com.door43.translationstudio.translations.tasks.repo.PushTask;
+import com.door43.translationstudio.translations.tasks.ProgressCallback;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,30 +14,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 
 /**
  * This class handles the storage of translated content.
  */
 public class TranslationManager {
-    private GitSync mGitSync = new GitSync();
     private MainApplication mContext;
     private final String TAG = "TranslationManager";
-    private String mActiveRepo;
-    private String mActiveRepoPath;
     private final String mParentProjectSlug = "uw"; //  NOTE: not sure if this will ever need to be dynamic
 
     public TranslationManager(MainApplication context) {
         mContext = context;
-    }
-
-    private void openRepo(String projectSlug, String languageCode) {
-        if(mActiveRepo != projectSlug) {
-            mActiveRepo = projectSlug;
-            mActiveRepoPath = buildRepositoryFilePath(projectSlug, languageCode);
-            File repoDir = new File(mActiveRepoPath);
-            repoDir.mkdir();
-            mGitSync.openRepo(repoDir);
-        }
     }
 
     /**
@@ -45,14 +35,35 @@ public class TranslationManager {
      * @param translation the translated text
      */
     public void save(String translation, String projectSlug, String langCode, String chapterFrameId) {
-        // open the repository
-        openRepo(projectSlug, langCode);
+        String repoPath = buildRepositoryFilePath(projectSlug, langCode);
+        String relativeFilePath = buildLocalTranslationFilePath(chapterFrameId);
 
-        // build the file path
-        String path = buildLocalTranslationFilePath(chapterFrameId);
-        if(path != null) {
-            // save the file
-            mGitSync.updateFile(translation, path);
+        // init the repository
+        Repo repo = new Repo(repoPath);
+
+        if(relativeFilePath != null) {
+            // write the file
+            File file = new File(repoPath + "/" + relativeFilePath);
+
+            // create new folder structure
+            if(!file.exists()) {
+                file.getParentFile().mkdir();
+            }
+
+            try {
+                file.createNewFile();
+                PrintStream ps = new PrintStream(file);
+                ps.print(translation);
+                ps.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // add to repo
+            // TODO: we should probably only stage changes just before pushes and before the app closes.
+            AddTask add = new AddTask(repo, file.getAbsolutePath());
+            add.executeTask();
         } else {
             mContext.showToastMessage(R.string.error_can_not_save_file);
         }

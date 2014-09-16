@@ -10,13 +10,13 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.DummyDialogListener;
 import com.door43.translationstudio.util.MainContextLink;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes

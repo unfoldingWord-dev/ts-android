@@ -1,8 +1,8 @@
-package com.door43.translationstudio.util;
+package com.door43.translationstudio.translations.tasks;
 
 import android.app.ProgressDialog;
 
-import com.door43.translationstudio.repo.GitSyncAsyncTask;
+import com.door43.translationstudio.util.MainContextLink;
 
 /**
  * Displays a progress dialog to the user

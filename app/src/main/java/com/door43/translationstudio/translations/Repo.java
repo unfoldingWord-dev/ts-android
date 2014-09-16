@@ -1,11 +1,15 @@
-package com.door43.translationstudio.repo;
+package com.door43.translationstudio.translations;
 
 import android.util.SparseArray;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.translations.tasks.StopTaskException;
+import com.door43.translationstudio.translations.tasks.repo.RepoOpTask;
 import com.door43.translationstudio.util.MainContextLink;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.InitCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.errors.RepositoryNotFoundException;
 import org.eclipse.jgit.lib.StoredConfig;
 
@@ -18,23 +22,60 @@ import java.util.Set;
  * Created by joel on 9/15/2014.
  */
 public class Repo {
-    private Git mGit;
-    private String mLocalPath;
+    private static int numRepos;
     private static SparseArray<RepoOpTask> mRepoTasks = new SparseArray<RepoOpTask>();
+
+    private Git mGit;
+    private int mId;
+    private String mLocalPath;
     private StoredConfig mStoredConfig;
-    private Set<String> mRemotes;
+    private Set<String> mRemotes = new HashSet<String>();
 
     /**
      * Creates a new repository instance
      * @param repositoryPath the path to the repository directory (not including the .git directory)
      */
     public Repo(String repositoryPath) {
-        mLocalPath = repositoryPath + "/.git";
+        // automatically generate repo ids
+        mId = numRepos;
+        numRepos ++;
+
+        // create the directory if missing
+        File repoPath = new File(repositoryPath);
+        if(!repoPath.exists()) {
+            repoPath.mkdir();
+        }
+
+        mLocalPath = repositoryPath;
+
+        // initialize new repository
+        File gitPath = new File(mLocalPath + "/.git");
+        if(!gitPath.exists()) {
+            initRepo();
+        }
     }
 
+    /**
+     * Initialize the git repository
+     */
+    private void initRepo() {
+        InitCommand init = Git.init();
+        File initFile = new File(getLocalPath());
+        init.setDirectory(initFile);
+        try {
+            init.call();
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+            MainContextLink.getContext().showException(e, R.string.error_could_not_create_repository);
+        }
+    }
+
+    /**
+     * Returns this repository's unique id
+     * @return
+     */
     public int getID() {
-        // TODO: impliment
-        return 0;
+        return mId;
     }
 
     /**

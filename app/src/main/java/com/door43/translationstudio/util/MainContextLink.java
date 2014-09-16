@@ -36,6 +36,11 @@ public class MainContextLink {
 
     // TODO: place all of these methods in the main application file
 
+    /**
+     * @deprecated
+     * @param s
+     * @return
+     */
     public static String md5(final String s) {
         try {
             // Create MD5 Hash
@@ -60,6 +65,11 @@ public class MainContextLink {
         return "";
     }
 
+    /**
+     * @deprecated
+     * @param email
+     * @return
+     */
     public static String buildGravatarURL(String email) {
         String hash = md5(email);
         String url = String.format(Locale.getDefault(), IMAGE_REQUEST_HASH,

@@ -6,8 +6,8 @@ import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.datastore.DataStore;
-import com.door43.translationstudio.projects.datastore.DataStoreDelegateResponse;
+import com.door43.translationstudio.projects.data.DataStore;
+import com.door43.translationstudio.projects.data.DataStoreDelegateResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
