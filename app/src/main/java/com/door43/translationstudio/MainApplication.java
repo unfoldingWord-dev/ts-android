@@ -227,7 +227,17 @@ public class MainApplication extends Application {
     }
 
     /**
+     * Returns the public key file
+     * @return
+     */
+    public File getPublicKey() {
+        File keysDir = getKeysFolder();
+        return  new File(keysDir.getAbsolutePath()+"/id_rsa.pub");
+    }
+
+    /**
      * Generates a new RSA key pair for use with ssh
+     * TODO: this should not be done on the main thread
      */
     public void generateKeys() {
         JSch jsch = new JSch();
@@ -235,17 +245,44 @@ public class MainApplication extends Application {
         File keysDir = getKeysFolder();
         String privateKeyPath = keysDir.getAbsolutePath() + "/id_rsa";
         String publicKeyPath = keysDir.getAbsolutePath() + "/id_rsa.pub";
-        String udid = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
         try{
             KeyPair kpair=KeyPair.genKeyPair(jsch, type);
             kpair.writePrivateKey(privateKeyPath);
-            kpair.writePublicKey(publicKeyPath, udid);
+            kpair.writePublicKey(publicKeyPath, getUDID());
             System.out.println("Finger print: "+kpair.getFingerPrint());
             kpair.dispose();
         }
         catch(Exception e){
             System.out.println(e);
         }
+    }
+
+    /**
+     * Checks if the client has sent it's ssh key to the server
+     * @return
+     */
+    public boolean hasRegistered() {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+        return settings.getBoolean("has_registered_with_server", false);
+    }
+
+    /**
+     * Sents whether the client has sent it's ssh key to the server
+     * @param hasRegistered
+     */
+    public void setHasRegistered(Boolean hasRegistered) {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("has_registered_with_server", hasRegistered);
+        editor.commit();
+    }
+
+    /**
+     * Returns the device id
+     * @return
+     */
+    public String getUDID() {
+        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 }

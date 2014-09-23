@@ -27,7 +27,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         // create adapter
         if(mProjectItemAdapter == null) mProjectItemAdapter = new ProjectItemAdapter(app());
 
-        // connect adapter
+        // connectAsync adapter
         listView.setAdapter(mProjectItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

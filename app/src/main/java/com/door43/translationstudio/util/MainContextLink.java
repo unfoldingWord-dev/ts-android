@@ -13,7 +13,7 @@ import java.util.Locale;
  * without having to manually pass the context to them.
  */
 public class MainContextLink {
-    private static final String IMAGE_REQUEST_HASH = "http://www.gravatar.com/avatar/%s?s=40";
+//    private static final String IMAGE_REQUEST_HASH = "http://www.gravatar.com/avatar/%s?s=40";
     private static MainApplication mContext;
 
     /**
@@ -41,39 +41,39 @@ public class MainContextLink {
      * @param s
      * @return
      */
-    public static String md5(final String s) {
-        try {
-            // Create MD5 Hash
-            MessageDigest digest = java.security.MessageDigest
-                    .getInstance("MD5");
-            digest.update(s.getBytes());
-            byte messageDigest[] = digest.digest();
-
-            // Create Hex String
-            StringBuffer hexString = new StringBuffer();
-            for (int i = 0; i < messageDigest.length; ++i) {
-                String h = Integer.toHexString(0xFF & messageDigest[i]);
-                while (h.length() < 2)
-                    h = "0" + h;
-                hexString.append(h);
-            }
-            return hexString.toString();
-
-        } catch (NoSuchAlgorithmException e) {
-            MainContextLink.getContext().showException(e);
-        }
-        return "";
-    }
+//    public static String md5(final String s) {
+//        try {
+//            // Create MD5 Hash
+//            MessageDigest digest = java.security.MessageDigest
+//                    .getInstance("MD5");
+//            digest.update(s.getBytes());
+//            byte messageDigest[] = digest.digest();
+//
+//            // Create Hex String
+//            StringBuffer hexString = new StringBuffer();
+//            for (int i = 0; i < messageDigest.length; ++i) {
+//                String h = Integer.toHexString(0xFF & messageDigest[i]);
+//                while (h.length() < 2)
+//                    h = "0" + h;
+//                hexString.append(h);
+//            }
+//            return hexString.toString();
+//
+//        } catch (NoSuchAlgorithmException e) {
+//            MainContextLink.getContext().showException(e);
+//        }
+//        return "";
+//    }
 
     /**
      * @deprecated
      * @param email
      * @return
      */
-    public static String buildGravatarURL(String email) {
-        String hash = md5(email);
-        String url = String.format(Locale.getDefault(), IMAGE_REQUEST_HASH,
-                hash);
-        return url;
-    }
+//    public static String buildGravatarURL(String email) {
+//        String hash = md5(email);
+//        String url = String.format(Locale.getDefault(), IMAGE_REQUEST_HASH,
+//                hash);
+//        return url;
+//    }
 }

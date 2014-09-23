@@ -27,7 +27,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         // create adapter
         if(mChapterItemAdapter == null) mChapterItemAdapter = new ChaptersItemAdapter(app());
 
-        // connect adapter
+        // connectAsync adapter
         listView.setAdapter(mChapterItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

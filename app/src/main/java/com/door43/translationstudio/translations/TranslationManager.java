@@ -2,11 +2,16 @@ package com.door43.translationstudio.translations;
 
 import android.util.Log;
 
+import com.door43.tcp.TCPClient;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.translations.tasks.ProgressCallback;
 import com.door43.translationstudio.translations.tasks.repo.AddTask;
 import com.door43.translationstudio.translations.tasks.repo.PushTask;
-import com.door43.translationstudio.translations.tasks.ProgressCallback;
+import com.door43.translationstudio.util.EventBus;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,13 +24,21 @@ import java.io.PrintStream;
 /**
  * This class handles the storage of translated content.
  */
-public class TranslationManager {
+public class TranslationManager implements TCPClient.TcpListener {
+    private TranslationManager me = this;
     private MainApplication mContext;
     private final String TAG = "TranslationManager";
     private final String mParentProjectSlug = "uw"; //  NOTE: not sure if this will ever need to be dynamic
+    private TCPClient mTcpClient;
 
     public TranslationManager(MainApplication context) {
         mContext = context;
+
+        // set up a tcp connection
+        mTcpClient = new TCPClient(mContext.getResources().getString(R.string.tcp_server), mContext.getResources().getInteger(R.integer.tcp_server_port), me);
+        EventBus.getInstance().register(this);
+        mTcpClient.connect();
+//        mTcpClient.connect();
     }
 
     /**
@@ -90,15 +103,71 @@ public class TranslationManager {
      * @param forcePush if set to true the app will perform a forced push to the server overriding any changes on the server and avoiding merge conflicts
      */
     public void sync(boolean forcePush) {
+        if(!mContext.hasRegistered()) {
+            // submit ssh keys to the server
+            register();
+        } else {
+            pushRepos(forcePush);
+        }
+    }
+
+    /**
+     * Pushes the local repositories to the server
+     * @param forced
+     */
+    private void pushRepos(Boolean forced) {
+        // push the local repositories to the server
+        // TODO: need to push all repositories or allow the user to choose which projects to push
         String repoPath = buildRepositoryFilePath("obs", "en");
+        String server =  mContext.getResources().getString(R.string.git_server);
+        String remotePath = buildRemotePath(server, "obs", "en");
         Repo repo = new Repo(repoPath);
         try {
-            repo.setRemote("origin", mContext.getResources().getString(R.string.git_server));
+            Log.d(TAG, "pushing to "+remotePath);
+            repo.setRemote("origin",  remotePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        PushTask push = new PushTask(repo, mContext.getResources().getString(R.string.git_server), true, forcePush, new ProgressCallback(R.string.push_msg_init));
+        PushTask push = new PushTask(repo, true, forced, new ProgressCallback(R.string.push_msg_init));
         push.executeTask();
+
+        // TODO: we need to check the errors from the push task. If auth fails then we need to re-register.
+    }
+
+    /**
+     * Generates the remote path for a local repo
+     * @param server
+     * @param projectSlug
+     * @param langCode
+     * @return
+     */
+    private String buildRemotePath(String server, String projectSlug, String langCode) {
+        return server + ":tS/" + mContext.getUDID() + "/" + mParentProjectSlug + "-" + projectSlug + "-" + langCode;
+    }
+
+    /**
+     * Submits the client public ssh key to the server so we can push updates
+     */
+    private void register() {
+        if(mContext.hasKeys()) {
+            JSONObject json = new JSONObject();
+            try {
+                String key = getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
+                json.put("key", key);
+                json.put("udid", mContext.getUDID());
+                // TODO: provide support for using user names
+//                json.put("username", "");
+                Log.d(TAG, json.toString());
+                mTcpClient.sendMessage(json.toString());
+            } catch (JSONException e) {
+                mContext.showException(e);
+            } catch (Exception e) {
+                mContext.showException(e);
+            }
+        } else {
+            mContext.showException(new Throwable("The ssh keys have not been generated."));
+        }
+
     }
 
     /**
@@ -185,5 +254,32 @@ public class TranslationManager {
      */
     private String buildRepositoryFilePath(String projectSlug, String langCode) {
         return mContext.getFilesDir() + "/" + mContext.getResources().getString(R.string.git_repository_dir) + "/"+mParentProjectSlug+"-" + projectSlug + "-" + langCode;
+    }
+
+
+    @Override
+    public void onConnectionEstablished() {
+        Log.d(TAG, "A TCP connection has been established with the server");
+    }
+
+    @Override
+    public void onMessageReceived(String message) {
+        // check if we get an ok message
+        try {
+            JSONObject json = new JSONObject(message);
+            if(json.has("ok")) {
+                mContext.setHasRegistered(true);
+                mContext.showToastMessage("You may now sync your work to the server");
+            } else {
+                mContext.showException(new Throwable(json.getString("error")));
+            }
+        } catch (JSONException e) {
+            mContext.showException(e);
+        }
+    }
+
+    @Override
+    public void onError(Throwable t) {
+        mContext.showException(t);
     }
 }

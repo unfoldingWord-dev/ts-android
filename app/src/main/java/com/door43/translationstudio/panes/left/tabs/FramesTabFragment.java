@@ -27,7 +27,7 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         // create adapter
         if(mFrameItemAdapter == null) mFrameItemAdapter = new FrameItemAdapter(app());
 
-        // connect adapter
+        // connectAsync adapter
         listView.setAdapter(mFrameItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

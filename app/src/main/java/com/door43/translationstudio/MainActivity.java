@@ -57,7 +57,7 @@ public class MainActivity extends TranslatorBaseActivity {
         initSlidingLayers();
         initPanes();
 
-        // auto start with last selected frame
+        // auto connect with last selected frame
         String frameId = app().getActiveFrame();
         Integer chapterId = app().getActiveChapter();
         String projectSlug = app().getActiveProject();

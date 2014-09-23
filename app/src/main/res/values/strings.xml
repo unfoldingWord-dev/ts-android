@@ -8,8 +8,9 @@
     <string name="chapters">Chapters</string>
     <string name="frames">Frames</string>
     <string name="git_repository_dir">git</string>
-    <string name="git_server">neutrinog@neutrinographics.net:ts</string>
-    <string name="git_server_prod">gitolite3@us.door43.org</string>
+    <string name="git_server_dev">neutrinog@neutrinographics.net:ts</string>
+    <string name="tcp_server">96.126.122.51</string>
+    <string name="git_server">gitolite3@us.door43.org</string>
     <string name="keys_dir">ssh</string>
     <string name="label_ok">ok</string>
     <string name="label_cancel">cancel</string>

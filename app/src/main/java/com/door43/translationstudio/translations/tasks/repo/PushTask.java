@@ -22,12 +22,10 @@ public class PushTask extends RepoOpTask {
     private AsyncTaskCallback mCallback;
     private boolean mPushAll;
     private boolean mForcePush;
-    private String mRemote;
     private StringBuffer resultMsg = new StringBuffer();
 
-    public PushTask(Repo repo, String remote, boolean pushAll, boolean forcePush, AsyncTaskCallback callback) {
+    public PushTask(Repo repo, boolean pushAll, boolean forcePush, AsyncTaskCallback callback) {
         super(repo);
-        mRemote = remote;
         mCallback = callback;
         mPushAll = pushAll;
         mForcePush = forcePush;
@@ -69,6 +67,11 @@ public class PushTask extends RepoOpTask {
         }
     }
 
+    /**
+     * Pushes the repository to the remote server.
+     * NOTE: the remote must already have been set.
+     * @return
+     */
     public boolean pushRepo() {
         Git git;
         try {
@@ -79,8 +82,7 @@ public class PushTask extends RepoOpTask {
         PushCommand pushCommand = git.push().setPushTags()
                 .setProgressMonitor(new BasicProgressMonitor())
                 .setTransportConfigCallback(new TransportCallback())
-                .setForce(mForcePush)
-                .setRemote(mRemote);
+                .setForce(mForcePush);
         if (mPushAll) {
             pushCommand.setPushAll();
         } else {

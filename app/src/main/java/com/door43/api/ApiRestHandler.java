@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
@@ -31,35 +30,46 @@ import java.util.Map;
 
 /**
  * Created by joel on 7/8/2014.
+ * @deprecated
  */
 public class ApiRestHandler extends AsyncTask<String, String, String> {
-    private ApiRequestCompleted listener;
+    private ApiRequestCompleted mListener;
     private String result;
-    private String baseUrl;
-    private Map<String, String> params;
-    private Context context;
+    private String mBaseUrl;
+    private Map<String, String> mParams;
+    private Context mContext;
+    private RequestMethod mRequestMethod;
 
-    public ApiRestHandler(String url, Map<String, String> params, Context context, ApiRequestCompleted listener) {
-        this.listener = listener;
-        this.baseUrl = url;
-        this.params = params;
-        this.context = context;
+    public static enum RequestMethod {
+        POST,
+        GET
+    }
+
+    /**
+     * Initialize a new api rest request
+     * @param requestMethod
+     * @param url
+     * @param params
+     * @param context
+     * @param listener
+     */
+    public ApiRestHandler(RequestMethod requestMethod, String url, Map<String, String> params, Context context, ApiRequestCompleted listener) {
+        mListener = listener;
+        mBaseUrl = url;
+        mParams = params;
+        mContext = context;
+        mRequestMethod = requestMethod;
     }
 
     @Override
     protected String doInBackground(String... params) {
-        if (params.length >= 2) {
-            if (params[1].compareTo("post") == 0) {
-                return HTTPpost(params[0]);
-            } else if(params[1].compareTo("get") == 0) {
-                return HTTPget(params[0]);
-            } else if(params[1].compareTo("image") == 0) {
-                return HTTPgetImage(params[0]);
-            } else if(params[1].compareTo("file") == 0) {
-                return HTTPgetFile(params[0]);
-            }
+        if (mRequestMethod == RequestMethod.POST) {
+            return HTTPpost(mBaseUrl);
+        } else if(mRequestMethod == RequestMethod.GET) {
+            return HTTPget(mBaseUrl);
+        } else {
+            return "";
         }
-        return "";
     }
 
     private String HTTPpost(String apiCommand) {
@@ -68,7 +78,7 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
         try
         {
             // prepare post data
-            Iterator it = this.params.entrySet().iterator();
+            Iterator it = this.mParams.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry)it.next();
                 data += "&" + URLEncoder.encode(pairs.getKey().toString(), "UTF-8") + "=" + URLEncoder.encode(pairs.getValue().toString(), "UTF-8");
@@ -106,7 +116,7 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
         String arguments = null;
         try {
             // prepare argument data
-            Iterator it = this.params.entrySet().iterator();
+            Iterator it = this.mParams.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry)it.next();
                 if(arguments == null) {
@@ -213,7 +223,7 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
         String arguments = null;
         try {
             // prepare argument data
-            Iterator it = this.params.entrySet().iterator();
+            Iterator it = this.mParams.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry pairs = (Map.Entry)it.next();
                 if(arguments == null) {
@@ -228,7 +238,7 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
             Log.d("Api", "get image request: "+url.toString());
 //            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 //            connection.setDoInput(true);
-//            connection.connect();
+//            connection.connectAsync();
 //            InputStream input = connection.getInputStream();
 //            bitmap = BitmapFactory.decodeStream((InputStream)url.getContent());
             bitmap = BitmapFactory.decodeStream(url.openStream());
@@ -240,7 +250,7 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
         if(bitmap != null) {
             // save image to cache
             FileOutputStream fos = null;
-            File image = new File(context.getCacheDir(), new SimpleDateFormat("ddMMyyy_HHmmssSSZ").format(new Date()));
+            File image = new File(mContext.getCacheDir(), new SimpleDateFormat("ddMMyyy_HHmmssSSZ").format(new Date()));
             String fileError = null;
             try {
                 fos = new FileOutputStream(image);
@@ -287,7 +297,7 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
      * @return
      */
     private String getRealUrl(String url) {
-        return this.baseUrl+url;
+        return this.mBaseUrl +url;
     }
 
     @Override
@@ -306,12 +316,12 @@ public class ApiRestHandler extends AsyncTask<String, String, String> {
                 } else {
                     response = new ApiResponse("MalformedResponse", "Could not determine if the response was an error or success message");
                 }
-                listener.onRequestCompleted(response);
+                mListener.onRequestCompleted(response);
             } catch(JSONException e) {
-                listener.onRequestCompleted(ApiResponse.generateError(e.getCause().toString(), e.getMessage()));
+                mListener.onRequestCompleted(ApiResponse.generateError(e.getCause().toString(), e.getMessage()));
             }
         } else {
-            listener.onRequestCompleted(ApiResponse.generateError("BadResponseError", string));
+            mListener.onRequestCompleted(ApiResponse.generateError("BadResponseError", string));
         }
     }
 }
