@@ -9,7 +9,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingDetailActivity;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
@@ -47,8 +47,8 @@ public class TopPaneFragment extends TranslatorBaseFragment {
         mButtonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(me, SettingDetailActivity)
-                app().showToastMessage("You clicked settings!");
+                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(intent);
             }
         });
         mButtonShare.setOnClickListener(new View.OnClickListener() {

@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Application;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.widget.Toast;
@@ -32,6 +33,12 @@ public class MainApplication extends Application {
     public void onCreate() {
         // initialize basic functions with link to main application
         new MainContextLink(this);
+
+        // initialize default settings
+        // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_save_and_sync, false);
+
 
         mProjectManager = new ProjectManager(this);
         mTranslationManager = new TranslationManager(this);
@@ -164,7 +171,7 @@ public class MainApplication extends Application {
      * Returns the active project from the preferences
      * @return
      */
-    public String getActiveProject() {
+    public String getLastActiveProject() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         return settings.getString("project_slug", "");
     }
@@ -173,7 +180,7 @@ public class MainApplication extends Application {
      * Returns the active chapter from the preferences
      * @return
      */
-    public Integer getActiveChapter() {
+    public Integer getLastActiveChapter() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         return settings.getInt("chapter_id", 0);
     }
@@ -182,7 +189,7 @@ public class MainApplication extends Application {
      * Returns the active from from the preferences
      * @return
      */
-    public String getActiveFrame() {
+    public String getLastActiveFrame() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         return settings.getString("frame_id", "");
     }
@@ -284,5 +291,14 @@ public class MainApplication extends Application {
      */
     public String getUDID() {
         return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    /**
+     * Returns an instance of the user preferences.
+     * This is just the default shared preferences
+     * @return
+     */
+    public SharedPreferences getUserPreferences() {
+        return PreferenceManager.getDefaultSharedPreferences(this);
     }
 }

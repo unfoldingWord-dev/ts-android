@@ -1,0 +1,16 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- These settings headers are only used on tablets. -->
+
+    <header
+        android:fragment="com.door43.translationstudio.SettingsActivity$GeneralPreferenceFragment"
+        android:title="@string/pref_header_general" />
+
+    <header
+        android:fragment="com.door43.translationstudio.SettingsActivity$SavePreferenceFragment"
+        android:title="@string/pref_header_autosave" />
+
+    <header
+        android:fragment="com.door43.translationstudio.SettingsActivity$SecurityPreferenceFragment"
+        android:title="@string/pref_header_security" />
+</preference-headers>

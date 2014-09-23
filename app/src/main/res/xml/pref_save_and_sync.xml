@@ -1,0 +1,36 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
+         dismiss it. -->
+
+
+    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
+    <ListPreference
+        android:key="autosave"
+        android:title="@string/pref_title_autosave_delay"
+        android:entries="@array/pref_autosave_titles"
+        android:entryValues="@array/pref_autosave_values"
+        android:defaultValue="@string/pref_default_autosave"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+    <EditTextPreference
+        android:key="auth_server"
+        android:title="@string/pref_title_auth_server"
+        android:defaultValue="@string/pref_default_auth_server"/>
+
+    <EditTextPreference
+        android:key="auth_server_port"
+        android:title="@string/pref_title_auth_server_port"
+        android:defaultValue="@string/pref_default_auth_server_port"/>
+
+    <EditTextPreference
+        android:key="git_server"
+        android:title="@string/pref_title_git_server"
+        android:defaultValue="@string/pref_default_git_server"/>
+
+    <EditTextPreference
+        android:key="git_server_port"
+        android:title="@string/pref_title_git_server_port"
+        android:defaultValue="@string/pref_default_git_server_port"/>
+</PreferenceScreen>

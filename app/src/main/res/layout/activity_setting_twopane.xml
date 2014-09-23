@@ -8,7 +8,7 @@
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
     android:showDividers="middle"
-    tools:context="com.door43.translationstudio.SettingListActivity">
+    tools:context="com.door43.translationstudio.settings.SettingListActivity">
 
     <!--
     This layout is a two-pane layout for the Settings
@@ -23,7 +23,7 @@
 
     <fragment
         android:id="@+id/setting_list"
-        android:name="com.door43.translationstudio.SettingListFragment"
+        android:name="com.door43.translationstudio.settings.SettingListFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"

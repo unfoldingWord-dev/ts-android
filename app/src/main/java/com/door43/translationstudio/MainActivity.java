@@ -8,12 +8,14 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.slidinglayer.SlidingLayer;
 
 
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -24,7 +26,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends TranslatorBaseActivity {
-    private MainActivity me = this;
+    private final MainActivity me = this;
 
     private static final String LANG_CODE = "en"; // TODO: this will eventually need to be managed dynamically by the project manager
 
@@ -57,13 +59,15 @@ public class MainActivity extends TranslatorBaseActivity {
         initSlidingLayers();
         initPanes();
 
-        // auto connect with last selected frame
-        String frameId = app().getActiveFrame();
-        Integer chapterId = app().getActiveChapter();
-        String projectSlug = app().getActiveProject();
-        app().getSharedProjectManager().setSelectedProject(projectSlug);
-        app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
-        app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+        // automatically open the last viewed frame when the app opens
+        if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
+            String frameId = app().getLastActiveFrame();
+            Integer chapterId = app().getLastActiveChapter();
+            String projectSlug = app().getLastActiveProject();
+            app().getSharedProjectManager().setSelectedProject(projectSlug);
+            app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
+            app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+        }
         app().pauseAutoSave(true);
         reloadCenterPane();
         app().pauseAutoSave(false);
@@ -271,9 +275,9 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // automatically save changes to inputText
         final EditText inputText = (EditText)findViewById(R.id.inputText);
+
         inputText.addTextChangedListener(new TextWatcher() {
             private Timer timer = new Timer();
-            private final long DELAY = getResources().getInteger(R.integer.auto_save_delay); // in ms
 
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -287,16 +291,19 @@ public class MainActivity extends TranslatorBaseActivity {
 
             @Override
             public void afterTextChanged(Editable editable) {
+                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
                 timer.cancel();
-                timer = new Timer();
-                if(!app().pauseAutoSave()) {
-                    timer.schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            // save the changes
-                            me.save();
-                        }
-                    }, DELAY);
+                if(saveDelay != -1) {
+                    timer = new Timer();
+                    if (!app().pauseAutoSave()) {
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                // save the changes
+                                me.save();
+                            }
+                        }, saveDelay);
+                    }
                 }
             }
         });
@@ -332,7 +339,6 @@ public class MainActivity extends TranslatorBaseActivity {
         inputText.setText(translation);
 
         // updates preferences so the app opens to the last opened frame
-        // TODO: the auto opening of the frame when the app starts has not been implimented yet.
         app().setActiveProject(app().getSharedProjectManager().getSelectedProject().getSlug());
         app().setActiveChapter(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getId());
         app().setActiveFrame(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getFrameId());
@@ -368,5 +374,15 @@ public class MainActivity extends TranslatorBaseActivity {
             app().getSharedTranslationManager().save(inputTextValue, p.getSlug(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
             app().pauseAutoSave(false);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_MENU) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

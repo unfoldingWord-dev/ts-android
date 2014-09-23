@@ -1,0 +1,48 @@
+<resources>
+        <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_remember_position">Remember last page</string>
+    <string name="pref_description_remember_position">Display the last viewed page when starting the app</string>
+    <string name="pref_default_remember_position">true</string>
+
+    <string name="pref_title_account_name">Account name</string>
+    <string name="pref_default_account_name"></string>
+
+    <!-- settings for Save and Sync -->
+    <string name="pref_header_autosave">Save &amp; Sync</string>
+    <string name="pref_title_autosave">Auto Save</string>
+    <string name="pref_default_autosave">3000</string>
+    <string name="pref_title_autosave_delay">Auto Save Changes</string>
+    <string-array name="pref_autosave_titles">
+        <item>immediately after I have stopped typing</item>
+        <item>1 second after I have stopped typing</item>
+        <item>3 seconds after I have stopped typing</item>
+        <item>5 seconds I have stopped typing</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_autosave_values">
+        <item>0</item>
+        <item>1000</item>
+        <item>3000</item>
+        <item>5000</item>
+        <item>-1</item>
+    </string-array>
+
+    <string name="pref_title_auth_server">Authentication Server</string>
+    <string name="pref_default_auth_server">us.door43.org</string>
+    <string name="pref_title_auth_server_port">Authentication Server Port</string>
+    <string name="pref_default_auth_server_port">9095</string>
+
+    <string name="pref_title_git_server">Data Server</string>
+    <string name="pref_default_git_server">gitolite@us.door43.org</string>
+    <string name="pref_title_git_server_port">Data Server Port</string>
+    <string name="pref_default_git_server_port">9299</string>
+
+    <!-- Security settings -->
+    <string name="pref_header_security">Security</string>
+</resources>

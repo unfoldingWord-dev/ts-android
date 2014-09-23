@@ -5,6 +5,7 @@ import android.util.Log;
 import com.door43.tcp.TCPClient;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.translations.tasks.ProgressCallback;
 import com.door43.translationstudio.translations.tasks.repo.AddTask;
 import com.door43.translationstudio.translations.tasks.repo.PushTask;
@@ -33,11 +34,6 @@ public class TranslationManager implements TCPClient.TcpListener {
 
     public TranslationManager(MainApplication context) {
         mContext = context;
-
-        // set up a tcp connection
-        mTcpClient = new TCPClient(mContext.getResources().getString(R.string.tcp_server), mContext.getResources().getInteger(R.integer.tcp_server_port), me);
-        // TODO: this is no longer used here.
-        EventBus.getInstance().register(this);
     }
 
     /**
@@ -94,6 +90,12 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     public void sync() {
         if(!mContext.hasRegistered()) {
+            // set up a tcp connection
+            if(mTcpClient == null) {
+                mTcpClient = new TCPClient(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, mContext.getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, mContext.getResources().getString(R.string.pref_default_auth_server_port))), me);
+            } else {
+                // TODO: update the sever and port if they have changed.
+            }
             // connect to the server so we can submit our key
             mTcpClient.connect();
         } else {
@@ -106,10 +108,9 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     private void pushRepos() {
         // push the local repositories to the server
-        // TODO: need to push all repositories or allow the user to choose which projects to push. Might be good to only push the selected project.
+        // TODO: need to push all repositories or allow the user to choose which projects to push. Might be good to only push the selected project and language.
         String repoPath = buildRepositoryFilePath("obs", "en");
-        String server =  mContext.getResources().getString(R.string.git_server);
-        String remotePath = buildRemotePath(server, "obs", "en");
+        String remotePath = buildRemotePath(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, mContext.getResources().getString(R.string.pref_default_git_server)), "obs", "en");
         Repo repo = new Repo(repoPath);
         PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.push_msg_init));
         push.executeTask();

@@ -8,8 +8,6 @@
     <string name="chapters">Chapters</string>
     <string name="frames">Frames</string>
     <string name="git_repository_dir">git</string>
-    <string name="tcp_server">us.door43.org</string>
-    <string name="git_server">gitolite3@us.door43.org</string>
     <string name="keys_dir">ssh</string>
     <string name="label_ok">ok</string>
     <string name="label_cancel">cancel</string>
@@ -24,7 +22,6 @@
     <string name="progress_right_init">0/0</string>
     <string name="error_could_not_create_repository">Could not create repository</string>
     <string name="success_auto_save">Changes where saved</string>
-    <string name="title_setting_list">Settings</string>
-    <string name="title_setting_detail">Setting Detail</string>
+
 
 </resources>

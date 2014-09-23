@@ -5,6 +5,7 @@ import org.eclipse.jgit.transport.OpenSshConfig.Host;
 import org.eclipse.jgit.util.FS;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.util.MainContextLink;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -20,7 +21,7 @@ public class GitSessionFactory extends JschConfigSessionFactory {
     @Override
     protected void configure(Host arg0, Session session) {
         session.setConfig("StrictHostKeyChecking", "no");
-        session.setPort(MainContextLink.getContext().getResources().getInteger(R.integer.git_server_port));
+        session.setPort(Integer.parseInt(MainContextLink.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, MainContextLink.getContext().getResources().getString(R.string.pref_default_git_server_port))));
     }
 
     @Override
