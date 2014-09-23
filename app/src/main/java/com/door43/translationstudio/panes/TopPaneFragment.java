@@ -1,5 +1,6 @@
 package com.door43.translationstudio.panes;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingDetailActivity;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
@@ -45,6 +47,7 @@ public class TopPaneFragment extends TranslatorBaseFragment {
         mButtonSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+//                Intent intent = new Intent(me, SettingDetailActivity)
                 app().showToastMessage("You clicked settings!");
             }
         });

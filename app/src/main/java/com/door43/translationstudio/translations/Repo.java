@@ -145,7 +145,7 @@ public class Repo {
     }
 
     public Set<String> getRemotes() {
-        if (mRemotes != null)
+        if (mRemotes.size() > 0)
             return mRemotes;
         try {
             StoredConfig config = getStoredConfig();

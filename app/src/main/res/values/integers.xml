@@ -3,4 +3,5 @@
     <integer name="min_source_lang_checking_level">3</integer>
     <integer name="auto_save_delay">1000</integer>
     <integer name="tcp_server_port">9095</integer>
+    <integer name="git_server_port">9299</integer>
 </resources>

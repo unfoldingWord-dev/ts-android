@@ -20,6 +20,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".SettingListActivity"
+            android:label="@string/title_setting_list" >
+        </activity>
+        <activity
+            android:name=".SettingDetailActivity"
+            android:label="@string/title_setting_detail"
+            android:parentActivityName=".SettingListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.SettingListActivity" />
+        </activity>
     </application>
 
 </manifest>

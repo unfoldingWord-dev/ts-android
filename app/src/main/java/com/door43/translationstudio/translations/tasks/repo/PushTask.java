@@ -1,5 +1,7 @@
 package com.door43.translationstudio.translations.tasks.repo;
 
+import android.util.Log;
+
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.translations.tasks.StopTaskException;
 import com.door43.translationstudio.translations.Repo;
@@ -14,6 +16,8 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * An asyncronous task to push commits to a remote branch.
@@ -22,12 +26,14 @@ public class PushTask extends RepoOpTask {
     private AsyncTaskCallback mCallback;
     private boolean mPushAll;
     private boolean mForcePush;
+    private String mRemote;
     private StringBuffer resultMsg = new StringBuffer();
 
-    public PushTask(Repo repo, boolean pushAll, boolean forcePush, AsyncTaskCallback callback) {
+    public PushTask(Repo repo, String remote, boolean pushAll, boolean forcePush, AsyncTaskCallback callback) {
         super(repo);
         mCallback = callback;
         mPushAll = pushAll;
+        mRemote = remote;
         mForcePush = forcePush;
     }
 
@@ -79,9 +85,19 @@ public class PushTask extends RepoOpTask {
         } catch (StopTaskException e1) {
             return false;
         }
+//        Set<String> remotes = mRepo.getRemotes();
+//        String remote = "origin";
+//        if(!remotes.isEmpty()) {
+//            Iterator iter = remotes.iterator();
+//            while(iter.hasNext()) {
+//                remote = iter.next().toString();
+//                Log.d("push", remote);
+//            }
+//        }
         PushCommand pushCommand = git.push().setPushTags()
                 .setProgressMonitor(new BasicProgressMonitor())
                 .setTransportConfigCallback(new TransportCallback())
+                .setRemote(mRemote)
                 .setForce(mForcePush);
         if (mPushAll) {
             pushCommand.setPushAll();

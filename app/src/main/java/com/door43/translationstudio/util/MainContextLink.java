@@ -37,7 +37,7 @@ public class MainContextLink {
     // TODO: place all of these methods in the main application file
 
     /**
-     * @deprecated
+
      * @param s
      * @return
      */
@@ -66,7 +66,7 @@ public class MainContextLink {
 //    }
 
     /**
-     * @deprecated
+     *
      * @param email
      * @return
      */

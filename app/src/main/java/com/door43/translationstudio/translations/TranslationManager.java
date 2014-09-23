@@ -36,9 +36,8 @@ public class TranslationManager implements TCPClient.TcpListener {
 
         // set up a tcp connection
         mTcpClient = new TCPClient(mContext.getResources().getString(R.string.tcp_server), mContext.getResources().getInteger(R.integer.tcp_server_port), me);
+        // TODO: this is no longer used here.
         EventBus.getInstance().register(this);
-        mTcpClient.connect();
-//        mTcpClient.connect();
     }
 
     /**
@@ -94,41 +93,25 @@ public class TranslationManager implements TCPClient.TcpListener {
      * and discard any discrepencies.
      */
     public void sync() {
-        sync(true);
-    }
-
-    /**
-     * Initiates a git sync with the server. This will attempt to push local changes to the server
-     * but will fail if there are any pending changes on the server.
-     * @param forcePush if set to true the app will perform a forced push to the server overriding any changes on the server and avoiding merge conflicts
-     */
-    public void sync(boolean forcePush) {
         if(!mContext.hasRegistered()) {
-            // submit ssh keys to the server
-            register();
+            // connect to the server so we can submit our key
+            mTcpClient.connect();
         } else {
-            pushRepos(forcePush);
+            pushRepos();
         }
     }
 
     /**
      * Pushes the local repositories to the server
-     * @param forced
      */
-    private void pushRepos(Boolean forced) {
+    private void pushRepos() {
         // push the local repositories to the server
-        // TODO: need to push all repositories or allow the user to choose which projects to push
+        // TODO: need to push all repositories or allow the user to choose which projects to push. Might be good to only push the selected project.
         String repoPath = buildRepositoryFilePath("obs", "en");
         String server =  mContext.getResources().getString(R.string.git_server);
         String remotePath = buildRemotePath(server, "obs", "en");
         Repo repo = new Repo(repoPath);
-        try {
-            Log.d(TAG, "pushing to "+remotePath);
-            repo.setRemote("origin",  remotePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        PushTask push = new PushTask(repo, true, forced, new ProgressCallback(R.string.push_msg_init));
+        PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.push_msg_init));
         push.executeTask();
 
         // TODO: we need to check the errors from the push task. If auth fails then we need to re-register.
@@ -150,6 +133,7 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     private void register() {
         if(mContext.hasKeys()) {
+            mContext.showToastMessage("Authenticating with the server");
             JSONObject json = new JSONObject();
             try {
                 String key = getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
@@ -259,7 +243,8 @@ public class TranslationManager implements TCPClient.TcpListener {
 
     @Override
     public void onConnectionEstablished() {
-        Log.d(TAG, "A TCP connection has been established with the server");
+        // submit key to the server
+        register();
     }
 
     @Override
@@ -269,13 +254,16 @@ public class TranslationManager implements TCPClient.TcpListener {
             JSONObject json = new JSONObject(message);
             if(json.has("ok")) {
                 mContext.setHasRegistered(true);
-                mContext.showToastMessage("You may now sync your work to the server");
+                // push the repository to the server
+                mContext.showToastMessage("You may now sync your work");
+
             } else {
                 mContext.showException(new Throwable(json.getString("error")));
             }
         } catch (JSONException e) {
             mContext.showException(e);
         }
+        mTcpClient.stop();
     }
 
     @Override
