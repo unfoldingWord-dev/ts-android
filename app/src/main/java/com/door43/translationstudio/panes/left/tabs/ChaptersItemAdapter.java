@@ -1,6 +1,7 @@
 package com.door43.translationstudio.panes.left.tabs;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,19 +18,19 @@ import com.door43.translationstudio.projects.Chapter;
  */
 public class ChaptersItemAdapter extends BaseAdapter {
 
-    private final MainApplication context;
+    private final MainApplication mContext;
 
     /**
      * Creates a new Chapter adapter
      * @param c The activity context
      */
     public ChaptersItemAdapter(MainApplication c) {
-        context = c;
+        mContext = c;
     }
 
     @Override
     public int getCount() {
-        return context.getSharedProjectManager().getSelectedProject().numChapters();
+        return mContext.getSharedProjectManager().getSelectedProject().numChapters();
     }
 
     @Override
@@ -48,7 +49,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
 
         // if it's not recycled, initialize some attributes
         if (view == null) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             chapterItemView = (LinearLayout)inflater.inflate(R.layout.fragment_pane_left_chapters_item, null);
         } else {
             chapterItemView = (LinearLayout)view;
@@ -65,11 +66,21 @@ public class ChaptersItemAdapter extends BaseAdapter {
         TextView chapterDescription = (TextView)chapterItemView.findViewById(R.id.chapterDescription);
         chapterDescription.setText(getChaptertItem(i).getDescription());
 
+        // highlight selected chapter
+        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getId() == getChaptertItem(i).getId()) {
+            chapterItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            chapterDescription.setTextColor(Color.WHITE);
+            chapterTitle.setTextColor(Color.WHITE);
+        } else {
+            chapterItemView.setBackgroundColor(Color.TRANSPARENT);
+            chapterDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
+            chapterTitle.setTextColor(mContext.getResources().getColor(R.color.black));
+        }
+
         return chapterItemView;
     }
 
     private Chapter getChaptertItem(int i) {
-        Integer key = (Integer)context.getSharedProjectManager().getSelectedProject().getChaptersKeySet().get(i);
-        return context.getSharedProjectManager().getSelectedProject().getChapter(key);
+        return mContext.getSharedProjectManager().getSelectedProject().getChapter(i);
     }
 }

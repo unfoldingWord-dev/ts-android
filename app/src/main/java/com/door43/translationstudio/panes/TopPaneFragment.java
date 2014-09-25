@@ -27,21 +27,13 @@ public class TopPaneFragment extends TranslatorBaseFragment {
 
         // set up buttons clicks
         mButtonSync = (Button)rootView.findViewById(R.id.buttonSync);
-        mButtonResources = (ImageButton)rootView.findViewById(R.id.buttonResources);
         mButtonSettings = (ImageButton)rootView.findViewById(R.id.buttonSettings);
         mButtonShare = (ImageButton)rootView.findViewById(R.id.buttonShare);
-        mButtonUser = (ImageButton)rootView.findViewById(R.id.buttonUser);
 
         mButtonSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 app().getSharedTranslationManager().sync();
-            }
-        });
-        mButtonResources.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                app().showToastMessage("You clicked resources!");
             }
         });
         mButtonSettings.setOnClickListener(new View.OnClickListener() {
@@ -55,12 +47,6 @@ public class TopPaneFragment extends TranslatorBaseFragment {
             @Override
             public void onClick(View view) {
                 app().showToastMessage("You clicked share!");
-            }
-        });
-        mButtonUser.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                app().showToastMessage("You clicked user!");
             }
         });
 

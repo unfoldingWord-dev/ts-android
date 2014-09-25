@@ -9,6 +9,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -27,16 +28,16 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         // create adapter
         if(mFrameItemAdapter == null) mFrameItemAdapter = new FrameItemAdapter(app());
 
-        // connectAsync adapter
         listView.setAdapter(mFrameItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // select the project
-                String key = (String)app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getFramesKeySet().get(i);
-                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(key);
+                // select the frame
+                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
                 // we're ready to begin translating. close the left pane
                 ((MainActivity)me.getActivity()).closeLeftPane();
+                // let the adapter redraw itself so the selected frame is corectly highlighted
+                NotifyAdapterDataSetChanged();
             }
         });
 

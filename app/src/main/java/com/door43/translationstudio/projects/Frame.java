@@ -2,36 +2,34 @@ package com.door43.translationstudio.projects;
 
 import android.util.Log;
 
-import java.util.ArrayList;
-
 /**
- * Created by joel on 9/3/2014.
+ * Frames encapsulates a specific piece of translated work
  */
 public class Frame {
-    private String mId; // this is a combination of the chapter id and frame id.
+    private String mChapterFrameId;
     private String mText;
-    private String mFrameId;
+    private String mId;
     private String mChapterId;
 
     /**
      * Creates a new frame.
-     * @param id the frame id. This is a combination of the chapter id and frame id. e.g. 01-02 for chapter 1 frame 2.
+     * @param chapterFrameId This is a combination of the chapter id and frame id. e.g. 01-02 for chapter 1 frame 2.
      * @param text a short description of the frame
      */
-    public Frame(String id, String text) {
-        String[] pieces = id.split("-");
+    public Frame(String chapterFrameId, String text) {
+        String[] pieces = chapterFrameId.split("-");
         if(pieces.length == 2) {
             mChapterId = pieces[0];
-            mFrameId = pieces[1];
+            mId = pieces[1];
         } else {
             Log.w("Frame", "The frame has an invalid id");
         }
-        mId = id;
+        mChapterFrameId = chapterFrameId;
         mText = text;
     }
 
     /**
-     * Get the frame description
+     * Returns the frame text
      * @return
      */
     public String getText() {
@@ -43,15 +41,15 @@ public class Frame {
      * @return
      */
     public String getChapterFrameId() {
-        return mId;
+        return mChapterFrameId;
     }
 
     /**
      * Returns the frame id
      * @return
      */
-    public String getFrameId() {
-        return mFrameId;
+    public String getId() {
+        return mId;
     }
 
     /**

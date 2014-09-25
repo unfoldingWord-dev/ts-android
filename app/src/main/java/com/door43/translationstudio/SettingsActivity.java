@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -11,7 +12,12 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ListView;
 
+
+import com.door43.translationstudio.util.MainContextLink;
 
 import java.util.List;
 
@@ -41,6 +47,51 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_GIT_SERVER_PORT = "git_server_port";
     public static final String KEY_PREF_REMEMBER_POSITION = "remember_position";
 
+    /**
+     * Removes references to self to avoid memory leaks
+     */
+    private void clearReferences() {
+        Activity currActivity = MainContextLink.getContext().getCurrentActivity();
+        if(currActivity != null && currActivity.equals(this)) {
+            MainContextLink.getContext().setCurrentActivity(null);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // set the current activity so that core classes can access the ui when nessesary.
+        MainContextLink.getContext().setCurrentActivity(this);
+    }
+    @Override
+    protected void onPause() {
+        clearReferences();
+        super.onPause();
+    }
+    @Override
+    protected void onDestroy() {
+        clearReferences();
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Add a button to the header list.
+        if (hasHeaders()) {
+            // add a button to regenerate the ssh keys
+            Button button = new Button(this);
+            button.setText("Regenerate SSH Keys");
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    MainContextLink.getContext().generateKeys();
+                }
+            });
+            setListFooter(button);
+        }
+    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {

@@ -43,7 +43,7 @@ The project manager maintains a list of projects within the app and provides eas
 A project encapsulates the source text for a specific translation effort regardless of language. This source text is subdivided into Chapters and Frames. The app has a set of predefined projects including starting data that will be augmented by data found on the server (if an active internect connection is available).
 
 ####Chapter
-A chapter encapsulates a specific set of translation Frames regardless of of language. Chapters mostly act to better organize the translation effort into sections for better navigation. Chapters may containe 0 or more frames.
+A chapter encapsulates a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation. Chapters may containe 0 or more frames.
 
 ####Frame
 A frame encapsulates a specific piece of translated work. Frames include additional translation information such as language. This is the lowest level of translation (just above the text file).

@@ -62,7 +62,7 @@ public class MainActivity extends TranslatorBaseActivity {
         // automatically open the last viewed frame when the app opens
         if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
             String frameId = app().getLastActiveFrame();
-            Integer chapterId = app().getLastActiveChapter();
+            String chapterId = app().getLastActiveChapter();
             String projectSlug = app().getLastActiveProject();
             app().getSharedProjectManager().setSelectedProject(projectSlug);
             app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
@@ -334,14 +334,14 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // load translation
         Project p = app().getSharedProjectManager().getSelectedProject();
-        String translation = app().getSharedTranslationManager().getTranslation(p.getSlug(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
+        String translation = app().getSharedTranslationManager().getTranslation(p.getId(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
         EditText inputText = (EditText)mCenterPane.findViewById(R.id.inputText);
         inputText.setText(translation);
 
         // updates preferences so the app opens to the last opened frame
-        app().setActiveProject(app().getSharedProjectManager().getSelectedProject().getSlug());
+        app().setActiveProject(app().getSharedProjectManager().getSelectedProject().getId());
         app().setActiveChapter(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getId());
-        app().setActiveFrame(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getFrameId());
+        app().setActiveFrame(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getId());
     }
 
     public void closeRightPane() {
@@ -371,7 +371,7 @@ public class MainActivity extends TranslatorBaseActivity {
             Project p = app().getSharedProjectManager().getSelectedProject();
 
             // TODO: we need a way to manage what language the translation is being made in. This is different than the source languages
-            app().getSharedTranslationManager().save(inputTextValue, p.getSlug(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
+            app().getSharedTranslationManager().save(inputTextValue, p.getId(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
             app().pauseAutoSave(false);
         }
     }

@@ -148,10 +148,10 @@ public class MainApplication extends Application {
      * Stores the active chapter in the app preferences so it can load automatically next time.
      * @param id
      */
-    public void setActiveChapter(Integer id) {
+    public void setActiveChapter(String id) {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putInt("chapter_id", id);
+        editor.putString("chapter_id", id);
         editor.commit();
     }
 
@@ -180,9 +180,9 @@ public class MainApplication extends Application {
      * Returns the active chapter from the preferences
      * @return
      */
-    public Integer getLastActiveChapter() {
+    public String getLastActiveChapter() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getInt("chapter_id", 0);
+        return settings.getString("chapter_id", "");
     }
 
     /**
@@ -257,12 +257,14 @@ public class MainApplication extends Application {
             KeyPair kpair=KeyPair.genKeyPair(jsch, type);
             kpair.writePrivateKey(privateKeyPath);
             kpair.writePublicKey(publicKeyPath, getUDID());
-            System.out.println("Finger print: "+kpair.getFingerPrint());
             kpair.dispose();
+            showToastMessage("SSH keys were successfully generated");
         }
         catch(Exception e){
-            System.out.println(e);
+            showException(e);
         }
+        // require the app to re-submit generated keys to the server
+        setHasRegistered(false);
     }
 
     /**

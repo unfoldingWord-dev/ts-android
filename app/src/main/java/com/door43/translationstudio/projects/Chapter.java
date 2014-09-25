@@ -6,39 +6,41 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by joel on 9/2/2014.
+ * Chapters encapsulate a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation
  */
 public class Chapter {
+    // so we can look up by index
+    private List<Frame> mFrames = new ArrayList<Frame>();
+    // so we can look up by id
+    private Map<String, Frame> mFrameMap = new HashMap<String, Frame>();
 
-    private Map<String, Frame> mFrames = new HashMap<String, Frame>();
-    private ArrayList<String> mFrameIndex = new ArrayList<String>();
-    private Integer mId;
+    private String mId;
     private String mTitle;
     private String mDescription;
-    private String mSelectedFrame;
+    private String mSelectedFrameId;
 
     /**
-     * Creates a new chapter.
+     * Create a new chapter
      * @param id the chapter id. This is effectively the chapter number.
      * @param title the human readable title of the chapter
      * @param description a short description of the chapter
      */
-    public Chapter(int id, String title, String description) {
+    public Chapter(String id, String title, String description) {
         mId = id;
         mTitle = title;
         mDescription = description;
     }
 
     /**
-     * Get the chapter id. This is effectively the chapter number.
+     * Returns the chapter id
      * @return
      */
-    public Integer getId() {
+    public String getId() {
         return mId;
     }
 
     /**
-     * Get the chapter title
+     * Returns the chapter title
      * @return
      */
     public String getTitle() {
@@ -46,7 +48,7 @@ public class Chapter {
     }
 
     /**
-     * Get the chapter description
+     * Returns a description of the chapter
      * @return
      */
     public String getDescription() {
@@ -54,77 +56,89 @@ public class Chapter {
     }
 
     /**
-     * Sets the currently selected frame in the application
-     * @param id
-     * @return boolean return true of the index is valid
+     * Returns the number of frames in this chapter
+     * @return
      */
-    public boolean setSelectedFrame(String id) {
-        if (mFrames.containsKey(id)) {
-            mSelectedFrame = id;
-            return true;
-        } else {
-            return false;
-        }
+    public int numFrames() {
+        return mFrameMap.size();
     }
 
     /**
-     * Gets a frame by index
-     * @param id the id of the frame
-     * @return
+     * Returns a frame by id
+     * @param id the frame id
+     * @return null if the frame does not exist
      */
     public Frame getFrame(String id) {
-        if(mFrames.containsKey(id)) {
-            return mFrames.get(id);
+        if(mFrameMap.containsKey(id)) {
+            return mFrameMap.get(id);
         } else {
-            // out of bounds
             return null;
         }
     }
 
     /**
-     * Returns the number of frames in this chapter
-     * @return
+     * Returns a frame by index
+     * @param index the frame index
+     * @return null if the frame does not exist
      */
-    public int numFrames() {
-        return mFrames.size();
+    public Frame getFrame(int index) {
+        if(index < mFrames.size() && index >= 0) {
+            return mFrames.get(index);
+        } else {
+            return null;
+        }
     }
 
     /**
-     * Returns the currently selected frame in the application
+     * Sets the currently selected frame in the chapter by id
+     * @param id the frame id
+     * @return true if the frame exists
+     */
+    public boolean setSelectedFrame(String id) {
+        Frame f = getFrame(id);
+        if(f != null) {
+            mSelectedFrameId = f.getId();
+        }
+        return f != null;
+    }
+
+    /**
+     * Sets the currently selected frame in the chapter by index
+     * @param index the frame index
+     * @return true if the frame exists
+     */
+    public boolean setSelectedFrame(int index) {
+        Frame f = getFrame(index);
+        if(f != null) {
+            mSelectedFrameId = f.getId();
+        }
+        return f != null;
+    }
+
+    /**
+     * Returns the currently selected frame in the chapter
      * @return
      */
     public Frame getSelectedFrame() {
-        Frame selectedFrame = getFrame(mSelectedFrame);;
+        Frame selectedFrame = getFrame(mSelectedFrameId);;
         if(selectedFrame == null) {
-            // atuo select the first project if no other project has been selected yet.
-            String key = (String) getFramesKeySet().get(0);
-            setSelectedFrame(key);
-            return getFrame(key);
+            // auto select the first frame if no other frame has been selected
+            int defaultFrameIndex = 0;
+            setSelectedFrame(defaultFrameIndex);
+            return getFrame(defaultFrameIndex);
         } else {
             return selectedFrame;
         }
     }
 
     /**
-     * Add a new frame to the chapter
+     * Add a frame to the chapter
      * @param f the frame to add
      */
-    public Frame addFrame(Frame f) {
-        if(!this.mFrames.containsKey(f.getFrameId())) {
-            mFrameIndex.add(f.getFrameId());
-            this.mFrames.put(f.getFrameId(), f);
-            return f;
-        } else {
-            // TODO: is this nessesary? need to double check that the object signatures are different. If they are the same we should just always return the input frame.
-            return getFrame(f.getFrameId());
+    public void addFrame(Frame f) {
+        if(!mFrameMap.containsKey(f.getId())) {
+            mFrameMap.put(f.getId(), f);
+            mFrames.add(f);
         }
-    }
-
-    /**
-     * Returns a keyset of frame keys so list adapters can use indexes to identify frames.
-     * @return
-     */
-    public List getFramesKeySet() {
-        return mFrameIndex;
     }
 }

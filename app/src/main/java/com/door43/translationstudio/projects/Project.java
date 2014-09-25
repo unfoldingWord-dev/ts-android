@@ -6,20 +6,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Projects are translation containers. They may also be called "Books".
- * Projects will first look for information (by slug) within the installed package, and will augment
- * any existing/missing information with data found on the server (requires internet connection).
+ * Projects encapsulate the source text for a specific translation effort regardless of language.
+ * This source text is subdivided into Chapters and Frames.
  */
 public class Project {
+    // so we can look up by index
+    private List<Chapter> mChapters = new ArrayList<Chapter>();
+    // so we can look up by id
+    private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
 
-    private Map<Integer,Chapter> mChapters = new HashMap<Integer, Chapter>();
     private final String mTitle;
     private final String mSlug;
     private final String mDescription;
-    private int mSelectedChapter;
+    private String mSelectedChapterId;
 
     /**
-     * Create a new project definition
+     * Create a new project
      * @param title The human readable title of the project.
      * @param slug The machine readable slug identifying the project.
      * @param description A short description of the project.
@@ -31,7 +33,15 @@ public class Project {
     }
 
     /**
-     * Get the project title
+     * Returns the project id a.k.a the project slug.
+     * @return
+     */
+    public String getId() {
+        return mSlug;
+    }
+
+    /**
+     * Returns the project title
      * @return
      */
     public String getTitle() {
@@ -39,15 +49,7 @@ public class Project {
     }
 
     /**
-     * Get the project slug
-     * @return
-     */
-    public String getSlug() {
-        return mSlug;
-    }
-
-    /**
-     * Get the project description
+     * Returns a description of the project
      * @return
      */
     public String getDescription() {
@@ -59,48 +61,72 @@ public class Project {
      * @return
      */
     public int numChapters() {
-        return mChapters.size();
+        return mChapterMap.size();
     }
 
     /**
-     * Get a chapter by index
-     * @param id the id of the chapter starting at 0
-     * @return
+     * Returns a chapter by id
+     * @param id the chapter id
+     * @return null if the chapter does not exist
      */
-    public Chapter getChapter(Integer id) {
-        if(mChapters.containsKey(id)) {
-            return mChapters.get(id);
+    public Chapter getChapter(String id) {
+        if(mChapterMap.containsKey(id)) {
+            return mChapterMap.get(id);
         } else {
-            // out of bounds
             return null;
         }
     }
 
     /**
-     * Sets the currently selected chapter in the application
-     * @param id
-     * @return boolean return true of the index is valid
+     * Returns a chapter by index
+     * @param index the chapter index
+     * @return null if the chapter does not exist
      */
-    public boolean setSelectedChapter(Integer id) {
-        if (mChapters.containsKey(id)) {
-            mSelectedChapter = id;
-            return true;
+    public Chapter getChapter(int index){
+        if(index < mChapters.size() && index >= 0) {
+            return mChapters.get(index);
         } else {
-            return false;
+            return null;
         }
     }
 
     /**
-     * Gets the currently selected chapter in the application
+     * Sets the currently selected chapter in the project by id
+     * @param id the chapter id
+     * @return true if the chapter exists
+     */
+    public boolean setSelectedChapter(String id) {
+        Chapter c = getChapter(id);
+        if(c != null) {
+            mSelectedChapterId = c.getId();
+        }
+        return c != null;
+    }
+
+    /**
+     * Sets the currently selected chapter in the project by index
+     * @param index the chapter index
+     * @return true if the chapter exists
+     */
+    public boolean setSelectedChapter(int index) {
+        Chapter c = getChapter(index);
+        if(c != null) {
+            mSelectedChapterId = c.getId();
+        }
+        return c != null;
+    }
+
+    /**
+     * Returns the currently selected chapter in the project
      * @return
      */
     public Chapter getSelectedChapter() {
-        Chapter selectedChapter = getChapter(mSelectedChapter);
+        Chapter selectedChapter = getChapter(mSelectedChapterId);
         if(selectedChapter == null) {
-            // atuo select the first project if no other project has been selected yet.
-            Integer key = (Integer) getChaptersKeySet().get(0);
-            setSelectedChapter(key);
-            return getChapter(key);
+            // auto select the first chapter if no other chapter has been selected
+            int defaultChapterIndex = 0;
+            setSelectedChapter(defaultChapterIndex);
+            return getChapter(defaultChapterIndex);
         } else {
             return selectedChapter;
         }
@@ -109,23 +135,11 @@ public class Project {
     /**
      * Adds a chapter to the project
      * @param c the chapter to add
-     * @return
      */
-    public Chapter addChapter(Chapter c) {
-        if(!this.mChapters.containsKey(c.getId())) {
-            this.mChapters.put(c.getId(), c);
-            return c;
-        } else {
-            // TODO: is this nessesary? need to double check that the object signatures are different. If they are the same we should just always return the input chapter.
-            return getChapter(c.getId());
+    public void addChapter(Chapter c) {
+        if(!mChapterMap.containsKey(c.getId())) {
+            mChapterMap.put(c.getId(), c);
+            mChapters.add(c);
         }
-    }
-
-    /**
-     * Returns a keyset of chapter keys so list adapters can use indexes to identify chapters.
-     * @return
-     */
-    public List getChaptersKeySet() {
-        return new ArrayList(mChapters.keySet());
     }
 }

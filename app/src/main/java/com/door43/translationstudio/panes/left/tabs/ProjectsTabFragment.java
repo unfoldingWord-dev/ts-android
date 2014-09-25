@@ -9,6 +9,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -33,10 +34,11 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // select the project
-                String key = (String)app().getSharedProjectManager().getProjectsKeySet().get(i);
-                app().getSharedProjectManager().setSelectedProject(key);
+                app().getSharedProjectManager().setSelectedProject(i);
                 // open up the chapters tab
                 ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);
+                // let the adapter redraw itself so the selected project is corectly highlighted
+                NotifyAdapterDataSetChanged();
             }
         });
 

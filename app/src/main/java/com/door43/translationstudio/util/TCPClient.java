@@ -1,20 +1,15 @@
-package com.door43.tcp;
+package com.door43.translationstudio.util;
 
 import android.os.AsyncTask;
-import android.os.Looper;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
 
 public class TCPClient {
 

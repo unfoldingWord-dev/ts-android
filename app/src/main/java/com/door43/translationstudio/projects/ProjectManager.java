@@ -20,14 +20,24 @@ import java.util.Map;
 
 /**
  * The project manager handles all of the projects within the app.
- * TODO: need to provide progress information so we can display appropriate information while the user is waiting for the app to load. e.g. a loading screen.
+ * TODO: need to provide progress information so we can display appropriate information while the user is waiting for the app to load. e.g. a loading screen while projects are parsed.
+ * TODO: parsing tasks need to be ran asyncronously
  * Created by joel on 8/29/2014.
  */
 public class ProjectManager implements DelegateListener {
     private static DataStore mDataStore;
-    private static Map<String, Project> mProjects = new HashMap<String, Project>();
-    private static ArrayList<Language> mLanguages = new ArrayList<Language>();
-    private static String mSelectedProjectSlug;
+
+    // so we can look up by index
+    private static List<Project> mProjects = new ArrayList<Project>();
+    // so we can look up by id
+    private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
+
+    // so we can look up by index
+    private static List<Language> mLanguages = new ArrayList<Language>();
+    // so we can look up by id
+    private static Map<String, Language> mLanguageMap = new HashMap<String, Language>();
+
+    private static String mSelectedProjectId;
     private static MainApplication mContext;
     private static final String TAG = "ProjectManager";
 
@@ -42,42 +52,60 @@ public class ProjectManager implements DelegateListener {
 
     /**
      * Adds a project to the manager
-     * @param p the new project to be added
-     * @return The project now managed by the manager. The return value should be used instead of the input value to ensure you are using the proper reference.
+     * @param p the project to add
      */
-    private Project addProject(Project p) {
-        if(!this.mProjects.containsKey(p.getSlug())) {
-            this.mProjects.put(p.getSlug(), p);
-            return p;
-        } else {
-            // TODO: is this nessesary? need to double check that the object signatures are different. If they are the same we should just always return the input project.
-            return getProject(p.getSlug());
+    private void addProject(Project p) {
+        if(!mProjectMap.containsKey(p.getId())) {
+            mProjectMap.put(p.getId(), p);
+            mProjects.add(p);
         }
     }
 
     /**
      * Adds a lanuage to the manager
-     * @param l
-     * @return
+     * @param l the language to add
      */
-    private Language addLanguage(Language l) {
-        if(!this.mLanguages.contains(l)) {
-            this.mLanguages.add(l);
-            return l;
-        } else {
-            // TODO: is this nessesary? need to double check that the object signatures are different. If they are the same we should just always return the input project.
-            return getLanguage(this.mLanguages.indexOf(l));
+    private void addLanguage(Language l) {
+        if(!mLanguageMap.containsKey(l.getId())) {
+            mLanguageMap.put(l.getId(), l);
+            mLanguages.add(l);
         }
     }
 
     /**
-     * Returns a project
-     * @param slug the slug of the project
-     * @return the existing project or null
+     * Returns a project by id
+     * @param id the project id a.k.a slug
+     * @return null if the project does not exist
      */
-    public Project getProject(String slug) {
-        if(this.mProjects.containsKey(slug)) {
-            return this.mProjects.get(slug);
+    public Project getProject(String id) {
+        if(mProjectMap.containsKey(id)) {
+            return mProjectMap.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a project by index
+     * @param index the project index
+     * @return null if the project does not exist
+     */
+    public Project getProject(int index) {
+        if(index < mProjects.size() && index >= 0) {
+            return mProjects.get(index);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a language by id
+     * @param id the langyage id a.k.a language code
+     * @return null if the language does not exist
+     */
+    public Language getLanguage(String id) {
+        if(mLanguageMap.containsKey(id)) {
+            return mLanguageMap.get(id);
         } else {
             return null;
         }
@@ -85,54 +113,65 @@ public class ProjectManager implements DelegateListener {
 
     /**
      * Retusn a lanuage
-     * @param i
-     * @return
+     * @param index the language index
+     * @return null if the language does not exist
      */
-    public Language getLanguage(int i) {
-        if(this.mLanguages.size() > i && i >= 0) {
-            return this.mLanguages.get(i);
+    public Language getLanguage(int index) {
+        if(index < mLanguages.size() && index >= 0) {
+            return mLanguages.get(index);
         } else {
-            // out of bounds
             return null;
         }
     }
 
     /**
-     * Sets the selected project within the application
-     * @param slug the slug of the selected project
-     * @return boolean returns true of the index is valid
+     * Sets the selected project in the app by id
+     * @param id the project id
+     * @return true if the project exists
      */
-    public boolean setSelectedProject(String slug) {
-        if (mProjects.containsKey(slug)) {
-            mSelectedProjectSlug = slug;
-            return true;
-        } else {
-            return false;
+    public boolean setSelectedProject(String id) {
+        Project p = getProject(id);
+        if(p != null) {
+            mSelectedProjectId = p.getId();
         }
+        return p != null;
     }
 
     /**
-     * Returns the currently selected project
+     * Sets the selected project in the app by index
+     * @param index the project index
+     * @return true if the project exists
+     */
+    public boolean setSelectedProject(int index) {
+        Project p = getProject(index);
+        if(p != null) {
+            mSelectedProjectId = p.getId();
+        }
+        return p != null;
+    }
+
+    /**
+     * Returns the currently selected project in the app
      * @return
      */
     public Project getSelectedProject() {
-        Project selectedProject = getProject(mSelectedProjectSlug);;
+        Project selectedProject = getProject(mSelectedProjectId);;
         if(selectedProject == null) {
-            // atuo select the first project if no other project has been selected yet.
-            String key = (String) getProjectsKeySet().get(0);
-            setSelectedProject(key);
-            return getProject(key);
+            // auto select the first project if no other project has been selected
+            int defaultProjectIndex = 0;
+            setSelectedProject(defaultProjectIndex);
+            return getProject(defaultProjectIndex);
         } else {
             return selectedProject;
         }
     }
 
     /**
-     * Returns the number of mProjects
+     * Returns the number of projects in the app
      * @return
      */
     public int numProjects() {
-        return mProjects.size();
+        return mProjectMap.size();
     }
 
     @Override
@@ -155,7 +194,7 @@ public class ProjectManager implements DelegateListener {
                     if(jsonProject.has("title") && jsonProject.has("slug") && jsonProject.has("desc")) {
                         Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
                         addProject(p);
-                        mDataStore.fetchLanguageCatalog(p.getSlug());
+                        mDataStore.fetchLanguageCatalog(p.getId());
                     } else {
                         Log.w(TAG, "missing required parameters in the project catalog");
                     }
@@ -186,12 +225,12 @@ public class ProjectManager implements DelegateListener {
                                 // add the language
                                 Language.Direction langDir = jsonLanguage.get("direction").toString() == "ltr" ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                                 Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir);
-                                l = addLanguage(l);
+                                addLanguage(l);
 
                                 // fetch source text
                                 Project p = getProject(message.getProjectSlug());
                                 if(p != null) {
-                                    mDataStore.fetchSourceText(p.getSlug(), l.getCode(), mLanguages.indexOf(l));
+                                    mDataStore.fetchSourceText(p.getId(), l.getId());
                                 } else {
                                     Log.w(TAG, "project not found");
                                 }
@@ -227,7 +266,7 @@ public class ProjectManager implements DelegateListener {
                     if(jsonChapter.has("ref") && jsonChapter.has("frames") && jsonChapter.has("title") && jsonChapter.has("number")) {
                         // load chapter
                         String num = jsonChapter.get("number").toString();
-                        int chapterNumber = Integer.parseInt(num.substring(0, num.indexOf(".")));
+                        String chapterNumber = num.substring(0, num.indexOf("."));
                         Chapter c = new Chapter(chapterNumber, jsonChapter.get("title").toString(), jsonChapter.get("ref").toString());
 
                         // add chapter to the project
@@ -268,11 +307,4 @@ public class ProjectManager implements DelegateListener {
         }
     }
 
-    /**
-     * Returns a keyset of project keys so list adapters can use indexes to identify projects.
-     * @return
-     */
-    public List getProjectsKeySet() {
-        return new ArrayList(mProjects.keySet());
-    }
 }

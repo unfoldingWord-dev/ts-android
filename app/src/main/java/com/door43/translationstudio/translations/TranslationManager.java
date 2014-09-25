@@ -2,14 +2,13 @@ package com.door43.translationstudio.translations;
 
 import android.util.Log;
 
-import com.door43.tcp.TCPClient;
+import com.door43.translationstudio.util.TCPClient;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.translations.tasks.ProgressCallback;
 import com.door43.translationstudio.translations.tasks.repo.AddTask;
 import com.door43.translationstudio.translations.tasks.repo.PushTask;
-import com.door43.translationstudio.util.EventBus;
 
 import org.json.JSONException;
 import org.json.JSONObject;

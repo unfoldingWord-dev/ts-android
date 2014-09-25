@@ -36,7 +36,7 @@ public class Language {
      * Returns the language code
      * @return
      */
-    public String getCode() {
+    public String getId() {
         return mCode;
     }
 

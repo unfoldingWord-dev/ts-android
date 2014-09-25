@@ -1,6 +1,7 @@
 package com.door43.translationstudio.panes.left.tabs;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,19 +18,19 @@ import com.door43.translationstudio.projects.Project;
  */
 public class ProjectItemAdapter extends BaseAdapter {
 
-    private final MainApplication context;
+    private final MainApplication mContext;
 
     /**
      * Creates a new Project adapter
      * @param c The activity context
      */
     public ProjectItemAdapter(MainApplication c) {
-        context = c;
+        mContext = c;
     }
 
     @Override
     public int getCount() {
-        return context.getSharedProjectManager().numProjects();
+        return mContext.getSharedProjectManager().numProjects();
     }
 
     @Override
@@ -48,7 +49,7 @@ public class ProjectItemAdapter extends BaseAdapter {
 
         // if it's not recycled, initialize some attributes
         if (view == null) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             projectItemView = (LinearLayout)inflater.inflate(R.layout.fragment_pane_left_projects_item, null);
         } else {
             projectItemView = (LinearLayout)view;
@@ -65,11 +66,21 @@ public class ProjectItemAdapter extends BaseAdapter {
         TextView projectDescription = (TextView)projectItemView.findViewById(R.id.projectDescription);
         projectDescription.setText(getProjectItem(i).getDescription());
 
+        // highlight selected project
+        if(mContext.getSharedProjectManager().getSelectedProject().getId() == getProjectItem(i).getId()) {
+            projectItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            projectDescription.setTextColor(Color.WHITE);
+            projectTitle.setTextColor(Color.WHITE);
+        } else {
+            projectItemView.setBackgroundColor(Color.TRANSPARENT);
+            projectDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
+            projectTitle.setTextColor(mContext.getResources().getColor(R.color.black));
+        }
+
         return projectItemView;
     }
 
     private Project getProjectItem(int i) {
-        String key = (String)context.getSharedProjectManager().getProjectsKeySet().get(i);
-        return context.getSharedProjectManager().getProject(key);
+        return mContext.getSharedProjectManager().getProject(i);
     }
 }

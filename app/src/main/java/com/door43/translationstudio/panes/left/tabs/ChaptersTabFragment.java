@@ -9,6 +9,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -33,10 +34,11 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // select the chapter
-                Integer key = (Integer)app().getSharedProjectManager().getSelectedProject().getChaptersKeySet().get(i);
-                app().getSharedProjectManager().getSelectedProject().setSelectedChapter(key);
+                app().getSharedProjectManager().getSelectedProject().setSelectedChapter(i);
                 // open up the frames tab
                 ((MainActivity)me.getActivity()).getLeftPane().selectTab(2);
+                // let the adapter redraw itself so the selected chapter is corectly highlighted
+                NotifyAdapterDataSetChanged();
             }
         });
 

@@ -1,6 +1,7 @@
 package com.door43.translationstudio.panes.left.tabs;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,19 +18,19 @@ import com.door43.translationstudio.projects.Frame;
  */
 public class FrameItemAdapter extends BaseAdapter {
 
-    private final MainApplication context;
+    private final MainApplication mContext;
 
     /**
      * Creates a new Frame adapter
-     * @param c The activity context
+     * @param c The application context
      */
     public FrameItemAdapter(MainApplication c) {
-        context = c;
+        mContext = c;
     }
 
     @Override
     public int getCount() {
-        return context.getSharedProjectManager().getSelectedProject().getSelectedChapter().numFrames();
+        return mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().numFrames();
     }
 
     @Override
@@ -48,7 +49,7 @@ public class FrameItemAdapter extends BaseAdapter {
 
         // if it's not recycled, initialize some attributes
         if (view == null) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             frameItemView = (LinearLayout)inflater.inflate(R.layout.fragment_pane_left_frames_item, null);
         } else {
             frameItemView = (LinearLayout)view;
@@ -58,18 +59,28 @@ public class FrameItemAdapter extends BaseAdapter {
         // image
 
         // title
-        TextView frameId = (TextView)frameItemView.findViewById(R.id.frameId);
-        frameId.setText(getFrameItem(i).getChapterFrameId());
+        TextView frameTitle = (TextView)frameItemView.findViewById(R.id.frameId);
+        frameTitle.setText(getFrameItem(i).getChapterFrameId());
 
         // description
         TextView frameDescription = (TextView)frameItemView.findViewById(R.id.frameDescription);
         frameDescription.setText(getFrameItem(i).getText());
 
+        // highlight selected frame
+        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getChapterFrameId() == getFrameItem(i).getChapterFrameId()) {
+            frameItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            frameDescription.setTextColor(Color.WHITE);
+            frameTitle.setTextColor(Color.WHITE);
+        } else {
+            frameItemView.setBackgroundColor(Color.TRANSPARENT);
+            frameDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
+            frameTitle.setTextColor(mContext.getResources().getColor(R.color.black));
+        }
+
         return frameItemView;
     }
 
     private Frame getFrameItem(int i) {
-        String key = (String)context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFramesKeySet().get(i);
-        return context.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(key);
+        return mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrame(i);
     }
 }
