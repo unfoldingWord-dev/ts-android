@@ -131,7 +131,6 @@ public class SettingsActivity extends PreferenceActivity {
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
         // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference("account_name"));
         bindPreferenceSummaryToValue(findPreference("autosave"));
         bindPreferenceSummaryToValue(findPreference("auth_server"));
         bindPreferenceSummaryToValue(findPreference("git_server"));
@@ -242,7 +241,6 @@ public class SettingsActivity extends PreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("account_name"));
         }
     }
 

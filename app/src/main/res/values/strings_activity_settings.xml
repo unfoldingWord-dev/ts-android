@@ -10,9 +10,6 @@
     <string name="pref_description_remember_position">Display the last viewed page when starting the app</string>
     <string name="pref_default_remember_position">true</string>
 
-    <string name="pref_title_account_name">Account name</string>
-    <string name="pref_default_account_name"></string>
-
     <!-- settings for Save and Sync -->
     <string name="pref_header_autosave">Save &amp; Sync</string>
     <string name="pref_title_autosave">Auto Save</string>
@@ -39,7 +36,7 @@
     <string name="pref_default_auth_server_port">9095</string>
 
     <string name="pref_title_git_server">Data Server</string>
-    <string name="pref_default_git_server">gitolite@us.door43.org</string>
+    <string name="pref_default_git_server">gitolite3@us.door43.org</string>
     <string name="pref_title_git_server_port">Data Server Port</string>
     <string name="pref_default_git_server_port">9299</string>
 
