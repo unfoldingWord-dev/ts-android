@@ -68,8 +68,7 @@ public class PushTask extends RepoOpTask {
             mCallback.onPostExecute(isSuccess);
         }
         if (isSuccess) {
-            MainContextLink.getContext().showMessageDialog(
-                    R.string.dialog_push_result, resultMsg.toString());
+            MainContextLink.getContext().showMessageDialog(R.string.dialog_push_result, resultMsg.toString());
         }
     }
 
@@ -85,15 +84,6 @@ public class PushTask extends RepoOpTask {
         } catch (StopTaskException e1) {
             return false;
         }
-//        Set<String> remotes = mRepo.getRemotes();
-//        String remote = "origin";
-//        if(!remotes.isEmpty()) {
-//            Iterator iter = remotes.iterator();
-//            while(iter.hasNext()) {
-//                remote = iter.next().toString();
-//                Log.d("push", remote);
-//            }
-//        }
         PushCommand pushCommand = git.push().setPushTags()
                 .setProgressMonitor(new BasicProgressMonitor())
                 .setTransportConfigCallback(new TransportCallback())

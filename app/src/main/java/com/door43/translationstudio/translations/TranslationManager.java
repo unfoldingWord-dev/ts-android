@@ -2,6 +2,7 @@ package com.door43.translationstudio.translations;
 
 import android.util.Log;
 
+import com.door43.delegate.DelegateSender;
 import com.door43.translationstudio.util.TCPClient;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -24,7 +25,7 @@ import java.io.PrintStream;
 /**
  * This class handles the storage of translated content.
  */
-public class TranslationManager implements TCPClient.TcpListener {
+public class TranslationManager extends DelegateSender implements TCPClient.TcpListener {
     private TranslationManager me = this;
     private MainApplication mContext;
     private final String TAG = "TranslationManager";
@@ -89,11 +90,12 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     public void sync() {
         if(!mContext.hasRegistered()) {
+            mContext.showProgressDialog("Establishing a connection...");
             // set up a tcp connection
             if(mTcpClient == null) {
                 mTcpClient = new TCPClient(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, mContext.getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, mContext.getResources().getString(R.string.pref_default_auth_server_port))), me);
             } else {
-                // TODO: update the sever and port if they have changed.
+                // TODO: update the sever and port if they have changed... Not sure if this task is applicable now
             }
             // connect to the server so we can submit our key
             mTcpClient.connect();
@@ -133,7 +135,7 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     private void register() {
         if(mContext.hasKeys()) {
-            mContext.showToastMessage("Authenticating with the server");
+            mContext.showProgressDialog("Transferring security keys...");
             JSONObject json = new JSONObject();
             try {
                 String key = getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
@@ -149,6 +151,7 @@ public class TranslationManager implements TCPClient.TcpListener {
                 mContext.showException(e);
             }
         } else {
+            mContext.closeProgressDialog();
             mContext.showException(new Throwable("The ssh keys have not been generated."));
         }
 
@@ -250,13 +253,12 @@ public class TranslationManager implements TCPClient.TcpListener {
     @Override
     public void onMessageReceived(String message) {
         // check if we get an ok message
+        mContext.closeProgressDialog();
         try {
             JSONObject json = new JSONObject(message);
             if(json.has("ok")) {
                 mContext.setHasRegistered(true);
-                // push the repository to the server
-                mContext.showToastMessage("You may now sync your work");
-
+                me.issueDelegateResponse(new TranslationSyncResponse(true));
             } else {
                 mContext.showException(new Throwable(json.getString("error")));
             }

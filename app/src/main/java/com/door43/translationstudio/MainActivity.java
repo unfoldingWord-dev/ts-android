@@ -1,8 +1,12 @@
 package com.door43.translationstudio;
 
+import com.door43.delegate.DelegateListener;
+import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.RightPaneFragment;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.translations.TranslationSyncResponse;
+import com.door43.translationstudio.util.MainContextLink;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.slidinglayer.SlidingLayer;
 
@@ -25,7 +29,7 @@ import android.widget.TextView;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends TranslatorBaseActivity {
+public class MainActivity extends TranslatorBaseActivity implements DelegateListener {
     private final MainActivity me = this;
 
     private static final String LANG_CODE = "en"; // TODO: this will eventually need to be managed dynamically by the project manager
@@ -47,6 +51,8 @@ public class MainActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        app().getSharedTranslationManager().registerDelegateListener(this);
 
         // TODO: we should display a splash screen until the project manager has finished loading.
         // we should also not load the project manager when initialized but manually in the splash loader.
@@ -405,8 +411,26 @@ public class MainActivity extends TranslatorBaseActivity {
         }
         ft.addToBackStack(null);
 
+        app().closeToastMessage();
         // Create and show the dialog.
         MenuDialogFragment newFragment = new MenuDialogFragment();
         newFragment.show(ft, "dialog");
+    }
+
+    @Override
+    public void onDelegateResponse(String id, DelegateResponse response) {
+        if(TranslationSyncResponse.class == response.getClass()) {
+            if (((TranslationSyncResponse)response).isSuccess()) {
+                showContextualMenu();
+            } else {
+                // error
+            }
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        app().getSharedTranslationManager().removeDelegateListener(this);
+        super.onDestroy();
     }
 }

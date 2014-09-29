@@ -3,6 +3,7 @@ package com.door43.translationstudio;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -26,6 +27,7 @@ public class MainApplication extends Application {
     private Activity mCurrentActivity = null;
     private Toast mToast = null;
     private ProjectManager mProjectManager;
+    private ProgressDialog mProgressDialog;
     private TranslationManager mTranslationManager;
     private final String PREFERENCES_TAG = "com.door43.translationstudio";
     private boolean mPauseAutoSave = false;
@@ -98,6 +100,20 @@ public class MainApplication extends Application {
         }
     }
 
+    /**
+     * Cancels any toast message that is currently being displayed.
+     */
+    public void closeToastMessage() {
+        if(mCurrentActivity != null) {
+            mCurrentActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if(mToast != null) mToast.cancel();
+                }
+            });
+        }
+    }
+
     public void showToastMessage(int resId) {
         showToastMessage(getString(resId));
     }
@@ -130,6 +146,34 @@ public class MainApplication extends Application {
     public void showException(Throwable t, int res) {
         showToastMessage(res);
         t.printStackTrace();
+    }
+
+    /**
+     * Displays a progress dialog
+     * @param message the message to display in the dialog
+     */
+    public void showProgressDialog(final String message) {
+        getCurrentActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(mProgressDialog == null) {
+                    mProgressDialog = new ProgressDialog(getCurrentActivity());
+                }
+                mProgressDialog.setMessage(message);
+                if(!mProgressDialog.isShowing()) {
+                    mProgressDialog.show();
+                }
+            }
+        });
+    }
+
+    /**
+     * Closes the current progress dialog
+     */
+    public void closeProgressDialog() {
+        if (mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
     }
 
     /**

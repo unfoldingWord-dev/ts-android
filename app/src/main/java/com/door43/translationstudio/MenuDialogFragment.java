@@ -8,6 +8,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.door43.delegate.DelegateListener;
+import com.door43.delegate.DelegateResponse;
+import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.util.MainContextLink;
 
 /**
@@ -30,6 +33,11 @@ public class MenuDialogFragment extends DialogFragment {
 
         // TODO: check if our key has been submitted to the server first. otherwise just display a connect to server button.
         Button syncBtn = (Button)v.findViewById(R.id.sync_btn);
+        if(MainContextLink.getContext().hasRegistered()) {
+            syncBtn.setText("Upload Translation");
+        } else {
+            syncBtn.setText("Request Upload Permission");
+        }
         syncBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -37,6 +45,8 @@ public class MenuDialogFragment extends DialogFragment {
                 me.dismiss();
             }
         });
+
+
         Button shareBtn = (Button)v.findViewById(R.id.share_btn);
         shareBtn.setOnClickListener(new View.OnClickListener() {
             @Override
