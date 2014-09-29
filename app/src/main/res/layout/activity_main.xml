@@ -130,24 +130,24 @@
     </com.slidinglayer.SlidingLayer>
 
     <!-- Top content pane -->
-    <com.slidinglayer.SlidingLayer
-        xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/topPane"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/sliding_layer_width_narrow"
-        slidingLayer:offsetWidth="@dimen/offset_width"
-        slidingLayer:stickTo="top"
-        slidingLayer:openOnTapEnabled="false"
-        slidingLayer:closeOnTapEnabled="false">
+    <!--<com.slidinglayer.SlidingLayer-->
+        <!--xmlns:slidingLayer="http://schemas.android.com/apk/res-auto"-->
+        <!--android:id="@+id/topPane"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="@dimen/sliding_layer_width_narrow"-->
+        <!--slidingLayer:offsetWidth="@dimen/offset_width"-->
+        <!--slidingLayer:stickTo="top"-->
+        <!--slidingLayer:openOnTapEnabled="false"-->
+        <!--slidingLayer:closeOnTapEnabled="false">-->
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/green"
-            android:paddingBottom="@dimen/offset_width"
-            android:id="@+id/topPaneContent">
-        </RelativeLayout>
-    </com.slidinglayer.SlidingLayer>
+        <!--<RelativeLayout-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:background="@color/green"-->
+            <!--android:paddingBottom="@dimen/offset_width"-->
+            <!--android:id="@+id/topPaneContent">-->
+        <!--</RelativeLayout>-->
+    <!--</com.slidinglayer.SlidingLayer>-->
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -167,13 +167,13 @@
         android:src="@drawable/ic_grip_right"
         android:background="@null"/>
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/buttonGripTop"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/ic_grip_top"
-        android:background="@null"/>
+    <!--<ImageButton-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/buttonGripTop"-->
+        <!--android:layout_centerHorizontal="true"-->
+        <!--android:src="@drawable/ic_grip_top"-->
+        <!--android:background="@null"/>-->
 
     <!-- Bottom content pane -->
     <!--<com.slidinglayer.SlidingLayer-->
