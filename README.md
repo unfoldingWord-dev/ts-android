@@ -28,7 +28,7 @@ Now you are ready to develop! Run the app in debug mode (the bug button) and wat
 
 Write some code, add a *USEFUL* but short and sweet commit message, repeat. If you run on multiple computers make sure to push to your github repository so you can develop at home or on vacation.
 
-###Submiting Your Code
+###Submiting Your [Beautiful] Code
 >Important! Your code will **NOT** be accepted if it does not follow the code style guidelines.
 > Please become familure with the [Code Style Guidelines](https://source.android.com/source/code-style.html). The repository is > guarded by a band of crazed-coding-style-obsessed-monkeys who will not hesitate to deny your pull request if you so much as have an extra space at the end of a line.
 
