@@ -27,6 +27,9 @@ Now you are ready to develop! Run the app in debug mode (the bug button) and wat
 ###Third Party Libraries
 * [Sliding Layer] by 6Wunderkinder
 
+###Additional Info
+Please check out the wiki for additional documentation to help you get started in the development.
+
 
 [Virtual Box]:https://www.virtualbox.org/
 [Genymotion Android Studio Plugin]:https://cloud.genymotion.com/page/doc/#collapse-intellij
