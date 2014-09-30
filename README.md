@@ -31,6 +31,5 @@ Please check out the wiki for additional documentation to help you get started i
 [Virtual Box]:https://www.virtualbox.org/
 [Genymotion Android Studio Plugin]:https://cloud.genymotion.com/page/doc/#collapse-intellij
 [Adding SDK Packages]:http://developer.android.com/sdk/installing/adding-packages.html
-[Sliding Layer]:https://github.com/6wunderkinder/android-sliding-layer-lib
 [Genymotion]:http://www.genymotion.com/
 [Android Studio]:https://developer.android.com/sdk/installing/studio.html
