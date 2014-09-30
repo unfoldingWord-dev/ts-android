@@ -30,7 +30,7 @@
                 android:id="@+id/dismiss_license_btn"
                 android:layout_gravity="center_horizontal"
                 android:background="@color/blue"
-                android:textSize="@dimen/h3"
+                android:textSize="@dimen/h4"
                 android:textColor="@color/white"
                 android:padding="10dp" />
         </LinearLayout>
