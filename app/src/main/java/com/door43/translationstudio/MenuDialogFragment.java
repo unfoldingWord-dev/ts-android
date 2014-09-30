@@ -2,15 +2,15 @@ package com.door43.translationstudio;
 
 import android.app.DialogFragment;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
-import com.door43.delegate.DelegateListener;
-import com.door43.delegate.DelegateResponse;
-import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.util.MainContextLink;
 
 /**
@@ -31,9 +31,20 @@ public class MenuDialogFragment extends DialogFragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.menu_fragment_dialog, container, false);
 
-        // TODO: check if our key has been submitted to the server first. otherwise just display a connect to server button.
+        // display app version
+        TextView versionText = (TextView)v.findViewById(R.id.app_version);
+        PackageInfo pInfo = null;
+        try {
+            pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
+            versionText.setText("version "+pInfo.versionName+" build "+pInfo.versionCode);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // hook up buttons
+
         Button syncBtn = (Button)v.findViewById(R.id.sync_btn);
-        if(MainContextLink.getContext().hasRegistered()) {
+        if(MainContextLink.getContext().hasRegisteredKeys()) {
             syncBtn.setText("Upload Translation");
         } else {
             syncBtn.setText("Request Upload Permission");

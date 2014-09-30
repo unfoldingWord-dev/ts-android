@@ -4,9 +4,9 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/offset_width"
-    android:paddingRight="@dimen/offset_width"
-    android:paddingTop="@dimen/offset_width">
+    android:paddingLeft="@dimen/drawer_edge_width"
+    android:paddingRight="@dimen/drawer_edge_width"
+    android:paddingTop="@dimen/drawer_edge_width">
 
     <TextView
         android:layout_width="wrap_content"
@@ -23,8 +23,8 @@
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/offset_width"
-        android:paddingRight="@dimen/offset_width">
+        android:paddingLeft="@dimen/drawer_edge_width"
+        android:paddingRight="@dimen/drawer_edge_width">
 
         <LinearLayout
             android:orientation="horizontal"

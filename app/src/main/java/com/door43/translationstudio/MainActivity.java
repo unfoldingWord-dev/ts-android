@@ -3,18 +3,16 @@ package com.door43.translationstudio;
 import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
-import com.door43.translationstudio.panes.RightPaneFragment;
+import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
-import com.door43.translationstudio.util.MainContextLink;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.slidinglayer.SlidingLayer;
 
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
@@ -22,7 +20,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -37,15 +34,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     // content panes
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
-//    private TopPaneFragment mTopPane;
     private LinearLayout mCenterPane;
 
-    private int mStackLevel = 0;
-
-    // sliding layers
-    private SlidingLayer mLeftSlidingLayer;
-    private SlidingLayer mRightSlidingLayer;
-//    private SlidingLayer mTopSlidingLayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +54,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
 
-        initSlidingLayers();
         initPanes();
 
         // automatically open the last viewed frame when the app opens
@@ -100,144 +89,13 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     /**
-     * Sets up the sliding effect between panes. Mostly just closing others when one opens
-     */
-    public void initSlidingLayers() {
-//        mTopSlidingLayer = (SlidingLayer)findViewById(R.id.topPane);
-        mLeftSlidingLayer = (SlidingLayer)findViewById(R.id.leftPane);
-        mRightSlidingLayer = (SlidingLayer)findViewById(R.id.rightPane);
-
-        // set up pane grips
-        final ImageButton leftGrip = (ImageButton)findViewById(R.id.buttonGripLeft);
-        final ImageButton rightGrip = (ImageButton)findViewById(R.id.buttonGripRight);
-//        final ImageButton topGrip = (ImageButton)findViewById(R.id.buttonGripTop);
-
-//        topGrip.setColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.SRC_ATOP);
-        rightGrip.setColorFilter(getResources().getColor(R.color.purple), PorterDuff.Mode.SRC_ATOP);
-        leftGrip.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
-
-//        topGrip.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                mTopSlidingLayer.openLayer(true);
-//            }
-//        });
-        rightGrip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mRightSlidingLayer.openLayer(true);
-            }
-        });
-        leftGrip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mLeftSlidingLayer.openLayer(true);
-            }
-        });
-
-        // set up opening/closing
-//        mTopSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
-//            @Override
-//            public void onOpen() {
-//                // bring self to front first to cover grip
-//                mTopSlidingLayer.bringToFront();
-//                mTopPane.onOpen();
-//
-//                mLeftSlidingLayer.closeLayer(true);
-//                mLeftSlidingLayer.bringToFront();
-//                mRightSlidingLayer.closeLayer(true);
-//                mRightSlidingLayer.bringToFront();
-//                leftGrip.bringToFront();
-//                rightGrip.bringToFront();
-//            }
-//
-//            @Override
-//            public void onClose() {
-//
-//            }
-//
-//            @Override
-//            public void onOpened() {
-//
-//            }
-//
-//            @Override
-//            public void onClosed() {
-//
-//            }
-//        });
-        mLeftSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
-            @Override
-            public void onOpen() {
-                // bring self to front first to cover grip
-                mLeftSlidingLayer.bringToFront();
-                mLeftPane.onOpen();
-
-//                mTopSlidingLayer.closeLayer(true);
-//                mTopSlidingLayer.bringToFront();
-                mRightSlidingLayer.closeLayer(true);
-                mRightSlidingLayer.bringToFront();
-//                topGrip.bringToFront();
-                rightGrip.bringToFront();
-            }
-
-            @Override
-            public void onClose() {
-
-            }
-
-            @Override
-            public void onOpened() {
-
-            }
-
-            @Override
-            public void onClosed() {
-
-            }
-        });
-        mRightSlidingLayer.setOnInteractListener(new SlidingLayer.OnInteractListener() {
-            @Override
-            public void onOpen() {
-                // bring self to front first to cover grip
-                mRightSlidingLayer.bringToFront();
-                mRightPane.onOpen();
-
-                mLeftSlidingLayer.closeLayer(true);
-                mLeftSlidingLayer.bringToFront();
-//                mTopSlidingLayer.closeLayer(true);
-//                mTopSlidingLayer.bringToFront();
-                leftGrip.bringToFront();
-//                topGrip.bringToFront();
-            }
-
-            @Override
-            public void onClose() {
-
-            }
-
-            @Override
-            public void onOpened() {
-
-            }
-
-            @Override
-            public void onClosed() {
-
-            }
-        });
-    }
-
-    /**
      * set up the content panes
      */
     private void initPanes() {
-//        mTopPane = new TopPaneFragment();
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
 
 
-//        getFragmentManager().beginTransaction().replace(R.id.topPaneContent, mTopPane).commit();
         getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
         getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
 
@@ -245,7 +103,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         findViewById(R.id.inputText).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                closePanes();
+                closeDrawers();
             }
         });
         TextView sourceText = ((TextView)findViewById(R.id.sourceText));
@@ -253,7 +111,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         sourceText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                closePanes();
+                closeDrawers();
             }
         });
         final TextView helpText = (TextView)findViewById(R.id.helpTextView);
@@ -317,21 +175,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         });
     }
 
-//    public void closeTopPane() {
-//        if(mTopSlidingLayer != null) {
-//            mTopSlidingLayer.closeLayer(true);
-//        }
-//    }
-
-    public void closeLeftPane() {
-        if (mLeftSlidingLayer != null) {
-            mLeftSlidingLayer.closeLayer(true);
-        }
-        app().pauseAutoSave(true);
-        reloadCenterPane();
-        app().pauseAutoSave(false);
-    }
-
     /**
      * Updates the center pane with the selected source frame text and any existing translations
      */
@@ -352,19 +195,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         app().setActiveFrame(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getId());
     }
 
-    public void closeRightPane() {
-        if(mRightSlidingLayer != null) {
-            mRightSlidingLayer.closeLayer(true);
-        }
-    }
-
     /**
-     * Closes all of the edge panes
+     * Closes all the navigation drawers
      */
-    public void closePanes() {
-        if (mLeftSlidingLayer != null) mLeftSlidingLayer.closeLayer(true);
-        if (mRightSlidingLayer != null) mRightSlidingLayer.closeLayer(true);
-//        if (mTopSlidingLayer != null) mTopSlidingLayer.closeLayer(true);
+    public void closeDrawers() {
+        ((DrawerLayout)findViewById(R.id.drawer_layout)).closeDrawers();
+        app().pauseAutoSave(true);
+        reloadCenterPane();
+        app().pauseAutoSave(false);
     }
 
     /**
@@ -403,7 +241,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * Displays the app contextual menu
      */
     public void showContextualMenu() {
-        mStackLevel++;
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {

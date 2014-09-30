@@ -308,26 +308,46 @@ public class MainApplication extends Application {
             showException(e);
         }
         // require the app to re-submit generated keys to the server
-        setHasRegistered(false);
+        setHasRegisteredKeys(false);
     }
 
     /**
      * Checks if the client has sent it's ssh key to the server
      * @return
      */
-    public boolean hasRegistered() {
+    public boolean hasRegisteredKeys() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         return settings.getBoolean("has_registered_with_server", false);
     }
 
     /**
-     * Sents whether the client has sent it's ssh key to the server
+     * Sets whether the client has sent it's ssh key to the server
      * @param hasRegistered
      */
-    public void setHasRegistered(Boolean hasRegistered) {
+    public void setHasRegisteredKeys(Boolean hasRegistered) {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("has_registered_with_server", hasRegistered);
+        editor.commit();
+    }
+
+    /**
+     * Checks if the client has accepted the terms of use
+     * @return
+     */
+    public boolean hasAcceptedTerms() {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+        return settings.getBoolean("has_accepted_terms", false);
+    }
+
+    /**
+     * Sets whether the client has accepted the terms of use.
+     * @param hasAcceptedTerms
+     */
+    public void setHasAcceptedTerms(Boolean hasAcceptedTerms) {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("has_accepted_terms", hasAcceptedTerms);
         editor.commit();
     }
 

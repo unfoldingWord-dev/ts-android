@@ -4,7 +4,7 @@
     <dimen name="shadow_width">8dp</dimen>
     <dimen name="sliding_layer_width">400dp</dimen>
     <dimen name="sliding_layer_width_narrow">100dp</dimen>
-    <dimen name="offset_width">5dp</dimen>
+    <dimen name="drawer_edge_width">10dp</dimen>
     <dimen name="project_list_item_image_width">70dp</dimen>
     <dimen name="project_list_item_image_height">70dp</dimen>
     <dimen name="h1">60sp</dimen>

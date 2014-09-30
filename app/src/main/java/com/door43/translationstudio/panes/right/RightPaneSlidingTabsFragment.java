@@ -1,29 +1,26 @@
-package com.door43.translationstudio.panes.left;
+package com.door43.translationstudio.panes.right;
 
+import android.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.door43.slidingtabs.SlidingTabLayout;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.panes.left.tabs.ChaptersTabFragment;
-import com.door43.translationstudio.panes.left.tabs.ProjectsTabFragment;
-import com.door43.translationstudio.panes.left.tabs.FramesTabFragment;
+import com.door43.translationstudio.panes.right.tabs.ResourcesTabFragment;
 import com.door43.translationstudio.util.StringFragmentKeySet;
 import com.door43.translationstudio.util.TabbedViewPagerAdapter;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
-import com.door43.slidingtabs.SlidingTabLayout;
 
 import java.util.ArrayList;
 
-
 /**
- * This class handles the tabbing for projects, chapters, and frames.
+ * Created by joel on 9/29/2014.
  */
-public class LeftPaneSlidingTabsFragment extends Fragment {
+public class RightPaneSlidingTabsFragment extends Fragment {
     private ViewPager mViewPager;
     private SlidingTabLayout mSlidingTabLayout;
     private TabbedViewPagerAdapter tabbedViewPagerAdapter;
@@ -37,9 +34,8 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
 
         if(tabs.size() == 0) {
             // Tabs
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.projects), new ProjectsTabFragment()));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.chapters), new ChaptersTabFragment()));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.frames), new FramesTabFragment()));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.resources), new ResourcesTabFragment()));
+            // TODO: place additional tabs here
         }
 
         // ViewPager
@@ -50,7 +46,7 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
         // Sliding tab layout
         mSlidingTabLayout = (SlidingTabLayout) rootView.findViewById(R.id.sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
-        if(selectedTabColor == 0) selectedTabColor = getResources().getColor(R.color.blue);
+        if(selectedTabColor == 0) selectedTabColor = getResources().getColor(R.color.purple);
         mSlidingTabLayout.setSelectedIndicatorColors(selectedTabColor);
         mSlidingTabLayout.setDividerColors(Color.TRANSPARENT);
 

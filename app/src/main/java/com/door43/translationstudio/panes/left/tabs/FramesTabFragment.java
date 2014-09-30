@@ -35,7 +35,7 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
                 // select the frame
                 app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
                 // we're ready to begin translating. close the left pane
-                ((MainActivity)me.getActivity()).closeLeftPane();
+                ((MainActivity)me.getActivity()).closeDrawers();
                 // let the adapter redraw itself so the selected frame is corectly highlighted
                 NotifyAdapterDataSetChanged();
             }

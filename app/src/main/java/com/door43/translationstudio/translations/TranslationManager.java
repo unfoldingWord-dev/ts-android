@@ -89,7 +89,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
      * and discard any discrepencies.
      */
     public void sync() {
-        if(!mContext.hasRegistered()) {
+        if(!mContext.hasRegisteredKeys()) {
             mContext.showProgressDialog("Establishing a connection...");
             // set up a tcp connection
             if(mTcpClient == null) {
@@ -257,7 +257,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
         try {
             JSONObject json = new JSONObject(message);
             if(json.has("ok")) {
-                mContext.setHasRegistered(true);
+                mContext.setHasRegisteredKeys(true);
                 me.issueDelegateResponse(new TranslationSyncResponse(true));
             } else {
                 mContext.showException(new Throwable(json.getString("error")));

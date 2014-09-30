@@ -22,6 +22,9 @@
     <string name="progress_right_init">0/0</string>
     <string name="error_could_not_create_repository">Could not create repository</string>
     <string name="success_auto_save">Changes where saved</string>
+    <string name="terms_title">Terms of Use</string>
+    <string name="terms">In order to use this app, you must agree to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License</string>
+    <string name="resources">Resources</string>
 
 
 </resources>

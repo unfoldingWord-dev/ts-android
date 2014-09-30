@@ -13,7 +13,7 @@
     <!-- settings for Save and Sync -->
     <string name="pref_header_autosave">Save &amp; Sync</string>
     <string name="pref_title_autosave">Auto Save</string>
-    <string name="pref_default_autosave">3000</string>
+    <string name="pref_default_autosave">1000</string>
     <string name="pref_title_autosave_delay">Auto Save Changes</string>
     <string-array name="pref_autosave_titles">
         <item>immediately after I have stopped typing</item>
