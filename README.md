@@ -12,7 +12,9 @@ Below are the technical specifications regarding this Android app and instructio
 * **IDE**: [Android Studio]
 * **Emulator**: [Genymotion] (way better than the default android emulator)
 
-Before you can start developing you must install [Android Studio]. 15 is currently the standard minimum sdk verion so it is likely you will have it once [Android Studio] has been installed. If not then you will need to download it following the instructions in [Adding SDK Packages].
+First you need to fork the repository! Go ahead and do so now.
+
+Next before you can start developing you must install [Android Studio]. 15 is currently the standard minimum sdk version so it is likely you will have it once [Android Studio] has been installed. If not then you will need to download it following the instructions in [Adding SDK Packages].
 
 Next install [Genymotion] and build an emulator. There are a few different licenses available, just choose the free license. Once installed the interface is pretty straight forward so if you experience difficulty setting up an emulator please refer to their documentation.
 
@@ -24,9 +26,17 @@ For added convenience you may download the [Genymotion Android Studio Plugin]. T
 
 Now you are ready to develop! Run the app in debug mode (the bug button) and watch the app pop up on your emulator. 
 
+Write some code, add a *USEFUL* but short and sweet commit message, repeat. If you run on multiple computers make sure to push to your github repository so you can develop at home or on vacation.
+
+###Submiting Your Code
+>Important! Your code will **NOT** be accepted if it does not follow the code style guidelines.
+> Please become familure with the [Code Style Guidelines](https://source.android.com/source/code-style.html). The repository is > guarded by a band of crazed-coding-style-obsessed-monkeys who will not hesitate to deny your pull request if you so much as have an extra space at the end of a line.
+
+Once you are ready to share you code (meaning it works and is written beautifully) send us a pull request. You can do so from your repository page in GitHub.
+
+
 ###Additional Info
 Please check out the wiki for additional documentation to help you get started in the development.
-
 
 [Virtual Box]:https://www.virtualbox.org/
 [Genymotion Android Studio Plugin]:https://cloud.genymotion.com/page/doc/#collapse-intellij
