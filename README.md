@@ -24,9 +24,6 @@ For added convenience you may download the [Genymotion Android Studio Plugin]. T
 
 Now you are ready to develop! Run the app in debug mode (the bug button) and watch the app pop up on your emulator. 
 
-###Third Party Libraries
-* [Sliding Layer] by 6Wunderkinder
-
 ###Additional Info
 Please check out the wiki for additional documentation to help you get started in the development.
 
