@@ -47,6 +47,24 @@
         android:gravity="center" />
 
     <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="20dp">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="View License"
+            android:id="@+id/license_btn"
+            android:background="@drawable/bordered_button"
+            android:padding="10dp"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/h3" />
+    </LinearLayout>
+
+    <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -59,7 +77,8 @@
             android:paddingLeft="20dp"
             android:paddingTop="20dp"
             android:paddingRight="10dp"
-            android:paddingBottom="20dp">
+            android:paddingBottom="20dp"
+            android:gravity="bottom">
 
             <Button
                 android:layout_width="fill_parent"
@@ -79,7 +98,8 @@
             android:paddingLeft="20dp"
             android:paddingTop="20dp"
             android:paddingRight="10dp"
-            android:paddingBottom="20dp">
+            android:paddingBottom="20dp"
+            android:gravity="bottom">
 
             <Button
                 android:layout_width="match_parent"

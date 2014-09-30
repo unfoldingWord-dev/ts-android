@@ -3,6 +3,7 @@ package com.door43.translationstudio.translations;
 import android.util.Log;
 
 import com.door43.delegate.DelegateSender;
+import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.TCPClient;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -138,7 +139,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
             mContext.showProgressDialog("Transferring security keys...");
             JSONObject json = new JSONObject();
             try {
-                String key = getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
+                String key = FileUtilities.getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
                 json.put("key", key);
                 json.put("udid", mContext.getUDID());
                 // TODO: provide support for using user names
@@ -171,49 +172,13 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
         if(filePath != null) {
             String path = repoPath + "/" + filePath;
             try {
-                return getStringFromFile(path);
+                return FileUtilities.getStringFromFile(path);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }
         } else {
             Log.w(TAG, "The translation file path could not be determined");
-            return null;
-        }
-    }
-
-    /**
-     * Converts an input stream into a string
-     * @param is the input stream
-     * @return
-     * @throws Exception
-     */
-    private static String convertStreamToString(InputStream is) throws Exception {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        reader.close();
-        return sb.toString();
-    }
-
-    /**
-     * Returns the contents of a file as a string
-     * @param filePath the path to the file
-     * @return
-     * @throws Exception
-     */
-    private static String getStringFromFile (String filePath) throws Exception {
-        File fl = new File(filePath);
-        if (fl.exists()) {
-            FileInputStream fin = new FileInputStream(fl);
-            String ret = convertStreamToString(fin);
-            //Make sure you close all streams.
-            fin.close();
-            return ret;
-        } else {
             return null;
         }
     }
