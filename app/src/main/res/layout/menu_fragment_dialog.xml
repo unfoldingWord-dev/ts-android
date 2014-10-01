@@ -1,77 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="5dp"
-    android:background="@color/blue">
+    android:id="@+id/scrollView" >
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:padding="20dp"
-        android:background="@color/white">
-
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textSize="@dimen/h3"
-            android:gravity="center" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/app_version"
-            android:text="v2.0.0"
-            android:gravity="center" />
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="5dp"
+        android:background="@color/blue">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:paddingTop="20dp">
+            android:padding="20dp"
+            android:background="@color/white">
 
-            <Button
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textSize="@dimen/h3"
+                android:gravity="center" />
+
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Upload Translation"
-                android:id="@+id/sync_btn"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/bordered_button"
-                android:textColor="@color/dark_gray"/>
+                android:id="@+id/app_version"
+                android:text="v2.0.0"
+                android:gravity="center" />
 
-            <Space
-                android:layout_width="20px"
-                android:layout_height="20px" />
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingTop="20dp">
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Export/Share"
-                android:id="@+id/share_btn"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/bordered_button"
-                android:textColor="@color/dark_gray" />
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Upload Translation"
+                    android:id="@+id/sync_btn"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/bordered_button"
+                    android:textColor="@color/dark_gray"/>
 
-            <Space
-                android:layout_width="20px"
-                android:layout_height="20px" />
+                <Space
+                    android:layout_width="20px"
+                    android:layout_height="20px" />
 
-            <Button
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Configure Settings"
-                android:id="@+id/settings_btn"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/bordered_button"
-                android:textColor="@color/dark_gray" />
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Export/Share"
+                    android:id="@+id/share_btn"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/bordered_button"
+                    android:textColor="@color/dark_gray" />
 
-            <Space
-                android:layout_width="20px"
-                android:layout_height="20px" />
+                <Space
+                    android:layout_width="20px"
+                    android:layout_height="20px" />
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Configure Settings"
+                    android:id="@+id/settings_btn"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/bordered_button"
+                    android:textColor="@color/dark_gray" />
+
+            </LinearLayout>
+
         </LinearLayout>
-
     </LinearLayout>
-</LinearLayout>
+</ScrollView>

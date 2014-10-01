@@ -51,6 +51,7 @@ public class MenuDialogFragment extends DialogFragment {
         syncBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 MainContextLink.getContext().getSharedTranslationManager().sync();
                 me.dismiss();
             }

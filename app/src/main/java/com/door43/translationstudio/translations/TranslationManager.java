@@ -73,6 +73,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
             // TODO: we should probably only stage changes just before pushes and before the app closes.
             AddTask add = new AddTask(repo, file.getAbsolutePath());
             add.executeTask();
+            // TODO: we need to fire a callback when this task is finished.
         } else {
             mContext.showToastMessage(R.string.error_can_not_save_file);
         }

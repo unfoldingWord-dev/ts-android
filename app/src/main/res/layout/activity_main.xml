@@ -25,7 +25,7 @@
                     android:fitsSystemWindows="true"
                     android:layout_weight="1"
                     android:scrollbars="vertical"
-                    android:background="#eee">
+                    android:background="@drawable/gray_vertical_border">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -53,19 +53,33 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:paddingLeft="2dp"
-                    android:background="#dee2d0">
+                    android:layout_weight="1">
 
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/inputText"
-                        android:inputType="textNoSuggestions|textCapSentences|text|textMultiLine"
-                        android:enabled="true"
-                        android:gravity="top"
-                        android:padding="10dp"
-                        android:textColor="@color/dark_gray" />
+                    <ImageView
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/imageView"
+                        android:adjustViewBounds="false"
+                        android:background="@drawable/ruled_paper" />
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:baselineAligned="false">
+
+                        <EditText
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/inputText"
+                            android:inputType="textNoSuggestions|textCapSentences|text|textMultiLine"
+                            android:enabled="true"
+                            android:gravity="top"
+                            android:textColor="@color/dark_gray"
+                            android:lineSpacingExtra="1.5dp"
+                            android:paddingTop="25dp" />
+                    </LinearLayout>
+
                 </FrameLayout>
 
             </LinearLayout>

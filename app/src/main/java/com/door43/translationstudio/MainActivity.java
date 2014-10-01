@@ -11,12 +11,17 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -56,18 +61,24 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         initPanes();
 
-        // automatically open the last viewed frame when the app opens
-        if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-            String frameId = app().getLastActiveFrame();
-            String chapterId = app().getLastActiveChapter();
-            String projectSlug = app().getLastActiveProject();
-            app().getSharedProjectManager().setSelectedProject(projectSlug);
-            app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
-            app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+        if(app().shouldShowWelcome()) {
+            // perform any welcoming tasks here
+            app().setShouldShowWelcome(false);
+            openLeftDrawer();
+        } else {
+            // automatically open the last viewed frame when the app opens
+            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
+                String frameId = app().getLastActiveFrame();
+                String chapterId = app().getLastActiveChapter();
+                String projectSlug = app().getLastActiveProject();
+                app().getSharedProjectManager().setSelectedProject(projectSlug);
+                app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
+                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+            }
+            app().pauseAutoSave(true);
+            reloadCenterPane();
+            app().pauseAutoSave(false);
         }
-        app().pauseAutoSave(true);
-        reloadCenterPane();
-        app().pauseAutoSave(false);
     }
 
     @Override
@@ -205,12 +216,15 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         app().pauseAutoSave(false);
     }
 
+    public void openLeftDrawer() {
+        ((DrawerLayout)findViewById(R.id.drawer_layout)).openDrawer(Gravity.LEFT);
+    }
+
     /**
      * Saves the translated content found in inputText
      */
     public void save() {
         if (!app().pauseAutoSave()) {
-            Log.d("Save", "Performing auto save");
             // do not allow saves to stack up when saves are running slowly.
             app().pauseAutoSave(true);
             String inputTextValue = ((EditText) findViewById(R.id.inputText)).getText().toString();

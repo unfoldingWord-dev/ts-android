@@ -1,5 +1,7 @@
 package com.door43.translationstudio.translations.tasks.repo;
 
+import android.widget.Toast;
+
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.translations.tasks.GitSyncAsyncTask;
 import com.door43.translationstudio.translations.Repo;
@@ -28,7 +30,7 @@ public abstract class RepoOpTask extends GitSyncAsyncTask<Void, String, Boolean>
             return;
         }
         if (isSuccess && mSuccessMsg != 0) {
-            MainContextLink.getContext().showToastMessage(mSuccessMsg);
+            MainContextLink.getContext().showToastMessage(mSuccessMsg, Toast.LENGTH_SHORT);
         }
     }
 

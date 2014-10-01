@@ -81,19 +81,28 @@ public class MainApplication extends Application {
     }
 
     /**
+     * Displays a standard toast message in the ui
+     * @param message
+     */
+    public void showToastMessage(final String message) {
+        showToastMessage(message, Toast.LENGTH_LONG);
+    }
+
+    /**
      * Displays a standard toast message in the ui.
      * If a toast message is currently visible it will be replaced.
      * @param message The message to display to the user
+     * @param duration
      */
-    public void showToastMessage(final String message) {
+    public void showToastMessage(final String message, final int duration) {
         if(mCurrentActivity != null) {
             mCurrentActivity.runOnUiThread(new Runnable() {
                 public void run() {
                     if(mToast != null) {
                         mToast.cancel();
                     }
-                    mToast = Toast.makeText(mCurrentActivity, message, Toast.LENGTH_LONG);
-                    mToast.setGravity(Gravity.CENTER, 0, 0);
+                    mToast = Toast.makeText(mCurrentActivity, message, duration);
+                    mToast.setGravity(Gravity.TOP, 0, 0);
                     mToast.show();
                 }
             });
@@ -114,6 +123,9 @@ public class MainApplication extends Application {
         }
     }
 
+    public void showToastMessage(int resId, int duration) {
+        showToastMessage(getString(resId), duration);
+    }
     public void showToastMessage(int resId) {
         showToastMessage(getString(resId));
     }
@@ -328,6 +340,26 @@ public class MainApplication extends Application {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("has_registered_with_server", hasRegistered);
+        editor.commit();
+    }
+
+    /**
+     * Checks if the app should opperate as if this is the first time it has opened.
+     * @return
+     */
+    public boolean shouldShowWelcome() {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+        return settings.getBoolean("show_welcome", true);
+    }
+
+    /**
+     * Sets whether the app should operate as if this is the first time it has opened.
+     * @param shouldWelcome
+     */
+    public void setShouldShowWelcome(Boolean shouldWelcome) {
+        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("show_welcome", shouldWelcome);
         editor.commit();
     }
 

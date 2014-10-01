@@ -16,6 +16,7 @@ public class AddTask extends RepoOpTask {
     public AddTask(Repo repo, String filepattern) {
         super(repo);
         mFilePattern = filepattern;
+        // TODO: need to fire an optional callback
         setSuccessMsg(R.string.success_auto_save);
     }
 
