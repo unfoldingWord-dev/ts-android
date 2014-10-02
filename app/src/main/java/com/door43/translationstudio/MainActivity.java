@@ -5,6 +5,7 @@ import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
+import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -16,20 +17,29 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import org.eclipse.jgit.diff.Edit;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -43,6 +53,11 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
     private LinearLayout mCenterPane;
+
+    private GestureDetector mSourceGestureDetector;
+    private GestureDetector mTranslationGestureDetector;
+    private final float MIN_FLING_DISTANCE = 100;
+    private final float MIN_FLING_VELOCITY = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,17 +123,40 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
 
-
         getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
         getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
 
+        ImageView nextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
+        ImageView previousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
+        PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.SRC_ATOP);
+//        Paint grayHighLight = new Paint();
+//        grayHighLight.setColorFilter(colorFilter);
+        nextFrameView.setColorFilter(colorFilter);
+        previousFrameView.setColorFilter(colorFilter);
+
         // close the side panes when the center content is clicked
-        findViewById(R.id.inputText).setOnClickListener(new View.OnClickListener() {
+        final EditText translationText = (EditText)findViewById(R.id.inputText);
+        // hide the input bottom border
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            translationText.setBackground(null);
+        } else {
+            translationText.setBackgroundDrawable(null);
+        }
+        translationText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 closeDrawers();
             }
         });
+        translationText.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                app().showToastMessage("Long presses are not supported at this time");
+                return true;
+            }
+        });
+
+
         TextView sourceText = ((TextView)findViewById(R.id.sourceText));
         sourceText.setMovementMethod(new ScrollingMovementMethod());
         sourceText.setOnClickListener(new View.OnClickListener() {
@@ -153,9 +191,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         });
 
         // automatically save changes to inputText
-        final EditText inputText = (EditText)findViewById(R.id.inputText);
-
-        inputText.addTextChangedListener(new TextWatcher() {
+        translationText.addTextChangedListener(new TextWatcher() {
             private Timer timer = new Timer();
 
             @Override
@@ -172,7 +208,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             public void afterTextChanged(Editable editable) {
                 int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
                 timer.cancel();
-                if(saveDelay != -1) {
+                if (saveDelay != -1) {
                     timer = new Timer();
                     if (!app().pauseAutoSave()) {
                         timer.schedule(new TimerTask() {
@@ -186,6 +222,68 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 }
             }
         });
+
+        // detect gestures
+        mSourceGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Log.e("", "Open language selector");
+                return true;
+            }
+            @Override
+            public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+                return handleFling(event1, event2, velocityX, velocityY);
+            }
+        });
+        mTranslationGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                Log.e("", "Open language selector and title editor");
+                return true;
+            }
+            @Override
+            public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+                return handleFling(event1, event2, velocityX, velocityY);
+            }
+        });
+
+        // hook up gesture detectors
+        sourceText.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                return mSourceGestureDetector.onTouchEvent(event);
+            }
+        });
+        translationText.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                return mTranslationGestureDetector.onTouchEvent(event);
+            }
+        });
+    }
+
+    private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+        Log.d("", "onFling: " + event1.toString()+event2.toString());
+        // positive distance moves right
+        Float distanceX = event2.getX() - event1.getX();
+        Project p = app().getSharedProjectManager().getSelectedProject();
+        if(Math.abs(distanceX) >= MIN_FLING_DISTANCE && Math.abs(velocityX) >= MIN_FLING_VELOCITY && p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
+            Frame f;
+            if(distanceX > 0) {
+                f = p.getSelectedChapter().getPreviousFrame();
+            } else {
+                f = p.getSelectedChapter().getNextFrame();
+            }
+            if(f != null) {
+
+                p.getSelectedChapter().setSelectedFrame(f.getId());
+            }
+            app().pauseAutoSave(true);
+            reloadCenterPane();
+            app().pauseAutoSave(false);
+            return true;
+        } else {
+            // TODO: might be cool to perform some simple animation to indicate you can swipe.
+            return false;
+        }
     }
 
     /**
@@ -194,19 +292,39 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     public void reloadCenterPane() {
         // load source text
         TextView sourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
-        Project selectedProject = app().getSharedProjectManager().getSelectedProject();
+        TextView sourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
+        TextView sourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
+        ImageView nextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
+        ImageView previousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
+        Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
-            sourceText.setText(selectedProject.getSelectedChapter().getSelectedFrame().getText());
+            int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
+
+            sourceTitleText.setText("Language: "+p.getSelectedChapter().getTitle());
+            sourceText.setText(p.getSelectedChapter().getSelectedFrame().getText());
+            sourceFrameNumText.setText("Page " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
+
+            // display navigation indicators
+            if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
+                nextFrameView.setVisibility(View.VISIBLE);
+            } else {
+                nextFrameView.setVisibility(View.INVISIBLE);
+            }
+            if(0 < frameIndex) {
+                previousFrameView.setVisibility(View.VISIBLE);
+            } else {
+                previousFrameView.setVisibility(View.INVISIBLE);
+            }
 
             // load translation
-            String translation = app().getSharedTranslationManager().getTranslation(selectedProject.getId(), LANG_CODE, selectedProject.getSelectedChapter().getSelectedFrame().getChapterFrameId());
+            String translation = app().getSharedTranslationManager().getTranslation(p.getId(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
             EditText inputText = (EditText)mCenterPane.findViewById(R.id.inputText);
             inputText.setText(translation);
 
             // updates preferences so the app opens to the last opened frame
-            app().setActiveProject(selectedProject.getId());
-            app().setActiveChapter(selectedProject.getSelectedChapter().getId());
-            app().setActiveFrame(selectedProject.getSelectedChapter().getSelectedFrame().getId());
+            app().setActiveProject(p.getId());
+            app().setActiveChapter(p.getSelectedChapter().getId());
+            app().setActiveFrame(p.getSelectedChapter().getSelectedFrame().getId());
         } else {
             // nothing was selected so open the project selector
             openLeftDrawer();

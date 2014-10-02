@@ -27,46 +27,105 @@
                     android:scrollbars="vertical"
                     android:background="@drawable/gray_vertical_border">
 
-                    <TextView
+                    <ImageView
                         android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/hasPreviousFrameImageView"
+                        android:layout_gravity="center_vertical"
+                        android:background="@drawable/chevron_left"
+                        android:layout_marginLeft="10dp"
+                        android:alpha=".07" />
+
+                    <TextView
+                        android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:text="Choose some source text from the left tab to get started"
                         android:id="@+id/helpTextView"
-                        android:textSize="@dimen/h3"
-                        android:padding="50dp"
-                        android:layout_gravity="center"
-                        android:textColor="@color/gray"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:id="@+id/sourceText"
                         android:textSize="@dimen/h4"
-                        android:maxLines="9999"
-                        android:scrollbars="vertical"
                         android:padding="10dp"
-                        android:textColor="@color/dark_gray" />
+                        android:textColor="@color/gray"
+                        android:textStyle="bold"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center"
+                        android:textIsSelectable="false" />
+
+                    <RelativeLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent">
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Language: Chapter"
+                            android:id="@+id/sourceTitleText"
+                            android:gravity="center"
+                            android:textColor="@color/gray"
+                            android:paddingTop="5dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="fill_parent"
+                            android:id="@+id/sourceText"
+                            android:textSize="@dimen/h4"
+                            android:maxLines="9999"
+                            android:scrollbars="vertical"
+                            android:textColor="@color/dark_gray"
+                            android:paddingTop="5dp"
+                            android:paddingLeft="10dp"
+                            android:paddingBottom="10dp"
+                            android:layout_above="@+id/sourceFrameNumText"
+                            android:layout_below="@+id/sourceTitleText"
+                            android:paddingRight="10dp" />
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Page 0 of 0"
+                            android:id="@+id/sourceFrameNumText"
+                            android:gravity="center"
+                            android:layout_alignParentBottom="true"
+                            android:textColor="@color/gray"
+                            android:paddingTop="5dp" />
+                    </RelativeLayout>
 
                 </FrameLayout>
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:background="@color/white">
 
                     <ImageView
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:id="@+id/imageView"
-                        android:adjustViewBounds="false"
-                        android:background="@drawable/ruled_paper" />
+                        android:adjustViewBounds="false" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/hasNextFrameImageView"
+                        android:layout_gravity="center_vertical|right"
+                        android:background="@drawable/chevron_right"
+                        android:layout_marginRight="10dp"
+                        android:alpha=".07"
+                        android:adjustViewBounds="false" />
 
                     <LinearLayout
                         android:orientation="vertical"
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:baselineAligned="false">
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Language: Chapter"
+                            android:id="@+id/translationTitleText"
+                            android:gravity="center"
+                            android:textColor="@color/gray"
+                            android:paddingTop="5dp" />
 
                         <EditText
                             android:layout_width="match_parent"
@@ -77,7 +136,11 @@
                             android:gravity="top"
                             android:textColor="@color/dark_gray"
                             android:lineSpacingExtra="1.5dp"
-                            android:paddingTop="25dp" />
+                            android:paddingLeft="10dp"
+                            android:paddingTop="5dp"
+                            android:paddingRight="10dp"
+                            android:paddingBottom="10dp" />
+
                     </LinearLayout>
 
                 </FrameLayout>

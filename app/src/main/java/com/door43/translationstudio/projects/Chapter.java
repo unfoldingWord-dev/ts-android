@@ -90,6 +90,15 @@ public class Chapter {
     }
 
     /**
+     * Returns the index of the given frame
+     * @param f
+     * @return
+     */
+    public int getFrameIndex(Frame f) {
+        return mFrames.indexOf(f);
+    }
+
+    /**
      * Sets the currently selected frame in the chapter by id
      * @param id the frame id
      * @return true if the frame exists
@@ -153,5 +162,19 @@ public class Chapter {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns the next ordered frame
+     * @return
+     */
+    public Frame getNextFrame() {
+        int index = mFrames.indexOf(getSelectedFrame()) + 1;
+        return getFrame(index);
+    }
+
+    public Frame getPreviousFrame() {
+        int index = mFrames.indexOf(getSelectedFrame()) - 1;
+        return getFrame(index);
     }
 }

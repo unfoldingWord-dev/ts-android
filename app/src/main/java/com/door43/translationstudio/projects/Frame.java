@@ -33,8 +33,6 @@ public class Frame {
             }
         }
 
-        System.out.println(imageRaw);
-
         // parse id
         String[] pieces = chapterFrameId.split("-");
         if(pieces.length == 2) {
