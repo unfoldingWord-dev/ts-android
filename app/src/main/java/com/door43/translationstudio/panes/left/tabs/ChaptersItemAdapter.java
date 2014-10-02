@@ -1,17 +1,20 @@
 package com.door43.translationstudio.panes.left.tabs;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 /**
  * Created by joel on 9/2/2014.
@@ -35,7 +38,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int i) {
-        return getChaptertItem(i);
+        return getChapterItem(i);
     }
 
     @Override
@@ -57,17 +60,25 @@ public class ChaptersItemAdapter extends BaseAdapter {
 
 
         // image
+        final ImageView chapterIcon = (ImageView)chapterItemView.findViewById(R.id.chapterIcon);
+        String imageUri = "assets://"+ getChapterItem(i).getImagePath();
+        mContext.getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                chapterIcon.setImageBitmap(loadedImage);
+            }
+        });
 
         // title
         TextView chapterTitle = (TextView)chapterItemView.findViewById(R.id.chapterTitle);
-        chapterTitle.setText(getChaptertItem(i).getTitle());
+        chapterTitle.setText(getChapterItem(i).getTitle());
 
         // description
         TextView chapterDescription = (TextView)chapterItemView.findViewById(R.id.chapterDescription);
-        chapterDescription.setText(getChaptertItem(i).getDescription());
+        chapterDescription.setText(getChapterItem(i).getDescription());
 
         // highlight selected chapter
-        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getId() == getChaptertItem(i).getId()) {
+        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getId() == getChapterItem(i).getId()) {
             chapterItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             chapterDescription.setTextColor(Color.WHITE);
             chapterTitle.setTextColor(Color.WHITE);
@@ -80,7 +91,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
         return chapterItemView;
     }
 
-    private Chapter getChaptertItem(int i) {
+    private Chapter getChapterItem(int i) {
         return mContext.getSharedProjectManager().getSelectedProject().getChapter(i);
     }
 }

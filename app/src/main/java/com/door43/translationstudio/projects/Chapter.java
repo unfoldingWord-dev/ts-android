@@ -141,4 +141,17 @@ public class Chapter {
             mFrames.add(f);
         }
     }
+
+    /**
+     * Returns the path to the image for the chapter
+     * Uses the image from the first frame if available
+     * @return
+     */
+    public String getImagePath() {
+        if(getFrame(0) != null) {
+            return getFrame(0).getImagePath();
+        } else {
+            return null;
+        }
+    }
 }

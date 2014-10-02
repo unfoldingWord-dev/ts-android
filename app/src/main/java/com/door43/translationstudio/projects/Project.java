@@ -142,4 +142,12 @@ public class Project {
             mChapters.add(c);
         }
     }
+
+    /**
+     * Returns the path to the image for this project
+     * @return
+     */
+    public String getImagePath() {
+        return "sourceTranslations/"+getId()+"/icon.jpg";
+    }
 }
