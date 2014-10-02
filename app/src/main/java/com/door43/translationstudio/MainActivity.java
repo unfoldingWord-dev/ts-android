@@ -4,9 +4,12 @@ import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
+import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 
 import android.app.Fragment;
@@ -40,7 +43,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
     private LinearLayout mCenterPane;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,18 +194,29 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     public void reloadCenterPane() {
         // load source text
         TextView sourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
-        sourceText.setText(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getText());
+        Project selectedProject = app().getSharedProjectManager().getSelectedProject();
+        if(frameIsSelected()) {
+            sourceText.setText(selectedProject.getSelectedChapter().getSelectedFrame().getText());
 
-        // load translation
-        Project p = app().getSharedProjectManager().getSelectedProject();
-        String translation = app().getSharedTranslationManager().getTranslation(p.getId(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
-        EditText inputText = (EditText)mCenterPane.findViewById(R.id.inputText);
-        inputText.setText(translation);
+            // load translation
+            String translation = app().getSharedTranslationManager().getTranslation(selectedProject.getId(), LANG_CODE, selectedProject.getSelectedChapter().getSelectedFrame().getChapterFrameId());
+            EditText inputText = (EditText)mCenterPane.findViewById(R.id.inputText);
+            inputText.setText(translation);
 
-        // updates preferences so the app opens to the last opened frame
-        app().setActiveProject(app().getSharedProjectManager().getSelectedProject().getId());
-        app().setActiveChapter(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getId());
-        app().setActiveFrame(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getId());
+            // updates preferences so the app opens to the last opened frame
+            app().setActiveProject(selectedProject.getId());
+            app().setActiveChapter(selectedProject.getSelectedChapter().getId());
+            app().setActiveFrame(selectedProject.getSelectedChapter().getSelectedFrame().getId());
+        } else {
+            // nothing was selected so open the project selector
+            openLeftDrawer();
+        }
+    }
+
+    // Checks if a frame has been selected in the app
+    public boolean frameIsSelected() {
+        Project selectedProject = app().getSharedProjectManager().getSelectedProject();
+        return selectedProject != null && selectedProject.getSelectedChapter() != null && selectedProject.getSelectedChapter().getSelectedFrame() != null;
     }
 
     /**
@@ -224,7 +237,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * Saves the translated content found in inputText
      */
     public void save() {
-        if (!app().pauseAutoSave()) {
+        if (!app().pauseAutoSave() && frameIsSelected()) {
             // do not allow saves to stack up when saves are running slowly.
             app().pauseAutoSave(true);
             String inputTextValue = ((EditText) findViewById(R.id.inputText)).getText().toString();

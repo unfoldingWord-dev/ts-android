@@ -279,8 +279,7 @@ public class ProjectManager implements DelegateListener {
                             for(int j=0; j<jsonFrames.length(); j++) {
                                 JSONObject jsonFrame = jsonFrames.getJSONObject(j);
                                 if(jsonFrame.has("id") && jsonFrame.has("text")) {
-                                    c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("text").toString()));
-                                    // TODO: load image assets for the frame
+                                    c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("img").toString(), jsonFrame.get("text").toString()));
                                 } else {
                                     Log.w(TAG, "missing required parameters in the source frames");
                                 }

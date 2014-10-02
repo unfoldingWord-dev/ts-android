@@ -1,17 +1,20 @@
 package com.door43.translationstudio.panes.left.tabs;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Frame;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 /**
  * Created by joel on 8/29/2014.
@@ -57,6 +60,14 @@ public class FrameItemAdapter extends BaseAdapter {
 
 
         // image
+        final ImageView frameIcon = (ImageView)frameItemView.findViewById(R.id.frameIcon);
+        String imageUri = "assets://"+getFrameItem(i).getImagePath();
+        mContext.getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                frameIcon.setImageBitmap(loadedImage);
+            }
+        });
 
         // title
         TextView frameTitle = (TextView)frameItemView.findViewById(R.id.frameId);

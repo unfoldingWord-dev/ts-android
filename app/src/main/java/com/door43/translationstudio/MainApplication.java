@@ -17,6 +17,8 @@ import com.door43.translationstudio.util.DummyDialogListener;
 import com.door43.translationstudio.util.MainContextLink;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import java.io.File;
 
@@ -31,6 +33,7 @@ public class MainApplication extends Application {
     private TranslationManager mTranslationManager;
     private final String PREFERENCES_TAG = "com.door43.translationstudio";
     private boolean mPauseAutoSave = false;
+    private ImageLoader mImageLoader;
 
     public void onCreate() {
         // initialize basic functions with link to main application
@@ -78,6 +81,19 @@ public class MainApplication extends Application {
      */
     public Activity getCurrentActivity() {
         return mCurrentActivity;
+    }
+
+    /**
+     * Generates and returns the image loader
+     * @return
+     */
+    public ImageLoader getImageLoader() {
+        if(mImageLoader == null) {
+            ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
+            mImageLoader = ImageLoader.getInstance();
+            mImageLoader.init(config);
+        }
+        return mImageLoader;
     }
 
     /**
