@@ -28,8 +28,8 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
     private SlidingTabLayout mSlidingTabLayout;
     private TabbedViewPagerAdapter tabbedViewPagerAdapter;
     private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
-    private int defaultPage = 0;
-    private int selectedTabColor = 0;
+    private int mDefaultPage = 0;
+    private int mSelectedTabColor = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,12 +50,12 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
         // Sliding tab layout
         mSlidingTabLayout = (SlidingTabLayout) rootView.findViewById(R.id.sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
-        if(selectedTabColor == 0) selectedTabColor = getResources().getColor(R.color.blue);
-        mSlidingTabLayout.setSelectedIndicatorColors(selectedTabColor);
+        if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.blue);
+        mSlidingTabLayout.setSelectedIndicatorColors(mSelectedTabColor);
         mSlidingTabLayout.setDividerColors(Color.TRANSPARENT);
 
         // open the default page
-        mViewPager.setCurrentItem(defaultPage);
+        mViewPager.setCurrentItem(mDefaultPage);
 
         return rootView;
     }
@@ -73,8 +73,16 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
                 ((TabsFragmentAdapterNotification)tabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
             }
         } else {
-            defaultPage = i;
+            mDefaultPage = i;
         }
+    }
+
+    /**
+     * Returns the currently selected tab index
+     * @return
+     */
+    public int getSelectedTabIndex() {
+        return mViewPager.getCurrentItem();
     }
 
     /**
@@ -85,7 +93,7 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
         if(mSlidingTabLayout != null) {
             mSlidingTabLayout.setSelectedIndicatorColors(color);
         } else {
-            selectedTabColor = color;
+            mSelectedTabColor = color;
         }
     }
 }

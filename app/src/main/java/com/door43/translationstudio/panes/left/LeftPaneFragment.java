@@ -35,9 +35,10 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
     }
 
     /**
-     * Triggered whenever the pane is opened
+     * Returns the currently selected tab index
+     * @return
      */
-    public void onOpen() {
-
+    public int getSelectedTabIndex() {
+        return mTabsPager.getSelectedTabIndex();
     }
 }

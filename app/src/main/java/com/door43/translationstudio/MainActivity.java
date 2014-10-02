@@ -122,17 +122,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private void initPanes() {
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
-
         getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
         getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
 
+        // TODO: these should be getting an overlay color, but it's not working.
         ImageView nextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
         ImageView previousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
-        PorterDuffColorFilter colorFilter = new PorterDuffColorFilter(getResources().getColor(R.color.green), PorterDuff.Mode.SRC_ATOP);
-//        Paint grayHighLight = new Paint();
-//        grayHighLight.setColorFilter(colorFilter);
-        nextFrameView.setColorFilter(colorFilter);
-        previousFrameView.setColorFilter(colorFilter);
+        nextFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
+        previousFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
 
         // close the side panes when the center content is clicked
         final EditText translationText = (EditText)findViewById(R.id.inputText);
@@ -273,8 +270,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 f = p.getSelectedChapter().getNextFrame();
             }
             if(f != null) {
-
                 p.getSelectedChapter().setSelectedFrame(f.getId());
+                mLeftPane.selectTab(mLeftPane.getSelectedTabIndex());
             }
             app().pauseAutoSave(true);
             reloadCenterPane();
@@ -300,9 +297,9 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         if(frameIsSelected()) {
             int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
 
-            sourceTitleText.setText("Language: "+p.getSelectedChapter().getTitle());
+            sourceTitleText.setText("[Language]: "+p.getSelectedChapter().getTitle());
             sourceText.setText(p.getSelectedChapter().getSelectedFrame().getText());
-            sourceFrameNumText.setText("Page " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
+            sourceFrameNumText.setText("Frame " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
 
             // display navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
