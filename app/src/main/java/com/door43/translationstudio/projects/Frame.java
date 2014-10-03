@@ -13,6 +13,7 @@ public class Frame {
     private String mId;
     private String mChapterId;
     private String mImagePath;
+    private Chapter mChapter;
 
     /**
      * Creates a new frame.
@@ -43,6 +44,23 @@ public class Frame {
         }
         mChapterFrameId = chapterFrameId;
         mText = text;
+    }
+
+    /**
+     * Specifies the chapter this frame belongs to.
+     * This can only be set once.
+     * @param chapter
+     */
+    public void setChapter(Chapter chapter) {
+        if(mChapter == null) mChapter = chapter;
+    }
+
+    /**
+     * Returns the chapter this frame belongs to
+     * @return
+     */
+    public Chapter getChapter() {
+        return mChapter;
     }
 
     public String getImagePath() {

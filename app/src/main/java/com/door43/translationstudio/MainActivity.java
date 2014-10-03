@@ -58,6 +58,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private GestureDetector mTranslationGestureDetector;
     private final float MIN_FLING_DISTANCE = 100;
     private final float MIN_FLING_VELOCITY = 10;
+    private final float MIN_LOG_PRESS = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +149,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         translationText.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                app().showToastMessage("Long presses are not supported at this time");
+                // TODO: for some reason this is getting called a lot when swiping over it we will need to resolve this before adding long press support.
+//                app().showToastMessage("Long presses are not supported at this time");
                 return true;
             }
         });
@@ -224,7 +226,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mSourceGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                Log.e("", "Open language selector");
+                showSourceMenu();
                 return true;
             }
             @Override
@@ -235,7 +237,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mTranslationGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                Log.e("", "Open language selector and title editor");
+                showTranslationMenu();
                 return true;
             }
             @Override
@@ -393,6 +395,40 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         app().closeToastMessage();
         // Create and show the dialog.
         MenuDialogFragment newFragment = new MenuDialogFragment();
+        newFragment.show(ft, "dialog");
+    }
+
+    /**
+     * Displays the translation contextual menu
+     */
+    public void showTranslationMenu() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        app().closeToastMessage();
+        // Create and show the dialog.
+        TranslationMenuDialog newFragment = new TranslationMenuDialog();
+        newFragment.show(ft, "dialog");
+    }
+
+    /**
+     * Displays the source contextual menu
+     */
+    public void showSourceMenu() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        app().closeToastMessage();
+        // Create and show the dialog.
+        SourceMenuDialog newFragment = new SourceMenuDialog();
         newFragment.show(ft, "dialog");
     }
 

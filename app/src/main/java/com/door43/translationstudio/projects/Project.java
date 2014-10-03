@@ -138,6 +138,7 @@ public class Project {
      */
     public void addChapter(Chapter c) {
         if(!mChapterMap.containsKey(c.getId())) {
+            c.setProject(this);
             mChapterMap.put(c.getId(), c);
             mChapters.add(c);
         }

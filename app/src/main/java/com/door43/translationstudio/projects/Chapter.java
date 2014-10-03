@@ -18,6 +18,7 @@ public class Chapter {
     private String mTitle;
     private String mDescription;
     private String mSelectedFrameId;
+    private Project mProject;
 
     /**
      * Create a new chapter
@@ -29,6 +30,23 @@ public class Chapter {
         mId = id;
         mTitle = title;
         mDescription = description;
+    }
+
+    /**
+     * Specifies the project this chapter belongs to.
+     * This can only be set once.
+     * @param project
+     */
+    public void setProject(Project project){
+        if(mProject == null) mProject = project;
+    }
+
+    /**
+     * Returns the project this chapter belongs to
+     * @return
+     */
+    public Project getProject() {
+        return mProject;
     }
 
     /**
@@ -146,6 +164,7 @@ public class Chapter {
      */
     public void addFrame(Frame f) {
         if(!mFrameMap.containsKey(f.getId())) {
+            f.setChapter(this);
             mFrameMap.put(f.getId(), f);
             mFrames.add(f);
         }
