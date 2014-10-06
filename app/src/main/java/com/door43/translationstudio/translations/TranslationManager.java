@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.door43.delegate.DelegateSender;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.FileUtilities;
@@ -74,13 +75,23 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
     private void pushSelectedProjectRepo() {
         Project p = mContext.getSharedProjectManager().getSelectedProject();
 
+        final String remotePath = getRemotePath(p, p.getSelectedLanguage());
+        final Repo repo = new Repo(p.getRepositoryPath());
 
-        String remotePath = getRemotePath(p, p.getSelectedLanguage());
-        Repo repo = new Repo(p.getRepositoryPath());
-        PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.push_msg_init));
-        push.executeTask();
+        AddTask add = new AddTask(repo, ".", new AddTask.OnAddComplete() {
+            @Override
+            public void success() {
+                PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.push_msg_init));
+                push.executeTask();
+                // TODO: we need to check the errors from the push task. If auth fails then we need to re-register.
+            }
 
-        // TODO: we need to check the errors from the push task. If auth fails then we need to re-register.
+            @Override
+            public void error() {
+                mContext.showToastMessage("Changes could not be staged.");
+            }
+        });
+        add.executeTask();
     }
 
     /**
@@ -99,7 +110,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
      */
     private void registerSSHKeys() {
         if(mContext.hasKeys()) {
-            mContext.showProgressDialog("Transferring security keys...");
+            mContext.showProgressDialog("Loading security keys...");
             JSONObject json = new JSONObject();
             try {
                 String key = FileUtilities.getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
@@ -108,6 +119,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
                 // TODO: provide support for using user names
 //                json.put("username", "");
                 Log.d(TAG, json.toString());
+                mContext.showProgressDialog("Transferring security keys...");
                 mTcpClient.sendMessage(json.toString());
             } catch (JSONException e) {
                 mContext.showException(e);

@@ -155,7 +155,7 @@ public class Frame {
 
             // create folder structure
             if(!file.exists()) {
-                file.getParentFile().mkdir();
+                file.getParentFile().mkdirs();
             }
 
             // write translation

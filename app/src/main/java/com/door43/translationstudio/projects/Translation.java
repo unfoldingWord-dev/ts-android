@@ -32,7 +32,11 @@ public class Translation {
      * @return
      */
     public String getText() {
-        return mTranslationText;
+        if(mTranslationText == null) {
+            return "";
+        } else {
+            return mTranslationText;
+        }
     }
 
     /**

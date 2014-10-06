@@ -290,7 +290,7 @@ public class Chapter {
             getReferenceTranslation().isSaved(true);
             File refFile = new File(referencePath);
             if(!refFile.exists()) {
-                refFile.getParentFile().mkdir();
+                refFile.getParentFile().mkdirs();
             }
             try {
                 refFile.createNewFile();
@@ -307,7 +307,7 @@ public class Chapter {
             getTitleTranslation().isSaved(true);
             File titleFile = new File(titlePath);
             if(!titleFile.exists()) {
-                titleFile.getParentFile().mkdir();
+                titleFile.getParentFile().mkdirs();
             }
             try {
                 titleFile.createNewFile();

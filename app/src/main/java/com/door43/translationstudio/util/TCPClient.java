@@ -159,7 +159,6 @@ public class TCPClient {
 
         @Override
         protected TCPClient doInBackground(String... strings) {
-            android.os.Debug.waitForDebugger();
             me.sendAsync(strings[0]);
             return null;
         }
