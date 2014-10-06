@@ -1,8 +1,8 @@
-package com.door43.translationstudio.translations.tasks.repo;
+package com.door43.translationstudio.git.tasks.repo;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.translations.tasks.StopTaskException;
-import com.door43.translationstudio.translations.Repo;
+import com.door43.translationstudio.git.tasks.StopTaskException;
+import com.door43.translationstudio.git.Repo;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
@@ -17,7 +17,7 @@ public class AddTask extends RepoOpTask {
         super(repo);
         mFilePattern = filepattern;
         // TODO: need to fire an optional callback
-        setSuccessMsg(R.string.success_auto_save);
+//        setSuccessMsg(R.string.success_auto_save);
     }
 
     @Override

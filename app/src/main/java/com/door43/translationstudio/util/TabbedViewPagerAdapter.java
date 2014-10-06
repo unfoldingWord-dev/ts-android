@@ -2,17 +2,20 @@ package com.door43.translationstudio.util;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v13.app.FragmentStatePagerAdapter;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
 /**
  * This is an adapter class that allows you to create a generic tabbed view pager with a custom set of tabs.
  */
-public class TabbedViewPagerAdapter extends FragmentPagerAdapter {
+public class TabbedViewPagerAdapter extends FragmentStatePagerAdapter {
     private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
 
     /**

@@ -1,4 +1,4 @@
-package com.door43.translationstudio.translations.tasks;
+package com.door43.translationstudio.git.tasks;
 
 /**
  * Created by joel on 9/15/2014.

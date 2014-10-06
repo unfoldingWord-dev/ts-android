@@ -2,7 +2,16 @@ package com.door43.translationstudio.projects;
 
 import android.util.Log;
 
+import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.MainContextLink;
+
 import org.eclipse.jgit.util.StringUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  * Frames encapsulates a specific piece of translated work
@@ -14,6 +23,7 @@ public class Frame {
     private String mChapterId;
     private String mImagePath;
     private Chapter mChapter;
+    private Translation mTranslation;
 
     /**
      * Creates a new frame.
@@ -44,6 +54,39 @@ public class Frame {
         }
         mChapterFrameId = chapterFrameId;
         mText = text;
+    }
+
+    /**
+     * Stores the translated frame text
+     * @param translation
+     */
+    public void setTranslation(String translation) {
+        if(mTranslation != null && mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedLanguage().getId() && !mTranslation.isSaved()) {
+            save();
+        }
+        mTranslation = new Translation(mChapter.getProject().getSelectedLanguage(), translation);
+    }
+
+    /**
+     * Returns this frames translation
+     * @return
+     */
+    public Translation getTranslation() {
+        if(mTranslation == null || mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedLanguage().getId()) {
+            // init translation
+            if(mTranslation == null) {
+                mTranslation = new Translation(mChapter.getProject().getSelectedLanguage(), "");
+            }
+            // load translation from disk
+            String path = mChapter.getProject().getRepositoryPath(mTranslation.getLanguage()) + getChapterId() + "/" + getId() + ".txt";
+            try {
+                String text = FileUtilities.getStringFromFile(path);
+                mTranslation = new Translation(mChapter.getProject().getSelectedLanguage(), text);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return mTranslation;
     }
 
     /**
@@ -97,5 +140,33 @@ public class Frame {
      */
     public String getChapterId() {
         return mChapterId;
+    }
+
+    /**
+     * Saves the frane trabskatuib
+     */
+    public void save() {
+        if(!getTranslation().isSaved()) {
+            getTranslation().isSaved(true);
+            String path = mChapter.getProject().getRepositoryPath(getTranslation().getLanguage()) + getChapterId() + "/" + getId() + ".txt";
+
+            // write the file
+            File file = new File(path);
+
+            // create folder structure
+            if(!file.exists()) {
+                file.getParentFile().mkdir();
+            }
+
+            // write translation
+            try {
+                file.createNewFile();
+                PrintStream ps = new PrintStream(file);
+                ps.print(getTranslation().getText());
+                ps.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

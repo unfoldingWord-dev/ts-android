@@ -1,5 +1,14 @@
 package com.door43.translationstudio.projects;
 
+import android.util.Log;
+
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.MainContextLink;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +18,8 @@ import java.util.Map;
  * Chapters encapsulate a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation
  */
 public class Chapter {
+    private static final String REFERENCE_FILE = "reference.txt";
+    private static final String TITLE_FILE = "title.txt";
     // so we can look up by index
     private List<Frame> mFrames = new ArrayList<Frame>();
     // so we can look up by id
@@ -19,6 +30,8 @@ public class Chapter {
     private String mDescription;
     private String mSelectedFrameId;
     private Project mProject;
+    private Translation mTitleTranslation;
+    private Translation mReferenceTranslation;
 
     /**
      * Create a new chapter
@@ -63,6 +76,74 @@ public class Chapter {
      */
     public String getTitle() {
         return mTitle;
+    }
+
+    /**
+     * Stores the translated chapter title
+     * @param translation
+     */
+    public void setTitleTranslation(String translation) {
+        if(mTitleTranslation != null && mTitleTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId() && !mTitleTranslation.isSaved()) {
+            // save pending changes first
+            save();
+        }
+        mTitleTranslation = new Translation(mProject.getSelectedLanguage(), translation);
+    }
+
+    /**
+     * Returns this chapter's title translation
+     * @return
+     */
+    public Translation getTitleTranslation() {
+        if(mTitleTranslation == null || mTitleTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId()) {
+            // init translation
+            if(mTitleTranslation == null) {
+                mTitleTranslation = new Translation(mProject.getSelectedLanguage(), "");
+            }
+            // load translation from disk
+            String path = mProject.getRepositoryPath(mTitleTranslation.getLanguage()) + getId() + "/" + TITLE_FILE;
+            try {
+                String text = FileUtilities.getStringFromFile(path);
+                mTitleTranslation = new Translation(mProject.getSelectedLanguage(), text);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return mTitleTranslation;
+    }
+
+    /**
+     * Stores the translated chapter reference
+     * @param translation
+     */
+    public void setReferenceTranslation(String translation) {
+        if(mReferenceTranslation != null && mReferenceTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId() && !mReferenceTranslation.isSaved()) {
+            // save pending changes first
+            save();
+        }
+        mReferenceTranslation = new Translation(mProject.getSelectedLanguage(), translation);
+    }
+
+    /**
+     * Returns this chapter's reference translation
+     * @return
+     */
+    public Translation getReferenceTranslation() {
+        if(mReferenceTranslation == null || mReferenceTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId()) {
+            // init translation
+            if(mReferenceTranslation == null) {
+                mReferenceTranslation = new Translation(mProject.getSelectedLanguage(), "");
+            }
+            // load translation from disk
+            String path = mProject.getRepositoryPath(mReferenceTranslation.getLanguage()) + getId() + "/" + REFERENCE_FILE;
+            try {
+                String text = FileUtilities.getStringFromFile(path);
+                mReferenceTranslation = new Translation(mProject.getSelectedLanguage(), text);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return mReferenceTranslation;
     }
 
     /**
@@ -147,7 +228,7 @@ public class Chapter {
      * @return
      */
     public Frame getSelectedFrame() {
-        Frame selectedFrame = getFrame(mSelectedFrameId);;
+        Frame selectedFrame = getFrame(mSelectedFrameId);
         if(selectedFrame == null) {
             // auto select the first frame if no other frame has been selected
             int defaultFrameIndex = 0;
@@ -195,5 +276,47 @@ public class Chapter {
     public Frame getPreviousFrame() {
         int index = mFrames.indexOf(getSelectedFrame()) - 1;
         return getFrame(index);
+    }
+
+    /**
+     * Saves the reference and title
+     */
+    public void save() {
+        String referencePath = mProject.getRepositoryPath(getReferenceTranslation().getLanguage()) + mId + "/" + REFERENCE_FILE;
+        String titlePath = mProject.getRepositoryPath(getTitleTranslation().getLanguage()) + mId + "/" + TITLE_FILE;
+
+        // save reference
+        if(!getReferenceTranslation().isSaved()) {
+            getReferenceTranslation().isSaved(true);
+            File refFile = new File(referencePath);
+            if(!refFile.exists()) {
+                refFile.getParentFile().mkdir();
+            }
+            try {
+                refFile.createNewFile();
+                PrintStream ps = new PrintStream(refFile);
+                ps.print(getReferenceTranslation().getText());
+                ps.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // save title
+        if(!getTitleTranslation().isSaved()) {
+            getTitleTranslation().isSaved(true);
+            File titleFile = new File(titlePath);
+            if(!titleFile.exists()) {
+                titleFile.getParentFile().mkdir();
+            }
+            try {
+                titleFile.createNewFile();
+                PrintStream ps = new PrintStream(titleFile);
+                ps.print(getTitleTranslation().getText());
+                ps.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

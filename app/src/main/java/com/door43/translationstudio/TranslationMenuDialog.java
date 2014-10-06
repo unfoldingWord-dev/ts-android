@@ -33,14 +33,16 @@ public class TranslationMenuDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.translation_fragment_dialog, container, false);
 
-        Project p = MainContextLink.getContext().getSharedProjectManager().getSelectedProject();
+        final Project p = MainContextLink.getContext().getSharedProjectManager().getSelectedProject();
         if(p == null || p.getSelectedChapter() == null) {
             me.dismiss();
         }
 
-        // set default chapter title
+        // set values
         final EditText chapterTitleEditText = (EditText)v.findViewById(R.id.editChapterTitleEditText);
-        chapterTitleEditText.setText(p.getSelectedChapter().getTitle());
+        chapterTitleEditText.setText(p.getSelectedChapter().getTitleTranslation().getText());
+        final EditText chapterReferenceEditText = (EditText)v.findViewById(R.id.editChapterReferenceEditText);
+        chapterReferenceEditText.setText(p.getSelectedChapter().getReferenceTranslation().getText());
 
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelEditChapterTitleButton);
@@ -54,8 +56,10 @@ public class TranslationMenuDialog extends DialogFragment {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: update the chapter title
-                Log.d("translation menu", chapterTitleEditText.getText().toString());
+                p.getSelectedChapter().setTitleTranslation(chapterTitleEditText.getText().toString());
+                p.getSelectedChapter().setReferenceTranslation(chapterReferenceEditText.getText().toString());
+                p.getSelectedChapter().save();
+                ((MainActivity) getActivity()).reloadCenterPane();
                 me.dismiss();
             }
         });

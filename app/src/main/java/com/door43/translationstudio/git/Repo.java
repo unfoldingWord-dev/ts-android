@@ -1,10 +1,10 @@
-package com.door43.translationstudio.translations;
+package com.door43.translationstudio.git;
 
 import android.util.SparseArray;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.translations.tasks.StopTaskException;
-import com.door43.translationstudio.translations.tasks.repo.RepoOpTask;
+import com.door43.translationstudio.git.tasks.StopTaskException;
+import com.door43.translationstudio.git.tasks.repo.RepoOpTask;
 import com.door43.translationstudio.util.MainContextLink;
 
 import org.eclipse.jgit.api.Git;

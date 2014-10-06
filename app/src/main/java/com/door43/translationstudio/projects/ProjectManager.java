@@ -178,7 +178,7 @@ public class ProjectManager implements DelegateListener {
     public void onDelegateResponse(String id, DelegateResponse response) {
         DataStoreDelegateResponse message = (DataStoreDelegateResponse)response;
         if(message.getType() == DataStoreDelegateResponse.MessageType.PROJECT) {
-            // parse the message
+            // load projects
             JSONArray json;
             try {
                 json = new JSONArray(message.getJSON());
@@ -204,7 +204,7 @@ public class ProjectManager implements DelegateListener {
                 }
             }
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.LANGUAGE) {
-            // parse the message
+            // parse languages
             JSONArray json;
             try {
                 json = new JSONArray(message.getJSON());
@@ -227,9 +227,11 @@ public class ProjectManager implements DelegateListener {
                                 Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir);
                                 addLanguage(l);
 
-                                // fetch source text
                                 Project p = getProject(message.getProjectSlug());
                                 if(p != null) {
+                                    p.addLanguager(l);
+
+                                    // fetch source text
                                     mDataStore.fetchSourceText(p.getId(), l.getId());
                                 } else {
                                     Log.w(TAG, "project not found");
@@ -249,7 +251,7 @@ public class ProjectManager implements DelegateListener {
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.SOURCE) {
             // TODO: this will break once we have multiple source languages. It will just load all the source into a single project mixing up all the languages. We need a way to manager different languges for each project.
 
-            // parse the message
+            // load source
             JSONArray jsonChapters;
             try {
                 JSONObject json = new JSONObject(message.getJSON());

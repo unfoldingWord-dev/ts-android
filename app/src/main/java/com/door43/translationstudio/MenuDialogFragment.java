@@ -52,7 +52,7 @@ public class MenuDialogFragment extends DialogFragment {
             @Override
             public void onClick(View view) {
 
-                MainContextLink.getContext().getSharedTranslationManager().sync();
+                MainContextLink.getContext().getSharedTranslationManager().syncSelectedProject();
                 me.dismiss();
             }
         });

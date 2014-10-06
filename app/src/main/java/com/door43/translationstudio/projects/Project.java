@@ -1,5 +1,8 @@
 package com.door43.translationstudio.projects;
 
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.MainContextLink;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,11 +17,15 @@ public class Project {
     private List<Chapter> mChapters = new ArrayList<Chapter>();
     // so we can look up by id
     private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
+    private List<Language> mLanguages = new ArrayList<Language>();
+    private Map<String,Language> mLanguageMap = new HashMap<String, Language>();
 
     private final String mTitle;
     private final String mSlug;
     private final String mDescription;
     private String mSelectedChapterId;
+    private String mSelectedLanguageId;
+    private static final String GLOBAL_PROJECT_SLUG = "uw";
 
     /**
      * Create a new project
@@ -62,6 +69,14 @@ public class Project {
      */
     public int numChapters() {
         return mChapterMap.size();
+    }
+
+    /**
+     * Returns the number of languages in this project
+     * @return
+     */
+    public int numLanguages() {
+        return mLanguageMap.size();
     }
 
     /**
@@ -145,10 +160,105 @@ public class Project {
     }
 
     /**
+     * Adds a language to the project
+     * @param l the language to add
+     */
+    public void addLanguager(Language l) {
+        if(!mLanguageMap.containsKey(l.getId())) {
+            mLanguageMap.put(l.getId(), l);
+            mLanguages.add(l);
+        }
+    }
+
+    /**
+     * Returns the currently selected language
+     */
+    public Language getSelectedLanguage() {
+        Language selectedLanguage = getLanguage(mSelectedLanguageId);
+        if(selectedLanguage == null) {
+            // auto select the first chapter if no other chapter has been selected
+            int defaultdefaultLanguageIndex = 0;
+            setSelectedLanguage(defaultdefaultLanguageIndex);
+            return getLanguage(defaultdefaultLanguageIndex);
+        } else {
+            return selectedLanguage;
+        }
+    }
+
+    /**
+     * Sets the currently selected language in the project by id
+     * @param id the language id
+     * @return true if the language exists
+     */
+    public boolean setSelectedLanguage(String id) {
+        Language c = getLanguage(id);
+        if(c != null) {
+            mSelectedLanguageId = c.getId();
+        }
+        return c != null;
+    }
+
+    /**
+     * Sets the currently selected language in the project by index
+     * @param index the language index
+     * @return true if the language exists
+     */
+    public boolean setSelectedLanguage(int index) {
+        Language c = getLanguage(index);
+        if(c != null) {
+            mSelectedLanguageId = c.getId();
+        }
+        return c != null;
+    }
+
+    /**
      * Returns the path to the image for this project
      * @return
      */
     public String getImagePath() {
-        return "sourceTranslations/"+getId()+"/icon.jpg";
+        return "sourceTranslations/" + getId() + "/icon.jpg";
+    }
+
+    /**
+     * Returns a language by id
+     * @param id the language id
+     * @return null if the language does not exist
+     */
+    public Language getLanguage(String id) {
+        if(mLanguageMap.containsKey(id)) {
+            return mLanguageMap.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a language by index
+     * @param index the language index
+     * @return null if the language does not exist
+     */
+    public Language getLanguage(int index){
+        if(index < mLanguages.size() && index >= 0) {
+            return mLanguages.get(index);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the absolute repository path for the given language
+     * @param language
+     * @return
+     */
+    public String getRepositoryPath(Language language) {
+        return MainContextLink.getContext().getFilesDir() + "/" + MainContextLink.getContext().getResources().getString(R.string.git_repository_dir) + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + language.getId() + "/";
+    }
+
+    /**
+     * Returns the absoute repository path for the currently selected language
+     * @return
+     */
+    public String getRepositoryPath() {
+        return getRepositoryPath(getSelectedLanguage());
     }
 }

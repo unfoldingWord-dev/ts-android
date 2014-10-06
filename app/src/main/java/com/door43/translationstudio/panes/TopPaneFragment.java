@@ -33,7 +33,7 @@ public class TopPaneFragment extends TranslatorBaseFragment {
         mButtonSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                app().getSharedTranslationManager().sync();
+                app().getSharedTranslationManager().syncSelectedProject();
             }
         });
         mButtonSettings.setOnClickListener(new View.OnClickListener() {

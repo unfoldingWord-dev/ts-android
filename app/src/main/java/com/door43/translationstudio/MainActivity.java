@@ -7,6 +7,7 @@ import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -265,6 +266,9 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         Float distanceX = event2.getX() - event1.getX();
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(Math.abs(distanceX) >= MIN_FLING_DISTANCE && Math.abs(velocityX) >= MIN_FLING_VELOCITY && p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
+            // automatically save changes if the auto save did not have time to save
+            // TODO: this should only occure if there were actual changes
+            save();
             Frame f;
             if(distanceX > 0) {
                 f = p.getSelectedChapter().getPreviousFrame();
@@ -293,14 +297,32 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         TextView sourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
         TextView sourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
         TextView sourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
+        TextView translationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
         ImageView nextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
         ImageView previousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
             int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
 
-            sourceTitleText.setText("[Language]: "+p.getSelectedChapter().getTitle());
-            sourceText.setText(p.getSelectedChapter().getSelectedFrame().getText());
+            // load translation
+            Chapter chapter = p.getSelectedChapter();
+            Frame frame = chapter.getSelectedFrame();
+            Translation translation = frame.getTranslation();
+            EditText inputText = (EditText)mCenterPane.findViewById(R.id.inputText);
+            inputText.setText(translation.getText());
+
+            // pane titles
+            sourceTitleText.setText(p.getSelectedLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
+            if(chapter.getTitleTranslation().getText() == "") {
+                // display non-translated title
+                translationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
+            } else {
+                // display translated title
+                translationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
+            }
+
+            // pane footers
+            sourceText.setText(frame.getText());
             sourceFrameNumText.setText("Frame " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
 
             // display navigation indicators
@@ -315,15 +337,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 previousFrameView.setVisibility(View.INVISIBLE);
             }
 
-            // load translation
-            String translation = app().getSharedTranslationManager().getTranslation(p.getId(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
-            EditText inputText = (EditText)mCenterPane.findViewById(R.id.inputText);
-            inputText.setText(translation);
-
             // updates preferences so the app opens to the last opened frame
             app().setActiveProject(p.getId());
             app().setActiveChapter(p.getSelectedChapter().getId());
-            app().setActiveFrame(p.getSelectedChapter().getSelectedFrame().getId());
+            app().setActiveFrame(frame.getId());
         } else {
             // nothing was selected so open the project selector
             openLeftDrawer();
@@ -358,10 +375,9 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             // do not allow saves to stack up when saves are running slowly.
             app().pauseAutoSave(true);
             String inputTextValue = ((EditText) findViewById(R.id.inputText)).getText().toString();
-            Project p = app().getSharedProjectManager().getSelectedProject();
-
-            // TODO: we need a way to manage what language the translation is being made in. This is different than the source languages
-            app().getSharedTranslationManager().save(inputTextValue, p.getId(), LANG_CODE, p.getSelectedChapter().getSelectedFrame().getChapterFrameId());
+            Frame f = app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+            f.setTranslation(inputTextValue);
+            f.save();
             app().pauseAutoSave(false);
         }
     }
@@ -412,6 +428,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         app().closeToastMessage();
         // Create and show the dialog.
         TranslationMenuDialog newFragment = new TranslationMenuDialog();
+
         newFragment.show(ft, "dialog");
     }
 

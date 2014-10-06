@@ -1,4 +1,4 @@
-package com.door43.translationstudio.ssh;
+package com.door43.translationstudio.git;
 
 import org.eclipse.jgit.transport.JschConfigSessionFactory;
 import org.eclipse.jgit.transport.OpenSshConfig.Host;

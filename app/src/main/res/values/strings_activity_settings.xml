@@ -13,7 +13,7 @@
     <!-- settings for Save and Sync -->
     <string name="pref_header_autosave">Synchronization</string>
     <string name="pref_title_autosave">Auto Save</string>
-    <string name="pref_default_autosave">500</string>
+    <string name="pref_default_autosave">0</string>
     <string name="pref_title_autosave_delay">Auto Save Changes</string>
     <string-array name="pref_autosave_titles">
         <item>immediately after I have stopped typing</item>
@@ -31,12 +31,12 @@
     </string-array>
 
     <string name="pref_title_auth_server">Authentication Server</string>
-    <string name="pref_default_auth_server">us.door43.org</string>
+    <string name="pref_default_auth_server">ts.door43.org</string>
     <string name="pref_title_auth_server_port">Authentication Server Port</string>
     <string name="pref_default_auth_server_port">9095</string>
 
     <string name="pref_title_git_server">Data Server</string>
-    <string name="pref_default_git_server">gitolite3@us.door43.org</string>
+    <string name="pref_default_git_server">gitolite3@git.door43.org</string>
     <string name="pref_title_git_server_port">Data Server Port</string>
     <string name="pref_default_git_server_port">9299</string>
 

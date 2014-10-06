@@ -47,6 +47,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        mProjectItemAdapter.notifyDataSetChanged();
+        if(mProjectItemAdapter != null) {
+            mProjectItemAdapter.notifyDataSetChanged();
+        }
     }
 }

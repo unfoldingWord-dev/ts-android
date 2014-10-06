@@ -1,4 +1,4 @@
-package com.door43.translationstudio.translations.tasks;
+package com.door43.translationstudio.git.tasks;
 
 import android.app.ProgressDialog;
 

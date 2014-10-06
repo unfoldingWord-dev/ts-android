@@ -1,4 +1,4 @@
-package com.door43.translationstudio.ssh;
+package com.door43.translationstudio.git;
 
 import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.transport.SshTransport;

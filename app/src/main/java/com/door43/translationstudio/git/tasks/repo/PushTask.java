@@ -1,11 +1,9 @@
-package com.door43.translationstudio.translations.tasks.repo;
-
-import android.util.Log;
+package com.door43.translationstudio.git.tasks.repo;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.translations.tasks.StopTaskException;
-import com.door43.translationstudio.translations.Repo;
-import com.door43.translationstudio.ssh.TransportCallback;
+import com.door43.translationstudio.git.tasks.StopTaskException;
+import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.TransportCallback;
 import com.door43.translationstudio.util.MainContextLink;
 
 import org.eclipse.jgit.api.Git;
@@ -16,8 +14,6 @@ import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * An asyncronous task to push commits to a remote branch.
