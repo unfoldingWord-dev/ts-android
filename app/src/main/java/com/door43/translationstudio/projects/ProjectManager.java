@@ -33,9 +33,14 @@ public class ProjectManager implements DelegateListener {
     private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
 
     // so we can look up by index
-    private static List<Language> mLanguages = new ArrayList<Language>();
+    private static List<Language> mSourceLanguages = new ArrayList<Language>();
     // so we can look up by id
-    private static Map<String, Language> mLanguageMap = new HashMap<String, Language>();
+    private static Map<String, Language> mSourceLanguageMap = new HashMap<String, Language>();
+
+    // so we can look up by index
+    private static List<Language> mTargetLanguages = new ArrayList<Language>();
+    // so we can look up by id
+    private static Map<String, Language> mTargetLanguageMap = new HashMap<String, Language>();
 
     private static String mSelectedProjectId;
     private static MainApplication mContext;
@@ -48,6 +53,8 @@ public class ProjectManager implements DelegateListener {
         mDataStore.registerDelegateListener(this);
         // begin loading projects
         mDataStore.fetchProjectCatalog();
+        // begin loading target languages
+        mDataStore.fetchTargetLanguageCatalog();
     }
 
     /**
@@ -62,13 +69,24 @@ public class ProjectManager implements DelegateListener {
     }
 
     /**
-     * Adds a lanuage to the manager
+     * Adds a source lanuage to the manager
      * @param l the language to add
      */
-    private void addLanguage(Language l) {
-        if(!mLanguageMap.containsKey(l.getId())) {
-            mLanguageMap.put(l.getId(), l);
-            mLanguages.add(l);
+    private void addSourceLanguage(Language l) {
+        if(!mSourceLanguageMap.containsKey(l.getId())) {
+            mSourceLanguageMap.put(l.getId(), l);
+            mSourceLanguages.add(l);
+        }
+    }
+
+    /**
+     * Adds a target lanuage to the manager
+     * @param l the language to add
+     */
+    private void addTargetLanguage(Language l) {
+        if(!mTargetLanguageMap.containsKey(l.getId())) {
+            mTargetLanguageMap.put(l.getId(), l);
+            mTargetLanguages.add(l);
         }
     }
 
@@ -99,26 +117,52 @@ public class ProjectManager implements DelegateListener {
     }
 
     /**
-     * Returns a language by id
+     * Returns a source language by id
      * @param id the langyage id a.k.a language code
      * @return null if the language does not exist
      */
-    public Language getLanguage(String id) {
-        if(mLanguageMap.containsKey(id)) {
-            return mLanguageMap.get(id);
+    public Language getSourceLanguage(String id) {
+        if(mSourceLanguageMap.containsKey(id)) {
+            return mSourceLanguageMap.get(id);
         } else {
             return null;
         }
     }
 
     /**
-     * Retusn a lanuage
+     * Returns a source lanuage
      * @param index the language index
      * @return null if the language does not exist
      */
-    public Language getLanguage(int index) {
-        if(index < mLanguages.size() && index >= 0) {
-            return mLanguages.get(index);
+    public Language getSourceLanguage(int index) {
+        if(index < mSourceLanguages.size() && index >= 0) {
+            return mSourceLanguages.get(index);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a target language by id
+     * @param id the langyage id a.k.a language code
+     * @return null if the language does not exist
+     */
+    public Language getTargetLanguage(String id) {
+        if(mTargetLanguageMap.containsKey(id)) {
+            return mTargetLanguageMap.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a target lanuage
+     * @param index the language index
+     * @return null if the language does not exist
+     */
+    public Language getTargetLanguage(int index) {
+        if(index < mTargetLanguages.size() && index >= 0) {
+            return mTargetLanguages.get(index);
         } else {
             return null;
         }
@@ -194,7 +238,7 @@ public class ProjectManager implements DelegateListener {
                     if(jsonProject.has("title") && jsonProject.has("slug") && jsonProject.has("desc")) {
                         Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
                         addProject(p);
-                        mDataStore.fetchLanguageCatalog(p.getId());
+                        mDataStore.fetchSourceLanguageCatalog(p.getId());
                     } else {
                         Log.w(TAG, "missing required parameters in the project catalog");
                     }
@@ -203,8 +247,8 @@ public class ProjectManager implements DelegateListener {
                     continue;
                 }
             }
-        } else if(message.getType() == DataStoreDelegateResponse.MessageType.LANGUAGE) {
-            // parse languages
+        } else if(message.getType() == DataStoreDelegateResponse.MessageType.SOURCE_LANGUAGE) {
+            // parse source languages
             JSONArray json;
             try {
                 json = new JSONArray(message.getJSON());
@@ -225,11 +269,11 @@ public class ProjectManager implements DelegateListener {
                                 // add the language
                                 Language.Direction langDir = jsonLanguage.get("direction").toString() == "ltr" ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                                 Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir);
-                                addLanguage(l);
+                                addSourceLanguage(l);
 
                                 Project p = getProject(message.getProjectSlug());
                                 if(p != null) {
-                                    p.addLanguager(l);
+                                    p.addSourceLanguage(l);
 
                                     // fetch source text
                                     mDataStore.fetchSourceText(p.getId(), l.getId());
@@ -238,10 +282,36 @@ public class ProjectManager implements DelegateListener {
                                 }
                             }
                         } else {
-                            Log.w(TAG, "missing required parameters in the project catalog");
+                            Log.w(TAG, "missing required parameters in the source language catalog");
                         }
                     } else {
-                        Log.w(TAG, "missing required parameters in the project catalog");
+                        Log.w(TAG, "missing required parameters in the source language catalog");
+                    }
+                } catch (JSONException e) {
+                    Log.w(TAG, e.getMessage());
+                    continue;
+                }
+            }
+        } else if(message.getType() == DataStoreDelegateResponse.MessageType.TARGET_LANGUAGE) {
+            // parse target languages
+            JSONArray json;
+            try {
+                json = new JSONArray(message.getJSON());
+            } catch (JSONException e) {
+                Log.w(TAG, e.getMessage());
+                return;
+            }
+
+            // load the data
+            for(int i=0; i<json.length(); i++) {
+                try {
+                    JSONObject jsonLanguage = json.getJSONObject(i);
+                    if(jsonLanguage.has("lc") && jsonLanguage.has("ln")) {
+                        // TODO: it would be best to include the language direction in the target language list
+                        Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
+                        addTargetLanguage(l);
+                    } else {
+                        Log.w(TAG, "missing required parameters in the target language catalog");
                     }
                 } catch (JSONException e) {
                     Log.w(TAG, e.getMessage());
@@ -297,7 +367,6 @@ public class ProjectManager implements DelegateListener {
                     continue;
                 }
             }
-
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.IMAGES) {
             // TODO: handle loading image assets for frames. Care should be taken to avoid memory leaks or slow load times. We may want to do this on demand instead of up front (except for locally stored assets).
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.AUDIO) {
@@ -308,4 +377,11 @@ public class ProjectManager implements DelegateListener {
         }
     }
 
+    /**
+     * Returns a list of target languages
+     * @return
+     */
+    public List<Language> getTargetLanguages() {
+        return mTargetLanguages;
+    }
 }

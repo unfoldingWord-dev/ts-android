@@ -6,7 +6,7 @@ import org.eclipse.jgit.util.FS;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -21,13 +21,13 @@ public class GitSessionFactory extends JschConfigSessionFactory {
     @Override
     protected void configure(Host arg0, Session session) {
         session.setConfig("StrictHostKeyChecking", "no");
-        session.setPort(Integer.parseInt(MainContextLink.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, MainContextLink.getContext().getResources().getString(R.string.pref_default_git_server_port))));
+        session.setPort(Integer.parseInt(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, MainContext.getContext().getResources().getString(R.string.pref_default_git_server_port))));
     }
 
     @Override
     protected JSch createDefaultJSch(FS fs) throws JSchException {
         JSch jsch = new JSch();
-        File sshDir = MainContextLink.getContext().getKeysFolder();
+        File sshDir = MainContext.getContext().getKeysFolder();
         for (File file : sshDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {

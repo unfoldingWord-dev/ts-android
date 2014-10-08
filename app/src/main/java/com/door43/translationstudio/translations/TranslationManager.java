@@ -75,7 +75,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
     private void pushSelectedProjectRepo() {
         Project p = mContext.getSharedProjectManager().getSelectedProject();
 
-        final String remotePath = getRemotePath(p, p.getSelectedLanguage());
+        final String remotePath = getRemotePath(p, p.getSelectedTargetLanguage());
         final Repo repo = new Repo(p.getRepositoryPath());
 
         AddTask add = new AddTask(repo, ".", new AddTask.OnAddComplete() {

@@ -1,20 +1,15 @@
 package com.door43.translationstudio;
 
 import android.app.DialogFragment;
-import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * This dialog contains contextual actions available for the currently selected translation content
@@ -33,7 +28,7 @@ public class TranslationMenuDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.translation_fragment_dialog, container, false);
 
-        final Project p = MainContextLink.getContext().getSharedProjectManager().getSelectedProject();
+        final Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(p == null || p.getSelectedChapter() == null) {
             me.dismiss();
         }

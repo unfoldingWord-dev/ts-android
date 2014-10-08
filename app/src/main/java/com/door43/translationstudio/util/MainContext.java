@@ -3,6 +3,7 @@ package com.door43.translationstudio.util;
 import android.app.Activity;
 
 import com.door43.translationstudio.MainApplication;
+import com.squareup.otto.Bus;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -12,15 +13,16 @@ import java.util.Locale;
  * This is sort of a hack to provide the main application context to all classes
  * without having to manually pass the context to them.
  */
-public class MainContextLink {
+public class MainContext {
 //    private static final String IMAGE_REQUEST_HASH = "http://www.gravatar.com/avatar/%s?s=40";
     private static MainApplication mContext;
+    private static Bus mEventBus;
 
     /**
      * Initializes the basic functions context.
      * @param context The application context. This can only be set once.
      */
-    public MainContextLink(MainApplication context) {
+    public MainContext(MainApplication context) {
         if(mContext == null) {
             mContext = context;
         }
@@ -32,6 +34,17 @@ public class MainContextLink {
      */
     public static MainApplication getContext() {
         return mContext;
+    }
+
+    /**
+     * Returns the global event bus
+     * @return
+     */
+    public static Bus getEventBus() {
+        if(mEventBus == null) {
+            mEventBus = new Bus();
+        }
+        return mEventBus;
     }
 
     // TODO: place all of these methods in the main application file

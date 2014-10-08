@@ -1,10 +1,6 @@
 package com.door43.translationstudio.projects;
 
-import android.util.Log;
-
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.FileUtilities;
-import com.door43.translationstudio.util.MainContextLink;
 
 import java.io.File;
 import java.io.IOException;
@@ -83,11 +79,11 @@ public class Chapter {
      * @param translation
      */
     public void setTitleTranslation(String translation) {
-        if(mTitleTranslation != null && mTitleTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId() && !mTitleTranslation.isSaved()) {
+        if(mTitleTranslation != null && mTitleTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId() && !mTitleTranslation.isSaved()) {
             // save pending changes first
             save();
         }
-        mTitleTranslation = new Translation(mProject.getSelectedLanguage(), translation);
+        mTitleTranslation = new Translation(mProject.getSelectedTargetLanguage(), translation);
     }
 
     /**
@@ -95,16 +91,16 @@ public class Chapter {
      * @return
      */
     public Translation getTitleTranslation() {
-        if(mTitleTranslation == null || mTitleTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId()) {
-            // init translation
-            if(mTitleTranslation == null) {
-                mTitleTranslation = new Translation(mProject.getSelectedLanguage(), "");
+        if(mTitleTranslation == null || mTitleTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId()) {
+            if(mTitleTranslation != null) {
+                save();
             }
             // load translation from disk
-            String path = mProject.getRepositoryPath(mTitleTranslation.getLanguage()) + getId() + "/" + TITLE_FILE;
+            String path = mProject.getRepositoryPath(mProject.getSelectedTargetLanguage()) + getId() + "/" + TITLE_FILE;
             try {
                 String text = FileUtilities.getStringFromFile(path);
-                mTitleTranslation = new Translation(mProject.getSelectedLanguage(), text);
+                mTitleTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
+                mTitleTranslation.isSaved(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -117,11 +113,11 @@ public class Chapter {
      * @param translation
      */
     public void setReferenceTranslation(String translation) {
-        if(mReferenceTranslation != null && mReferenceTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId() && !mReferenceTranslation.isSaved()) {
+        if(mReferenceTranslation != null && mReferenceTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId() && !mReferenceTranslation.isSaved()) {
             // save pending changes first
             save();
         }
-        mReferenceTranslation = new Translation(mProject.getSelectedLanguage(), translation);
+        mReferenceTranslation = new Translation(mProject.getSelectedTargetLanguage(), translation);
     }
 
     /**
@@ -129,16 +125,16 @@ public class Chapter {
      * @return
      */
     public Translation getReferenceTranslation() {
-        if(mReferenceTranslation == null || mReferenceTranslation.getLanguage().getId() != mProject.getSelectedLanguage().getId()) {
-            // init translation
-            if(mReferenceTranslation == null) {
-                mReferenceTranslation = new Translation(mProject.getSelectedLanguage(), "");
+        if(mReferenceTranslation == null || mReferenceTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId()) {
+            if(mReferenceTranslation != null) {
+                save();
             }
             // load translation from disk
-            String path = mProject.getRepositoryPath(mReferenceTranslation.getLanguage()) + getId() + "/" + REFERENCE_FILE;
+            String path = mProject.getRepositoryPath(mProject.getSelectedTargetLanguage()) + getId() + "/" + REFERENCE_FILE;
             try {
                 String text = FileUtilities.getStringFromFile(path);
-                mReferenceTranslation = new Translation(mProject.getSelectedLanguage(), text);
+                mReferenceTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
+                mReferenceTranslation.isSaved(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -282,40 +278,54 @@ public class Chapter {
      * Saves the reference and title
      */
     public void save() {
-        String referencePath = mProject.getRepositoryPath(getReferenceTranslation().getLanguage()) + mId + "/" + REFERENCE_FILE;
-        String titlePath = mProject.getRepositoryPath(getTitleTranslation().getLanguage()) + mId + "/" + TITLE_FILE;
+        if(mReferenceTranslation != null && mTitleTranslation != null) {
+            String referencePath = mProject.getRepositoryPath(mReferenceTranslation.getLanguage()) + getId() + "/" + REFERENCE_FILE;
+            String titlePath = mProject.getRepositoryPath(mTitleTranslation.getLanguage()) + getId() + "/" + TITLE_FILE;
 
-        // save reference
-        if(!getReferenceTranslation().isSaved()) {
-            getReferenceTranslation().isSaved(true);
-            File refFile = new File(referencePath);
-            if(!refFile.exists()) {
-                refFile.getParentFile().mkdirs();
+            // save reference
+            if(!mReferenceTranslation.isSaved()) {
+                mReferenceTranslation.isSaved(true);
+                File refFile = new File(referencePath);
+                if(mReferenceTranslation.getText().isEmpty()) {
+                    // delete empty file
+                    refFile.delete();
+                } else {
+                    // write translation
+                    if(!refFile.exists()) {
+                        refFile.getParentFile().mkdirs();
+                    }
+                    try {
+                        refFile.createNewFile();
+                        PrintStream ps = new PrintStream(refFile);
+                        ps.print(mReferenceTranslation.getText());
+                        ps.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-            try {
-                refFile.createNewFile();
-                PrintStream ps = new PrintStream(refFile);
-                ps.print(getReferenceTranslation().getText());
-                ps.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
 
-        // save title
-        if(!getTitleTranslation().isSaved()) {
-            getTitleTranslation().isSaved(true);
-            File titleFile = new File(titlePath);
-            if(!titleFile.exists()) {
-                titleFile.getParentFile().mkdirs();
-            }
-            try {
-                titleFile.createNewFile();
-                PrintStream ps = new PrintStream(titleFile);
-                ps.print(getTitleTranslation().getText());
-                ps.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            // save title
+            if(!mTitleTranslation.isSaved()) {
+                mTitleTranslation.isSaved(true);
+                File titleFile = new File(titlePath);
+                if(mTitleTranslation.getText().isEmpty()) {
+                    // delete empty file
+                    titleFile.delete();
+                } else {
+                    // write translation
+                    if(!titleFile.exists()) {
+                        titleFile.getParentFile().mkdirs();
+                    }
+                    try {
+                        titleFile.createNewFile();
+                        PrintStream ps = new PrintStream(titleFile);
+                        ps.print(mTitleTranslation.getText());
+                        ps.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ import android.widget.Toast;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.DummyDialogListener;
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -36,8 +36,9 @@ public class MainApplication extends Application {
     private ImageLoader mImageLoader;
 
     public void onCreate() {
+
         // initialize basic functions with link to main application
-        new MainContextLink(this);
+        new MainContext(this);
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
@@ -56,8 +57,6 @@ public class MainApplication extends Application {
     public ProjectManager getSharedProjectManager() {
         return mProjectManager;
     }
-
-
 
     /**
      * Returns the shared instance of the translation manager

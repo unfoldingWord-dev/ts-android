@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
+import com.door43.translationstudio.events.ModalDismissedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
@@ -10,19 +11,12 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.squareup.otto.Subscribe;
 
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
@@ -39,8 +33,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import org.eclipse.jgit.diff.Edit;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -227,7 +219,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mSourceGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
-                showSourceMenu();
+                showSourceLanguageMenu();
                 return true;
             }
             @Override
@@ -312,7 +304,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             inputText.setText(translation.getText());
 
             // pane titles
-            sourceTitleText.setText(p.getSelectedLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
+            sourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             if(chapter.getTitleTranslation().getText() == "") {
                 // display non-translated title
                 translationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
@@ -320,6 +312,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 // display translated title
                 translationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
             }
+
 
             // pane footers
             sourceText.setText(frame.getText());
@@ -435,7 +428,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     /**
      * Displays the source contextual menu
      */
-    public void showSourceMenu() {
+    public void showSourceLanguageMenu() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
@@ -445,7 +438,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         app().closeToastMessage();
         // Create and show the dialog.
-        SourceMenuDialog newFragment = new SourceMenuDialog();
+        TargetLanguageMenu newFragment = new TargetLanguageMenu();
+//        SourceMenuDialog newFragment = new SourceMenuDialog();
         newFragment.show(ft, "dialog");
     }
 
@@ -464,5 +458,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     public void onDestroy() {
         app().getSharedTranslationManager().removeDelegateListener(this);
         super.onDestroy();
+    }
+
+    @Subscribe
+    public void modalDismissed(ModalDismissedEvent event) {
+        reloadCenterPane();
     }
 }

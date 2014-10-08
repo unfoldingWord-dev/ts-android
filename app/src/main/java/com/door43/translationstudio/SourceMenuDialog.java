@@ -2,15 +2,13 @@ package com.door43.translationstudio;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * This dialog contains contextual actions available for the currently selected source language
@@ -29,7 +27,7 @@ public class SourceMenuDialog extends DialogFragment  {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.source_fragment_dialog, container, false);
 
-        Project p = MainContextLink.getContext().getSharedProjectManager().getSelectedProject();
+        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(p == null) {
             me.dismiss();
         }

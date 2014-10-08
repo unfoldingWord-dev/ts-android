@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="20dp">
+    <!-- Editext for Search -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linearLayout2">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose Your Target Language"
+            android:id="@+id/textView"
+            android:textSize="@dimen/h3" />
+
+        <EditText android:id="@+id/inputSearchTargetLanguage"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search for target language"
+            android:inputType="textVisiblePassword"/>
+    </LinearLayout>
+
+    <!-- List View -->
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/linearLayout"
+        android:layout_below="@+id/linearLayout2">
+
+        <ListView
+            android:id="@+id/targetLanguageListView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:focusable="true"
+            android:scrollingCache="true"
+            android:smoothScrollbar="true" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:paddingTop="20dp"
+        android:baselineAligned="false"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:id="@+id/cancelSwitchTargetLanguageButton"
+            android:layout_weight="1"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bordered_button"
+            android:textColor="@color/dark_gray"
+            android:layout_marginRight="10dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

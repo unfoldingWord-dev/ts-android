@@ -2,12 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.util.Log;
 
-import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.FileUtilities;
-import com.door43.translationstudio.util.MainContextLink;
-
-import org.eclipse.jgit.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,10 +56,10 @@ public class Frame {
      * @param translation
      */
     public void setTranslation(String translation) {
-        if(mTranslation != null && mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedLanguage().getId() && !mTranslation.isSaved()) {
+        if(mTranslation != null && mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedTargetLanguage().getId() && !mTranslation.isSaved()) {
             save();
         }
-        mTranslation = new Translation(mChapter.getProject().getSelectedLanguage(), translation);
+        mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), translation);
     }
 
     /**
@@ -72,16 +67,16 @@ public class Frame {
      * @return
      */
     public Translation getTranslation() {
-        if(mTranslation == null || mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedLanguage().getId()) {
-            // init translation
-            if(mTranslation == null) {
-                mTranslation = new Translation(mChapter.getProject().getSelectedLanguage(), "");
+        if(mTranslation == null || mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedTargetLanguage().getId()) {
+            if(mTranslation != null) {
+                save();
             }
             // load translation from disk
-            String path = mChapter.getProject().getRepositoryPath(mTranslation.getLanguage()) + getChapterId() + "/" + getId() + ".txt";
+            String path = mChapter.getProject().getRepositoryPath(mChapter.getProject().getSelectedTargetLanguage()) + getChapterId() + "/" + getId() + ".txt";
             try {
                 String text = FileUtilities.getStringFromFile(path);
-                mTranslation = new Translation(mChapter.getProject().getSelectedLanguage(), text);
+                mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), text);
+                mTranslation.isSaved(true);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -146,26 +141,26 @@ public class Frame {
      * Saves the frane trabskatuib
      */
     public void save() {
-        if(!getTranslation().isSaved()) {
-            getTranslation().isSaved(true);
-            String path = mChapter.getProject().getRepositoryPath(getTranslation().getLanguage()) + getChapterId() + "/" + getId() + ".txt";
-
-            // write the file
+        if(mTranslation != null && !mTranslation.isSaved()) {
+            mTranslation.isSaved(true);
+            String path = mChapter.getProject().getRepositoryPath(mTranslation.getLanguage()) + getChapterId() + "/" + getId() + ".txt";
             File file = new File(path);
-
-            // create folder structure
-            if(!file.exists()) {
-                file.getParentFile().mkdirs();
-            }
-
-            // write translation
-            try {
-                file.createNewFile();
-                PrintStream ps = new PrintStream(file);
-                ps.print(getTranslation().getText());
-                ps.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            if(mTranslation.getText().isEmpty()) {
+                // delete empty file
+                file.delete();
+            } else {
+                // write translation
+                if(!file.exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                try {
+                    file.createNewFile();
+                    PrintStream ps = new PrintStream(file);
+                    ps.print(mTranslation.getText());
+                    ps.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

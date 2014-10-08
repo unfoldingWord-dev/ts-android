@@ -14,10 +14,9 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
 
 
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 import java.util.List;
 
@@ -51,9 +50,9 @@ public class SettingsActivity extends PreferenceActivity {
      * Removes references to self to avoid memory leaks
      */
     private void clearReferences() {
-        Activity currActivity = MainContextLink.getContext().getCurrentActivity();
+        Activity currActivity = MainContext.getContext().getCurrentActivity();
         if(currActivity != null && currActivity.equals(this)) {
-            MainContextLink.getContext().setCurrentActivity(null);
+            MainContext.getContext().setCurrentActivity(null);
         }
     }
 
@@ -61,7 +60,7 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onResume() {
         super.onResume();
         // set the current activity so that core classes can access the ui when nessesary.
-        MainContextLink.getContext().setCurrentActivity(this);
+        MainContext.getContext().setCurrentActivity(this);
     }
     @Override
     protected void onPause() {
@@ -86,7 +85,7 @@ public class SettingsActivity extends PreferenceActivity {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MainContextLink.getContext().generateKeys();
+                    MainContext.getContext().generateKeys();
                 }
             });
             setListFooter(button);

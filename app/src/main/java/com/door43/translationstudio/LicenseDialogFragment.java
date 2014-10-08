@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.util.FileUtilities;
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +36,7 @@ public class LicenseDialogFragment extends DialogFragment {
 
         // load the license html
         try {
-            InputStream is = MainContextLink.getContext().getAssets().open("license.html");
+            InputStream is = MainContext.getContext().getAssets().open("license.html");
             String licenseString = FileUtilities.convertStreamToString(is);
             // display license text
             licenseText.setText(Html.fromHtml(licenseString));

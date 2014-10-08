@@ -4,7 +4,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
@@ -64,7 +64,7 @@ public class PushTask extends RepoOpTask {
             mCallback.onPostExecute(isSuccess);
         }
         if (isSuccess) {
-            MainContextLink.getContext().showMessageDialog(R.string.dialog_push_result, resultMsg.toString());
+            MainContext.getContext().showMessageDialog(R.string.dialog_push_result, resultMsg.toString());
         }
     }
 

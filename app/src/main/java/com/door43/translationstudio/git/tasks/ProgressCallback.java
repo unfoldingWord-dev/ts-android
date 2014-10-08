@@ -2,7 +2,7 @@ package com.door43.translationstudio.git.tasks;
 
 import android.app.ProgressDialog;
 
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * Displays a progress dialog to the user
@@ -14,12 +14,12 @@ public class ProgressCallback implements GitSyncAsyncTask.AsyncTaskCallback {
 
     public ProgressCallback(int initMsg) {
         mInitMsg = initMsg;
-        dialog = new ProgressDialog(MainContextLink.getContext().getCurrentActivity());
+        dialog = new ProgressDialog(MainContext.getContext().getCurrentActivity());
     }
 
     @Override
     public void onPreExecute() {
-        dialog.setMessage(MainContextLink.getContext().getString(mInitMsg));
+        dialog.setMessage(MainContext.getContext().getString(mInitMsg));
         dialog.show();
     }
 

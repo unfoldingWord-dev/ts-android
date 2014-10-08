@@ -12,6 +12,7 @@ import java.io.InputStream;
  */
 public class DataStore extends DelegateSender {
     private static MainApplication mContext;
+    private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";
 
     public DataStore(MainApplication context) {
         mContext = context;
@@ -23,7 +24,7 @@ public class DataStore extends DelegateSender {
      */
     public void fetchProjectCatalog() {
         // TODO: check for updates on the server
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.PROJECT, loadJSONAsset("projects.json")));
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.PROJECT, loadJSONAsset(SOURCE_TRANSLATIONS_DIR+"projects.json")));
     }
 
     /**
@@ -31,10 +32,19 @@ public class DataStore extends DelegateSender {
      * @param projectSlug the slug of the project for which languages will be returned
      * @return
      */
-    public void fetchLanguageCatalog(String projectSlug) {
+    public void fetchSourceLanguageCatalog(String projectSlug) {
         // TODO: check for updates on the server
-        String path = projectSlug+"/languages.json";
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.LANGUAGE, loadJSONAsset(path), projectSlug));
+        String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/languages.json";
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE_LANGUAGE, loadJSONAsset(path), projectSlug));
+    }
+
+    /**
+     * Retusn a json array of target languages
+     */
+    public void fetchTargetLanguageCatalog() {
+        // TODO: check for updates on the server
+        String path = "target_languages.json";
+        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.TARGET_LANGUAGE, loadJSONAsset(path)));
     }
 
     /**
@@ -45,7 +55,7 @@ public class DataStore extends DelegateSender {
      */
     public void fetchSourceText(String projectSlug, String languageCode) {
         // TODO: check for updates on the server
-        String path = projectSlug+"/"+languageCode+"/source.json";
+        String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/source.json";
         issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectSlug));
     }
 
@@ -55,7 +65,6 @@ public class DataStore extends DelegateSender {
      * @return the string contents of the json file
      */
     private String loadJSONAsset(String path) {
-        path = "sourceTranslations/"+path;
         String json;
         try {
             InputStream is = mContext.getAssets().open(path);

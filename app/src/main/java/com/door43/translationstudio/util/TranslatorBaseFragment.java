@@ -18,4 +18,16 @@ public class TranslatorBaseFragment extends Fragment {
     protected MainApplication app() {
         return (MainApplication)getActivity().getApplicationContext();
     }
+
+    public void onResume() {
+        super.onResume();
+        MainContext.getEventBus().register(this);
+    }
+
+
+
+    public void onDestroy() {
+        MainContext.getEventBus().unregister(this);
+        super.onDestroy();
+    }
 }

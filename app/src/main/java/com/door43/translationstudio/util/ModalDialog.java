@@ -1,0 +1,30 @@
+package com.door43.translationstudio.util;
+
+import android.app.DialogFragment;
+import android.os.Bundle;
+
+import com.door43.translationstudio.events.ModalDismissedEvent;
+
+/**
+ * Created by joel on 10/7/2014.
+ */
+public class ModalDialog extends DialogFragment {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // use theme = 1 for full screen and 0 for small window
+        int style = DialogFragment.STYLE_NO_TITLE, theme = 1;
+        setStyle(style, theme);
+    }
+
+    /**
+     * Dismisses the dialog and fires an event
+     * @param id an id to help identify which modal fire the event
+     * @param didCancel specifies if the user pressed the cancel button the dialog
+     */
+    public void onDismiss(String id, Boolean didCancel) {
+       MainContext.getEventBus().post(new ModalDismissedEvent(this, id, didCancel));
+        this.dismiss();
+    }
+}

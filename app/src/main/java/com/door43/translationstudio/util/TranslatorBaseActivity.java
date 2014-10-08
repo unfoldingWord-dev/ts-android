@@ -13,6 +13,7 @@ public class TranslatorBaseActivity extends ActionBarActivity {
 
     protected void onResume() {
         super.onResume();
+        MainContext.getEventBus().register(this);
         // set the current activity so that core classes can access the ui when nessesary.
         app().setCurrentActivity(this);
     }
@@ -39,6 +40,7 @@ public class TranslatorBaseActivity extends ActionBarActivity {
      * Removes references to self to avoid memory leaks
      */
     private void clearReferences() {
+        MainContext.getEventBus().unregister(this);
         Activity currActivity = app().getCurrentActivity();
         if(currActivity != null && currActivity.equals(this)) {
             app().setCurrentActivity(null);

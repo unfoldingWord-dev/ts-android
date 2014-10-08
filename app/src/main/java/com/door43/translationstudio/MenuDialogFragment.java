@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * This is the contextual menu dialog fragment
@@ -43,7 +43,7 @@ public class MenuDialogFragment extends DialogFragment {
         // hook up buttons
 
         Button syncBtn = (Button)v.findViewById(R.id.sync_btn);
-        if(MainContextLink.getContext().hasRegisteredKeys()) {
+        if(MainContext.getContext().hasRegisteredKeys()) {
             syncBtn.setText("Upload Translation");
         } else {
             syncBtn.setText("Request Upload Permission");
@@ -52,7 +52,7 @@ public class MenuDialogFragment extends DialogFragment {
             @Override
             public void onClick(View view) {
 
-                MainContextLink.getContext().getSharedTranslationManager().syncSelectedProject();
+                MainContext.getContext().getSharedTranslationManager().syncSelectedProject();
                 me.dismiss();
             }
         });
@@ -63,7 +63,7 @@ public class MenuDialogFragment extends DialogFragment {
             @Override
             public void onClick(View view) {
                 // TODO: display the sharing interface.
-                MainContextLink.getContext().showToastMessage("Sharing has not been built yet.");
+                MainContext.getContext().showToastMessage("Sharing has not been built yet.");
                 me.dismiss();
             }
         });

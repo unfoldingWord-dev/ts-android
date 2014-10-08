@@ -2,7 +2,7 @@ package com.door43.translationstudio.git.tasks;
 
 import android.os.AsyncTask;
 
-import com.door43.translationstudio.util.MainContextLink;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 9/15/2014.
@@ -22,9 +22,9 @@ public abstract class GitSyncAsyncTask<A, B, C> extends AsyncTask<A, B, C> {
 
     protected void showError() {
         if (mErrorRes != 0) {
-            MainContextLink.getContext().showException(mException, mErrorRes);
+            MainContext.getContext().showException(mException, mErrorRes);
         } else if (mException != null) {
-            MainContextLink.getContext().showException(mException);
+            MainContext.getContext().showException(mException);
         }
     }
 
