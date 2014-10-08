@@ -304,4 +304,12 @@ public class Project {
     public String getRepositoryPath() {
         return getRepositoryPath(getSelectedTargetLanguage());
     }
+
+    /**
+     * Returns a list of source languages for this project
+     * @return
+     */
+    public List<Language> getSourceLanguages() {
+        return mSourceLanguages;
+    }
 }

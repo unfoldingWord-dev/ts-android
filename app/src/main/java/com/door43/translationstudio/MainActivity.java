@@ -2,7 +2,7 @@ package com.door43.translationstudio;
 
 import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
-import com.door43.translationstudio.events.ModalDismissedEvent;
+import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
@@ -438,9 +438,12 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         app().closeToastMessage();
         // Create and show the dialog.
-        TargetLanguageMenu newFragment = new TargetLanguageMenu();
+        LanguageSelectorMenu dialogFragment = new LanguageSelectorMenu();
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("sourceLanguages", true);
+        dialogFragment.setArguments(bundle);
 //        SourceMenuDialog newFragment = new SourceMenuDialog();
-        newFragment.show(ft, "dialog");
+        dialogFragment.show(ft, "dialog");
     }
 
     @Override
@@ -461,7 +464,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     @Subscribe
-    public void modalDismissed(ModalDismissedEvent event) {
+    public void modalDismissed(LanguageModalDismissedEvent event) {
         reloadCenterPane();
     }
 }
