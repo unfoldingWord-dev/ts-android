@@ -442,7 +442,26 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         Bundle bundle = new Bundle();
         bundle.putBoolean("sourceLanguages", true);
         dialogFragment.setArguments(bundle);
-//        SourceMenuDialog newFragment = new SourceMenuDialog();
+        dialogFragment.show(ft, "dialog");
+    }
+
+    /**
+     * Displays the target contextual menu
+     */
+    public void showTargetLanguageMenu() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        app().closeToastMessage();
+        // Create and show the dialog.
+        LanguageSelectorMenu dialogFragment = new LanguageSelectorMenu();
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("sourceLanguages", false);
+        dialogFragment.setArguments(bundle);
         dialogFragment.show(ft, "dialog");
     }
 

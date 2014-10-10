@@ -10,6 +10,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.projects.Language;
@@ -48,7 +49,7 @@ public class LanguageSelectorMenu extends ModalDialog {
         if(willShowSourceLanguages) {
             adapter = new LanguageAdapter(p.getSourceLanguages(), getActivity());
         } else {
-            adapter = new LanguageAdapter(MainContext.getContext().getSharedProjectManager().getTargetLanguages(), getActivity());
+            adapter = new LanguageAdapter(MainContext.getContext().getSharedProjectManager().getLanguages(), getActivity());
         }
 
         list.setAdapter(adapter);
@@ -66,12 +67,6 @@ public class LanguageSelectorMenu extends ModalDialog {
         });
         list.setTextFilterEnabled(true);
         EditText searchField = (EditText)v.findViewById(R.id.inputSearchTargetLanguage);
-        if(willShowSourceLanguages) {
-            // TODO: update wording to reflect languages list
-        } else {
-            // TODO: update wording to reflect languages list
-        }
-
         searchField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -91,6 +86,13 @@ public class LanguageSelectorMenu extends ModalDialog {
 
             }
         });
+
+        TextView titleText = (TextView)v.findViewById(R.id.languageMenuTitleText);
+        if(willShowSourceLanguages) {
+            titleText.setText("Choose The Source Language");
+        } else {
+            titleText.setText("Choose The Target Language");
+        }
 
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelSwitchTargetLanguageButton);

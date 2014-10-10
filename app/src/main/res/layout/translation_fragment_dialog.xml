@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/scrollView" >
 
-    <LinearLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="5dp"
-        android:background="@color/blue">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:orientation="vertical"
@@ -21,7 +15,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Edit Chapter Title"
+                android:text="Chapter Title &amp; Description"
                 android:id="@+id/editChapterTitleText"
                 android:textSize="@dimen/h3" />
 
@@ -40,11 +34,41 @@
                 android:singleLine="false"
                 android:lines="2" />
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="Eventually you'll be able to switch the translation language too"
-                android:id="@+id/textView" />
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Target Language"
+                    android:textSize="@dimen/h3" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="New Text"
+                        android:id="@+id/languageNameText"
+                        android:layout_weight="1"
+                        android:textSize="@dimen/h3"
+                        android:textColor="@color/gray" />
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Change"
+                        android:id="@+id/switchTargetLanguageButton"
+                        android:background="@drawable/bordered_button"
+                        android:padding="20dp" />
+                </LinearLayout>
+            </LinearLayout>
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -58,7 +82,7 @@
                     android:text="Cancel"
                     android:id="@+id/cancelEditChapterTitleButton"
                     android:layout_weight="1"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@drawable/bordered_button"
                     android:textColor="@color/dark_gray"
                     android:layout_marginRight="10dp" />
@@ -69,7 +93,7 @@
                     android:text="Save"
                     android:id="@+id/saveChapterTitleButton"
                     android:layout_weight="1"
-                    android:layout_gravity="center_horizontal"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@color/blue"
                     android:textColor="@color/white"
                     android:layout_marginLeft="10dp" />
@@ -77,4 +101,3 @@
 
         </LinearLayout>
     </LinearLayout>
-</ScrollView>

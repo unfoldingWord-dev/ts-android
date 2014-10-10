@@ -33,14 +33,14 @@ public class ProjectManager implements DelegateListener {
     private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
 
     // so we can look up by index
-    private static List<Language> mSourceLanguages = new ArrayList<Language>();
+    private static List<Language> mLanguages = new ArrayList<Language>();
     // so we can look up by id
-    private static Map<String, Language> mSourceLanguageMap = new HashMap<String, Language>();
+    private static Map<String, Language> mLanguagesMap = new HashMap<String, Language>();
 
-    // so we can look up by index
-    private static List<Language> mTargetLanguages = new ArrayList<Language>();
-    // so we can look up by id
-    private static Map<String, Language> mTargetLanguageMap = new HashMap<String, Language>();
+//    // so we can look up by index
+//    private static List<Language> mTargetLanguages = new ArrayList<Language>();
+//    // so we can look up by id
+//    private static Map<String, Language> mTargetLanguageMap = new HashMap<String, Language>();
 
     private static String mSelectedProjectId;
     private static MainApplication mContext;
@@ -72,21 +72,10 @@ public class ProjectManager implements DelegateListener {
      * Adds a source lanuage to the manager
      * @param l the language to add
      */
-    private void addSourceLanguage(Language l) {
-        if(!mSourceLanguageMap.containsKey(l.getId())) {
-            mSourceLanguageMap.put(l.getId(), l);
-            mSourceLanguages.add(l);
-        }
-    }
-
-    /**
-     * Adds a target lanuage to the manager
-     * @param l the language to add
-     */
-    private void addTargetLanguage(Language l) {
-        if(!mTargetLanguageMap.containsKey(l.getId())) {
-            mTargetLanguageMap.put(l.getId(), l);
-            mTargetLanguages.add(l);
+    private void addLanguage(Language l) {
+        if(!mLanguagesMap.containsKey(l.getId())) {
+            mLanguagesMap.put(l.getId(), l);
+            mLanguages.add(l);
         }
     }
 
@@ -121,9 +110,9 @@ public class ProjectManager implements DelegateListener {
      * @param id the langyage id a.k.a language code
      * @return null if the language does not exist
      */
-    public Language getSourceLanguage(String id) {
-        if(mSourceLanguageMap.containsKey(id)) {
-            return mSourceLanguageMap.get(id);
+    public Language getLanguage(String id) {
+        if(mLanguagesMap.containsKey(id)) {
+            return mLanguagesMap.get(id);
         } else {
             return null;
         }
@@ -134,35 +123,9 @@ public class ProjectManager implements DelegateListener {
      * @param index the language index
      * @return null if the language does not exist
      */
-    public Language getSourceLanguage(int index) {
-        if(index < mSourceLanguages.size() && index >= 0) {
-            return mSourceLanguages.get(index);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a target language by id
-     * @param id the langyage id a.k.a language code
-     * @return null if the language does not exist
-     */
-    public Language getTargetLanguage(String id) {
-        if(mTargetLanguageMap.containsKey(id)) {
-            return mTargetLanguageMap.get(id);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a target lanuage
-     * @param index the language index
-     * @return null if the language does not exist
-     */
-    public Language getTargetLanguage(int index) {
-        if(index < mTargetLanguages.size() && index >= 0) {
-            return mTargetLanguages.get(index);
+    public Language getLanguage(int index) {
+        if(index < mLanguages.size() && index >= 0) {
+            return mLanguages.get(index);
         } else {
             return null;
         }
@@ -269,7 +232,7 @@ public class ProjectManager implements DelegateListener {
                                 // add the language
                                 Language.Direction langDir = jsonLanguage.get("direction").toString() == "ltr" ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                                 Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir);
-                                addSourceLanguage(l);
+                                addLanguage(l);
 
                                 Project p = getProject(message.getProjectSlug());
                                 if(p != null) {
@@ -309,7 +272,7 @@ public class ProjectManager implements DelegateListener {
                     if(jsonLanguage.has("lc") && jsonLanguage.has("ln")) {
                         // TODO: it would be best to include the language direction in the target language list
                         Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
-                        addTargetLanguage(l);
+                        addLanguage(l);
                     } else {
                         Log.w(TAG, "missing required parameters in the target language catalog");
                     }
@@ -320,9 +283,14 @@ public class ProjectManager implements DelegateListener {
             }
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.SOURCE) {
             // TODO: this will break once we have multiple source languages. It will just load all the source into a single project mixing up all the languages. We need a way to manager different languges for each project.
+            // we could just skip loading the source for all but the first language. Then when user switches source language we will re-load the frames and chapters.
 
             // load source
             JSONArray jsonChapters;
+            if(message.getJSON() == null) {
+                Log.w(TAG, "The source was not found");
+                return;
+            }
             try {
                 JSONObject json = new JSONObject(message.getJSON());
                 jsonChapters = json.getJSONArray("chapters");
@@ -378,10 +346,10 @@ public class ProjectManager implements DelegateListener {
     }
 
     /**
-     * Returns a list of target languages
+     * Returns a list of languages
      * @return
      */
-    public List<Language> getTargetLanguages() {
-        return mTargetLanguages;
+    public List<Language> getLanguages() {
+        return mLanguages;
     }
 }

@@ -7,22 +7,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.ModalDialog;
 
 /**
  * This dialog contains contextual actions available for the currently selected translation content
  */
-public class TranslationMenuDialog extends DialogFragment {
+public class TranslationMenuDialog extends ModalDialog {
     private final TranslationMenuDialog me = this;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        int style = DialogFragment.STYLE_NO_TITLE, theme = 0;
-        setStyle(style, theme);
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -38,6 +33,8 @@ public class TranslationMenuDialog extends DialogFragment {
         chapterTitleEditText.setText(p.getSelectedChapter().getTitleTranslation().getText());
         final EditText chapterReferenceEditText = (EditText)v.findViewById(R.id.editChapterReferenceEditText);
         chapterReferenceEditText.setText(p.getSelectedChapter().getReferenceTranslation().getText());
+        TextView languageText = (TextView)v.findViewById(R.id.languageNameText);
+        languageText.setText(p.getSelectedTargetLanguage().getName());
 
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelEditChapterTitleButton);
@@ -56,6 +53,13 @@ public class TranslationMenuDialog extends DialogFragment {
                 p.getSelectedChapter().save();
                 ((MainActivity) getActivity()).reloadCenterPane();
                 me.dismiss();
+            }
+        });
+        Button languageBtn = (Button)v.findViewById(R.id.switchTargetLanguageButton);
+        languageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity) getActivity()).showTargetLanguageMenu();
             }
         });
         return v;

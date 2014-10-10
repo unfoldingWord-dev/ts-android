@@ -192,7 +192,7 @@ public class Project {
      * @return
      */
     public boolean setSelectedTargetLanguage(String id) {
-        Language l = MainContext.getContext().getSharedProjectManager().getTargetLanguage(id);
+        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(id);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
         }
@@ -205,7 +205,7 @@ public class Project {
      * @return true if the language exists
      */
     public boolean setSelectedTargetLanguage(int index) {
-        Language l = MainContext.getContext().getSharedProjectManager().getTargetLanguage(index);
+        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(index);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
         }
@@ -217,12 +217,12 @@ public class Project {
      * @return
      */
     public Language getSelectedTargetLanguage() {
-        Language selectedLanguage = MainContext.getContext().getSharedProjectManager().getTargetLanguage(mSelectedTargetLanguageId);
+        Language selectedLanguage = MainContext.getContext().getSharedProjectManager().getLanguage(mSelectedTargetLanguageId);
         if(selectedLanguage == null) {
             // auto select the first language
             int defaultLanguageIndex = 0;
             setSelectedTargetLanguage(defaultLanguageIndex);
-            return MainContext.getContext().getSharedProjectManager().getTargetLanguage(defaultLanguageIndex);
+            return MainContext.getContext().getSharedProjectManager().getLanguage(defaultLanguageIndex);
         } else {
             return selectedLanguage;
         }
