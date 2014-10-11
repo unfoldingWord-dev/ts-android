@@ -2,6 +2,10 @@ package com.door43.translationstudio;
 
 import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
+import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
+import com.door43.translationstudio.dialogs.InfoDialog;
+import com.door43.translationstudio.dialogs.LanguageSelectorDialog;
+import com.door43.translationstudio.dialogs.TranslationMenuDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
@@ -16,6 +20,7 @@ import com.squareup.otto.Subscribe;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,7 +31,9 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
-import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
@@ -139,14 +146,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 closeDrawers();
             }
         });
-        translationText.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                // TODO: for some reason this is getting called a lot when swiping over it we will need to resolve this before adding long press support.
-//                app().showToastMessage("Long presses are not supported at this time");
-                return true;
-            }
-        });
+//        translationText.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View view) {
+//                // TODO: for some reason this is getting called a lot when swiping over it we will need to resolve this before adding long press support.
+////                app().showToastMessage("Long presses are not supported at this time");
+//                return true;
+//            }
+//        });
 
 
         TextView sourceText = ((TextView)findViewById(R.id.sourceText));
@@ -357,7 +364,13 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     public void openLeftDrawer() {
+        closeDrawers();
         ((DrawerLayout)findViewById(R.id.drawer_layout)).openDrawer(Gravity.LEFT);
+    }
+
+    public void openRightDrawer() {
+        closeDrawers();
+        ((DrawerLayout)findViewById(R.id.drawer_layout)).openDrawer(Gravity.RIGHT);
     }
 
     /**
@@ -376,24 +389,31 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     /**
-     * Override the device contextual menu button to open our custom menu
-     * @param keyCode
-     * @param event
-     * @return
+     * Opens the user settings activity
      */
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_MENU) {
-            showContextualMenu();
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
+    public void openSettings() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     /**
-     * Displays the app contextual menu
+     * Begins syncing the selected project
      */
-    public void showContextualMenu() {
+    public void openSyncing() {
+        app().getSharedTranslationManager().syncSelectedProject();
+    }
+
+    /**
+     * Opens the sharing and export activity
+     */
+    public void openSharing() {
+        app().showToastMessage("Sharing is not enabled yet.");
+    }
+
+    /**
+     * opens the advanced settings dialog
+     */
+    public void openAdvancedSettings() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
@@ -403,7 +423,26 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         app().closeToastMessage();
         // Create and show the dialog.
-        MenuDialogFragment newFragment = new MenuDialogFragment();
+        AdvancedSettingsDialog newFragment = new AdvancedSettingsDialog();
+
+        newFragment.show(ft, "dialog");
+    }
+
+    /**
+     * opens the app info dialog
+     */
+    public void openInfo() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        app().closeToastMessage();
+        // Create and show the dialog.
+        InfoDialog newFragment = new InfoDialog();
+
         newFragment.show(ft, "dialog");
     }
 
@@ -438,7 +477,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         app().closeToastMessage();
         // Create and show the dialog.
-        LanguageSelectorMenu dialogFragment = new LanguageSelectorMenu();
+        LanguageSelectorDialog dialogFragment = new LanguageSelectorDialog();
         Bundle bundle = new Bundle();
         bundle.putBoolean("sourceLanguages", true);
         dialogFragment.setArguments(bundle);
@@ -458,7 +497,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         app().closeToastMessage();
         // Create and show the dialog.
-        LanguageSelectorMenu dialogFragment = new LanguageSelectorMenu();
+        LanguageSelectorDialog dialogFragment = new LanguageSelectorDialog();
         Bundle bundle = new Bundle();
         bundle.putBoolean("sourceLanguages", false);
         dialogFragment.setArguments(bundle);
@@ -469,7 +508,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     public void onDelegateResponse(String id, DelegateResponse response) {
         if(TranslationSyncResponse.class == response.getClass()) {
             if (((TranslationSyncResponse)response).isSuccess()) {
-                showContextualMenu();
+                openSyncing();
             } else {
                 // error
             }
@@ -485,5 +524,40 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     @Subscribe
     public void modalDismissed(LanguageModalDismissedEvent event) {
         reloadCenterPane();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_activity_actions, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_share:
+                openSharing();
+                return true;
+            case R.id.action_sync:
+                openSyncing();
+                return true;
+            case R.id.action_settings:
+                openSettings();
+                return true;
+            case R.id.action_info:
+                openInfo();
+                return true;
+            case R.id.action_library:
+                openLeftDrawer();
+                return true;
+            case R.id.action_resources:
+                openRightDrawer();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

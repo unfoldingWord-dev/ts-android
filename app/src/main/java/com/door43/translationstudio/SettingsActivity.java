@@ -76,20 +76,6 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Add a button to the header list.
-        if (hasHeaders()) {
-            // add a button to regenerate the ssh keys
-            Button button = new Button(this);
-            button.setText("Regenerate SSH Keys");
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    MainContext.getContext().generateKeys();
-                }
-            });
-            setListFooter(button);
-        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 
@@ -19,8 +20,8 @@ import java.io.InputStream;
 /**
  * Created by joel on 9/29/2014.
  */
-public class LicenseDialogFragment extends DialogFragment {
-    private final LicenseDialogFragment me = this;
+public class LicenseDialog extends DialogFragment {
+    private final LicenseDialog me = this;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -31,7 +32,7 @@ public class LicenseDialogFragment extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_license, container, false);
+        View v = inflater.inflate(R.layout.dialog_license, container, false);
         TextView licenseText = (TextView) v.findViewById(R.id.license_text);
 
         // load the license html

@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
 
@@ -25,7 +26,7 @@ public class SourceMenuDialog extends DialogFragment  {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.source_fragment_dialog, container, false);
+        View v = inflater.inflate(R.layout.dialog_source, container, false);
 
         Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(p == null) {

@@ -7,13 +7,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.door43.translationstudio.dialogs.LicenseDialog;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 /**
  * This activity checks if the user has accepted the terms of use before continuing to load the app
  */
 public class TermsActivity extends TranslatorBaseActivity {
-    private LicenseDialogFragment licenseDialogFragment;
+    private LicenseDialog licenseDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,9 +71,9 @@ public class TermsActivity extends TranslatorBaseActivity {
         ft.addToBackStack(null);
 
         // Create and show the dialog.
-        if(licenseDialogFragment == null) {
-            licenseDialogFragment = new LicenseDialogFragment();
+        if(licenseDialog == null) {
+            licenseDialog = new LicenseDialog();
         }
-        licenseDialogFragment.show(ft, "dialog");
+        licenseDialog.show(ft, "dialog");
     }
 }

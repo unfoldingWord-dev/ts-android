@@ -8,13 +8,45 @@
         <item name="android:layout_height">fill_parent</item>
 
         <!-- No backgrounds, titles or window float -->
-        <item name="android:windowNoTitle">true</item>
+        <!--<item name="android:windowNoTitle">true</item>-->
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowIsFloating">false</item>
+        <item name="android:actionBarStyle">@style/TranslationActionbar</item>
     </style>
 
-    <style name="SettingTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+    <style name="TitledTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">fill_parent</item>
 
+        <!-- No backgrounds, titles or window float -->
+        <!--<item name="android:windowNoTitle">true</item>-->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:actionBarStyle">@style/TitledActionbar</item>
+    </style>
+
+    <style name="TitledActionbar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/green</item>
+        <item name="android:titleTextStyle">@style/TitleTextStyle</item>
+    </style>
+
+    <style name="TranslationActionbar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/green</item>
+        <item name="android:displayOptions">useLogo|showHome</item>
+        <item name="android:icon">@android:color/transparent</item>
+        <item name="android:titleTextStyle">@style/TitleTextStyle</item>
+    </style>
+
+    <style name="TranslationNoActionbar" parent="@style/Theme.AppCompat.Light">
+
+    </style>
+
+    <style name="SettingTheme" parent="@style/Theme.AppCompat.Light">
+        <item name="android:actionBarStyle">@style/TranslationNoActionbar</item>
+    </style>
+
+    <style name="TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/white</item>
     </style>
 
 </resources>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_library"
+        android:title="@string/menu_library"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_resources"
+        android:title="@string/menu_resources"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_share"
+        android:title="@string/menu_share"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_sync"
+        android:title="@string/menu_sync"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_info"
+        android:title="@string/menu_info"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/menu_settings"
+        app:showAsAction="never" />
+</menu>

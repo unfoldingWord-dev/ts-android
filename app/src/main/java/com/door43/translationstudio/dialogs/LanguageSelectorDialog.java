@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.dialogs;
 
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
@@ -22,12 +23,12 @@ import com.door43.translationstudio.util.ModalDialog;
 /**
  * Created by joel on 10/7/2014.
  */
-public class LanguageSelectorMenu extends ModalDialog {
-    private final LanguageSelectorMenu me = this;
+public class LanguageSelectorDialog extends ModalDialog {
+    private final LanguageSelectorDialog me = this;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.target_language_fragment_dialog, container, false);
+        View v = inflater.inflate(R.layout.dialog_language, container, false);
         Boolean showSourceLanguages = false;
 
         Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();

@@ -1,6 +1,5 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.dialogs;
 
-import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +8,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.door43.translationstudio.MainActivity;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.ModalDialog;
@@ -21,7 +22,7 @@ public class TranslationMenuDialog extends ModalDialog {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.translation_fragment_dialog, container, false);
+        View v = inflater.inflate(R.layout.dialog_translation, container, false);
 
         final Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(p == null || p.getSelectedChapter() == null) {
