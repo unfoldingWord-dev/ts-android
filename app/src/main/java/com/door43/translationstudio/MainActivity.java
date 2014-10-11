@@ -60,6 +60,15 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private final float MIN_FLING_VELOCITY = 10;
     private final float MIN_LOG_PRESS = 100;
 
+    // center view fields for caching
+    TextView mSourceText;
+    TextView mSourceTitleText;
+    TextView mSourceFrameNumText;
+    TextView mTranslationTitleText;
+    ImageView mNextFrameView;
+    ImageView mPreviousFrameView;
+    EditText mInputText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -293,12 +302,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      */
     public void reloadCenterPane() {
         // load source text
-        TextView sourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
-        TextView sourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
-        TextView sourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
-        TextView translationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
-        ImageView nextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
-        ImageView previousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
+        mSourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
+        mSourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
+        mSourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
+        mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
+        mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
+        mPreviousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
+        mInputText = (EditText)mCenterPane.findViewById(R.id.inputText);
+
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
             int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
@@ -307,34 +318,33 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             Chapter chapter = p.getSelectedChapter();
             Frame frame = chapter.getSelectedFrame();
             Translation translation = frame.getTranslation();
-            EditText inputText = (EditText)mCenterPane.findViewById(R.id.inputText);
-            inputText.setText(translation.getText());
+            mInputText.setText(translation.getText());
 
             // pane titles
-            sourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
+            mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             if(chapter.getTitleTranslation().getText() == "") {
                 // display non-translated title
-                translationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
+                mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
             } else {
                 // display translated title
-                translationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
+                mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
             }
 
 
             // pane footers
-            sourceText.setText(frame.getText());
-            sourceFrameNumText.setText("Frame " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
+            mSourceText.setText(frame.getText());
+            mSourceFrameNumText.setText((frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
 
             // display navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
-                nextFrameView.setVisibility(View.VISIBLE);
+                mNextFrameView.setVisibility(View.VISIBLE);
             } else {
-                nextFrameView.setVisibility(View.INVISIBLE);
+                mNextFrameView.setVisibility(View.INVISIBLE);
             }
             if(0 < frameIndex) {
-                previousFrameView.setVisibility(View.VISIBLE);
+                mPreviousFrameView.setVisibility(View.VISIBLE);
             } else {
-                previousFrameView.setVisibility(View.INVISIBLE);
+                mPreviousFrameView.setVisibility(View.INVISIBLE);
             }
 
             // updates preferences so the app opens to the last opened frame

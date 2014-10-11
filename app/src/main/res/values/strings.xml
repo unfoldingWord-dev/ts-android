@@ -2,8 +2,6 @@
 <resources>
 
     <string name="app_name">Translation Studio</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="projects">Projects</string>
     <string name="chapters">Chapters</string>
     <string name="frames">Frames</string>
