@@ -9,7 +9,6 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -38,6 +37,11 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
                 ((MainActivity)me.getActivity()).closeDrawers();
                 // let the adapter redraw itself so the selected frame is corectly highlighted
                 NotifyAdapterDataSetChanged();
+
+                // Display chapter translation dialog if translating a new chapter
+                if(!app().getSharedProjectManager().getSelectedProject().getSelectedChapter().translationInProgress()) {
+                    ((MainActivity)me.getActivity()).showTranslationMenu();
+                }
             }
         });
 

@@ -234,21 +234,11 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         // detect gestures
         mSourceGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                showSourceLanguageMenu();
-                return true;
-            }
-            @Override
             public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
                 return handleFling(event1, event2, velocityX, velocityY);
             }
         });
         mTranslationGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                showTranslationMenu();
-                return true;
-            }
             @Override
             public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
                 return handleFling(event1, event2, velocityX, velocityY);
@@ -565,6 +555,9 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 return true;
             case R.id.action_resources:
                 openRightDrawer();
+                return true;
+            case R.id.action_translation_settings:
+                showTranslationMenu();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

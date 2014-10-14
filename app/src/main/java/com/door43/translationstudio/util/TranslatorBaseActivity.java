@@ -18,11 +18,6 @@ public class TranslatorBaseActivity extends ActionBarActivity {
         app().setCurrentActivity(this);
     }
 
-    protected void onPause() {
-        clearReferences();
-        super.onPause();
-    }
-
     protected void onDestroy() {
         clearReferences();
         super.onDestroy();

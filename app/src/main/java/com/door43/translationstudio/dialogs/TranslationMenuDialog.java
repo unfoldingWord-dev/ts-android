@@ -30,12 +30,19 @@ public class TranslationMenuDialog extends ModalDialog {
         }
 
         // set values
-        final EditText chapterTitleEditText = (EditText)v.findViewById(R.id.editChapterTitleEditText);
-        chapterTitleEditText.setText(p.getSelectedChapter().getTitleTranslation().getText());
-        final EditText chapterReferenceEditText = (EditText)v.findViewById(R.id.editChapterReferenceEditText);
-        chapterReferenceEditText.setText(p.getSelectedChapter().getReferenceTranslation().getText());
-        TextView languageText = (TextView)v.findViewById(R.id.languageNameText);
-        languageText.setText(p.getSelectedTargetLanguage().getName());
+        TextView sourceLanguageChapterTitleEditText = (TextView)v.findViewById(R.id.sourceLanguageChapterTitle);
+        sourceLanguageChapterTitleEditText.setText(p.getSelectedChapter().getTitle());
+        TextView sourceLanguageChapterReferenceEditText = (TextView)v.findViewById(R.id.sourceLanguageChapterReference);
+        sourceLanguageChapterReferenceEditText.setText(p.getSelectedChapter().getReference());
+        TextView sourceLanguageText = (TextView)v.findViewById(R.id.sourceLanguageNameText);
+        sourceLanguageText.setText(p.getSelectedSourceLanguage().getName());
+
+        final EditText targetLanguageChapterTitleEditText = (EditText)v.findViewById(R.id.targetLanguageChapterTitleEditText);
+        targetLanguageChapterTitleEditText.setText(p.getSelectedChapter().getTitleTranslation().getText());
+        final EditText targetLanguageChapterReferenceEditText = (EditText)v.findViewById(R.id.targetLanguageChapterReferenceEditText);
+        targetLanguageChapterReferenceEditText.setText(p.getSelectedChapter().getReferenceTranslation().getText());
+        TextView targetLanguageText = (TextView)v.findViewById(R.id.targetLanguageNameText);
+        targetLanguageText.setText(p.getSelectedTargetLanguage().getName());
 
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelEditChapterTitleButton);
@@ -49,18 +56,25 @@ public class TranslationMenuDialog extends ModalDialog {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                p.getSelectedChapter().setTitleTranslation(chapterTitleEditText.getText().toString());
-                p.getSelectedChapter().setReferenceTranslation(chapterReferenceEditText.getText().toString());
+                p.getSelectedChapter().setTitleTranslation(targetLanguageChapterTitleEditText.getText().toString());
+                p.getSelectedChapter().setReferenceTranslation(targetLanguageChapterReferenceEditText.getText().toString());
                 p.getSelectedChapter().save();
                 ((MainActivity) getActivity()).reloadCenterPane();
                 me.dismiss();
             }
         });
-        Button languageBtn = (Button)v.findViewById(R.id.switchTargetLanguageButton);
-        languageBtn.setOnClickListener(new View.OnClickListener() {
+        Button targetLanguageBtn = (Button)v.findViewById(R.id.switchTargetLanguageButton);
+        targetLanguageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ((MainActivity) getActivity()).showTargetLanguageMenu();
+            }
+        });
+        Button sourceLanguageBtn = (Button)v.findViewById(R.id.switchSourceLanguageButton);
+        sourceLanguageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainActivity) getActivity()).showSourceLanguageMenu();
             }
         });
         return v;

@@ -1,13 +1,7 @@
 package com.door43.translationstudio.util;
 
-import android.app.Activity;
-
 import com.door43.translationstudio.MainApplication;
 import com.squareup.otto.Bus;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Locale;
 
 /**
  * This is sort of a hack to provide the main application context to all classes

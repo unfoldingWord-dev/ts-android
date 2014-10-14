@@ -1,39 +1,6 @@
 [
   {
-    "date_modified": "20140729", 
-    "direction": "ltr", 
-    "language": "ru", 
-    "status": {
-      "checking_entity": "translation team", 
-      "checking_level": "1", 
-      "comments": "Level 1 check cleared via email to Tim Jore by translation team.", 
-      "contributors": "jack.shibata", 
-      "progress_notes": "", 
-      "publish_date": "2014-07-29", 
-      "source_text": "en", 
-      "source_text_version": "2.0", 
-      "version": "2.1"
-    }, 
-    "string": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439"
-  }, 
-  {
-    "date_modified": "20140731", 
-    "direction": "ltr", 
-    "language": "es", 
-    "status": {
-      "checking_entity": "translation team", 
-      "checking_level": "1", 
-      "comments": "Level 1 check cleared via email to Tim Jore by translation team.", 
-      "contributors": "ljbadiola; natilatina", 
-      "publish_date": "2014-07-31", 
-      "source_text": "en", 
-      "source_text_version": "2.0", 
-      "version": "2.1"
-    }, 
-    "string": "Espa\u00f1ol"
-  }, 
-  {
-    "date_modified": "20140811", 
+    "date_modified": "20140917", 
     "direction": "ltr", 
     "language": "en", 
     "status": {
@@ -41,11 +8,75 @@
       "checking_level": "3", 
       "comments": "Original source text.", 
       "contributors": "Distant Shores Media", 
-      "publish_date": "2014-08-11", 
+      "publish_date": "2014-09-17", 
       "source_text": "en", 
       "source_text_version": "3.1", 
       "version": "3.1"
     }, 
     "string": "English"
+  }, 
+  {
+    "date_modified": "20140917", 
+    "direction": "ltr", 
+    "language": "es", 
+    "status": {
+      "checking_entity": "translation team", 
+      "checking_level": "1", 
+      "comments": "Level 1 check cleared via email to Tim Jore by translation team.", 
+      "contributors": "ljbadiola; natilatina", 
+      "publish_date": "2014-09-17", 
+      "source_text": "en", 
+      "source_text_version": "2.0", 
+      "version": "2.1"
+    }, 
+    "string": "Espa\u00f1ol"
+  }, 
+  {
+    "date_modified": "20140917", 
+    "direction": "ltr", 
+    "language": "ru", 
+    "status": {
+      "checking_entity": "translation team", 
+      "checking_level": "1", 
+      "comments": "Level 1 check cleared via email to Tim Jore by translation team.", 
+      "contributors": "jack.shibata", 
+      "publish_date": "2014-09-17", 
+      "source_text": "en", 
+      "source_text_version": "2.0", 
+      "version": "2.1"
+    }, 
+    "string": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439"
+  }, 
+  {
+    "date_modified": "20141006", 
+    "direction": "ltr", 
+    "language": "fr", 
+    "status": {
+      "checking_entity": "translation team", 
+      "checking_level": "1", 
+      "comments": "", 
+      "contributors": "francoise39;grace-duval;morendo", 
+      "publish_date": "2014-10-06", 
+      "source_text": "en", 
+      "source_text_version": "3.1", 
+      "version": "3.2"
+    }, 
+    "string": "Fran\u00e7ais"
+  }, 
+  {
+    "date_modified": "20141007", 
+    "direction": "ltr", 
+    "language": "pt-br", 
+    "status": {
+      "checking_entity": "translation team", 
+      "checking_level": "1", 
+      "comments": "", 
+      "contributors": "abe.beserra;admin;beta.lara.carla;cheryljore;dan;deboradc;isaacthib;jonatas.matheus;tim;verinhalcm", 
+      "publish_date": "2014-10-07", 
+      "source_text": "en", 
+      "source_text_version": "3.1", 
+      "version": "3.2"
+    }, 
+    "string": "Portugu\u00eas"
   }
 ]

@@ -23,7 +23,7 @@ public class Chapter {
 
     private String mId;
     private String mTitle;
-    private String mDescription;
+    private String mReference;
     private String mSelectedFrameId;
     private Project mProject;
     private Translation mTitleTranslation;
@@ -33,12 +33,12 @@ public class Chapter {
      * Create a new chapter
      * @param id the chapter id. This is effectively the chapter number.
      * @param title the human readable title of the chapter
-     * @param description a short description of the chapter
+     * @param reference a short description of the chapter
      */
-    public Chapter(String id, String title, String description) {
+    public Chapter(String id, String title, String reference) {
         mId = id;
         mTitle = title;
-        mDescription = description;
+        mReference = reference;
     }
 
     /**
@@ -72,6 +72,14 @@ public class Chapter {
      */
     public String getTitle() {
         return mTitle;
+    }
+
+    /**
+     * Returns the chapter reference
+     * @return
+     */
+    public String getReference() {
+        return mReference;
     }
 
     /**
@@ -147,7 +155,7 @@ public class Chapter {
      * @return
      */
     public String getDescription() {
-        return mDescription;
+        return mReference;
     }
 
     /**
@@ -328,5 +336,13 @@ public class Chapter {
                 }
             }
         }
+    }
+
+    /**
+     * Checks if the chapter has started being translated
+     * @return
+     */
+    public boolean translationInProgress() {
+        return !getReferenceTranslation().getText().isEmpty() || !getTitleTranslation().getText().isEmpty();
     }
 }
