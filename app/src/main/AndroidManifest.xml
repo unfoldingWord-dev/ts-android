@@ -12,26 +12,42 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name=".TermsActivity"
-            android:theme="@style/TitledTheme"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:theme="@style/TitledTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".SplashActivity"
-            android:label="@string/app_name">
-        </activity>
-        <activity
-            android:name=".MainActivity"
-            android:windowSoftInputMode="stateHidden"
             android:label="@string/app_name" >
         </activity>
         <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateHidden" >
+        </activity>
+        <activity
             android:name=".SettingsActivity"
-            android:theme="@style/SettingTheme"
-            android:label="@string/title_activity_settings" >
+            android:label="@string/title_activity_settings"
+            android:theme="@style/SettingTheme" >
+        </activity>
+        <activity
+            android:name=".ChapterSettingActivity"
+            android:label="@string/title_activity_chapter_setting"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.MainActivity" />
+        </activity>
+        <activity
+            android:name=".LanguageSelectorActivity"
+            android:label="@string/title_activity_language_selector" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.ChapterSettingActivity" />
         </activity>
     </application>
 

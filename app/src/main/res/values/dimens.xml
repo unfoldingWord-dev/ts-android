@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <dimen name="nav_bar_height">45dp</dimen>
     <dimen name="shadow_width">8dp</dimen>
     <dimen name="sliding_layer_width">400dp</dimen>
@@ -11,4 +12,7 @@
     <dimen name="h2">30sp</dimen>
     <dimen name="h3">25sp</dimen>
     <dimen name="h4">20sp</dimen>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
 </resources>

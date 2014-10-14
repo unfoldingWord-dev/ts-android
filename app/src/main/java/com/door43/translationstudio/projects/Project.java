@@ -1,5 +1,8 @@
 package com.door43.translationstudio.projects;
 
+import android.content.SharedPreferences;
+
+import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.MainContext;
 
@@ -27,6 +30,7 @@ public class Project {
     private String mSelectedSourceLanguageId;
     private String mSelectedTargetLanguageId;
     private static final String GLOBAL_PROJECT_SLUG = "uw";
+    private static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
 
     /**
      * Create a new project
@@ -38,6 +42,10 @@ public class Project {
         mTitle = title;
         mSlug = slug;
         mDescription = description;
+        // load the selected language
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
+        mSelectedTargetLanguageId = settings.getString("selected_target_language_"+mSlug, null);
     }
 
     /**
@@ -195,6 +203,7 @@ public class Project {
         Language l = MainContext.getContext().getSharedProjectManager().getLanguage(id);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
+            storeSelectedTargetLanguage(mSelectedTargetLanguageId);
         }
         return l != null;
     }
@@ -208,8 +217,20 @@ public class Project {
         Language l = MainContext.getContext().getSharedProjectManager().getLanguage(index);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
+            storeSelectedTargetLanguage(mSelectedTargetLanguageId);
         }
         return l != null;
+    }
+
+    /**
+     * stores the selected target language in the preferences so we can load it the next time the app starts
+     * @param slug
+     */
+    private void storeSelectedTargetLanguage(String slug) {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("selected_target_language_"+mSlug, slug);
+        editor.commit();
     }
 
     /**
@@ -237,6 +258,7 @@ public class Project {
         Language l = getSourceLanguage(id);
         if(l != null) {
             mSelectedSourceLanguageId = l.getId();
+            storeSelectedSourceLanguage(mSelectedSourceLanguageId);
         }
         return l != null;
     }
@@ -250,8 +272,20 @@ public class Project {
         Language l = getSourceLanguage(index);
         if(l != null) {
             mSelectedSourceLanguageId = l.getId();
+            storeSelectedSourceLanguage(mSelectedSourceLanguageId);
         }
         return l != null;
+    }
+
+    /**
+     * stores the selected target language in the preferences so we can load it the next time the app starts
+     * @param slug
+     */
+    private void storeSelectedSourceLanguage(String slug) {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("selected_source_language_"+mSlug, slug);
+        editor.commit();
     }
 
     /**

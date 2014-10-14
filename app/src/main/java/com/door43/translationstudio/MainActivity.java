@@ -4,8 +4,6 @@ import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
-import com.door43.translationstudio.dialogs.LanguageSelectorDialog;
-import com.door43.translationstudio.dialogs.TranslationMenuDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
@@ -116,6 +114,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     @Override
     protected void onResume() {
         super.onResume();
+        reloadCenterPane();
     }
 
     /**
@@ -155,15 +154,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 closeDrawers();
             }
         });
-//        translationText.setOnLongClickListener(new View.OnLongClickListener() {
-//            @Override
-//            public boolean onLongClick(View view) {
-//                // TODO: for some reason this is getting called a lot when swiping over it we will need to resolve this before adding long press support.
-////                app().showToastMessage("Long presses are not supported at this time");
-//                return true;
-//            }
-//        });
-
 
         TextView sourceText = ((TextView)findViewById(R.id.sourceText));
         sourceText.setMovementMethod(new ScrollingMovementMethod());
@@ -450,58 +440,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * Displays the translation contextual menu
      */
     public void showTranslationMenu() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        app().closeToastMessage();
-        // Create and show the dialog.
-        TranslationMenuDialog newFragment = new TranslationMenuDialog();
-
-        newFragment.show(ft, "dialog");
-    }
-
-    /**
-     * Displays the source contextual menu
-     */
-    public void showSourceLanguageMenu() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        app().closeToastMessage();
-        // Create and show the dialog.
-        LanguageSelectorDialog dialogFragment = new LanguageSelectorDialog();
-        Bundle bundle = new Bundle();
-        bundle.putBoolean("sourceLanguages", true);
-        dialogFragment.setArguments(bundle);
-        dialogFragment.show(ft, "dialog");
-    }
-
-    /**
-     * Displays the target contextual menu
-     */
-    public void showTargetLanguageMenu() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        app().closeToastMessage();
-        // Create and show the dialog.
-        LanguageSelectorDialog dialogFragment = new LanguageSelectorDialog();
-        Bundle bundle = new Bundle();
-        bundle.putBoolean("sourceLanguages", false);
-        dialogFragment.setArguments(bundle);
-        dialogFragment.show(ft, "dialog");
+        Intent chapterSettingsIntent = new Intent(me, ChapterSettingActivity.class);
+        startActivity(chapterSettingsIntent);
     }
 
     @Override

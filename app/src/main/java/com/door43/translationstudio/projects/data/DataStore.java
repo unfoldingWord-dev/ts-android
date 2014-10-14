@@ -43,6 +43,7 @@ public class DataStore extends DelegateSender {
      */
     public void fetchTargetLanguageCatalog() {
         // TODO: check for updates on the server
+        // https://api.unfoldingword.org/td/txt/1/langnames.json
         String path = "target_languages.json";
         issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.TARGET_LANGUAGE, loadJSONAsset(path)));
     }
