@@ -19,12 +19,12 @@ public class TermsActivity extends TranslatorBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_terms);
 
         if (app().hasAcceptedTerms()) {
             // skip to the splash screen if they have already accepted the terms of use
             startSplashActivity();
         } else {
+            setContentView(R.layout.activity_terms);
             Button rejectBtn = (Button)findViewById(R.id.reject_terms_btn);
             rejectBtn.setOnClickListener(new View.OnClickListener() {
                 @Override

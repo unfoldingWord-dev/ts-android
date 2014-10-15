@@ -54,10 +54,11 @@ public class DataStore extends DelegateSender {
      * @param languageCode the language code for which the source text will be returned
      * @return
      */
-    public void fetchSourceText(String projectSlug, String languageCode) {
+    public String fetchSourceText(String projectSlug, String languageCode) {
         // TODO: check for updates on the server
         String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/source.json";
-        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectSlug));
+        return loadJSONAsset(path);
+//        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectSlug));
     }
 
     /**

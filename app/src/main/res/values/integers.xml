@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <integer name="min_source_lang_checking_level">3</integer>
+    <integer name="min_source_lang_checking_level">1</integer>
 </resources>

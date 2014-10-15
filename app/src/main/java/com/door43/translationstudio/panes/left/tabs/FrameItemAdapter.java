@@ -34,7 +34,11 @@ public class FrameItemAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().numFrames();
+        try {
+            return mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().numFrames();
+        } catch(Exception e) {
+            return 0;
+        }
     }
 
     @Override

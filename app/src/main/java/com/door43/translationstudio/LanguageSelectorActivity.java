@@ -58,6 +58,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(willShowSourceLanguages) {
                     MainContext.getContext().getSharedProjectManager().getSelectedProject().setSelectedSourceLanguage(adapter.getItem(i).getId());
+                    MainContext.getContext().getSharedProjectManager().fetchProjectSource(MainContext.getContext().getSharedProjectManager().getSelectedProject());
                     finish();
                 } else {
                     MainContext.getContext().getSharedProjectManager().getSelectedProject().setSelectedTargetLanguage(adapter.getItem(i).getId());

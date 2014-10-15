@@ -31,7 +31,13 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
 
         mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
-            finish();
+            if(mProject != null && mProject.getSelectedChapter() == null) {
+                // there are not chapters in the selected source language
+                Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
+                languageIntent.putExtra("sourceLanguages", true);
+                startActivity(languageIntent);
+                finish();
+            }
         }
 
         // expand view fields
@@ -54,9 +60,11 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mProject.getSelectedChapter().setTitleTranslation(targetLanguageChapterTitleEditText.getText().toString());
-                mProject.getSelectedChapter().setReferenceTranslation(targetLanguageChapterReferenceEditText.getText().toString());
-                mProject.getSelectedChapter().save();
+                if(mProject.getSelectedChapter() != null) {
+                    mProject.getSelectedChapter().setTitleTranslation(targetLanguageChapterTitleEditText.getText().toString());
+                    mProject.getSelectedChapter().setReferenceTranslation(targetLanguageChapterReferenceEditText.getText().toString());
+                    mProject.getSelectedChapter().save();
+                }
                 finish();
             }
         });
@@ -106,10 +114,12 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
     }
 
     private void loadValues() {
-        sourceLanguageChapterTitleEditText.setText(mProject.getSelectedChapter().getTitle());
-        sourceLanguageChapterReferenceEditText.setText(mProject.getSelectedChapter().getReference());
-        targetLanguageChapterTitleEditText.setText(mProject.getSelectedChapter().getTitleTranslation().getText());
-        targetLanguageChapterReferenceEditText.setText(mProject.getSelectedChapter().getReferenceTranslation().getText());
+        if(mProject.getSelectedChapter() != null) {
+            sourceLanguageChapterTitleEditText.setText(mProject.getSelectedChapter().getTitle());
+            sourceLanguageChapterReferenceEditText.setText(mProject.getSelectedChapter().getReference());
+            targetLanguageChapterTitleEditText.setText(mProject.getSelectedChapter().getTitleTranslation().getText());
+            targetLanguageChapterReferenceEditText.setText(mProject.getSelectedChapter().getReferenceTranslation().getText());
+        }
         targetLanguageBtn.setText(mProject.getSelectedTargetLanguage().getName());
         sourceLanguageBtn.setText(mProject.getSelectedSourceLanguage().getName());
     }

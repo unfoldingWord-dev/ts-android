@@ -6,8 +6,10 @@ import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.events.ProjectsLoadedEvent;
 import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.DataStoreDelegateResponse;
+import com.door43.translationstudio.util.MainContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,13 +50,28 @@ public class ProjectManager implements DelegateListener {
 
     public ProjectManager(MainApplication context) {
         mContext = context;
-        mDataStore = new DataStore(context);
+    }
+    private FinishedLoadingSource mCallback;
+
+    /**
+     * loads the source projects
+     */
+    public void init(FinishedLoadingSource callback) {
+        mCallback = callback;
+        mDataStore = new DataStore(mContext);
         // register to receive async messages from the datastore
         mDataStore.registerDelegateListener(this);
-        // begin loading projects
-        mDataStore.fetchProjectCatalog();
         // begin loading target languages
         mDataStore.fetchTargetLanguageCatalog();
+    }
+
+    /**
+     * Loads the source for a single project
+     * @param p
+     */
+    public void fetchProjectSource(Project p) {
+        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId());
+        loadProject(source, p);
     }
 
     /**
@@ -239,7 +256,7 @@ public class ProjectManager implements DelegateListener {
                                     p.addSourceLanguage(l);
 
                                     // fetch source text
-                                    mDataStore.fetchSourceText(p.getId(), l.getId());
+//                                    mDataStore.fetchSourceText(p.getId(), l.getId());
                                 } else {
                                     Log.w(TAG, "project not found");
                                 }
@@ -255,6 +272,8 @@ public class ProjectManager implements DelegateListener {
                     continue;
                 }
             }
+            // notify listeners that we have finished loading the source projects
+            mCallback.ready();
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.TARGET_LANGUAGE) {
             // parse target languages
             JSONArray json;
@@ -281,60 +300,11 @@ public class ProjectManager implements DelegateListener {
                     continue;
                 }
             }
+            // begin loading projects
+            mDataStore.fetchProjectCatalog();
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.SOURCE) {
-            // TODO: this will break once we have multiple source languages. It will just load all the source into a single project mixing up all the languages. We need a way to manager different languges for each project.
-            // we could just skip loading the source for all but the first language. Then when user switches source language we will re-load the frames and chapters.
-
-            // load source
-            JSONArray jsonChapters;
-            if(message.getJSON() == null) {
-                Log.w(TAG, "The source was not found");
-                return;
-            }
-            try {
-                JSONObject json = new JSONObject(message.getJSON());
-                jsonChapters = json.getJSONArray("chapters");
-            } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
-                return;
-            }
-
-            // load the data
-            for(int i=0; i<jsonChapters.length(); i++) {
-                try {
-                    JSONObject jsonChapter = jsonChapters.getJSONObject(i);
-                    if(jsonChapter.has("ref") && jsonChapter.has("frames") && jsonChapter.has("title") && jsonChapter.has("number")) {
-                        // load chapter
-                        String num = jsonChapter.get("number").toString();
-                        String chapterNumber = num.substring(0, num.indexOf("."));
-                        Chapter c = new Chapter(chapterNumber, jsonChapter.get("title").toString(), jsonChapter.get("ref").toString());
-
-                        // add chapter to the project
-                        Project p = getProject(message.getProjectSlug());
-                        if(p != null) {
-                            p.addChapter(c);
-
-                            // load frames
-                            JSONArray jsonFrames = jsonChapter.getJSONArray("frames");
-                            for(int j=0; j<jsonFrames.length(); j++) {
-                                JSONObject jsonFrame = jsonFrames.getJSONObject(j);
-                                if(jsonFrame.has("id") && jsonFrame.has("text")) {
-                                    c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("img").toString(), jsonFrame.get("text").toString()));
-                                } else {
-                                    Log.w(TAG, "missing required parameters in the source frames");
-                                }
-                            }
-                        } else {
-                            Log.w(TAG, "could not locate project");
-                        }
-                    } else {
-                        Log.w(TAG, "missing required parameters in the source chapters");
-                    }
-                } catch (JSONException e) {
-                    Log.w(TAG, e.getMessage());
-                    continue;
-                }
-            }
+            // @deprecated
+//            loadProject(message.getJSON(), getProject(message.getProjectSlug()));
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.IMAGES) {
             // TODO: handle loading image assets for frames. Care should be taken to avoid memory leaks or slow load times. We may want to do this on demand instead of up front (except for locally stored assets).
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.AUDIO) {
@@ -346,10 +316,71 @@ public class ProjectManager implements DelegateListener {
     }
 
     /**
+     * Loads the source translation into a project
+     * @param jsonString
+     * @param p
+     */
+    private void loadProject(String jsonString, Project p) {
+        p.flush();
+
+        if(p == null) return;
+
+        // load source
+        JSONArray jsonChapters;
+        if(jsonString == null) {
+            Log.w(TAG, "The source was not found");
+            return;
+        }
+        try {
+            JSONObject json = new JSONObject(jsonString);
+            jsonChapters = json.getJSONArray("chapters");
+        } catch (JSONException e) {
+            Log.w(TAG, e.getMessage());
+            return;
+        }
+
+        // load the data
+        for(int i=0; i<jsonChapters.length(); i++) {
+            try {
+                JSONObject jsonChapter = jsonChapters.getJSONObject(i);
+                if(jsonChapter.has("ref") && jsonChapter.has("frames") && jsonChapter.has("title") && jsonChapter.has("number")) {
+                    // load chapter
+                    String num = jsonChapter.get("number").toString();
+                    String chapterNumber = num.substring(0, num.indexOf("."));
+                    Chapter c = new Chapter(chapterNumber, jsonChapter.get("title").toString(), jsonChapter.get("ref").toString());
+
+                    // add chapter to the project
+                    p.addChapter(c);
+
+                    // load frames
+                    JSONArray jsonFrames = jsonChapter.getJSONArray("frames");
+                    for(int j=0; j<jsonFrames.length(); j++) {
+                        JSONObject jsonFrame = jsonFrames.getJSONObject(j);
+                        if(jsonFrame.has("id") && jsonFrame.has("text")) {
+                            c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("img").toString(), jsonFrame.get("text").toString()));
+                        } else {
+                            Log.w(TAG, "missing required parameters in the source frames");
+                        }
+                    }
+                } else {
+                    Log.w(TAG, "missing required parameters in the source chapters");
+                }
+            } catch (JSONException e) {
+                Log.w(TAG, e.getMessage());
+                continue;
+            }
+        }
+    }
+
+    /**
      * Returns a list of languages
      * @return
      */
     public List<Language> getLanguages() {
         return mLanguages;
+    }
+
+    public interface FinishedLoadingSource {
+        void ready();
     }
 }

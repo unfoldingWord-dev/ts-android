@@ -74,31 +74,27 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         app().getSharedTranslationManager().registerDelegateListener(this);
 
-        // TODO: we should display a splash screen until the project manager has finished loading.
-        // we should also not load the project manager when initialized but manually in the splash loader.
-        // we should also generate the keys in the splash loader
-        // Generate the ssh keys
-        if(!app().hasKeys()) {
-            app().generateKeys();
-        }
-
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
 
         initPanes();
+
+        if(app().getSharedProjectManager().getSelectedProject() != null && app().getSharedProjectManager().getSelectedProject().getSelectedChapter() == null) {
+            // the project contains no chapters for the current language
+            Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
+            languageIntent.putExtra("sourceLanguages", true);
+            startActivity(languageIntent);
+        }
 
         if(app().shouldShowWelcome()) {
             // perform any welcoming tasks here
             app().setShouldShowWelcome(false);
             openLeftDrawer();
         } else {
-            // automatically open the last viewed frame when the app opens
+            // open the drawer if the remembered chapter does not exist
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-                String frameId = app().getLastActiveFrame();
-                String chapterId = app().getLastActiveChapter();
-                String projectSlug = app().getLastActiveProject();
-                app().getSharedProjectManager().setSelectedProject(projectSlug);
-                app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
-                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+                if(app().getSharedProjectManager().getSelectedProject().getSelectedChapter() == null) {
+                    openLeftDrawer();
+                }
             }
             app().pauseAutoSave(true);
             reloadCenterPane();
@@ -293,15 +289,12 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
             int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
-
-            // load translation
             Chapter chapter = p.getSelectedChapter();
             Frame frame = chapter.getSelectedFrame();
+
+            // target translation
             Translation translation = frame.getTranslation();
             mInputText.setText(translation.getText());
-
-            // pane titles
-            mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             if(chapter.getTitleTranslation().getText() == "") {
                 // display non-translated title
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
@@ -310,12 +303,12 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
             }
 
-
-            // pane footers
+            // source translation
+            mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             mSourceText.setText(frame.getText());
             mSourceFrameNumText.setText((frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
 
-            // display navigation indicators
+            // navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
                 mNextFrameView.setVisibility(View.VISIBLE);
             } else {
@@ -332,6 +325,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             app().setActiveChapter(p.getSelectedChapter().getId());
             app().setActiveFrame(frame.getId());
         } else {
+            mInputText.setText("");
+            mTranslationTitleText.setText("");
+            mSourceTitleText.setText("");
+            mSourceText.setText("");
+            mSourceFrameNumText.setText("");
+            mNextFrameView.setVisibility(View.INVISIBLE);
+            mPreviousFrameView.setVisibility(View.INVISIBLE);
+
             // nothing was selected so open the project selector
             openLeftDrawer();
         }
@@ -354,12 +355,12 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     public void openLeftDrawer() {
-        closeDrawers();
+        ((DrawerLayout)findViewById(R.id.drawer_layout)).closeDrawer(Gravity.RIGHT);
         ((DrawerLayout)findViewById(R.id.drawer_layout)).openDrawer(Gravity.LEFT);
     }
 
     public void openRightDrawer() {
-        closeDrawers();
+        ((DrawerLayout)findViewById(R.id.drawer_layout)).closeDrawer(Gravity.LEFT);
         ((DrawerLayout)findViewById(R.id.drawer_layout)).openDrawer(Gravity.RIGHT);
     }
 

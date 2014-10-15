@@ -49,6 +49,15 @@ public class Project {
     }
 
     /**
+     * Dumps all the frames and chapters from the project
+     */
+    public void flush() {
+        mChapters = new ArrayList<Chapter>();
+        mChapterMap = new HashMap<String, Chapter>();
+        mSelectedChapterId = null;
+    }
+
+    /**
      * Returns the project id a.k.a the project slug.
      * @return
      */
