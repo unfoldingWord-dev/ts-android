@@ -1,5 +1,7 @@
 package com.door43.translationstudio.projects;
 
+import android.graphics.Bitmap;
+
 import com.door43.translationstudio.util.FileUtilities;
 
 import java.io.File;
@@ -261,11 +263,14 @@ public class Chapter {
      * @return
      */
     public String getImagePath() {
-        if(getFrame(0) != null) {
-            return getFrame(0).getImagePath();
-        } else {
-            return null;
-        }
+        // TODO: the universal image loader does not support multiple callbacks on a single image so the first frame doesn't load it's image on startup.
+        // as a work around chapters load a copy of the first frame's image.
+//        if(getFrame(0) != null) {
+//            return getFrame(0).getImagePath();
+//        } else {
+//            return null;
+//        }
+        return "sourceTranslations/"+getProject().getId()+"/en/images/"+getProject().getId()+"-"+getId()+"-00.jpg";
     }
 
     /**

@@ -139,7 +139,8 @@
                             android:paddingLeft="10dp"
                             android:paddingTop="5dp"
                             android:paddingRight="10dp"
-                            android:paddingBottom="10dp" />
+                            android:paddingBottom="10dp"
+                            android:focusable="true" />
 
                     </LinearLayout>
 

@@ -47,7 +47,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(final int i, View view, ViewGroup viewGroup) {
         LinearLayout chapterItemView;
 
         // if it's not recycled, initialize some attributes

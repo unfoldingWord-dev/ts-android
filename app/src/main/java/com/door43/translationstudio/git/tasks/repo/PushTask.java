@@ -64,7 +64,7 @@ public class PushTask extends RepoOpTask {
             mCallback.onPostExecute(isSuccess);
         }
         if (isSuccess) {
-            MainContext.getContext().showMessageDialog(R.string.dialog_push_result, resultMsg.toString());
+            MainContext.getContext().showMessageDialogDetails(R.string.success, R.id.git_push_success, resultMsg.toString());
         }
     }
 

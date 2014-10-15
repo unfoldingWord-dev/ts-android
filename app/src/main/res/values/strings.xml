@@ -37,5 +37,8 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_language_selector">LanguageSelectorActivity</string>
     <string name="loading_project">Loading chapters...</string>
+    <string name="success">Success</string>
+    <string name="label_details">details</string>
+    <string name="details">Details</string>
 
 </resources>

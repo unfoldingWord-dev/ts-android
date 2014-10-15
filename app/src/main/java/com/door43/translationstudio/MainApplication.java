@@ -166,6 +166,22 @@ public class MainApplication extends Application {
         builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
     }
 
+    /**
+     * Displays a message dialog to the user with a detailed view
+     * @param title
+     * @param msg
+     * @param details
+     */
+    public void showMessageDialogDetails(final int title, int msg, final String details) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getCurrentActivity());
+        builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                showMessageDialog(title, details);
+            }
+        }).show();
+    }
+
     public void showException(Throwable t) {
         showToastMessage(t.getMessage());
         t.printStackTrace();

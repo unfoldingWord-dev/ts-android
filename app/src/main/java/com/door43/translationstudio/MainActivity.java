@@ -20,6 +20,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
@@ -27,13 +28,18 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -51,12 +57,15 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
     private LinearLayout mCenterPane;
+    private DrawerLayout mRootView;
 
     private GestureDetector mSourceGestureDetector;
     private GestureDetector mTranslationGestureDetector;
     private final float MIN_FLING_DISTANCE = 100;
     private final float MIN_FLING_VELOCITY = 10;
     private final float MIN_LOG_PRESS = 100;
+    private int mActionBarHeight;
+    private boolean mActivityIsInitializing;
 
     // center view fields for caching
     TextView mSourceText;
@@ -65,16 +74,18 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     TextView mTranslationTitleText;
     ImageView mNextFrameView;
     ImageView mPreviousFrameView;
-    EditText mInputText;
+    EditText mTranslationEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mActivityIsInitializing = true;
 
         app().getSharedTranslationManager().registerDelegateListener(this);
 
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
+        mRootView = (DrawerLayout)findViewById(R.id.drawer_layout);
 
         initPanes();
 
@@ -110,7 +121,12 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     @Override
     protected void onResume() {
         super.onResume();
-        reloadCenterPane();
+        if(!mActivityIsInitializing) {
+            reloadCenterPane();
+        } else {
+            // don't reload the center pane the first time the app starts.
+            mActivityIsInitializing = false;
+        }
     }
 
     /**
@@ -122,9 +138,73 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     /**
+     * Triggered when the keyboard opens
+     * @param r the dimensions of the visible area
+     */
+    private void onKeyboardOpen(Rect r) {
+        resizeRootView(r);
+    }
+
+    /**
+     * Triggered when the keyboard closes
+     * @param r the dimensions of the visible area
+     */
+    private void onKeyboardClose(Rect r) {
+        mTranslationEditText.clearFocus();
+        resizeRootView(r);
+    }
+
+    private void resizeRootView(Rect r) {
+        ViewGroup.LayoutParams params = mRootView.getLayoutParams();
+        params.height = r.bottom - mActionBarHeight;
+        mRootView.setLayoutParams(params);
+    }
+
+    /**
      * set up the content panes
      */
     private void initPanes() {
+        mSourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
+        mSourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
+        mSourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
+        mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
+        mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
+        mPreviousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
+        mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
+
+        mTranslationEditText.setEnabled(false);
+
+        // calculate actionbar height
+        TypedValue tv = new TypedValue();
+        mActionBarHeight = 0;
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        {
+            mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+        }
+
+        // hack to watch for the soft keyboard open and close
+        final View activityRootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);
+        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            private boolean mWasOpened;
+            private final Rect mRect= new Rect();
+
+            @Override
+            public void onGlobalLayout() {
+                activityRootView.getWindowVisibleDisplayFrame(mRect);
+                int heightDiff = activityRootView.getRootView().getHeight() - (mRect.bottom - mRect.top);
+                boolean isOpen = heightDiff > 100;
+                if (isOpen == mWasOpened) {
+                    return;
+                }
+                mWasOpened = isOpen;
+                if(isOpen) {
+                    onKeyboardOpen(mRect);
+                } else {
+                    onKeyboardClose(mRect);
+                }
+            }
+        });
+
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
         getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
@@ -136,33 +216,18 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         nextFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
         previousFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
 
-        // close the side panes when the center content is clicked
-        final EditText translationText = (EditText)findViewById(R.id.inputText);
         // hide the input bottom border
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            translationText.setBackground(null);
+            mTranslationEditText.setBackground(null);
         } else {
-            translationText.setBackgroundDrawable(null);
+            mTranslationEditText.setBackgroundDrawable(null);
         }
-        translationText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                closeDrawers();
-            }
-        });
 
         TextView sourceText = ((TextView)findViewById(R.id.sourceText));
         sourceText.setMovementMethod(new ScrollingMovementMethod());
-        sourceText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                closeDrawers();
-            }
-        });
-        final TextView helpText = (TextView)findViewById(R.id.helpTextView);
 
         // display help text when sourceText is empty.
-        // TODO: enable/disable inputText as sourceText becomes available.
+        final TextView helpText = (TextView)findViewById(R.id.helpTextView);
         sourceText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -173,8 +238,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
                 if(charSequence.length() > 0) {
                     helpText.setVisibility(View.GONE);
+                    mTranslationEditText.setEnabled(true);
                 } else {
                     helpText.setVisibility(View.VISIBLE);
+                    mTranslationEditText.setEnabled(false);
                 }
             }
 
@@ -184,8 +251,17 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             }
         });
 
+        mSourceText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mSourceText.getText().length() == 0) {
+                    openLeftDrawer();
+                }
+            }
+        });
+
         // automatically save changes to inputText
-        translationText.addTextChangedListener(new TextWatcher() {
+        mTranslationEditText.addTextChangedListener(new TextWatcher() {
             private Timer timer = new Timer();
 
             @Override
@@ -237,9 +313,18 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 return mSourceGestureDetector.onTouchEvent(event);
             }
         });
-        translationText.setOnTouchListener(new View.OnTouchListener() {
+        mTranslationEditText.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 return mTranslationGestureDetector.onTouchEvent(event);
+            }
+        });
+        mTranslationEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (keyEvent != null && i == EditorInfo.IME_ACTION_DONE) {
+                    Log.i("keyboard", "done");
+                }
+                return false;
             }
         });
     }
@@ -278,13 +363,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      */
     public void reloadCenterPane() {
         // load source text
-        mSourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
-        mSourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
-        mSourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
-        mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
-        mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
-        mPreviousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
-        mInputText = (EditText)mCenterPane.findViewById(R.id.inputText);
 
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
@@ -294,7 +372,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
             // target translation
             Translation translation = frame.getTranslation();
-            mInputText.setText(translation.getText());
+            mTranslationEditText.setText(translation.getText());
             if(chapter.getTitleTranslation().getText() == "") {
                 // display non-translated title
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
@@ -325,7 +403,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             app().setActiveChapter(p.getSelectedChapter().getId());
             app().setActiveFrame(frame.getId());
         } else {
-            mInputText.setText("");
+            mTranslationEditText.setText("");
             mTranslationTitleText.setText("");
             mSourceTitleText.setText("");
             mSourceText.setText("");
@@ -348,20 +426,20 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * Closes all the navigation drawers
      */
     public void closeDrawers() {
-        ((DrawerLayout)findViewById(R.id.drawer_layout)).closeDrawers();
+        mRootView.closeDrawers();
         app().pauseAutoSave(true);
         reloadCenterPane();
         app().pauseAutoSave(false);
     }
 
     public void openLeftDrawer() {
-        ((DrawerLayout)findViewById(R.id.drawer_layout)).closeDrawer(Gravity.RIGHT);
-        ((DrawerLayout)findViewById(R.id.drawer_layout)).openDrawer(Gravity.LEFT);
+        mRootView.closeDrawer(Gravity.RIGHT);
+        mRootView.openDrawer(Gravity.LEFT);
     }
 
     public void openRightDrawer() {
-        ((DrawerLayout)findViewById(R.id.drawer_layout)).closeDrawer(Gravity.LEFT);
-        ((DrawerLayout)findViewById(R.id.drawer_layout)).openDrawer(Gravity.RIGHT);
+        mRootView.closeDrawer(Gravity.LEFT);
+        mRootView.openDrawer(Gravity.RIGHT);
     }
 
     /**

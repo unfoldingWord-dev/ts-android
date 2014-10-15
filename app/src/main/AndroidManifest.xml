@@ -28,7 +28,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="adjustResize" >
         </activity>
         <activity
             android:name=".SettingsActivity"
@@ -38,6 +38,7 @@
         <activity
             android:name=".ChapterSettingActivity"
             android:label="@string/title_activity_chapter_setting"
+            android:windowSoftInputMode="stateAlwaysHidden"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
