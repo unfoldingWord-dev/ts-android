@@ -34,6 +34,7 @@ public class MainApplication extends Application {
     private final String PREFERENCES_TAG = "com.door43.translationstudio";
     private boolean mPauseAutoSave = false;
     private ImageLoader mImageLoader;
+    private Activity mCurrentDialogActivity;
 
     public void onCreate() {
 
@@ -183,7 +184,8 @@ public class MainApplication extends Application {
         getCurrentActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(mProgressDialog == null) {
+                if(mProgressDialog == null || mCurrentDialogActivity != getCurrentActivity()) {
+                    closeProgressDialog();
                     mProgressDialog = new ProgressDialog(getCurrentActivity());
                 }
                 mProgressDialog.setMessage(message);
@@ -192,6 +194,14 @@ public class MainApplication extends Application {
                 }
             }
         });
+    }
+
+    /**
+     * Displays a progress dialog
+     * @param res the resource id of the text to display
+     */
+    public void showProgressDialog(int res) {
+        showProgressDialog(getResources().getString(res));
     }
 
     /**

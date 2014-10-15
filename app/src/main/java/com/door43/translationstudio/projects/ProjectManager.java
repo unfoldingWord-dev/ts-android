@@ -70,8 +70,10 @@ public class ProjectManager implements DelegateListener {
      * @param p
      */
     public void fetchProjectSource(Project p) {
+        mContext.showProgressDialog(R.string.loading_project);
         String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId());
         loadProject(source, p);
+        mContext.closeProgressDialog();
     }
 
     /**
@@ -345,8 +347,7 @@ public class ProjectManager implements DelegateListener {
                 JSONObject jsonChapter = jsonChapters.getJSONObject(i);
                 if(jsonChapter.has("ref") && jsonChapter.has("frames") && jsonChapter.has("title") && jsonChapter.has("number")) {
                     // load chapter
-                    String num = jsonChapter.get("number").toString();
-                    String chapterNumber = num.substring(0, num.indexOf("."));
+                    String chapterNumber = jsonChapter.get("number").toString();
                     Chapter c = new Chapter(chapterNumber, jsonChapter.get("title").toString(), jsonChapter.get("ref").toString());
 
                     // add chapter to the project

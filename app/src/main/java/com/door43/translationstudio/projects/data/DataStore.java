@@ -24,6 +24,7 @@ public class DataStore extends DelegateSender {
      */
     public void fetchProjectCatalog() {
         // TODO: check for updates on the server
+        // https://api.unfoldingword.org/ts/txt/1/ts-catalog.json
         issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.PROJECT, loadJSONAsset(SOURCE_TRANSLATIONS_DIR+"projects.json")));
     }
 
@@ -34,6 +35,7 @@ public class DataStore extends DelegateSender {
      */
     public void fetchSourceLanguageCatalog(String projectSlug) {
         // TODO: check for updates on the server
+        // https://api.unfoldingword.org/obs/txt/1/obs-catalog.json
         String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/languages.json";
         issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE_LANGUAGE, loadJSONAsset(path), projectSlug));
     }
@@ -56,6 +58,7 @@ public class DataStore extends DelegateSender {
      */
     public String fetchSourceText(String projectSlug, String languageCode) {
         // TODO: check for updates on the server
+        // api.unfoldingword.org/obs/txt/1/[langcode]/obs-[langcode].json
         String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/source.json";
         return loadJSONAsset(path);
 //        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectSlug));

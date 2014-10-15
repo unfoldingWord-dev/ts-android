@@ -36,5 +36,6 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_language_selector">LanguageSelectorActivity</string>
+    <string name="loading_project">Loading chapters...</string>
 
 </resources>
