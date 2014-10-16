@@ -32,13 +32,14 @@
     <string name="reference_field">Chapter Reference:</string>
     <string name="source_language_field">Project Source Language:</string>
     <string name="target_language_field">Project Target Language:</string>
-    <string name="title_activity_chapter_setting">ChapterSettingActivity</string>
+    <string name="title_activity_chapter_setting">Chapter Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_language_selector">LanguageSelectorActivity</string>
+    <string name="title_activity_language_selector">Language</string>
     <string name="loading_project">Loading chapters...</string>
     <string name="success">Success</string>
     <string name="label_details">details</string>
     <string name="details">Details</string>
+    <string name="title_activity_sharing">Sharing</string>
 
 </resources>

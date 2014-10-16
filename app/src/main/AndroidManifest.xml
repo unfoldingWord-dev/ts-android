@@ -22,8 +22,8 @@
         </activity>
         <activity
             android:name=".SplashActivity"
-            android:theme="@style/SettingTheme"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/SettingTheme" >
         </activity>
         <activity
             android:name=".MainActivity"
@@ -38,18 +38,29 @@
         <activity
             android:name=".ChapterSettingActivity"
             android:label="@string/title_activity_chapter_setting"
-            android:windowSoftInputMode="stateAlwaysHidden"
-            android:parentActivityName=".MainActivity" >
+            android:theme="@style/TitledTheme"
+            android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
             android:name=".LanguageSelectorActivity"
-            android:label="@string/title_activity_language_selector" >
+            android:label="@string/title_activity_language_selector"
+            android:theme="@style/TitledTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.ChapterSettingActivity" />
+        </activity>
+        <activity
+            android:name=".SharingActivity"
+            android:label="@string/title_activity_sharing"
+            android:theme="@style/TitledTheme"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.MainActivity" />
         </activity>
     </application>
 

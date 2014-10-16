@@ -37,7 +37,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/textView"
-        android:layout_above="@+id/button">
+        android:layout_above="@+id/export_sd_button">
 
         <Button
             android:layout_width="wrap_content"

@@ -476,7 +476,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * Opens the sharing and export activity
      */
     public void openSharing() {
-        app().showToastMessage("Sharing is not enabled yet.");
+        Intent intent = new Intent(this, SharingActivity.class);
+        startActivity(intent);
     }
 
     /**
