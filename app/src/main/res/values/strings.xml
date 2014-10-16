@@ -28,10 +28,10 @@
     <string name="close">Close</string>
     <string name="menu_library">Library</string>
     <string name="menu_resources">Resources</string>
-    <string name="title_field">Chapter Title:</string>
-    <string name="reference_field">Chapter Reference:</string>
-    <string name="source_language_field">Project Source Language:</string>
-    <string name="target_language_field">Project Target Language:</string>
+    <string name="chapter_title_field">Chapter Title:</string>
+    <string name="chapter_reference_field">Chapter Reference:</string>
+    <string name="source_language_field">Source Language:</string>
+    <string name="target_language_field">Target Language:</string>
     <string name="title_activity_chapter_setting">Chapter Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -41,5 +41,7 @@
     <string name="label_details">details</string>
     <string name="details">Details</string>
     <string name="title_activity_sharing">Sharing</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_cancel">Cancel</string>
 
 </resources>

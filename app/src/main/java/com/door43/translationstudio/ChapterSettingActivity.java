@@ -3,6 +3,7 @@ package com.door43.translationstudio;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -49,25 +50,6 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         sourceLanguageBtn = (Button)findViewById(R.id.switchSourceLanguageButton);
 
         // hook up buttons
-        Button cancelBtn = (Button)findViewById(R.id.cancelEditChapterTitleButton);
-        cancelBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-        Button saveBtn = (Button)findViewById(R.id.saveChapterTitleButton);
-        saveBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(mProject.getSelectedChapter() != null) {
-                    mProject.getSelectedChapter().setTitleTranslation(targetLanguageChapterTitleEditText.getText().toString());
-                    mProject.getSelectedChapter().setReferenceTranslation(targetLanguageChapterReferenceEditText.getText().toString());
-                    mProject.getSelectedChapter().save();
-                }
-                finish();
-            }
-        });
         targetLanguageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -103,5 +85,33 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         }
         targetLanguageBtn.setText(mProject.getSelectedTargetLanguage().getName());
         sourceLanguageBtn.setText(mProject.getSelectedSourceLanguage().getName());
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.chapter_settings_activity_actions, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_save_chapter_settings:
+                if(mProject.getSelectedChapter() != null) {
+                    mProject.getSelectedChapter().setTitleTranslation(targetLanguageChapterTitleEditText.getText().toString());
+                    mProject.getSelectedChapter().setReferenceTranslation(targetLanguageChapterReferenceEditText.getText().toString());
+                    mProject.getSelectedChapter().save();
+                }
+                finish();
+                return true;
+            case R.id.action_cancel_chapter_settings:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
