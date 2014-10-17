@@ -4,10 +4,25 @@ import android.content.SharedPreferences;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.StopTaskException;
+import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoFilepatternException;
+import org.eclipse.jgit.revwalk.RevCommit;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -362,5 +377,123 @@ public class Project {
      */
     public List<Language> getSourceLanguages() {
         return mSourceLanguages;
+    }
+
+    /**
+     * Exports the project with the currently selected target language in Doku Wiki format
+     * This is a process heavy method and should not be ran on the main thread
+     * @return the path to the export directory
+     */
+    public String export() throws IOException {
+        String translationVersion = getLocalTranslationVersion();
+        String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
+        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.dokuwiki_export_dir) + "/");
+        File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion + "/");
+        Boolean commitSucceeded = true;
+        exportDir.mkdirs();
+
+        // commit changes to repo
+        Repo repo = new Repo(getRepositoryPath());
+        try {
+            // only commit if the repo is dirty
+            if(!repo.getGit().status().call().isClean()) {
+                // add
+                AddCommand add = repo.getGit().add();
+                add.addFilepattern(".").call();
+
+                // commit
+                CommitCommand commit = repo.getGit().commit();
+                commit.setAll(true);
+                commit.setMessage("auto save");
+                commit.call();
+            }
+        } catch (Exception e) {
+            commitSucceeded = false;
+        }
+
+        // clean up old exports
+        String[] cachedExports = exportDir.list();
+        for(int i=0; i < cachedExports.length; i ++) {
+            String[] pieces = cachedExports[i].split("_");
+            if(pieces[0].equals(projectComplexName) && !pieces[1].equals(translationVersion)) {
+                File oldDir = new File(exportDir, cachedExports[i]);
+                FileUtilities.deleteRecursive(oldDir);
+            }
+        }
+
+        // return the already exported project
+        // TRICKY: we can only rely on this when all changes are commited to the repo
+        if(outputDir.isDirectory() && commitSucceeded) {
+            return outputDir.getAbsolutePath();
+        }
+
+        // export the project
+        outputDir.mkdirs();
+        for(int i = 0; i < mChapters.size(); i ++) {
+            Chapter c = getChapter(i);
+            if(c != null) {
+                File chapterFile = new File(outputDir, c.getId() + ".txt");
+                chapterFile.createNewFile();
+                PrintStream ps = new PrintStream(chapterFile);
+
+                // chapter title
+                ps.print("======");
+                ps.print(c.getTitleTranslation().getText().trim());
+                ps.println("======");
+                ps.println();
+
+                // frames
+                for(int j = 0; j < c.numFrames(); j ++) {
+                    Frame f = c.getFrame(j);
+                    if(f != null && !f.getTranslation().getText().isEmpty()) {
+                        // image
+                        ps.print("{{");
+                        // TODO: the api version and image dimensions should be placed in the user preferences
+                        String apiVersion = "1";
+                        ps.print(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, MainContext.getContext().getResources().getString(R.string.pref_default_media_server))+"/"+getId()+"/jpg/"+apiVersion+"/"+getSelectedTargetLanguage().getId()+"/360px/"+getId()+"-"+getSelectedTargetLanguage().getId()+"-"+c.getId()+"-"+f.getId()+".jpg");
+                        ps.println("}}");
+                        ps.println();
+
+                        // text
+                        ps.println(f.getTranslation().getText().trim());
+                        ps.println();
+                    }
+                }
+
+                // chapter reference
+                ps.print("//");
+                ps.print(c.getReferenceTranslation().getText().trim());
+                ps.println("//");
+
+                ps.close();
+            }
+        }
+        return outputDir.getAbsolutePath();
+    }
+
+    /**
+     * Returns the latest git commit id for the project repo with the selected target language
+     * @return
+     */
+    public String getLocalTranslationVersion() {
+        Repo repo = new Repo(getRepositoryPath());
+        try {
+            Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+            RevCommit commit = null;
+            for(RevCommit c : commits) {
+                commit = c;
+            }
+            if(commit != null) {
+                String[] pieces = commit.toString().split(" ");
+                return pieces[1];
+            } else {
+                return null;
+            }
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+        } catch (StopTaskException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

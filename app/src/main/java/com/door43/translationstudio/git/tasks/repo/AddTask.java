@@ -48,6 +48,16 @@ public class AddTask extends RepoOpTask {
             return false;
         }
 
+        // check if the repo is dirty first
+        try {
+            if(git.status().call().isClean()) {
+                return true;
+            }
+        } catch (GitAPIException e) {
+            setException(e);
+            return false;
+        }
+
         // stage changes
         AddCommand add = git.add();
         try {

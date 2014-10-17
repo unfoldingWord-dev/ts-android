@@ -45,6 +45,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_GIT_SERVER = "git_server";
     public static final String KEY_PREF_GIT_SERVER_PORT = "git_server_port";
     public static final String KEY_PREF_REMEMBER_POSITION = "remember_position";
+    public static final String KEY_PREF_MEDIA_SERVER = "media_server";
 
     /**
      * Removes references to self to avoid memory leaks

@@ -43,13 +43,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                         app().showProgressDialog(R.string.exporting_project);
                         try {
                             Project p = app().getSharedProjectManager().getSelectedProject();
-                            // TODO: compile the project as Doku Wiki before archiving
+                            String dokuwikiPath = p.export();
 
                             String date = simpleDateFormat.format(new Date());
                             String archivePath = internalDestDir+p.getGlobalProjectId()+"-"+p.getId()+"-"+p.getSelectedTargetLanguage().getId()+"_"+date+".tar";
                             File dest = new File(archivePath);
                             dest.getParentFile().mkdirs();
-                            app().tar(p.getRepositoryPath(), archivePath);
+                            app().tar(dokuwikiPath, archivePath);
 
                             File f = new File(archivePath);
                             if(f.isFile()) {
@@ -78,13 +78,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                         app().showProgressDialog(R.string.exporting_project);
                         try {
                             Project p = app().getSharedProjectManager().getSelectedProject();
-                            // TODO: compile the project as Doku Wiki before archiving to sd
+                            String dokuwikiPath = p.export();
 
                             String date = simpleDateFormat.format(new Date());
                             String archivePath = externalDestDir+p.getGlobalProjectId()+"-"+p.getId()+"-"+p.getSelectedTargetLanguage().getId()+"_"+date+".tar";
                             File dest = new File(archivePath);
                             dest.getParentFile().mkdirs();
-                            app().tar(p.getRepositoryPath(), archivePath);
+                            app().tar(dokuwikiPath, archivePath);
                             File f = new File(archivePath);
                             if(f.isFile()) {
                                 // TODO: display success message

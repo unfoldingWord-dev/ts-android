@@ -45,5 +45,6 @@
     <string name="menu_cancel">Cancel</string>
     <string name="exporting_project">Exporting Project...</string>
     <string name="importing_project">Importing Project...</string>
+    <string name="dokuwiki_export_dir">dokuwiki</string>
 
 </resources>
