@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:text="Advanced Settings &amp; Tools"
         android:textSize="@dimen/h3"
-        android:id="@+id/textView" />
+        android:id="@+id/sharingToolTextView" />
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -36,7 +36,7 @@
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/textView"
+        android:layout_below="@+id/sharingToolTextView"
         android:layout_above="@+id/export_sd_button">
 
         <Button

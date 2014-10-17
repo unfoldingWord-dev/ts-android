@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/app_name"
-        android:id="@+id/textView"
+        android:id="@+id/sharingToolTextView"
         android:textSize="30sp"
         android:textIsSelectable="true"
         android:textColor="@color/white"

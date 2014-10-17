@@ -49,6 +49,14 @@ public class Project {
     }
 
     /**
+     * Returns the global project id
+     * @return
+     */
+    public String getGlobalProjectId() {
+        return GLOBAL_PROJECT_SLUG;
+    }
+
+    /**
      * Dumps all the frames and chapters from the project
      */
     public void flush() {

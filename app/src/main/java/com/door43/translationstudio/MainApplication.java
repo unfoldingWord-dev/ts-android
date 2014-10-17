@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -11,6 +12,7 @@ import android.provider.Settings;
 import android.view.Gravity;
 import android.widget.Toast;
 
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.DummyDialogListener;
@@ -20,7 +22,18 @@ import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
+import org.kamranzafar.jtar.TarEntry;
+import org.kamranzafar.jtar.TarOutputStream;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes
@@ -35,6 +48,7 @@ public class MainApplication extends Application {
     private boolean mPauseAutoSave = false;
     private ImageLoader mImageLoader;
     private Activity mCurrentDialogActivity;
+    static final int BUFFER = 2048;
 
     public void onCreate() {
 
@@ -439,5 +453,68 @@ public class MainApplication extends Application {
      */
     public SharedPreferences getUserPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(this);
+    }
+
+    /**
+     * Generates a zipped archive of the project
+     * @param sourcePath the directory to archive
+     * @return the path to the project archive
+     */
+    public void tar(String sourcePath, String destPath) throws IOException {
+        // build dest
+        FileOutputStream dest = new FileOutputStream(destPath);
+        TarOutputStream out = new TarOutputStream( new BufferedOutputStream( dest ) );
+        tarFolder(null, sourcePath, out);
+        out.close();
+    }
+
+    private void tarFolder(String parent, String path, TarOutputStream out) throws IOException {
+        BufferedInputStream origin;
+        File f = new File(path);
+        String files[] = f.list();
+
+        // is file
+        if (files == null) {
+            files = new String[1];
+            files[0] = f.getName();
+        }
+
+        parent = ((parent == null) ? (f.isFile()) ? "" : f.getName() + "/" : parent + f.getName() + "/");
+
+        for (int i = 0; i < files.length; i++) {
+            System.out.println("Adding: " + files[i]);
+            File fe = f;
+            byte data[] = new byte[BUFFER];
+
+            if (f.isDirectory()) {
+                fe = new File(f, files[i]);
+            }
+
+            if (fe.isDirectory()) {
+                String[] fl = fe.list();
+                if (fl != null && fl.length != 0) {
+                    tarFolder(parent, fe.getPath(), out);
+                } else {
+                    TarEntry entry = new TarEntry(fe, parent + files[i] + "/");
+                    out.putNextEntry(entry);
+                }
+                continue;
+            }
+
+            FileInputStream fi = new FileInputStream(fe);
+            origin = new BufferedInputStream(fi);
+            TarEntry entry = new TarEntry(fe, parent + files[i]);
+            out.putNextEntry(entry);
+
+            int count;
+
+            while ((count = origin.read(data)) != -1) {
+                out.write(data, 0, count);
+            }
+
+            out.flush();
+
+            origin.close();
+        }
     }
 }

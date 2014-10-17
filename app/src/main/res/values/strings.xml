@@ -43,5 +43,7 @@
     <string name="title_activity_sharing">Sharing</string>
     <string name="menu_save">Save</string>
     <string name="menu_cancel">Cancel</string>
+    <string name="exporting_project">Exporting Project...</string>
+    <string name="importing_project">Importing Project...</string>
 
 </resources>
