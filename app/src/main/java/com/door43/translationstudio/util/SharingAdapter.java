@@ -60,6 +60,11 @@ public class SharingAdapter extends BaseAdapter {
         ImageView iconImage = (ImageView)sharingToolView.findViewById(R.id.sharingToolImageView);
         iconImage.setBackgroundResource(getItem(i).getIcon());
 
+        // mark tool as disabled.
+        if (!getItem(i).isEnabled()) {
+            nameText.setTextColor(mContext.getResources().getColor(R.color.gray));
+        }
+
         return sharingToolView;
     }
 }

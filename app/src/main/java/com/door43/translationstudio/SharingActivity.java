@@ -3,21 +3,22 @@ package com.door43.translationstudio;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v4.content.FileProvider;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
+import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
@@ -28,11 +29,11 @@ public class SharingActivity extends TranslatorBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sharing);
 
-        // TODO: internal dest dir should be the cache directory and we should clean them up after the export is complete
-        final String internalDestDir = getFilesDir() + "/sharing/export/";
-        // TODO: external dest dir should point to sd
-        final String externalDestDir = getFilesDir() + "/sharing/export/";
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("ddMMyyyyhhmmss");
+        final File internalDestDir = new File(getCacheDir(), "sharing/");
+        final Project p = app().getSharedProjectManager().getSelectedProject();
+        // NOTE: we check again in the threads just in case they removed the card while this activity was open
+        StorageUtils.StorageInfo removeableMedia = StorageUtils.getRemoveableMediaDevice();
+        internalDestDir.mkdirs();
 
         // define sharing tools
         mSharingTools.add(new SharingToolItem("Export to App", R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
@@ -42,18 +43,17 @@ public class SharingActivity extends TranslatorBaseActivity {
                     public void run() {
                         app().showProgressDialog(R.string.exporting_project);
                         try {
-                            Project p = app().getSharedProjectManager().getSelectedProject();
+                            // export to Doku Wiki
                             String dokuwikiPath = p.export();
 
-                            String date = simpleDateFormat.format(new Date());
-                            String archivePath = internalDestDir+p.getGlobalProjectId()+"-"+p.getId()+"-"+p.getSelectedTargetLanguage().getId()+"_"+date+".tar";
-                            File dest = new File(archivePath);
+                            // tar
+                            File dest = new File(internalDestDir, getArchiveName(p));
                             dest.getParentFile().mkdirs();
-                            app().tar(dokuwikiPath, archivePath);
+                            app().tar(dokuwikiPath, dest.getAbsolutePath());
 
-                            File f = new File(archivePath);
-                            if(f.isFile()) {
-                                Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", f);
+                            // share
+                            if(dest.exists() && dest.isFile()) {
+                                Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", dest);
                                 Intent i = new Intent(Intent.ACTION_SEND);
                                 i.setType("application/x-tar");
                                 i.putExtra(Intent.EXTRA_STREAM, u);
@@ -70,24 +70,38 @@ public class SharingActivity extends TranslatorBaseActivity {
                 thread.start();
             }
         }));
+
         mSharingTools.add(new SharingToolItem("Export to SD", R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
             @Override
             public void run() {
                 Thread thread = new Thread() {
                     public void run() {
+                        Looper.prepare();
                         app().showProgressDialog(R.string.exporting_project);
                         try {
-                            Project p = app().getSharedProjectManager().getSelectedProject();
+                            File externalDestDir = null;
+
+                            // export to Doku Wiki
                             String dokuwikiPath = p.export();
 
-                            String date = simpleDateFormat.format(new Date());
-                            String archivePath = externalDestDir+p.getGlobalProjectId()+"-"+p.getId()+"-"+p.getSelectedTargetLanguage().getId()+"_"+date+".tar";
-                            File dest = new File(archivePath);
+                            // try to locate the removable sd card
+                            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+                            if(removeableMediaInfo != null) {
+                                // write files to the removeable sd card
+                                externalDestDir = new File("/storage/" + removeableMediaInfo.getMountName() + "/TranslationStudio/");
+                            } else {
+                                app().showToastMessage(R.string.missing_external_storage);
+                                return;
+                            }
+                            externalDestDir.mkdirs();
+
+                            // tar
+                            File dest = new File(externalDestDir, getArchiveName(p));
                             dest.getParentFile().mkdirs();
-                            app().tar(dokuwikiPath, archivePath);
-                            File f = new File(archivePath);
-                            if(f.isFile()) {
-                                // TODO: display success message
+                            app().tar(dokuwikiPath, dest.getAbsolutePath());
+                            if(dest.exists() && dest.isFile()) {
+                                // TODO: define a global list of notification id's that we can use.
+                                app().showToastMessage(getResources().getString(R.string.project_exported_to) + " " + dest.getParentFile().getAbsolutePath(), Toast.LENGTH_SHORT);
                             } else {
                                 app().showToastMessage("Project archive not found");
                             }
@@ -99,7 +113,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                 };
                 thread.start();
             }
-        }));
+        }, removeableMedia != null , R.string.missing_external_storage));
+
         mSharingTools.add(new SharingToolItem("Import from SD", R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
             @Override
             public void run() {
@@ -112,7 +127,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                 };
                 thread.start();
             }
-        }));
+        }, removeableMedia != null, R.string.missing_external_storage));
+
         mSharingTools.add(new SharingToolItem("Export to nearby device", R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
             @Override
             public void run() {
@@ -120,15 +136,12 @@ public class SharingActivity extends TranslatorBaseActivity {
                     public void run() {
                         app().showProgressDialog(R.string.exporting_project);
                         try {
-                            Project p = app().getSharedProjectManager().getSelectedProject();
-                            String date = simpleDateFormat.format(new Date());
-                            String archivePath = externalDestDir+p.getGlobalProjectId()+"-"+p.getId()+"-"+p.getSelectedTargetLanguage().getId()+"_"+date+".tar";
-                            File dest = new File(archivePath);
-                            dest.getParentFile().mkdirs();
-                            app().tar(p.getRepositoryPath(), archivePath);
-                            File f = new File(archivePath);
-                            if(f.isFile()) {
+                            // tar
+                            File dest = new File(internalDestDir, getArchiveName(p));
+                            app().tar(p.getRepositoryPath(), dest.getAbsolutePath());
+                            if(dest.exists() && dest.isFile()) {
                                 // TODO: serve the archive to listening devices
+                                app().showToastMessage("archive is ready");
                             } else {
                                 app().showToastMessage("Project archive not found");
                             }
@@ -141,6 +154,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 thread.start();
             }
         }));
+
         mSharingTools.add(new SharingToolItem("Import from nearby device", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
             @Override
             public void run() {
@@ -165,9 +179,22 @@ public class SharingActivity extends TranslatorBaseActivity {
                 if(mSharingTools.size() > i && i >= 0) {
                     SharingToolItem tool = mSharingTools.get(i);
                     // execute the sharing action
-                    tool.getAction().run();
+                    if(tool.isEnabled()) {
+                        tool.getAction().run();
+                    } else {
+                        app().showToastMessage(tool.getDisabledNotice());
+                    }
                 }
             }
         });
+    }
+
+    /**
+     * Generates the archive name for the project
+     * @param p
+     * @return
+     */
+    private String getArchiveName(Project p) {
+        return p.getGlobalProjectId()+"-"+p.getId()+"-"+p.getSelectedTargetLanguage().getId()+"_"+p.getLocalTranslationVersion()+".tar";
     }
 }

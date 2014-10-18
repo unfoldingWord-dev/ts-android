@@ -54,7 +54,7 @@ public class TermsActivity extends TranslatorBaseActivity {
      * Continues to the splash screen where local resources will be loaded
      */
     private void startSplashActivity() {
-        Intent splashIntent = new Intent(this, SplashActivity.class);
+        Intent splashIntent = new Intent(this, SplashScreenActivity.class);
         startActivity(splashIntent);
         finish();
     }

@@ -46,5 +46,8 @@
     <string name="exporting_project">Exporting Project...</string>
     <string name="importing_project">Importing Project...</string>
     <string name="dokuwiki_export_dir">dokuwiki</string>
+    <string name="missing_external_storage">External storage is not available</string>
+    <string name="project_exported_to">Project saved to </string>
+    <string name="project_exported">Project exported</string>
 
 </resources>

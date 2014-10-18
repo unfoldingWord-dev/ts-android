@@ -12,7 +12,7 @@ import com.squareup.otto.Subscribe;
 /**
  * Created by joel on 9/29/2014.
  */
-public class SplashActivity extends TranslatorBaseActivity {
+public class SplashScreenActivity extends TranslatorBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

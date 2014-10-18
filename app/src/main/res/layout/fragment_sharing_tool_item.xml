@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:text="New Text"
         android:id="@+id/sharingToolTextView"
-        android:textSize="@dimen/h3"
+        android:textSize="@dimen/h4"
         android:paddingLeft="10dp" />
 
 </LinearLayout>

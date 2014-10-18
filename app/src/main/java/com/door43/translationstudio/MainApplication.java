@@ -3,16 +3,22 @@ package com.door43.translationstudio;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.widget.Toast;
 
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.DummyDialogListener;
@@ -29,11 +35,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes
@@ -48,6 +54,7 @@ public class MainApplication extends Application {
     private boolean mPauseAutoSave = false;
     private ImageLoader mImageLoader;
     private Activity mCurrentDialogActivity;
+    private Map<String, ArrayList<String>> mNotificationsMap = new HashMap<String, ArrayList<String>>();
     static final int BUFFER = 2048;
 
     public void onCreate() {
@@ -63,6 +70,47 @@ public class MainApplication extends Application {
 
         mProjectManager = new ProjectManager(this);
         mTranslationManager = new TranslationManager(this);
+    }
+
+    /**
+     * Sends a new local notification
+     */
+    public void sendNotification(int notificationId, int titleResourceId, String message) {
+        // keep track of all the notifications
+        ArrayList<String> notifications;
+        if(mNotificationsMap.containsKey(""+notificationId)) {
+            notifications = mNotificationsMap.get(""+notificationId);
+        } else {
+            // add new notification group
+            notifications = new ArrayList<String>();
+            mNotificationsMap.put("" + notificationId, notifications);
+        }
+
+        // build notification
+        notifications.add(message);
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_stat_notify_msg)
+                        .setContentTitle(getResources().getString(titleResourceId))
+                        .setContentText(message)
+                        .setAutoCancel(true)
+                        .setNumber(notifications.size());
+
+        // build big notification
+        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+        inboxStyle.setBigContentTitle(getResources().getString(titleResourceId));
+        for (String event:notifications) {
+            inboxStyle.addLine(event);
+        }
+        mBuilder.setStyle(inboxStyle);
+
+        // issue notification
+        NotificationManager mNotifyMgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mNotifyMgr.notify(notificationId, mBuilder.build());
+        } else {
+            mNotifyMgr.notify(notificationId, mBuilder.getNotification());
+        }
     }
 
     /**
