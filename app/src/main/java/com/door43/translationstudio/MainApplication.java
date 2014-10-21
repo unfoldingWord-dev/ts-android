@@ -29,6 +29,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import org.kamranzafar.jtar.TarEntry;
+import org.kamranzafar.jtar.TarInputStream;
 import org.kamranzafar.jtar.TarOutputStream;
 
 import java.io.BufferedInputStream;
@@ -502,6 +503,55 @@ public class MainApplication extends Application {
      */
     public SharedPreferences getUserPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(this);
+    }
+
+    /**
+     * Extracts a tar file
+     * @param tarPath
+     * @throws IOException
+     */
+    public void untarTarFile(String tarPath, String destPath) throws IOException {
+        File destFolder = new File(destPath);
+        destFolder.mkdirs();
+
+        File zf = new File(tarPath);
+
+        TarInputStream tis = new TarInputStream(new BufferedInputStream(new FileInputStream(zf)));
+        untar(tis, destFolder.getAbsolutePath());
+
+        tis.close();
+
+    }
+
+    private void untar(TarInputStream tis, String destFolder) throws IOException {
+        BufferedOutputStream dest = null;
+
+        TarEntry entry;
+        while ((entry = tis.getNextEntry()) != null) {
+            System.out.println("Extracting: " + entry.getName());
+            int count;
+            byte data[] = new byte[BUFFER];
+
+            if (entry.isDirectory()) {
+                new File(destFolder + "/" + entry.getName()).mkdirs();
+                continue;
+            } else {
+                int di = entry.getName().lastIndexOf('/');
+                if (di != -1) {
+                    new File(destFolder + "/" + entry.getName().substring(0, di)).mkdirs();
+                }
+            }
+
+            FileOutputStream fos = new FileOutputStream(destFolder + "/" + entry.getName());
+            dest = new BufferedOutputStream(fos);
+
+            while ((count = tis.read(data)) != -1) {
+                dest.write(data, 0, count);
+            }
+
+            dest.flush();
+            dest.close();
+        }
     }
 
     /**

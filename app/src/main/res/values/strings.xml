@@ -51,5 +51,6 @@
     <string name="project_exported">Project exported</string>
     <string name="preparing_sharing">Preparing the project for sharing...</string>
     <string name="project_share_exception">The project cannot be shared</string>
+    <string name="title_activity_file_explorer">File Explorer</string>
 
 </resources>

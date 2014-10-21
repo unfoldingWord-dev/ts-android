@@ -26,8 +26,10 @@ import java.util.ArrayList;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
+    private SharingActivity me = this;
     private ArrayList<SharingToolItem> mSharingTools = new ArrayList<SharingToolItem>();
     private SharingAdapter mAdapter;
+    private static int IMPORT_FROM_SD_REQUEST = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -167,14 +169,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                     mSharingTools.add(new SharingToolItem("Import from SD", R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
                         @Override
                         public void run() {
-                            Thread thread = new Thread() {
-                                public void run() {
-                                    app().showProgressDialog(R.string.importing_project);
-                                    // TODO: display file chooser to select file and import the project
-                                    app().closeProgressDialog();
-                                }
-                            };
-                            thread.start();
+                            Intent intent = new Intent(me, FileExplorerActivity.class);
+                            startActivityForResult(intent, IMPORT_FROM_SD_REQUEST);
                         }
                     }, removeableMedia != null, R.string.missing_external_storage));
                 }
@@ -268,5 +264,24 @@ public class SharingActivity extends TranslatorBaseActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == IMPORT_FROM_SD_REQUEST) {
+            if(data != null) {
+                final String path = data.getExtras().getString("path");
+                Thread thread = new Thread() {
+                    public void run() {
+                        app().showProgressDialog(R.string.importing_project);
+                        // TODO: extract the tar file and import the project.
+//                        app().untarTarFile();
+                        app().closeProgressDialog();
+                    }
+                };
+                thread.start();
+            }
+        }
+
     }
 }

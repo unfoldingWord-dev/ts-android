@@ -72,6 +72,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
         </activity>
+        <activity
+            android:name=".FileExplorerActivity"
+            android:label="@string/title_activity_file_explorer"
+            android:theme="@style/TitledTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.SharingActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -1,7 +1,5 @@
 package com.door43.translationstudio.projects;
 
-import android.graphics.Bitmap;
-
 import com.door43.translationstudio.util.FileUtilities;
 
 import java.io.File;
