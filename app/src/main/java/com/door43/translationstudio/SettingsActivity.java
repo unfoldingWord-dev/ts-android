@@ -12,8 +12,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.view.View;
-import android.widget.Button;
 
 
 import com.door43.translationstudio.util.MainContext;
@@ -46,6 +44,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_GIT_SERVER_PORT = "git_server_port";
     public static final String KEY_PREF_REMEMBER_POSITION = "remember_position";
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
+    public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
 
     /**
      * Removes references to self to avoid memory leaks
@@ -102,28 +101,28 @@ public class SettingsActivity extends PreferenceActivity {
         // Add 'general' preferences.
         addPreferencesFromResource(R.xml.pref_general);
 
-        // Add 'save' preferences, and a corresponding header.
+        // Add 'sharing' preferences, and a corresponding header.
         PreferenceCategory preferenceHeader = new PreferenceCategory(this);
+        preferenceHeader.setTitle(R.string.pref_header_sharing);
+        getPreferenceScreen().addPreference(preferenceHeader);
+        addPreferencesFromResource(R.xml.pref_sharing);
+
+        // Add 'save' preferences, and a corresponding header.
+        preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_autosave);
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.pref_save_and_sync);
 
-        // Add 'security' preferences, and a corresponding header.
-        preferenceHeader = new PreferenceCategory(this);
-        preferenceHeader.setTitle(R.string.pref_header_security);
-        getPreferenceScreen().addPreference(preferenceHeader);
-        addPreferencesFromResource(R.xml.pref_security);
-
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
         // to reflect the new value, per the Android Design guidelines.
-
-
         bindPreferenceSummaryToValue(findPreference("autosave"));
         bindPreferenceSummaryToValue(findPreference("auth_server"));
         bindPreferenceSummaryToValue(findPreference("git_server"));
         bindPreferenceSummaryToValue(findPreference("auth_server_port"));
         bindPreferenceSummaryToValue(findPreference("git_server_port"));
+        bindPreferenceSummaryToValue(findPreference("export_format"));
+        bindPreferenceSummaryToValue(findPreference("media_server"));
     }
 
     /** {@inheritDoc} */
@@ -252,6 +251,7 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceSummaryToValue(findPreference("git_server"));
             bindPreferenceSummaryToValue(findPreference("auth_server_port"));
             bindPreferenceSummaryToValue(findPreference("git_server_port"));
+            bindPreferenceSummaryToValue(findPreference("media_server"));
         }
     }
 
@@ -260,17 +260,17 @@ public class SettingsActivity extends PreferenceActivity {
      * activity is showing a two-pane settings UI.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class SecurityPreferenceFragment extends PreferenceFragment {
+    public static class SharingPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_security);
+            addPreferencesFromResource(R.xml.pref_sharing);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-
+            bindPreferenceSummaryToValue(findPreference("export_format"));
         }
     }
 }

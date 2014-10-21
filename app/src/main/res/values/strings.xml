@@ -49,5 +49,7 @@
     <string name="missing_external_storage">External storage is not available</string>
     <string name="project_exported_to">Project saved to </string>
     <string name="project_exported">Project exported</string>
+    <string name="preparing_sharing">Preparing the project for sharing...</string>
+    <string name="project_share_exception">The project cannot be shared</string>
 
 </resources>

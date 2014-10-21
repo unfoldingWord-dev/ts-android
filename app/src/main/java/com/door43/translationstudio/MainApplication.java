@@ -66,6 +66,7 @@ public class MainApplication extends Application {
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_save_and_sync, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_sharing, false);
 
 
         mProjectManager = new ProjectManager(this);

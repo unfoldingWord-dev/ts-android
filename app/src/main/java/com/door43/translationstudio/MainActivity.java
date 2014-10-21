@@ -12,6 +12,7 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 

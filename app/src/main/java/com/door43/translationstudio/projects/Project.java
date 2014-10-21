@@ -6,7 +6,10 @@ import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.StopTaskException;
+import com.door43.translationstudio.git.tasks.repo.AddTask;
+import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 
@@ -495,5 +498,48 @@ public class Project {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Adds and commits the changes to the repository
+     */
+    public void commit(final OnCommitComplete callback) {
+        final Repo repo = new Repo(getRepositoryPath());
+
+        AddTask add = new AddTask(repo, ".", new AddTask.OnAddComplete() {
+            @Override
+            public void success() {
+                callback.success();
+            }
+
+            @Override
+            public void error() {
+                callback.error();
+            }
+        });
+        add.executeTask();
+    }
+
+    /**
+     * Generates the remote path for a local repo
+     * @param lang
+     * @return
+     */
+    public String getRemotePath(Language lang) {
+        String server = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, MainContext.getContext().getResources().getString(R.string.pref_default_git_server));
+        return server + ":tS/" + MainContext.getContext().getUDID() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
+    }
+
+    /**
+     * Generates the remote path for a local repo from the currently selected target language
+     * @return
+     */
+    public String getRemotePath() {
+        return getRemotePath(getSelectedTargetLanguage());
+    }
+
+    public interface OnCommitComplete {
+        public void success();
+        public void error();
     }
 }

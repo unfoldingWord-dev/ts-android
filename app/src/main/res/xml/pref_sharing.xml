@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:key="export_format"
+        android:title="@string/pref_title_export_format"
+        android:entries="@array/pref_export_format_titles"
+        android:entryValues="@array/pref_export_format_values"
+        android:defaultValue="@string/pref_default_export_format"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+</PreferenceScreen>

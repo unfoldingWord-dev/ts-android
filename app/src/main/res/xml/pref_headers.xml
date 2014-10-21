@@ -11,6 +11,6 @@
         android:title="@string/pref_header_autosave" />
 
     <header
-        android:fragment="com.door43.translationstudio.SettingsActivity$SecurityPreferenceFragment"
-        android:title="@string/pref_header_security" />
+        android:fragment="com.door43.translationstudio.SettingsActivity$SharingPreferenceFragment"
+        android:title="@string/pref_header_sharing" />
 </preference-headers>

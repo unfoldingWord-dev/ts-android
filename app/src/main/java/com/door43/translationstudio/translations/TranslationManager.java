@@ -32,23 +32,6 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
         mContext = context;
     }
 
-
-    /**
-     * Exports a project as an archive that can be imported into another client running the app
-     * @param p
-     */
-    public void exportArchive(Project p) {
-        mContext.showToastMessage("exporting archives hasn't been set up yet!");
-    }
-
-    /**
-     * Exports a project as a fully functional DokuWiki package
-     * @param p
-     */
-    public void exportDokuWiki(Project p) {
-        mContext.showToastMessage("exporting dokuwiki hasn't been set up yet!");
-    }
-
     /**
      * Initiates a git sync with the server. This will forcebly push all local changes to the server
      * and discard any discrepencies.
