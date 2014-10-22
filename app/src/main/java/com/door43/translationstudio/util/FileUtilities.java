@@ -1,5 +1,7 @@
 package com.door43.translationstudio.util;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -69,5 +71,27 @@ public class FileUtilities {
             }
         }
         fileOrDirectory.delete();
+    }
+
+    /**
+     * Attempts to move a file or directory. If moving fails it will try to copy instead.
+     * @param sourceFile
+     * @param destFile
+     * @return
+     */
+    public static boolean moveOrCopy(File sourceFile, File destFile) {
+        // first try to move
+        if(!sourceFile.renameTo(destFile)) {
+            // try to copy
+            try {
+                FileUtils.copyDirectory(sourceFile, destFile);
+                return true;
+            } catch (IOException e) {
+                MainContext.getContext().showException(e);
+            }
+        } else {
+            return true;
+        }
+        return false;
     }
 }

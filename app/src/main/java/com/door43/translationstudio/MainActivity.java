@@ -120,6 +120,13 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        // save any changes to the frame
+        save();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if(!mActivityIsInitializing) {
@@ -331,7 +338,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-        Log.d("", "onFling: " + event1.toString()+event2.toString());
+//        Log.d("", "onFling: " + event1.toString()+event2.toString());
         // positive distance moves right
         Float distanceX = event2.getX() - event1.getX();
         Project p = app().getSharedProjectManager().getSelectedProject();
@@ -374,7 +381,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             // target translation
             Translation translation = frame.getTranslation();
             mTranslationEditText.setText(translation.getText());
-            if(chapter.getTitleTranslation().getText() == "") {
+            if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
             } else {

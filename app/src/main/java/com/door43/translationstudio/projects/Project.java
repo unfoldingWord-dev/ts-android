@@ -1,6 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -16,6 +17,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -41,7 +43,8 @@ public class Project {
     private String mSelectedChapterId;
     private String mSelectedSourceLanguageId;
     private String mSelectedTargetLanguageId;
-    private static final String GLOBAL_PROJECT_SLUG = "uw";
+    public static final String GLOBAL_PROJECT_SLUG = "uw";
+    private static final String TAG = "project";
     private static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
 
     /**
@@ -353,11 +356,12 @@ public class Project {
 
     /**
      * Returns the absolute repository path for the given language
-     * @param language
+     * @param projectId
+     * @param languageId
      * @return
      */
-    public String getRepositoryPath(Language language) {
-        return MainContext.getContext().getFilesDir() + "/" + MainContext.getContext().getResources().getString(R.string.git_repository_dir) + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + language.getId() + "/";
+    public static String getRepositoryPath(String projectId, String languageId) {
+        return MainContext.getContext().getFilesDir() + "/" + MainContext.getContext().getResources().getString(R.string.git_repository_dir) + "/" + GLOBAL_PROJECT_SLUG + "-" + projectId + "-" + languageId + "/";
     }
 
     /**
@@ -365,7 +369,7 @@ public class Project {
      * @return
      */
     public String getRepositoryPath() {
-        return getRepositoryPath(getSelectedTargetLanguage());
+        return getRepositoryPath(getId(), getSelectedTargetLanguage().getId());
     }
 
     /**
@@ -429,15 +433,31 @@ public class Project {
         for(int i = 0; i < mChapters.size(); i ++) {
             Chapter c = getChapter(i);
             if(c != null) {
+                // check if any frames have been translated
+                File chapterDir = new File(getRepositoryPath(), c.getId());
+                if(!chapterDir.exists()) continue;
+                String[] translatedFrames = chapterDir.list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File file, String s) {
+                        return !s.equals("title") && !s.equals("reference");
+                    }
+                });
+                if(translatedFrames.length == 0 && c.getTitleTranslation().getText().trim().isEmpty() && c.getReferenceTranslation().getText().trim().isEmpty()) continue;
+
+                // compile translation
                 File chapterFile = new File(outputDir, c.getId() + ".txt");
                 chapterFile.createNewFile();
                 PrintStream ps = new PrintStream(chapterFile);
 
+
+
                 // chapter title
-                ps.print("======");
-                ps.print(c.getTitleTranslation().getText().trim());
-                ps.println("======");
-                ps.println();
+                if(!c.getTitleTranslation().getText().trim().isEmpty()) {
+                    ps.print("======");
+                    ps.print(c.getTitleTranslation().getText().trim());
+                    ps.println("======");
+                    ps.println();
+                }
 
                 // frames
                 for(int j = 0; j < c.numFrames(); j ++) {
@@ -458,9 +478,11 @@ public class Project {
                 }
 
                 // chapter reference
-                ps.print("//");
-                ps.print(c.getReferenceTranslation().getText().trim());
-                ps.println("//");
+                if(!c.getReferenceTranslation().getText().trim().isEmpty()) {
+                    ps.print("//");
+                    ps.print(c.getReferenceTranslation().getText().trim());
+                    ps.println("//");
+                }
 
                 ps.close();
             }
@@ -535,5 +557,88 @@ public class Project {
     public interface OnCommitComplete {
         public void success();
         public void error();
+    }
+
+    /**
+     * Imports a project from a file and returns an instance of the project
+     * @param archiveDir the directory that will be imported
+     * @return
+     */
+    public static boolean importTranslationFromFile(File archiveDir) {
+        TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(archiveDir.getName());
+        if(translationInfo != null) {
+            // locate existing project
+            Project p = MainContext.getContext().getSharedProjectManager().getProject(translationInfo.projectId);
+            if(p != null) {
+                File repoDir = new File(Project.getRepositoryPath(p.getId(), translationInfo.languageId));
+                if(repoDir.exists()) {
+                    // merge repos
+                    File archiveGitDir = new File(archiveDir, ".git");
+                    FileUtilities.deleteRecursive(archiveGitDir);
+                    File[] files = archiveDir.listFiles();
+                    for(File f:files) {
+                        if(!FileUtilities.moveOrCopy(f, new File(repoDir, f.getName()))) {
+                            // TODO: record list of files that cannot be coppied and display to the user
+                            Log.w(TAG, "failed to import translation file "+f.getName());
+                        }
+                    }
+                    translationInfo.getLanguage().touch();
+                    // TODO: perform a git diff to see if there are any changes
+                    return true;
+                } else {
+                    // add as new repo
+                    return FileUtilities.moveOrCopy(archiveDir, repoDir);
+                }
+            } else {
+                // TODO: create a new project and add it to the project manager.
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns information about the translation archive
+     * @param archiveName
+     * @return
+     */
+    public static TranslationArchiveInfo getTranslationArchiveInfo(String archiveName) {
+        if(validateProjectArchiveName(archiveName)) {
+            String[] fields = archiveName.toLowerCase().split("-");
+            return new TranslationArchiveInfo(fields[0], fields[1], fields[2]);
+        }
+        return null;
+    }
+
+    /**
+     * Checks if the project archive is named properly
+     * @param name
+     * @return
+     */
+    public static boolean validateProjectArchiveName(String name) {
+        String[] fields = name.toLowerCase().split("-");
+        return fields.length == 3 && fields[0].equals(GLOBAL_PROJECT_SLUG);
+    }
+
+    /**
+     * Stores information about a translation archive
+     */
+    public static class TranslationArchiveInfo {
+        public final String globalProjectId;
+        public final String projectId;
+        public final String languageId;
+
+        public TranslationArchiveInfo(String globalProjectId, String projectId, String languageId) {
+            this.globalProjectId = globalProjectId;
+            this.projectId = projectId;
+            this.languageId = languageId;
+        }
+
+        public Project getProject() {
+            return MainContext.getContext().getSharedProjectManager().getProject(projectId);
+        }
+
+        public Language getLanguage() {
+            return MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
+        }
     }
 }

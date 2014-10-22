@@ -218,6 +218,15 @@ public class MainApplication extends Application {
         showMessageDialog(title, msg, positiveBtn, R.string.label_cancel, positiveListenerr, new DummyDialogListener());
     }
 
+    /**
+     *
+     * @param title
+     * @param msg
+     * @param positiveBtn
+     * @param negativeBtn
+     * @param positiveListener
+     * @param negativeListener
+     */
     public void showMessageDialog(int title, String msg, int positiveBtn, int negativeBtn, DialogInterface.OnClickListener positiveListener, DialogInterface.OnClickListener negativeListener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title).setMessage(msg)
@@ -419,7 +428,6 @@ public class MainApplication extends Application {
             kpair.writePrivateKey(privateKeyPath);
             kpair.writePublicKey(publicKeyPath, getUDID());
             kpair.dispose();
-            showToastMessage("SSH keys were successfully generated");
         }
         catch(Exception e){
             showException(e);

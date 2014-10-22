@@ -36,8 +36,7 @@
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/sharingToolTextView"
-        android:layout_above="@+id/export_sd_button">
+        android:layout_below="@+id/sharingToolTextView">
 
         <Button
             android:layout_width="wrap_content"

@@ -87,7 +87,7 @@ public class Chapter {
      * @param translation
      */
     public void setTitleTranslation(String translation) {
-        if(mTitleTranslation != null && mTitleTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId() && !mTitleTranslation.isSaved()) {
+        if(mTitleTranslation != null && !mTitleTranslation.isLanguage(mProject.getSelectedTargetLanguage()) && !mTitleTranslation.isSaved()) {
             // save pending changes first
             save();
         }
@@ -99,12 +99,12 @@ public class Chapter {
      * @return
      */
     public Translation getTitleTranslation() {
-        if(mTitleTranslation == null || mTitleTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId()) {
+        if(mTitleTranslation == null || !mTitleTranslation.isLanguage(mProject.getSelectedTargetLanguage())) {
             if(mTitleTranslation != null) {
                 save();
             }
             // load translation from disk
-            String path = mProject.getRepositoryPath(mProject.getSelectedTargetLanguage()) + getId() + "/" + TITLE_FILE;
+            String path = Project.getRepositoryPath(mProject.getId(), mProject.getSelectedTargetLanguage().getId()) + getId() + "/" + TITLE_FILE;
             try {
                 String text = FileUtilities.getStringFromFile(path);
                 mTitleTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
@@ -121,7 +121,7 @@ public class Chapter {
      * @param translation
      */
     public void setReferenceTranslation(String translation) {
-        if(mReferenceTranslation != null && mReferenceTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId() && !mReferenceTranslation.isSaved()) {
+        if(mReferenceTranslation != null && !mReferenceTranslation.isLanguage(mProject.getSelectedTargetLanguage()) && !mReferenceTranslation.isSaved()) {
             // save pending changes first
             save();
         }
@@ -133,12 +133,12 @@ public class Chapter {
      * @return
      */
     public Translation getReferenceTranslation() {
-        if(mReferenceTranslation == null || mReferenceTranslation.getLanguage().getId() != mProject.getSelectedTargetLanguage().getId()) {
+        if(mReferenceTranslation == null || !mReferenceTranslation.isLanguage(mProject.getSelectedTargetLanguage())) {
             if(mReferenceTranslation != null) {
                 save();
             }
             // load translation from disk
-            String path = mProject.getRepositoryPath(mProject.getSelectedTargetLanguage()) + getId() + "/" + REFERENCE_FILE;
+            String path = Project.getRepositoryPath(mProject.getId(), mProject.getSelectedTargetLanguage().getId()) + getId() + "/" + REFERENCE_FILE;
             try {
                 String text = FileUtilities.getStringFromFile(path);
                 mReferenceTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
@@ -286,12 +286,12 @@ public class Chapter {
     }
 
     /**
-     * Saves the reference and title
+     * Saves the reference and title to the disk
      */
     public void save() {
         if(mReferenceTranslation != null && mTitleTranslation != null) {
-            String referencePath = mProject.getRepositoryPath(mReferenceTranslation.getLanguage()) + getId() + "/" + REFERENCE_FILE;
-            String titlePath = mProject.getRepositoryPath(mTitleTranslation.getLanguage()) + getId() + "/" + TITLE_FILE;
+            String referencePath = Project.getRepositoryPath(mProject.getId(), mReferenceTranslation.getLanguage().getId()) + getId() + "/" + REFERENCE_FILE;
+            String titlePath = Project.getRepositoryPath(mProject.getId(), mTitleTranslation.getLanguage().getId()) + getId() + "/" + TITLE_FILE;
 
             // save reference
             if(!mReferenceTranslation.isSaved()) {

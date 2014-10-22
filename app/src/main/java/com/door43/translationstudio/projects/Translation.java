@@ -7,6 +7,7 @@ public class Translation {
     private Language mLanguage;
     private String mTranslationText;
     private Boolean mIsSaved;
+    private int mLanguageSessionVersion;
 
     /**
      *
@@ -15,6 +16,7 @@ public class Translation {
      */
     public Translation(Language lang, String translationText){
         mLanguage = lang;
+        mLanguageSessionVersion = lang.getSessionVersion();
         mTranslationText = translationText;
         mIsSaved = false;
     }
@@ -53,5 +55,13 @@ public class Translation {
      */
     public void isSaved(Boolean saved) {
         mIsSaved = saved;
+    }
+
+    /**
+     * Checks if the translation is in the given language and if the target translation has been updated on the disk
+     * @param language
+     */
+    public boolean isLanguage(Language language) {
+        return getLanguage().getId().equals(language.getId()) && mLanguageSessionVersion == language.getSessionVersion();
     }
 }

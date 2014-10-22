@@ -7,6 +7,7 @@ public class Language {
     private String mCode;
     private String mName;
     private Direction mDirection;
+    private int mSessionVersion; // this is used for target language
 
     public enum Direction {
         LeftToRight, RightToLeft
@@ -47,4 +48,20 @@ public class Language {
     public String getName() {
         return mName;
     }
+
+    /**
+     * Increases the session version so that cached translations in this language will become invalid and re-loaded from the disk
+     */
+    public void touch() {
+        mSessionVersion ++;
+    }
+
+    /**
+     * Returns the session version of the target language
+     * @return
+     */
+    public int getSessionVersion() {
+        return mSessionVersion;
+    }
+
 }

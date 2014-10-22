@@ -56,6 +56,10 @@ public class SharingAdapter extends BaseAdapter {
         TextView nameText = (TextView)sharingToolView.findViewById(R.id.sharingToolTextView);
         nameText.setText(getItem(i).getName());
 
+        // description
+        TextView descriptionText = (TextView)sharingToolView.findViewById(R.id.sharingToolDescriptionTextView);
+        descriptionText.setText(getItem(i).getDescription());
+
         // icon
         ImageView iconImage = (ImageView)sharingToolView.findViewById(R.id.sharingToolImageView);
         iconImage.setBackgroundResource(getItem(i).getIcon());

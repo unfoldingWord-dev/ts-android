@@ -1,9 +1,12 @@
 package com.door43.translationstudio;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.support.v4.content.FileProvider;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,6 +17,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
@@ -21,8 +25,11 @@ import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
@@ -64,6 +71,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         final Project p = app().getSharedProjectManager().getSelectedProject();
 
         MainContext.getContext().showProgressDialog(R.string.preparing_sharing);
+
         // stage and commit changes to the project
         p.commit(new Project.OnCommitComplete() {
             @Override
@@ -77,10 +85,17 @@ public class SharingActivity extends TranslatorBaseActivity {
                 boolean exportAsProject = exportFormt.equals("project");
                 final boolean exportAsDokuwiki = exportFormt.equals("dokuwiki");
 
+                int descriptionResource = 0;
+                if(exportAsProject) {
+                    descriptionResource = R.string.export_as_project;
+                } else if(exportAsDokuwiki) {
+                    descriptionResource = R.string.export_as_dokuwiki;
+                }
+
                 mSharingTools.clear();
 
                 // define sharing tools
-                mSharingTools.add(new SharingToolItem("Export to App", R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(R.string.export_to_app, descriptionResource, R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Thread thread = new Thread() {
@@ -118,7 +133,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }));
 
-                mSharingTools.add(new SharingToolItem("Export to SD", R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(R.string.export_to_sd, descriptionResource, R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Thread thread = new Thread() {
@@ -166,7 +181,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 }, removeableMedia != null , R.string.missing_external_storage));
 
                 if(exportAsProject) {
-                    mSharingTools.add(new SharingToolItem("Import from SD", R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
+                    mSharingTools.add(new SharingToolItem(R.string.import_from_sd, descriptionResource, R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
                         @Override
                         public void run() {
                             Intent intent = new Intent(me, FileExplorerActivity.class);
@@ -176,7 +191,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 }
 
 //        if(exportAsProject) {
-//            mSharingTools.add(new SharingToolItem("Export to nearby device", R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+//            mSharingTools.add(new SharingToolItem("Export to nearby device", descriptionResource, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
 //                @Override
 //                public void run() {
 //                    Thread thread = new Thread() {
@@ -242,7 +257,9 @@ public class SharingActivity extends TranslatorBaseActivity {
         if(exportFormat.equals("dokuwiki")) {
             name = name + "_" + exportFormat;
         }
-        return name + "_" + p.getLocalTranslationVersion() + ".tar";
+        SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
+        String timestamp = s.format(new Date());
+        return name + "_" + timestamp + ".tar";
     }
 
     @Override
@@ -269,17 +286,61 @@ public class SharingActivity extends TranslatorBaseActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMPORT_FROM_SD_REQUEST) {
+            // import translation studio project from the sd card
             if(data != null) {
-                final String path = data.getExtras().getString("path");
-                Thread thread = new Thread() {
-                    public void run() {
-                        app().showProgressDialog(R.string.importing_project);
-                        // TODO: extract the tar file and import the project.
-//                        app().untarTarFile();
-                        app().closeProgressDialog();
-                    }
-                };
-                thread.start();
+                final File archiveFile = new File(data.getExtras().getString("path"));
+                if(archiveFile.exists() && archiveFile.isFile()) {
+
+                    // thread to prepare import
+                    Runnable prepareImport = new Runnable() {
+                        public void run() {
+                            app().showProgressDialog(R.string.importing_project);
+
+                            // place extracted archive into timestamped directory to prevent archives with no folder structure from throwing files everywhere
+                            SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
+                            String timestamp = s.format(new Date());
+                            File exportDir = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+
+                            // TODO: validate that file is a tar
+
+                            // extract
+                            try {
+                                app().untarTarFile(archiveFile.getAbsolutePath(), exportDir.getAbsolutePath());
+                                File[] files = exportDir.listFiles(new FilenameFilter() {
+                                    @Override
+                                    public boolean accept(File file, String s) {
+                                        return Project.validateProjectArchiveName(s);
+                                    }
+                                });
+                                if(files.length == 1) {
+                                    // TODO: it would be nice if we could double check with the user before running the import.
+                                    if(Project.importTranslationFromFile(files[0])) {
+                                        app().showToastMessage(R.string.success);
+                                    } else {
+                                        // failed to import translation
+                                        app().showToastMessage(R.string.translation_import_failed);
+                                    }
+                                } else {
+                                    app().showToastMessage(R.string.malformed_translation_archive);
+                                }
+                            } catch (IOException e) {
+                                app().showException(e);
+                            }
+
+                            // clean up
+                            if(exportDir.exists()) {
+                                FileUtilities.deleteRecursive(exportDir);
+                            }
+
+                            app().closeProgressDialog();
+                        }
+                    };
+
+                    // begin the import
+                    new Thread(prepareImport).start();
+                } else {
+                    app().showToastMessage(R.string.missing_file);
+                }
             }
         }
 

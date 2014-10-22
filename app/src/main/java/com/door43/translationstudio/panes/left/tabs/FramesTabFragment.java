@@ -31,7 +31,9 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // select the frame
+                // save changes to the current frame first
+                ((MainActivity)me.getActivity()).save();
+                // select the new frame
                 app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
                 // we're ready to begin translating. close the left pane
                 ((MainActivity)me.getActivity()).closeDrawers();

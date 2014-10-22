@@ -10,9 +10,7 @@ import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
-import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.StorageUtils;
 
 /**
  * See https://github.com/mburman/Android-File-Explore
@@ -36,7 +34,7 @@ public class FileExplorerActivity extends Activity {
 	private static final String TAG = "F_PATH";
 
 	private Item[] fileList;
-	private File path = new File(Environment.getExternalStorageDirectory() + "");
+    private File mPath;
 	private String chosenFile;
 	private static final int DIALOG_LOAD_FILE = 1000;
 
@@ -44,25 +42,36 @@ public class FileExplorerActivity extends Activity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-
 		super.onCreate(savedInstanceState);
+
+        // TODO: support fetching files from the internal downloads directory
+
+        // external sd
+        StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+        if(removeableMediaInfo != null) {
+            // write files to the removeable sd card
+            mPath = new File("/storage/" + removeableMediaInfo.getMountName());
+        } else {
+            // the external storage could not be found
+            finish();
+        }
 
 		loadFileList();
 
 		showDialog(DIALOG_LOAD_FILE);
-		Log.d(TAG, path.getAbsolutePath());
+		Log.d(TAG, mPath.getAbsolutePath());
 
 	}
 
 	private void loadFileList() {
 		try {
-			path.mkdirs();
+			mPath.mkdirs();
 		} catch (SecurityException e) {
 			Log.e(TAG, "unable to write on the sd card ");
 		}
 
 		// Checks whether path exists
-		if (path.exists()) {
+		if (mPath.exists()) {
 			FilenameFilter filter = new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String filename) {
@@ -74,13 +83,13 @@ public class FileExplorerActivity extends Activity {
 				}
 			};
 
-			String[] fList = path.list(filter);
+			String[] fList = mPath.list(filter);
 			fileList = new Item[fList.length];
 			for (int i = 0; i < fList.length; i++) {
 				fileList[i] = new Item(fList[i], R.drawable.file_icon);
 
 				// Convert into file path
-				File sel = new File(path, fList[i]);
+				File sel = new File(mPath, fList[i]);
 
 				// Set drawables
 				if (sel.isDirectory()) {
@@ -161,20 +170,20 @@ public class FileExplorerActivity extends Activity {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					chosenFile = fileList[which].file;
-					File sel = new File(path + "/" + chosenFile);
+					File sel = new File(mPath + "/" + chosenFile);
 					if (sel.isDirectory()) {
 						firstLvl = false;
 
 						// Adds chosen directory to list
 						str.add(chosenFile);
 						fileList = null;
-						path = new File(sel + "");
+						mPath = new File(sel + "");
 
 						loadFileList();
 
 						removeDialog(DIALOG_LOAD_FILE);
 						showDialog(DIALOG_LOAD_FILE);
-						Log.d(TAG, path.getAbsolutePath());
+						Log.d(TAG, mPath.getAbsolutePath());
 
 					} else if (chosenFile.equalsIgnoreCase("up") && !sel.exists()) {
 
@@ -182,8 +191,8 @@ public class FileExplorerActivity extends Activity {
 						String s = str.remove(str.size() - 1);
 
 						// path modified to exclude present directory
-						path = new File(path.toString().substring(0,
-								path.toString().lastIndexOf(s)));
+						mPath = new File(mPath.toString().substring(0,
+								mPath.toString().lastIndexOf(s)));
 						fileList = null;
 
 						// if there are no more directories in the list, then
@@ -195,13 +204,13 @@ public class FileExplorerActivity extends Activity {
 
 						removeDialog(DIALOG_LOAD_FILE);
 						showDialog(DIALOG_LOAD_FILE);
-						Log.d(TAG, path.getAbsolutePath());
+						Log.d(TAG, mPath.getAbsolutePath());
 
 					} else {
 						// pass path to the calling activity
                         Intent i = getIntent();
 
-                        i.putExtra("path", new File(path, chosenFile).getAbsolutePath());
+                        i.putExtra("path", new File(mPath, chosenFile).getAbsolutePath());
                         setResult(RESULT_OK, i);
                         finish();
 					}

@@ -43,7 +43,7 @@ public class Frame {
      * @param translation
      */
     public void setTranslation(String translation) {
-        if(mTranslation != null && mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedTargetLanguage().getId() && !mTranslation.isSaved()) {
+        if(mTranslation != null && !mTranslation.isLanguage(mChapter.getProject().getSelectedTargetLanguage()) && !mTranslation.isSaved()) {
             save();
         }
         mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), translation);
@@ -54,12 +54,12 @@ public class Frame {
      * @return
      */
     public Translation getTranslation() {
-        if(mTranslation == null || mTranslation.getLanguage().getId() != mChapter.getProject().getSelectedTargetLanguage().getId()) {
+        if(mTranslation == null || !mTranslation.isLanguage(mChapter.getProject().getSelectedTargetLanguage())) {
             if(mTranslation != null) {
                 save();
             }
             // load translation from disk
-            String path = mChapter.getProject().getRepositoryPath(mChapter.getProject().getSelectedTargetLanguage()) + getChapterId() + "/" + getId() + ".txt";
+            String path = Project.getRepositoryPath(mChapter.getProject().getId(), mChapter.getProject().getSelectedTargetLanguage().getId()) + getChapterId() + "/" + getId() + ".txt";
             try {
                 String text = FileUtilities.getStringFromFile(path);
                 mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), text);
@@ -130,12 +130,12 @@ public class Frame {
     }
 
     /**
-     * Saves the frane trabskatuib
+     * Saves the frame to the disk
      */
     public void save() {
         if(mTranslation != null && !mTranslation.isSaved()) {
             mTranslation.isSaved(true);
-            String path = mChapter.getProject().getRepositoryPath(mTranslation.getLanguage()) + getChapterId() + "/" + getId() + ".txt";
+            String path = Project.getRepositoryPath(mChapter.getProject().getId(), mTranslation.getLanguage().getId()) + getChapterId() + "/" + getId() + ".txt";
             File file = new File(path);
             if(mTranslation.getText().isEmpty()) {
                 // delete empty file

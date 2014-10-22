@@ -6,28 +6,31 @@ package com.door43.translationstudio.util;
 public class SharingToolItem {
     private SharingToolAction mAction;
     private String mName;
+    private String mDescription;
     private int mIcon;
     private Boolean mIsEnabled;
     private int mDisabledNotice;
 
-    public SharingToolItem(String name, int icon, SharingToolAction action) {
+    public SharingToolItem(int nameResource, int descriptionResource, int iconResource, SharingToolAction action) {
         mAction = action;
-        mName = name;
-        mIcon = icon;
+        mDescription = MainContext.getContext().getResources().getString(descriptionResource);
+        mName = MainContext.getContext().getResources().getString(nameResource);
+        mIcon = iconResource;
         mIsEnabled = true;
         mDisabledNotice = 0;
     }
 
     /**
      *
-     * @param name The visible name of the tool
+     * @param nameResource The visible name of the tool
      * @param icon the tool icon
      * @param action the action to be performed
      * @param enabled sets the tool as enabled or disabled. when disabled a notice will be displayed
      */
-    public SharingToolItem(String name, int icon, SharingToolAction action, Boolean enabled, int disabledNotice) {
+    public SharingToolItem(int nameResource, int descriptionResource, int icon, SharingToolAction action, Boolean enabled, int disabledNotice) {
         mAction = action;
-        mName = name;
+        mDescription = MainContext.getContext().getResources().getString(descriptionResource);
+        mName = MainContext.getContext().getResources().getString(nameResource);
         mIcon = icon;
         mIsEnabled = enabled;
         mDisabledNotice = disabledNotice;
@@ -47,6 +50,14 @@ public class SharingToolItem {
      */
     public String getName() {
         return mName;
+    }
+
+    /**
+     * Returns the tool description
+     * @return
+     */
+    public String getDescription() {
+        return mDescription;
     }
 
     /**
