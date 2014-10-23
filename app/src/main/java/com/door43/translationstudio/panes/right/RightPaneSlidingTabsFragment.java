@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 /**
  * Created by joel on 9/29/2014.
+ * @deprecated
  */
 public class RightPaneSlidingTabsFragment extends Fragment {
     private ViewPager mViewPager;

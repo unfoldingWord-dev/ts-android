@@ -15,6 +15,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
  * Created by joel on 9/29/2014.
+ * @deprecated
  */
 public class ResourcesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private ResourcesTabFragment me = this;

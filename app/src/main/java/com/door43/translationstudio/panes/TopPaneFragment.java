@@ -14,6 +14,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
  * Created by joel on 8/26/2014.
+ * @deprecated
  */
 public class TopPaneFragment extends TranslatorBaseFragment {
     Button mButtonSync;
