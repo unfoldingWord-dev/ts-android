@@ -42,8 +42,12 @@
         </activity>
         <activity
             android:name=".SettingsActivity"
+            android:theme="@style/TitledTheme"
             android:label="@string/title_activity_settings"
-            android:theme="@style/SettingTheme" >
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
             android:name=".ChapterSettingActivity"
