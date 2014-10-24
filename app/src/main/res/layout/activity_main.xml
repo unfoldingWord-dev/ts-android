@@ -137,6 +137,7 @@
                             android:enabled="true"
                             android:gravity="top"
                             android:textColor="@color/dark_gray"
+                            android:imeOptions="flagNoExtractUi"
                             android:lineSpacingExtra="1.5dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="5dp"

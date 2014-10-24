@@ -12,14 +12,15 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
-import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Build;
@@ -40,7 +41,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -112,6 +115,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             reloadCenterPane();
             app().pauseAutoSave(false);
         }
+        closeTranslationKeyboard();
     }
 
     @Override
@@ -335,6 +339,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 return false;
             }
         });
+    }
+
+    public void closeTranslationKeyboard() {
+        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
     private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
