@@ -60,5 +60,6 @@
     <string name="translation_import_failed">Failed to import the translation</string>
     <string name="import_ready_title">Ready to import translation</string>
     <string name="import_ready_message">You are about to import a translation for the \"%1$s\" language into the \"%2$s\"  project.</string>
+    <string name="internet_not_available">You do not have an active internet connection.</string>
 
 </resources>

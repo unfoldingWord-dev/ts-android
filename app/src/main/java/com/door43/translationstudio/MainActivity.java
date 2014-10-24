@@ -485,7 +485,11 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * Begins syncing the selected project
      */
     public void openSyncing() {
-        app().getSharedTranslationManager().syncSelectedProject();
+        if(app().isNetworkAvailable()) {
+            app().getSharedTranslationManager().syncSelectedProject();
+        } else {
+            app().showToastMessage(R.string.internet_not_available);
+        }
     }
 
     /**
