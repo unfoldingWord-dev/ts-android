@@ -135,8 +135,7 @@ public class PushTask extends RepoOpTask {
                                 update.getRemoteName());
                 break;
             case OK:
-                msg = String.format("[%s] Success push to remote ref.\n",
-                        update.getRemoteName());
+                msg = String.format("[%s] Success push to remote ref.\n", update.getRemoteName());
                 break;
             case REJECTED_NODELETE:
                 msg = String
@@ -172,6 +171,7 @@ public class PushTask extends RepoOpTask {
                         update.getRemoteName());
                 break;
         }
+        msg += "\nServer: "+mRemote;
         resultMsg.append(msg);
     }
 }
