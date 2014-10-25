@@ -64,4 +64,11 @@ public class Language {
         return mSessionVersion;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(obj.getClass() == Language.class) {
+            return ((Language)obj).getId().equals(getId());
+        }
+        return false;
+    }
 }

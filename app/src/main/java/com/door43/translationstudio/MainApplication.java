@@ -236,9 +236,21 @@ public class MainApplication extends Application {
                 .setNegativeButton(negativeBtn, negativeListener).show();
     }
 
+    public void showMessageDialog(int title, int msg, int positiveBtn, int negativeBtn, DialogInterface.OnClickListener positiveListener, DialogInterface.OnClickListener negativeListener) {
+        showMessageDialog(title, getResources().getString(msg), positiveBtn, negativeBtn, positiveListener, negativeListener);
+    }
+
     public void showMessageDialog(int title, String msg) {
+        showMessageDialog(getResources().getString(title), msg);
+    }
+
+    public void showMessageDialog(String title, String msg) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getCurrentActivity());
         builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
+    }
+
+    public void showMessageDialog(int title, int msg) {
+        showMessageDialog(title, getResources().getString(msg));
     }
 
     /**

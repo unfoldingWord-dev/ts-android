@@ -92,6 +92,7 @@ public class Chapter {
             save();
         }
         mTitleTranslation = new Translation(mProject.getSelectedTargetLanguage(), translation);
+        mProject.setIsTranslating(true);
     }
 
     /**
@@ -126,6 +127,7 @@ public class Chapter {
             save();
         }
         mReferenceTranslation = new Translation(mProject.getSelectedTargetLanguage(), translation);
+        mProject.setIsTranslating(true);
     }
 
     /**

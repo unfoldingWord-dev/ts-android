@@ -641,4 +641,24 @@ public class Project {
             return MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
         }
     }
+
+    /**
+     * Sets whether or not the project is being translated
+     * @param hasTranslation
+     */
+    public void setIsTranslating(Boolean hasTranslation) {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("is_translating_"+mSlug, hasTranslation);
+        editor.commit();
+    }
+
+    /**
+     * Checks if the project is being translated
+     * @return
+     */
+    public Boolean getIsTranslating() {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        return settings.getBoolean("is_translating_"+mSlug, false);
+    }
 }

@@ -12,15 +12,14 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
+import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.os.Build;
@@ -43,7 +42,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -484,9 +482,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     /**
      * Begins syncing the selected project
      */
-    public void openSyncing() {
+    public void openSyncing(Boolean validate) {
         if(app().isNetworkAvailable()) {
-            app().getSharedTranslationManager().syncSelectedProject();
+            if(validate) {
+                Intent intent = new Intent(this, UploadWizardActivity.class);
+                startActivity(intent);
+            } else {
+                app().getSharedTranslationManager().syncSelectedProject();
+            }
         } else {
             app().showToastMessage(R.string.internet_not_available);
         }
@@ -548,7 +551,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     public void onDelegateResponse(String id, DelegateResponse response) {
         if(TranslationSyncResponse.class == response.getClass()) {
             if (((TranslationSyncResponse)response).isSuccess()) {
-                openSyncing();
+                openSyncing(false);
             } else {
                 // error
             }
@@ -582,7 +585,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 openSharing();
                 return true;
             case R.id.action_sync:
-                openSyncing();
+                openSyncing(true);
                 return true;
             case R.id.action_settings:
                 openSettings();

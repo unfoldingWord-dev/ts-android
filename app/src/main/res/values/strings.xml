@@ -5,8 +5,8 @@
     <string name="projects">Projects</string>
     <string name="chapters">Chapters</string>
     <string name="frames">Frames</string>
-    <string name="label_ok">ok</string>
-    <string name="label_cancel">cancel</string>
+    <string name="label_ok">OK</string>
+    <string name="label_cancel">Cancel</string>
     <string name="error_task_running">A task is already running</string>
     <string name="dialog_push_result">Push Result</string>
     <string name="error_out_of_memory">Out of memory</string>
@@ -61,5 +61,25 @@
     <string name="import_ready_title">Ready to import translation</string>
     <string name="import_ready_message">You are about to import a translation for the \"%1$s\" language into the \"%2$s\"  project.</string>
     <string name="internet_not_available">You do not have an active internet connection.</string>
+    <string name="title_activity_upload_wizard">Translation Upload</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="upload_wizard_intro">You are about to upload your translation. We will now perform a few checks to ensure your translation is ready to be uploaded.</string>
+    <string name="label_continue">Continue</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="upload_wizard_overview">Upload Overview</string>
+    <string name="label_project_details">Project details</string>
+    <string name="project_details">\"%1$s\" translated from the \"%2$s\" language into the \"%3$s\" language.</string>
+    <string name="click_for_details">Click for details</string>
+    <string name="label_project_settings">Project Settings</string>
+    <string name="error_target_and_source_are_same">The source and target languages are the same</string>
+    <string name="label_chapter_settings">Chapter Settings</string>
+    <string name="error_chapter_title_missing">The title is missing.</string>
+    <string name="error_chapter_reference_missing">The reference is missing.</string>
+    <string name="label_validate_chapter">Chapter: %1$s</string>
+    <string name="dialog_validation_errors">Validation Errors</string>
+    <string name="validation_errors">There are unresolved errors in the translation. Please correct these then try again.</string>
+    <string name="error_frames_not_translated">%1$s frames have not been translated.</string>
+    <string name="dialog_validation_warnings">Validation Warnings</string>
+    <string name="validation_warnings">There are unresolved warnings. Are you sure you want to upload this translation?</string>
 
 </resources>

@@ -47,6 +47,7 @@ public class Frame {
             save();
         }
         mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), translation);
+        mChapter.getProject().setIsTranslating(true);
     }
 
     /**

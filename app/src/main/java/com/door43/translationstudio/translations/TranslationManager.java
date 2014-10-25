@@ -123,7 +123,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
 
     @Override
     public void onMessageReceived(String message) {
-        // check if we get an ok message
+        // check if we get an ok message from sending ssh keys to the server
         mContext.closeProgressDialog();
         try {
             JSONObject json = new JSONObject(message);
