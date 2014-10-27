@@ -21,14 +21,12 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
     private TextView sourceLanguageChapterReferenceEditText;
     private EditText targetLanguageChapterTitleEditText;
     private EditText targetLanguageChapterReferenceEditText;
-    private Button targetLanguageBtn;
-    private Button sourceLanguageBtn;
     private Project mProject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chapter_setting);
+        setContentView(R.layout.activity_chapter_settings);
 
         mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
@@ -46,26 +44,6 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         sourceLanguageChapterReferenceEditText = (TextView)findViewById(R.id.sourceLanguageChapterReference);
         targetLanguageChapterTitleEditText = (EditText)findViewById(R.id.targetLanguageChapterTitleEditText);
         targetLanguageChapterReferenceEditText = (EditText)findViewById(R.id.targetLanguageChapterReferenceEditText);
-        targetLanguageBtn = (Button)findViewById(R.id.switchTargetLanguageButton);
-        sourceLanguageBtn = (Button)findViewById(R.id.switchSourceLanguageButton);
-
-        // hook up buttons
-        targetLanguageBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
-                languageIntent.putExtra("sourceLanguages", false);
-                startActivity(languageIntent);
-            }
-        });
-        sourceLanguageBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
-                languageIntent.putExtra("sourceLanguages", true);
-                startActivity(languageIntent);
-            }
-        });
 
         loadValues();
     }
@@ -83,8 +61,6 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
             targetLanguageChapterTitleEditText.setText(mProject.getSelectedChapter().getTitleTranslation().getText());
             targetLanguageChapterReferenceEditText.setText(mProject.getSelectedChapter().getReferenceTranslation().getText());
         }
-        targetLanguageBtn.setText(mProject.getSelectedTargetLanguage().getName());
-        sourceLanguageBtn.setText(mProject.getSelectedSourceLanguage().getName());
     }
 
     @Override

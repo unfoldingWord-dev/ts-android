@@ -91,6 +91,14 @@
             android:label="@string/title_activity_upload_wizard"
             android:theme="@style/TitledTheme" >
         </activity>
+        <activity
+            android:name=".ProjectSettingsActivity"
+            android:label="@string/title_activity_project_settings"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

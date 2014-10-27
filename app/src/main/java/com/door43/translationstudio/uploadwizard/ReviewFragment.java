@@ -26,7 +26,7 @@ import java.util.ArrayList;
  * A simple {@link Fragment} subclass.
  *
  */
-public class OverviewFragment extends WizardFragment {
+public class ReviewFragment extends WizardFragment {
     private Button mContinueBtn;
     private ValidateUploadTask mValidator;
     private ArrayList<UploadValidationItem> mValidationItems = new ArrayList<UploadValidationItem>();
@@ -34,7 +34,7 @@ public class OverviewFragment extends WizardFragment {
     private boolean mHasErrors = false;
     private boolean mHasWarnings = false;
 
-    public OverviewFragment() {
+    public ReviewFragment() {
         // Required empty public constructor
     }
 
@@ -156,6 +156,8 @@ public class OverviewFragment extends WizardFragment {
             }
 
             // make sure all the chapter titles and references have been set
+            int numChaptersTranslated = 0;
+            boolean chapterHasWarnings = false;
             for(int i = 0; i < p.numChapters(); i ++) {
                 Chapter c = p.getChapter(i);
                 String description = "";
@@ -164,13 +166,13 @@ public class OverviewFragment extends WizardFragment {
                 if(c.getTitleTranslation().getText().isEmpty()) {
                     description = getResources().getString(R.string.error_chapter_title_missing);
                     status = UploadValidationItem.Status.WARNING;
-                    mHasWarnings = true;
+                    chapterHasWarnings = true;
                 }
                 // check reference
                 if(c.getReferenceTranslation().getText().isEmpty()) {
                     description = description + "\n"+getResources().getString(R.string.error_chapter_reference_missing);
                     status = UploadValidationItem.Status.WARNING;
-                    mHasWarnings = true;
+                    chapterHasWarnings = true;
                 }
                 // check frames
                 int numFramesNotTranslated = 0;
@@ -183,13 +185,25 @@ public class OverviewFragment extends WizardFragment {
                 if(numFramesNotTranslated > 0) {
                     description += "\n"+String.format(getResources().getString(R.string.error_frames_not_translated), numFramesNotTranslated);
                     status = UploadValidationItem.Status.WARNING;
-                    mHasWarnings = true;
+                    chapterHasWarnings = true;
                 }
 
-                publishProgress(new UploadValidationItem(String.format(getResources().getString(R.string.label_validate_chapter), c.getTitle()), description, status));
+                // only display warnings for chapters that have at least some frames translated
+                if(numFramesNotTranslated != c.numFrames()) {
+                    numChaptersTranslated ++;
+                    publishProgress(new UploadValidationItem(String.format(getResources().getString(R.string.label_validate_chapter), c.getTitle()), description, status));
+                } else {
+                    // ignore
+                    chapterHasWarnings = false;
+                }
+                mHasWarnings = chapterHasWarnings || mHasWarnings;
             }
 
-//            publishProgress(new UploadValidationItem("Frames", true));
+            // ensure at least one chapter has been translated
+            if(numChaptersTranslated == 0) {
+                publishProgress(new UploadValidationItem(getResources().getString(R.string.label_chapters), getResources().getString(R.string.no_translated_chapters), UploadValidationItem.Status.ERROR));
+                mHasErrors = true;
+            }
             return null;
         }
 

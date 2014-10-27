@@ -540,11 +540,19 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     /**
-     * Displays the translation contextual menu
+     * Displays the chapter settings
      */
-    public void showTranslationMenu() {
-        Intent chapterSettingsIntent = new Intent(me, ChapterSettingActivity.class);
-        startActivity(chapterSettingsIntent);
+    public void showChapterSettingsMenu() {
+        Intent intent = new Intent(me, ChapterSettingActivity.class);
+        startActivity(intent);
+    }
+
+    /**
+     * Displays the project settings
+     */
+    public void showProjectSettingsMenu() {
+        Intent intent = new Intent(me, ProjectSettingsActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -599,8 +607,11 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             case R.id.action_resources:
                 openRightDrawer();
                 return true;
-            case R.id.action_translation_settings:
-                showTranslationMenu();
+            case R.id.action_chapter_settings:
+                showChapterSettingsMenu();
+                return true;
+            case R.id.action_project_settings:
+                showProjectSettingsMenu();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

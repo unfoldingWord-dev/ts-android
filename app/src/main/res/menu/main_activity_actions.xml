@@ -11,16 +11,20 @@
         android:title="@string/menu_resources"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_chapter_settings"
+        android:title="@string/menu_chapter_settings"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_project_settings"
+        android:title="@string/menu_project_settings"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_share"
         android:title="@string/menu_share"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_sync"
         android:title="@string/menu_sync"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_translation_settings"
-        android:title="@string/menu_translation_settings"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_info"

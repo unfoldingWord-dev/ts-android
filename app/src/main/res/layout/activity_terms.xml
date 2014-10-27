@@ -5,26 +5,29 @@
     android:layout_height="match_parent"
     android:background="@color/white">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/terms_title"
+        android:textSize="@dimen/h3"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:background="@color/dark_gray"
+        android:autoText="false"
+        android:id="@+id/textView" />
+
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/scrollView"
-        android:layout_above="@+id/linearLayout">
+        android:layout_above="@+id/linearLayout"
+        android:layout_below="@+id/textView"
+        android:padding="20dp">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/terms_title"
-                android:textSize="@dimen/h3"
-                android:textColor="@color/white"
-                android:gravity="center"
-                android:background="@color/dark_gray"
-                android:autoText="false" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -104,4 +107,5 @@
                 android:textColor="@color/white" />
         </LinearLayout>
     </LinearLayout>
+
 </RelativeLayout>

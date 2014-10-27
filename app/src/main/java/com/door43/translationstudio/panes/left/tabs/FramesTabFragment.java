@@ -42,7 +42,7 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
 
                 // Display chapter translation dialog if translating a new chapter
                 if(!app().getSharedProjectManager().getSelectedProject().getSelectedChapter().translationInProgress()) {
-                    ((MainActivity)me.getActivity()).showTranslationMenu();
+                    ((MainActivity)me.getActivity()).showChapterSettingsMenu();
                 }
             }
         });

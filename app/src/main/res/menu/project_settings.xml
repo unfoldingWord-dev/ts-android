@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.door43.translationstudio.ProjectSettingsActivity" >
+    <item
+        android:id="@+id/action_dismiss_project_settings"
+        android:title="@string/label_ok"
+        app:showAsAction="always" />
+</menu>

@@ -24,15 +24,8 @@
                 android:layout_height="wrap_content"
                 android:text="@string/source_language_field"
                 android:paddingRight="10dp"
-                android:textSize="@dimen/h4" />
-            <Button
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="Change"
-                android:id="@+id/switchSourceLanguageButton"
-                android:layout_marginTop="5dp"
-                style="?android:attr/buttonStyleSmall"
-                android:background="@drawable/bordered_button" />
+                android:textSize="@dimen/h3" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -68,16 +61,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/target_language_field"
                 android:paddingRight="10dp"
-                android:textSize="@dimen/h4" />
-
-            <Button
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="Change"
-                android:id="@+id/switchTargetLanguageButton"
-                android:background="@drawable/bordered_button"
-                android:layout_marginTop="5dp"
-                style="?android:attr/buttonStyleSmall" />
+                android:textSize="@dimen/h3" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -108,38 +92,5 @@
                 android:singleLine="false"
                 android:lines="2" />
         </LinearLayout>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/gray"></LinearLayout>
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:fitsSystemWindows="true"
-        android:paddingTop="10dp">
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Cancel"
-            android:id="@+id/cancelEditChapterTitleButton"
-            android:layout_weight="1"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@drawable/bordered_button"
-            android:textColor="@color/dark_gray"
-            android:layout_marginRight="10dp" />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save"
-            android:id="@+id/saveChapterTitleButton"
-            android:layout_weight="1"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/blue"
-            android:textColor="@color/white"
-            android:layout_marginLeft="10dp" />
     </LinearLayout>
 </LinearLayout>

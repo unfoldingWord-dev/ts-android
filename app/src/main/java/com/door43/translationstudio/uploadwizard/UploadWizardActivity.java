@@ -1,12 +1,8 @@
 package com.door43.translationstudio.uploadwizard;
 
-import android.app.Activity;
-
 import android.os.Bundle;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.uploadwizard.IntroFragment;
-import com.door43.translationstudio.uploadwizard.WizardFragment;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.ArrayList;
@@ -22,7 +18,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
         setContentView(R.layout.activity_upload_wizard);
         
         mFragments.add(new IntroFragment());
-        mFragments.add(new OverviewFragment());
+        mFragments.add(new ReviewFragment());
         
         loadNextFragment();
     }

@@ -66,7 +66,7 @@
     <string name="upload_wizard_intro">You are about to upload your translation. We will now perform a few checks to ensure your translation is ready to be uploaded.</string>
     <string name="label_continue">Continue</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="upload_wizard_overview">Upload Overview</string>
+    <string name="upload_wizard_overview">Upload Review</string>
     <string name="label_project_details">Project details</string>
     <string name="project_details">\"%1$s\" translated from the \"%2$s\" language into the \"%3$s\" language.</string>
     <string name="click_for_details">Click for details</string>
@@ -81,5 +81,9 @@
     <string name="error_frames_not_translated">%1$s frames have not been translated.</string>
     <string name="dialog_validation_warnings">Validation Warnings</string>
     <string name="validation_warnings">There are unresolved warnings. Are you sure you want to upload this translation?</string>
+    <string name="no_translated_chapters">Nothing has been translated yet.</string>
+    <string name="label_chapters">Chapters</string>
+    <string name="title_activity_project_settings">ProjectSettingsActivity</string>
+    <string name="source_language_has_no_chapters">There are no chapters availble in that source language</string>
 
 </resources>
