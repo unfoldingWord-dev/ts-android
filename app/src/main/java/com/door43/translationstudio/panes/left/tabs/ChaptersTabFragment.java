@@ -33,8 +33,12 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // save changes to the current frame first
+                ((MainActivity)me.getActivity()).save();
                 // select the chapter
                 app().getSharedProjectManager().getSelectedProject().setSelectedChapter(i);
+                // reload the center pane so we don't accidently overwrite a frame
+                ((MainActivity)me.getActivity()).reloadCenterPane();
                 // open up the frames tab
                 ((MainActivity)me.getActivity()).getLeftPane().selectTab(2);
                 // let the adapter redraw itself so the selected chapter is corectly highlighted

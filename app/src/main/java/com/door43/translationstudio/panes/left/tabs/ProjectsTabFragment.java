@@ -33,8 +33,12 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // save changes to the current frame first
+                ((MainActivity)me.getActivity()).save();
                 // select the project
                 app().getSharedProjectManager().setSelectedProject(i);
+                // reload the center pane so we don't accidently overwrite a frame
+                ((MainActivity)me.getActivity()).reloadCenterPane();
                 // open up the chapters tab
                 ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);
                 // let the adapter redraw itself so the selected project is corectly highlighted
