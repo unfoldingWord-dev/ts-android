@@ -10,6 +10,7 @@ import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
@@ -22,12 +23,18 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
+import android.text.Html;
+import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
+import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -47,6 +54,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -68,15 +77,16 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private final float MIN_LOG_PRESS = 100;
     private int mActionBarHeight;
     private boolean mActivityIsInitializing;
+    private TermsHighlighterTask mHighlighTask;
 
     // center view fields for caching
-    TextView mSourceText;
-    TextView mSourceTitleText;
-    TextView mSourceFrameNumText;
-    TextView mTranslationTitleText;
-    ImageView mNextFrameView;
-    ImageView mPreviousFrameView;
-    EditText mTranslationEditText;
+    private TextView mSourceText;
+    private TextView mSourceTitleText;
+    private TextView mSourceFrameNumText;
+    private TextView mTranslationTitleText;
+    private ImageView mNextFrameView;
+    private ImageView mPreviousFrameView;
+    private EditText mTranslationEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -233,12 +243,23 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             mTranslationEditText.setBackgroundDrawable(null);
         }
 
-        TextView sourceText = ((TextView)findViewById(R.id.sourceText));
-        sourceText.setMovementMethod(new ScrollingMovementMethod());
+        // enable scrolling
+        mSourceText.setMovementMethod(new ScrollingMovementMethod());
+
+        // make links clickable
+        MovementMethod m = mSourceText.getMovementMethod();
+        if ((m == null) || !(m instanceof LinkMovementMethod)) {
+            if (mSourceText.getLinksClickable()) {
+                mSourceText.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+        }
+
+        // make it focusable again
+        mSourceText.setFocusable(true);
 
         // display help text when sourceText is empty.
         final TextView helpText = (TextView)findViewById(R.id.helpTextView);
-        sourceText.addTextChangedListener(new TextWatcher() {
+        mSourceText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
 
@@ -318,7 +339,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         });
 
         // hook up gesture detectors
-        sourceText.setOnTouchListener(new View.OnTouchListener() {
+        mSourceText.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 return mSourceGestureDetector.onTouchEvent(event);
             }
@@ -399,6 +420,43 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             mSourceText.setText(frame.getText());
             mSourceFrameNumText.setText((frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
+
+            // set up task to highlight the source text key terms
+            if(mHighlighTask != null && !mHighlighTask.isCancelled()) {
+                mHighlighTask.cancel(true);
+            }
+            mHighlighTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
+                @Override
+                public void onProgress(String result) {
+                    String[] pieces = result.split("<a>");
+                    mSourceText.setText("");
+                    mSourceText.append(Html.fromHtml(pieces[0]));
+                    for(int i=1; i<pieces.length; i++) {
+                        // get closing anchor
+                        String[] linkChunks = pieces[i].split("</a>");
+                        SpannableString link = new SpannableString(linkChunks[0]);
+                        final String term = linkChunks[0];
+                        ClickableSpan cs = new ClickableSpan() {
+                            @Override
+                            public void onClick(View widget) {
+                                showTermDetails(term);
+                            }
+                        };
+                        link.setSpan(cs, 0, term.length(), 0);
+                        mSourceText.append(link);
+                        mSourceText.append(" ");
+                        try {
+                            mSourceText.append(Html.fromHtml(linkChunks[1]));
+                        } catch(Exception e){}
+                    }
+                }
+
+                @Override
+                public void onSuccess(String result) {
+                    // TODO: stop the loading indicator
+                }
+            });
+            mHighlighTask.execute(frame.getText());
 
             // navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
@@ -555,6 +613,15 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         startActivity(intent);
     }
 
+    /**
+     * Opens the resources panel and displays the term details
+     * @param term
+     */
+    public void showTermDetails(String term) {
+        openRightDrawer();
+        mRightPane.showTerm(app().getSharedProjectManager().getSelectedProject().getTerm(term));
+    }
+
     @Override
     public void onDelegateResponse(String id, DelegateResponse response) {
         if(TranslationSyncResponse.class == response.getClass()) {
@@ -616,5 +683,45 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * A task to highlight key terms in the source text
+     */
+    private class TermsHighlighterTask extends AsyncTask<String, String, String> {
+        private OnHighlightProgress mCallback;
+        private List<Term> mTerms = new ArrayList<Term>();
+
+        public TermsHighlighterTask(List<Term> terms, OnHighlightProgress callback) {
+            mCallback = callback;
+            mTerms = terms;
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String text = params[0];
+            // TODO: load the cached source text
+            for(Term t:mTerms) {
+                text = text.replaceAll("(?i)" + t.getName(), "<a>" + t.getName() + "</a>");
+            }
+            publishProgress(text);
+            return text;
+        }
+
+        protected void onProgressUpdate(String... items) {
+            mCallback.onProgress(items[0]);
+        }
+
+        protected void onPostExecute(String result) {
+            mCallback.onSuccess(result);
+        }
+    }
+
+    /**
+     * An interface tfor the terms highlight task
+     */
+    private interface OnHighlightProgress {
+        void onProgress(String result);
+        void onSuccess(String result);
     }
 }

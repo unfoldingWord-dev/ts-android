@@ -4,4 +4,52 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/termName"
+                android:textSize="@dimen/h2" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="description"
+                android:id="@+id/termDescription" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="See Also:"
+                android:id="@+id/relatedTermsTitleText"
+                android:paddingTop="20dp"
+                android:textSize="@dimen/h3" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/relatedTermsText"
+                android:textSize="@dimen/h3" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Examples:"
+                android:id="@+id/exampleUsagesText"
+                android:paddingTop="20dp"
+                android:textSize="@dimen/h3" />
+
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

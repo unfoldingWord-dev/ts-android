@@ -51,6 +51,15 @@ public class DataStore extends DelegateSender {
     }
 
     /**
+     * Retusn a json array of target languages
+     */
+    public String fetchTermsText(String projectSlug, String languageCode) {
+        // TODO: check for updates on the server
+        String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/terms.json";
+        return loadJSONAsset(path);
+    }
+
+    /**
      * Returns a json object of source text for a specific project and language
      * @param projectSlug the slug of the project for which the source text will be returned
      * @param languageCode the language code for which the source text will be returned
@@ -61,7 +70,6 @@ public class DataStore extends DelegateSender {
         // api.unfoldingword.org/obs/txt/1/[langcode]/obs-[langcode].json
         String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/source.json";
         return loadJSONAsset(path);
-//        issueDelegateResponse(new DataStoreDelegateResponse(DataStoreDelegateResponse.MessageType.SOURCE, loadJSONAsset(path), projectSlug));
     }
 
     /**

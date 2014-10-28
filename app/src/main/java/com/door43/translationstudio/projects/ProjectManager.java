@@ -10,6 +10,7 @@ import com.door43.translationstudio.events.ProjectsLoadedEvent;
 import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.DataStoreDelegateResponse;
 import com.door43.translationstudio.util.MainContext;
+import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,7 +73,10 @@ public class ProjectManager implements DelegateListener {
     public void fetchProjectSource(Project p) {
         mContext.showProgressDialog(R.string.loading_project);
         String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId());
+        p.flush();
         loadProject(source, p);
+        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId());
+        loadTerms(terms, p);
         mContext.closeProgressDialog();
     }
 
@@ -318,13 +322,72 @@ public class ProjectManager implements DelegateListener {
     }
 
     /**
+     * Loads the key terms for the project
+     * @param jsonString
+     * @param p
+     */
+    private void loadTerms(String jsonString, Project p) {
+        if(p == null) return;
+
+        // load source
+        JSONArray jsonTerms;
+        if(jsonString == null) {
+            Log.w(TAG, "The source was not found");
+            return;
+        }
+        try {
+            jsonTerms = new JSONArray(jsonString);
+        } catch (JSONException e) {
+            Log.w(TAG, e.getMessage());
+            return;
+        }
+
+        // load the data
+        for(int i=0; i<jsonTerms.length(); i++) {
+            try {
+                JSONObject jsonTerm = jsonTerms.getJSONObject(i);
+                if(jsonTerm.has("definition") && jsonTerm.has("related") && jsonTerm.has("examples") && jsonTerm.has("term")) {
+                    // load related terms
+                    List<String> relatedTerms = new ArrayList<String>();
+                    JSONArray jsonRelated = jsonTerm.getJSONArray("related");
+                    for(int j=0; j<jsonRelated.length(); j ++) {
+                        relatedTerms.add(jsonRelated.getString(j));
+                    }
+
+                    // load examples
+                    List<Term.Example> examples = new ArrayList<Term.Example>();
+                    JSONArray jsonExamples = jsonTerm.getJSONArray("examples");
+                    for(int j=0; j<jsonExamples.length(); j ++) {
+                        JSONObject jsonExample = jsonExamples.getJSONObject(j);
+                        String[] ref = jsonExample.getString("ref").toString().split("-");
+                        if(ref.length == 2) {
+                            examples.add(new Term.Example(ref[0], ref[1], jsonExample.getString("text").toString()));
+                        } else {
+                            Log.w(TAG, "invalid term example reference");
+                        }
+                    }
+
+                    // load term
+                    Term t = new Term(jsonTerm.get("term").toString(), jsonTerm.get("definition").toString(), relatedTerms, examples);
+
+                    // add term to the project
+                    p.addTerm(t);
+                } else {
+                    Log.w(TAG, "missing required parameters in the source terms");
+                }
+            } catch (JSONException e) {
+                Log.w(TAG, e.getMessage());
+                continue;
+            }
+        }
+    }
+
+    /**
      * Loads the source translation into a project
      * @param jsonString
      * @param p
      */
     private void loadProject(String jsonString, Project p) {
-        p.flush();
-
         if(p == null) return;
 
         // load source

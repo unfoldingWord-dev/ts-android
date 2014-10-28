@@ -1,0 +1,56 @@
+[
+  {
+    "definition": "&lt;p&gt;This is the description&lt;/p&gt;",
+    "examples": [
+      {
+        "ref": "05-06",
+        "text": "When Isaac was a young man, God tested Abraham's faith by saying, Take Isaac, your only son, and kill him as a sacrifice to me."
+      }
+    ],
+    "related": [
+      "believe",
+      "faithful",
+      "god"
+    ],
+    "term": "faith"
+  },
+  {
+    "definition": "&lt;p&gt;The creator of the universe&lt;/p&gt;&lt;p&gt;The creator of the universe&lt;/p&gt;&lt;p&gt;The creator of the universe&lt;/p&gt;",
+    "examples": [
+      {
+        "ref": "05-05",
+        "text": "...la de da de da..."
+      }
+    ],
+    "related": [
+      "lord"
+    ],
+    "term": "God"
+  },
+  {
+    "definition": "&lt;p&gt;A Ruler&lt;/p&gt;",
+    "examples": [
+      {
+        "ref": "05-05",
+        "text": "...Since God has not allowed me to have children..."
+      }
+    ],
+    "related": [
+      "god", "faith"
+    ],
+    "term": "lord"
+  },
+  {
+    "definition": "&lt;p&gt;Someone's kid&lt;/p&gt;",
+    "examples": [
+      {
+        "ref": "05-05",
+        "text": "they still did not have a child."
+      }
+    ],
+    "related": [
+      "son"
+    ],
+    "term": "child"
+  }
+]

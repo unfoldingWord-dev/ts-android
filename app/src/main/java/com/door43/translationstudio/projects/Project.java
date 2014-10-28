@@ -36,6 +36,8 @@ public class Project {
     private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
     private List<Language> mSourceLanguages = new ArrayList<Language>();
     private Map<String,Language> mSourceLanguageMap = new HashMap<String, Language>();
+    private List<Term> mTerms = new ArrayList<Term>();
+    private Map<String, Term> mTermMap = new HashMap<String, Term>();
 
     private final String mTitle;
     private final String mSlug;
@@ -209,6 +211,54 @@ public class Project {
             mSourceLanguageMap.put(l.getId(), l);
             mSourceLanguages.add(l);
         }
+    }
+
+    /**
+     * Adds a term to the project
+     * @param term
+     */
+    public void addTerm(Term term) {
+        if(!mTermMap.containsKey(term.getName().toLowerCase())) {
+            mTermMap.put(term.getName().toLowerCase(), term);
+            mTerms.add(term);
+        }
+    }
+
+    /**
+     * Returns the number of terms there are in the project
+     * @return
+     */
+    public int numTerms() {
+        return mTerms.size();
+    }
+
+    /**
+     * Returns a term by index
+     * @param index
+     * @return
+     */
+    public Term getTerm(int index) {
+        if(index < mTerms.size() && index >= 0) {
+            return mTerms.get(index);
+        } else {
+            return null;
+        }
+    }
+
+    public Term getTerm(String name) {
+        if(mTermMap.containsKey(name.toLowerCase())) {
+            return mTermMap.get(name.toLowerCase());
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a list of terms in the project
+     * @return
+     */
+    public List<Term> getTerms() {
+        return mTerms;
     }
 
     /**
