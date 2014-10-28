@@ -16,7 +16,7 @@ public class Term {
 
     public Term(String name, String definition, List<String> related, List<Example> examples) {
         mName = name;
-        mDefinition = Html.fromHtml(definition).toString();
+        mDefinition = definition; // NOTE: if the input html has been encoded to html entities we'll need to parse this. Html.fromHtml()
         mRelated = related;
         mExamples = examples;
     }
@@ -46,6 +46,22 @@ public class Term {
     }
 
     /**
+     * Returns a list of example passages
+     * @return
+     */
+    public List<Example> getExamples() {
+        return mExamples;
+    }
+
+    /**
+     * Returns the number of examples passages for this term
+     * @return
+     */
+    public int numExamples() {
+        return mExamples.size();
+    }
+
+    /**
      * Returns the definition of the term
      * @return
      */
@@ -62,6 +78,30 @@ public class Term {
             mChapterId = chapterId;
             mFrameId = frameId;
             mText = text;
+        }
+
+        /**
+         * Returns the related chapter id
+         * @return
+         */
+        public String getChapterId() {
+            return mChapterId;
+        }
+
+        /**
+         * Returns the related frame id
+         * @return
+         */
+        public String getFrameId() {
+            return mFrameId;
+        }
+
+        /**
+         * Returns the passage text
+         * @return
+         */
+        public String getText() {
+            return mText;
         }
     }
 }

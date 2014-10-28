@@ -346,24 +346,29 @@ public class ProjectManager implements DelegateListener {
         for(int i=0; i<jsonTerms.length(); i++) {
             try {
                 JSONObject jsonTerm = jsonTerms.getJSONObject(i);
-                if(jsonTerm.has("definition") && jsonTerm.has("related") && jsonTerm.has("examples") && jsonTerm.has("term")) {
+                if(jsonTerm.has("definition") && jsonTerm.has("term")) {
+
                     // load related terms
                     List<String> relatedTerms = new ArrayList<String>();
-                    JSONArray jsonRelated = jsonTerm.getJSONArray("related");
-                    for(int j=0; j<jsonRelated.length(); j ++) {
-                        relatedTerms.add(jsonRelated.getString(j));
+                    if(jsonTerm.has("related")) {
+                        JSONArray jsonRelated = jsonTerm.getJSONArray("related");
+                        for (int j = 0; j < jsonRelated.length(); j++) {
+                            relatedTerms.add(jsonRelated.getString(j));
+                        }
                     }
 
                     // load examples
                     List<Term.Example> examples = new ArrayList<Term.Example>();
-                    JSONArray jsonExamples = jsonTerm.getJSONArray("examples");
-                    for(int j=0; j<jsonExamples.length(); j ++) {
-                        JSONObject jsonExample = jsonExamples.getJSONObject(j);
-                        String[] ref = jsonExample.getString("ref").toString().split("-");
-                        if(ref.length == 2) {
-                            examples.add(new Term.Example(ref[0], ref[1], jsonExample.getString("text").toString()));
-                        } else {
-                            Log.w(TAG, "invalid term example reference");
+                    if(jsonTerm.has("examples")) {
+                        JSONArray jsonExamples = jsonTerm.getJSONArray("examples");
+                        for (int j = 0; j < jsonExamples.length(); j++) {
+                            JSONObject jsonExample = jsonExamples.getJSONObject(j);
+                            String[] ref = jsonExample.getString("ref").toString().split("-");
+                            if (ref.length == 2) {
+                                examples.add(new Term.Example(ref[0], ref[1], jsonExample.getString("text").toString()));
+                            } else {
+                                Log.w(TAG, "invalid term example reference");
+                            }
                         }
                     }
 

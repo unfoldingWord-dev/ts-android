@@ -1,55 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
+
+    tools:context="com.door43.translationstudio.panes.right.ResourcesFragment"
     android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_translation_notes"
+            android:id="@+id/resourcesNotesButton"
+            android:background="@color/blue"
+            android:textColor="@color/white"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp" />
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollView" >
 
-        <LinearLayout
-            android:orientation="vertical"
+        <FrameLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:padding="20dp">
+            android:layout_height="fill_parent">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New Text"
-                android:id="@+id/termName"
-                android:textSize="@dimen/h2" />
-
-            <TextView
+            <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="description"
-                android:id="@+id/termDescription" />
+                android:id="@+id/resourcesNotesView"></LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="See Also:"
-                android:id="@+id/relatedTermsTitleText"
-                android:paddingTop="20dp"
-                android:textSize="@dimen/h3" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New Text"
-                android:id="@+id/relatedTermsText"
-                android:textSize="@dimen/h3" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Examples:"
-                android:id="@+id/exampleUsagesText"
-                android:paddingTop="20dp"
-                android:textSize="@dimen/h3" />
-
-        </LinearLayout>
+                android:id="@+id/resourcesTermsView"></LinearLayout>
+        </FrameLayout>
     </ScrollView>
+
 </LinearLayout>

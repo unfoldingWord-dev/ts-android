@@ -419,7 +419,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             // source translation
             mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             mSourceText.setText(frame.getText());
-            mSourceFrameNumText.setText((frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
+            mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
 
             // set up task to highlight the source text key terms
             if(mHighlighTask != null && !mHighlighTask.isCancelled()) {

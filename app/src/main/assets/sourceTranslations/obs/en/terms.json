@@ -15,7 +15,7 @@
     "term": "faith"
   },
   {
-    "definition": "&lt;p&gt;The creator of the universe&lt;/p&gt;&lt;p&gt;The creator of the universe&lt;/p&gt;&lt;p&gt;The creator of the universe&lt;/p&gt;",
+    "definition": "<ul><li>The creator of the universe</li><li>The creator of the universe</li><li>The creator of the universe</li></ul>",
     "examples": [
       {
         "ref": "05-05",
@@ -33,6 +33,14 @@
       {
         "ref": "05-05",
         "text": "...Since God has not allowed me to have children..."
+      },
+      {
+        "ref": "05-05",
+        "text": "...Since God has not allowed me to have children..."
+      },
+      {
+        "ref": "05-05",
+        "text": "...Since God has not allowed me to have children..."
       }
     ],
     "related": [
@@ -42,15 +50,6 @@
   },
   {
     "definition": "&lt;p&gt;Someone's kid&lt;/p&gt;",
-    "examples": [
-      {
-        "ref": "05-05",
-        "text": "they still did not have a child."
-      }
-    ],
-    "related": [
-      "son"
-    ],
     "term": "child"
   }
 ]

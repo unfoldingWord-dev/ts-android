@@ -14,14 +14,14 @@
         android:gravity="center"
         android:background="@color/dark_gray"
         android:autoText="false"
-        android:id="@+id/textView" />
+        android:id="@+id/examplePassageLinkText" />
 
     <ScrollView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/scrollView"
         android:layout_above="@+id/linearLayout"
-        android:layout_below="@+id/textView"
+        android:layout_below="@+id/examplePassageLinkText"
         android:padding="20dp">
 
         <LinearLayout

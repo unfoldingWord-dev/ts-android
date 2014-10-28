@@ -85,5 +85,9 @@
     <string name="label_chapters">Chapters</string>
     <string name="title_activity_project_settings">ProjectSettingsActivity</string>
     <string name="source_language_has_no_chapters">There are no chapters availble in that source language</string>
+    <string name="now_viewing_frame">Now viewing frame %1$s in chapter %2$s.</string>
+    <string name="unknown_chapter">Unknown chapter</string>
+    <string name="label_frame">Frame</string>
+    <string name="label_translation_notes">Translation Notes</string>
 
 </resources>
