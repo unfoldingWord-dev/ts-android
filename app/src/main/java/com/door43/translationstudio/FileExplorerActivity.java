@@ -19,23 +19,24 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.util.StorageUtils;
+import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 /**
  * See https://github.com/mburman/Android-File-Explore
  */
-public class FileExplorerActivity extends Activity {
+public class FileExplorerActivity extends TranslatorBaseActivity {
     private FileExplorerActivity me = this;
 	// Stores names of traversed directories
-	ArrayList<String> str = new ArrayList<String>();
+	ArrayList<String> mTraversedDirectories = new ArrayList<String>();
 
 	// Check if the first level of the directory structure is the one showing
-	private Boolean firstLvl = true;
+	private Boolean mFirstLevel = true;
 
 	private static final String TAG = "F_PATH";
 
-	private Item[] fileList;
+	private Item[] mFileList;
     private File mPath;
-	private String chosenFile;
+	private String mChosenFile;
 	private static final int DIALOG_LOAD_FILE = 1000;
 
 	ListAdapter adapter;
@@ -84,29 +85,29 @@ public class FileExplorerActivity extends Activity {
 			};
 
 			String[] fList = mPath.list(filter);
-			fileList = new Item[fList.length];
+			mFileList = new Item[fList.length];
 			for (int i = 0; i < fList.length; i++) {
-				fileList[i] = new Item(fList[i], R.drawable.file_icon);
+				mFileList[i] = new Item(fList[i], R.drawable.file_icon);
 
 				// Convert into file path
 				File sel = new File(mPath, fList[i]);
 
 				// Set drawables
 				if (sel.isDirectory()) {
-					fileList[i].icon = R.drawable.ic_folder_open;
-					Log.d("DIRECTORY", fileList[i].file);
+					mFileList[i].icon = R.drawable.ic_folder_open;
+					Log.d("DIRECTORY", mFileList[i].file);
 				} else {
-					Log.d("FILE", fileList[i].file);
+					Log.d("FILE", mFileList[i].file);
 				}
 			}
 
-			if (!firstLvl) {
-				Item temp[] = new Item[fileList.length + 1];
-				for (int i = 0; i < fileList.length; i++) {
-					temp[i + 1] = fileList[i];
+			if (!mFirstLevel) {
+				Item temp[] = new Item[mFileList.length + 1];
+				for (int i = 0; i < mFileList.length; i++) {
+					temp[i + 1] = mFileList[i];
 				}
 				temp[0] = new Item("Up", R.drawable.directory_up);
-				fileList = temp;
+				mFileList = temp;
 			}
 		} else {
 			Log.e(TAG, "path does not exist");
@@ -114,7 +115,7 @@ public class FileExplorerActivity extends Activity {
 
 		adapter = new ArrayAdapter<Item>(this,
 				android.R.layout.select_dialog_item, android.R.id.text1,
-				fileList) {
+                mFileList) {
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				// creates view
@@ -124,7 +125,7 @@ public class FileExplorerActivity extends Activity {
 
 				// put the image on the text view
 				textView.setCompoundDrawablesWithIntrinsicBounds(
-						fileList[position].icon, 0, 0, 0);
+						mFileList[position].icon, 0, 0, 0);
 
 				// add margin between image and text (support various screen
 				// densities)
@@ -157,7 +158,7 @@ public class FileExplorerActivity extends Activity {
 		Dialog dialog = null;
 		AlertDialog.Builder builder = new Builder(this);
 
-		if (fileList == null) {
+		if (mFileList == null) {
 			Log.e(TAG, "No files loaded");
 			dialog = builder.create();
 			return dialog;
@@ -169,14 +170,14 @@ public class FileExplorerActivity extends Activity {
 			builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					chosenFile = fileList[which].file;
-					File sel = new File(mPath + "/" + chosenFile);
+					mChosenFile = mFileList[which].file;
+					File sel = new File(mPath + "/" + mChosenFile);
 					if (sel.isDirectory()) {
-						firstLvl = false;
+						mFirstLevel = false;
 
 						// Adds chosen directory to list
-						str.add(chosenFile);
-						fileList = null;
+						mTraversedDirectories.add(mChosenFile);
+						mFileList = null;
 						mPath = new File(sel + "");
 
 						loadFileList();
@@ -185,20 +186,20 @@ public class FileExplorerActivity extends Activity {
 						showDialog(DIALOG_LOAD_FILE);
 						Log.d(TAG, mPath.getAbsolutePath());
 
-					} else if (chosenFile.equalsIgnoreCase("up") && !sel.exists()) {
+					} else if (mChosenFile.equalsIgnoreCase("up") && !sel.exists()) {
 
 						// present directory removed from list
-						String s = str.remove(str.size() - 1);
+						String s = mTraversedDirectories.remove(mTraversedDirectories.size() - 1);
 
 						// path modified to exclude present directory
 						mPath = new File(mPath.toString().substring(0,
 								mPath.toString().lastIndexOf(s)));
-						fileList = null;
+						mFileList = null;
 
 						// if there are no more directories in the list, then
 						// its the first level
-						if (str.isEmpty()) {
-							firstLvl = true;
+						if (mTraversedDirectories.isEmpty()) {
+							mFirstLevel = true;
 						}
 						loadFileList();
 
@@ -210,7 +211,7 @@ public class FileExplorerActivity extends Activity {
 						// pass path to the calling activity
                         Intent i = getIntent();
 
-                        i.putExtra("path", new File(mPath, chosenFile).getAbsolutePath());
+                        i.putExtra("path", new File(mPath, mChosenFile).getAbsolutePath());
                         setResult(RESULT_OK, i);
                         finish();
 					}

@@ -5,6 +5,7 @@ import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
+import com.door43.translationstudio.footnotes.Footnote;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
@@ -31,12 +32,14 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.ActionMode;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -87,6 +90,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private ImageView mNextFrameView;
     private ImageView mPreviousFrameView;
     private EditText mTranslationEditText;
+
+    private static final int MENU_ITEM_FOOTNOTE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -225,6 +230,55 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             }
         });
 
+        // set custom commands for input text selection
+        mTranslationEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+                menu.add(Menu.NONE, MENU_ITEM_FOOTNOTE, Menu.NONE, R.string.menu_footnote);
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+                switch(menuItem.getItemId()) {
+                    case MENU_ITEM_FOOTNOTE:
+                        // TODO: handle footnotes
+                        app().showToastMessage("creating footnote");
+
+                        // load selection
+                        String translationText = mTranslationEditText.getText().toString();
+                        String selectionBefore = translationText.substring(0, mTranslationEditText.getSelectionStart());
+                        String selectionAfter = translationText.substring(mTranslationEditText.getSelectionEnd(), mTranslationEditText.length());
+                        final String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
+
+                        // TODO: we'll need to display a popup to get the footnote text from the user.
+
+                        // generate clickable footnote
+                        Footnote footnote = new Footnote(selection);
+
+                        // add clickable footnote to the text
+                        mTranslationEditText.setText(selectionBefore);
+                        mTranslationEditText.append(footnote.toCharSequence());
+                        mTranslationEditText.append(selectionAfter);
+
+                        return false;
+                    default:
+                        app().showToastMessage(menuItem.getOrder()+"");
+                        return false;
+                }
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode actionMode) {
+
+            }
+        });
+
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
         getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
@@ -246,16 +300,36 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         // enable scrolling
         mSourceText.setMovementMethod(new ScrollingMovementMethod());
 
-        // make links clickable
+        // make links in the source text clickable
         MovementMethod m = mSourceText.getMovementMethod();
         if ((m == null) || !(m instanceof LinkMovementMethod)) {
             if (mSourceText.getLinksClickable()) {
                 mSourceText.setMovementMethod(LinkMovementMethod.getInstance());
             }
         }
-
-        // make it focusable again
         mSourceText.setFocusable(true);
+
+//        mTranslationEditText.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // check if the cursor is on a footnote
+//                String translationText = mTranslationEditText.getText().toString();
+//                String selectionBefore = translationText.substring(0, mTranslationEditText.getSelectionStart());
+//                String selectionAfter = translationText.substring(mTranslationEditText.getSelectionEnd(), mTranslationEditText.length());
+//                String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
+//
+//            }
+//        });
+
+        // make links in the translation text clickable
+//        m = mTranslationEditText.getMovementMethod();
+//        if ((m == null) || !(m instanceof ArrowKeyMovementMethod)) {
+//            if (mTranslationEditText.getLinksClickable()) {
+//                mTranslationEditText.setMovementMethod(ArrowKeyMovementMethod.getInstance());
+//            }
+//        }
+//        mTranslationEditText.setFocusable(true);
+//        mTranslationEditText.setClickable(true);
 
         // display help text when sourceText is empty.
         final TextView helpText = (TextView)findViewById(R.id.helpTextView);

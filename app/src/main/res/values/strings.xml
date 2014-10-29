@@ -89,5 +89,6 @@
     <string name="unknown_chapter">Unknown chapter</string>
     <string name="label_frame">Frame</string>
     <string name="label_translation_notes">Translation Notes</string>
+    <string name="menu_footnote">Footnote</string>
 
 </resources>
