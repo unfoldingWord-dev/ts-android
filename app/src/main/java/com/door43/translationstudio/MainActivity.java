@@ -61,6 +61,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends TranslatorBaseActivity implements DelegateListener {
     private final MainActivity me = this;
@@ -504,7 +506,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 public void onProgress(String result) {
                     String[] pieces = result.split("<a>");
                     mSourceText.setText("");
-                    mSourceText.append(Html.fromHtml(pieces[0]));
+                    mSourceText.append(pieces[0]);
                     for(int i=1; i<pieces.length; i++) {
                         // get closing anchor
                         String[] linkChunks = pieces[i].split("</a>");
@@ -518,9 +520,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                         };
                         link.setSpan(cs, 0, term.length(), 0);
                         mSourceText.append(link);
-                        mSourceText.append(" ");
                         try {
-                            mSourceText.append(Html.fromHtml(linkChunks[1]));
+                            mSourceText.append(linkChunks[1]);
                         } catch(Exception e){}
                     }
                 }
@@ -776,7 +777,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             String text = params[0];
             // TODO: load the cached source text
             for(Term t:mTerms) {
-                text = text.replaceAll("(?i)" + t.getName(), "<a>" + t.getName() + "</a>");
+                text = text.replaceAll("(?i)\\b" + t.getName() + "\\b", "<a>" + t.getName() + "</a>");
             }
             publishProgress(text);
             return text;

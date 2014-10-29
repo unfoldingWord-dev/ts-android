@@ -346,12 +346,12 @@ public class ProjectManager implements DelegateListener {
         for(int i=0; i<jsonTerms.length(); i++) {
             try {
                 JSONObject jsonTerm = jsonTerms.getJSONObject(i);
-                if(jsonTerm.has("definition") && jsonTerm.has("term")) {
+                if(jsonTerm.has("def") && jsonTerm.has("def_title") && jsonTerm.has("term")) {
 
                     // load related terms
                     List<String> relatedTerms = new ArrayList<String>();
-                    if(jsonTerm.has("related")) {
-                        JSONArray jsonRelated = jsonTerm.getJSONArray("related");
+                    if(jsonTerm.has("cf")) {
+                        JSONArray jsonRelated = jsonTerm.getJSONArray("cf");
                         for (int j = 0; j < jsonRelated.length(); j++) {
                             relatedTerms.add(jsonRelated.getString(j));
                         }
@@ -359,8 +359,8 @@ public class ProjectManager implements DelegateListener {
 
                     // load examples
                     List<Term.Example> examples = new ArrayList<Term.Example>();
-                    if(jsonTerm.has("examples")) {
-                        JSONArray jsonExamples = jsonTerm.getJSONArray("examples");
+                    if(jsonTerm.has("ex")) {
+                        JSONArray jsonExamples = jsonTerm.getJSONArray("ex");
                         for (int j = 0; j < jsonExamples.length(); j++) {
                             JSONObject jsonExample = jsonExamples.getJSONObject(j);
                             String[] ref = jsonExample.getString("ref").toString().split("-");
@@ -373,7 +373,7 @@ public class ProjectManager implements DelegateListener {
                     }
 
                     // load term
-                    Term t = new Term(jsonTerm.get("term").toString(), jsonTerm.get("definition").toString(), relatedTerms, examples);
+                    Term t = new Term(jsonTerm.get("term").toString(), jsonTerm.get("sub").toString(), jsonTerm.get("def").toString(), jsonTerm.get("def_title").toString(), relatedTerms, examples);
 
                     // add term to the project
                     p.addTerm(t);

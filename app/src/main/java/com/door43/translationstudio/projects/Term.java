@@ -10,13 +10,17 @@ import java.util.List;
  */
 public class Term {
     private String mName;
+    private String mSubName;
     private String mDefinition;
+    private String mDefinitionTitle;
     private List<String> mRelated = new ArrayList<String>();
     private List<Example> mExamples = new ArrayList<Example>();
 
-    public Term(String name, String definition, List<String> related, List<Example> examples) {
+    public Term(String name, String sub_name, String definition, String definition_title, List<String> related, List<Example> examples) {
         mName = name;
+        mSubName = sub_name;
         mDefinition = definition; // NOTE: if the input html has been encoded to html entities we'll need to parse this. Html.fromHtml()
+        mDefinitionTitle = definition_title;
         mRelated = related;
         mExamples = examples;
     }
@@ -27,6 +31,14 @@ public class Term {
      */
     public String getName() {
         return mName;
+    }
+
+    /**
+     * Returns the sub title for the term
+     * @return
+     */
+    public String getSubName() {
+        return mSubName;
     }
 
     /**
@@ -67,6 +79,14 @@ public class Term {
      */
     public String getDefinition() {
         return mDefinition;
+    }
+
+    /**
+     * Returns the title used for the definition
+     * @return
+     */
+    public String getmDefinitionTitle() {
+        return mDefinitionTitle;
     }
 
     public static class Example {
