@@ -86,6 +86,12 @@ public class KeyTermFragment extends TranslatorBaseFragment {
      * @param term
      */
     public void showTerm(Term term) {
+        if(term == null) {
+            app().showToastMessage(getResources().getString(R.string.error_term_missing));
+            ((MainActivity)getActivity()).closeDrawers();
+            return;
+        }
+
         final Project p = app().getSharedProjectManager().getSelectedProject();
         mRelatedTerms.setText("");
         mTermName.setText(term.getName());

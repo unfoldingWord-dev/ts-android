@@ -58,9 +58,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -775,9 +778,59 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         @Override
         protected String doInBackground(String... params) {
             String text = params[0];
-            // TODO: load the cached source text
+            Vector<Boolean> indicies = new Vector<Boolean>();
+            indicies.setSize(text.length());
             for(Term t:mTerms) {
-                text = text.replaceAll("(?i)\\b" + t.getName() + "\\b", "<a>" + t.getName() + "</a>");
+                StringBuffer buf = new StringBuffer();
+                Pattern p = Pattern.compile("(?i)\\b" + t.getName() + "\\b");
+                Matcher m = p.matcher(text);
+                while (m.find()) {
+                    Log.d("Key Terms", t.getName());
+                    String update = "";
+                    for(int i = 0; i < indicies.size(); i ++) {
+                        if(indicies.get(i) == null) {
+                            update += "[__]";
+                        } else {
+                            update += "["+i+"]";
+                        }
+                    }
+                    Log.d("UPDATE", "("+indicies.size()+" - actual: "+text.length()+")"+update);
+                    if(indicies.size() < m.start() || (indicies.get(m.start()) == null && indicies.get(m.end()) == null)) {
+                        // replace
+                        String key = "<a>" + m.group() + "</a>";
+                        int newKeyEnd = m.start() + key.length()-1;
+
+                        // resize indicies vector
+                        if(indicies.size() <= newKeyEnd ) {
+                            indicies.setSize(newKeyEnd);
+                        }
+
+                        // TODO: IMPORTANT!! Our problem is that the m.start and end are not changing when we manage our indicies!!! This is why not everything is working.
+                        // TODO: we need to virtually identify everything that is a valid key then make the changes so that we do not mix up our indicies with m.!!
+
+                        // add new indicies for the anchor characters (7 total)
+                        for(int i = m.start(); i < m.start() + 7; i ++) {
+                            indicies.insertElementAt(true, i);
+                        }
+
+                        // lock indicies
+                        for(int i = m.start(); i <= newKeyEnd; i ++) {
+                            indicies.set(i, true);
+                        }
+
+                        Log.d("ADDING",key + "("+ key.length()+") added from "+m.start() + " to " + newKeyEnd);
+                        m.appendReplacement(buf, key);
+                    } else {
+                        // do nothing. this is a key collision
+                        String message = t.getName() + "("+ t.getName().length()+") start("+m.start()+")";
+                        if(indicies.get(m.start()) != null) message = message + "[x]";
+                        message = message + " end("+m.end()+")";
+                        if(indicies.get(m.end()) != null) message = message + "[x]";
+                        Log.d("COLLISION!", message);
+                    }
+                }
+                m.appendTail(buf);
+                text = buf.toString(); //text.replaceAll("(?i)\\b" + t.getName() + "\\b", "<a>" + t.getName() + "</a>");
             }
             publishProgress(text);
             return text;
