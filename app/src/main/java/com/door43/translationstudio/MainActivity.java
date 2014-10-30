@@ -777,63 +777,42 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         @Override
         protected String doInBackground(String... params) {
-            String text = params[0];
+            String keyedText = params[0];
             Vector<Boolean> indicies = new Vector<Boolean>();
-            indicies.setSize(text.length());
+            indicies.setSize(keyedText.length());
             for(Term t:mTerms) {
                 StringBuffer buf = new StringBuffer();
                 Pattern p = Pattern.compile("(?i)\\b" + t.getName() + "\\b");
-                Matcher m = p.matcher(text);
-                while (m.find()) {
-                    Log.d("Key Terms", t.getName());
-                    String update = "";
-                    for(int i = 0; i < indicies.size(); i ++) {
-                        if(indicies.get(i) == null) {
-                            update += "[__]";
-                        } else {
-                            update += "["+i+"]";
-                        }
-                    }
-                    Log.d("UPDATE", "("+indicies.size()+" - actual: "+text.length()+")"+update);
-                    if(indicies.size() < m.start() || (indicies.get(m.start()) == null && indicies.get(m.end()) == null)) {
-                        // replace
-                        String key = "<a>" + m.group() + "</a>";
-                        int newKeyEnd = m.start() + key.length()-1;
+                // TRICKY: we need to run two matches at the same time in order to keep track of used indicies in the string
+                Matcher matcherSourceText = p.matcher(params[0]);
+                Matcher matcherKeyedText = p.matcher(keyedText);
 
-                        // resize indicies vector
-                        if(indicies.size() <= newKeyEnd ) {
-                            indicies.setSize(newKeyEnd);
-                        }
+                while (matcherSourceText.find() && matcherKeyedText.find()) {
+                    // ensure the key term was found in an area of the string that does not overlap another key term.
+                    if(indicies.get(matcherSourceText.start()) == null && indicies.get(matcherSourceText.end()) == null) {
+                        String key = "<a>" + matcherSourceText.group() + "</a>";
+//                        int newKeyEnd = matcherSourceText.start() + key.length()-1;
 
-                        // TODO: IMPORTANT!! Our problem is that the m.start and end are not changing when we manage our indicies!!! This is why not everything is working.
-                        // TODO: we need to virtually identify everything that is a valid key then make the changes so that we do not mix up our indicies with m.!!
-
-                        // add new indicies for the anchor characters (7 total)
-                        for(int i = m.start(); i < m.start() + 7; i ++) {
-                            indicies.insertElementAt(true, i);
-                        }
-
-                        // lock indicies
-                        for(int i = m.start(); i <= newKeyEnd; i ++) {
+                        // lock indicies to prevent key term collisions
+                        for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {
+                            if(indicies.size() <= i) {
+                                Log.d("test", "sd");
+                            }
                             indicies.set(i, true);
                         }
 
-                        Log.d("ADDING",key + "("+ key.length()+") added from "+m.start() + " to " + newKeyEnd);
-                        m.appendReplacement(buf, key);
+                        // insert the key into the keyedText
+                        matcherKeyedText.appendReplacement(buf, key);
                     } else {
                         // do nothing. this is a key collision
-                        String message = t.getName() + "("+ t.getName().length()+") start("+m.start()+")";
-                        if(indicies.get(m.start()) != null) message = message + "[x]";
-                        message = message + " end("+m.end()+")";
-                        if(indicies.get(m.end()) != null) message = message + "[x]";
-                        Log.d("COLLISION!", message);
+                        // e.g. the key term "life" collided with "eternal life".
                     }
                 }
-                m.appendTail(buf);
-                text = buf.toString(); //text.replaceAll("(?i)\\b" + t.getName() + "\\b", "<a>" + t.getName() + "</a>");
+                matcherKeyedText.appendTail(buf);
+                keyedText = buf.toString();
             }
-            publishProgress(text);
-            return text;
+            publishProgress(keyedText);
+            return keyedText;
         }
 
         protected void onProgressUpdate(String... items) {
