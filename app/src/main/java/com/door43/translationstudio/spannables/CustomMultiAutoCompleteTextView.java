@@ -25,6 +25,9 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class is a modified version of the source found at https://github.com/krishnalalstha/Spannable
+ */
 public class CustomMultiAutoCompleteTextView extends MultiAutoCompleteTextView {
 
 

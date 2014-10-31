@@ -89,7 +89,7 @@
     <string name="unknown_chapter">Unknown chapter</string>
     <string name="label_frame">Frame</string>
     <string name="label_translation_notes">Translation Notes</string>
-    <string name="menu_footnote">Footnote</string>
+    <string name="menu_passagenote">Notes</string>
     <string name="error_term_missing">The term could not be found</string>
 
 </resources>

@@ -5,10 +5,10 @@ import com.door43.translationstudio.R;
 /**
  * Created by joel on 10/28/2014.
  */
-public class FootnoteSpan extends FancySpan {
+public class PassageNoteSpan extends FancySpan {
     private final String mDefinition;
 
-    public FootnoteSpan(String id, String text, String definition, OnClickListener clickListener) {
+    public PassageNoteSpan(String id, String text, String definition, OnClickListener clickListener) {
         super(id, text, clickListener);
         mDefinition = definition.replace("\"", "'");
     }

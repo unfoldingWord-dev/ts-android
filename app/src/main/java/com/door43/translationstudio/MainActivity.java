@@ -8,7 +8,7 @@ import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
 import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
 import com.door43.translationstudio.spannables.FancySpan;
-import com.door43.translationstudio.spannables.FootnoteSpan;
+import com.door43.translationstudio.spannables.PassageNoteSpan;
 import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
@@ -67,6 +67,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends TranslatorBaseActivity implements DelegateListener {
+    public static final String REGEX_PASSAGE_NOTE_START_ANCHOR = "<a def=\"[^(<A).]*\">";
+    public static final String REGEX_PASSAGE_NOTE_END_ANCHOR = "</a>";
     private final MainActivity me = this;
 
     private static final String LANG_CODE = "en"; // TODO: this will eventually need to be managed dynamically by the project manager
@@ -85,7 +87,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private int mActionBarHeight;
     private boolean mActivityIsInitializing;
     private TermsHighlighterTask mTermsTask;
-    private FootnotesHighlighterTask mFootnoteTask;
+    private PassageNotesHighlighterTask mPassageNoteTask;
 
     // center view fields for caching
     private TextView mSourceText;
@@ -96,7 +98,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private ImageView mPreviousFrameView;
     private CustomMultiAutoCompleteTextView mTranslationEditText;
 
-    private static final int MENU_ITEM_FOOTNOTE = 1;
+    private static final int MENU_ITEM_PASSAGENOTE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -244,48 +246,36 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
             @Override
             public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-                menu.add(Menu.NONE, MENU_ITEM_FOOTNOTE, Menu.NONE, R.string.menu_footnote);
+                menu.add(Menu.NONE, MENU_ITEM_PASSAGENOTE, Menu.NONE, R.string.menu_passagenote);
                 return false;
             }
 
             @Override
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 switch(menuItem.getItemId()) {
-                    case MENU_ITEM_FOOTNOTE:
-                        // TODO: handle footnotes
-                        app().showToastMessage("creating footnote");
-
+                    case MENU_ITEM_PASSAGENOTE:
                         // load selection
                         String translationText = mTranslationEditText.getText().toString();
                         String selectionBefore = translationText.substring(0, mTranslationEditText.getSelectionStart());
                         String selectionAfter = translationText.substring(mTranslationEditText.getSelectionEnd(), mTranslationEditText.length());
                         final String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
 
-                        // TODO: we'll need to display a popup to get the footnote text from the user.
-                        String definition = "This is a definition";
+                        // do not allow passage notes to collide
+                        if(selection.split(REGEX_PASSAGE_NOTE_START_ANCHOR).length <= 1 && selection.split(REGEX_PASSAGE_NOTE_END_ANCHOR).length <= 1) {
+                            // TODO: we'll need to display a popup to get the footnote text from the user.
+                            String definition = "This is a definition";
 
-                        // convert to footnote tag
-                        String taggedText = "";
-                        taggedText += selectionBefore;
-                        taggedText += FootnoteSpan.generateTag(selection, definition);
-                        taggedText += selectionAfter;
+                            // convert to passage note tag
+                            String taggedText = "";
+                            taggedText += selectionBefore;
+                            taggedText += PassageNoteSpan.generateTag(selection, definition);
+                            taggedText += selectionAfter;
 
-                        // parse all footnote tags
-                        parseFootnoteTags(taggedText);
-
-//                        // generate clickable footnote
-//                        FootnoteSpan footnoteSpan = new FootnoteSpan(selection, selection, "definition", new FancySpan.OnClickListener() {
-//                            @Override
-//                            public void onClick(View view, String spanText, String spanId) {
-//                                app().showToastMessage(spanId);
-//                            }
-//                        });
-//
-//                        // add clickable footnote to the text
-//                        mTranslationEditText.setText(selectionBefore);
-//                        mTranslationEditText.append(footnoteSpan.toCharSequence());
-//                        mTranslationEditText.append(selectionAfter);
-
+                            // parse all passage note tags
+                            parsePassageNoteTags(taggedText);
+                        } else {
+                            app().showToastMessage("Passage notes cannot overlap");
+                        }
                         return false;
                     default:
                         app().showToastMessage(menuItem.getOrder()+"");
@@ -329,27 +319,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         }
         mSourceText.setFocusable(true);
 
-//        mTranslationEditText.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                // check if the cursor is on a footnote
-//                String translationText = mTranslationEditText.getText().toString();
-//                String selectionBefore = translationText.substring(0, mTranslationEditText.getSelectionStart());
-//                String selectionAfter = translationText.substring(mTranslationEditText.getSelectionEnd(), mTranslationEditText.length());
-//                String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
-//
-//            }
-//        });
-
-        // make links in the translation text clickable
-//        m = mTranslationEditText.getMovementMethod();
-//        if ((m == null) || !(m instanceof LinkMovementMethod)) {
-//            if (mTranslationEditText.getLinksClickable()) {
-//                mTranslationEditText.setMovementMethod(LinkMovementMethod.getInstance());
-//            }
-//        }
-//        mTranslationEditText.setFocusable(true);
-//        mTranslationEditText.setClickable(true);
+        // make links in the translation source clickable without losing selection capabilities.
         mTranslationEditText.setMovementMethod(new CustomMovementMethod());
 
         // display help text when sourceText is empty.
@@ -459,12 +429,12 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * Begins or restarts parsing the footnote tags
      * @param text
      */
-    private void parseFootnoteTags(String text) {
-        if(mFootnoteTask != null && !mFootnoteTask.isCancelled()) {
-            mFootnoteTask.cancel(true);
+    private void parsePassageNoteTags(String text) {
+        if(mPassageNoteTask != null && !mPassageNoteTask.isCancelled()) {
+            mPassageNoteTask.cancel(true);
         }
-        mFootnoteTask = new FootnotesHighlighterTask();
-        mFootnoteTask.execute(text);
+        mPassageNoteTask = new PassageNotesHighlighterTask();
+        mPassageNoteTask.execute(text);
     }
 
     public void closeTranslationKeyboard() {
@@ -514,7 +484,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
             // target translation
             Translation translation = frame.getTranslation();
-            parseFootnoteTags(translation.getText());
+            parsePassageNoteTags(translation.getText());
             // the translation text is initially loaded as html so so users do not see the raw code before footnotes are parsed.
             mTranslationEditText.setText(Html.fromHtml(translation.getText()));
             if(chapter.getTitleTranslation().getText().isEmpty()) {
@@ -525,15 +495,17 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
             }
 
+            // be sure the terms highlighter task is stopped so it doesn't overwrite the new text.
+            if(mTermsTask != null && !mTermsTask.isCancelled()) {
+                mTermsTask.cancel(true);
+            }
+
             // source translation
             mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             mSourceText.setText(frame.getText());
             mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
 
             // set up task to highlight the source text key terms
-            if(mTermsTask != null && !mTermsTask.isCancelled()) {
-                mTermsTask.cancel(true);
-            }
             mTermsTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
                 @Override
                 public void onProgress(String result) {
@@ -860,67 +832,36 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     /**
-     * A task to highlight key terms in the source text
+     * A task to highlight passage notes in the translation text
      */
-    private class FootnotesHighlighterTask extends AsyncTask<String, String, CharSequence> {
+    private class PassageNotesHighlighterTask extends AsyncTask<String, String, CharSequence> {
 
         @Override
         protected CharSequence doInBackground(String... params) {
             TextView notedResult = new TextView(me);
-            String[] pieces = params[0].split("<a def=\"[^(<A).]*\">");
-            notedResult.append(pieces[0]);
-            for(int i=1; i<pieces.length; i++) {
-                // get closing anchor
-                String[] linkChunks = pieces[i].split("</a>");
-                // TODO: actually pull out the definition
-                FootnoteSpan footnote = new FootnoteSpan(linkChunks[0], linkChunks[0], "some definition", new FancySpan.OnClickListener() {
-                    @Override
-                    public void onClick(View view, String spanText, String spanId) {
-                        app().showToastMessage(spanId);
+            try {
+                String[] pieces = params[0].split(REGEX_PASSAGE_NOTE_START_ANCHOR);
+                notedResult.append(pieces[0]);
+                for (int i = 1; i < pieces.length; i++) {
+                    // get closing anchor
+                    String[] linkChunks = pieces[i].split(REGEX_PASSAGE_NOTE_END_ANCHOR);
+                    // TODO: actually pull out the definition
+                    PassageNoteSpan footnote = new PassageNoteSpan(linkChunks[0], linkChunks[0], "some definition", new FancySpan.OnClickListener() {
+                        @Override
+                        public void onClick(View view, String spanText, String spanId) {
+                            app().showToastMessage(spanId);
+                        }
+                    });
+                    notedResult.append(footnote.toCharSequence());
+                    try {
+                        notedResult.append(linkChunks[1]);
+                    } catch (Exception e) {
                     }
-                });
-                notedResult.append(footnote.toCharSequence());
-                try {
-                    notedResult.append(linkChunks[1]);
-                } catch(Exception e){}
+                }
+            } catch(Exception e) {
+                // return the raw text if an error occures so we don't accidently overwrite anything.
+                return params[0];
             }
-
-
-
-//            String keyedText = params[0];
-//            Vector<Boolean> indicies = new Vector<Boolean>();
-//            indicies.setSize(keyedText.length());
-//            for(Term t:mTerms) {
-//                StringBuffer buf = new StringBuffer();
-//                Pattern p = Pattern.compile("(?i)\\b" + t.getName() + "\\b");
-//                // TRICKY: we need to run two matches at the same time in order to keep track of used indicies in the string
-//                Matcher matcherSourceText = p.matcher(params[0]);
-//                Matcher matcherKeyedText = p.matcher(keyedText);
-//
-//                while (matcherSourceText.find() && matcherKeyedText.find()) {
-//                    // ensure the key term was found in an area of the string that does not overlap another key term.
-//                    if(indicies.get(matcherSourceText.start()) == null && indicies.get(matcherSourceText.end()) == null) {
-//                        String key = "<a>" + matcherSourceText.group() + "</a>";
-////                        int newKeyEnd = matcherSourceText.start() + key.length()-1;
-//
-//                        // lock indicies to prevent key term collisions
-//                        for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {
-//                            if(indicies.size() <= i) {
-//                                Log.d("test", "sd");
-//                            }
-//                            indicies.set(i, true);
-//                        }
-//
-//                        // insert the key into the keyedText
-//                        matcherKeyedText.appendReplacement(buf, key);
-//                    } else {
-//                        // do nothing. this is a key collision
-//                        // e.g. the key term "life" collided with "eternal life".
-//                    }
-//                }
-//                matcherKeyedText.appendTail(buf);
-//                keyedText = buf.toString();
-//            }
             return notedResult.getText();
         }
 
