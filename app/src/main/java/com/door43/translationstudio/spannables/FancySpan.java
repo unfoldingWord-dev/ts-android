@@ -37,10 +37,26 @@ public class FancySpan {
     /**
      * Generates the content of the span
      * @param backgroundResource
+     * @param colorResource
+     * @param textSizeResource
      * @return
      */
     protected SpannableStringBuilder generateSpan(int backgroundResource, int colorResource, int textSizeResource) {
-        SpannableStringBuilder spannable = new SpannableStringBuilder(mText);
+        return generateSpan(mText, backgroundResource, colorResource, textSizeResource);
+    }
+
+    /**
+     * Generates the content of the span
+     * @param textReplacemenmt the text to be inserted into the raw text (not visible) This is useful for storing information that should be persited to the disk.
+     * @param backgroundResource
+     * @param colorResource
+     * @param textSizeResource
+     * @return
+     */
+    protected SpannableStringBuilder generateSpan(String textReplacemenmt, int backgroundResource, int colorResource, int textSizeResource) {
+        // TODO: instead of mtext we need to provide the format for the span.
+        // this could be an optional parameter where we can specify data to be stored.
+        SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacemenmt);
         if(spannable.length() > 0) {
             BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mText, backgroundResource, colorResource, textSizeResource));
             bd.setBounds(0, 0, bd.getIntrinsicWidth(), bd.getIntrinsicHeight());

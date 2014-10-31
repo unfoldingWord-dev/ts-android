@@ -3,10 +3,10 @@ package com.door43.translationstudio.spannables;
 import com.door43.translationstudio.R;
 
 /**
- * Created by joel on 10/28/2014.
+ * Created by joel on 10/31/2014.
  */
-public class LightBlueSpanBubble extends FancySpan {
-    public LightBlueSpanBubble(String id, String text, OnClickListener clickListener) {
+public class TermSpan extends FancySpan{
+    public TermSpan(String id, String text, OnClickListener clickListener) {
         super(id, text, clickListener);
     }
 
@@ -15,6 +15,6 @@ public class LightBlueSpanBubble extends FancySpan {
      * @return
      */
     public CharSequence toCharSequence() {
-        return generateSpan(R.drawable.light_blue_bubble, R.color.blue, R.dimen.h5);
+        return generateSpan(R.drawable.blue_bubble, R.color.white, R.dimen.h5);
     }
 }

@@ -8,8 +8,8 @@ import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
 import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
 import com.door43.translationstudio.spannables.FancySpan;
-import com.door43.translationstudio.spannables.LightBlueSpanBubble;
-import com.door43.translationstudio.spannables.BlueSpanBubble;
+import com.door43.translationstudio.spannables.FootnoteSpan;
+import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
@@ -33,6 +33,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
@@ -83,7 +84,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private final float MIN_LOG_PRESS = 100;
     private int mActionBarHeight;
     private boolean mActivityIsInitializing;
-    private TermsHighlighterTask mHighlighTask;
+    private TermsHighlighterTask mTermsTask;
+    private FootnotesHighlighterTask mFootnoteTask;
 
     // center view fields for caching
     private TextView mSourceText;
@@ -260,18 +262,29 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                         final String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
 
                         // TODO: we'll need to display a popup to get the footnote text from the user.
-                        // generate clickable footnote
-                        LightBlueSpanBubble lightBlueSpanBubble = new LightBlueSpanBubble(selection, selection, new FancySpan.OnClickListener() {
-                            @Override
-                            public void onClick(View view, String spanText, String spanId) {
-                                app().showToastMessage(spanId);
-                            }
-                        });
+                        String definition = "This is a definition";
 
-                        // add clickable footnote to the text
-                        mTranslationEditText.setText(selectionBefore);
-                        mTranslationEditText.append(lightBlueSpanBubble.toCharSequence());
-                        mTranslationEditText.append(selectionAfter);
+                        // convert to footnote tag
+                        String taggedText = "";
+                        taggedText += selectionBefore;
+                        taggedText += FootnoteSpan.generateTag(selection, definition);
+                        taggedText += selectionAfter;
+
+                        // parse all footnote tags
+                        parseFootnoteTags(taggedText);
+
+//                        // generate clickable footnote
+//                        FootnoteSpan footnoteSpan = new FootnoteSpan(selection, selection, "definition", new FancySpan.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view, String spanText, String spanId) {
+//                                app().showToastMessage(spanId);
+//                            }
+//                        });
+//
+//                        // add clickable footnote to the text
+//                        mTranslationEditText.setText(selectionBefore);
+//                        mTranslationEditText.append(footnoteSpan.toCharSequence());
+//                        mTranslationEditText.append(selectionAfter);
 
                         return false;
                     default:
@@ -442,6 +455,18 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         });
     }
 
+    /**
+     * Begins or restarts parsing the footnote tags
+     * @param text
+     */
+    private void parseFootnoteTags(String text) {
+        if(mFootnoteTask != null && !mFootnoteTask.isCancelled()) {
+            mFootnoteTask.cancel(true);
+        }
+        mFootnoteTask = new FootnotesHighlighterTask();
+        mFootnoteTask.execute(text);
+    }
+
     public void closeTranslationKeyboard() {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
@@ -489,7 +514,9 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
             // target translation
             Translation translation = frame.getTranslation();
-            mTranslationEditText.setText(translation.getText());
+            parseFootnoteTags(translation.getText());
+            // the translation text is initially loaded as html so so users do not see the raw code before footnotes are parsed.
+            mTranslationEditText.setText(Html.fromHtml(translation.getText()));
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
@@ -504,10 +531,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
 
             // set up task to highlight the source text key terms
-            if(mHighlighTask != null && !mHighlighTask.isCancelled()) {
-                mHighlighTask.cancel(true);
+            if(mTermsTask != null && !mTermsTask.isCancelled()) {
+                mTermsTask.cancel(true);
             }
-            mHighlighTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
+            mTermsTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
                 @Override
                 public void onProgress(String result) {
                     String[] pieces = result.split("<a>");
@@ -516,7 +543,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                     for(int i=1; i<pieces.length; i++) {
                         // get closing anchor
                         String[] linkChunks = pieces[i].split("</a>");
-                        BlueSpanBubble term  = new BlueSpanBubble(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
+                        TermSpan term  = new TermSpan(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
                             @Override
                             public void onClick(View view, String spanText, String spanId) {
                                 showTermDetails(spanId);
@@ -534,7 +561,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                     // TODO: stop the loading indicator
                 }
             });
-            mHighlighTask.execute(frame.getText());
+            mTermsTask.execute(frame.getText());
 
             // navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
@@ -830,5 +857,75 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private interface OnHighlightProgress {
         void onProgress(String result);
         void onSuccess(String result);
+    }
+
+    /**
+     * A task to highlight key terms in the source text
+     */
+    private class FootnotesHighlighterTask extends AsyncTask<String, String, CharSequence> {
+
+        @Override
+        protected CharSequence doInBackground(String... params) {
+            TextView notedResult = new TextView(me);
+            String[] pieces = params[0].split("<a def=\"[^(<A).]*\">");
+            notedResult.append(pieces[0]);
+            for(int i=1; i<pieces.length; i++) {
+                // get closing anchor
+                String[] linkChunks = pieces[i].split("</a>");
+                // TODO: actually pull out the definition
+                FootnoteSpan footnote = new FootnoteSpan(linkChunks[0], linkChunks[0], "some definition", new FancySpan.OnClickListener() {
+                    @Override
+                    public void onClick(View view, String spanText, String spanId) {
+                        app().showToastMessage(spanId);
+                    }
+                });
+                notedResult.append(footnote.toCharSequence());
+                try {
+                    notedResult.append(linkChunks[1]);
+                } catch(Exception e){}
+            }
+
+
+
+//            String keyedText = params[0];
+//            Vector<Boolean> indicies = new Vector<Boolean>();
+//            indicies.setSize(keyedText.length());
+//            for(Term t:mTerms) {
+//                StringBuffer buf = new StringBuffer();
+//                Pattern p = Pattern.compile("(?i)\\b" + t.getName() + "\\b");
+//                // TRICKY: we need to run two matches at the same time in order to keep track of used indicies in the string
+//                Matcher matcherSourceText = p.matcher(params[0]);
+//                Matcher matcherKeyedText = p.matcher(keyedText);
+//
+//                while (matcherSourceText.find() && matcherKeyedText.find()) {
+//                    // ensure the key term was found in an area of the string that does not overlap another key term.
+//                    if(indicies.get(matcherSourceText.start()) == null && indicies.get(matcherSourceText.end()) == null) {
+//                        String key = "<a>" + matcherSourceText.group() + "</a>";
+////                        int newKeyEnd = matcherSourceText.start() + key.length()-1;
+//
+//                        // lock indicies to prevent key term collisions
+//                        for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {
+//                            if(indicies.size() <= i) {
+//                                Log.d("test", "sd");
+//                            }
+//                            indicies.set(i, true);
+//                        }
+//
+//                        // insert the key into the keyedText
+//                        matcherKeyedText.appendReplacement(buf, key);
+//                    } else {
+//                        // do nothing. this is a key collision
+//                        // e.g. the key term "life" collided with "eternal life".
+//                    }
+//                }
+//                matcherKeyedText.appendTail(buf);
+//                keyedText = buf.toString();
+//            }
+            return notedResult.getText();
+        }
+
+        protected void onPostExecute(CharSequence result) {
+            mTranslationEditText.setText(result);
+        }
     }
 }
