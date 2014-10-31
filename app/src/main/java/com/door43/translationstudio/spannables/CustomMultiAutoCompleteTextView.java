@@ -111,16 +111,15 @@ public class CustomMultiAutoCompleteTextView extends MultiAutoCompleteTextView {
                     // something is added
 
                     if (!TextUtils.isEmpty(addedString.trim())) {
-                        int startIndex = isContactAddedFromDb ? addedString
-                                .length() : CustomMultiAutoCompleteTextView.this.getSelectionEnd();
-                        startIndex = startIndex < 1 ? 1 : startIndex;
-                        String charAtStartIndex = Character
-                                .toString(addedString
-                                        .charAt(startIndex - 1));
-                        if (charAtStartIndex.equals(",")) {
-                            isTextAdditionInProgress = true;
-                            addOrCheckSpannable(s, startIndex);
-                        }
+//                        int startIndex = isContactAddedFromDb ? addedString.length() : CustomMultiAutoCompleteTextView.this.getSelectionEnd();
+//                        startIndex = startIndex < 1 ? 1 : startIndex;
+//                        String charAtStartIndex = Character
+//                                .toString(addedString
+//                                        .charAt(startIndex - 1));
+//                        if (charAtStartIndex.equals(",")) {
+//                            isTextAdditionInProgress = true;
+//                            addOrCheckSpannable(s, startIndex);
+//                        }
                     }
                 }
             }

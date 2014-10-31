@@ -42,7 +42,6 @@ public class FancySpan {
     protected SpannableStringBuilder generateSpan(int backgroundResource, int colorResource, int textSizeResource) {
         SpannableStringBuilder spannable = new SpannableStringBuilder(mText);
         if(spannable.length() > 0) {
-            spannable.append(toString());
             BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mText, backgroundResource, colorResource, textSizeResource));
             bd.setBounds(0, 0, bd.getIntrinsicWidth(), bd.getIntrinsicHeight());
             spannable.setSpan(new ImageSpan(bd), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
