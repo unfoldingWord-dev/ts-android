@@ -5,7 +5,9 @@ import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
-import com.door43.translationstudio.footnotes.Footnote;
+import com.door43.translationstudio.spannables.FancySpan;
+import com.door43.translationstudio.spannables.LightBlueSpanBubble;
+import com.door43.translationstudio.spannables.BlueSpanBubble;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
@@ -29,14 +31,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
-import android.text.Html;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
-import android.text.style.ClickableSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -58,9 +56,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -262,13 +258,17 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                         final String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
 
                         // TODO: we'll need to display a popup to get the footnote text from the user.
-
                         // generate clickable footnote
-                        Footnote footnote = new Footnote(selection);
+                        LightBlueSpanBubble lightBlueSpanBubble = new LightBlueSpanBubble(selection, selection, new FancySpan.OnClickListener() {
+                            @Override
+                            public void onClick(View view, String spanText, String spanId) {
+                                app().showToastMessage(spanId);
+                            }
+                        });
 
                         // add clickable footnote to the text
                         mTranslationEditText.setText(selectionBefore);
-                        mTranslationEditText.append(footnote.toCharSequence());
+                        mTranslationEditText.append(lightBlueSpanBubble.toCharSequence());
                         mTranslationEditText.append(selectionAfter);
 
                         return false;
@@ -513,16 +513,13 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                     for(int i=1; i<pieces.length; i++) {
                         // get closing anchor
                         String[] linkChunks = pieces[i].split("</a>");
-                        SpannableString link = new SpannableString(linkChunks[0]);
-                        final String term = linkChunks[0];
-                        ClickableSpan cs = new ClickableSpan() {
+                        BlueSpanBubble term  = new BlueSpanBubble(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
                             @Override
-                            public void onClick(View widget) {
-                                showTermDetails(term);
+                            public void onClick(View view, String spanText, String spanId) {
+                                showTermDetails(spanId);
                             }
-                        };
-                        link.setSpan(cs, 0, term.length(), 0);
-                        mSourceText.append(link);
+                        });
+                        mSourceText.append(term.toCharSequence());
                         try {
                             mSourceText.append(linkChunks[1]);
                         } catch(Exception e){}
