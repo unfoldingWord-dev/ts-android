@@ -5,6 +5,8 @@ import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
+import com.door43.translationstudio.spannables.CustomMovementMethod;
+import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.LightBlueSpanBubble;
 import com.door43.translationstudio.spannables.BlueSpanBubble;
@@ -90,7 +92,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private TextView mTranslationTitleText;
     private ImageView mNextFrameView;
     private ImageView mPreviousFrameView;
-    private EditText mTranslationEditText;
+    private CustomMultiAutoCompleteTextView mTranslationEditText;
 
     private static final int MENU_ITEM_FOOTNOTE = 1;
 
@@ -196,7 +198,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
         mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
         mPreviousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
-        mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
+        mTranslationEditText = (CustomMultiAutoCompleteTextView)mCenterPane.findViewById(R.id.inputText);
 
         mTranslationEditText.setEnabled(false);
 
@@ -328,13 +330,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         // make links in the translation text clickable
 //        m = mTranslationEditText.getMovementMethod();
-//        if ((m == null) || !(m instanceof ArrowKeyMovementMethod)) {
+//        if ((m == null) || !(m instanceof LinkMovementMethod)) {
 //            if (mTranslationEditText.getLinksClickable()) {
-//                mTranslationEditText.setMovementMethod(ArrowKeyMovementMethod.getInstance());
+//                mTranslationEditText.setMovementMethod(LinkMovementMethod.getInstance());
 //            }
 //        }
 //        mTranslationEditText.setFocusable(true);
 //        mTranslationEditText.setClickable(true);
+        mTranslationEditText.setMovementMethod(new CustomMovementMethod());
 
         // display help text when sourceText is empty.
         final TextView helpText = (TextView)findViewById(R.id.helpTextView);

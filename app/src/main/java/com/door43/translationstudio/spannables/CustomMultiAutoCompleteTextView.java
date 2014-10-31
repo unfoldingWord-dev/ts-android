@@ -50,8 +50,7 @@ public class CustomMultiAutoCompleteTextView extends MultiAutoCompleteTextView {
         init(context);
     }
 
-    public CustomMultiAutoCompleteTextView(Context context, AttributeSet attrs,
-                                           int defStyle) {
+    public CustomMultiAutoCompleteTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(context);
     }
@@ -527,8 +526,7 @@ public class CustomMultiAutoCompleteTextView extends MultiAutoCompleteTextView {
     }
 
     @Override
-    protected void onFocusChanged(boolean focused, int direction,
-                                  Rect previouslyFocusedRect) {
+    protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
         addOrCheckSpannable(null, 0);
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
     }
