@@ -39,11 +39,11 @@ public class FancySpan {
      * @param backgroundResource
      * @return
      */
-    protected SpannableStringBuilder generateSpan(int backgroundResource) {
+    protected SpannableStringBuilder generateSpan(int backgroundResource, int colorResource, int textSizeResource) {
         SpannableStringBuilder spannable = new SpannableStringBuilder(mText);
         if(spannable.length() > 0) {
             spannable.append(toString());
-            BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mText, backgroundResource));
+            BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mText, backgroundResource, colorResource, textSizeResource));
             bd.setBounds(0, 0, bd.getIntrinsicWidth(), bd.getIntrinsicHeight());
             spannable.setSpan(new ImageSpan(bd), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             ClickableSpan clickSpan = new ClickableSpan() {
@@ -64,21 +64,22 @@ public class FancySpan {
      * @return
      */
     private static TextView createFancyTextView(String text, int backgroundResource) {
-        return createFancyTextView(text, backgroundResource, 20);
+        return createFancyTextView(text, backgroundResource, R.color.dark_gray, R.dimen.h5);
     }
 
     /**
      * Generates a fancy text view
      * @param text
      * @param backgroundResource
-     * @param fontSizeSP
+     * @param textColorResource
+     * @param fontSizeResource
      * @return
      */
-    private static TextView createFancyTextView(String text, int backgroundResource, int fontSizeSP) {
+    private static TextView createFancyTextView(String text, int backgroundResource, int textColorResource, int fontSizeResource) {
         TextView tv = new TextView(MainContext.getContext());
         tv.setText(text);
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSizeSP);
-        tv.setTextColor(MainContext.getContext().getResources().getColor(R.color.white));
+        tv.setTextSize(MainContext.getContext().getResources().getDimension(fontSizeResource));
+        tv.setTextColor(MainContext.getContext().getResources().getColor(textColorResource));
         tv.setBackgroundResource(backgroundResource);
         tv.setPadding(10, 5, 10, 5);
         return tv;

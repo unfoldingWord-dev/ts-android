@@ -15,6 +15,6 @@ public class LightBlueSpanBubble extends FancySpan {
      * @return
      */
     public CharSequence toCharSequence() {
-        return generateSpan(R.drawable.light_blue_bubble);
+        return generateSpan(R.drawable.light_blue_bubble, R.color.blue, R.dimen.h5);
     }
 }
