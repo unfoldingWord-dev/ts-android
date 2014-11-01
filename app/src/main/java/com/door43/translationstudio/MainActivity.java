@@ -58,6 +58,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.apache.commons.io.input.CharSequenceInputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -839,29 +841,56 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         @Override
         protected CharSequence doInBackground(String... params) {
             TextView notedResult = new TextView(me);
-            try {
-                String[] pieces = params[0].split(REGEX_PASSAGE_NOTE_START_ANCHOR);
-                notedResult.append(pieces[0]);
-                for (int i = 1; i < pieces.length; i++) {
-                    // get closing anchor
-                    String[] linkChunks = pieces[i].split(REGEX_PASSAGE_NOTE_END_ANCHOR);
-                    // TODO: actually pull out the definition
-                    PassageNoteSpan footnote = new PassageNoteSpan(linkChunks[0], linkChunks[0], "some definition", new FancySpan.OnClickListener() {
-                        @Override
-                        public void onClick(View view, String spanText, String spanId) {
-                            app().showToastMessage(spanId);
-                        }
-                    });
-                    notedResult.append(footnote.toCharSequence());
-                    try {
-                        notedResult.append(linkChunks[1]);
-                    } catch (Exception e) {
-                    }
+
+            // new method that supports fetching anchor data
+            Pattern p = Pattern.compile(REGEX_PASSAGE_NOTE_START_ANCHOR + "[^(" + REGEX_PASSAGE_NOTE_END_ANCHOR + ").]*" + REGEX_PASSAGE_NOTE_END_ANCHOR);
+            Matcher matcher = p.matcher(params[0]);
+            int lastEnd = 0;
+            while(matcher.find()) {
+                if(matcher.start() > lastEnd) {
+                    // add the last piece
+                    notedResult.append(params[0].substring(lastEnd, matcher.start()));
                 }
-            } catch(Exception e) {
-                // return the raw text if an error occures so we don't accidently overwrite anything.
-                return params[0];
+                lastEnd = matcher.end();
+                // TODO: insert the actual note
+                String data = matcher.group().substring(0, matcher.group().length() - REGEX_PASSAGE_NOTE_END_ANCHOR.length());
+                String[] pieces = data.split(REGEX_PASSAGE_NOTE_START_ANCHOR);
+                PassageNoteSpan footnote = new PassageNoteSpan(pieces[1], pieces[1], "some definition", new FancySpan.OnClickListener() {
+                    @Override
+                    public void onClick(View view, String spanText, String spanId) {
+                        app().showToastMessage(spanId);
+                    }
+                });
+                notedResult.append(footnote.toCharSequence());
             }
+            if(lastEnd < params[0].length()) {
+                notedResult.append(params[0].substring(lastEnd, params[0].length()));
+            }
+
+            // old method
+//            notedResult.setText("");
+//            String[] pieces = params[0].split(REGEX_PASSAGE_NOTE_START_ANCHOR);
+//            notedResult.append(pieces[0]);
+//            for (int i = 1; i < pieces.length; i++) {
+//                // get closing anchor
+//                String[] linkChunks = pieces[i].split(REGEX_PASSAGE_NOTE_END_ANCHOR);
+//                // TODO: actually pull out the definition
+//                try {
+//                    PassageNoteSpan footnote = new PassageNoteSpan(linkChunks[0], linkChunks[0], "some definition", new FancySpan.OnClickListener() {
+//                        @Override
+//                        public void onClick(View view, String spanText, String spanId) {
+//                            app().showToastMessage(spanId);
+//                        }
+//                    });
+//                    notedResult.append(footnote.toCharSequence());
+//                    if(linkChunks.length > 1) {
+//                        notedResult.append(linkChunks[1]);
+//                    }
+//                } catch(Exception e) {
+//                    // an error occured while parsing the note so return the raw value.
+//                    notedResult.append(pieces[i]);
+//                }
+//            }
             return notedResult.getText();
         }
 
