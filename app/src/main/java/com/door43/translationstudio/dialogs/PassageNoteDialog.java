@@ -42,6 +42,7 @@ public class PassageNoteDialog extends DialogFragment {
 
         // the span id
         final String id = args.getString("id");
+        Boolean isFootnote = args.getBoolean("footnote");
 
         // load values
         final EditText passageText = (EditText)v.findViewById(R.id.passageEditText);
@@ -49,6 +50,7 @@ public class PassageNoteDialog extends DialogFragment {
         final EditText passageNoteText = (EditText)v.findViewById(R.id.passageNoteEditText);
         passageNoteText.setText(args.getString("note"));
         final Switch footnoteSwitch = (Switch)v.findViewById(R.id.passageIsFootnoteSwitch);
+        footnoteSwitch.setChecked(isFootnote);
 
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelButton);

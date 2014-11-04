@@ -267,11 +267,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
                         // do not allow passage notes to collide
                         if(selection.split(PassageNoteSpan.REGEX_OPEN_TAG).length <= 1 && selection.split(PassageNoteSpan.REGEX_CLOSE_TAG).length <= 1) {
-                            // TODO: we'll need to display a popup to get the note text from the user.
                             // convert to passage note tag
                             String taggedText = "";
                             taggedText += selectionBefore;
-                            taggedText += PassageNoteSpan.generateTag(selection, "");
+                            taggedText += PassageNoteSpan.generateTag(selection, "", false);
                             taggedText += selectionAfter;
 
                             // parse all passage note tags
@@ -854,6 +853,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
         @Override
         protected CharSequence doInBackground(String... params) {
+            PassageNoteSpan.reset();
             TextView notedResult = new TextView(me);
             PassageNoteSpan needsUpdate = null;
             Pattern p = Pattern.compile(PassageNoteSpan.REGEX_OPEN_TAG + "((?!" + PassageNoteSpan.REGEX_CLOSE_TAG + ").)*" + PassageNoteSpan.REGEX_CLOSE_TAG);
@@ -879,14 +879,18 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 // extract phrase
                 String[] pieces = data.split(PassageNoteSpan.REGEX_OPEN_TAG);
 
-                // TODO: need to determine if is a footnote
+                // check if footnote is set in the open tag
+                Boolean isFootnote = false;
+                if(data.substring(0, data.length() - pieces[1].length()).contains("footnote")) {
+                    isFootnote = true;
+                }
+                final Boolean displayAsFootnote = isFootnote;
 
                 // build passage note
-                PassageNoteSpan note = new PassageNoteSpan(pieces[1], definition, new FancySpan.OnClickListener() {
+                PassageNoteSpan note = new PassageNoteSpan(pieces[1], definition, isFootnote, new FancySpan.OnClickListener() {
                     @Override
                     public void onClick(View view, String spanText, String spanId) {
-                        // TODO: need to determine if it is a footnote
-                        openPassageNoteDialog(spanText, definition, spanId, false);
+                        openPassageNoteDialog(spanText, definition, spanId, displayAsFootnote);
                     }
                 });
                 if(definition.isEmpty()) {
@@ -915,13 +919,15 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      */
     private class PassageNotesUpdaterTask extends AsyncTask<String, String, Void> {
         private Boolean mUpdate = false;
+        private Boolean mIsFootnote = false;
 
         /**
          * Specifies if the passage note should be updated or removed
          * @param update
          */
-        public PassageNotesUpdaterTask(Boolean update) {
+        public PassageNotesUpdaterTask(Boolean update, Boolean isFootnote) {
             mUpdate = update;
+            mIsFootnote = isFootnote;
         }
 
         @Override
@@ -939,7 +945,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 updatedResult.append(text.substring(0, matcher.start()));
                 if(mUpdate) {
                     // update passage note
-                    updatedResult.append(PassageNoteSpan.generateTag(spanPassage, spanPassageDefinition));
+                    updatedResult.append(PassageNoteSpan.generateTag(spanPassage, spanPassageDefinition, mIsFootnote));
                 } else {
                     // remove passage note
                     String data = matcher.group().substring(0, matcher.group().length() - PassageNoteSpan.REGEX_CLOSE_TAG.length());
@@ -991,7 +997,13 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         switch(event.getStatus()) {
             case OK:
                 // update the passage note
-                task = new PassageNotesUpdaterTask(true);
+                if(!event.getNote().isEmpty()) {
+                    task = new PassageNotesUpdaterTask(true, event.getIsFootnote());
+
+                } else {
+                    // delete empty notes
+                    task = new PassageNotesUpdaterTask(false, false);
+                }
                 task.execute(mTranslationEditText.getText().toString(),
                         event.getSpanId(),
                         event.getPassage(),
@@ -999,7 +1011,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 break;
             case DELETE:
                 // remove the passage note
-                task = new PassageNotesUpdaterTask(false);
+                task = new PassageNotesUpdaterTask(false, false);
                 task.execute(mTranslationEditText.getText().toString(),
                         event.getSpanId(),
                         event.getPassage(),

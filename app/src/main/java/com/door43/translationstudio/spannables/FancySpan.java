@@ -47,20 +47,42 @@ public class FancySpan {
 
     /**
      * Generates the content of the span
-     * @param textReplacemenmt the text to be inserted into the raw text (not visible) This is useful for storing information that should be persited to the disk.
+     * @param textReplacement the text to be inserted into the raw text (not visible) This is useful for storing information that should be persited to the disk.
      * @param backgroundResource
      * @param colorResource
      * @param textSizeResource
      * @return
      */
-    protected SpannableStringBuilder generateSpan(String textReplacemenmt, int backgroundResource, int colorResource, int textSizeResource) {
+    protected SpannableStringBuilder generateSpan(String textReplacement, int backgroundResource, int colorResource, int textSizeResource) {
         // TODO: instead of mtext we need to provide the format for the span.
         // this could be an optional parameter where we can specify data to be stored.
-        SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacemenmt);
+        SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacement);
         if(spannable.length() > 0) {
             BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mText, backgroundResource, colorResource, textSizeResource));
             bd.setBounds(0, 0, bd.getIntrinsicWidth(), bd.getIntrinsicHeight());
             spannable.setSpan(new ImageSpan(bd), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            ClickableSpan clickSpan = new ClickableSpan() {
+                @Override
+                public void onClick(View view) {
+                    mClickListener.onClick(view, mText, mId);
+                }
+            };
+            spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return spannable;
+    }
+
+    /**
+     * Generates the content of the span
+     * @param textReplacement
+     * @param background
+     * @return
+     */
+    protected SpannableStringBuilder generateSpan(String textReplacement, BitmapDrawable background) {
+        SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacement);
+        if(spannable.length() > 0) {
+            background.setBounds(0, 0, background.getIntrinsicWidth(), background.getIntrinsicHeight());
+            spannable.setSpan(new ImageSpan(background), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             ClickableSpan clickSpan = new ClickableSpan() {
                 @Override
                 public void onClick(View view) {
@@ -105,7 +127,7 @@ public class FancySpan {
      * @param view
      * @return
      */
-    private static BitmapDrawable convertViewToDrawable(View view) {
+    protected static BitmapDrawable convertViewToDrawable(View view) {
         int spec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
         view.measure(spec, spec);
         view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());

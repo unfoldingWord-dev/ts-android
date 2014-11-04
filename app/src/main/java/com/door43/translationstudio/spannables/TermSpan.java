@@ -15,6 +15,6 @@ public class TermSpan extends FancySpan{
      * @return
      */
     public CharSequence toCharSequence() {
-        return generateSpan(R.drawable.blue_bubble, R.color.white, R.dimen.h5);
+        return generateSpan(R.drawable.span_blue_bubble, R.color.white, R.dimen.h5);
     }
 }
