@@ -4,6 +4,7 @@ import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
+import com.door43.translationstudio.dialogs.PassageNoteDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
 import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
@@ -19,6 +20,8 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
+import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
@@ -58,8 +61,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.apache.commons.io.input.CharSequenceInputStream;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -69,8 +70,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends TranslatorBaseActivity implements DelegateListener {
-    public static final String REGEX_PASSAGE_NOTE_START_ANCHOR = "<a def=\"[^(<A).]*\">";
-    public static final String REGEX_PASSAGE_NOTE_END_ANCHOR = "</a>";
     private final MainActivity me = this;
 
     private static final String LANG_CODE = "en"; // TODO: this will eventually need to be managed dynamically by the project manager
@@ -107,6 +106,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mActivityIsInitializing = true;
+
+        MainContext.getEventBus().register(this);
 
         app().getSharedTranslationManager().registerDelegateListener(this);
 
@@ -149,6 +150,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     public void onPause() {
         super.onPause();
         // save any changes to the frame
+        MainContext.getEventBus().unregister(this);
         save();
     }
 
@@ -161,6 +163,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             // don't reload the center pane the first time the app starts.
             mActivityIsInitializing = false;
         }
+        MainContext.getEventBus().register(this);
     }
 
     /**
@@ -263,18 +266,16 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                         final String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
 
                         // do not allow passage notes to collide
-                        if(selection.split(REGEX_PASSAGE_NOTE_START_ANCHOR).length <= 1 && selection.split(REGEX_PASSAGE_NOTE_END_ANCHOR).length <= 1) {
-                            // TODO: we'll need to display a popup to get the footnote text from the user.
-                            String definition = "This is a definition";
-
+                        if(selection.split(PassageNoteSpan.REGEX_OPEN_TAG).length <= 1 && selection.split(PassageNoteSpan.REGEX_CLOSE_TAG).length <= 1) {
+                            // TODO: we'll need to display a popup to get the note text from the user.
                             // convert to passage note tag
                             String taggedText = "";
                             taggedText += selectionBefore;
-                            taggedText += PassageNoteSpan.generateTag(selection, definition);
+                            taggedText += PassageNoteSpan.generateTag(selection, "");
                             taggedText += selectionAfter;
 
                             // parse all passage note tags
-                            parsePassageNoteTags(taggedText);
+                            parsePassageNoteTags(taggedText, true);
                         } else {
                             app().showToastMessage("Passage notes cannot overlap");
                         }
@@ -428,14 +429,22 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     /**
-     * Begins or restarts parsing the footnote tags
+     * Begins or restarts parsing the note tags.
      * @param text
      */
     private void parsePassageNoteTags(String text) {
+        parsePassageNoteTags(text, false);
+    }
+
+    /**
+     * Begins or restarts parsing the note tags
+     * @param text
+     */
+    private void parsePassageNoteTags(String text, Boolean isNewNote) {
         if(mPassageNoteTask != null && !mPassageNoteTask.isCancelled()) {
             mPassageNoteTask.cancel(true);
         }
-        mPassageNoteTask = new PassageNotesHighlighterTask();
+        mPassageNoteTask = new PassageNotesHighlighterTask(isNewNote);
         mPassageNoteTask.execute(text);
     }
 
@@ -487,7 +496,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             // target translation
             Translation translation = frame.getTranslation();
             parsePassageNoteTags(translation.getText());
-            // the translation text is initially loaded as html so so users do not see the raw code before footnotes are parsed.
+            // the translation text is initially loaded as html so so users do not see the raw code before notes are parsed.
             mTranslationEditText.setText(Html.fromHtml(translation.getText()));
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
@@ -837,13 +846,18 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
      * A task to highlight passage notes in the translation text
      */
     private class PassageNotesHighlighterTask extends AsyncTask<String, String, CharSequence> {
+        private Boolean mRequestEmptyDefinitions;
+
+        public PassageNotesHighlighterTask(Boolean requestEmptyDefinitions) {
+            mRequestEmptyDefinitions = requestEmptyDefinitions;
+        }
 
         @Override
         protected CharSequence doInBackground(String... params) {
             TextView notedResult = new TextView(me);
-
-            // new method that supports fetching anchor data
-            Pattern p = Pattern.compile(REGEX_PASSAGE_NOTE_START_ANCHOR + "[^(" + REGEX_PASSAGE_NOTE_END_ANCHOR + ").]*" + REGEX_PASSAGE_NOTE_END_ANCHOR);
+            PassageNoteSpan needsUpdate = null;
+            Pattern p = Pattern.compile(PassageNoteSpan.REGEX_OPEN_TAG + "((?!" + PassageNoteSpan.REGEX_CLOSE_TAG + ").)*" + PassageNoteSpan.REGEX_CLOSE_TAG);
+            Pattern defPattern = Pattern.compile("def=\"([^(\").]*)\"");
             Matcher matcher = p.matcher(params[0]);
             int lastEnd = 0;
             while(matcher.find()) {
@@ -852,50 +866,148 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                     notedResult.append(params[0].substring(lastEnd, matcher.start()));
                 }
                 lastEnd = matcher.end();
-                // TODO: insert the actual note
-                String data = matcher.group().substring(0, matcher.group().length() - REGEX_PASSAGE_NOTE_END_ANCHOR.length());
-                String[] pieces = data.split(REGEX_PASSAGE_NOTE_START_ANCHOR);
-                PassageNoteSpan footnote = new PassageNoteSpan(pieces[1], pieces[1], "some definition", new FancySpan.OnClickListener() {
+
+                // extract definition
+                String data = matcher.group().substring(0, matcher.group().length() - PassageNoteSpan.REGEX_CLOSE_TAG.length());
+                Matcher defMatcher = defPattern.matcher(data);
+                String def = "";
+                if(defMatcher.find()) {
+                    def = defMatcher.group(1);
+                }
+                final String definition = def;
+
+                // extract phrase
+                String[] pieces = data.split(PassageNoteSpan.REGEX_OPEN_TAG);
+
+                // TODO: need to determine if is a footnote
+
+                // build passage note
+                PassageNoteSpan note = new PassageNoteSpan(pieces[1], definition, new FancySpan.OnClickListener() {
                     @Override
                     public void onClick(View view, String spanText, String spanId) {
-                        app().showToastMessage(spanId);
+                        // TODO: need to determine if it is a footnote
+                        openPassageNoteDialog(spanText, definition, spanId, false);
                     }
                 });
-                notedResult.append(footnote.toCharSequence());
+                if(definition.isEmpty()) {
+                    needsUpdate = note;
+                }
+                notedResult.append(note.toCharSequence());
             }
             if(lastEnd < params[0].length()) {
                 notedResult.append(params[0].substring(lastEnd, params[0].length()));
             }
 
-            // old method
-//            notedResult.setText("");
-//            String[] pieces = params[0].split(REGEX_PASSAGE_NOTE_START_ANCHOR);
-//            notedResult.append(pieces[0]);
-//            for (int i = 1; i < pieces.length; i++) {
-//                // get closing anchor
-//                String[] linkChunks = pieces[i].split(REGEX_PASSAGE_NOTE_END_ANCHOR);
-//                // TODO: actually pull out the definition
-//                try {
-//                    PassageNoteSpan footnote = new PassageNoteSpan(linkChunks[0], linkChunks[0], "some definition", new FancySpan.OnClickListener() {
-//                        @Override
-//                        public void onClick(View view, String spanText, String spanId) {
-//                            app().showToastMessage(spanId);
-//                        }
-//                    });
-//                    notedResult.append(footnote.toCharSequence());
-//                    if(linkChunks.length > 1) {
-//                        notedResult.append(linkChunks[1]);
-//                    }
-//                } catch(Exception e) {
-//                    // an error occured while parsing the note so return the raw value.
-//                    notedResult.append(pieces[i]);
-//                }
-//            }
+            // display a dialog to populate the empty definition.
+            if(needsUpdate != null && mRequestEmptyDefinitions) {
+                openPassageNoteDialog(needsUpdate.toString(), "", needsUpdate.getId()+"", needsUpdate.isFootnote());
+            }
             return notedResult.getText();
         }
 
         protected void onPostExecute(CharSequence result) {
             mTranslationEditText.setText(result);
+        }
+    }
+
+    /**
+     * A task update passages notes
+     */
+    private class PassageNotesUpdaterTask extends AsyncTask<String, String, Void> {
+        private Boolean mUpdate = false;
+
+        /**
+         * Specifies if the passage note should be updated or removed
+         * @param update
+         */
+        public PassageNotesUpdaterTask(Boolean update) {
+            mUpdate = update;
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            String text = params[0];
+            String spanId = params[1];
+            String spanPassage = params[2];
+            String spanPassageDefinition = params[3];
+
+            TextView updatedResult = new TextView(me);
+
+            Pattern p = Pattern.compile(PassageNoteSpan.regexOpenTagById(spanId) + "((?!" + PassageNoteSpan.REGEX_CLOSE_TAG + ").)*" + PassageNoteSpan.REGEX_CLOSE_TAG);
+            Matcher matcher = p.matcher(text);
+            if(matcher.find()) {
+                updatedResult.append(text.substring(0, matcher.start()));
+                if(mUpdate) {
+                    // update passage note
+                    updatedResult.append(PassageNoteSpan.generateTag(spanPassage, spanPassageDefinition));
+                } else {
+                    // remove passage note
+                    String data = matcher.group().substring(0, matcher.group().length() - PassageNoteSpan.REGEX_CLOSE_TAG.length());
+                    String[] pieces = data.split(PassageNoteSpan.REGEX_OPEN_TAG);
+                    updatedResult.append(pieces[1]);
+                }
+                if(matcher.end() < text.length()) {
+                    updatedResult.append(text.substring(matcher.end(), text.length()));
+                }
+                parsePassageNoteTags(updatedResult.getText().toString());
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Displays a dialog for editing a passage note
+     * @param passage
+     * @param definition
+     * @param id
+     * @param isFootnote
+     */
+    public void openPassageNoteDialog(String passage, String definition, String id, Boolean isFootnote) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        app().closeToastMessage();
+
+        // Create and show the dialog
+        PassageNoteDialog newFragment = new PassageNoteDialog();
+        Bundle args = new Bundle();
+        args.putString("passage", passage);
+        args.putString("note", definition);
+        args.putBoolean("footnote", isFootnote);
+        args.putString("id", id);
+        newFragment.setArguments(args);
+        newFragment.show(ft, "dialog");
+    }
+
+    @Subscribe
+    public void passageNote(PassageNoteEvent event) {
+        // close the dialog.
+        event.getDialog().dismiss();
+        PassageNotesUpdaterTask task;
+        switch(event.getStatus()) {
+            case OK:
+                // update the passage note
+                task = new PassageNotesUpdaterTask(true);
+                task.execute(mTranslationEditText.getText().toString(),
+                        event.getSpanId(),
+                        event.getPassage(),
+                        event.getNote());
+                break;
+            case DELETE:
+                // remove the passage note
+                task = new PassageNotesUpdaterTask(false);
+                task.execute(mTranslationEditText.getText().toString(),
+                        event.getSpanId(),
+                        event.getPassage(),
+                        event.getNote());
+                break;
+            case CANCEL:
+            default:
+                // do nothing
         }
     }
 }

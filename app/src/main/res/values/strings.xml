@@ -91,5 +91,10 @@
     <string name="label_translation_notes">Translation Notes</string>
     <string name="menu_passagenote">Notes</string>
     <string name="error_term_missing">The term could not be found</string>
+    <string name="label_passage_note">Passage note:</string>
+    <string name="label_passage_note_selection">Selected passage:</string>
+    <string name="label_delete">Delete</string>
+    <string name="source_language_instructions">The source language contains the completed translation including definitions for key terms and translation notes.</string>
+    <string name="target_language_instructions">The target language may not be completely translated and supports translation notes and footnotes.</string>
 
 </resources>

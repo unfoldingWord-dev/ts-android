@@ -75,7 +75,8 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/targetLanguageChapterTitleEditText"
                 android:hint="Chapter Title"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:background="@color/light_gray" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -90,7 +91,8 @@
                 android:id="@+id/targetLanguageChapterReferenceEditText"
                 android:hint="Chapter Reference"
                 android:singleLine="false"
-                android:lines="2" />
+                android:lines="2"
+                android:background="@color/light_gray" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

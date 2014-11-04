@@ -1,5 +1,7 @@
 package com.door43.translationstudio.spannables;
 
+import android.os.Bundle;
+
 import com.door43.translationstudio.R;
 
 /**
@@ -7,9 +9,16 @@ import com.door43.translationstudio.R;
  */
 public class PassageNoteSpan extends FancySpan {
     private final String mDefinition;
+    private int mId;
+    private static int mNumSpans = 0;
+    public static final String TAG = "passagenote";
+    public static final String REGEX_OPEN_TAG = "<"+TAG+" ((?!>).)*>";
+    public static final String REGEX_CLOSE_TAG = "</"+TAG+">";
 
-    public PassageNoteSpan(String id, String text, String definition, OnClickListener clickListener) {
-        super(id, text, clickListener);
+    public PassageNoteSpan(String text, String definition, OnClickListener clickListener) {
+        super(mNumSpans+"", text, clickListener);
+        mId = mNumSpans;
+        mNumSpans ++;
         mDefinition = definition.replace("\"", "'");
     }
 
@@ -18,16 +27,50 @@ public class PassageNoteSpan extends FancySpan {
      * @return
      */
     public CharSequence toCharSequence() {
-        return generateSpan(generateTag(toString(), mDefinition), R.drawable.light_blue_bubble, R.color.blue, R.dimen.h5);
+        Bundle attrs = new Bundle();
+        attrs.putString("id", mId + "");
+        return generateSpan(generateTag(toString(), mDefinition, attrs), R.drawable.light_blue_bubble, R.color.blue, R.dimen.h5);
     }
 
     /**
-     * Generates the proper footnote tag
-     * @param title
-     * @param definition
+     * Generates the passage note tag
+     * @param title the passage title
+     * @param definition the passage definition
      * @return
      */
     public static String generateTag(String title, String definition) {
-        return "<a def=\""+definition+"\">"+title+"</a>";
+        return generateTag(title, definition, new Bundle());
+    }
+
+    /**
+     * Generates the regular expression used to select the opening tag of a span by id
+     * @param id
+     * @return
+     */
+    public static String regexOpenTagById(String id) {
+        return "<"+TAG+" ((?!>).)*id=\""+id+"\"((?!>).)*>";
+    }
+
+    /**
+     * Generates the passage note tag with additional attributes
+     * @param title
+     * @param definition
+     * @param attrs
+     * @return
+     */
+    public static String generateTag(String title, String definition, Bundle attrs) {
+        String attributes = "";
+        for(String key: attrs.keySet()) {
+            attributes += String.format("%s=\"%s\" ", key, attrs.getString(key));
+        }
+        return "<"+TAG+" "+attributes+"def=\""+definition+"\">"+title+"</"+TAG+">";
+    }
+
+    public int getId() {
+        return mId;
+    }
+
+    public boolean isFootnote() {
+        return false;
     }
 }
