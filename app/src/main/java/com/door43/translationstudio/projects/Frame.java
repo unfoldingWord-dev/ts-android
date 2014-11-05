@@ -19,6 +19,7 @@ public class Frame {
     private String mImagePath;
     private Chapter mChapter;
     private Translation mTranslation;
+    private TranslationNote mNotes;
 
     /**
      * Creates a new frame.
@@ -36,6 +37,22 @@ public class Frame {
         }
         mChapterFrameId = chapterFrameId;
         mText = text;
+    }
+
+    /**
+     * Sets the translation notes available for this frame
+     * @param notes
+     */
+    public void setTranslationNotes(TranslationNote notes) {
+        mNotes = notes;
+    }
+
+    /**
+     * Returns the translation notes for this frame
+     * @return
+     */
+    public TranslationNote getTranslationNotes() {
+        return mNotes;
     }
 
     /**

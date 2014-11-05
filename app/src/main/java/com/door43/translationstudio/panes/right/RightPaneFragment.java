@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Term;
+import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
@@ -34,5 +35,8 @@ public class RightPaneFragment extends TranslatorBaseFragment {
 
     public void showTerm(Term term) {
         mResourcesFragment.showTerm(term);
+    }
+    public void showNotes(TranslationNote note) {
+        mResourcesFragment.showNotes(note);
     }
 }

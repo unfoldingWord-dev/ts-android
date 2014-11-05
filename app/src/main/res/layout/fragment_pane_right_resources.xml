@@ -11,18 +11,20 @@
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp">
+        android:id="@+id/resourcesNavView"
+        android:background="@color/light_blue">
 
         <Button
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/label_translation_notes"
             android:id="@+id/resourcesNotesButton"
             android:background="@color/blue"
             android:textColor="@color/white"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp" />
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp" />
+
     </LinearLayout>
 
     <ScrollView

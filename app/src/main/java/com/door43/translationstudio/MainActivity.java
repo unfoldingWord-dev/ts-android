@@ -6,6 +6,7 @@ import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.PassageNoteDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
+import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
 import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
 import com.door43.translationstudio.spannables.FancySpan;
@@ -20,7 +21,6 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
-import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
@@ -107,8 +107,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         setContentView(R.layout.activity_main);
         mActivityIsInitializing = true;
 
-        MainContext.getEventBus().register(this);
-
         app().getSharedTranslationManager().registerDelegateListener(this);
 
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
@@ -150,7 +148,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     public void onPause() {
         super.onPause();
         // save any changes to the frame
-        MainContext.getEventBus().unregister(this);
         save();
     }
 
@@ -163,7 +160,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             // don't reload the center pane the first time the app starts.
             mActivityIsInitializing = false;
         }
-        MainContext.getEventBus().register(this);
     }
 
     /**
@@ -246,19 +242,38 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mTranslationEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
             @Override
             public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+                // remove title
+                actionMode.setTitle(null);
+//                actionMode.setCustomView(null);
+
+                // customize menu
+                MenuInflater inflater = actionMode.getMenuInflater();
+                inflater.inflate(R.menu.text_selection, menu);
+                menu.removeItem(android.R.id.selectAll);
+                menu.removeItem(android.R.id.paste);
+                menu.removeItem(android.R.id.cut);
+                menu.removeItem(android.R.id.copy);
+
+                // force always show
+                menu.findItem(android.R.id.selectAll).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                menu.findItem(android.R.id.cut).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                menu.findItem(android.R.id.copy).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                menu.findItem(R.id.action_notes).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+//                menu.add("Item " + (i + 1)).setIcon(android.R.drawable.sym_def_app_icon)
+//                            .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
                 return true;
             }
 
             @Override
             public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-                menu.add(Menu.NONE, MENU_ITEM_PASSAGENOTE, Menu.NONE, R.string.menu_passagenote);
                 return false;
             }
 
             @Override
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 switch(menuItem.getItemId()) {
-                    case MENU_ITEM_PASSAGENOTE:
+                    case R.id.action_notes:
                         // load selection
                         String translationText = mTranslationEditText.getText().toString();
                         String selectionBefore = translationText.substring(0, mTranslationEditText.getSelectionStart());
@@ -280,7 +295,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                         }
                         return false;
                     default:
-                        app().showToastMessage(menuItem.getOrder()+"");
                         return false;
                 }
             }
@@ -491,6 +505,9 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
             Chapter chapter = p.getSelectedChapter();
             Frame frame = chapter.getSelectedFrame();
+
+            // load the translation notes
+            setTranslationNotes(frame.getTranslationNotes());
 
             // target translation
             Translation translation = frame.getTranslation();
@@ -709,6 +726,19 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mRightPane.showTerm(app().getSharedProjectManager().getSelectedProject().getTerm(term));
     }
 
+    /**
+     * OPens the resources panel and displays the translation notes
+     * @param n
+     */
+    public void showTranslationNotes(TranslationNote n) {
+        openRightDrawer();
+        mRightPane.showNotes(n);
+    }
+
+    public void setTranslationNotes(TranslationNote n) {
+        mRightPane.showNotes(n);
+    }
+
     @Override
     public void onDelegateResponse(String id, DelegateResponse response) {
         if(TranslationSyncResponse.class == response.getClass()) {
@@ -857,7 +887,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             TextView notedResult = new TextView(me);
             PassageNoteSpan needsUpdate = null;
             Pattern p = Pattern.compile(PassageNoteSpan.REGEX_OPEN_TAG + "((?!" + PassageNoteSpan.REGEX_CLOSE_TAG + ").)*" + PassageNoteSpan.REGEX_CLOSE_TAG);
-            Pattern defPattern = Pattern.compile("def=\"([^(\").]*)\"");
+            Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");
             Matcher matcher = p.matcher(params[0]);
             int lastEnd = 0;
             while(matcher.find()) {

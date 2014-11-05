@@ -3,7 +3,5 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="test"
-    android:background="@drawable/dotted_line"
-    android:drawablePadding="1dp"
     android:textColor="@color/blue"
-    android:padding="7dp"></TextView>
+    android:padding="3dp"></TextView>

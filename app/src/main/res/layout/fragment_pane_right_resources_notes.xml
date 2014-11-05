@@ -12,14 +12,14 @@
         android:text="Important Terms:"
         android:id="@+id/importantTermsTitleText"
         android:paddingTop="20dp"
-        android:textSize="@dimen/h3" />
+        android:textSize="@dimen/h4" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New Text"
         android:id="@+id/importantTermsText"
-        android:textSize="@dimen/h3" />
+        android:textSize="@dimen/h4" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -27,5 +27,11 @@
         android:text="Translation Notes:"
         android:id="@+id/translationNotesTitleText"
         android:paddingTop="20dp"
-        android:textSize="@dimen/h3" />
+        android:textSize="@dimen/h4" />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/translationNotesView"></LinearLayout>
 </LinearLayout>

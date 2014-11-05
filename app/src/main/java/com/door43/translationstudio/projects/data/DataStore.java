@@ -51,12 +51,19 @@ public class DataStore extends DelegateSender {
     }
 
     /**
-     * Retusn a json array of target languages
+     * Returns a json array of key terms
      */
     public String fetchTermsText(String projectSlug, String languageCode) {
         // TODO: check for updates on the server
         // https://api.unfoldingword.org/[project id]/txt/1/[langcode]/kt-[langcode].json
         String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/terms.json";
+        return loadJSONAsset(path);
+    }
+
+    public String fetchTranslationNotes(String projectSlug, String languageCode) {
+        // TODO: check for updates on the server
+        // https://api.unfoldingword.org/obs/txt/1/en/tN-en.json
+        String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/notes.json";
         return loadJSONAsset(path);
     }
 

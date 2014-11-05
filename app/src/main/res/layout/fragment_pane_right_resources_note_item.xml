@@ -10,13 +10,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New Text"
-        android:id="@+id/examplePassageLinkText"
+        android:id="@+id/translationNoteReferenceText"
         android:paddingRight="10dp"
-        android:textSize="@dimen/h4" />
+        android:textSize="@dimen/h5"
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="New Text\nasdffsd\nsdfsdsd\nsdgfsdf"
-        android:id="@+id/examplePassageText" />
+        android:id="@+id/translationNoteText" />
 </LinearLayout>

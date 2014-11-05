@@ -77,6 +77,8 @@ public class ProjectManager implements DelegateListener {
         loadProject(source, p);
         String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId());
         loadTerms(terms, p);
+        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId());
+        loadNotes(notes, p);
         mContext.closeProgressDialog();
     }
 
@@ -322,11 +324,72 @@ public class ProjectManager implements DelegateListener {
     }
 
     /**
+     * Loads the translation notes for the project
+     * @param jsonString
+     * @param p
+     */
+    private void loadNotes(String jsonString, Project p) {
+        // TODO: cache the notes by frame and add accessors to the frame object to retreive the notes. Then we can just load one set of notes at a time instead of loading everything into memory
+        if(p == null) return;
+
+        // load source
+        JSONArray jsonNotes;
+        if(jsonString == null) {
+            Log.w(TAG, "The source was not found");
+            return;
+        }
+        try {
+            jsonNotes = new JSONArray(jsonString);
+        } catch (JSONException e) {
+            Log.w(TAG, e.getMessage());
+            return;
+        }
+
+        // load the data
+        for(int i=0; i<jsonNotes.length(); i++) {
+            try {
+                JSONObject jsonNote = jsonNotes.getJSONObject(i);
+                if(jsonNote.has("id") && jsonNote.has("it") && jsonNote.has("tn")) {
+
+                    // load id
+                    String[] chapterFrameId = jsonNote.getString("id").split("-");
+                    String frameId = chapterFrameId[1];
+                    String chapterId = chapterFrameId[0];
+
+                    // load important terms
+                    List<String> importantTerms = new ArrayList<String>();
+                    JSONArray jsonImportantTerms = jsonNote.getJSONArray("it");
+                    for (int j = 0; j < jsonImportantTerms.length(); j++) {
+                        importantTerms.add(jsonImportantTerms.getString(j));
+                    }
+
+                    // load notes
+                    List<TranslationNote.Note> notes = new ArrayList<TranslationNote.Note>();
+                    JSONArray jsonNoteItems = jsonNote.getJSONArray("tn");
+                    for (int j = 0; j < jsonNoteItems.length(); j++) {
+                        JSONObject jsonNoteItem = jsonNoteItems.getJSONObject(j);
+                        notes.add(new TranslationNote.Note(jsonNoteItem.getString("ref").toString(), jsonNoteItem.getString("text").toString()));
+                    }
+
+                    // add translation notes to the frame
+                    p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(importantTerms, notes));
+                } else {
+                    Log.w(TAG, "missing required parameters in the source notes");
+                }
+            } catch (JSONException e) {
+                Log.w(TAG, e.getMessage());
+                continue;
+            }
+        }
+    }
+
+    /**
      * Loads the key terms for the project
      * @param jsonString
      * @param p
      */
     private void loadTerms(String jsonString, Project p) {
+        // TODO: cache the terms by frame and add accessors to the frame object to retreive the terms. Then we can just load one set of terms at a time instead of loading everything into memory
         if(p == null) return;
 
         // load source

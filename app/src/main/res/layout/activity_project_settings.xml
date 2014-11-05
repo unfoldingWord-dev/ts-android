@@ -37,7 +37,7 @@
                 android:layout_height="fill_parent"
                 android:text="@string/source_language_instructions"
                 android:padding="10dp"
-                android:textSize="@dimen/h3"
+                android:textSize="@dimen/h5"
                 android:textColor="@color/gray"
                 android:gravity="center" />
         </LinearLayout>
@@ -69,7 +69,7 @@
                 android:layout_height="fill_parent"
                 android:text="@string/target_language_instructions"
                 android:padding="10dp"
-                android:textSize="@dimen/h3"
+                android:textSize="@dimen/h5"
                 android:textColor="@color/gray"
                 android:gravity="center" />
         </LinearLayout>
