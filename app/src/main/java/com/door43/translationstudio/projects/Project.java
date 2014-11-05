@@ -2,12 +2,15 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
+import com.door43.translationstudio.spannables.FancySpan;
+import com.door43.translationstudio.spannables.PassageNoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 
@@ -24,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Projects encapsulate the source text for a specific translation effort regardless of language.
@@ -441,6 +446,8 @@ public class Project {
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.dokuwiki_export_dir) + "/");
         File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion + "/");
         Boolean commitSucceeded = true;
+        Pattern pattern = Pattern.compile(PassageNoteSpan.REGEX_OPEN_TAG + "((?!" + PassageNoteSpan.REGEX_CLOSE_TAG + ").)*" + PassageNoteSpan.REGEX_CLOSE_TAG);
+        Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");
         exportDir.mkdirs();
 
         // commit changes to repo
@@ -499,8 +506,6 @@ public class Project {
                 chapterFile.createNewFile();
                 PrintStream ps = new PrintStream(chapterFile);
 
-
-
                 // chapter title
                 if(!c.getTitleTranslation().getText().trim().isEmpty()) {
                     ps.print("======");
@@ -521,8 +526,41 @@ public class Project {
                         ps.println("}}");
                         ps.println();
 
+                        // convert tags
+                        String text = f.getTranslation().getText().trim();
+                        Matcher matcher = pattern.matcher(text);
+                        String convertedText = "";
+                        int lastEnd = 0;
+                        while(matcher.find()) {
+                            if(matcher.start() > lastEnd) {
+                                // add the last piece
+                                convertedText += text.substring(lastEnd, matcher.start());
+                            }
+                            lastEnd = matcher.end();
+                            // extract definition
+                            String data = matcher.group().substring(0, matcher.group().length() - PassageNoteSpan.REGEX_CLOSE_TAG.length());
+                            Matcher defMatcher = defPattern.matcher(data);
+                            String def = "";
+                            if(defMatcher.find()) {
+                                def = defMatcher.group(1);
+                            }
+                            // extract phrase
+                            String[] pieces = data.split(PassageNoteSpan.REGEX_OPEN_TAG);
+                            // check if footnote is set in the open tag
+                            if(data.substring(0, data.length() - pieces[1].length()).contains("footnote")) {
+                                // footnote
+                                convertedText += "((ref:\""+pieces[1]+"\",note:\""+def+"\"))";
+                            } else {
+                                // skip passage notes
+                                convertedText += pieces[1];
+                            }
+                        }
+                        if(lastEnd < text.length()) {
+                            convertedText += text.substring(lastEnd, text.length());
+                        }
+
                         // text
-                        ps.println(f.getTranslation().getText().trim());
+                        ps.println(convertedText);
                         ps.println();
                     }
                 }

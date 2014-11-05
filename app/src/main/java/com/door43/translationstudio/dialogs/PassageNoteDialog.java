@@ -73,7 +73,7 @@ public class PassageNoteDialog extends DialogFragment {
             @Override
             public void onClick(View view) {
                 // strip out invalid characters
-                String safeNote = passageNoteText.getText().toString().replace('<', ' ').replace('>', ' ').replace('"', '\'');
+                String safeNote = passageNoteText.getText().toString().replace('<', ' ').replace('>', ' ').replace('"', '\'').replace('(', ' ').replace(')', ' ');
                 MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.OK, passageText.getText().toString(), safeNote, id, footnoteSwitch.isChecked()));
             }
         });
