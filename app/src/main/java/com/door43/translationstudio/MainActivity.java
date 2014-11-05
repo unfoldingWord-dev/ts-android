@@ -1019,6 +1019,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         newFragment.show(ft, "dialog");
     }
 
+    /**
+     * This is called when the passage note dialog is closed.
+     * @param event
+     */
     @Subscribe
     public void passageNote(PassageNoteEvent event) {
         // close the dialog.
