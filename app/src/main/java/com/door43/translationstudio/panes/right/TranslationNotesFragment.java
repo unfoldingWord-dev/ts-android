@@ -89,32 +89,34 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
 
         // important terms
         int numImportantTerms = 0;
-        for(String term:note.getImportantTerms()) {
-            final Term importantTerm = p.getTerm(term);
-            if(importantTerm != null) {
-                final String termName = term;
-                SpannableString link = new SpannableString(importantTerm.getName());
-                ClickableSpan cs = new ClickableSpan() {
-                    @Override
-                    public void onClick(View widget) {
-                        ((MainActivity)getActivity()).showTermDetails(termName);
-                    }
-                };
-                link.setSpan(cs, 0, importantTerm.getName().length(), 0);
-                mImportantTerms.append(link);
-
-            } else {
-                mImportantTerms.append(term);
-            }
-            numImportantTerms++;
-            if(numImportantTerms < note.getImportantTerms().size()) {
-                mImportantTerms.append(", ");
-            }
-        }
+//        for(String term:note.getImportantTerms()) {
+//            final Term importantTerm = p.getTerm(term);
+//            if(importantTerm != null) {
+//                final String termName = term;
+//                SpannableString link = new SpannableString(importantTerm.getName());
+//                ClickableSpan cs = new ClickableSpan() {
+//                    @Override
+//                    public void onClick(View widget) {
+//                        ((MainActivity)getActivity()).showTermDetails(termName);
+//                    }
+//                };
+//                link.setSpan(cs, 0, importantTerm.getName().length(), 0);
+//                mImportantTerms.append(link);
+//
+//            } else {
+//                mImportantTerms.append(term);
+//            }
+//            numImportantTerms++;
+//            if(numImportantTerms < note.getImportantTerms().size()) {
+//                mImportantTerms.append(", ");
+//            }
+//        }
         if(numImportantTerms == 0) {
             mImportantTermsTitle.setVisibility(View.GONE);
+            mImportantTerms.setVisibility(View.GONE);
         } else {
             mImportantTermsTitle.setVisibility(View.VISIBLE);
+            mImportantTerms.setVisibility(View.VISIBLE);
         }
 
         // notes
@@ -125,33 +127,7 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
 
                 // link
                 TextView linkText = (TextView)noteItemView.findViewById(R.id.translationNoteReferenceText);
-//                final String linkName = "[" + noteItem.getChapterId() + "-" + noteItem.getFrameId() + "]";
-//                SpannableString link = new SpannableString(linkName);
-//                ClickableSpan cs = new ClickableSpan() {
-//                    @Override
-//                    public void onClick(View widget) {
-//                        p.setSelectedChapter(noteItem.getChapterId());
-//                        p.getSelectedChapter().setSelectedFrame(noteItem.getFrameId());
-//                        ((MainActivity)getActivity()).reloadCenterPane();
-//                        ((MainActivity)getActivity()).closeDrawers();
-//                        Chapter c = p.getChapter(noteItem.getChapterId());
-//                        if(c != null) {
-//                            app().showToastMessage(String.format(getResources().getString(R.string.now_viewing_frame), noteItem.getFrameId(), c.getTitle()));
-//                        } else {
-//                            app().showToastMessage(R.string.unknown_chapter);
-//                        }
-//                    }
-//                };
-//                link.setSpan(cs, 0, linkName.length(), 0);
                 linkText.setText(noteItem.getRef() + "-");
-
-                // make links clickable
-//                MovementMethod m = linkText.getMovementMethod();
-//                if ((m == null) || !(m instanceof LinkMovementMethod)) {
-//                    if (linkText.getLinksClickable()) {
-//                        linkText.setMovementMethod(LinkMovementMethod.getInstance());
-//                    }
-//                }
 
                 // passage
                 TextView passageText = (TextView)noteItemView.findViewById(R.id.translationNoteText);
