@@ -21,9 +21,17 @@
         android:textSize="@dimen/h2" />
 
     <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal" />
+        android:id="@+id/progressBar" />
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="loading..."
+        android:id="@+id/progressTextView"
+        android:gravity="center"
+        android:padding="10dp" />
+
 </LinearLayout>

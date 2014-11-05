@@ -6,11 +6,8 @@ import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ProjectsLoadedEvent;
 import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.DataStoreDelegateResponse;
-import com.door43.translationstudio.util.MainContext;
-import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,6 +37,12 @@ public class ProjectManager implements DelegateListener {
     // so we can look up by id
     private static Map<String, Language> mLanguagesMap = new HashMap<String, Language>();
 
+    // these constants are used to bind the progress bar to within certain ranges for the data.
+    private final double PERCENT_TARGET_LANGUAGES = 70.0;
+    private final double PERCENT_PROJECTS = 10.0;
+    private final double PERCENT_PROJECT_SOURCE = 20.0;
+    private double mProgress = 0;
+
 //    // so we can look up by index
 //    private static List<Language> mTargetLanguages = new ArrayList<Language>();
 //    // so we can look up by id
@@ -52,32 +55,58 @@ public class ProjectManager implements DelegateListener {
     public ProjectManager(MainApplication context) {
         mContext = context;
     }
-    private FinishedLoadingSource mCallback;
+    private OnProgressCallback mCallback;
 
     /**
      * loads the source projects
      */
-    public void init(FinishedLoadingSource callback) {
+    public void init(OnProgressCallback callback) {
         mCallback = callback;
         mDataStore = new DataStore(mContext);
         // register to receive async messages from the datastore
         mDataStore.registerDelegateListener(this);
         // begin loading target languages
-        mDataStore.fetchTargetLanguageCatalog();
+        String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
+        loadTargetLanguagesCatalog(targetLanguageCatalog);
+        mCallback.finished();
+    }
+
+    /**
+     * Loads the source for a single project.
+     * A loading notice will be displayed to the user
+     * @param p
+     */
+    public void fetchProjectSource(Project p) {
+        fetchProjectSource(p, true);
     }
 
     /**
      * Loads the source for a single project
-     * @param p
+     * @param p the project that will be loaded
+     * @param displayNotice you dispaly a loading notice to the user
      */
-    public void fetchProjectSource(Project p) {
-        mContext.showProgressDialog(R.string.loading_project);
+    public void fetchProjectSource(Project p, Boolean displayNotice) {
+        if(displayNotice) {
+            mContext.showProgressDialog(R.string.loading_project);
+        }
         String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId());
         p.flush();
+        if(!displayNotice) {
+            mProgress += PERCENT_PROJECT_SOURCE/3;
+            mCallback.onProgress(mProgress, "opening project");
+        }
         loadProject(source, p);
         String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId());
+        if(!displayNotice) {
+            mProgress += PERCENT_PROJECT_SOURCE/3;
+            mCallback.onProgress(mProgress, "loading key terms");
+        }
         loadTerms(terms, p);
         String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId());
+        if(!displayNotice) {
+            mProgress += PERCENT_PROJECT_SOURCE/3;
+            mCallback.onProgress(mProgress, "loading translation notes");
+        }
         loadNotes(notes, p);
         mContext.closeProgressDialog();
     }
@@ -206,114 +235,137 @@ public class ProjectManager implements DelegateListener {
         return mProjectMap.size();
     }
 
-    @Override
-    public void onDelegateResponse(String id, DelegateResponse response) {
-        DataStoreDelegateResponse message = (DataStoreDelegateResponse)response;
-        if(message.getType() == DataStoreDelegateResponse.MessageType.PROJECT) {
-            // load projects
-            JSONArray json;
-            try {
-                json = new JSONArray(message.getJSON());
-            } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
-                return;
-            }
+    /**
+     * Loads the target languages catalog
+     * @param targetLanguages
+     */
+    private void loadTargetLanguagesCatalog(String targetLanguages) {
+        // parse target languages
+        JSONArray json;
+        try {
+            json = new JSONArray(targetLanguages);
+        } catch (JSONException e) {
+            Log.w(TAG, e.getMessage());
+            return;
+        }
 
-            // load the data
-            for(int i=0; i<json.length(); i++) {
-                try {
-                    JSONObject jsonProject = json.getJSONObject(i);
-                    if(jsonProject.has("title") && jsonProject.has("slug") && jsonProject.has("desc")) {
-                        Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
-                        addProject(p);
-                        mDataStore.fetchSourceLanguageCatalog(p.getId());
-                    } else {
-                        Log.w(TAG, "missing required parameters in the project catalog");
-                    }
-                } catch (JSONException e) {
-                    Log.w(TAG, e.getMessage());
-                    continue;
+        // load the data
+        int numLanguages = json.length();
+        for(int i=0; i<numLanguages; i++) {
+            try {
+                JSONObject jsonLanguage = json.getJSONObject(i);
+                if(jsonLanguage.has("lc") && jsonLanguage.has("ln")) {
+                    mProgress += PERCENT_TARGET_LANGUAGES / numLanguages;
+                    mCallback.onProgress(mProgress, "loading target language: " + jsonLanguage.get("lc").toString());
+                    // TODO: it would be best to include the language direction in the target language list
+                    Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
+                    addLanguage(l);
+                } else {
+                    Log.w(TAG, "missing required parameters in the target language catalog");
                 }
-            }
-        } else if(message.getType() == DataStoreDelegateResponse.MessageType.SOURCE_LANGUAGE) {
-            // parse source languages
-            JSONArray json;
-            try {
-                json = new JSONArray(message.getJSON());
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
-                return;
+                continue;
             }
+        }
+        // begin loading projects
+        String projectsCatalog = mDataStore.fetchProjectCatalog();
+        loadProjectsCatalog(projectsCatalog);
+    }
 
-            // load the data
-            for(int i=0; i<json.length(); i++) {
-                try {
-                    JSONObject jsonLanguage = json.getJSONObject(i);
-                    if(jsonLanguage.has("language") && jsonLanguage.has("status") && jsonLanguage.has("string") && jsonLanguage.has("direction")) {
-                        JSONObject jsonStatus = jsonLanguage.getJSONObject("status");
-                        if(jsonStatus.has("checking_level")) {
-                            // require minimum language checking level
-                            if(Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                                // add the language
-                                Language.Direction langDir = jsonLanguage.get("direction").toString() == "ltr" ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
-                                Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir);
-                                addLanguage(l);
+    /**
+     * Loads the projects catalog
+     * @param projectsCatalog
+     */
+    private void loadProjectsCatalog(String projectsCatalog) {
+        // load projects
+        JSONArray json;
+        try {
+            json = new JSONArray(projectsCatalog);
+        } catch (JSONException e) {
+            Log.w(TAG, e.getMessage());
+            return;
+        }
 
-                                Project p = getProject(message.getProjectSlug());
-                                if(p != null) {
-                                    p.addSourceLanguage(l);
+        // load the data
+        int numProjects = json.length();
+        for(int i=0; i<numProjects; i++) {
+            try {
+                JSONObject jsonProject = json.getJSONObject(i);
+                if(jsonProject.has("title") && jsonProject.has("slug") && jsonProject.has("desc")) {
+                    mProgress += PERCENT_PROJECTS / numProjects;
+                    mCallback.onProgress(mProgress, "loading project: " + jsonProject.get("slug").toString());
+                    Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
+                    addProject(p);
+                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId());
+                    loadSourceLanguageCatalog(p, sourceLanguageCatalog);
+                } else {
+                    Log.w(TAG, "missing required parameters in the project catalog");
+                }
+            } catch (JSONException e) {
+                Log.w(TAG, e.getMessage());
+                continue;
+            }
+        }
+    }
 
-                                    // fetch source text
+    private void loadSourceLanguageCatalog(Project p, String sourceLangaugeCatalog) {
+        // parse source languages
+        JSONArray json;
+        try {
+            json = new JSONArray(sourceLangaugeCatalog);
+        } catch (JSONException e) {
+            Log.w(TAG, e.getMessage());
+            return;
+        }
+
+        // load the data
+        for(int i=0; i<json.length(); i++) {
+            try {
+                JSONObject jsonLanguage = json.getJSONObject(i);
+                if(jsonLanguage.has("language") && jsonLanguage.has("status") && jsonLanguage.has("string") && jsonLanguage.has("direction")) {
+                    JSONObject jsonStatus = jsonLanguage.getJSONObject("status");
+                    if(jsonStatus.has("checking_level")) {
+                        // require minimum language checking level
+                        if(Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
+                            // add the language
+                            Language.Direction langDir = jsonLanguage.get("direction").toString() == "ltr" ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
+                            Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir);
+                            addLanguage(l);
+
+                            if(p != null) {
+                                p.addSourceLanguage(l);
+
+                                // fetch source text
 //                                    mDataStore.fetchSourceText(p.getId(), l.getId());
-                                } else {
-                                    Log.w(TAG, "project not found");
-                                }
+                            } else {
+                                Log.w(TAG, "project not found");
                             }
-                        } else {
-                            Log.w(TAG, "missing required parameters in the source language catalog");
                         }
                     } else {
                         Log.w(TAG, "missing required parameters in the source language catalog");
                     }
-                } catch (JSONException e) {
-                    Log.w(TAG, e.getMessage());
-                    continue;
+                } else {
+                    Log.w(TAG, "missing required parameters in the source language catalog");
                 }
-            }
-            // notify listeners that we have finished loading the source projects
-            mCallback.ready();
-        } else if(message.getType() == DataStoreDelegateResponse.MessageType.TARGET_LANGUAGE) {
-            // parse target languages
-            JSONArray json;
-            try {
-                json = new JSONArray(message.getJSON());
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
-                return;
+                continue;
             }
+        }
+    }
 
-            // load the data
-            for(int i=0; i<json.length(); i++) {
-                try {
-                    JSONObject jsonLanguage = json.getJSONObject(i);
-                    if(jsonLanguage.has("lc") && jsonLanguage.has("ln")) {
-                        // TODO: it would be best to include the language direction in the target language list
-                        Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
-                        addLanguage(l);
-                    } else {
-                        Log.w(TAG, "missing required parameters in the target language catalog");
-                    }
-                } catch (JSONException e) {
-                    Log.w(TAG, e.getMessage());
-                    continue;
-                }
-            }
-            // begin loading projects
-            mDataStore.fetchProjectCatalog();
-        } else if(message.getType() == DataStoreDelegateResponse.MessageType.SOURCE) {
-            // @deprecated
-//            loadProject(message.getJSON(), getProject(message.getProjectSlug()));
-        } else if(message.getType() == DataStoreDelegateResponse.MessageType.IMAGES) {
+    /**
+     * We were loading everything through callbacks, however since introducing the splash page we've been loading
+     * everything in a thread so the callbacks are not nessesary anymore.
+     * @param id the id specified by the listener when it registered itself with the listener
+     * @param response the delegate response sent by the delegate sender. You can determine which
+     *                 message has been sent by comparing it's class with a known delegat response class
+     */
+    @Override
+    public void onDelegateResponse(String id, DelegateResponse response) {
+        DataStoreDelegateResponse message = (DataStoreDelegateResponse)response;
+        if(message.getType() == DataStoreDelegateResponse.MessageType.IMAGES) {
             // TODO: handle loading image assets for frames. Care should be taken to avoid memory leaks or slow load times. We may want to do this on demand instead of up front (except for locally stored assets).
         } else if(message.getType() == DataStoreDelegateResponse.MessageType.AUDIO) {
             // TODO: handle loading audio assets
@@ -512,7 +564,8 @@ public class ProjectManager implements DelegateListener {
         return mLanguages;
     }
 
-    public interface FinishedLoadingSource {
-        void ready();
+    public interface OnProgressCallback {
+        void onProgress(double progress, String message);
+        void finished();
     }
 }

@@ -19,7 +19,7 @@ public class DataStoreDelegateResponse implements DelegateResponse {
     }
 
     public enum MessageType {
-        PROJECT, SOURCE_LANGUAGE, TARGET_LANGUAGE, SOURCE, AUDIO, IMAGES, TERMS
+        AUDIO, IMAGES, TERMS
     }
 
     /**
