@@ -1,8 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,12 +8,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Switch;
-import android.widget.TextView;
-import android.widget.ViewSwitcher;
 
-import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.spannables.PassageNoteSpan;
+import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
 
@@ -42,7 +37,7 @@ public class PassageNoteDialog extends DialogFragment {
 
         // the span id
         final String id = args.getString("id");
-        Boolean isFootnote = args.getBoolean("footnote");
+        NoteSpan.NoteType noteType = NoteSpan.NoteType.values()[args.getInt("noteType")];
 
         // load values
         final EditText passageText = (EditText)v.findViewById(R.id.passageEditText);
@@ -50,7 +45,11 @@ public class PassageNoteDialog extends DialogFragment {
         final EditText passageNoteText = (EditText)v.findViewById(R.id.passageNoteEditText);
         passageNoteText.setText(args.getString("note"));
         final Switch footnoteSwitch = (Switch)v.findViewById(R.id.passageIsFootnoteSwitch);
-        footnoteSwitch.setChecked(isFootnote);
+//        footnoteSwitch.setChecked(noteType == NoteSpan.NoteType.Footnote);
+        // TODO: each project will need to have it's own settings about what features it has. Then we can show footnotes according to these settings.
+        // for now since we only have one project we just disable all the footnotes.
+        footnoteSwitch.setChecked(false);
+        footnoteSwitch.setVisibility(View.GONE);
 
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelButton);
@@ -60,13 +59,15 @@ public class PassageNoteDialog extends DialogFragment {
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.CANCEL, passageText.getText().toString(), passageNoteText.getText().toString(), id, footnoteSwitch.isChecked()));
+                NoteSpan.NoteType noteType = footnoteSwitch.isChecked() ? NoteSpan.NoteType.Footnote : NoteSpan.NoteType.UserNote;
+                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.CANCEL, passageText.getText().toString(), passageNoteText.getText().toString(), id, noteType));
             }
         });
         deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.DELETE, passageText.getText().toString(), passageNoteText.getText().toString(), id, footnoteSwitch.isChecked()));
+                NoteSpan.NoteType noteType = footnoteSwitch.isChecked() ? NoteSpan.NoteType.Footnote : NoteSpan.NoteType.UserNote;
+                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.DELETE, passageText.getText().toString(), passageNoteText.getText().toString(), id, noteType));
             }
         });
         okBtn.setOnClickListener(new View.OnClickListener() {
@@ -74,7 +75,8 @@ public class PassageNoteDialog extends DialogFragment {
             public void onClick(View view) {
                 // strip out invalid characters
                 String safeNote = passageNoteText.getText().toString().replace('<', ' ').replace('>', ' ').replace('"', '\'').replace('(', ' ').replace(')', ' ');
-                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.OK, passageText.getText().toString(), safeNote, id, footnoteSwitch.isChecked()));
+                NoteSpan.NoteType noteType = footnoteSwitch.isChecked() ? NoteSpan.NoteType.Footnote : NoteSpan.NoteType.UserNote;
+                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.OK, passageText.getText().toString(), safeNote, id, noteType));
             }
         });
         return v;

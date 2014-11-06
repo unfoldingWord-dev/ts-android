@@ -2,6 +2,8 @@ package com.door43.translationstudio.util;
 
 import android.app.DialogFragment;
 
+import com.door43.translationstudio.spannables.NoteSpan;
+
 /**
  * passes the passage note dialog event to the main activity
  */
@@ -10,20 +12,20 @@ public class PassageNoteEvent {
     private Status mStatus;
     private String mPassage;
     private String mNote;
-    private Boolean mIsFootnote;
+    private NoteSpan.NoteType mNoteType;
     private String mSpanId;
     public static enum Status {
         OK, CANCEL, DELETE
     };
 
 
-    public PassageNoteEvent(DialogFragment dialog, Status status, String passage, String note, String spanId, Boolean isFootnote) {
+    public PassageNoteEvent(DialogFragment dialog, Status status, String passage, String note, String spanId, NoteSpan.NoteType noteType) {
         mDialog = dialog;
         mStatus = status;
         mPassage = passage;
         mNote = note;
         mSpanId = spanId;
-        mIsFootnote = isFootnote;
+        mNoteType = noteType;
     }
 
     public DialogFragment getDialog() {
@@ -42,8 +44,8 @@ public class PassageNoteEvent {
         return mNote;
     }
 
-    public Boolean getIsFootnote() {
-        return mIsFootnote;
+    public NoteSpan.NoteType getNoteType() {
+        return mNoteType;
     }
 
     public String getSpanId() {

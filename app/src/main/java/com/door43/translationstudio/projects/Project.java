@@ -2,15 +2,13 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 import android.util.Log;
-import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
-import com.door43.translationstudio.spannables.FancySpan;
-import com.door43.translationstudio.spannables.PassageNoteSpan;
+import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 
@@ -446,7 +444,7 @@ public class Project {
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.dokuwiki_export_dir) + "/");
         File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion + "/");
         Boolean commitSucceeded = true;
-        Pattern pattern = Pattern.compile(PassageNoteSpan.REGEX_OPEN_TAG + "((?!" + PassageNoteSpan.REGEX_CLOSE_TAG + ").)*" + PassageNoteSpan.REGEX_CLOSE_TAG);
+        Pattern pattern = Pattern.compile(NoteSpan.REGEX_OPEN_TAG + "((?!" + NoteSpan.REGEX_CLOSE_TAG + ").)*" + NoteSpan.REGEX_CLOSE_TAG);
         Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");
         exportDir.mkdirs();
 
@@ -538,14 +536,14 @@ public class Project {
                             }
                             lastEnd = matcher.end();
                             // extract definition
-                            String data = matcher.group().substring(0, matcher.group().length() - PassageNoteSpan.REGEX_CLOSE_TAG.length());
+                            String data = matcher.group().substring(0, matcher.group().length() - NoteSpan.REGEX_CLOSE_TAG.length());
                             Matcher defMatcher = defPattern.matcher(data);
                             String def = "";
                             if(defMatcher.find()) {
                                 def = defMatcher.group(1);
                             }
                             // extract phrase
-                            String[] pieces = data.split(PassageNoteSpan.REGEX_OPEN_TAG);
+                            String[] pieces = data.split(NoteSpan.REGEX_OPEN_TAG);
                             // check if footnote is set in the open tag
                             if(data.substring(0, data.length() - pieces[1].length()).contains("footnote")) {
                                 // footnote
