@@ -897,6 +897,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 }
                 lastEnd = matcher.end();
 
+                NoteSpan test = NoteSpan.getInstanceFromXML(matcher.group());
+
                 // extract definition
                 String data = matcher.group().substring(0, matcher.group().length() - NoteSpan.REGEX_CLOSE_TAG.length());
                 Matcher defMatcher = defPattern.matcher(data);
