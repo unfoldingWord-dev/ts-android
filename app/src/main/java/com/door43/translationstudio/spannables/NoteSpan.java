@@ -1,5 +1,6 @@
 package com.door43.translationstudio.spannables;
 
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.text.Html;
@@ -104,21 +105,34 @@ public class NoteSpan extends FancySpan {
     public CharSequence toCharSequence() {
         Bundle attrs = new Bundle();
         attrs.putString("id", getSpanId());
-        if(mNoteType == NoteType.Footnote) {
-            // load custom footnote layout
-            TextView textView = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_footnote, null);
-            textView.setText(Html.fromHtml(toString() + "<sup>" + mFootnoteId + "</sup>"));
-            textView.setTextSize(MainContext.getContext().getResources().getDimension(R.dimen.h5));
-            BitmapDrawable bm = convertViewToDrawable(textView);
-            return generateSpan(generateTag(toString(), mNoteText, mNoteType, attrs), bm);
-        } else {
-            // load custom user note layout
-            TextView textView = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_usernote, null);
-            textView.setText(toString());
-            textView.setTextSize(MainContext.getContext().getResources().getDimension(R.dimen.h5));
-            BitmapDrawable bm = convertViewToDrawable(textView);
-            return generateSpan(generateTag(toString(), mNoteText, mNoteType, attrs), bm);
+        TextView textView;
+        BitmapDrawable bm;
+        CharSequence span;
+        switch(mNoteType) {
+            case Footnote:
+                // load custom footnote layout
+                textView = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_footnote, null);
+                textView.setText(Html.fromHtml(toString() + "<sup>" + mFootnoteId + "</sup>"));
+                textView.setTextSize(MainContext.getContext().getResources().getDimension(R.dimen.h5));
+                if(mTypeface != null) {
+                    textView.setTypeface(mTypeface);
+                }
+                bm = convertViewToDrawable(textView);
+                span = generateSpan(generateTag(toString(), mNoteText, mNoteType, attrs), bm);
+                break;
+            case UserNote:
+            default:
+                // load custom user note layout
+                textView = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_usernote, null);
+                textView.setText(toString());
+                textView.setTextSize(MainContext.getContext().getResources().getDimension(R.dimen.h5));
+                if(mTypeface != null) {
+                    textView.setTypeface(mTypeface);
+                }
+                bm = convertViewToDrawable(textView);
+                span = generateSpan(generateTag(toString(), mNoteText, mNoteType, attrs), bm);
         }
+        return span;
     }
 
     /**

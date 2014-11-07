@@ -3,7 +3,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="test"
-    android:background="@drawable/span_light_blue_bubble"
+    android:background="@drawable/span_blue_bubble"
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
     android:textColor="@color/blue"></TextView>

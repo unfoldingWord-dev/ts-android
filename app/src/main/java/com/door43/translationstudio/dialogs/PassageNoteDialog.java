@@ -51,6 +51,10 @@ public class PassageNoteDialog extends DialogFragment {
         footnoteSwitch.setChecked(false);
         footnoteSwitch.setVisibility(View.GONE);
 
+        // set up fonts
+        passageNoteText.setTypeface(MainContext.getContext().getTranslationTypeface());
+        passageText.setTypeface(MainContext.getContext().getTranslationTypeface());
+
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelButton);
         Button deleteBtn = (Button)v.findViewById(R.id.deleteButton);

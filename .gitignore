@@ -28,6 +28,9 @@ proguard/
 # Log Files
 *.log
 
+# SlidingLayer build path
+libraries/SlidingLayer/build
+
 ### JetBrains ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 

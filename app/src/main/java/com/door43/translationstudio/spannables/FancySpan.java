@@ -2,6 +2,7 @@ package com.door43.translationstudio.spannables;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -21,6 +22,7 @@ public class FancySpan {
     private final String mSpanText;
     private OnClickListener mClickListener;
     private final String mSpanId;
+    protected static Typeface mTypeface;
 
     public FancySpan(String spanId, String spanText, OnClickListener clickListener) {
         mSpanId = spanId;
@@ -48,6 +50,14 @@ public class FancySpan {
      */
     public String getSpanId() {
         return mSpanId;
+    }
+
+    /**
+     * Specifies the type face to use for all spans
+     * @param typeface
+     */
+    public static void setGlobalTypeface(Typeface typeface) {
+        mTypeface = typeface;
     }
 
     /**
@@ -141,12 +151,14 @@ public class FancySpan {
      * @return
      */
     private static TextView createFancyTextView(String text, int backgroundResource, int textColorResource, int fontSizeResource) {
-        TextView tv = new TextView(MainContext.getContext());
+        TextView tv = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_plain, null);
         tv.setText(text);
         tv.setTextSize(MainContext.getContext().getResources().getDimension(fontSizeResource));
         tv.setTextColor(MainContext.getContext().getResources().getColor(textColorResource));
         tv.setBackgroundResource(backgroundResource);
-        tv.setPadding(10, 5, 10, 5);
+        if(mTypeface != null) {
+            tv.setTypeface(mTypeface);
+        }
         return tv;
     }
 

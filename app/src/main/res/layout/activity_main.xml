@@ -137,13 +137,13 @@
                             android:gravity="top"
                             android:textColor="@color/dark_gray"
                             android:imeOptions="flagNoExtractUi"
-                            android:lineSpacingExtra="1.5dp"
                             android:paddingLeft="10dp"
                             android:paddingTop="5dp"
                             android:paddingRight="10dp"
                             android:paddingBottom="10dp"
                             android:focusable="true"
-                            android:inputType="textNoSuggestions|text|textMultiLine" />
+                            android:inputType="textNoSuggestions|text|textMultiLine"
+                            android:fontFamily="GentiumPlus"/>
 
                     </LinearLayout>
 

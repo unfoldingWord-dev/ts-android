@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -59,6 +60,7 @@ public class MainApplication extends Application {
     private Activity mCurrentDialogActivity;
     private Map<String, ArrayList<String>> mNotificationsMap = new HashMap<String, ArrayList<String>>();
     static final int BUFFER = 2048;
+    private static Typeface mTranslationTypeface;
 
     public void onCreate() {
 
@@ -74,6 +76,17 @@ public class MainApplication extends Application {
 
         mProjectManager = new ProjectManager(this);
         mTranslationManager = new TranslationManager(this);
+    }
+
+    /**
+     * Returns the custom typeface used for translation
+     * @return
+     */
+    public Typeface getTranslationTypeface() {
+        if(mTranslationTypeface == null) {
+            mTranslationTypeface = Typeface.createFromAsset(getAssets(), "fonts/GentiumPlus/GentiumPlus.ttf");
+        }
+        return mTranslationTypeface;
     }
 
     /**

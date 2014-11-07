@@ -31,6 +31,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -206,6 +207,13 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         mTranslationEditText = (CustomMultiAutoCompleteTextView)mCenterPane.findViewById(R.id.inputText);
 
         mTranslationEditText.setEnabled(false);
+
+        // set up custom fonts
+        Typeface translationTypeface = app().getTranslationTypeface();
+        FancySpan.setGlobalTypeface(translationTypeface);
+        mTranslationEditText.setTypeface(translationTypeface);
+        mSourceText.setTypeface(translationTypeface);
+
 
         // calculate actionbar height
         TypedValue tv = new TypedValue();
