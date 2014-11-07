@@ -7,7 +7,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
@@ -19,19 +18,36 @@ import com.door43.translationstudio.util.MainContext;
  */
 public class FancySpan {
     private final FancySpan me = this;
-    private final String mText;
-    private final OnClickListener mClickListener;
-    private final String mId;
+    private final String mSpanText;
+    private OnClickListener mClickListener;
+    private final String mSpanId;
 
-    public FancySpan(String id, String text, OnClickListener clickListener) {
-        mId = id;
-        mText = text;
+    public FancySpan(String spanId, String spanText, OnClickListener clickListener) {
+        mSpanId = spanId;
+        mSpanText = spanText;
         mClickListener = clickListener;
     }
 
     @Override
     public String toString() {
-        return mText;
+        return mSpanText;
+    }
+
+    /**
+     * Returns the text that spanned
+     * @return
+     */
+    public String getSpanText() {
+        return mSpanText;
+    }
+
+    /**
+     * Returns the id of the span.
+     * This id is used to identify an individual span within the text.
+     * @return
+     */
+    public String getSpanId() {
+        return mSpanId;
     }
 
     /**
@@ -42,7 +58,7 @@ public class FancySpan {
      * @return
      */
     protected SpannableStringBuilder generateSpan(int backgroundResource, int colorResource, int textSizeResource) {
-        return generateSpan(mText, backgroundResource, colorResource, textSizeResource);
+        return generateSpan(mSpanText, backgroundResource, colorResource, textSizeResource);
     }
 
     /**
@@ -58,18 +74,28 @@ public class FancySpan {
         // this could be an optional parameter where we can specify data to be stored.
         SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacement);
         if(spannable.length() > 0) {
-            BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mText, backgroundResource, colorResource, textSizeResource));
+            BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mSpanText, backgroundResource, colorResource, textSizeResource));
             bd.setBounds(0, 0, bd.getIntrinsicWidth(), bd.getIntrinsicHeight());
             spannable.setSpan(new ImageSpan(bd), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             ClickableSpan clickSpan = new ClickableSpan() {
                 @Override
                 public void onClick(View view) {
-                    mClickListener.onClick(view, mText, mId);
+                    if(mClickListener != null) {
+                        mClickListener.onClick(view, me);
+                    }
                 }
             };
             spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return spannable;
+    }
+
+    /**
+     * Specifies the listener to be called upon a click
+     * @param clickListener
+     */
+    public void setOnClickListener(OnClickListener clickListener) {
+        mClickListener = clickListener;
     }
 
     /**
@@ -86,7 +112,9 @@ public class FancySpan {
             ClickableSpan clickSpan = new ClickableSpan() {
                 @Override
                 public void onClick(View view) {
-                    mClickListener.onClick(view, mText, mId);
+                    if(mClickListener != null) {
+                        mClickListener.onClick(view, me);
+                    }
                 }
             };
             spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -147,6 +175,6 @@ public class FancySpan {
      * Custom click listener when span is clicked
      */
     public static interface OnClickListener {
-        public void onClick(View view, String spanText, String spanId);
+        public void onClick(View view, FancySpan span);
     }
 }

@@ -84,9 +84,7 @@ public class StorageUtils {
         try {
             buf_reader = new BufferedReader(new FileReader("/proc/mounts"));
             String line;
-//            Log.d(TAG, "/proc/mounts");
             while ((line = buf_reader.readLine()) != null) {
-//                Log.d(TAG, line);
                 if (line.contains("vfat") || line.contains("/mnt")) {
                     StringTokenizer tokens = new StringTokenizer(line, " ");
                     String unused = tokens.nextToken(); //device

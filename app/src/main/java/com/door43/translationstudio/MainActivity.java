@@ -259,8 +259,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 menu.findItem(android.R.id.cut).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                 menu.findItem(android.R.id.copy).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
                 menu.findItem(R.id.action_notes).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-//                menu.add("Item " + (i + 1)).setIcon(android.R.drawable.sym_def_app_icon)
-//                            .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 
                 return true;
             }
@@ -291,7 +289,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                             // parse all passage note tags
                             parsePassageNoteTags(taggedText, true);
                         } else {
-                            app().showToastMessage("Passage notes cannot overlap");
+                            app().showToastMessage(R.string.notes_cannot_overlap);
                         }
                         return false;
                     default:
@@ -544,8 +542,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                         String[] linkChunks = pieces[i].split("</a>");
                         TermSpan term  = new TermSpan(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
                             @Override
-                            public void onClick(View view, String spanText, String spanId) {
-                                showTermDetails(spanId);
+                            public void onClick(View view, FancySpan span) {
+                                showTermDetails(span.getSpanId());
                             }
                         });
                         mSourceText.append(term.toCharSequence());
@@ -886,8 +884,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             NoteSpan.reset();
             TextView notedResult = new TextView(me);
             NoteSpan needsUpdate = null;
-            Pattern p = Pattern.compile(NoteSpan.REGEX_OPEN_TAG + "((?!" + NoteSpan.REGEX_CLOSE_TAG + ").)*" + NoteSpan.REGEX_CLOSE_TAG);
-            Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");
+            Pattern p = Pattern.compile(NoteSpan.REGEX_NOTE, Pattern.DOTALL);
             Matcher matcher = p.matcher(params[0]);
             int lastEnd = 0;
             while(matcher.find()) {
@@ -897,35 +894,14 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 }
                 lastEnd = matcher.end();
 
-                NoteSpan test = NoteSpan.getInstanceFromXML(matcher.group());
-
-                // extract definition
-                String data = matcher.group().substring(0, matcher.group().length() - NoteSpan.REGEX_CLOSE_TAG.length());
-                Matcher defMatcher = defPattern.matcher(data);
-                String def = "";
-                if(defMatcher.find()) {
-                    def = defMatcher.group(1);
-                }
-                final String definition = def;
-
-                // extract phrase
-                String[] pieces = data.split(NoteSpan.REGEX_OPEN_TAG);
-
-                // determine note type
-                Boolean isFootnote = false;
-                if(data.substring(0, data.length() - pieces[1].length()).contains("footnote")) {
-                    isFootnote = true;
-                }
-                final NoteSpan.NoteType noteType = isFootnote ? NoteSpan.NoteType.Footnote : NoteSpan.NoteType.UserNote;
-
-                // build passage note
-                NoteSpan note = new NoteSpan(pieces[1], definition, noteType, new FancySpan.OnClickListener() {
+                NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
+                note.setOnClickListener(new FancySpan.OnClickListener() {
                     @Override
-                    public void onClick(View view, String spanText, String spanId) {
-                        openPassageNoteDialog(spanText, definition, spanId, noteType);
+                    public void onClick(View view, FancySpan span) {
+                        openPassageNoteDialog((NoteSpan)span);
                     }
                 });
-                if(definition.isEmpty()) {
+                if(note.getNoteText().isEmpty()) {
                     needsUpdate = note;
                 }
                 notedResult.append(note.toCharSequence());
@@ -934,9 +910,9 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 notedResult.append(params[0].substring(lastEnd, params[0].length()));
             }
 
-            // display a dialog to populate the empty definition.
+            // display a dialog to populate the empty note.
             if(needsUpdate != null && mRequestEmptyDefinitions) {
-                openPassageNoteDialog(needsUpdate.toString(), "", needsUpdate.getId()+"", needsUpdate.getNoteType());
+                openPassageNoteDialog(needsUpdate);
             }
             return notedResult.getText();
         }
@@ -971,18 +947,17 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
             TextView updatedResult = new TextView(me);
 
-            Pattern p = Pattern.compile(NoteSpan.regexOpenTagById(spanId) + "((?!" + NoteSpan.REGEX_CLOSE_TAG + ").)*" + NoteSpan.REGEX_CLOSE_TAG);
+            Pattern p = Pattern.compile(NoteSpan.regexNoteById(spanId), Pattern.DOTALL);
             Matcher matcher = p.matcher(text);
             if(matcher.find()) {
                 updatedResult.append(text.substring(0, matcher.start()));
                 if(mUpdate) {
-                    // update passage note
+                    // update the note
                     updatedResult.append(NoteSpan.generateTag(spanPassage, spanPassageDefinition, mNoteType));
                 } else {
-                    // remove passage note
-                    String data = matcher.group().substring(0, matcher.group().length() - NoteSpan.REGEX_CLOSE_TAG.length());
-                    String[] pieces = data.split(NoteSpan.REGEX_OPEN_TAG);
-                    updatedResult.append(pieces[1]);
+                    // remove the note
+                    NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
+                    updatedResult.append(note.getSpanText());
                 }
                 if(matcher.end() < text.length()) {
                     updatedResult.append(text.substring(matcher.end(), text.length()));
@@ -995,12 +970,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
 
     /**
      * Displays a dialog for editing a passage note
-     * @param passage
-     * @param definition
-     * @param id
-     * @param noteType
+     * @param note
      */
-    public void openPassageNoteDialog(String passage, String definition, String id, NoteSpan.NoteType noteType) {
+    public void openPassageNoteDialog(NoteSpan note) {
+
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
@@ -1013,10 +986,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         // Create and show the dialog
         PassageNoteDialog newFragment = new PassageNoteDialog();
         Bundle args = new Bundle();
-        args.putString("passage", passage);
-        args.putString("note", definition);
-        args.putInt("noteType", noteType.ordinal());
-        args.putString("id", id);
+        args.putString("passage", note.getSpanText());
+        args.putString("note", note.getNoteText());
+        args.putInt("noteType", note.getNoteType().ordinal());
+        args.putString("id", note.getSpanId());
         newFragment.setArguments(args);
         newFragment.show(ft, "dialog");
     }

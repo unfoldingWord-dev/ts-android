@@ -535,22 +535,15 @@ public class Project {
                                 convertedText += text.substring(lastEnd, matcher.start());
                             }
                             lastEnd = matcher.end();
-                            // extract definition
-                            String data = matcher.group().substring(0, matcher.group().length() - NoteSpan.REGEX_CLOSE_TAG.length());
-                            Matcher defMatcher = defPattern.matcher(data);
-                            String def = "";
-                            if(defMatcher.find()) {
-                                def = defMatcher.group(1);
-                            }
-                            // extract phrase
-                            String[] pieces = data.split(NoteSpan.REGEX_OPEN_TAG);
-                            // check if footnote is set in the open tag
-                            if(data.substring(0, data.length() - pieces[1].length()).contains("footnote")) {
-                                // footnote
-                                convertedText += "((ref:\""+pieces[1]+"\",note:\""+def+"\"))";
-                            } else {
-                                // skip passage notes
-                                convertedText += pieces[1];
+
+                            // extract note
+                            NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
+                            if(note.getNoteType() == NoteSpan.NoteType.Footnote) {
+                                // iclude footnotes
+                                convertedText += note.generateDokuWikiTag();
+                            } else if(note.getNoteType() == NoteSpan.NoteType.UserNote) {
+                                // skip user notes
+                                convertedText += note.getSpanText();
                             }
                         }
                         if(lastEnd < text.length()) {

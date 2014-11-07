@@ -99,5 +99,6 @@
     <string name="error_note_missing">There are no translation notes for this frame</string>
     <string name="translation_notes_title">Translation Notes:</string>
     <string name="translation_notes_important_terms_title">Important Terms:</string>
+    <string name="notes_cannot_overlap">Notes cannot overlap</string>
 
 </resources>
