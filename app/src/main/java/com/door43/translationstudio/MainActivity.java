@@ -35,6 +35,7 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.Html;
@@ -73,8 +74,6 @@ import java.util.regex.Pattern;
 public class MainActivity extends TranslatorBaseActivity implements DelegateListener {
     private final MainActivity me = this;
 
-    private static final String LANG_CODE = "en"; // TODO: this will eventually need to be managed dynamically by the project manager
-
     // content panes
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
@@ -85,7 +84,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private GestureDetector mTranslationGestureDetector;
     private final float MIN_FLING_DISTANCE = 100;
     private final float MIN_FLING_VELOCITY = 10;
-    private final float MIN_LOG_PRESS = 100;
     private int mActionBarHeight;
     private boolean mActivityIsInitializing;
     private TermsHighlighterTask mTermsTask;
@@ -99,8 +97,6 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     private ImageView mNextFrameView;
     private ImageView mPreviousFrameView;
     private CustomMultiAutoCompleteTextView mTranslationEditText;
-
-    private static final int MENU_ITEM_PASSAGENOTE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -440,9 +436,21 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                 if (keyEvent != null && i == EditorInfo.IME_ACTION_DONE) {
-                    Log.i("keyboard", "done");
+//                    Log.i("keyboard", "done");
                 }
                 return false;
+            }
+        });
+
+        // get notified when drawers open
+        mRootView.setDrawerListener(new ActionBarDrawerToggle(this, mRootView, R.drawable.ic_ab_back_holo_light_am, R.string.close, R.string.close) {
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+                mTranslationEditText.setEnabled(true);
+            }
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                mTranslationEditText.setEnabled(false);
             }
         });
     }
@@ -536,7 +544,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
             // source translation
             mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
             mSourceText.setText(frame.getText());
-            mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " of " + p.getSelectedChapter().numFrames());
+            mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " " + getResources().getString(R.string.of) + " " + p.getSelectedChapter().numFrames());
 
             // set up task to highlight the source text key terms
             mTermsTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
@@ -836,13 +844,8 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                     // ensure the key term was found in an area of the string that does not overlap another key term.
                     if(indicies.get(matcherSourceText.start()) == null && indicies.get(matcherSourceText.end()) == null) {
                         String key = "<a>" + matcherSourceText.group() + "</a>";
-//                        int newKeyEnd = matcherSourceText.start() + key.length()-1;
-
                         // lock indicies to prevent key term collisions
                         for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {
-                            if(indicies.size() <= i) {
-                                Log.d("test", "sd");
-                            }
                             indicies.set(i, true);
                         }
 

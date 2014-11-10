@@ -100,5 +100,9 @@
     <string name="translation_notes_title">Translation Notes:</string>
     <string name="translation_notes_important_terms_title">Important Terms:</string>
     <string name="notes_cannot_overlap">Notes cannot overlap</string>
+    <string name="generating_security_keys">Generating security keys</string>
+    <string name="loading_preferences">Loading preferences</string>
+    <string name="launching_translator">Launching translator</string>
+    <string name="of">of</string>
 
 </resources>

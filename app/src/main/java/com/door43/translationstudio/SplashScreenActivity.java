@@ -63,12 +63,12 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                     // Generate the ssh keys
                     if(!app().hasKeys()) {
                         // this is so short we don't update the progress bar
-                        publishProgress("generating security keys");
+                        publishProgress(getResources().getString(R.string.generating_security_keys));
                         app().generateKeys();
                     }
 
                     // load previously viewed frame
-                    publishProgress("loading preferences");
+                    publishProgress(getResources().getString(R.string.loading_preferences));
                     if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
                         String frameId = app().getLastActiveFrame();
                         String chapterId = app().getLastActiveChapter();
@@ -97,7 +97,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         }
 
         protected void onPostExecute(Void item) {
-            mProgressTextView.setText("launching translator");
+            mProgressTextView.setText(getResources().getString(R.string.launching_translator));
             startMainActivity();
         }
     }
