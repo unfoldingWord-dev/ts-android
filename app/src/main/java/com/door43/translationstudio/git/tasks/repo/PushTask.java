@@ -121,57 +121,39 @@ public class PushTask extends RepoOpTask {
         String msg = null;
         switch (update.getStatus()) {
             case AWAITING_REPORT:
-                msg = String
-                        .format("[%s] Push process is awaiting update report from remote repository.\n",
-                                update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_awaiting_report), update.getRemoteName());
                 break;
             case NON_EXISTING:
-                msg = String.format("[%s] Remote ref didn't exist.\n",
-                        update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_non_existing), update.getRemoteName());
                 break;
             case NOT_ATTEMPTED:
-                msg = String
-                        .format("[%s] Push process hasn't yet attempted to update this ref.\n",
-                                update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_not_attempted), update.getRemoteName());
                 break;
             case OK:
-                msg = String.format("[%s] Success push to remote ref.\n", update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_ok), update.getRemoteName());
                 break;
             case REJECTED_NODELETE:
-                msg = String
-                        .format("[%s] Remote ref update was rejected,"
-                                        + " because remote side doesn't support/allow deleting refs.\n",
-                                update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_rejected_nondelete), update.getRemoteName());
                 break;
             case REJECTED_NONFASTFORWARD:
-                msg = String.format("[%s] Remote ref update was rejected,"
-                                + " as it would cause non fast-forward update.\n",
-                        update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_rejected_nonfastforward), update.getRemoteName());
+                break;
             case REJECTED_OTHER_REASON:
                 String reason = update.getMessage();
                 if (reason == null || reason.isEmpty()) {
-                    msg = String.format(
-                            "[%s] Remote ref update was rejected.\n",
-                            update.getRemoteName());
+                    msg = String.format(MainContext.getContext().getResources().getString(R.string.git_rejected_other_reason), update.getRemoteName());
                 } else {
-                    msg = String
-                            .format("[%s] Remote ref update was rejected, because %s.\n",
-                                    update.getRemoteName(), reason);
+                    msg = String.format(MainContext.getContext().getResources().getString(R.string.git_rejected_other_reason_detailed), update.getRemoteName(), reason);
                 }
                 break;
             case REJECTED_REMOTE_CHANGED:
-                msg = String
-                        .format("[%s] Remote ref update was rejected,"
-                                        + " because old object id on remote "
-                                        + "repository wasn't the same as defined expected old object.\n",
-                                update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_rejected_remote_changed),update.getRemoteName());
                 break;
             case UP_TO_DATE:
-                msg = String.format("[%s] remote ref is up to date\n",
-                        update.getRemoteName());
+                msg = String.format(MainContext.getContext().getResources().getString(R.string.git_uptodate), update.getRemoteName());
                 break;
         }
-        msg += "\nServer: "+mRemote;
+        msg += "\n" + String.format(MainContext.getContext().getResources().getString(R.string.git_server_details), mRemote);
         resultMsg.append(msg);
     }
 }

@@ -4,7 +4,7 @@ import com.door43.delegate.DelegateListener;
 import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
-import com.door43.translationstudio.dialogs.PassageNoteDialog;
+import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
@@ -43,7 +43,6 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.GestureDetector;
@@ -995,7 +994,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         app().closeToastMessage();
 
         // Create and show the dialog
-        PassageNoteDialog newFragment = new PassageNoteDialog();
+        NoteDialog newFragment = new NoteDialog();
         Bundle args = new Bundle();
         args.putString("passage", note.getSpanText());
         args.putString("note", note.getNoteText());

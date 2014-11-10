@@ -43,10 +43,10 @@ public class LicenseDialog extends DialogFragment {
             licenseText.setText(Html.fromHtml(licenseString));
         } catch (IOException e) {
             e.printStackTrace();
-            licenseText.setText(Html.fromHtml("Failed to load the license file"));
+            licenseText.setText(R.string.error_failed_loading_license);
         } catch (Exception e) {
             e.printStackTrace();
-            licenseText.setText(Html.fromHtml("Failed to parse the license file"));
+            licenseText.setText(R.string.error_failed_parsing_license);
         }
 
         // enable button

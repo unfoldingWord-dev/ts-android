@@ -104,5 +104,17 @@
     <string name="loading_preferences">Loading preferences</string>
     <string name="launching_translator">Launching translator</string>
     <string name="of">of</string>
-
+    <string name="error_failed_loading_license">Failed to load the license file</string>
+    <string name="error_failed_parsing_license">Failed to parse the license file</string>
+    <string name="git_awaiting_report">[%1$s] Push process is awaiting update report from remote repository.</string>
+    <string name="git_non_existing">[%1$s] Remote ref didn\'t exist.</string>
+    <string name="git_not_attempted">[%s] Push process hasn\'t yet attempted to update this ref.</string>
+    <string name="git_ok">[%1$s] Success push to remote ref.</string>
+    <string name="git_rejected_nondelete">[%1$s] Remote ref update was rejected, because remote side doesn\'t support/allow deleting refs.</string>
+    <string name="git_rejected_nonfastforward">[%1$s] Remote ref update was rejected, as it would cause non fast-forward update.</string>
+    <string name="git_rejected_other_reason">[%1$s] Remote ref update was rejected.</string>
+    <string name="git_rejected_other_reason_detailed">[%1$s] Remote ref update was rejected, because %1$s.</string>
+    <string name="git_rejected_remote_changed">[%1$s] Remote ref update was rejected,  because old object id on remote repository wasn\'t the same as defined expected old object.</string>
+    <string name="git_uptodate">[%1$s] remote ref is up to date</string>
+    <string name="git_server_details">Server: %1$s</string>
 </resources>

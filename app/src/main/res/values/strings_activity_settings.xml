@@ -6,9 +6,22 @@
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
 
+    <!-- remember last page -->
     <string name="pref_title_remember_position">Remember last page</string>
     <string name="pref_description_remember_position">Display the last viewed page when starting the app</string>
     <string name="pref_default_remember_position">true</string>
+
+    <!-- translation typeface -->
+    <string name="pref_title_translation_typeface">Translation Typeface</string>
+    <string name="pref_default_translation_typeface">gentium_plus</string>
+    <string-array name="pref_translation_typeface_titles">
+        <item>Gentium Plus</item>
+        <item>Andika</item>
+    </string-array>
+    <string-array name="pref_translation_typeface_values">
+        <item>gentium_plus</item>
+        <item>andika</item>
+    </string-array>
 
     <!-- settings for Save and Sync -->
     <string name="pref_header_autosave">Synchronization</string>

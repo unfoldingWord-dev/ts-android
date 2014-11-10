@@ -45,6 +45,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_REMEMBER_POSITION = "remember_position";
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
     public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
+    public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
 
     /**
      * Removes references to self to avoid memory leaks
@@ -116,13 +117,14 @@ public class SettingsActivity extends PreferenceActivity {
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
         // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference("autosave"));
-        bindPreferenceSummaryToValue(findPreference("auth_server"));
-        bindPreferenceSummaryToValue(findPreference("git_server"));
-        bindPreferenceSummaryToValue(findPreference("auth_server_port"));
-        bindPreferenceSummaryToValue(findPreference("git_server_port"));
-        bindPreferenceSummaryToValue(findPreference("export_format"));
-        bindPreferenceSummaryToValue(findPreference("media_server"));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_TRANSLATION_TYPEFACE));
     }
 
     /** {@inheritDoc} */
@@ -228,6 +230,7 @@ public class SettingsActivity extends PreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_TRANSLATION_TYPEFACE));
         }
     }
 
@@ -246,12 +249,12 @@ public class SettingsActivity extends PreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("autosave"));
-            bindPreferenceSummaryToValue(findPreference("auth_server"));
-            bindPreferenceSummaryToValue(findPreference("git_server"));
-            bindPreferenceSummaryToValue(findPreference("auth_server_port"));
-            bindPreferenceSummaryToValue(findPreference("git_server_port"));
-            bindPreferenceSummaryToValue(findPreference("media_server"));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
         }
     }
 
@@ -270,7 +273,7 @@ public class SettingsActivity extends PreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("export_format"));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
         }
     }
 }

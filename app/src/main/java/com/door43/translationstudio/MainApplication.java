@@ -61,6 +61,7 @@ public class MainApplication extends Application {
     private Map<String, ArrayList<String>> mNotificationsMap = new HashMap<String, ArrayList<String>>();
     static final int BUFFER = 2048;
     private static Typeface mTranslationTypeface;
+    private static String mSelectedTypeface = "";
 
     public void onCreate() {
 
@@ -83,9 +84,14 @@ public class MainApplication extends Application {
      * @return
      */
     public Typeface getTranslationTypeface() {
-        if(mTranslationTypeface == null) {
+        String typeFace = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, MainContext.getContext().getResources().getString(R.string.pref_default_translation_typeface));
+        if(typeFace.equals("andika") && !mSelectedTypeface.equals(typeFace)) {
+            mTranslationTypeface = Typeface.createFromAsset(getAssets(), "fonts/Andika/Andika.ttf");
+        } else if(!mSelectedTypeface.equals("gentium_plus")) {
+            // default
             mTranslationTypeface = Typeface.createFromAsset(getAssets(), "fonts/GentiumPlus/GentiumPlus.ttf");
         }
+        mSelectedTypeface = typeFace;
         return mTranslationTypeface;
     }
 

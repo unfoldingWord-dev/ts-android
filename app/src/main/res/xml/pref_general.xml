@@ -6,4 +6,13 @@
         android:summary="@string/pref_description_remember_position"
         android:defaultValue="@string/pref_default_remember_position" />
 
+    <ListPreference
+        android:key="translation_typeface"
+        android:title="@string/pref_title_translation_typeface"
+        android:entries="@array/pref_translation_typeface_titles"
+        android:entryValues="@array/pref_translation_typeface_values"
+        android:defaultValue="@string/pref_default_translation_typeface"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
 </PreferenceScreen>

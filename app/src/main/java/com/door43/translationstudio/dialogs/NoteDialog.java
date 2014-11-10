@@ -17,8 +17,8 @@ import com.door43.translationstudio.util.PassageNoteEvent;
 /**
  * Created by joel on 11/3/2014.
  */
-public class PassageNoteDialog extends DialogFragment {
-    private PassageNoteDialog me = this;
+public class NoteDialog extends DialogFragment {
+    private NoteDialog me = this;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
