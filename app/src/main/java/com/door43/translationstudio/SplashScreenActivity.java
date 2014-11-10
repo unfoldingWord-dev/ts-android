@@ -29,67 +29,16 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
         // we need a high precision bar because we are loading a ton of things
         mProgressBar.setMax(10000);
+        mProgressBar.setProgress(0);
 
         LoadAppTask task = new LoadAppTask();
         task.execute();
 
-//        Thread splash_screen= new Thread(){
-//            public void run() {
-//                app().getSharedProjectManager().init(new ProjectManager.OnProgressCallback() {
-//                    @Override
-//                    public void onProgress(double progress, String message) {
-//                        me.onProgress(progress, message);
-//                    }
-//
-//                    @Override
-//                    public void finished() {
-//                        // Generate the ssh keys
-//                        if(!app().hasKeys()) {
-//                            me.onProgress(0.4, "generating security keys");
-//                            app().generateKeys();
-//                        }
-//
-//                        // load previously viewed frame
-//                        me.onProgress(0.5, "loading preferences");
-//                        if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-//                            String frameId = app().getLastActiveFrame();
-//                            String chapterId = app().getLastActiveChapter();
-//                            String projectSlug = app().getLastActiveProject();
-//                            app().getSharedProjectManager().setSelectedProject(projectSlug);
-//
-//                            // load the saved project
-//                            app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject());
-//
-//                            app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
-//                            if(app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
-//                                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
-//                            }
-//                        } else {
-//                            // load the default project
-//                            app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject());
-//                        }
-//                        me.onProgress(1, "launching translator");
-//                        startMainActivity();
-//                    }
-//                });
-//            }
-//        };
-//        splash_screen.start();
     }
 
     public void onResume() {
         super.onResume();
     }
-
-//    /**
-//     * Updates the progress of loading the app
-//     * @param progress
-//     * @param message
-//     */
-//    private void onProgress(double progress, String message) {
-//        Log.d("loading", progress + " " +message);
-//        mProgressTextView.setText(message);
-//    }
 
     public void startMainActivity() {
         Intent splashIntent = new Intent(this, MainActivity.class);
@@ -105,7 +54,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
             app().getSharedProjectManager().init(new ProjectManager.OnProgressCallback() {
                 @Override
                 public void onProgress(double progress, String message) {
-                    mProgress = (int)(progress * 100);
+                    mProgress = (int)(progress * 100); // project manager returns 100 based percent values not 10,000
                     publishProgress(message);
                 }
 

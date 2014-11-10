@@ -51,23 +51,26 @@ public class ProjectManager implements DelegateListener {
     private static String mSelectedProjectId;
     private static MainApplication mContext;
     private static final String TAG = "ProjectManager";
+    private OnProgressCallback mCallback;
 
     public ProjectManager(MainApplication context) {
         mContext = context;
     }
-    private OnProgressCallback mCallback;
 
     /**
      * loads the source projects
      */
     public void init(OnProgressCallback callback) {
-        mCallback = callback;
-        mDataStore = new DataStore(mContext);
-        // register to receive async messages from the datastore
-        mDataStore.registerDelegateListener(this);
-        // begin loading target languages
-        String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
-        loadTargetLanguagesCatalog(targetLanguageCatalog);
+        // make sure we only call this once.
+        if(mDataStore == null) {
+            mCallback = callback;
+            mDataStore = new DataStore(mContext);
+            // register to receive async messages from the datastore
+            mDataStore.registerDelegateListener(this);
+            // begin loading target languages
+            String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
+            loadTargetLanguagesCatalog(targetLanguageCatalog);
+        }
         mCallback.finished();
     }
 
