@@ -33,7 +33,7 @@
     <string name="title_activity_chapter_setting">Chapter Settings</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_language_selector">Language</string>
-    <string name="loading_project">Loading chapters...</string>
+    <string name="loading_project_chapters">Loading chapters...</string>
     <string name="success">Success</string>
     <string name="label_details">details</string>
     <string name="details">Details</string>
@@ -117,4 +117,20 @@
     <string name="git_rejected_remote_changed">[%1$s] Remote ref update was rejected,  because old object id on remote repository wasn\'t the same as defined expected old object.</string>
     <string name="git_uptodate">[%1$s] remote ref is up to date</string>
     <string name="git_server_details">Server: %1$s</string>
+    <string name="opening_project">Opening project</string>
+    <string name="loading_key_terms">Loading key terms</string>
+    <string name="loading_translation_notes">Loading translation notes</string>
+    <string name="loading_target_language">Loading target language: %1$s</string>
+    <string name="loading_project">Loading project: %1$s</string>
+    <string name="connection">Establishing a connection...</string>
+    <string name="error_git_stage">Changes could not be staged</string>
+    <string name="submitting_security_keys">Transferring security keys...</string>
+    <string name="error_missing_ssh_keys">The ssh keys have not been generated</string>
+    <string name="return_to_parent_directory">Up</string>
+    <string name="choose_file">Choose your file</string>
+    <string name="choose_source_language">Choose The Source Language</string>
+    <string name="choose_target_language">Choose The Target Language</string>
+    <string name="project_archive_missing">Project archive not found</string>
+    <string name="label_email">Email:</string>
+    <string name="search_target_language">Search for a target language</string>
 </resources>

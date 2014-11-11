@@ -89,6 +89,8 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
 
         // important terms
         int numImportantTerms = 0;
+
+        // NOTE: the important terms are disabled for now. It is uncertain whether they will be re-enabled in the future.
 //        for(String term:note.getImportantTerms()) {
 //            final Term importantTerm = p.getTerm(term);
 //            if(importantTerm != null) {
@@ -111,6 +113,7 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
 //                mImportantTerms.append(", ");
 //            }
 //        }
+
         if(numImportantTerms == 0) {
             mImportantTermsTitle.setVisibility(View.GONE);
             mImportantTerms.setVisibility(View.GONE);

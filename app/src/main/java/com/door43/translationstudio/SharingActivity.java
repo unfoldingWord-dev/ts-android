@@ -119,9 +119,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         Intent i = new Intent(Intent.ACTION_SEND);
                                         i.setType("application/x-tar");
                                         i.putExtra(Intent.EXTRA_STREAM, u);
-                                        startActivity(Intent.createChooser(i, "Email:"));
+                                        startActivity(Intent.createChooser(i, getResources().getString(R.string.label_email)));
                                     } else {
-                                        app().showToastMessage("Project archive not found");
+                                        app().showToastMessage(R.string.project_archive_missing);
                                     }
                                 } catch (IOException e) {
                                     app().showException(e);
@@ -168,7 +168,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         // TODO: define a global list of notification id's that we can use.
                                         app().showToastMessage(getResources().getString(R.string.project_exported_to) + " " + dest.getParentFile().getAbsolutePath(), Toast.LENGTH_SHORT);
                                     } else {
-                                        app().showToastMessage("Project archive not found");
+                                        app().showToastMessage(R.string.project_archive_missing);
                                     }
                                 } catch(IOException e) {
                                     app().showException(e);

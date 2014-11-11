@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
@@ -68,7 +67,7 @@ public class FileExplorerActivity extends TranslatorBaseActivity {
 		try {
 			mPath.mkdirs();
 		} catch (SecurityException e) {
-			Log.e(TAG, "unable to write on the sd card ");
+//			Log.e(TAG, "unable to write on the sd card ");
 		}
 
 		// Checks whether path exists
@@ -95,9 +94,9 @@ public class FileExplorerActivity extends TranslatorBaseActivity {
 				// Set drawables
 				if (sel.isDirectory()) {
 					mFileList[i].icon = R.drawable.ic_folder_open;
-					Log.d("DIRECTORY", mFileList[i].file);
+//					Log.d("DIRECTORY", mFileList[i].file);
 				} else {
-					Log.d("FILE", mFileList[i].file);
+//					Log.d("FILE", mFileList[i].file);
 				}
 			}
 
@@ -106,26 +105,23 @@ public class FileExplorerActivity extends TranslatorBaseActivity {
 				for (int i = 0; i < mFileList.length; i++) {
 					temp[i + 1] = mFileList[i];
 				}
+                // TODO: this activiy relies on string comparisons to correctly identify the up bottom. so we can't safely place this in a resource yet.
 				temp[0] = new Item("Up", R.drawable.directory_up);
 				mFileList = temp;
 			}
 		} else {
-			Log.e(TAG, "path does not exist");
+//			Log.e(TAG, "path does not exist");
 		}
 
-		adapter = new ArrayAdapter<Item>(this,
-				android.R.layout.select_dialog_item, android.R.id.text1,
-                mFileList) {
+		adapter = new ArrayAdapter<Item>(this, android.R.layout.select_dialog_item, android.R.id.text1, mFileList) {
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				// creates view
 				View view = super.getView(position, convertView, parent);
-				TextView textView = (TextView) view
-						.findViewById(android.R.id.text1);
+				TextView textView = (TextView) view.findViewById(android.R.id.text1);
 
 				// put the image on the text view
-				textView.setCompoundDrawablesWithIntrinsicBounds(
-						mFileList[position].icon, 0, 0, 0);
+				textView.setCompoundDrawablesWithIntrinsicBounds(mFileList[position].icon, 0, 0, 0);
 
 				// add margin between image and text (support various screen
 				// densities)
@@ -155,18 +151,18 @@ public class FileExplorerActivity extends TranslatorBaseActivity {
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		Dialog dialog = null;
+		Dialog dialog;
 		AlertDialog.Builder builder = new Builder(this);
 
 		if (mFileList == null) {
-			Log.e(TAG, "No files loaded");
+//			Log.e(TAG, "No files loaded");
 			dialog = builder.create();
 			return dialog;
 		}
 
 		switch (id) {
 		case DIALOG_LOAD_FILE:
-			builder.setTitle("Choose your file");
+			builder.setTitle(getResources().getString(R.string.choose_file));
 			builder.setAdapter(adapter, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {

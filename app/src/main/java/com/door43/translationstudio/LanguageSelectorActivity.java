@@ -90,9 +90,9 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
 
         TextView titleText = (TextView)findViewById(R.id.languageMenuTitleText);
         if(willShowSourceLanguages) {
-            titleText.setText("Choose The Source Language");
+            titleText.setText(R.string.choose_source_language);
         } else {
-            titleText.setText("Choose The Target Language");
+            titleText.setText(R.string.choose_target_language);
         }
 
         // hook up buttons

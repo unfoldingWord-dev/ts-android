@@ -291,7 +291,7 @@ public class NoteSpan extends FancySpan {
         String noteText = "";
         String notePassage = ""; // just for user notes
 
-        parser.require(XmlPullParser.START_TAG, null, "note");
+        parser.require(XmlPullParser.START_TAG, null, ROOT_TAG);
 
         // load attributes
         String style = parser.getAttributeValue("","style");
@@ -312,7 +312,7 @@ public class NoteSpan extends FancySpan {
         // load char's
         while(eventType != XmlPullParser.END_DOCUMENT) {
             if(eventType == XmlPullParser.START_TAG){
-                parser.require(XmlPullParser.START_TAG, null, "char");
+                parser.require(XmlPullParser.START_TAG, null, CHILDREN_TAG);
                 String charStyle = parser.getAttributeValue("","style");
                 String charText = parser.nextText();
 

@@ -8,10 +8,6 @@ import java.util.List;
  *
  */
 public class TranslationNote {
-    private String mName;
-    private String mSubName;
-    private String mDefinition;
-    private String mDefinitionTitle;
     private List<String> mImportantTerms = new ArrayList<String>();
     private List<Note> mNotes = new ArrayList<Note>();
 

@@ -90,25 +90,25 @@ public class ProjectManager implements DelegateListener {
      */
     public void fetchProjectSource(Project p, Boolean displayNotice) {
         if(displayNotice) {
-            mContext.showProgressDialog(R.string.loading_project);
+            mContext.showProgressDialog(R.string.loading_project_chapters);
         }
         String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId());
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            mCallback.onProgress(mProgress, "opening project");
+            mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
         }
         loadProject(source, p);
         String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId());
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            mCallback.onProgress(mProgress, "loading key terms");
+            mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
         }
         loadTerms(terms, p);
         String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId());
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            mCallback.onProgress(mProgress, "loading translation notes");
+            mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
         }
         loadNotes(notes, p);
         mContext.closeProgressDialog();
@@ -259,12 +259,12 @@ public class ProjectManager implements DelegateListener {
                 JSONObject jsonLanguage = json.getJSONObject(i);
                 if(jsonLanguage.has("lc") && jsonLanguage.has("ln")) {
                     mProgress += PERCENT_TARGET_LANGUAGES / numLanguages;
-                    mCallback.onProgress(mProgress, "loading target language: " + jsonLanguage.get("lc").toString());
+                    mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
                     // TODO: it would be best to include the language direction in the target language list
                     Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
                     addLanguage(l);
                 } else {
-                    Log.w(TAG, "missing required parameters in the target language catalog");
+//                    Log.w(TAG, "missing required parameters in the target language catalog");
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
@@ -297,13 +297,13 @@ public class ProjectManager implements DelegateListener {
                 JSONObject jsonProject = json.getJSONObject(i);
                 if(jsonProject.has("title") && jsonProject.has("slug") && jsonProject.has("desc")) {
                     mProgress += PERCENT_PROJECTS / numProjects;
-                    mCallback.onProgress(mProgress, "loading project: " + jsonProject.get("slug").toString());
+                    mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
                     Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
                     addProject(p);
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId());
                     loadSourceLanguageCatalog(p, sourceLanguageCatalog);
                 } else {
-                    Log.w(TAG, "missing required parameters in the project catalog");
+//                    Log.w(TAG, "missing required parameters in the project catalog");
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
@@ -338,21 +338,18 @@ public class ProjectManager implements DelegateListener {
 
                             if(p != null) {
                                 p.addSourceLanguage(l);
-
-                                // fetch source text
-//                                    mDataStore.fetchSourceText(p.getId(), l.getId());
                             } else {
-                                Log.w(TAG, "project not found");
+//                                Log.w(TAG, "project not found");
                             }
                         }
                     } else {
-                        Log.w(TAG, "missing required parameters in the source language catalog");
+//                        Log.w(TAG, "missing required parameters in the source language catalog");
                     }
                 } else {
-                    Log.w(TAG, "missing required parameters in the source language catalog");
+//                    Log.w(TAG, "missing required parameters in the source language catalog");
                 }
             } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
+//                Log.w(TAG, e.getMessage());
                 continue;
             }
         }
@@ -374,7 +371,7 @@ public class ProjectManager implements DelegateListener {
             // TODO: handle loading audio assets
         } else {
             // Unknown message type
-            Log.w("ProjectManager", "Unknown delegate message type "+message.getType());
+//            Log.w("ProjectManager", "Unknown delegate message type "+message.getType());
         }
     }
 
@@ -390,7 +387,7 @@ public class ProjectManager implements DelegateListener {
         // load source
         JSONArray jsonNotes;
         if(jsonString == null) {
-            Log.w(TAG, "The source was not found");
+//            Log.w(TAG, "The source was not found");
             return;
         }
         try {
@@ -429,7 +426,7 @@ public class ProjectManager implements DelegateListener {
                     // add translation notes to the frame
                     p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(importantTerms, notes));
                 } else {
-                    Log.w(TAG, "missing required parameters in the source notes");
+//                    Log.w(TAG, "missing required parameters in the source notes");
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
@@ -444,19 +441,18 @@ public class ProjectManager implements DelegateListener {
      * @param p
      */
     private void loadTerms(String jsonString, Project p) {
-        // TODO: cache the terms by frame and add accessors to the frame object to retreive the terms. Then we can just load one set of terms at a time instead of loading everything into memory
         if(p == null) return;
 
         // load source
         JSONArray jsonTerms;
         if(jsonString == null) {
-            Log.w(TAG, "The source was not found");
+//            Log.w(TAG, "The source was not found");
             return;
         }
         try {
             jsonTerms = new JSONArray(jsonString);
         } catch (JSONException e) {
-            Log.w(TAG, e.getMessage());
+//            Log.w(TAG, e.getMessage());
             return;
         }
 
@@ -485,7 +481,7 @@ public class ProjectManager implements DelegateListener {
                             if (ref.length == 2) {
                                 examples.add(new Term.Example(ref[0], ref[1], jsonExample.getString("text").toString()));
                             } else {
-                                Log.w(TAG, "invalid term example reference");
+//                                Log.w(TAG, "invalid term example reference");
                             }
                         }
                     }
@@ -496,7 +492,7 @@ public class ProjectManager implements DelegateListener {
                     // add term to the project
                     p.addTerm(t);
                 } else {
-                    Log.w(TAG, "missing required parameters in the source terms");
+//                    Log.w(TAG, "missing required parameters in the source terms");
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
@@ -516,7 +512,7 @@ public class ProjectManager implements DelegateListener {
         // load source
         JSONArray jsonChapters;
         if(jsonString == null) {
-            Log.w(TAG, "The source was not found");
+//            Log.w(TAG, "The source was not found");
             return;
         }
         try {
@@ -546,11 +542,11 @@ public class ProjectManager implements DelegateListener {
                         if(jsonFrame.has("id") && jsonFrame.has("text")) {
                             c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("img").toString(), jsonFrame.get("text").toString()));
                         } else {
-                            Log.w(TAG, "missing required parameters in the source frames");
+//                            Log.w(TAG, "missing required parameters in the source frames");
                         }
                     }
                 } else {
-                    Log.w(TAG, "missing required parameters in the source chapters");
+//                    Log.w(TAG, "missing required parameters in the source chapters");
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());

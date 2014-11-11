@@ -120,7 +120,7 @@ public class KeyTermFragment extends TranslatorBaseFragment {
                     mRelatedTerms.append(", ");
                 }
             } else {
-                Log.w("Resources", "Unknown term " + related);
+//                Log.w("Resources", "Unknown term " + related);
             }
         }
         if(numRelatedTerms == 0) {

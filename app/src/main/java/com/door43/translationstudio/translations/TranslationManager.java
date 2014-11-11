@@ -38,7 +38,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
      */
     public void syncSelectedProject() {
         if(!mContext.hasRegisteredKeys()) {
-            mContext.showProgressDialog("Establishing a connection...");
+            mContext.showProgressDialog(R.string.connection);
             // set up a tcp connection
             if(mTcpClient == null) {
                 mTcpClient = new TCPClient(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, mContext.getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, mContext.getResources().getString(R.string.pref_default_auth_server_port))), me);
@@ -71,7 +71,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
 
             @Override
             public void error() {
-                mContext.showToastMessage("Changes could not be staged.");
+                mContext.showToastMessage(R.string.error_git_stage);
             }
         });
         add.executeTask();
@@ -93,7 +93,6 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
      */
     private void registerSSHKeys() {
         if(mContext.hasKeys()) {
-            mContext.showProgressDialog("Loading security keys...");
             JSONObject json = new JSONObject();
             try {
                 String key = FileUtilities.getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
@@ -102,7 +101,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
                 // TODO: provide support for using user names
 //                json.put("username", "");
                 Log.d(TAG, json.toString());
-                mContext.showProgressDialog("Transferring security keys...");
+                mContext.showProgressDialog(R.string.submitting_security_keys);
                 mTcpClient.sendMessage(json.toString());
             } catch (JSONException e) {
                 mContext.showException(e);
@@ -111,7 +110,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
             }
         } else {
             mContext.closeProgressDialog();
-            mContext.showException(new Throwable("The ssh keys have not been generated."));
+            mContext.showException(new Throwable(mContext.getResources().getString(R.string.error_missing_ssh_keys)));
         }
     }
 

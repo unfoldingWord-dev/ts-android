@@ -33,7 +33,7 @@ public class Frame {
             mChapterId = pieces[0];
             mId = pieces[1];
         } else {
-            Log.w("Frame", "The frame has an invalid id");
+//            Log.w("Frame", "The frame has an invalid id");
         }
         mChapterFrameId = chapterFrameId;
         mText = text;

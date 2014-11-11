@@ -658,7 +658,7 @@ public class Project {
                     for(File f:files) {
                         if(!FileUtilities.moveOrCopy(f, new File(repoDir, f.getName()))) {
                             // TODO: record list of files that cannot be coppied and display to the user
-                            Log.w(TAG, "failed to import translation file "+f.getName());
+//                            Log.w(TAG, "failed to import translation file "+f.getName());
                         }
                     }
                     translationInfo.getLanguage().touch();

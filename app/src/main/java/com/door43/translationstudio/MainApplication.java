@@ -569,7 +569,7 @@ public class MainApplication extends Application {
 
         TarEntry entry;
         while ((entry = tis.getNextEntry()) != null) {
-            System.out.println("Extracting: " + entry.getName());
+//            System.out.println("Extracting: " + entry.getName());
             int count;
             byte data[] = new byte[BUFFER];
 
@@ -622,7 +622,7 @@ public class MainApplication extends Application {
         parent = ((parent == null) ? (f.isFile()) ? "" : f.getName() + "/" : parent + f.getName() + "/");
 
         for (int i = 0; i < files.length; i++) {
-            System.out.println("Adding: " + files[i]);
+//            System.out.println("Adding: " + files[i]);
             File fe = f;
             byte data[] = new byte[BUFFER];
 

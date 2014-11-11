@@ -16,14 +16,14 @@ android:padding="20dp">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose Your Target Language"
+        android:text="@string/choose_target_language"
         android:id="@+id/languageMenuTitleText"
         android:textSize="@dimen/h4" />
 
     <EditText android:id="@+id/inputSearchTargetLanguage"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="Search for target language"
+        android:hint="@string/search_target_language"
         android:inputType="textVisiblePassword"/>
 </LinearLayout>
 
@@ -57,7 +57,7 @@ android:padding="20dp">
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Cancel"
+        android:text="@string/label_cancel"
         android:id="@+id/cancelSwitchTargetLanguageButton"
         android:layout_weight="1"
         android:layout_gravity="center_horizontal"
