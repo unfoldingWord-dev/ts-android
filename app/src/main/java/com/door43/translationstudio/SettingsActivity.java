@@ -110,7 +110,7 @@ public class SettingsActivity extends PreferenceActivity {
 
         // Add 'save' preferences, and a corresponding header.
         preferenceHeader = new PreferenceCategory(this);
-        preferenceHeader.setTitle(R.string.pref_header_autosave);
+        preferenceHeader.setTitle(R.string.pref_header_synchronization);
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.pref_save_and_sync);
 

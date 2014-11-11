@@ -1,11 +1,10 @@
 package com.door43.translationstudio;
 
-import com.door43.delegate.DelegateListener;
-import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
+import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
 import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
@@ -19,7 +18,6 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
-import com.door43.translationstudio.translations.TranslationSyncResponse;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -70,7 +68,7 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MainActivity extends TranslatorBaseActivity implements DelegateListener {
+public class MainActivity extends TranslatorBaseActivity {
     private final MainActivity me = this;
 
     // content panes
@@ -102,8 +100,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mActivityIsInitializing = true;
-
-        app().getSharedTranslationManager().registerDelegateListener(this);
+        app().setMainActivity(this);
 
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
         mRootView = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -657,14 +654,10 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     /**
      * Begins syncing the selected project
      */
-    public void openSyncing(Boolean validate) {
+    public void openSyncing() {
         if(app().isNetworkAvailable()) {
-            if(validate) {
-                Intent intent = new Intent(this, UploadWizardActivity.class);
-                startActivity(intent);
-            } else {
-                app().getSharedTranslationManager().syncSelectedProject();
-            }
+            Intent intent = new Intent(this, UploadWizardActivity.class);
+            startActivity(intent);
         } else {
             app().showToastMessage(R.string.internet_not_available);
         }
@@ -753,25 +746,26 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
     }
 
     @Override
-    public void onDelegateResponse(String id, DelegateResponse response) {
-        if(TranslationSyncResponse.class == response.getClass()) {
-            if (((TranslationSyncResponse)response).isSuccess()) {
-                openSyncing(false);
-            } else {
-                // error
-            }
-        }
-    }
-
-    @Override
     public void onDestroy() {
-        app().getSharedTranslationManager().removeDelegateListener(this);
         super.onDestroy();
     }
 
     @Subscribe
     public void modalDismissed(LanguageModalDismissedEvent event) {
         reloadCenterPane();
+    }
+
+    /**
+     * Triggered by the translation manager after the security keys have been successfully submitted to the server
+     * @param event
+     */
+    @Subscribe
+    public void securityKeysSubmitted(SecurityKeysSubmittedEvent event) {
+        if(app().isNetworkAvailable()) {
+            app().getSharedTranslationManager().syncSelectedProject();
+        } else {
+            app().showToastMessage(R.string.internet_not_available);
+        }
     }
 
     @Override
@@ -790,7 +784,7 @@ public class MainActivity extends TranslatorBaseActivity implements DelegateList
                 openSharing();
                 return true;
             case R.id.action_sync:
-                openSyncing(true);
+                openSyncing();
                 return true;
             case R.id.action_settings:
                 openSettings();

@@ -101,7 +101,6 @@
     <string name="loading_translation_notes">Loading translation notes</string>
     <string name="loading_target_language">Loading target language: %1$s</string>
     <string name="loading_project">Loading project: %1$s</string>
-    <string name="connection">Establishing a connection...</string>
     <string name="error_git_stage">Changes could not be staged</string>
     <string name="submitting_security_keys">Transferring security keys...</string>
     <string name="error_missing_ssh_keys">The ssh keys have not been generated</string>
@@ -122,5 +121,6 @@
     <string name="related_terms">See Also:</string>
     <string name="term_examples">Examples:</string>
     <string name="git_push_success">Project was successfully uploaded</string>
+    <string name="connection">Establishing a connection with the server...</string>
 
 </resources>

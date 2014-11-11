@@ -10,17 +10,14 @@ import com.door43.translationstudio.util.MainContext;
  */
 public class ProgressCallback implements GitSyncAsyncTask.AsyncTaskCallback {
     private int mInitMsg;
-    private ProgressDialog dialog;
 
     public ProgressCallback(int initMsg) {
         mInitMsg = initMsg;
-        dialog = new ProgressDialog(MainContext.getContext().getCurrentActivity());
     }
 
     @Override
     public void onPreExecute() {
-        dialog.setMessage(MainContext.getContext().getString(mInitMsg));
-        dialog.show();
+        MainContext.getContext().showProgressDialog(mInitMsg);
     }
 
     @Override
@@ -30,9 +27,7 @@ public class ProgressCallback implements GitSyncAsyncTask.AsyncTaskCallback {
 
     @Override
     public void onPostExecute(Boolean isSuccess) {
-        if(dialog.isShowing()) {
-            dialog.dismiss();
-        }
+        MainContext.getContext().closeProgressDialog();
     }
 
     @Override

@@ -8,7 +8,7 @@
 
     <header
         android:fragment="com.door43.translationstudio.SettingsActivity$SavePreferenceFragment"
-        android:title="@string/pref_header_autosave" />
+        android:title="@string/pref_header_synchronization" />
 
     <header
         android:fragment="com.door43.translationstudio.SettingsActivity$SharingPreferenceFragment"

@@ -16,7 +16,7 @@
     </string-array>
 
     <!-- settings for Save and Sync -->
-    <string name="pref_header_autosave">Synchronization</string>
+    <string name="pref_header_synchronization">Upload</string>
     <string name="pref_title_autosave">Auto Save</string>
     <string name="pref_title_autosave_delay">Auto Save Changes</string>
     <string-array name="pref_autosave_titles">

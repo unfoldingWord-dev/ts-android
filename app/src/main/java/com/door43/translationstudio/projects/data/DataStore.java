@@ -1,6 +1,5 @@
 package com.door43.translationstudio.projects.data;
 
-import com.door43.delegate.DelegateSender;
 import com.door43.translationstudio.MainApplication;
 
 import java.io.IOException;
@@ -10,7 +9,7 @@ import java.io.InputStream;
  * The data store handles all of the text and media resources within the app.
  * This class will look for data locally as well as on the server.
  */
-public class DataStore extends DelegateSender {
+public class DataStore {
     private static MainApplication mContext;
     private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";
 

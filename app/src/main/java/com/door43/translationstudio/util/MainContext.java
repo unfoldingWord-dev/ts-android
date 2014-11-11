@@ -2,6 +2,7 @@ package com.door43.translationstudio.util;
 
 import com.door43.translationstudio.MainApplication;
 import com.squareup.otto.Bus;
+import com.squareup.otto.ThreadEnforcer;
 
 /**
  * This is sort of a hack to provide the main application context to all classes
@@ -10,7 +11,7 @@ import com.squareup.otto.Bus;
 public class MainContext {
 //    private static final String IMAGE_REQUEST_HASH = "http://www.gravatar.com/avatar/%s?s=40";
     private static MainApplication mContext;
-    private static Bus mEventBus;
+    private static MainThreadBus mEventBus;
 
     /**
      * Initializes the basic functions context.
@@ -36,7 +37,7 @@ public class MainContext {
      */
     public static Bus getEventBus() {
         if(mEventBus == null) {
-            mEventBus = new Bus();
+            mEventBus = new MainThreadBus(ThreadEnforcer.ANY);
         }
         return mEventBus;
     }

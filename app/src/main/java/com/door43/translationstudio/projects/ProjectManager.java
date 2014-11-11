@@ -2,12 +2,9 @@ package com.door43.translationstudio.projects;
 
 import android.util.Log;
 
-import com.door43.delegate.DelegateListener;
-import com.door43.delegate.DelegateResponse;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
-import com.door43.translationstudio.projects.data.DataStoreDelegateResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +21,7 @@ import java.util.Map;
  * TODO: parsing tasks need to be ran asyncronously
  * Created by joel on 8/29/2014.
  */
-public class ProjectManager implements DelegateListener {
+public class ProjectManager {
     private static DataStore mDataStore;
 
     // so we can look up by index
@@ -65,8 +62,6 @@ public class ProjectManager implements DelegateListener {
         if(mDataStore == null) {
             mCallback = callback;
             mDataStore = new DataStore(mContext);
-            // register to receive async messages from the datastore
-            mDataStore.registerDelegateListener(this);
             // begin loading target languages
             String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
             loadTargetLanguagesCatalog(targetLanguageCatalog);
@@ -352,26 +347,6 @@ public class ProjectManager implements DelegateListener {
 //                Log.w(TAG, e.getMessage());
                 continue;
             }
-        }
-    }
-
-    /**
-     * We were loading everything through callbacks, however since introducing the splash page we've been loading
-     * everything in a thread so the callbacks are not nessesary anymore.
-     * @param id the id specified by the listener when it registered itself with the listener
-     * @param response the delegate response sent by the delegate sender. You can determine which
-     *                 message has been sent by comparing it's class with a known delegat response class
-     */
-    @Override
-    public void onDelegateResponse(String id, DelegateResponse response) {
-        DataStoreDelegateResponse message = (DataStoreDelegateResponse)response;
-        if(message.getType() == DataStoreDelegateResponse.MessageType.IMAGES) {
-            // TODO: handle loading image assets for frames. Care should be taken to avoid memory leaks or slow load times. We may want to do this on demand instead of up front (except for locally stored assets).
-        } else if(message.getType() == DataStoreDelegateResponse.MessageType.AUDIO) {
-            // TODO: handle loading audio assets
-        } else {
-            // Unknown message type
-//            Log.w("ProjectManager", "Unknown delegate message type "+message.getType());
         }
     }
 

@@ -2,12 +2,13 @@ package com.door43.translationstudio.translations;
 
 import android.util.Log;
 
-import com.door43.delegate.DelegateSender;
+import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TCPClient;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -21,7 +22,7 @@ import org.json.JSONObject;
 /**
  * This class handles the storage of translated content.
  */
-public class TranslationManager extends DelegateSender implements TCPClient.TcpListener {
+public class TranslationManager implements TCPClient.TcpListener {
     private TranslationManager me = this;
     private MainApplication mContext;
     private final String TAG = "TranslationManager";
@@ -128,7 +129,7 @@ public class TranslationManager extends DelegateSender implements TCPClient.TcpL
             JSONObject json = new JSONObject(message);
             if(json.has("ok")) {
                 mContext.setHasRegisteredKeys(true);
-                me.issueDelegateResponse(new TranslationSyncResponse(true));
+                MainContext.getEventBus().post(new SecurityKeysSubmittedEvent());
             } else {
                 mContext.showException(new Throwable(json.getString("error")));
             }

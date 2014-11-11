@@ -62,6 +62,7 @@ public class MainApplication extends Application {
     static final int BUFFER = 2048;
     private static Typeface mTranslationTypeface;
     private static String mSelectedTypeface = "";
+    private static Activity mMainActivity;
 
     public void onCreate() {
 
@@ -77,6 +78,14 @@ public class MainApplication extends Application {
 
         mProjectManager = new ProjectManager(this);
         mTranslationManager = new TranslationManager(this);
+    }
+
+    /**
+     * Sets the main activity that can be used for displaying dialogs.
+     * @param activity
+     */
+    public static void setMainActivity(Activity activity) {
+        mMainActivity = activity;
     }
 
     /**
@@ -300,15 +309,16 @@ public class MainApplication extends Application {
 
     /**
      * Displays a progress dialog
+     * TODO: Hack alert! we are using a quick fix to avoid leaked windows while showing dialogs from async tasks. Right now we are only using this for the upload manager.
      * @param message the message to display in the dialog
      */
     public void showProgressDialog(final String message) {
         getCurrentActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(mProgressDialog == null || mCurrentDialogActivity != getCurrentActivity()) {
+                if(mProgressDialog == null || mCurrentDialogActivity != mMainActivity) { // was using: getCurrentActivity()
                     closeProgressDialog();
-                    mProgressDialog = new ProgressDialog(getCurrentActivity());
+                    mProgressDialog = new ProgressDialog(mMainActivity); // was using: getCurrentActivity()
                 }
                 mProgressDialog.setMessage(message);
                 if(!mProgressDialog.isShowing()) {
@@ -331,7 +341,12 @@ public class MainApplication extends Application {
      */
     public void closeProgressDialog() {
         if (mProgressDialog != null) {
-            mProgressDialog.dismiss();
+            try {
+                mProgressDialog.dismiss();
+            } catch (Exception e) {
+                showToastMessage(e.getMessage());
+//                Log.d("error", e.getMessage());
+            }
         }
     }
 
