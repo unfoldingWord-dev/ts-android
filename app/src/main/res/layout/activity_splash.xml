@@ -29,7 +29,7 @@
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="loading..."
+        android:text="@string/loading"
         android:id="@+id/progressTextView"
         android:gravity="center"
         android:padding="10dp" />

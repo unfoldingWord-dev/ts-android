@@ -27,7 +27,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="See Also:"
+            android:text="@string/related_terms"
             android:id="@+id/relatedTermsTitleText"
             android:paddingTop="20dp"
             android:textSize="@dimen/h3" />
@@ -42,7 +42,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Examples:"
+            android:text="@string/term_examples"
             android:id="@+id/examplePassagesTitleText"
             android:paddingTop="20dp"
             android:textSize="@dimen/h3" />

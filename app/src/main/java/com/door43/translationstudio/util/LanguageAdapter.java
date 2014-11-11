@@ -25,7 +25,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
     private LanguageFilter mLanguageFilter;
 
     public LanguageAdapter(List<Language> languageList, Context context) {
-        super(context, R.layout.target_language_list_item, languageList);
+        super(context, R.layout.fragment_target_language_list_item, languageList);
         mLanguageList = languageList;
         mOrigLanguageList = languageList;
         mContext = context;
@@ -47,7 +47,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.target_language_list_item, null);
+            v = inflater.inflate(R.layout.fragment_target_language_list_item, null);
             TextView nameText = (TextView) v.findViewById(R.id.target_language_name);
             TextView idText = (TextView) v.findViewById(R.id.target_language_id);
             holder.languageNameView = nameText;

@@ -133,4 +133,14 @@
     <string name="project_archive_missing">Project archive not found</string>
     <string name="label_email">Email:</string>
     <string name="search_target_language">Search for a target language</string>
+    <string name="loading">Loading...</string>
+    <string name="view_license">View License</string>
+    <string name="license_deny">No Thanks</string>
+    <string name="license_accept">I Agree</string>
+    <string name="label_display_as_footnote">Display as footnote</string>
+    <string name="label_note_phrase">Selected phrase:</string>
+    <string name="important_terms">Important Terms:</string>
+    <string name="related_terms">See Also:</string>
+    <string name="term_examples">Examples:</string>
+    <string name="git_push_success">Project was successfully uploaded</string>
 </resources>

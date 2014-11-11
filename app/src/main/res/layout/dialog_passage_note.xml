@@ -14,7 +14,7 @@
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Display as footnote"
+            android:text="@string/label_display_as_footnote"
             android:id="@+id/passageIsFootnoteSwitch"
             android:layout_gravity="right"
             android:layout_alignParentRight="true" />
@@ -22,7 +22,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Selected phrase:"
+            android:text="@string/label_note_phrase"
             android:id="@+id/textView"
             android:textSize="@dimen/h4"
             android:textStyle="bold" />

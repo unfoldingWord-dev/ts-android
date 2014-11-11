@@ -47,7 +47,7 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="View License"
+                    android:text="@string/view_license"
                     android:id="@+id/license_btn"
                     android:background="@drawable/bordered_button"
                     android:padding="10dp"
@@ -79,7 +79,7 @@
             <Button
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="No Thanks"
+                android:text="@string/license_deny"
                 android:id="@+id/reject_terms_btn"
                 android:textSize="@dimen/h4"
                 android:background="@drawable/bordered_button"
@@ -100,7 +100,7 @@
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="I Agree"
+                android:text="@string/license_accept"
                 android:id="@+id/accept_terms_btn"
                 android:textSize="@dimen/h4"
                 android:background="@color/blue"
