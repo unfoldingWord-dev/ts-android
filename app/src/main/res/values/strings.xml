@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
     <string name="app_name">Translation Studio</string>
     <string name="projects">Projects</string>
@@ -10,7 +10,7 @@
     <string name="error_task_running">A task is already running</string>
     <string name="error_out_of_memory">Out of memory</string>
     <string name="error_repository_not_found">Repository Not Found</string>
-    <string name="push_msg_init">Sending to server...</string>
+    <string name="push_msg_init">Sending to server…</string>
     <string name="error_could_not_create_repository">Could not create repository</string>
     <string name="terms_title">Terms of Use</string>
     <string name="terms">In order to use this app, you must agree to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License</string>
@@ -23,15 +23,15 @@
     <string name="target_language_field">Target Language:</string>
     <string name="title_activity_chapter_setting">Chapter Settings</string>
     <string name="title_activity_language_selector">Language</string>
-    <string name="loading_project_chapters">Loading chapters...</string>
+    <string name="loading_project_chapters">Loading chapters…</string>
     <string name="success">Success</string>
     <string name="label_details">details</string>
     <string name="title_activity_sharing">Sharing</string>
-    <string name="exporting_project">Exporting Project...</string>
-    <string name="importing_project">Importing Project...</string>
+    <string name="exporting_project">Exporting Project…</string>
+    <string name="importing_project">Importing Project…</string>
     <string name="missing_external_storage">External storage is not available</string>
     <string name="project_exported_to">Project saved to </string>
-    <string name="preparing_sharing">Preparing the project for sharing...</string>
+    <string name="preparing_sharing">Preparing the project for sharing…</string>
     <string name="project_share_exception">The project cannot be shared</string>
     <string name="title_activity_file_explorer">File Explorer</string>
     <string name="missing_file">The file does not exist</string>
@@ -43,30 +43,30 @@
     <string name="malformed_translation_archive">Malformed translation archive</string>
     <string name="translation_import_failed">Failed to import the translation</string>
     <string name="import_ready_title">Ready to import translation</string>
-    <string name="import_ready_message">You are about to import a translation for the \"%1$s\" language into the \"%2$s\"  project.</string>
+    <string name="import_ready_message">You are about to import a translation for the <xliff:g id="language" example="Deutsch">\"%1$s\"</xliff:g> language into the <xliff:g id="project" example="Open Bible Stories">\"%2$s\"</xliff:g>  project.</string>
     <string name="internet_not_available">You do not have an active internet connection.</string>
     <string name="title_activity_upload_wizard">Translation Upload</string>
     <string name="upload_wizard_intro">You are about to upload your translation. We will now perform a few checks to ensure your translation is ready to be uploaded.</string>
     <string name="label_continue">Continue</string>
     <string name="upload_wizard_overview">Upload Review</string>
     <string name="label_project_details">Project details</string>
-    <string name="project_details">\"%1$s\" translated from the \"%2$s\" language into the \"%3$s\" language.</string>
+    <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> translated from the <xliff:g id="language" example="English">\"%2$s\"</xliff:g> language into the <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> language.</string>
     <string name="click_for_details">Click for details</string>
     <string name="label_project_settings">Project Settings</string>
     <string name="error_target_and_source_are_same">The source and target languages are the same</string>
     <string name="error_chapter_title_missing">The title is missing.</string>
     <string name="error_chapter_reference_missing">The reference is missing.</string>
-    <string name="label_validate_chapter">Chapter: %1$s</string>
+    <string name="label_validate_chapter">Chapter: <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
     <string name="dialog_validation_errors">Validation Errors</string>
     <string name="validation_errors">There are unresolved errors in the translation. Please correct these then try again.</string>
-    <string name="error_frames_not_translated">%1$s frames have not been translated.</string>
+    <string name="error_frames_not_translated"><xliff:g id="number" example="5">%1$s</xliff:g> frames have not been translated.</string>
     <string name="dialog_validation_warnings">Validation Warnings</string>
     <string name="validation_warnings">There are unresolved warnings. Are you sure you want to upload this translation?</string>
     <string name="no_translated_chapters">Nothing has been translated yet.</string>
     <string name="label_chapters">Chapters</string>
     <string name="title_activity_project_settings">ProjectSettingsActivity</string>
     <string name="source_language_has_no_chapters">There are no chapters availble in that source language</string>
-    <string name="now_viewing_frame">Now viewing frame %1$s in chapter %2$s.</string>
+    <string name="now_viewing_frame">Now viewing frame <xliff:g id="number" example="1">%1$s</xliff:g> in chapter <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>.</string>
     <string name="unknown_chapter">Unknown chapter</string>
     <string name="label_frame">Frame</string>
     <string name="label_translation_notes">Translation Notes</string>
@@ -85,24 +85,24 @@
     <string name="of">of</string>
     <string name="error_failed_loading_license">Failed to load the license file</string>
     <string name="error_failed_parsing_license">Failed to parse the license file</string>
-    <string name="git_awaiting_report">[%1$s] Push process is awaiting update report from remote repository.</string>
-    <string name="git_non_existing">[%1$s] Remote ref didn\'t exist.</string>
-    <string name="git_not_attempted">[%s] Push process hasn\'t yet attempted to update this ref.</string>
-    <string name="git_ok">[%1$s] Success push to remote ref.</string>
-    <string name="git_rejected_nondelete">[%1$s] Remote ref update was rejected, because remote side doesn\'t support/allow deleting refs.</string>
-    <string name="git_rejected_nonfastforward">[%1$s] Remote ref update was rejected, as it would cause non fast-forward update.</string>
-    <string name="git_rejected_other_reason">[%1$s] Remote ref update was rejected.</string>
-    <string name="git_rejected_other_reason_detailed">[%1$s] Remote ref update was rejected, because %1$s.</string>
-    <string name="git_rejected_remote_changed">[%1$s] Remote ref update was rejected,  because old object id on remote repository wasn\'t the same as defined expected old object.</string>
-    <string name="git_uptodate">[%1$s] remote ref is up to date</string>
-    <string name="git_server_details">Server: %1$s</string>
+    <string name="git_awaiting_report">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Push process is awaiting update report from remote repository.</string>
+    <string name="git_non_existing">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref didn\'t exist.</string>
+    <string name="git_not_attempted">[<xliff:g id="remote" example="refs/heads/master">%s</xliff:g>] Push process hasn\'t yet attempted to update this ref.</string>
+    <string name="git_ok">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Success push to remote ref.</string>
+    <string name="git_rejected_nondelete">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected, because remote side doesn\'t support/allow deleting refs.</string>
+    <string name="git_rejected_nonfastforward">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected, as it would cause non fast-forward update.</string>
+    <string name="git_rejected_other_reason">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected.</string>
+    <string name="git_rejected_other_reason_detailed">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected, because <xliff:g id="error" example="error message">%2$s.</xliff:g></string>
+    <string name="git_rejected_remote_changed">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] Remote ref update was rejected,  because old object id on remote repository wasn\'t the same as defined expected old object.</string>
+    <string name="git_uptodate">[<xliff:g id="remote" example="refs/heads/master">%1$s</xliff:g>] remote ref is up to date</string>
+    <string name="git_server_details">Server: <xliff:g id="server" example="gitolite3@ts.door43.org:tS/46983314849sd54s6d/uw-obs-de">%1$s</xliff:g></string>
     <string name="opening_project">Opening project</string>
     <string name="loading_key_terms">Loading key terms</string>
     <string name="loading_translation_notes">Loading translation notes</string>
-    <string name="loading_target_language">Loading target language: %1$s</string>
-    <string name="loading_project">Loading project: %1$s</string>
+    <string name="loading_target_language">Loading target language: <xliff:g id="language" example="Deutsch">%1$s</xliff:g></string>
+    <string name="loading_project">Loading project: <xliff:g id="project" example="Open Bible Stories">%1$s</xliff:g></string>
     <string name="error_git_stage">Changes could not be staged</string>
-    <string name="submitting_security_keys">Transferring security keys...</string>
+    <string name="submitting_security_keys">Transferring security keys…</string>
     <string name="error_missing_ssh_keys">The ssh keys have not been generated</string>
     <string name="return_to_parent_directory">Up</string>
     <string name="choose_file">Choose your file</string>
@@ -111,7 +111,7 @@
     <string name="project_archive_missing">Project archive not found</string>
     <string name="label_email">Email:</string>
     <string name="search_target_language">Search for a target language</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
     <string name="view_license">View License</string>
     <string name="license_deny">No Thanks</string>
     <string name="license_accept">I Agree</string>
@@ -121,6 +121,7 @@
     <string name="related_terms">See Also:</string>
     <string name="term_examples">Examples:</string>
     <string name="git_push_success">Project was successfully uploaded</string>
-    <string name="connection">Establishing a connection with the server...</string>
+    <string name="connection">Establishing a connection with the server…</string>
+    <string name="choose_frame_to_start">Choose some source text from the left tab to get started</string>
 
 </resources>

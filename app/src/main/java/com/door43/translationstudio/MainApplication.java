@@ -359,7 +359,7 @@ public class MainApplication extends Application {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("project_slug", slug);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -370,7 +370,7 @@ public class MainApplication extends Application {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("chapter_id", id);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -382,7 +382,7 @@ public class MainApplication extends Application {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("frame_id", id);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -501,7 +501,7 @@ public class MainApplication extends Application {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("has_registered_with_server", hasRegistered);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -521,7 +521,7 @@ public class MainApplication extends Application {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("show_welcome", shouldWelcome);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -541,7 +541,7 @@ public class MainApplication extends Application {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("has_accepted_terms", hasAcceptedTerms);
-        editor.commit();
+        editor.apply();
     }
 
     /**

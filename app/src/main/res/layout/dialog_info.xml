@@ -46,8 +46,8 @@
                 android:paddingTop="20dp">
 
                 <Space
-                    android:layout_width="20px"
-                    android:layout_height="20px" />
+                    android:layout_width="10dp"
+                    android:layout_height="10dp" />
 
                 <Button
                     android:layout_width="match_parent"

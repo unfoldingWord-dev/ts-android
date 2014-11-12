@@ -41,7 +41,7 @@
                     <TextView
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:text="Choose some source text from the left tab to get started"
+                        android:text="@string/choose_frame_to_start"
                         android:id="@+id/helpTextView"
                         android:textSize="@dimen/h4"
                         android:padding="10dp"

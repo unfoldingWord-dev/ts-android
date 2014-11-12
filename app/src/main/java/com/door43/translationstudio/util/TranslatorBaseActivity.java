@@ -1,5 +1,6 @@
 package com.door43.translationstudio.util;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -10,7 +11,7 @@ import com.door43.translationstudio.MainApplication;
  * Custom activity class to provide some of the heavy lifting.
  * Every activity within the app should extend this base activity.
  */
-public class TranslatorBaseActivity extends ActionBarActivity {
+public abstract class TranslatorBaseActivity extends ActionBarActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
