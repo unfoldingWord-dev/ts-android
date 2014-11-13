@@ -3,19 +3,26 @@ package com.door43.translationstudio;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 
 
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.TTFAnalyzer;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -226,11 +233,38 @@ public class SettingsActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference(KEY_PREF_TRANSLATION_TYPEFACE));
+            // identify all typefaces in the assets directory
+            AssetManager am = getResources().getAssets();
+            String fileList[] = null;
+            ArrayList<String> entries = new ArrayList<String>();
+            ArrayList<String> entryValues = new ArrayList<String>();
+            try {
+                 fileList = am.list("fonts");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (fileList != null)
+            {
+                for (int i = 0; i<fileList.length; i++)
+                {
+                    File typeface = MainContext.getContext().getAssetAsFile("fonts/" + fileList[i]);
+                    if (typeface != null) {
+                        TTFAnalyzer analyzer = new TTFAnalyzer();
+                        String fontname = "";
+                        fontname = analyzer.getTtfFontName(typeface.getAbsolutePath());
+                        if(fontname != null) {
+                            // add valid fonts to the list
+                            entries.add(fontname);
+                            entryValues.add(fileList[i]);
+                        }
+                    }
+                }
+            }
+
+            ListPreference pref = (ListPreference)findPreference(KEY_PREF_TRANSLATION_TYPEFACE);
+            pref.setEntries(entries.toArray(new CharSequence[entries.size()]));
+            pref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
+            bindPreferenceSummaryToValue(pref);
         }
     }
 

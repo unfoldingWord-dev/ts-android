@@ -12,7 +12,6 @@
     <string name="pref_title_translation_typeface">Translation Typeface</string>
     <string-array name="pref_translation_typeface_titles">
         <item>Gentium Plus</item>
-        <item>Andika</item>
     </string-array>
 
     <!-- settings for Save and Sync -->

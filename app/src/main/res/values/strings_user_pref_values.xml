@@ -3,10 +3,9 @@
 
     <string name="pref_default_remember_position">true</string>
 
-    <string name="pref_default_translation_typeface">gentium_plus</string>
+    <string name="pref_default_translation_typeface">GentiumPlus.ttf</string>
     <string-array name="pref_translation_typeface_values">
-        <item>gentium_plus</item>
-        <item>andika</item>
+        <item>GentiumPlus.ttf</item>
     </string-array>
 
     <string name="pref_default_autosave">5000</string>

@@ -26,6 +26,7 @@ import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.DummyDialogListener;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.TTFAnalyzer;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -41,6 +42,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,14 +96,48 @@ public class MainApplication extends Application {
      */
     public Typeface getTranslationTypeface() {
         String typeFace = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, MainContext.getContext().getResources().getString(R.string.pref_default_translation_typeface));
-        if(typeFace.equals("andika") && !mSelectedTypeface.equals(typeFace)) {
-            mTranslationTypeface = Typeface.createFromAsset(getAssets(), "fonts/Andika/Andika.ttf");
-        } else if(!mSelectedTypeface.equals("gentium_plus")) {
-            // default
-            mTranslationTypeface = Typeface.createFromAsset(getAssets(), "fonts/GentiumPlus/GentiumPlus.ttf");
+        if(!mSelectedTypeface.equals(typeFace)) {
+            mTranslationTypeface = Typeface.createFromAsset(getAssets(), "fonts/" + typeFace);
         }
         mSelectedTypeface = typeFace;
+
+        // TODO: fonts should be initialized when the app starts.
+        // TODO: should return the default font if the font is missing.
         return mTranslationTypeface;
+    }
+
+    /**
+     * Moves an asset into the cache directory and returns a file reference to it
+     * @param path
+     * @return
+     */
+    public File getAssetAsFile(String path) {
+        // TODO: we need to figure out when the clear out these cached files. Probably just on version bumps.
+        File cacheFile = new File(getCacheDir(), "assets/" + path);
+        if(!cacheFile.exists()) {
+            cacheFile.getParentFile().mkdirs();
+            try {
+                InputStream is = getAssets().open(path);
+                try {
+                    FileOutputStream outputStream = new FileOutputStream(cacheFile);
+                    try {
+                        byte[] buf = new byte[1024];
+                        int len;
+                        while ((len = is.read(buf)) > 0) {
+                            outputStream.write(buf, 0, len);
+                        }
+                    } finally {
+                        outputStream.close();
+                    }
+                } finally {
+                    is.close();
+                }
+
+            } catch (IOException e) {
+                return null;
+            }
+        }
+        return cacheFile;
     }
 
     /**
