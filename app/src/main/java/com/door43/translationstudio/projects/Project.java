@@ -520,7 +520,9 @@ public class Project {
                         ps.print("{{");
                         // TODO: the api version and image dimensions should be placed in the user preferences
                         String apiVersion = "1";
-                        ps.print(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, MainContext.getContext().getResources().getString(R.string.pref_default_media_server))+"/"+getId()+"/jpg/"+apiVersion+"/"+getSelectedTargetLanguage().getId()+"/360px/"+getId()+"-"+getSelectedTargetLanguage().getId()+"-"+c.getId()+"-"+f.getId()+".jpg");
+                        // TODO: for now all images use the english versions
+                        String languageCode = "en"; // eventually we should use: getSelectedTargetLanguage().getId()
+                        ps.print(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, MainContext.getContext().getResources().getString(R.string.pref_default_media_server))+"/"+getId()+"/jpg/"+apiVersion+"/"+languageCode+"/360px/"+getId()+"-"+languageCode+"-"+c.getId()+"-"+f.getId()+".jpg");
                         ps.println("}}");
                         ps.println();
 

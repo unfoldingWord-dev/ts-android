@@ -109,6 +109,40 @@ public class SettingsActivity extends PreferenceActivity {
         // Add 'general' preferences.
         addPreferencesFromResource(R.xml.pref_general);
 
+        // NOTE: this is a copy paste from GeneralPreferenceFragment
+        // identify all typefaces in the assets directory
+        AssetManager am = getResources().getAssets();
+        String fileList[] = null;
+        ArrayList<String> entries = new ArrayList<String>();
+        ArrayList<String> entryValues = new ArrayList<String>();
+        try {
+            fileList = am.list("fonts");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (fileList != null)
+        {
+            for (int i = 0; i<fileList.length; i++)
+            {
+                File typeface = MainContext.getContext().getAssetAsFile("fonts/" + fileList[i]);
+                if (typeface != null) {
+                    TTFAnalyzer analyzer = new TTFAnalyzer();
+                    String fontname = "";
+                    fontname = analyzer.getTtfFontName(typeface.getAbsolutePath());
+                    if(fontname != null) {
+                        // add valid fonts to the list
+                        entries.add(fontname);
+                        entryValues.add(fileList[i]);
+                    }
+                }
+            }
+        }
+
+        ListPreference pref = (ListPreference)findPreference(KEY_PREF_TRANSLATION_TYPEFACE);
+        pref.setEntries(entries.toArray(new CharSequence[entries.size()]));
+        pref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
+        bindPreferenceSummaryToValue(pref);
+
         // Add 'sharing' preferences, and a corresponding header.
         PreferenceCategory preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_sharing);
@@ -233,6 +267,7 @@ public class SettingsActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
 
+            // TODO: this should be once once when the app is installed or updated. The results can be cached in a config file.
             // identify all typefaces in the assets directory
             AssetManager am = getResources().getAssets();
             String fileList[] = null;
