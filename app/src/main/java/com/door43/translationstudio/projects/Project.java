@@ -17,7 +17,9 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -641,11 +643,39 @@ public class Project {
     }
 
     /**
-     * Imports a project from a file and returns an instance of the project
+     * Imports a translation (Doku Wiki) into the project
+     * @param file the doku wiki file
+     * @return
+     */
+    public boolean importTranslation(File file) {
+        if(file.exists() && file.isFile()) {
+            StringBuilder text = new StringBuilder();
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String line;
+                String languageName = br.readLine().trim().replace("/", "").trim();
+                // TODO: finish building the dokuwiki import
+                while ((line = br.readLine()) != null) {
+                    text.append(line);
+                    text.append('\n');
+                }
+                String content = text.toString().trim();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Imports a Translation Studio Project from a directory
      * @param archiveDir the directory that will be imported
      * @return
      */
-    public static boolean importTranslationFromFile(File archiveDir) {
+    public static boolean importProject(File archiveDir) {
         TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(archiveDir.getName());
         if(translationInfo != null) {
             // locate existing project

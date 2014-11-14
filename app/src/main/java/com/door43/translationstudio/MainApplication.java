@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -56,7 +58,7 @@ public class MainApplication extends Application {
     private ProjectManager mProjectManager;
     private ProgressDialog mProgressDialog;
     private TranslationManager mTranslationManager;
-    private final String PREFERENCES_TAG = "com.door43.translationstudio";
+    public static final String PREFERENCES_TAG = "com.door43.translationstudio";
     private boolean mPauseAutoSave = false;
     private ImageLoader mImageLoader;
     private Activity mCurrentDialogActivity;
@@ -76,7 +78,6 @@ public class MainApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_save_and_sync, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_sharing, false);
-
 
         mProjectManager = new ProjectManager(this);
         mTranslationManager = new TranslationManager(this);

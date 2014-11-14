@@ -1,6 +1,9 @@
 package com.door43.translationstudio;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,7 +36,6 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
         LoadAppTask task = new LoadAppTask();
         task.execute();
-
     }
 
     public void onResume() {
@@ -65,6 +67,24 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                         // this is so short we don't update the progress bar
                         publishProgress(getResources().getString(R.string.generating_security_keys));
                         app().generateKeys();
+                    }
+
+                    // handle app version changes
+                    SharedPreferences settings = getSharedPreferences(MainApplication.PREFERENCES_TAG, MODE_PRIVATE);
+                    SharedPreferences.Editor editor = settings.edit();
+                    int lastVersionCode = settings.getInt("last_version_code", 0);
+                    PackageInfo pInfo = null;
+                    try {
+                        pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                        if(pInfo.versionCode > lastVersionCode) {
+                            // update!
+                            UpdateManager updater = new UpdateManager(lastVersionCode, pInfo.versionCode);
+                            updater.run();
+                        }
+                        editor.putInt("last_version_code", pInfo.versionCode);
+                        editor.apply();
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
                     }
 
                     // load previously viewed frame

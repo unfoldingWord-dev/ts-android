@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.SharingAdapter;
@@ -178,7 +179,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }, removeableMedia != null , R.string.missing_external_storage));
 
-//                if(exportAsProject) {
+                // TODO: for now this is disabled until we get around to finishing the import. This is important to have so that 1.x exports can be loaded into 2.x
+                if(exportAsProject) {
                 mSharingTools.add(new SharingToolItem(R.string.import_from_sd, descriptionResource, R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
@@ -186,9 +188,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                         startActivityForResult(intent, exportAsProject ? IMPORT_PROJECT_FROM_SD_REQUEST : IMPORT_DOKUWIKI_FROM_SD_REQUEST);
                     }
                 }, removeableMedia != null, R.string.missing_external_storage));
-//                }
+                }
 
-//        if(exportAsProject) {
+
 //            mSharingTools.add(new SharingToolItem("Export to nearby device", descriptionResource, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
 //                @Override
 //                public void run() {
@@ -214,9 +216,9 @@ public class SharingActivity extends TranslatorBaseActivity {
 //                    thread.start();
 //                }
 //            }));
-//        }
 
-//        if(exportAsProject) {
+
+
 //            mSharingTools.add(new SharingToolItem("Import from nearby device", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
 //                @Override
 //                public void run() {
@@ -230,7 +232,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 //                    thread.start();
 //                }
 //            }));
-//        }
+
                 mAdapter.notifyDataSetChanged();
                 MainContext.getContext().closeProgressDialog();
             }
@@ -312,7 +314,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                 });
                                 if(files.length == 1) {
                                     // TODO: it would be nice if we could double check with the user before running the import.
-                                    if(Project.importTranslationFromFile(files[0])) {
+                                    if(Project.importProject(files[0])) {
                                         app().showToastMessage(R.string.success);
                                     } else {
                                         // failed to import translation
@@ -345,50 +347,33 @@ public class SharingActivity extends TranslatorBaseActivity {
             if(data != null) {
                 final File file = new File(data.getExtras().getString("path"));
                 if(file.exists() && file.isFile()) {
-                    app().showToastMessage("Not implimented yet.");
-                    // TODO: ask the user what project to import the project to
-                    // TODO: we should be able to automatically determine the language.
+                    ProjectManager pm = app().getSharedProjectManager();
+                    Project p;
+                    if(pm.numProjects() > 1) {
+                        // TODO: display a dialog where the user can choose which project to import to.
+                        app().showToastMessage("Doku Wiki import is not configured for import with multiple projects yet.");
+                        return;
+                    } else {
+                        p = pm.getProject(0);
+                    }
+
+                    final Project project = p;
+
                     // thread to prepare import
-//                    Runnable prepareImport = new Runnable() {
-//                        public void run() {
-//                            app().showProgressDialog(R.string.importing_project);
-//
-//
-//                            // extract
-//                            try {
-//                                app().untarTarFile(file.getAbsolutePath(), exportDir.getAbsolutePath());
-//                                File[] files = exportDir.listFiles(new FilenameFilter() {
-//                                    @Override
-//                                    public boolean accept(File file, String s) {
-//                                        return Project.validateProjectArchiveName(s);
-//                                    }
-//                                });
-//                                if(files.length == 1) {
-//                                    // TODO: it would be nice if we could double check with the user before running the import.
-//                                    if(Project.importTranslationFromFile(files[0])) {
-//                                        app().showToastMessage(R.string.success);
-//                                    } else {
-//                                        // failed to import translation
-//                                        app().showToastMessage(R.string.translation_import_failed);
-//                                    }
-//                                } else {
-//                                    app().showToastMessage(R.string.malformed_translation_archive);
-//                                }
-//                            } catch (IOException e) {
-//                                app().showException(e);
-//                            }
-//
-//                            // clean up
-//                            if(exportDir.exists()) {
-//                                FileUtilities.deleteRecursive(exportDir);
-//                            }
-//
-//                            app().closeProgressDialog();
-//                        }
-//                    };
-//
-//                    // begin the import
-//                    new Thread(prepareImport).start();
+                    Runnable prepareImport = new Runnable() {
+                        public void run() {
+                            app().showProgressDialog(R.string.importing_project);
+                            if(project.importTranslation(file)) {
+                                app().showToastMessage(R.string.success);
+                            } else {
+                                app().showToastMessage(R.string.translation_import_failed);
+                            }
+                            app().closeProgressDialog();
+                        }
+                    };
+
+                    // begin the import
+                    new Thread(prepareImport).start();
                 } else {
                     app().showToastMessage(R.string.missing_file);
                 }
