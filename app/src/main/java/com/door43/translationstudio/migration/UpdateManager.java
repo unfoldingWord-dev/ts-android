@@ -61,11 +61,10 @@ public class UpdateManager {
                 File backup = new File(MainContext.getContext().getFilesDir(), "1.x_backup.sqlite3");
                 FileUtilities.moveOrCopy(db, backup);
 
-                // trash old files
+                // clean up old 1.x files
                 FileUtilities.deleteRecursive(new File(MainContext.getContext().getFilesDir(), "Documents"));
-                // TODO: delete app_database
-                // TODO: delete app_webview
-                // TODO: delete the others.
+                FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_database"));
+                FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_webview")); // this technically deletes 2.x stuff too, but it will be rebuilt automatically
             } else {
                 onError("The database from version 1.x could not be found at " + db.getAbsolutePath());
             }
