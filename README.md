@@ -3,6 +3,7 @@ Translation Studio 2.0
 
 translationStudio for unfoldingWord
 
+[![Crowdin](https://d322cqt584bo4o.cloudfront.net/translation-studio/localized.png)](https://crowdin.com/project/translation-studio)
 
 ###Contributing
 Below are the technical specifications regarding this Android app and instructions for setting up your development environment.
