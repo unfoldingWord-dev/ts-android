@@ -60,10 +60,22 @@ public class Frame {
      * @param translation
      */
     public void setTranslation(String translation) {
-        if(mTranslation != null && !mTranslation.isLanguage(mChapter.getProject().getSelectedTargetLanguage()) && !mTranslation.isSaved()) {
+        // the default is to use the project's target language
+        setTranslation(translation, mChapter.getProject().getSelectedTargetLanguage());
+    }
+
+    /**
+     * Stores the translated frame text.
+     * Important! You should almost always use setTranslation(String translation) instead.
+     * Only use this method if you know what you are doing.
+     * @param translation the translated text
+     * @param targetLanguage the language the text was translated to
+     */
+    public void setTranslation(String translation, Language targetLanguage) {
+        if(mTranslation != null && !mTranslation.isLanguage(targetLanguage) && !mTranslation.isSaved()) {
             save();
         }
-        mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), translation);
+        mTranslation = new Translation(targetLanguage, translation);
         mChapter.getProject().setIsTranslating(true);
     }
 

@@ -1,0 +1,117 @@
+package com.door43.translationstudio.migration;
+
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.MainContext;
+
+import java.io.File;
+
+/**
+ * Handles updates from one version to another.
+ * This may be process heavy so don't run this on the ui thread
+ */
+public class UpdateManager {
+    private final int mOldVersionCode;
+    private final int mNewVersionCode;
+    private final String TAG = "UpdateManager";
+    private OnProgressCallback mCallback;
+
+    public UpdateManager(int oldVersionCode, int newVersionCode) {
+        mOldVersionCode = oldVersionCode;
+        mNewVersionCode = newVersionCode;
+    }
+
+    /**
+     * Performs updates nessesary to migrate the app from mOldVersionCode to mNewVersionCode
+     * @param callback the progress callback that will receive progress events
+     */
+    public void run(OnProgressCallback callback) {
+        mCallback = callback;
+
+        if(mOldVersionCode == 0) {
+            // perform migration from 1.x to 2.x
+            Log.d(TAG, "performing migration from 1.x to 2.x");
+            onProgress(0, "performing migration from 1.x to 2.x");
+
+            File db = new File("/data/data/com.translationstudio.androidapp/app_webview/databases/file__0/1");
+            if(db.exists() && db.isFile()) {
+                // perform migration
+                PackageInfo pInfo;
+                try {
+                    pInfo = MainContext.getContext().getPackageManager().getPackageInfo(MainContext.getContext().getPackageName(), 0);
+                } catch (PackageManager.NameNotFoundException e) {
+                    // failed identify package dir
+                    e.printStackTrace();
+                    return;
+                }
+                String databasePath = pInfo.applicationInfo.dataDir + "/app_webview/databases/file__0/1";
+                SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(MainContext.getContext(), databasePath);
+                migrationHelper.migrateDatabase(new SQLiteMigrationHelper.OnProgressCallback() {
+                    @Override
+                    public void onProgress(double progress, String message) {
+                        UpdateManager.this.onProgress(progress, message);
+                    }
+                });
+
+                // backup database
+                File backup = new File(MainContext.getContext().getFilesDir(), "1.x_backup.sqlite3");
+                FileUtilities.moveOrCopy(db, backup);
+
+                // trash old files
+                FileUtilities.deleteRecursive(new File(MainContext.getContext().getFilesDir(), "Documents"));
+                // TODO: delete app_database
+                // TODO: delete app_webview
+                // TODO: delete the others.
+            } else {
+                onError("The database from version 1.x could not be found at " + db.getAbsolutePath());
+            }
+        }
+        onSuccess();
+    }
+
+    /**
+     * Performs updates nessesary to migrate the app from mOldVersionCode to mNewVersionCode
+     */
+    public void run() {
+        run(null);
+    }
+
+    /**
+     * Submits the progress to the callback if it is not null
+     * @param progress
+     */
+    private void onProgress(double progress, String message) {
+        if(mCallback != null) {
+            mCallback.onProgress(progress, message);
+        }
+    }
+
+    /**
+     * lets the callback know we are done
+     */
+    private void onSuccess() {
+        if(mCallback != null) {
+            mCallback.onSuccess();
+        }
+    }
+
+    /**
+     * Sends an error message to the callback
+     * @param message
+     */
+    private void onError(String message) {
+        if(mCallback != null) {
+            mCallback.onError(message);
+        }
+    }
+
+    public interface OnProgressCallback {
+        void onProgress(double progress, String message);
+        void onSuccess();
+        void onError(String message);
+    }
+}

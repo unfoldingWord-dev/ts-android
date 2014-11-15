@@ -6,14 +6,12 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-
-import org.w3c.dom.Text;
 
 /**
  * Created by joel on 9/29/2014.
@@ -61,30 +59,12 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 }
 
                 @Override
-                public void finished() {
+                public void onSuccess() {
                     // Generate the ssh keys
                     if(!app().hasKeys()) {
                         // this is so short we don't update the progress bar
                         publishProgress(getResources().getString(R.string.generating_security_keys));
                         app().generateKeys();
-                    }
-
-                    // handle app version changes
-                    SharedPreferences settings = getSharedPreferences(MainApplication.PREFERENCES_TAG, MODE_PRIVATE);
-                    SharedPreferences.Editor editor = settings.edit();
-                    int lastVersionCode = settings.getInt("last_version_code", 0);
-                    PackageInfo pInfo = null;
-                    try {
-                        pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                        if(pInfo.versionCode > lastVersionCode) {
-                            // update!
-                            UpdateManager updater = new UpdateManager(lastVersionCode, pInfo.versionCode);
-                            updater.run();
-                        }
-                        editor.putInt("last_version_code", pInfo.versionCode);
-                        editor.apply();
-                    } catch (PackageManager.NameNotFoundException e) {
-                        e.printStackTrace();
                     }
 
                     // load previously viewed frame
@@ -105,6 +85,43 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                     } else {
                         // load the default project without display a notice to the user
                         app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+                    }
+
+                    // handle app version changes
+                    SharedPreferences settings = getSharedPreferences(MainApplication.PREFERENCES_TAG, MODE_PRIVATE);
+                    SharedPreferences.Editor editor = settings.edit();
+                    int lastVersionCode = settings.getInt("last_version_code", 0);
+                    PackageInfo pInfo = null;
+                    try {
+                        pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                        if(pInfo.versionCode > lastVersionCode) {
+                            // update!
+                            mProgress = 0;
+                            publishProgress("Performing updates");
+                            UpdateManager updater = new UpdateManager(lastVersionCode, pInfo.versionCode);
+                            updater.run(new UpdateManager.OnProgressCallback() {
+                                @Override
+                                public void onProgress(double progress, String message) {
+                                    mProgress = (int)(progress * 100); // update manager returns 100 based percent values not 10,000
+                                    publishProgress(message);
+                                }
+
+                                @Override
+                                public void onSuccess() {
+
+                                }
+
+                                @Override
+                                public void onError(String message) {
+                                    // TODO: display an error message to the user.
+                                }
+                            });
+                        }
+                        // TODO: this is disabled for testing
+//                        editor.putInt("last_version_code", pInfo.versionCode);
+//                        editor.apply();
+                    } catch (PackageManager.NameNotFoundException e) {
+                        e.printStackTrace();
                     }
                 }
             });

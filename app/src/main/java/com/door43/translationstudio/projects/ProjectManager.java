@@ -66,7 +66,7 @@ public class ProjectManager {
             String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
             loadTargetLanguagesCatalog(targetLanguageCatalog);
         }
-        mCallback.finished();
+        mCallback.onSuccess();
     }
 
     /**
@@ -540,6 +540,6 @@ public class ProjectManager {
 
     public interface OnProgressCallback {
         void onProgress(double progress, String message);
-        void finished();
+        void onSuccess();
     }
 }
