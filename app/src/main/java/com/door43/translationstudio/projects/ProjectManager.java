@@ -498,6 +498,12 @@ public class ProjectManager {
             return;
         }
 
+        // TODO: extract the images if nessesary
+        // "sourceTranslations/"+p.getId()+"/en/images.tar.gz";
+        // should go to
+        // Note: for now all images are english.
+        // cache/assets/p.getid()/en/images
+
         // load the data
         for(int i=0; i<jsonChapters.length(); i++) {
             try {
