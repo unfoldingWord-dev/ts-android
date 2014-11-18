@@ -1,7 +1,6 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -17,9 +16,7 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -384,8 +381,8 @@ public class Project {
     }
 
     /**
-     * Returns a language by id
-     * @param id the language id
+     * Finds a language by the language code
+     * @param id the language code
      * @return null if the language does not exist
      */
     public Language getSourceLanguage(String id) {
@@ -397,7 +394,7 @@ public class Project {
     }
 
     /**
-     * Returns a language by index
+     * Finds a language by index
      * @param index the language index
      * @return null if the language does not exist
      */
@@ -436,7 +433,7 @@ public class Project {
     }
 
     /**
-     * Exports the project with the currently selected target language in Doku Wiki format
+     * Exports the project with the currently selected target language in DokuWiki format
      * This is a process heavy method and should not be ran on the main thread
      * @return the path to the export directory
      */
@@ -608,12 +605,16 @@ public class Project {
         AddTask add = new AddTask(repo, ".", new AddTask.OnAddComplete() {
             @Override
             public void success() {
-                callback.success();
+                if(callback != null) {
+                    callback.success();
+                }
             }
 
             @Override
             public void error() {
-                callback.error();
+                if(callback != null) {
+                    callback.error();
+                }
             }
         });
         add.executeTask();
@@ -640,34 +641,6 @@ public class Project {
     public interface OnCommitComplete {
         public void success();
         public void error();
-    }
-
-    /**
-     * Imports a translation (Doku Wiki) into the project
-     * @param file the doku wiki file
-     * @return
-     */
-    public boolean importTranslation(File file) {
-        if(file.exists() && file.isFile()) {
-            StringBuilder text = new StringBuilder();
-            try {
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                String line;
-                String languageName = br.readLine().trim().replace("/", "").trim();
-                // TODO: finish building the dokuwiki import
-                while ((line = br.readLine()) != null) {
-                    text.append(line);
-                    text.append('\n');
-                }
-                String content = text.toString().trim();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return true;
-        } else {
-            return false;
-        }
     }
 
     /**

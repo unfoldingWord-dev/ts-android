@@ -10,10 +10,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The project manager handles all of the projects within the app.
@@ -33,6 +39,8 @@ public class ProjectManager {
     private static List<Language> mLanguages = new ArrayList<Language>();
     // so we can look up by id
     private static Map<String, Language> mLanguagesMap = new HashMap<String, Language>();
+    // so we can look up by name
+    private static Map<String, Language> mLanguagesNameMap = new HashMap<String, Language>();
 
     // these constants are used to bind the progress bar to within certain ranges for the data.
     private final double PERCENT_TARGET_LANGUAGES = 70.0;
@@ -127,6 +135,7 @@ public class ProjectManager {
     private void addLanguage(Language l) {
         if(!mLanguagesMap.containsKey(l.getId())) {
             mLanguagesMap.put(l.getId(), l);
+            mLanguagesNameMap.put(l.getName(), l);
             mLanguages.add(l);
         }
     }
@@ -165,6 +174,19 @@ public class ProjectManager {
     public Language getLanguage(String id) {
         if(mLanguagesMap.containsKey(id)) {
             return mLanguagesMap.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Finds a language by the human readable name
+     * @param name the name of the language
+     * @return null if the language does not exist
+     */
+    private Language getLanguageByName(String name) {
+        if(mLanguagesNameMap.containsKey(name)) {
+            return mLanguagesNameMap.get(name);
         } else {
             return null;
         }
@@ -222,6 +244,93 @@ public class ProjectManager {
             return getProject(defaultProjectIndex);
         } else {
             return selectedProject;
+        }
+    }
+
+    /**
+     * Imports a translation (Doku Wiki) into a project.
+     * @param file the doku wiki file
+     * @return
+     */
+    public boolean importTranslation(File file) {
+        if(file.exists() && file.isFile()) {
+            StringBuilder frameBuffer = new StringBuilder();
+            String line, chapterId = "", frameId = "", chapterTitle = "";
+            Pattern pattern = Pattern.compile("-(\\d\\d)-(\\d\\d)\\.jpg");
+            Language targetLanguage = null;
+            Project project = null;
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    if(line.length() > 4 && line.substring(0, 2).equals("//")) {
+                        line = line.substring(2, line.length() - 2).trim();
+                        if(targetLanguage == null) {
+                            // retrieve the translation language
+                            targetLanguage = getLanguageByName(line);
+                            if(targetLanguage == null) return false;
+                        } else if(project == null) {
+                            // retrieve project
+                            project = getProject(line);
+                            if(project == null) return false;
+                            // place this translation into the correct language
+                            project.setSelectedTargetLanguage(targetLanguage.getId());
+                        } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
+                            // retrieve chapter reference (end of chapter)
+                            Chapter c =  project.getChapter(chapterId);
+                            c.setReferenceTranslation(line);
+                            if(!chapterTitle.isEmpty()) {
+                                c.setTitleTranslation(chapterTitle);
+                            }
+                            c.save();
+
+                            // save the last frame of the chapter
+                            if(frameBuffer.length() > 0) {
+                                Frame f = c.getFrame(frameId);
+                                f.setTranslation(frameBuffer.toString().trim());
+                                f.save();
+                            }
+                            chapterId = "";
+                            frameId = "";
+                            frameBuffer.setLength(0);
+                        } else {
+                            // unexpected input
+                            return false;
+                        }
+                    } else if(line.length() > 12 && line.substring(0, 6).equals("======")) {
+                        // start of a new chapter
+                        chapterTitle = line.substring(6, line.length() - 6).trim(); // this is saved at the end of the chapter
+                    } else if(line.length() > 4 && line.substring(0, 2).equals("{{")) {
+                        // save the previous frame
+                        if(project != null && !chapterId.isEmpty() && !frameId.isEmpty() && frameBuffer.length() > 0) {
+                            Frame f = project.getChapter(chapterId).getFrame(frameId);
+                            f.setTranslation(frameBuffer.toString().trim());
+                            f.save();
+                        }
+
+                        // image tag. We use this to get the frame number for the following text.
+                        Matcher matcher = pattern.matcher(line);
+                        while(matcher.find()) {
+                            chapterId = matcher.group(1);
+                            frameId = matcher.group(2);
+                        }
+                        // clear the frame buffer
+                        frameBuffer.setLength(0);
+                    } else {
+                        // frame translation
+                        frameBuffer.append(line);
+                        frameBuffer.append('\n');
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return true;
+        } else {
+            return false;
         }
     }
 

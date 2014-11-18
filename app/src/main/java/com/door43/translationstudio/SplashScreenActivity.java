@@ -117,9 +117,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                                 }
                             });
                         }
-                        // TODO: this is disabled for testing
-//                        editor.putInt("last_version_code", pInfo.versionCode);
-//                        editor.apply();
+                        editor.putInt("last_version_code", pInfo.versionCode);
+                        editor.apply();
                     } catch (PackageManager.NameNotFoundException e) {
                         e.printStackTrace();
                     }

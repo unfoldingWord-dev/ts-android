@@ -180,7 +180,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 }, removeableMedia != null , R.string.missing_external_storage));
 
                 // TODO: for now this is disabled until we get around to finishing the import. This is important to have so that 1.x exports can be loaded into 2.x
-                if(exportAsProject) {
+//                if(exportAsProject) {
                 mSharingTools.add(new SharingToolItem(R.string.import_from_sd, descriptionResource, R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
@@ -188,7 +188,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                         startActivityForResult(intent, exportAsProject ? IMPORT_PROJECT_FROM_SD_REQUEST : IMPORT_DOKUWIKI_FROM_SD_REQUEST);
                     }
                 }, removeableMedia != null, R.string.missing_external_storage));
-                }
+//                }
 
 
 //            mSharingTools.add(new SharingToolItem("Export to nearby device", descriptionResource, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
@@ -347,23 +347,23 @@ public class SharingActivity extends TranslatorBaseActivity {
             if(data != null) {
                 final File file = new File(data.getExtras().getString("path"));
                 if(file.exists() && file.isFile()) {
-                    ProjectManager pm = app().getSharedProjectManager();
-                    Project p;
-                    if(pm.numProjects() > 1) {
-                        // TODO: display a dialog where the user can choose which project to import to.
-                        app().showToastMessage("Doku Wiki import is not configured for import with multiple projects yet.");
-                        return;
-                    } else {
-                        p = pm.getProject(0);
-                    }
+                    final ProjectManager pm = app().getSharedProjectManager();
+//                    Project p;
+//                    if(pm.numProjects() > 1) {
+//                        // TODO: display a dialog where the user can choose which project to import to.
+//                        app().showToastMessage("Doku Wiki import is not configured for import with multiple projects yet.");
+//                        return;
+//                    } else {
+//                        p = pm.getProject(0);
+//                    }
 
-                    final Project project = p;
+//                    final Project project = p;
 
                     // thread to prepare import
                     Runnable prepareImport = new Runnable() {
                         public void run() {
                             app().showProgressDialog(R.string.importing_project);
-                            if(project.importTranslation(file)) {
+                            if(pm.importTranslation(file)) {
                                 app().showToastMessage(R.string.success);
                             } else {
                                 app().showToastMessage(R.string.translation_import_failed);
