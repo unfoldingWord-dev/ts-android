@@ -74,7 +74,7 @@
                             android:textColor="@color/dark_gray"
                             android:paddingTop="5dp"
                             android:paddingLeft="10dp"
-                            android:paddingBottom="10dp"
+                            android:paddingBottom="5dp"
                             android:layout_above="@+id/sourceFrameNumText"
                             android:layout_below="@+id/sourceTitleText"
                             android:paddingRight="10dp" />
@@ -138,7 +138,6 @@
                             android:textColor="@color/dark_gray"
                             android:imeOptions="flagNoExtractUi"
                             android:paddingLeft="10dp"
-                            android:paddingTop="5dp"
                             android:paddingRight="10dp"
                             android:paddingBottom="10dp"
                             android:focusable="true"

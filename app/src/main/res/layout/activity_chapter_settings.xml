@@ -19,12 +19,15 @@
             android:background="@drawable/gray_vertical_border"
             android:padding="10dp"
             android:layout_weight="1">
+
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/source_language_field"
-                android:paddingRight="10dp"
-                android:textSize="@dimen/h3" />
+                android:text="Language: Chapter"
+                android:id="@+id/sourceLanguageName"
+                android:gravity="center"
+                android:textColor="@color/gray"
+                android:paddingTop="5dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -56,12 +59,15 @@
             android:layout_weight="1"
             android:padding="10dp"
             android:orientation="vertical">
+
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/target_language_field"
-                android:paddingRight="10dp"
-                android:textSize="@dimen/h3" />
+                android:text="Language: Chapter"
+                android:id="@+id/targetLanguageName"
+                android:gravity="center"
+                android:textColor="@color/gray"
+                android:paddingTop="5dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -76,6 +82,8 @@
                 android:id="@+id/targetLanguageChapterTitleEditText"
                 android:hint="Chapter Title"
                 android:singleLine="true"
+                android:padding="2dp"
+                android:textSize="@dimen/h5"
                 android:background="@color/light_gray" />
 
             <TextView
@@ -91,7 +99,10 @@
                 android:id="@+id/targetLanguageChapterReferenceEditText"
                 android:hint="Chapter Reference"
                 android:singleLine="false"
-                android:lines="2"
+                android:gravity="top"
+                android:padding="2dp"
+                android:lines="3"
+                android:textSize="@dimen/h5"
                 android:background="@color/light_gray" />
         </LinearLayout>
     </LinearLayout>

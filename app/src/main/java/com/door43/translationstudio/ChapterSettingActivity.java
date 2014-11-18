@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -17,10 +15,12 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 public class ChapterSettingActivity extends TranslatorBaseActivity {
     private ChapterSettingActivity me = this;
-    private TextView sourceLanguageChapterTitleEditText;
-    private TextView sourceLanguageChapterReferenceEditText;
+    private TextView sourceLanguageChapterTitleText;
+    private TextView sourceLanguageChapterReferenceText;
     private EditText targetLanguageChapterTitleEditText;
     private EditText targetLanguageChapterReferenceEditText;
+    private TextView sourceLanguageNameText;
+    private TextView targetLanguageNameText;
     private Project mProject;
 
     @Override
@@ -40,8 +40,10 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         }
 
         // expand view fields
-        sourceLanguageChapterTitleEditText = (TextView)findViewById(R.id.sourceLanguageChapterTitle);
-        sourceLanguageChapterReferenceEditText = (TextView)findViewById(R.id.sourceLanguageChapterReference);
+        sourceLanguageNameText = (TextView)findViewById(R.id.sourceLanguageName);
+        targetLanguageNameText = (TextView)findViewById(R.id.targetLanguageName);
+        sourceLanguageChapterTitleText = (TextView)findViewById(R.id.sourceLanguageChapterTitle);
+        sourceLanguageChapterReferenceText = (TextView)findViewById(R.id.sourceLanguageChapterReference);
         targetLanguageChapterTitleEditText = (EditText)findViewById(R.id.targetLanguageChapterTitleEditText);
         targetLanguageChapterReferenceEditText = (EditText)findViewById(R.id.targetLanguageChapterReferenceEditText);
 
@@ -56,11 +58,13 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
 
     private void loadValues() {
         if(mProject.getSelectedChapter() != null) {
-            sourceLanguageChapterTitleEditText.setText(mProject.getSelectedChapter().getTitle());
-            sourceLanguageChapterReferenceEditText.setText(mProject.getSelectedChapter().getReference());
+            sourceLanguageChapterTitleText.setText(mProject.getSelectedChapter().getTitle());
+            sourceLanguageChapterReferenceText.setText(mProject.getSelectedChapter().getReference());
             targetLanguageChapterTitleEditText.setText(mProject.getSelectedChapter().getTitleTranslation().getText());
             targetLanguageChapterReferenceEditText.setText(mProject.getSelectedChapter().getReferenceTranslation().getText());
         }
+        sourceLanguageNameText.setText(mProject.getSelectedSourceLanguage().getName());
+        targetLanguageNameText.setText(mProject.getSelectedTargetLanguage().getName());
     }
 
     @Override
