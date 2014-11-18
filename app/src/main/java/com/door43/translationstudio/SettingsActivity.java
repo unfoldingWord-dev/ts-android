@@ -53,6 +53,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
     public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
+    public static final String KEY_PREF_TYPEFACE_SIZE = "typeface_size";
 
     /**
      * Removes references to self to avoid memory leaks
@@ -142,6 +143,7 @@ public class SettingsActivity extends PreferenceActivity {
         pref.setEntries(entries.toArray(new CharSequence[entries.size()]));
         pref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
         bindPreferenceSummaryToValue(pref);
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
 
         // Add 'sharing' preferences, and a corresponding header.
         PreferenceCategory preferenceHeader = new PreferenceCategory(this);
@@ -267,7 +269,7 @@ public class SettingsActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
 
-            // TODO: this should be once once when the app is installed or updated. The results can be cached in a config file.
+            // TODO: this should be done once when the app is installed or updated. The results can be cached in a config file.
             // identify all typefaces in the assets directory
             AssetManager am = getResources().getAssets();
             String fileList[] = null;
@@ -300,6 +302,7 @@ public class SettingsActivity extends PreferenceActivity {
             pref.setEntries(entries.toArray(new CharSequence[entries.size()]));
             pref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
             bindPreferenceSummaryToValue(pref);
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
         }
     }
 

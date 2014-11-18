@@ -19,6 +19,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
@@ -206,6 +207,11 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText.setTypeface(translationTypeface);
         mSourceText.setTypeface(translationTypeface);
 
+        // set custom font size (sp)
+        int typefaceSize = Integer.parseInt(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_TYPEFACE_SIZE, MainContext.getContext().getResources().getString(R.string.pref_default_typeface_size)));
+        FancySpan.setGlobalTypefaceSize(typefaceSize);
+        mTranslationEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
+        mSourceText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
         // calculate actionbar height
         TypedValue tv = new TypedValue();

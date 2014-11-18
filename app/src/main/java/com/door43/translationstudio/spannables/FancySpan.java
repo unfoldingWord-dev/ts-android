@@ -8,6 +8,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ClickableSpan;
 import android.text.style.ImageSpan;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
@@ -23,6 +24,7 @@ public class FancySpan {
     private OnClickListener mClickListener;
     private final String mSpanId;
     protected static Typeface mTypeface;
+    protected static float mTypefaceSize = 0;
 
     public FancySpan(String spanId, String spanText, OnClickListener clickListener) {
         mSpanId = spanId;
@@ -58,6 +60,16 @@ public class FancySpan {
      */
     public static void setGlobalTypeface(Typeface typeface) {
         mTypeface = typeface;
+    }
+
+
+    /**
+     * Specifies the typeface size to use for all spans. This overides the size given by inherited classes
+     * @param typefaceSize
+     */
+    public static void setGlobalTypefaceSize(int typefaceSize) {
+        // TRICKY: this is a hack to get the span font size to match normal text size. This seems to be the magic ratio.
+        mTypefaceSize = (float)(typefaceSize * 1.5);
     }
 
     /**
@@ -158,6 +170,9 @@ public class FancySpan {
         tv.setBackgroundResource(backgroundResource);
         if(mTypeface != null) {
             tv.setTypeface(mTypeface);
+        }
+        if(mTypefaceSize > 0) {
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, mTypefaceSize);
         }
         return tv;
     }
