@@ -15,9 +15,13 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
-    <EditTextPreference
+    <ListPreference
         android:key="typeface_size"
         android:title="@string/pref_title_typeface_size"
-        android:defaultValue="@string/pref_default_typeface_size"/>
+        android:entries="@array/pref_typeface_size_titles"
+        android:entryValues="@array/pref_typeface_size_values"
+        android:defaultValue="@string/pref_default_typeface_size"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
 
 </PreferenceScreen>

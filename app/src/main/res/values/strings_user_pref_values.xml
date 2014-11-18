@@ -8,7 +8,13 @@
         <item>GentiumPlus.ttf</item>
     </string-array>
 
-    <string name="pref_default_typeface_size">20</string>
+    <string name="pref_default_typeface_size">25</string>
+    <string-array name="pref_typeface_size_values">
+        <item>20</item>
+        <item>25</item>
+        <item>30</item>
+        <item>35</item>
+    </string-array>
 
     <string name="pref_default_autosave">5000</string>
     <string-array name="pref_autosave_values">
