@@ -126,5 +126,6 @@
     <string name="key_terms">Key Terms</string>
     <string name="return_to_important_terms">Return to Important Terms</string>
     <string name="no_translation_notes">There are no translation notes</string>
+    <string name="label_important_terms">Important Terms</string>
 
 </resources>

@@ -110,6 +110,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
         mRootView = (DrawerLayout)findViewById(R.id.drawer_layout);
+        mRootView.setScrimColor(getResources().getColor(R.color.scrim));
 
         initPanes();
 

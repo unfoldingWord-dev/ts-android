@@ -11,4 +11,5 @@
     <color name="dark_gray">#ff3a3a3a</color>
     <color name="black">#000000</color>
     <color name="light_gray">#ffeaeaea</color>
+    <color name="scrim">#32000000</color>
 </resources>
