@@ -49,7 +49,7 @@ public class ResourcesFragment extends TranslatorBaseFragment {
         mNotesFragment.setOnShowCallback(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message message) {
-                mNotesBtn.setBackgroundResource(R.drawable.button_blue_bottom_border);
+                mNotesBtn.setBackgroundResource(R.drawable.button_purple_bottom_border);
                 mTermsBtn.setBackgroundResource(android.R.color.transparent);
                 mNotesBtn.setPadding(10, 10, 10, 10);
                 mTermsBtn.setPadding(10, 10, 10, 10);
@@ -60,7 +60,7 @@ public class ResourcesFragment extends TranslatorBaseFragment {
         mTermFragment.setOnShowCallback(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message message) {
-                mTermsBtn.setBackgroundResource(R.drawable.button_blue_bottom_border);
+                mTermsBtn.setBackgroundResource(R.drawable.button_purple_bottom_border);
                 mNotesBtn.setBackgroundResource(android.R.color.transparent);
                 mNotesBtn.setPadding(10, 10, 10, 10);
                 mTermsBtn.setPadding(10, 10, 10, 10);

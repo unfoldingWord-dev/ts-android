@@ -531,6 +531,11 @@ public class MainActivity extends TranslatorBaseActivity {
 
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
+            // get the target language
+            if(!p.hasChosenTargetLanguage()) {
+                showProjectSettingsMenu();
+            }
+
             int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
             Chapter chapter = p.getSelectedChapter();
             Frame frame = chapter.getSelectedFrame();

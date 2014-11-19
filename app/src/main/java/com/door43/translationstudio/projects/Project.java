@@ -319,6 +319,7 @@ public class Project {
 
     /**
      * Returns the currently selected target language
+     * If no target language has been chosen it will return the default language
      * @return
      */
     public Language getSelectedTargetLanguage() {
@@ -326,11 +327,18 @@ public class Project {
         if(selectedLanguage == null) {
             // auto select the first language
             int defaultLanguageIndex = 0;
-            setSelectedTargetLanguage(defaultLanguageIndex);
             return MainContext.getContext().getSharedProjectManager().getLanguage(defaultLanguageIndex);
         } else {
             return selectedLanguage;
         }
+    }
+
+    /**
+     * Checks if the user has chosen a target language for this project yet.
+     * @return
+     */
+    public boolean hasChosenTargetLanguage() {
+        return mSelectedTargetLanguageId != null;
     }
 
     /**
