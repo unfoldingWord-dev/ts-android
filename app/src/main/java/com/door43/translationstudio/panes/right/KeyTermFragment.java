@@ -4,7 +4,9 @@ package com.door43.translationstudio.panes.right;
 
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Handler;
 import android.text.Html;
+import android.text.Layout;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
@@ -14,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -22,6 +25,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
+import com.door43.translationstudio.projects.TranslationNote;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
@@ -37,6 +42,13 @@ public class KeyTermFragment extends TranslatorBaseFragment {
     private LinearLayout mExamplePassagesView;
     private View mainView;
     private boolean mStartHidden = false;
+    private Term mTerm;
+    private Handler.Callback mOnShowCallback;
+    private TextView mImportantTerms;
+    private TextView mImportantTermsTitle;
+    private View mTermLayout;
+    private View mImportantTermsLayout;
+    private Button mImportantTermsButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,12 +60,37 @@ public class KeyTermFragment extends TranslatorBaseFragment {
         mExamplePassagesTitle = (TextView)view.findViewById(R.id.examplePassagesTitleText);
         mTermDescriptionWebView = (WebView)view.findViewById(R.id.termDescriptionWebView);
         mRelatedTerms = (TextView)view.findViewById(R.id.relatedTermsText);
-
         mainView = view.findViewById(R.id.keyTermsLayout);
+        mImportantTermsButton = (Button)view.findViewById(R.id.importantTermsButton);
 
-        // make links clickable
-        MovementMethod m = mRelatedTerms.getMovementMethod();
-        if ((m == null) || !(m instanceof LinkMovementMethod)) {
+        // these are for the default page
+        mImportantTermsTitle = (TextView)view.findViewById(R.id.importantTermsTitleText);
+        mImportantTermsTitle.setText(R.string.translation_notes_important_terms_title);
+        mImportantTerms = (TextView)view.findViewById(R.id.importantTermsText);
+
+        mTermLayout = view.findViewById(R.id.termLayout);
+        mImportantTermsLayout = view.findViewById(R.id.importantTermsLayout);
+
+        // return to the important terms view
+        mImportantTermsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mTerm = null;
+                showTerm();
+            }
+        });
+
+        // make important term links clickable
+        MovementMethod movementMethodImportantTerms = mImportantTerms.getMovementMethod();
+        if ((movementMethodImportantTerms == null) || !(movementMethodImportantTerms instanceof LinkMovementMethod)) {
+            if (mImportantTerms.getLinksClickable()) {
+                mImportantTerms.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+        }
+
+        // make related links clickable
+        MovementMethod movementMethodRelatedTerms = mRelatedTerms.getMovementMethod();
+        if ((movementMethodRelatedTerms == null) || !(movementMethodRelatedTerms instanceof LinkMovementMethod)) {
             if (mRelatedTerms.getLinksClickable()) {
                 mRelatedTerms.setMovementMethod(LinkMovementMethod.getInstance());
             }
@@ -82,8 +119,51 @@ public class KeyTermFragment extends TranslatorBaseFragment {
     }
 
     /**
+     * Shows the term details.
+     * Will show the related terms of the current term if one has already been selected.
+     */
+    public void showTerm() {
+        if(mTerm != null) {
+            showTerm(mTerm);
+        } else {
+            TranslationNote note = MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes();
+            mTermLayout.setVisibility(View.GONE);
+            mImportantTermsLayout.setVisibility(View.VISIBLE);
+
+            mImportantTerms.setText("");
+            int numImportantTerms = 0;
+
+            final Project p = app().getSharedProjectManager().getSelectedProject();
+
+            // show the related terms for this frame
+            for(String term:note.getImportantTerms()) {
+                final Term importantTerm = p.getTerm(term);
+                if(importantTerm != null) {
+                    final String termName = term;
+                    SpannableString link = new SpannableString(importantTerm.getName());
+                    ClickableSpan cs = new ClickableSpan() {
+                        @Override
+                        public void onClick(View widget) {
+                            ((MainActivity)getActivity()).showTermDetails(termName);
+                        }
+                    };
+                    link.setSpan(cs, 0, importantTerm.getName().length(), 0);
+                    mImportantTerms.append(link);
+                } else {
+                    mImportantTerms.append(term);
+                }
+                numImportantTerms++;
+                if(numImportantTerms < note.getImportantTerms().size()) {
+                    mImportantTerms.append(", ");
+                }
+            }
+            onShow();
+        }
+    }
+
+    /**
      * Shows the term details
-     * @param term
+     * @param term the term to display
      */
     public void showTerm(Term term) {
         if(term == null) {
@@ -91,6 +171,11 @@ public class KeyTermFragment extends TranslatorBaseFragment {
             ((MainActivity)getActivity()).closeDrawers();
             return;
         }
+
+        mTermLayout.setVisibility(View.VISIBLE);
+        mImportantTermsLayout.setVisibility(View.GONE);
+
+        mTerm = term;
 
         final Project p = app().getSharedProjectManager().getSelectedProject();
         mRelatedTerms.setText("");
@@ -176,5 +261,17 @@ public class KeyTermFragment extends TranslatorBaseFragment {
             mExamplePassagesTitle.setVisibility(View.GONE);
             mExamplePassagesView.setVisibility(View.GONE);
         }
+
+        onShow();
+    }
+
+    public void onShow() {
+        if(mOnShowCallback != null) {
+            mOnShowCallback.handleMessage(null);
+        }
+    }
+
+    public void setOnShowCallback(Handler.Callback callback) {
+        mOnShowCallback = callback;
     }
 }

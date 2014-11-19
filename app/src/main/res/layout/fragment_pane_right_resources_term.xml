@@ -3,6 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
@@ -10,48 +11,90 @@
         android:id="@+id/keyTermsLayout"
         android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/termName"
-            android:textSize="@dimen/h2" />
-
-        <WebView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/termDescriptionWebView"
-            android:background="@android:color/transparent"
-            android:clickable="false" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/related_terms"
-            android:id="@+id/relatedTermsTitleText"
-            android:paddingTop="20dp"
-            android:textSize="@dimen/h3" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New Text"
-            android:id="@+id/relatedTermsText"
-            android:textSize="@dimen/h4" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/term_examples"
-            android:id="@+id/examplePassagesTitleText"
-            android:paddingTop="20dp"
-            android:textSize="@dimen/h3" />
-
         <LinearLayout
-            android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:id="@+id/examplePassagesView"></LinearLayout>
+            android:orientation="vertical"
+            android:id="@+id/importantTermsLayout">
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/important_terms"
+                android:id="@+id/importantTermsTitleText"
+                android:paddingTop="20dp"
+                android:textSize="@dimen/h4" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="New Text"
+                android:id="@+id/importantTermsText"
+                android:textSize="@dimen/h4"
+                android:textColor="@color/gray" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical"
+            android:id="@+id/termLayout">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/return_to_important_terms"
+                android:id="@+id/importantTermsButton"
+                android:textSize="@dimen/h5"
+                android:background="@drawable/bordered_button"
+                android:layout_marginBottom="20dp"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/termName"
+                android:textSize="@dimen/h2" />
+
+            <WebView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/termDescriptionWebView"
+                android:background="@android:color/transparent"
+                android:clickable="false" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/related_terms"
+                android:id="@+id/relatedTermsTitleText"
+                android:paddingTop="20dp"
+                android:textSize="@dimen/h3" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/relatedTermsText"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/h4" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/term_examples"
+                android:id="@+id/examplePassagesTitleText"
+                android:paddingTop="20dp"
+                android:textSize="@dimen/h3" />
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/examplePassagesView"></LinearLayout>
+        </LinearLayout>
 
     </LinearLayout>
+
 </LinearLayout>

@@ -123,5 +123,8 @@
     <string name="git_push_success">Project was successfully uploaded</string>
     <string name="connection">Establishing a connection with the server…</string>
     <string name="choose_frame_to_start">Choose some source text from the left tab to get started</string>
+    <string name="key_terms">Key Terms</string>
+    <string name="return_to_important_terms">Return to Important Terms</string>
+    <string name="no_translation_notes">There are no translation notes</string>
 
 </resources>

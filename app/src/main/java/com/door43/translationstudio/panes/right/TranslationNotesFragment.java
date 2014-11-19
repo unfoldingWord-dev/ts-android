@@ -31,8 +31,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
  *
  */
 public class TranslationNotesFragment extends TranslatorBaseFragment {
-    private TextView mImportantTerms;
-    private TextView mImportantTermsTitle;
+
     private TextView mNotesTitleText;
     private LinearLayout mNotesView;
     private View mainView;
@@ -47,19 +46,9 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
         mNotesTitleText = (TextView)view.findViewById(R.id.translationNotesTitleText);
         mNotesTitleText.setText(R.string.translation_notes_title);
         mNotesView = (LinearLayout)view.findViewById(R.id.translationNotesView);
-        mImportantTermsTitle = (TextView)view.findViewById(R.id.importantTermsTitleText);
-        mImportantTermsTitle.setText(R.string.translation_notes_important_terms_title);
-        mImportantTerms = (TextView)view.findViewById(R.id.importantTermsText);
+
 
         mainView = view.findViewById(R.id.resourcesNotesView);
-
-        // make links clickable
-        MovementMethod m = mImportantTerms.getMovementMethod();
-        if ((m == null) || !(m instanceof LinkMovementMethod)) {
-            if (mImportantTerms.getLinksClickable()) {
-                mImportantTerms.setMovementMethod(LinkMovementMethod.getInstance());
-            }
-        }
 
         mIsLoaded = true;
         if(mTranslationNote != null) {
@@ -84,43 +73,7 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
 
         // load the notes
         final Project p = app().getSharedProjectManager().getSelectedProject();
-        mImportantTerms.setText("");
         mNotesView.removeAllViews();
-
-        // important terms
-        int numImportantTerms = 0;
-
-        // NOTE: the important terms are disabled for now. It is uncertain whether they will be re-enabled in the future.
-//        for(String term:note.getImportantTerms()) {
-//            final Term importantTerm = p.getTerm(term);
-//            if(importantTerm != null) {
-//                final String termName = term;
-//                SpannableString link = new SpannableString(importantTerm.getName());
-//                ClickableSpan cs = new ClickableSpan() {
-//                    @Override
-//                    public void onClick(View widget) {
-//                        ((MainActivity)getActivity()).showTermDetails(termName);
-//                    }
-//                };
-//                link.setSpan(cs, 0, importantTerm.getName().length(), 0);
-//                mImportantTerms.append(link);
-//
-//            } else {
-//                mImportantTerms.append(term);
-//            }
-//            numImportantTerms++;
-//            if(numImportantTerms < note.getImportantTerms().size()) {
-//                mImportantTerms.append(", ");
-//            }
-//        }
-
-        if(numImportantTerms == 0) {
-            mImportantTermsTitle.setVisibility(View.GONE);
-            mImportantTerms.setVisibility(View.GONE);
-        } else {
-            mImportantTermsTitle.setVisibility(View.VISIBLE);
-            mImportantTerms.setVisibility(View.VISIBLE);
-        }
 
         // notes
         if(note.getNotes().size() > 0) {
@@ -140,8 +93,12 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
             }
             mNotesView.setVisibility(View.VISIBLE);
         } else {
-            mNotesTitleText.setVisibility(View.GONE);
-            mNotesView.setVisibility(View.GONE);
+//            mNotesTitleText.setVisibility(View.GONE);
+//            mNotesView.setVisibility(View.GONE);
+            TextView placeholder = new TextView(getActivity());
+            placeholder.setText(R.string.no_translation_notes);
+            placeholder.setTextColor(getResources().getColor(R.color.gray));
+            mNotesView.addView(placeholder);
         }
     }
 
