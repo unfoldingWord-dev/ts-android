@@ -15,6 +15,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
  */
 public class RightPaneFragment extends TranslatorBaseFragment {
     private ResourcesFragment mResourcesFragment = new ResourcesFragment();
+    private int mLayoutWidth = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -23,6 +24,10 @@ public class RightPaneFragment extends TranslatorBaseFragment {
 
         // insert resources layout
         getFragmentManager().beginTransaction().replace(R.id.right_pane_content, mResourcesFragment).addToBackStack(null).commit();
+
+        if(mLayoutWidth != 0) {
+            rootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.FILL_PARENT));
+        }
 
         return rootView;
     }
@@ -38,5 +43,13 @@ public class RightPaneFragment extends TranslatorBaseFragment {
     }
     public void showNotes(TranslationNote note) {
         mResourcesFragment.showNotes(note);
+    }
+
+    /**
+     * Specifies the width of the layout
+     * @param width
+     */
+    public void setLayoutWidth(int width) {
+        mLayoutWidth = width;
     }
 }

@@ -163,11 +163,12 @@
     </RelativeLayout>
 
     <RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/drawer_edge_width"
-    android:background="@color/purple"
-    android:layout_gravity="end"
-    android:id="@+id/rightPaneContent">
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingLeft="@dimen/drawer_edge_width"
+        android:background="@color/purple"
+        android:layout_gravity="end"
+        android:id="@+id/rightPaneContent">
     </RelativeLayout>
+
 </android.support.v4.widget.DrawerLayout>

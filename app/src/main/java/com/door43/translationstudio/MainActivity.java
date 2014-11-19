@@ -25,9 +25,12 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
 
+import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -38,12 +41,14 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.Html;
+import android.text.Layout;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.util.TypedValue;
 import android.view.ActionMode;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -309,8 +314,16 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         });
 
+        // set up drawers
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            // make the right pane fill half the screen when in landscape mode.
+            mRightPane.setLayoutWidth(size.x / 2);
+        }
         getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
         getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
 

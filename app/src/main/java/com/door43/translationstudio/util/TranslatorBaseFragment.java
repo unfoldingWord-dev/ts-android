@@ -2,6 +2,8 @@ package com.door43.translationstudio.util;
 
 
 import android.app.Fragment;
+import android.view.View;
+import android.view.ViewGroup;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.MainApplication;
@@ -30,4 +32,5 @@ public class TranslatorBaseFragment extends Fragment {
         MainContext.getEventBus().unregister(this);
         super.onDestroy();
     }
+
 }
