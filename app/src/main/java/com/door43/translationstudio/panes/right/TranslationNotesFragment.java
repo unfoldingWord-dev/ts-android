@@ -93,8 +93,6 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
             }
             mNotesView.setVisibility(View.VISIBLE);
         } else {
-//            mNotesTitleText.setVisibility(View.GONE);
-//            mNotesView.setVisibility(View.GONE);
             TextView placeholder = new TextView(getActivity());
             placeholder.setText(R.string.no_translation_notes);
             placeholder.setTextColor(getResources().getColor(R.color.gray));

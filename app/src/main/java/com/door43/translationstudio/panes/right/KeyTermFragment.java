@@ -114,8 +114,6 @@ public class KeyTermFragment extends TranslatorBaseFragment {
         // TODO: fade out
         if(mainView != null) {
             mainView.setVisibility(View.GONE);
-        } else {
-//            mStartHidden = true;
         }
     }
 

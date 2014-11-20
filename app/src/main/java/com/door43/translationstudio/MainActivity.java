@@ -25,6 +25,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
 
+import android.animation.ObjectAnimator;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -37,6 +38,8 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
@@ -65,6 +68,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -105,6 +110,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private CustomMultiAutoCompleteTextView mTranslationEditText;
     private int mSourceTextMotionDownX = 0;
     private int mSourceTextMotionDownY = 0;
+    private final int TEXT_FADE_SPEED = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -537,12 +543,41 @@ public class MainActivity extends TranslatorBaseActivity {
      * Begins or restarts parsing the note tags
      * @param text
      */
-    private void parsePassageNoteTags(String text, Boolean isNewNote) {
+    private void parsePassageNoteTags(final String text, Boolean isNewNote) {
         if(mPassageNoteTask != null && !mPassageNoteTask.isCancelled()) {
             mPassageNoteTask.cancel(true);
         }
-        mPassageNoteTask = new PassageNotesHighlighterTask(isNewNote);
-        mPassageNoteTask.execute(text);
+        final Animation in = new AlphaAnimation(0.0f, 1.0f);
+        in.setDuration(TEXT_FADE_SPEED);
+        final Animation out = new AlphaAnimation(1.0f, 0.0f);
+        out.setDuration(TEXT_FADE_SPEED);
+        mPassageNoteTask = new PassageNotesHighlighterTask(isNewNote, new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message message) {
+                mTranslationEditText.setVisibility(View.VISIBLE);
+                mTranslationEditText.startAnimation(in);
+                return false;
+            }
+        });
+        out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mTranslationEditText.setVisibility(View.INVISIBLE);
+                mPassageNoteTask.execute(text);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTranslationEditText.startAnimation(out);
+            }
+        });
     }
 
     public void closeTranslationKeyboard() {
@@ -587,52 +622,104 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     /**
+     * This method will cause a view to fade out after which it fires a callback where operations can be performed.
+     * lastly it will fade back in.
+     */
+    private void fadeOutActionInAnimation(final View view, final Handler.Callback callback) {
+        final Animation in = new AlphaAnimation(0.0f, 1.0f);
+        in.setDuration(TEXT_FADE_SPEED);
+        final Animation out = new AlphaAnimation(1.0f, 0.0f);
+        out.setDuration(TEXT_FADE_SPEED);
+        out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                callback.handleMessage(null);
+                view.startAnimation(in);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
+        view.startAnimation(out);
+    }
+
+    /**
      * Updates the center pane with the selected source frame text and any existing translations
      */
     public void reloadCenterPane() {
-        // load source text
-
-        Project p = app().getSharedProjectManager().getSelectedProject();
+        // load the text
+        final Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
+            final int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
+            final Chapter chapter = p.getSelectedChapter();
+            final Frame frame = chapter.getSelectedFrame();
+
             // get the target language
             if(!p.hasChosenTargetLanguage()) {
                 showProjectSettingsMenu();
             }
 
-            int frameIndex = p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame());
-            Chapter chapter = p.getSelectedChapter();
-            Frame frame = chapter.getSelectedFrame();
-
             // target translation
-            Translation translation = frame.getTranslation();
+            final Translation translation = frame.getTranslation();
+
+
             parsePassageNoteTags(translation.getText());
-            // the translation text is initially loaded as html so users do not see the raw code before notes are parsed.
-            // TODO: we should show a loading animation instead
-//            mTranslationEditText.setText(Html.fromHtml(translation.getText()));
-//            mTranslationEditText.setSelection(mTranslationEditText.getSelectionStart());
+
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
-                mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
+                fadeOutActionInAnimation(mTranslationTitleText, new Handler.Callback() {
+                    @Override
+                    public boolean handleMessage(Message message) {
+                        mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
+                        return false;
+                    }
+                });
             } else {
                 // display translated title
-                mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
+                fadeOutActionInAnimation(mTranslationTitleText, new Handler.Callback() {
+                    @Override
+                    public boolean handleMessage(Message message) {
+                        mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
+                        return false;
+                    }
+                });
             }
+
+            // source translation
+            fadeOutActionInAnimation(mSourceTitleText, new Handler.Callback() {
+                @Override
+                public boolean handleMessage(Message message) {
+                    mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
+                    return false;
+                }
+            });
+            fadeOutActionInAnimation(mSourceFrameNumText, new Handler.Callback() {
+                @Override
+                public boolean handleMessage(Message message) {
+                    mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " " + getResources().getString(R.string.of) + " " + p.getSelectedChapter().numFrames());
+                    return false;
+                }
+            });
 
             // be sure the terms highlighter task is stopped so it doesn't overwrite the new text.
             if(mTermsTask != null && !mTermsTask.isCancelled()) {
                 mTermsTask.cancel(true);
             }
 
-            // source translation
-            mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
-            mSourceText.setText(frame.getText());
-            mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " " + getResources().getString(R.string.of) + " " + p.getSelectedChapter().numFrames());
-
-            // set up task to highlight the source text key terms
+            // set up task to highlight the source text key terms.
+            final Animation in = new AlphaAnimation(0.0f, 1.0f);
+            in.setDuration(TEXT_FADE_SPEED);
+            final Animation out = new AlphaAnimation(1.0f, 0.0f);
+            out.setDuration(TEXT_FADE_SPEED);
             mTermsTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
                 @Override
                 public void onSuccess(String result) {
-                    String[] pieces = result.split("<a>");
+                    final String textResult = result;
+                    // load the highlighted text
+                    String[] pieces = textResult.split("<a>");
                     mSourceText.setText("");
                     mSourceText.append(pieces[0]);
                     for(int i=1; i<pieces.length; i++) {
@@ -649,10 +736,24 @@ public class MainActivity extends TranslatorBaseActivity {
                             mSourceText.append(linkChunks[1]);
                         } catch(Exception e){}
                     }
-                    // TODO: stop the loading indicator
+                    mSourceText.setVisibility(View.VISIBLE);
+                    mSourceText.startAnimation(in);
                 }
             });
-            mTermsTask.execute(frame.getText());
+            out.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {}
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mSourceText.setVisibility(View.INVISIBLE);
+                    mTermsTask.execute(frame.getText());
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+            mSourceText.startAnimation(out);
 
             // navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
@@ -942,9 +1043,11 @@ public class MainActivity extends TranslatorBaseActivity {
      */
     private class PassageNotesHighlighterTask extends AsyncTask<String, String, CharSequence> {
         private Boolean mRequestEmptyDefinitions;
+        private Handler.Callback mCallback;
 
-        public PassageNotesHighlighterTask(Boolean requestEmptyDefinitions) {
+        public PassageNotesHighlighterTask(Boolean requestEmptyDefinitions, Handler.Callback callback) {
             mRequestEmptyDefinitions = requestEmptyDefinitions;
+            mCallback = callback;
         }
 
         @Override
@@ -988,6 +1091,7 @@ public class MainActivity extends TranslatorBaseActivity {
         protected void onPostExecute(CharSequence result) {
             mTranslationEditText.setText(result);
             mTranslationEditText.setSelection(0);
+            mCallback.handleMessage(null);
         }
     }
 
