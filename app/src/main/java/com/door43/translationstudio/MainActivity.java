@@ -42,10 +42,15 @@ import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.Html;
 import android.text.Layout;
+import android.text.Selection;
+import android.text.Spannable;
+import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -100,6 +105,8 @@ public class MainActivity extends TranslatorBaseActivity {
     private ImageView mNextFrameView;
     private ImageView mPreviousFrameView;
     private CustomMultiAutoCompleteTextView mTranslationEditText;
+    private int mSourceTextMotionDownX = 0;
+    private int mSourceTextMotionDownY = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -341,19 +348,117 @@ public class MainActivity extends TranslatorBaseActivity {
             mTranslationEditText.setBackgroundDrawable(null);
         }
 
+        // detect gestures
+        mSourceGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+                return handleFling(event1, event2, velocityX, velocityY);
+            }
+        });
+        mTranslationGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+                return handleFling(event1, event2, velocityX, velocityY);
+            }
+        });
+
+        // hook up gesture detectors
+//        mSourceText.setOnTouchListener(new View.OnTouchListener() {
+//            public boolean onTouch(View v, MotionEvent event) {
+//                return mSourceGestureDetector.onTouchEvent(event);
+//            }
+//        });
+        mTranslationEditText.setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                return mTranslationGestureDetector.onTouchEvent(event);
+            }
+        });
+        mTranslationEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (keyEvent != null && i == EditorInfo.IME_ACTION_DONE) {
+//                    Log.i("keyboard", "done");
+                }
+                return false;
+            }
+        });
+
         // enable scrolling
         mSourceText.setMovementMethod(new ScrollingMovementMethod());
 
         // make links in the source text clickable
-        MovementMethod m = mSourceText.getMovementMethod();
-        if ((m == null) || !(m instanceof LinkMovementMethod)) {
-            if (mSourceText.getLinksClickable()) {
-                mSourceText.setMovementMethod(LinkMovementMethod.getInstance());
-            }
-        }
+//        MovementMethod m = mSourceText.getMovementMethod();
+//        if ((m == null) || !(m instanceof LinkMovementMethod)) {
+//            if (mSourceText.getLinksClickable()) {
+//                mSourceText.setMovementMethod(LinkMovementMethod.getInstance());
+//            }
+//        }
         mSourceText.setFocusable(true);
+        /*
+        * LinkMovementMethod disables parent gesture events for the spans.
+        * So we manually enable the clicking event in order to support scrolling on top of spans.
+        * http://stackoverflow.com/questions/7236840/android-textview-linkify-intercepts-with-parent-view-gestures
+        * */
+        mSourceText.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                TextView widget = (TextView) view;
+                Object text = widget.getText();
+                if (text instanceof Spanned) {
+                    Spannable buffer = (Spannable) text;
 
-        // make links in the translation source clickable without losing selection capabilities.
+                    int action = motionEvent.getAction();
+
+                    if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
+                        int x = (int) motionEvent.getX();
+                        int y = (int) motionEvent.getY();
+
+                        // watch out for drags
+                        if(action == MotionEvent.ACTION_DOWN) {
+                            // record start of drag
+                            mSourceTextMotionDownX = x;
+                            mSourceTextMotionDownY = y;
+                        } else {
+                            // don't click spans when dragging. we give a little of wiggle room though just in case
+                            int maxSpanClickWiggle = 5;
+                            if(Math.abs(mSourceTextMotionDownX - x) > maxSpanClickWiggle || Math.abs(mSourceTextMotionDownY - y) > maxSpanClickWiggle) {
+                                return mSourceGestureDetector.onTouchEvent(motionEvent);
+                            }
+                        }
+
+                        x -= widget.getTotalPaddingLeft();
+                        y -= widget.getTotalPaddingTop();
+
+                        x += widget.getScrollX();
+                        y += widget.getScrollY();
+
+                        Layout layout = widget.getLayout();
+                        int line = layout.getLineForVertical(y);
+                        int off = layout.getOffsetForHorizontal(line, x);
+                        ClickableSpan[] link = buffer.getSpans(off, off,
+                                ClickableSpan.class);
+
+                        if (link.length != 0) {
+                            if (action == MotionEvent.ACTION_UP) {
+                                motionEvent.getX();
+                                link[0].onClick(widget);
+                            } else if (action == MotionEvent.ACTION_DOWN) {
+                                Selection.setSelection(buffer,
+                                        buffer.getSpanStart(link[0]),
+                                        buffer.getSpanEnd(link[0]));
+                            }
+                            return mSourceGestureDetector.onTouchEvent(motionEvent);
+                        }
+                    }
+
+                }
+
+                return mSourceGestureDetector.onTouchEvent(motionEvent);
+            }
+        });
+
+
+        // make links in the translation text clickable without losing selection capabilities.
         mTranslationEditText.setMovementMethod(new CustomMovementMethod());
 
         // display help text when sourceText is empty.
@@ -420,41 +525,6 @@ public class MainActivity extends TranslatorBaseActivity {
                         }, saveDelay);
                     }
                 }
-            }
-        });
-
-        // detect gestures
-        mSourceGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-                return handleFling(event1, event2, velocityX, velocityY);
-            }
-        });
-        mTranslationGestureDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-                return handleFling(event1, event2, velocityX, velocityY);
-            }
-        });
-
-        // hook up gesture detectors
-        mSourceText.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                return mSourceGestureDetector.onTouchEvent(event);
-            }
-        });
-        mTranslationEditText.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                return mTranslationGestureDetector.onTouchEvent(event);
-            }
-        });
-        mTranslationEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (keyEvent != null && i == EditorInfo.IME_ACTION_DONE) {
-//                    Log.i("keyboard", "done");
-                }
-                return false;
             }
         });
 
