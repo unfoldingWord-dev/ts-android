@@ -42,6 +42,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes
@@ -593,6 +596,105 @@ public class MainApplication extends Application {
     public SharedPreferences getUserPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(this);
     }
+
+    /**
+     * Creates a zip archive
+     * http://stackoverflow.com/questions/6683600/zip-compress-a-folder-full-of-files-on-android
+     * @param sourcePath
+     * @param destPath
+     * @throws IOException
+     */
+    public void zip(String sourcePath, String destPath) throws IOException {
+        final int BUFFER = 2048;
+        File sourceFile = new File(sourcePath);
+        BufferedInputStream origin = null;
+        FileOutputStream dest = new FileOutputStream(destPath);
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
+                dest));
+        if (sourceFile.isDirectory()) {
+            zipSubFolder(out, sourceFile, sourceFile.getParent().length());
+        } else {
+            byte data[] = new byte[BUFFER];
+            FileInputStream fi = new FileInputStream(sourcePath);
+            origin = new BufferedInputStream(fi, BUFFER);
+            String[] segments = sourcePath.split("/");
+            String lastPathComponent = segments[segments.length - 1];
+            ZipEntry entry = new ZipEntry(lastPathComponent);
+            out.putNextEntry(entry);
+            int count;
+            while ((count = origin.read(data, 0, BUFFER)) != -1) {
+                out.write(data, 0, count);
+            }
+        }
+        out.close();
+    }
+
+    /**
+     * Zips up a sub folder
+     * @param out
+     * @param folder
+     * @param basePathLength
+     * @throws IOException
+     */
+    private void zipSubFolder(ZipOutputStream out, File folder, int basePathLength) throws IOException {
+        final int BUFFER = 2048;
+        File[] fileList = folder.listFiles();
+        BufferedInputStream origin = null;
+        for (File file : fileList) {
+            if (file.isDirectory()) {
+                zipSubFolder(out, file, basePathLength);
+            } else {
+                byte data[] = new byte[BUFFER];
+                String unmodifiedFilePath = file.getPath();
+                String relativePath = unmodifiedFilePath.substring(basePathLength);
+                FileInputStream fi = new FileInputStream(unmodifiedFilePath);
+                origin = new BufferedInputStream(fi, BUFFER);
+                ZipEntry entry = new ZipEntry(relativePath);
+                out.putNextEntry(entry);
+                int count;
+                while ((count = origin.read(data, 0, BUFFER)) != -1) {
+                    out.write(data, 0, count);
+                }
+                origin.close();
+            }
+        }
+    }
+
+    /**
+     * Extracts a zip archive
+     * @param zipPath
+     * @throws IOException
+     */
+    public void unzip(String zipPath, String destPath) throws IOException {
+        InputStream is;
+        ZipInputStream zis;
+        String filename;
+        ZipEntry ze;
+        int count;
+        byte[] buffer = new byte[1024];
+        is = new FileInputStream(zipPath);
+        zis = new ZipInputStream(new BufferedInputStream(is));
+
+        File destDir = new File(destPath);
+        destDir.mkdirs();
+
+        while ((ze = zis.getNextEntry()) != null) {
+            filename = ze.getName();
+            if (ze.isDirectory()) {
+                File f = new File(destPath, filename);
+                f.mkdirs();
+                continue;
+            }
+            FileOutputStream fout = new FileOutputStream(new File(destPath, filename).getAbsolutePath());
+            while ((count = zis.read(buffer)) != -1) {
+                fout.write(buffer, 0, count);
+            }
+            fout.close();
+            zis.closeEntry();
+        }
+        zis.close();
+    }
+
 
     /**
      * Extracts a tar file

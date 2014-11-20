@@ -248,7 +248,8 @@ public class ProjectManager {
     }
 
     /**
-     * Imports a translation (Doku Wiki) into a project.
+     * Imports a 1.x translation (Doku Wiki) into a project.
+     * TODO: this needs to support 2.x translations as well! 2.x archives chapter files. 1.x combines them into one file. This will work for 2.x, but you'd have to do one file at a time.
      * @param file the doku wiki file
      * @return
      */

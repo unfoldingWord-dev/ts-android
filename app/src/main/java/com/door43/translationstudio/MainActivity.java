@@ -587,7 +587,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         // positive x distance moves right
         final double maxFlingAngle = 20;
-        final float minFlingDistance = 150;
+        final float minFlingDistance = 100;
         final float minFlingVelocity = 20;
         float distanceX = event2.getX() - event1.getX();
         float distanceY = event2.getY() - event1.getY();

@@ -107,16 +107,16 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         sourcePath = p.export();
                                     }
 
-                                    // tar
+                                    // zip
                                     File dest = new File(internalDestDir, getArchiveName(p));
                                     dest.getParentFile().mkdirs();
-                                    app().tar(sourcePath, dest.getAbsolutePath());
+                                    app().zip(sourcePath, dest.getAbsolutePath());
 
                                     // share
                                     if(dest.exists() && dest.isFile()) {
                                         Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", dest);
                                         Intent i = new Intent(Intent.ACTION_SEND);
-                                        i.setType("application/x-tar");
+                                        i.setType("application/zip");
                                         i.putExtra(Intent.EXTRA_STREAM, u);
                                         startActivity(Intent.createChooser(i, getResources().getString(R.string.label_email)));
                                     } else {
@@ -162,7 +162,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     // tar
                                     File dest = new File(externalDestDir, getArchiveName(p));
                                     dest.getParentFile().mkdirs();
-                                    app().tar(sourcePath, dest.getAbsolutePath());
+                                    app().zip(sourcePath, dest.getAbsolutePath());
                                     if(dest.exists() && dest.isFile()) {
                                         // TODO: define a global list of notification id's that we can use.
                                         app().showToastMessage(getResources().getString(R.string.project_exported_to) + " " + dest.getParentFile().getAbsolutePath(), Toast.LENGTH_SHORT);
@@ -259,7 +259,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         }
         SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
         String timestamp = s.format(new Date());
-        return name + "_" + timestamp + ".tar";
+        return name + "_" + timestamp + ".zip";
     }
 
     @Override
@@ -301,11 +301,11 @@ public class SharingActivity extends TranslatorBaseActivity {
                             String timestamp = s.format(new Date());
                             File exportDir = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
 
-                            // TODO: validate that file is a tar
+                            // TODO: validate that file is a zip
 
                             // extract
                             try {
-                                app().untarTarFile(archiveFile.getAbsolutePath(), exportDir.getAbsolutePath());
+                                app().unzip(archiveFile.getAbsolutePath(), exportDir.getAbsolutePath());
                                 File[] files = exportDir.listFiles(new FilenameFilter() {
                                     @Override
                                     public boolean accept(File file, String s) {

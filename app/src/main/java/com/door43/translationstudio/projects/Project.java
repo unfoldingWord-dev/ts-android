@@ -516,13 +516,25 @@ public class Project {
                 chapterFile.createNewFile();
                 PrintStream ps = new PrintStream(chapterFile);
 
+                // language
+                ps.print("//");
+                ps.print(getSelectedTargetLanguage().getName());
+                ps.println("//");
+                ps.println();
+
+                // project
+                ps.print("//");
+                ps.print(getId());
+                ps.println("//");
+                ps.println();
+
                 // chapter title
-                if(!c.getTitleTranslation().getText().trim().isEmpty()) {
-                    ps.print("======");
-                    ps.print(c.getTitleTranslation().getText().trim());
-                    ps.println("======");
-                    ps.println();
-                }
+//                if(!c.getTitleTranslation().getText().trim().isEmpty()) {
+                ps.print("======");
+                ps.print(c.getTitleTranslation().getText().trim());
+                ps.println("======");
+                ps.println();
+//                }
 
                 // frames
                 for(int j = 0; j < c.numFrames(); j ++) {
@@ -571,11 +583,11 @@ public class Project {
                 }
 
                 // chapter reference
-                if(!c.getReferenceTranslation().getText().trim().isEmpty()) {
-                    ps.print("//");
-                    ps.print(c.getReferenceTranslation().getText().trim());
-                    ps.println("//");
-                }
+//                if(!c.getReferenceTranslation().getText().trim().isEmpty()) {
+                ps.print("//");
+                ps.print(c.getReferenceTranslation().getText().trim());
+                ps.println("//");
+//                }
 
                 ps.close();
             }
