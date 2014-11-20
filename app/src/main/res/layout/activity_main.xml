@@ -134,6 +134,7 @@
                             android:layout_height="match_parent"
                             android:id="@+id/inputText"
                             android:enabled="true"
+                            android:scrollbars="vertical"
                             android:gravity="top"
                             android:textColor="@color/dark_gray"
                             android:imeOptions="flagNoExtractUi"

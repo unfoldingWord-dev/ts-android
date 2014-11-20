@@ -90,8 +90,6 @@ public class MainActivity extends TranslatorBaseActivity {
 
     private GestureDetector mSourceGestureDetector;
     private GestureDetector mTranslationGestureDetector;
-    private final float MIN_FLING_DISTANCE = 100;
-    private final float MIN_FLING_VELOCITY = 10;
     private int mActionBarHeight;
     private boolean mActivityIsInitializing;
     private TermsHighlighterTask mTermsTask;
@@ -213,6 +211,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText = (CustomMultiAutoCompleteTextView)mCenterPane.findViewById(R.id.inputText);
 
         mTranslationEditText.setEnabled(false);
+//        mTranslationEditText.setVerticalScrollBarEnabled(true);
 
         // set up custom fonts
         Typeface translationTypeface = app().getTranslationTypeface();
@@ -363,11 +362,6 @@ public class MainActivity extends TranslatorBaseActivity {
         });
 
         // hook up gesture detectors
-//        mSourceText.setOnTouchListener(new View.OnTouchListener() {
-//            public boolean onTouch(View v, MotionEvent event) {
-//                return mSourceGestureDetector.onTouchEvent(event);
-//            }
-//        });
         mTranslationEditText.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
                 return mTranslationGestureDetector.onTouchEvent(event);
@@ -557,13 +551,21 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
-//        Log.d("", "onFling: " + event1.toString()+event2.toString());
-        // positive distance moves right
-        Float distanceX = event2.getX() - event1.getX();
+        // positive x distance moves right
+        final double maxFlingAngle = 20;
+        final float minFlingDistance = 150;
+        final float minFlingVelocity = 20;
+        float distanceX = event2.getX() - event1.getX();
+        float distanceY = event2.getY() - event1.getY();
+
+        // don't handle vertical swipes (division error)
+        if(distanceX == 0) return false;
+
+        double flingAngle = Math.toDegrees(Math.asin(Math.abs(distanceY/distanceX)));
+
         Project p = app().getSharedProjectManager().getSelectedProject();
-        if(Math.abs(distanceX) >= MIN_FLING_DISTANCE && Math.abs(velocityX) >= MIN_FLING_VELOCITY && p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
+        if(flingAngle <= maxFlingAngle && Math.abs(distanceX) >= minFlingDistance && Math.abs(velocityX) >= minFlingVelocity && p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
             // automatically save changes if the auto save did not have time to save
-            // TODO: this should only occure if there were actual changes
             save();
             Frame f;
             if(distanceX > 0) {
@@ -603,13 +605,16 @@ public class MainActivity extends TranslatorBaseActivity {
             Frame frame = chapter.getSelectedFrame();
 
             // load the translation notes
+            // TODO: the notes can get the notes itself
             setTranslationNotes(frame.getTranslationNotes());
 
             // target translation
             Translation translation = frame.getTranslation();
             parsePassageNoteTags(translation.getText());
-            // the translation text is initially loaded as html so so users do not see the raw code before notes are parsed.
-            mTranslationEditText.setText(Html.fromHtml(translation.getText()));
+            // the translation text is initially loaded as html so users do not see the raw code before notes are parsed.
+            // TODO: we should show a loading animation instead
+//            mTranslationEditText.setText(Html.fromHtml(translation.getText()));
+            mTranslationEditText.setSelection(mTranslationEditText.getSelectionStart());
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
