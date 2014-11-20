@@ -1,7 +1,6 @@
 package com.door43.translationstudio.spannables;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 10/31/2014.
@@ -16,6 +15,8 @@ public class TermSpan extends FancySpan{
      * @return
      */
     public CharSequence toCharSequence() {
-        return generateSpan(R.drawable.span_blue_bubble, R.color.white, R.dimen.h5);
+        // TODO: we have to use a plain span (without any drawing) to preserve word wrapping.
+        // perhaps we could provide an option in the user prefs to use bubble spans instead.
+        return generateSpan();
     }
 }

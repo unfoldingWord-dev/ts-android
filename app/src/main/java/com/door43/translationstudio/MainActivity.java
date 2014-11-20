@@ -408,22 +408,17 @@ public class MainActivity extends TranslatorBaseActivity {
                     Spannable buffer = (Spannable) text;
 
                     int action = motionEvent.getAction();
+                    int x = (int) motionEvent.getX();
+                    int y = (int) motionEvent.getY();
 
-                    if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-                        int x = (int) motionEvent.getX();
-                        int y = (int) motionEvent.getY();
-
-                        // watch out for drags
-                        if(action == MotionEvent.ACTION_DOWN) {
-                            // record start of drag
-                            mSourceTextMotionDownX = x;
-                            mSourceTextMotionDownY = y;
-                        } else {
-                            // don't click spans when dragging. we give a little of wiggle room though just in case
-                            int maxSpanClickWiggle = 5;
-                            if(Math.abs(mSourceTextMotionDownX - x) > maxSpanClickWiggle || Math.abs(mSourceTextMotionDownY - y) > maxSpanClickWiggle) {
-                                return mSourceGestureDetector.onTouchEvent(motionEvent);
-                            }
+                    if(action == MotionEvent.ACTION_DOWN) {
+                        mSourceTextMotionDownX = x;
+                        mSourceTextMotionDownY = y;
+                    } else if (action == MotionEvent.ACTION_UP) {
+                        // don't click spans when dragging. we give a little wiggle room just in case
+                        int maxSpanClickWiggle = 5;
+                        if(Math.abs(mSourceTextMotionDownX - x) > maxSpanClickWiggle || Math.abs(mSourceTextMotionDownY - y) > maxSpanClickWiggle) {
+                            return mSourceGestureDetector.onTouchEvent(motionEvent);
                         }
 
                         x -= widget.getTotalPaddingLeft();
@@ -442,10 +437,6 @@ public class MainActivity extends TranslatorBaseActivity {
                             if (action == MotionEvent.ACTION_UP) {
                                 motionEvent.getX();
                                 link[0].onClick(widget);
-                            } else if (action == MotionEvent.ACTION_DOWN) {
-                                Selection.setSelection(buffer,
-                                        buffer.getSpanStart(link[0]),
-                                        buffer.getSpanEnd(link[0]));
                             }
                             return mSourceGestureDetector.onTouchEvent(motionEvent);
                         }

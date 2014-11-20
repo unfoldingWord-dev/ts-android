@@ -6,7 +6,9 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.SpannedString;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.CharacterStyle;
 import android.text.style.ClickableSpan;
@@ -22,7 +24,7 @@ import com.door43.translationstudio.util.MainContext;
 /**
  * Created by joel on 10/31/2014.
  */
-public class FancySpan {
+public abstract class FancySpan {
     private final FancySpan me = this;
     private final String mSpanText;
     private OnClickListener mClickListener;
@@ -78,30 +80,21 @@ public class FancySpan {
 
     /**
      * Generates the content of the span
-     * @param backgroundResource
-     * @param colorResource
-     * @param textSizeResource
      * @return
      */
-    protected SpannableStringBuilder generateSpan(int backgroundResource, int colorResource, int textSizeResource) {
-        return generateSpan(mSpanText, backgroundResource, colorResource, textSizeResource);
+    protected SpannableStringBuilder generateSpan() {
+        return generateSpan(mSpanText);
     }
 
     /**
      * Generates the content of the span
      * @param textReplacement the text to be inserted into the raw text (not visible) This is useful for storing information that should be persited to the disk.
-     * @param backgroundResource
-     * @param colorResource
-     * @param textSizeResource
      * @return
      */
-    protected SpannableStringBuilder generateSpan(String textReplacement, int backgroundResource, int colorResource, int textSizeResource) {
-        // TODO: instead of mtext we need to provide the format for the span.
-        // this could be an optional parameter where we can specify data to be stored.
-        SpannableStringBuilder spannable = new SpannableStringBuilder();
-        spannable.append(textReplacement);
+    private SpannableStringBuilder generateSpan(String textReplacement) {
+        SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacement);
         if(spannable.length() > 0) {
-            spannable.setSpan(new RoundedBackgroundSpan(MainContext.getContext().getResources().getColor(R.color.light_blue), MainContext.getContext().getResources().getColor(R.color.white)), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new SpannedString(textReplacement), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             ClickableSpan clickSpan = new ClickableSpan() {
                 @Override
                 public void onClick(View view) {
@@ -116,6 +109,19 @@ public class FancySpan {
     }
 
     /**
+     * Generates a spannable that has a bubble background
+     * @param backgroundColorResourceId
+     * @param textColorResourceId
+     * @return
+     */
+    protected SpannableStringBuilder generateBubbleSpan(int backgroundColorResourceId, int textColorResourceId) {
+        SpannableStringBuilder spannable = generateSpan(mSpanText);
+        // TODO: there has to be a better way than using the global context class.
+        spannable.setSpan(new RoundedBackgroundSpan(MainContext.getContext().getResources().getColor(backgroundColorResourceId), MainContext.getContext().getResources().getColor(textColorResourceId)), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return spannable;
+    }
+
+    /**
      * Specifies the listener to be called upon a click
      * @param clickListener
      */
@@ -125,11 +131,12 @@ public class FancySpan {
 
     /**
      * Generates the content of the span
+     * @deprecated
      * @param textReplacement
      * @param background
      * @return
      */
-    protected SpannableStringBuilder generateSpan(String textReplacement, BitmapDrawable background) {
+    protected SpannableStringBuilder generateImageSpan(String textReplacement, BitmapDrawable background) {
         SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacement);
         if(spannable.length() > 0) {
             background.setBounds(0, 0, background.getIntrinsicWidth(), background.getIntrinsicHeight());
@@ -149,6 +156,7 @@ public class FancySpan {
 
     /**
      * Generates a fancy text view
+     * @deprecated
      * @param text
      * @param backgroundResource
      * @return
