@@ -603,10 +603,6 @@ public class MainActivity extends TranslatorBaseActivity {
             Chapter chapter = p.getSelectedChapter();
             Frame frame = chapter.getSelectedFrame();
 
-            // load the translation notes
-            // TODO: the notes can get the notes itself
-            setTranslationNotes(frame.getTranslationNotes());
-
             // target translation
             Translation translation = frame.getTranslation();
             parsePassageNoteTags(translation.getText());
@@ -816,19 +812,6 @@ public class MainActivity extends TranslatorBaseActivity {
     public void showTermDetails(String term) {
         openRightDrawer();
         mRightPane.showTerm(app().getSharedProjectManager().getSelectedProject().getTerm(term));
-    }
-
-    /**
-     * OPens the resources panel and displays the translation notes
-     * @param n
-     */
-    public void showTranslationNotes(TranslationNote n) {
-        openRightDrawer();
-        mRightPane.showNotes(n);
-    }
-
-    public void setTranslationNotes(TranslationNote n) {
-        mRightPane.showNotes(n);
     }
 
     @Override

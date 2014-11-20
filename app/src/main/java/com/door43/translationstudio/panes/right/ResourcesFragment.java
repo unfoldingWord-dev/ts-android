@@ -7,8 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ScrollView;
 
-import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.TranslationNote;
@@ -23,11 +23,14 @@ public class ResourcesFragment extends TranslatorBaseFragment {
     private TranslationNotesFragment mNotesFragment = new TranslationNotesFragment();
     private Button mNotesBtn;
     private Button mTermsBtn;
+    private ScrollView mScrollView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_pane_right_resources, container, false);
+
+        mScrollView = (ScrollView)view.findViewById(R.id.scrollView);
 
         // hook up notes button
         mTermsBtn = (Button)view.findViewById(R.id.resourcesTermsButton);
@@ -35,7 +38,7 @@ public class ResourcesFragment extends TranslatorBaseFragment {
         mNotesBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showNotes(MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes());
+                showNotes();
             }
         });
         mTermsBtn.setOnClickListener(new View.OnClickListener() {
@@ -49,10 +52,12 @@ public class ResourcesFragment extends TranslatorBaseFragment {
         mNotesFragment.setOnShowCallback(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message message) {
+                mTermFragment.hide();
                 mNotesBtn.setBackgroundResource(R.drawable.button_purple_bottom_border);
                 mTermsBtn.setBackgroundResource(android.R.color.transparent);
                 mNotesBtn.setPadding(10, 10, 10, 10);
                 mTermsBtn.setPadding(10, 10, 10, 10);
+                scrollToTop();
                 return false;
             }
         });
@@ -60,18 +65,28 @@ public class ResourcesFragment extends TranslatorBaseFragment {
         mTermFragment.setOnShowCallback(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message message) {
+                mNotesFragment.hide();
                 mTermsBtn.setBackgroundResource(R.drawable.button_purple_bottom_border);
                 mNotesBtn.setBackgroundResource(android.R.color.transparent);
                 mNotesBtn.setPadding(10, 10, 10, 10);
                 mTermsBtn.setPadding(10, 10, 10, 10);
+                scrollToTop();
                 return false;
             }
         });
 
+        if(MainContext.getContext().getSelectedKeyTerm() != null) {
+            showTerm(MainContext.getContext().getSelectedKeyTerm());
+        } else if(MainContext.getContext().getShowImportantTerms()) {
+            showTerm();
+        } else {
+            showNotes();
+        }
+
         // insert layouts
         getFragmentManager().beginTransaction().replace(R.id.resourcesNotesView, mNotesFragment).addToBackStack(null).commit();
         getFragmentManager().beginTransaction().replace(R.id.resourcesTermsView, mTermFragment).addToBackStack(null).commit();
-        mTermFragment.hide();
+
         return view;
     }
 
@@ -89,6 +104,7 @@ public class ResourcesFragment extends TranslatorBaseFragment {
      * @param term
      */
     public void showTerm(Term term) {
+        MainContext.getContext().setSelectedKeyTerm(term);
         mNotesFragment.hide();
         mTermFragment.show();
         mTermFragment.showTerm(term);
@@ -98,9 +114,22 @@ public class ResourcesFragment extends TranslatorBaseFragment {
      * Displays the translation notes for the current frame.
      * This is the default view
      */
-    public void showNotes(TranslationNote note) {
+    public void showNotes() {
+        MainContext.getContext().setShowImportantTerms(false);
+        MainContext.getContext().setSelectedKeyTerm(null);
         mTermFragment.hide();
         mNotesFragment.show();
-        mNotesFragment.showNotes(note);
+        mNotesFragment.showNotes(MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes());
+    }
+
+    private void scrollToTop() {
+        if(mScrollView != null) {
+            mScrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mScrollView.smoothScrollTo(0, 0);
+                }
+            });
+        }
     }
 }

@@ -4,20 +4,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
@@ -25,10 +19,10 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.DummyDialogListener;
 import com.door43.translationstudio.util.MainContext;
-import com.door43.translationstudio.util.TTFAnalyzer;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -67,6 +61,8 @@ public class MainApplication extends Application {
     private static Typeface mTranslationTypeface;
     private static String mSelectedTypeface = "";
     private static Activity mMainActivity;
+    private Term mSelectedKeyTerm;
+    private boolean mShowImportantTerms;
 
     public void onCreate() {
 
@@ -718,5 +714,39 @@ public class MainApplication extends Application {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    /**
+     * Sets the currently selected key term in the resources pane.
+     * We store this here so selections persist between orientation changes
+     * @param term
+     */
+    public void setSelectedKeyTerm(Term term) {
+        mSelectedKeyTerm = term;
+    }
+
+    /**
+     * Returns the curently selected key term
+     * @return
+     */
+    public Term getSelectedKeyTerm() {
+        return mSelectedKeyTerm;
+    }
+
+    /**
+     * Check if the important terms should be shown
+     * @return
+     */
+    public boolean getShowImportantTerms() {
+        return mShowImportantTerms;
+    }
+
+    /**
+     * Sets if the resources pane should display the important terms.
+     * This is needed to persist selection between orientation change
+     * @param showImportantTerms
+     */
+    public void setShowImportantTerms(boolean showImportantTerms) {
+        this.mShowImportantTerms = showImportantTerms;
     }
 }

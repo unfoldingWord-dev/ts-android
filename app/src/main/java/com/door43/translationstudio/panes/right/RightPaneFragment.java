@@ -41,8 +41,8 @@ public class RightPaneFragment extends TranslatorBaseFragment {
     public void showTerm(Term term) {
         mResourcesFragment.showTerm(term);
     }
-    public void showNotes(TranslationNote note) {
-        mResourcesFragment.showNotes(note);
+    public void showNotes() {
+        mResourcesFragment.showNotes();
     }
 
     /**

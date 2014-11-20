@@ -21,6 +21,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainActivity;
+import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Project;
@@ -41,7 +42,7 @@ public class KeyTermFragment extends TranslatorBaseFragment {
     private TextView mExamplePassagesTitle;
     private LinearLayout mExamplePassagesView;
     private View mainView;
-    private boolean mStartHidden = false;
+    private boolean mStartHidden = true;
     private Term mTerm;
     private Handler.Callback mOnShowCallback;
     private TextView mImportantTerms;
@@ -49,6 +50,7 @@ public class KeyTermFragment extends TranslatorBaseFragment {
     private View mTermLayout;
     private View mImportantTermsLayout;
     private Button mImportantTermsButton;
+    private boolean mHasLoaded = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -76,6 +78,7 @@ public class KeyTermFragment extends TranslatorBaseFragment {
             @Override
             public void onClick(View view) {
                 mTerm = null;
+                MainContext.getContext().setSelectedKeyTerm(null); // needed for device rotations.
                 showTerm();
             }
         });
@@ -96,8 +99,12 @@ public class KeyTermFragment extends TranslatorBaseFragment {
             }
         }
 
+        mHasLoaded = true;
+
         if(mStartHidden) {
             hide();
+        } else {
+            showTerm();
         }
 
         return view;
@@ -108,7 +115,7 @@ public class KeyTermFragment extends TranslatorBaseFragment {
         if(mainView != null) {
             mainView.setVisibility(View.GONE);
         } else {
-            mStartHidden = true;
+//            mStartHidden = true;
         }
     }
 
@@ -126,6 +133,15 @@ public class KeyTermFragment extends TranslatorBaseFragment {
         if(mTerm != null) {
             showTerm(mTerm);
         } else {
+            // Show the important terms
+            MainContext.getContext().setShowImportantTerms(true);
+
+            // let things load first
+            if(!mHasLoaded) {
+                mStartHidden = false;
+                return;
+            }
+
             TranslationNote note = MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes();
             mTermLayout.setVisibility(View.GONE);
             mImportantTermsLayout.setVisibility(View.VISIBLE);
@@ -172,10 +188,19 @@ public class KeyTermFragment extends TranslatorBaseFragment {
             return;
         }
 
+        mTerm = term;
+
+        MainContext.getContext().setShowImportantTerms(false);
+
+        // let things load first
+        if(!mHasLoaded) {
+            mStartHidden = false;
+            return;
+        }
+
         mTermLayout.setVisibility(View.VISIBLE);
         mImportantTermsLayout.setVisibility(View.GONE);
 
-        mTerm = term;
 
         final Project p = app().getSharedProjectManager().getSelectedProject();
         mRelatedTerms.setText("");
