@@ -211,7 +211,6 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText = (CustomMultiAutoCompleteTextView)mCenterPane.findViewById(R.id.inputText);
 
         mTranslationEditText.setEnabled(false);
-//        mTranslationEditText.setVerticalScrollBarEnabled(true);
 
         // set up custom fonts
         Typeface translationTypeface = app().getTranslationTypeface();
@@ -614,7 +613,7 @@ public class MainActivity extends TranslatorBaseActivity {
             // the translation text is initially loaded as html so users do not see the raw code before notes are parsed.
             // TODO: we should show a loading animation instead
 //            mTranslationEditText.setText(Html.fromHtml(translation.getText()));
-            mTranslationEditText.setSelection(mTranslationEditText.getSelectionStart());
+//            mTranslationEditText.setSelection(mTranslationEditText.getSelectionStart());
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
                 mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
@@ -1005,6 +1004,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
         protected void onPostExecute(CharSequence result) {
             mTranslationEditText.setText(result);
+            mTranslationEditText.setSelection(0);
         }
     }
 
