@@ -1,6 +1,7 @@
 package com.door43.translationstudio.spannables;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 10/31/2014.

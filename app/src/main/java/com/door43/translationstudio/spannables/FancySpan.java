@@ -2,11 +2,15 @@ package com.door43.translationstudio.spannables;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.CharacterStyle;
 import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.util.TypedValue;
 import android.view.View;
@@ -94,11 +98,10 @@ public class FancySpan {
     protected SpannableStringBuilder generateSpan(String textReplacement, int backgroundResource, int colorResource, int textSizeResource) {
         // TODO: instead of mtext we need to provide the format for the span.
         // this could be an optional parameter where we can specify data to be stored.
-        SpannableStringBuilder spannable = new SpannableStringBuilder(textReplacement);
+        SpannableStringBuilder spannable = new SpannableStringBuilder();
+        spannable.append(textReplacement);
         if(spannable.length() > 0) {
-            BitmapDrawable bd = convertViewToDrawable(createFancyTextView(mSpanText, backgroundResource, colorResource, textSizeResource));
-            bd.setBounds(0, 0, bd.getIntrinsicWidth(), bd.getIntrinsicHeight());
-            spannable.setSpan(new ImageSpan(bd), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new RoundedBackgroundSpan(MainContext.getContext().getResources().getColor(R.color.light_blue), MainContext.getContext().getResources().getColor(R.color.white)), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             ClickableSpan clickSpan = new ClickableSpan() {
                 @Override
                 public void onClick(View view) {

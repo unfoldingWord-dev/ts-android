@@ -570,7 +570,7 @@ public class MainActivity extends TranslatorBaseActivity {
             // set up task to highlight the source text key terms
             mTermsTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
                 @Override
-                public void onProgress(String result) {
+                public void onSuccess(String result) {
                     String[] pieces = result.split("<a>");
                     mSourceText.setText("");
                     mSourceText.append(pieces[0]);
@@ -588,10 +588,6 @@ public class MainActivity extends TranslatorBaseActivity {
                             mSourceText.append(linkChunks[1]);
                         } catch(Exception e){}
                     }
-                }
-
-                @Override
-                public void onSuccess(String result) {
                     // TODO: stop the loading indicator
                 }
             });
@@ -877,13 +873,13 @@ public class MainActivity extends TranslatorBaseActivity {
                 matcherKeyedText.appendTail(buf);
                 keyedText = buf.toString();
             }
-            publishProgress(keyedText);
+//            publishProgress(keyedText);
             return keyedText;
         }
 
-        protected void onProgressUpdate(String... items) {
-            mCallback.onProgress(items[0]);
-        }
+//        protected void onProgressUpdate(String... items) {
+//            mCallback.onProgress(items[0]);
+//        }
 
         protected void onPostExecute(String result) {
             mCallback.onSuccess(result);
@@ -894,7 +890,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * An interface tfor the terms highlight task
      */
     private interface OnHighlightProgress {
-        void onProgress(String result);
+//        void onProgress(String result);
         void onSuccess(String result);
     }
 
