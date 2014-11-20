@@ -220,8 +220,8 @@ public class Project {
      * @param term
      */
     public void addTerm(Term term) {
-        if(!mTermMap.containsKey(term.getName().toLowerCase())) {
-            mTermMap.put(term.getName().toLowerCase(), term);
+        if(!mTermMap.containsKey(term.getName())) {
+            mTermMap.put(term.getName(), term);
             mTerms.add(term);
         }
     }
@@ -247,9 +247,14 @@ public class Project {
         }
     }
 
+    /**
+     * Looks up a key term by name.
+     * @param name the case sensitive name of the term
+     * @return
+     */
     public Term getTerm(String name) {
-        if(mTermMap.containsKey(name.toLowerCase())) {
-            return mTermMap.get(name.toLowerCase());
+        if(mTermMap.containsKey(name)) {
+            return mTermMap.get(name);
         } else {
             return null;
         }

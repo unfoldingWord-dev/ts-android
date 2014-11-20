@@ -51,6 +51,7 @@ public class DataStore {
 
     /**
      * Returns a json array of key terms
+     * Terms are case sensitive
      */
     public String fetchTermsText(String projectSlug, String languageCode) {
         // TODO: check for updates on the server

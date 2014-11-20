@@ -910,7 +910,7 @@ public class MainActivity extends TranslatorBaseActivity {
             indicies.setSize(keyedText.length());
             for(Term t:mTerms) {
                 StringBuffer buf = new StringBuffer();
-                Pattern p = Pattern.compile("(?i)\\b" + t.getName() + "\\b");
+                Pattern p = Pattern.compile("\\b" + t.getName() + "\\b");
                 // TRICKY: we need to run two matches at the same time in order to keep track of used indicies in the string
                 Matcher matcherSourceText = p.matcher(params[0]);
                 Matcher matcherKeyedText = p.matcher(keyedText);
@@ -934,13 +934,8 @@ public class MainActivity extends TranslatorBaseActivity {
                 matcherKeyedText.appendTail(buf);
                 keyedText = buf.toString();
             }
-//            publishProgress(keyedText);
             return keyedText;
         }
-
-//        protected void onProgressUpdate(String... items) {
-//            mCallback.onProgress(items[0]);
-//        }
 
         protected void onPostExecute(String result) {
             mCallback.onSuccess(result);
