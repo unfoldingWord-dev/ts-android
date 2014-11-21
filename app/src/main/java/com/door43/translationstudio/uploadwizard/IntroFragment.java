@@ -4,13 +4,18 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 
 public class IntroFragment extends WizardFragment {
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -28,6 +33,32 @@ public class IntroFragment extends WizardFragment {
             @Override
             public void onClick(View view) {
                 onContinue();
+            }
+        });
+        final Switch completeSwitch = (Switch)rootView.findViewById(R.id.translationIsCompleteSwitch);
+        final TextView translationChecksNotice = (TextView)rootView.findViewById(R.id.translationChecksNoticeTextView);
+
+        translationChecksNotice.setVisibility(View.INVISIBLE);
+
+        // TODO: turn on the switch of the translation is marekd as ready
+
+        completeSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO: mark the translation as ready
+                if(completeSwitch.isChecked()) {
+                    Animation in = new AlphaAnimation(0.0f, 1.0f);
+                    in.setDuration(100);
+                    in.setFillAfter(true);
+//                    translationChecksNotice.setVisibility(View.VISIBLE);
+                    translationChecksNotice.startAnimation(in);
+                } else {
+                    Animation out = new AlphaAnimation(1.0f, 0.0f);
+                    out.setDuration(100);
+                    out.setFillAfter(false);
+                    translationChecksNotice.startAnimation(out);
+
+                }
             }
         });
 

@@ -68,6 +68,23 @@ public class Project {
     }
 
     /**
+     * Sets whether the translation in the currently selected target langauge is ready for submission
+     * @param isReady
+     */
+    public void setTranslationIsReady(boolean isReady){
+        // TODO: store the setting by project and language id
+    }
+
+    /**
+     * Checks if the translation in the currently selected target is ready for submission
+     * @return
+     */
+    public boolean getTranslationIsReady() {
+        // TODO: return the setting by project and language id
+        return false;
+    }
+
+    /**
      * Returns the global project id
      * @return
      */

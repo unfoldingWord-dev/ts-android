@@ -110,7 +110,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private CustomMultiAutoCompleteTextView mTranslationEditText;
     private int mSourceTextMotionDownX = 0;
     private int mSourceTextMotionDownY = 0;
-    private final int TEXT_FADE_SPEED = 100;
+    private static final int TEXT_FADE_SPEED = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -624,8 +624,9 @@ public class MainActivity extends TranslatorBaseActivity {
     /**
      * This method will cause a view to fade out after which it fires a callback where operations can be performed.
      * lastly it will fade back in.
+     * TODO: this should be placed in a utility class
      */
-    private void fadeOutActionInAnimation(final View view, final Handler.Callback callback) {
+    public static void fadeOutActionInAnimation(final View view, final Handler.Callback callback) {
         final Animation in = new AlphaAnimation(0.0f, 1.0f);
         in.setDuration(TEXT_FADE_SPEED);
         final Animation out = new AlphaAnimation(1.0f, 0.0f);

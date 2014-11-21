@@ -46,7 +46,7 @@
     <string name="import_ready_message">You are about to import a translation for the <xliff:g id="language" example="Deutsch">\"%1$s\"</xliff:g> language into the <xliff:g id="project" example="Open Bible Stories">\"%2$s\"</xliff:g>  project.</string>
     <string name="internet_not_available">You do not have an active internet connection.</string>
     <string name="title_activity_upload_wizard">Translation Upload</string>
-    <string name="upload_wizard_intro">You are about to upload your translation. We will now perform a few checks to ensure your translation is ready to be uploaded.</string>
+    <string name="upload_wizard_intro">You are about to upload your translation.</string>
     <string name="label_continue">Continue</string>
     <string name="upload_wizard_overview">Upload Review</string>
     <string name="label_project_details">Project details</string>
@@ -127,5 +127,7 @@
     <string name="return_to_important_terms">Return to Important Terms</string>
     <string name="no_translation_notes">There are no translation notes</string>
     <string name="label_important_terms">Important Terms</string>
+    <string name="translation_check_notice">We will now perform a few checks to ensure your translation is ready.</string>
+    <string name="translation_complete">Translation is complete</string>
 
 </resources>
