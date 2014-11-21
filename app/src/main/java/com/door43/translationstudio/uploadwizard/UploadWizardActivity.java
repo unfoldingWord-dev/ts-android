@@ -3,6 +3,7 @@ package com.door43.translationstudio.uploadwizard;
 import android.os.Bundle;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.ArrayList;
@@ -41,8 +42,21 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
      * Begins uploading the translation
      */
     public void startUpload() {
-        app().getSharedTranslationManager().syncSelectedProject();
-        finish();
+        app().showProgressDialog(R.string.preparing_upload);
+        app().getSharedProjectManager().getSelectedProject().commit(new Project.OnCommitComplete() {
+            @Override
+            public void success() {
+                app().getSharedTranslationManager().syncSelectedProject();
+                finish();
+            }
+
+            @Override
+            public void error() {
+                // We don't care. Worst case is the server won't know that the translation is ready.
+                app().getSharedTranslationManager().syncSelectedProject();
+                finish();
+            }
+        });
     }
 
     @Override

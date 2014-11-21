@@ -50,6 +50,7 @@ public class Project {
     public static final String GLOBAL_PROJECT_SLUG = "uw";
     private static final String TAG = "project";
     private static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
+    private static final String TRANSLATION_READY_TAG = "READY";
 
     /**
      * Create a new project
@@ -72,6 +73,19 @@ public class Project {
      * @param isReady
      */
     public void setTranslationIsReady(boolean isReady){
+        File file = new File(getRepositoryPath(), TRANSLATION_READY_TAG);
+        if(isReady == true) {
+            // place a file in the repo so the server knows it is ready
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                return;
+            }
+        } else {
+            // remove the ready tag
+            file.delete();
+        }
+
         SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putBoolean("translation_ready_"+mSlug+"_"+getSelectedTargetLanguage().getId(), isReady);
@@ -84,7 +98,7 @@ public class Project {
      */
     public boolean getTranslationIsReady() {
         SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        return settings.getBoolean("translation_ready_"+mSlug+"_"+getSelectedTargetLanguage().getId(), false);
+        return settings.getBoolean("translation_ready_" + mSlug + "_" + getSelectedTargetLanguage().getId(), false);
     }
 
     /**

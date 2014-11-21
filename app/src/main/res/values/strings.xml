@@ -129,5 +129,6 @@
     <string name="label_important_terms">Important Terms</string>
     <string name="translation_check_notice">We will now perform a few checks to ensure your translation is ready.</string>
     <string name="translation_complete">Translation is complete</string>
+    <string name="preparing_upload">Preparing the project for uploading...</string>
 
 </resources>
