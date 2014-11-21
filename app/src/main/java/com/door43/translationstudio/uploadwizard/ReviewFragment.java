@@ -35,7 +35,7 @@ public class ReviewFragment extends WizardFragment {
     private boolean mHasWarnings = false;
 
     public ReviewFragment() {
-        // Required empty public constructor
+
     }
 
 

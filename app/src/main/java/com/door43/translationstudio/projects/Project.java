@@ -72,7 +72,10 @@ public class Project {
      * @param isReady
      */
     public void setTranslationIsReady(boolean isReady){
-        // TODO: store the setting by project and language id
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("translation_ready_"+mSlug+"_"+getSelectedTargetLanguage().getId(), isReady);
+        editor.apply();
     }
 
     /**
@@ -80,8 +83,8 @@ public class Project {
      * @return
      */
     public boolean getTranslationIsReady() {
-        // TODO: return the setting by project and language id
-        return false;
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        return settings.getBoolean("translation_ready_"+mSlug+"_"+getSelectedTargetLanguage().getId(), false);
     }
 
     /**

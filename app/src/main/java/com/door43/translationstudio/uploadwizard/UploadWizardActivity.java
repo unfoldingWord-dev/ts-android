@@ -30,7 +30,6 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
         } else if(mCurrentFragmentIndex >= mFragments.size()) {
             // we are done
             startUpload();
-            finish();
         } else {
             // invalid index
 //            Log.d("error", "Invalid fragment index");
@@ -43,6 +42,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
      */
     public void startUpload() {
         app().getSharedTranslationManager().syncSelectedProject();
+        finish();
     }
 
     @Override
