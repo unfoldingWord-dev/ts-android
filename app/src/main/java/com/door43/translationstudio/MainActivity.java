@@ -96,6 +96,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private GestureDetector mSourceGestureDetector;
     private GestureDetector mTranslationGestureDetector;
     private int mActionBarHeight;
+    private int mStatusBarHeight;
     private boolean mActivityIsInitializing;
     private TermsHighlighterTask mTermsTask;
     private PassageNotesHighlighterTask mPassageNoteTask;
@@ -115,7 +116,11 @@ public class MainActivity extends TranslatorBaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_main);
+
         mActivityIsInitializing = true;
         app().setMainActivity(this);
 
@@ -200,7 +205,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
     private void resizeRootView(Rect r) {
         ViewGroup.LayoutParams params = mRootView.getLayoutParams();
-        params.height = r.bottom - mActionBarHeight;
+        params.height = r.bottom - mActionBarHeight - mStatusBarHeight;
         mRootView.setLayoutParams(params);
     }
 
@@ -230,12 +235,19 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
         mSourceText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
-        // calculate actionbar height
+        // get the actionbar height
         TypedValue tv = new TypedValue();
         mActionBarHeight = 0;
         if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
         {
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+        }
+
+        // get the statusbar height
+        mStatusBarHeight = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            mStatusBarHeight = getResources().getDimensionPixelSize(resourceId);
         }
 
         // hack to watch for the soft keyboard open and close

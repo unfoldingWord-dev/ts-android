@@ -20,10 +20,10 @@ android:padding="20dp">
         android:id="@+id/languageMenuTitleText"
         android:textSize="@dimen/h4" />
 
-    <EditText android:id="@+id/inputSearchTargetLanguage"
+    <EditText android:id="@+id/inputSearchLanguage"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/search_target_language"
+        android:hint="@string/search_language"
         android:inputType="textVisiblePassword"/>
 </LinearLayout>
 

@@ -110,7 +110,7 @@
     <string name="choose_target_language">Choose The Target Language</string>
     <string name="project_archive_missing">Project archive not found</string>
     <string name="label_email">Email:</string>
-    <string name="search_target_language">Search for a target language</string>
+    <string name="search_language">Search for a language</string>
     <string name="loading">Loading…</string>
     <string name="view_license">View License</string>
     <string name="license_deny">No Thanks</string>

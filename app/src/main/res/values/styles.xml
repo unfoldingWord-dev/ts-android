@@ -9,7 +9,7 @@
 
         <!-- No backgrounds, titles or window float -->
         <!--<item name="android:windowNoTitle">true</item>-->
-        <item name="android:windowFullscreen">true</item>
+        <!--<item name="android:windowFullscreen">true</item>-->
         <item name="android:windowIsFloating">false</item>
         <item name="android:actionBarStyle">@style/TranslationActionbar</item>
     </style>
@@ -20,7 +20,7 @@
 
         <!-- No backgrounds, titles or window float -->
         <!--<item name="android:windowNoTitle">true</item>-->
-        <item name="android:windowFullscreen">true</item>
+        <!--<item name="android:windowFullscreen">true</item>-->
         <item name="android:windowIsFloating">false</item>
         <item name="android:actionBarStyle">@style/TitledActionbar</item>
     </style>

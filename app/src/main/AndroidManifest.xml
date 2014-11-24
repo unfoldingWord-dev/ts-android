@@ -10,8 +10,7 @@
         android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:label="@string/app_name" >
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.door43.translationstudio.fileprovider"
@@ -40,7 +39,8 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:windowSoftInputMode="adjustResize" >
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustNothing" >
         </activity>
         <activity
             android:name=".SettingsActivity"
@@ -94,6 +94,7 @@
         <activity
             android:name=".ProjectSettingsActivity"
             android:label="@string/title_activity_project_settings"
+            android:theme="@style/TitledTheme"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
