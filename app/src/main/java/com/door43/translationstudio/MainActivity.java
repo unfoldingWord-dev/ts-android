@@ -751,14 +751,15 @@ public class MainActivity extends TranslatorBaseActivity {
                             } catch (Exception e) {
                             }
                         }
-                        mSourceText.setVisibility(View.VISIBLE);
-                        mSourceText.startAnimation(in);
-                        // scroll to top
-                        mSourceText.scrollTo(0, 0);
                     } else {
                         // just display the plain source text
                         mSourceText.setText(frame.getText());
                     }
+                    mSourceText.setVisibility(View.VISIBLE);
+                    mSourceText.startAnimation(in);
+                    // scroll to top
+                    mSourceText.scrollTo(0, 0);
+                    mRightPane.reloadTerm();
                 }
             });
             out.setAnimationListener(new Animation.AnimationListener() {
@@ -769,7 +770,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     mSourceText.setVisibility(View.INVISIBLE);
-                    mTermsTask.execute(frame.getText());
+                    mTermsTask.execute(frame);
                 }
 
                 @Override
@@ -1005,7 +1006,7 @@ public class MainActivity extends TranslatorBaseActivity {
     /**
      * A task to highlight key terms in the source text
      */
-    private class TermsHighlighterTask extends AsyncTask<String, String, String> {
+    private class TermsHighlighterTask extends AsyncTask<Frame, String, String> {
         private OnHighlightProgress mCallback;
         private List<Term> mTerms = new ArrayList<Term>();
 
@@ -1015,20 +1016,23 @@ public class MainActivity extends TranslatorBaseActivity {
         }
 
         @Override
-        protected String doInBackground(String... params) {
-            String keyedText = params[0];
+        protected String doInBackground(Frame... params) {
+            String keyedText = params[0].getText();
             Vector<Boolean> indicies = new Vector<Boolean>();
             indicies.setSize(keyedText.length());
             for(Term t:mTerms) {
                 StringBuffer buf = new StringBuffer();
                 Pattern p = Pattern.compile("\\b" + t.getName() + "\\b");
                 // TRICKY: we need to run two matches at the same time in order to keep track of used indicies in the string
-                Matcher matcherSourceText = p.matcher(params[0]);
+                Matcher matcherSourceText = p.matcher(params[0].getText());
                 Matcher matcherKeyedText = p.matcher(keyedText);
 
                 while (matcherSourceText.find() && matcherKeyedText.find()) {
                     // ensure the key term was found in an area of the string that does not overlap another key term.
                     if(indicies.get(matcherSourceText.start()) == null && indicies.get(matcherSourceText.end()) == null) {
+                        // build important terms list.
+                        params[0].addImportantTerm(matcherSourceText.group());
+                        // build the link
                         String key = "<a>" + matcherSourceText.group() + "</a>";
                         // lock indicies to prevent key term collisions
                         for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {

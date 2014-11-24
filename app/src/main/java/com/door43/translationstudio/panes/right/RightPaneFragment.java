@@ -38,6 +38,9 @@ public class RightPaneFragment extends TranslatorBaseFragment {
 
     }
 
+    public void reloadTerm() {
+        mResourcesFragment.showTerm();
+    }
     public void showTerm(Term term) {
         mResourcesFragment.showTerm(term);
     }
