@@ -3,6 +3,8 @@
 
     <string name="pref_default_remember_position">true</string>
 
+    <string name="pref_default_highlight_key_terms">true</string>
+
     <string name="pref_default_translation_typeface">GentiumPlus.ttf</string>
     <string-array name="pref_translation_typeface_values">
         <item>GentiumPlus.ttf</item>

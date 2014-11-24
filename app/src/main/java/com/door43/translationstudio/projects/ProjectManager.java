@@ -486,19 +486,12 @@ public class ProjectManager {
         for(int i=0; i<jsonNotes.length(); i++) {
             try {
                 JSONObject jsonNote = jsonNotes.getJSONObject(i);
-                if(jsonNote.has("id") && jsonNote.has("it") && jsonNote.has("tn")) {
+                if(jsonNote.has("id") && jsonNote.has("tn")) {
 
                     // load id
                     String[] chapterFrameId = jsonNote.getString("id").split("-");
                     String frameId = chapterFrameId[1];
                     String chapterId = chapterFrameId[0];
-
-                    // load important terms
-                    List<String> importantTerms = new ArrayList<String>();
-                    JSONArray jsonImportantTerms = jsonNote.getJSONArray("it");
-                    for (int j = 0; j < jsonImportantTerms.length(); j++) {
-                        importantTerms.add(jsonImportantTerms.getString(j));
-                    }
 
                     // load notes
                     List<TranslationNote.Note> notes = new ArrayList<TranslationNote.Note>();
@@ -509,7 +502,7 @@ public class ProjectManager {
                     }
 
                     // add translation notes to the frame
-                    p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(importantTerms, notes));
+                    p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(notes));
                 } else {
 //                    Log.w(TAG, "missing required parameters in the source notes");
                 }

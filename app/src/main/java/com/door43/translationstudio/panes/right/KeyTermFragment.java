@@ -24,6 +24,7 @@ import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
+import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.TranslationNote;
@@ -140,7 +141,9 @@ public class KeyTermFragment extends TranslatorBaseFragment {
                 return;
             }
 
-            TranslationNote note = MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes();
+            Frame frame = MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+            TranslationNote note = frame.getTranslationNotes();
+
             mTermLayout.setVisibility(View.GONE);
             mImportantTermsLayout.setVisibility(View.VISIBLE);
 
@@ -150,7 +153,7 @@ public class KeyTermFragment extends TranslatorBaseFragment {
             final Project p = app().getSharedProjectManager().getSelectedProject();
 
             // show the related terms for this frame
-            for(String term:note.getImportantTerms()) {
+            for(String term:frame.getImportantTerms()) {
                 final Term importantTerm = p.getTerm(term);
                 if(importantTerm != null) {
                     final String termName = term;
@@ -167,7 +170,7 @@ public class KeyTermFragment extends TranslatorBaseFragment {
                     mImportantTerms.append(term);
                 }
                 numImportantTerms++;
-                if(numImportantTerms < note.getImportantTerms().size()) {
+                if(numImportantTerms < frame.getImportantTerms().size()) {
                     mImportantTerms.append(", ");
                 }
             }

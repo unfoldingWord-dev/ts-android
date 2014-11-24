@@ -54,6 +54,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
     public static final String KEY_PREF_TYPEFACE_SIZE = "typeface_size";
+    public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
 
     /**
      * Removes references to self to avoid memory leaks

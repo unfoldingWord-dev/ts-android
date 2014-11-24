@@ -8,20 +8,10 @@ import java.util.List;
  *
  */
 public class TranslationNote {
-    private List<String> mImportantTerms = new ArrayList<String>();
     private List<Note> mNotes = new ArrayList<Note>();
 
-    public TranslationNote(List<String> importantTerms, List<Note> notes) {
-        mImportantTerms = importantTerms;
+    public TranslationNote(List<Note> notes) {
         mNotes = notes;
-    }
-
-    /**
-     * Returns a list of important terms
-     * @return
-     */
-    public List<String> getImportantTerms() {
-        return mImportantTerms;
     }
 
     /**

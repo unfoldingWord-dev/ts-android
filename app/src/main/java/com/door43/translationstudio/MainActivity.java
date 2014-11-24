@@ -722,7 +722,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 mTermsTask.cancel(true);
             }
 
-            // set up task to highlight the source text key terms.
+            // set up task to highlight the source text key terms. This also loads the important terms into the frame
             final Animation in = new AlphaAnimation(0.0f, 1.0f);
             in.setDuration(TEXT_FADE_SPEED);
             final Animation out = new AlphaAnimation(1.0f, 0.0f);
@@ -730,34 +730,41 @@ public class MainActivity extends TranslatorBaseActivity {
             mTermsTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
                 @Override
                 public void onSuccess(String result) {
-                    final String textResult = result;
-                    // load the highlighted text
-                    String[] pieces = textResult.split("<a>");
-                    mSourceText.setText("");
-                    mSourceText.append(pieces[0]);
-                    for(int i=1; i<pieces.length; i++) {
-                        // get closing anchor
-                        String[] linkChunks = pieces[i].split("</a>");
-                        TermSpan term  = new TermSpan(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
-                            @Override
-                            public void onClick(View view, FancySpan span) {
-                                showTermDetails(span.getSpanId());
+                    if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
+                        final String textResult = result;
+                        // load the highlighted text
+                        String[] pieces = textResult.split("<a>");
+                        mSourceText.setText("");
+                        mSourceText.append(pieces[0]);
+                        for (int i = 1; i < pieces.length; i++) {
+                            // get closing anchor
+                            String[] linkChunks = pieces[i].split("</a>");
+                            TermSpan term = new TermSpan(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
+                                @Override
+                                public void onClick(View view, FancySpan span) {
+                                    showTermDetails(span.getSpanId());
+                                }
+                            });
+                            mSourceText.append(term.toCharSequence());
+                            try {
+                                mSourceText.append(linkChunks[1]);
+                            } catch (Exception e) {
                             }
-                        });
-                        mSourceText.append(term.toCharSequence());
-                        try {
-                            mSourceText.append(linkChunks[1]);
-                        } catch(Exception e){}
+                        }
+                        mSourceText.setVisibility(View.VISIBLE);
+                        mSourceText.startAnimation(in);
+                        // scroll to top
+                        mSourceText.scrollTo(0, 0);
+                    } else {
+                        // just display the plain source text
+                        mSourceText.setText(frame.getText());
                     }
-                    mSourceText.setVisibility(View.VISIBLE);
-                    mSourceText.startAnimation(in);
-                    // scroll to top
-                    mSourceText.scrollTo(0, 0);
                 }
             });
             out.setAnimationListener(new Animation.AnimationListener() {
                 @Override
-                public void onAnimationStart(Animation animation) {}
+                public void onAnimationStart(Animation animation) {
+                }
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
@@ -766,7 +773,8 @@ public class MainActivity extends TranslatorBaseActivity {
                 }
 
                 @Override
-                public void onAnimationRepeat(Animation animation) {}
+                public void onAnimationRepeat(Animation animation) {
+                }
             });
             mSourceText.startAnimation(out);
 

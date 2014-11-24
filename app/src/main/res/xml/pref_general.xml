@@ -6,6 +6,12 @@
         android:summary="@string/pref_description_remember_position"
         android:defaultValue="@string/pref_default_remember_position" />
 
+    <CheckBoxPreference
+        android:key="highlight_key_terms"
+        android:title="@string/pref_title_highlight_key_terms"
+        android:summary="@string/pref_description_highlight_key_terms"
+        android:defaultValue="@string/pref_default_highlight_key_terms" />
+
     <ListPreference
         android:key="translation_typeface"
         android:title="@string/pref_title_translation_typeface"

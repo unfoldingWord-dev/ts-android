@@ -7,6 +7,7 @@ import com.door43.translationstudio.util.FileUtilities;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 /**
  * Frames encapsulates a specific piece of translated work
@@ -20,6 +21,7 @@ public class Frame {
     private Chapter mChapter;
     private Translation mTranslation;
     private TranslationNote mNotes;
+    private ArrayList<String> mImportantTerms;
 
     /**
      * Creates a new frame.
@@ -56,8 +58,31 @@ public class Frame {
     }
 
     /**
+     * Returns a list of key terms that exist within this frame.
+     * @return
+     */
+    public ArrayList<String> getImportantTerms() {
+        if(mImportantTerms == null) {
+            return  new ArrayList<String>();
+        } else {
+            return mImportantTerms;
+        }
+    }
+
+    /**
+     * Adds a term to the list of important terms
+     * @param term
+     */
+    public void addImportantTerm(String term) {
+        if(mImportantTerms == null) mImportantTerms = new ArrayList<String>();
+        if(!mImportantTerms.contains(term)) {
+            mImportantTerms.add(term);
+        }
+    }
+
+    /**
      * Stores the translated frame text
-     * @param translation
+     * @param translation the translated text
      */
     public void setTranslation(String translation) {
         // the default is to use the project's target language
