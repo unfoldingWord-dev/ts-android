@@ -739,6 +739,8 @@ public class MainActivity extends TranslatorBaseActivity {
                     }
                     mSourceText.setVisibility(View.VISIBLE);
                     mSourceText.startAnimation(in);
+                    // scroll to top
+                    mSourceText.scrollTo(0, 0);
                 }
             });
             out.setAnimationListener(new Animation.AnimationListener() {
