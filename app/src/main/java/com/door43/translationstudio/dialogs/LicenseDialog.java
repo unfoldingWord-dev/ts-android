@@ -36,18 +36,10 @@ public class LicenseDialog extends DialogFragment {
         TextView licenseText = (TextView) v.findViewById(R.id.license_text);
 
         // load the license html
-        try {
-            InputStream is = MainContext.getContext().getAssets().open("license.html");
-            String licenseString = FileUtilities.convertStreamToString(is);
+
+            String licenseString = getResources().getString(R.string.license);
             // display license text
             licenseText.setText(Html.fromHtml(licenseString));
-        } catch (IOException e) {
-            e.printStackTrace();
-            licenseText.setText(R.string.error_failed_loading_license);
-        } catch (Exception e) {
-            e.printStackTrace();
-            licenseText.setText(R.string.error_failed_parsing_license);
-        }
 
         // enable button
         Button dismissBtn = (Button)v.findViewById(R.id.dismiss_license_btn);
