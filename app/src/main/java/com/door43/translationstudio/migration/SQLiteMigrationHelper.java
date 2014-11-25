@@ -77,10 +77,11 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
                 do {
                     mProgress += PERCENT_CHAPTERS / numRows;
                     Chapter c = p.getChapter(cursor.getString(cursor.getColumnIndex("story")));
-                    if(c != null) {
+                    Language l = mProjectManager.getLanguage(cursor.getString(cursor.getColumnIndex("language_code")));
+                    if(c != null && l != null) {
                         callback.onProgress(mProgress, "Migrating "+c.getId());
-                        c.setTitleTranslation(cursor.getString(cursor.getColumnIndex("story_title")));
-                        c.setReferenceTranslation(cursor.getString(cursor.getColumnIndex("story_ref")));
+                        c.setTitleTranslation(cursor.getString(cursor.getColumnIndex("story_title")), l);
+                        c.setReferenceTranslation(cursor.getString(cursor.getColumnIndex("story_ref")), l);
                         c.save();
                     } else {
                         Log.d(TAG, "the chapter could not be found " + cursor.getString(cursor.getColumnIndex("story")));

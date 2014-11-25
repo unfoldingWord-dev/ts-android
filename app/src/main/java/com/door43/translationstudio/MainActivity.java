@@ -5,7 +5,6 @@ import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.events.LanguageModalDismissedEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
-import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
 import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
 import com.door43.translationstudio.spannables.FancySpan;
@@ -169,7 +168,9 @@ public class MainActivity extends TranslatorBaseActivity {
     protected void onResume() {
         super.onResume();
         if(!mActivityIsInitializing) {
+            app().pauseAutoSave(true);
             reloadCenterPane();
+            app().pauseAutoSave(false);
         } else {
             // don't reload the center pane the first time the app starts.
             mActivityIsInitializing = false;
@@ -837,7 +838,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * Saves the translated content found in inputText
      */
     public void save() {
-        if (!app().pauseAutoSave() && frameIsSelected()) {
+        if (!app().pauseAutoSave() && frameIsSelected() && app().getSharedProjectManager().getSelectedProject().hasChosenTargetLanguage()) {
             // do not allow saves to stack up when saves are running slowly.
             app().pauseAutoSave(true);
             String inputTextValue = ((EditText) findViewById(R.id.inputText)).getText().toString();
@@ -942,11 +943,6 @@ public class MainActivity extends TranslatorBaseActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-    }
-
-    @Subscribe
-    public void modalDismissed(LanguageModalDismissedEvent event) {
-        reloadCenterPane();
     }
 
     /**

@@ -255,7 +255,9 @@ public class KeyTermFragment extends TranslatorBaseFragment {
                     public void onClick(View widget) {
                         p.setSelectedChapter(example.getChapterId());
                         p.getSelectedChapter().setSelectedFrame(example.getFrameId());
+                        app().pauseAutoSave(true);
                         ((MainActivity)getActivity()).reloadCenterPane();
+                        app().pauseAutoSave(false);
                         ((MainActivity)getActivity()).closeDrawers();
                         Chapter c = p.getChapter(example.getChapterId());
                         if(c != null) {

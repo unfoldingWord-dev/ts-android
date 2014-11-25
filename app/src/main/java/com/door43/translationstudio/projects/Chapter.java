@@ -87,11 +87,22 @@ public class Chapter {
      * @param translation
      */
     public void setTitleTranslation(String translation) {
-        if(mTitleTranslation != null && !mTitleTranslation.isLanguage(mProject.getSelectedTargetLanguage()) && !mTitleTranslation.isSaved()) {
+        setTitleTranslation(translation, mProject.getSelectedTargetLanguage());
+    }
+
+    /**
+     * Stores the translated title text.
+     * Important! you should almost always use setTitleTranslation(translation) instead.
+     * Only use this if you know what you are doing.
+     * @param translation the text to store as a translation
+     * @param targetLanguage the target language the translation was made in.
+     */
+    public void setTitleTranslation(String translation, Language targetLanguage) {
+        if(mTitleTranslation != null && !mTitleTranslation.isLanguage(targetLanguage) && !mTitleTranslation.isSaved()) {
             // save pending changes first
             save();
         }
-        mTitleTranslation = new Translation(mProject.getSelectedTargetLanguage(), translation);
+        mTitleTranslation = new Translation(targetLanguage, translation);
         mProject.setIsTranslating(true);
     }
 
@@ -122,11 +133,22 @@ public class Chapter {
      * @param translation
      */
     public void setReferenceTranslation(String translation) {
-        if(mReferenceTranslation != null && !mReferenceTranslation.isLanguage(mProject.getSelectedTargetLanguage()) && !mReferenceTranslation.isSaved()) {
+        setReferenceTranslation(translation, mProject.getSelectedTargetLanguage());
+    }
+
+    /**
+     * Stores the translated chapter reference
+     * Important! you should almost always use setReferenceTranslation(translation) instead.
+     * Only use this method if you know what you are doing.
+     * @param translation the text to store as the translation
+     * @param targetLanguage the language the translation was made in.
+     */
+    public void setReferenceTranslation(String translation, Language targetLanguage) {
+        if(mReferenceTranslation != null && !mReferenceTranslation.isLanguage(targetLanguage) && !mReferenceTranslation.isSaved()) {
             // save pending changes first
             save();
         }
-        mReferenceTranslation = new Translation(mProject.getSelectedTargetLanguage(), translation);
+        mReferenceTranslation = new Translation(targetLanguage, translation);
         mProject.setIsTranslating(true);
     }
 

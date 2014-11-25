@@ -3,8 +3,6 @@ package com.door43.translationstudio.util;
 import android.app.DialogFragment;
 import android.os.Bundle;
 
-import com.door43.translationstudio.events.LanguageModalDismissedEvent;
-
 /**
  * Created by joel on 10/7/2014.
  */
