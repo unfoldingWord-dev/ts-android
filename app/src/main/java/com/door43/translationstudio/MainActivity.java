@@ -117,8 +117,6 @@ public class MainActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         setContentView(R.layout.activity_main);
 
         mActivityIsInitializing = true;
@@ -138,13 +136,13 @@ public class MainActivity extends TranslatorBaseActivity {
         }
 
         if(app().shouldShowWelcome()) {
-            // perform any welcoming tasks here
+            // perform any welcoming tasks here. This happens when the user first opens the app.
             app().setShouldShowWelcome(false);
             openLeftDrawer();
         } else {
             // open the drawer if the remembered chapter does not exist
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-                if(app().getSharedProjectManager().getSelectedProject().getSelectedChapter() == null) {
+                if(app().getSharedProjectManager().getSelectedProject() == null || app().getSharedProjectManager().getSelectedProject().getSelectedChapter() == null) {
                     openLeftDrawer();
                 }
             }
@@ -935,8 +933,10 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param term
      */
     public void showTermDetails(String term) {
-        openRightDrawer();
-        mRightPane.showTerm(app().getSharedProjectManager().getSelectedProject().getTerm(term));
+        if(app().getSharedProjectManager().getSelectedProject() != null) {
+            openRightDrawer();
+            mRightPane.showTerm(app().getSharedProjectManager().getSelectedProject().getTerm(term));
+        }
     }
 
     @Override
@@ -975,10 +975,18 @@ public class MainActivity extends TranslatorBaseActivity {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.action_share:
-                openSharing();
+                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                    openSharing();
+                } else {
+                    app().showToastMessage(R.string.choose_a_project);
+                }
                 return true;
             case R.id.action_sync:
-                openSyncing();
+                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                    openSyncing();
+                } else {
+                    app().showToastMessage(R.string.choose_a_project);
+                }
                 return true;
             case R.id.action_settings:
                 openSettings();
@@ -990,13 +998,27 @@ public class MainActivity extends TranslatorBaseActivity {
                 openLeftDrawer();
                 return true;
             case R.id.action_resources:
-                openRightDrawer();
+                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                    openRightDrawer();
+                } else {
+                    app().showToastMessage(R.string.choose_a_project);
+                }
                 return true;
             case R.id.action_chapter_settings:
-                showChapterSettingsMenu();
+                if(app().getSharedProjectManager().getSelectedProject() != null && app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
+                    showChapterSettingsMenu();
+                } else if(app().getSharedProjectManager().getSelectedProject() == null) {
+                    app().showToastMessage(R.string.choose_a_project);
+                } else {
+                    app().showToastMessage(R.string.choose_a_chapter);
+                }
                 return true;
             case R.id.action_project_settings:
-                showProjectSettingsMenu();
+                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                    showProjectSettingsMenu();
+                } else {
+                    app().showToastMessage(R.string.choose_a_project);
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

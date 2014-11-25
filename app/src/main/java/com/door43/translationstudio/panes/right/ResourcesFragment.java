@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.ScrollView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.MainContext;
@@ -119,7 +120,10 @@ public class ResourcesFragment extends TranslatorBaseFragment {
         MainContext.getContext().setSelectedKeyTerm(null);
         mTermFragment.hide();
         mNotesFragment.show();
-        mNotesFragment.showNotes(MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes());
+        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        if(p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
+            mNotesFragment.showNotes(MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes());
+        }
     }
 
     private void scrollToTop() {

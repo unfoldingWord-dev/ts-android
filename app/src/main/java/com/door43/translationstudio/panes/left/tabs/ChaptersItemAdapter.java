@@ -33,7 +33,11 @@ public class ChaptersItemAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mContext.getSharedProjectManager().getSelectedProject().numChapters();
+        if(mContext.getSharedProjectManager().getSelectedProject() != null) {
+            return mContext.getSharedProjectManager().getSelectedProject().numChapters();
+        } else {
+            return 0;
+        }
     }
 
     @Override

@@ -82,6 +82,9 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_dismiss_project_settings:
+                if(!mProject.hasChosenTargetLanguage()) {
+                    mProject.setSelectedTargetLanguage(mProject.getSelectedTargetLanguage().getId());
+                }
                 finish();
                 return true;
             default:

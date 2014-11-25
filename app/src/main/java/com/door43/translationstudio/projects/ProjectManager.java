@@ -80,6 +80,7 @@ public class ProjectManager {
     /**
      * Loads the source for a single project.
      * A loading notice will be displayed to the user
+     * This should be called from within a thread
      * @param p
      */
     public void fetchProjectSource(Project p) {
@@ -87,7 +88,8 @@ public class ProjectManager {
     }
 
     /**
-     * Loads the source for a single project
+     * Loads the source for a single project.
+     * This should be called from within a thread
      * @param p the project that will be loaded
      * @param displayNotice you dispaly a loading notice to the user
      */
@@ -95,6 +97,8 @@ public class ProjectManager {
         if(displayNotice) {
             mContext.showProgressDialog(R.string.loading_project_chapters);
         }
+        if(p == null) return;
+
         String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId());
         p.flush();
         if(!displayNotice) {
@@ -239,9 +243,10 @@ public class ProjectManager {
         Project selectedProject = getProject(mSelectedProjectId);;
         if(selectedProject == null) {
             // auto select the first project if no other project has been selected
-            int defaultProjectIndex = 0;
-            setSelectedProject(defaultProjectIndex);
-            return getProject(defaultProjectIndex);
+//            int defaultProjectIndex = 0;
+//            setSelectedProject(defaultProjectIndex);
+//            return getProject(defaultProjectIndex);
+            return null;
         } else {
             return selectedProject;
         }

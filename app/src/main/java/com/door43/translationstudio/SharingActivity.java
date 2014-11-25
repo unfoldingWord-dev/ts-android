@@ -68,6 +68,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 
         final File internalDestDir = new File(getCacheDir(), "sharing/");
         final Project p = app().getSharedProjectManager().getSelectedProject();
+        if(p == null) finish();
 
         MainContext.getContext().showProgressDialog(R.string.preparing_sharing);
 

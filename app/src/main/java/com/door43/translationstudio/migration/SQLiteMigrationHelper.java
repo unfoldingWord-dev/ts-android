@@ -57,7 +57,7 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
     public void migrateDatabase(OnProgressCallback callback) {
         // we can assume
         Project p = mProjectManager.getProject("obs");
-        if(!mProjectManager.getSelectedProject().getId().equals(p.getId())) {
+        if(mProjectManager.getSelectedProject() == null || !mProjectManager.getSelectedProject().getId().equals(p.getId())) {
             // load the project silently
             mProjectManager.fetchProjectSource(p, false);
         }

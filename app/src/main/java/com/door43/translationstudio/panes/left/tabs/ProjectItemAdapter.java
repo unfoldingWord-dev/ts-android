@@ -77,7 +77,7 @@ public class ProjectItemAdapter extends BaseAdapter {
         projectDescription.setText(getProjectItem(i).getDescription());
 
         // highlight selected project
-        if(mContext.getSharedProjectManager().getSelectedProject().getId() == getProjectItem(i).getId()) {
+        if(mContext.getSharedProjectManager().getSelectedProject() != null && mContext.getSharedProjectManager().getSelectedProject().getId() == getProjectItem(i).getId()) {
             projectItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             projectDescription.setTextColor(Color.WHITE);
             projectTitle.setTextColor(Color.WHITE);

@@ -75,16 +75,20 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                         String projectSlug = app().getLastActiveProject();
                         app().getSharedProjectManager().setSelectedProject(projectSlug);
 
-                        // load the saved project without displaying a notice to the user
-                        app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+                        if(app().getSharedProjectManager().getSelectedProject() != null) {
+                            // load the saved project without displaying a notice to the user
+                            app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
 
-                        app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
-                        if(app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
-                            app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+                            app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
+                            if (app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
+                                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+                            }
                         }
                     } else {
                         // load the default project without display a notice to the user
-                        app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+                        if(app().getSharedProjectManager().getSelectedProject() != null) {
+                            app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+                        }
                     }
 
                     // handle app version changes
