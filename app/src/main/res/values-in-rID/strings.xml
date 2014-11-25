@@ -122,5 +122,12 @@
   <string name="term_examples">Contoh:</string>
   <string name="git_push_success">Proyek berhasil diupload</string>
   <string name="connection">Menetapkan hubungan dengan server...</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>Anda bebas untuk:</h2>
+<p>Share, menyalin, dan mendistribusikan materi dalam media atau format; Beradaptasi, remix, mengubah, dan membangun bahan untuk tujuan apapun, bahkan untuk tujuan komersial. Lisensi tidak dapat mencabut kebebasan tersebut selama Anda mengikuti persyaratan lisensi.</p>
+<h2>Dengan ketentuan sebagai berikut:</h2>
+<p>
+    <b>Atribusi</b> - Anda harus memberikan kredit yang tepat, menyediakan link ke lisensi, dan menunjukkan jika perubahan yang dilakukan. Anda dapat melakukannya dengan cara yang masuk akal, tapi tidak dengan cara apa pun yang mengesankan pemberi lisensi mendukung Anda atau penggunaan Anda; <br/> <b>ShareAlike</b> - Jika Anda remix, mengubah, atau membuat atas dasar materi, Anda harus mendistribusikan kontribusi Anda di bawah lisensi yang sama seperti aslinya; <br/> <b>Tidak ada pembatasan tambahan</b> - Anda mungkin tidak berlaku istilah hukum atau tindakan teknologi yang secara hukum membatasi orang lain melakukan sesuatu izin lisensi.
+</p>
+<h2>Pemberitahuan:</h2>
+<p>Anda tidak harus mematuhi lisensi untuk unsur-unsur material dalam domain publik atau di mana penggunaan yang diizinkan oleh pengecualian berlaku atau pembatasan; Tidak ada jaminan yang diberikan. Lisensi mungkin tidak memberikan semua izin yang diperlukan untuk penggunaan yang diinginkan. Sebagai contoh, hak-hak lain seperti publisitas, privasi, atau hak moral dapat membatasi bagaimana Anda menggunakan materi.</p>]]></string>
 </resources>

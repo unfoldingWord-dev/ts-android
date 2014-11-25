@@ -43,14 +43,14 @@
   <string name="malformed_translation_archive">不正な形式の翻訳アーカイブ</string>
   <string name="translation_import_failed">翻訳のインポートに失敗しました</string>
   <string name="import_ready_title">翻訳をインポートする準備ができて</string>
-  <string name="import_ready_message">\"%1 の $s\"の翻訳をインポートする\"%2$s\"に言語プロジェクト。</string>
+  <string name="import_ready_message">\"%1$s\"の翻訳をインポートする\"%2$s\"に言語プロジェクト。</string>
   <string name="internet_not_available">アクティブなインターネット接続がありません。</string>
   <string name="title_activity_upload_wizard">翻訳のアップロード</string>
   <string name="upload_wizard_intro">あなたの翻訳をアップロードしようとしています。今あなたの翻訳がアップロードする準備ができていることを確認するいくつかのチェックを行います。</string>
   <string name="label_continue">続行</string>
   <string name="upload_wizard_overview">レビューをアップロードします。</string>
   <string name="label_project_details">プロジェクトの詳細</string>
-  <string name="project_details">\"%1 の $s\"翻訳\"%2$s\"から\"%3$s\"に言語言語。</string>
+  <string name="project_details">\"%1$s\"翻訳\"%2$s\"から\"%3$s\"に言語言語。</string>
   <string name="click_for_details">詳細はこちら</string>
   <string name="label_project_settings">プロジェクトの設定</string>
   <string name="error_target_and_source_are_same">ソースとターゲット言語が同じ</string>
@@ -59,7 +59,7 @@
   <string name="label_validate_chapter">章: %1$s</string>
   <string name="dialog_validation_errors">検証エラー</string>
   <string name="validation_errors">翻訳で未解決のエラーがあります。これらを修正してください、もう一度やり直してください。</string>
-  <string name="error_frames_not_translated">%1$ のフレームが変換されていません。</string>
+  <string name="error_frames_not_translated">%1$s のフレームが変換されていません。</string>
   <string name="dialog_validation_warnings">検証の警告</string>
   <string name="validation_warnings">未解決の警告があります。この翻訳をアップロードしてもよろしいですか。</string>
   <string name="no_translated_chapters">何もまだ翻訳されています。</string>
@@ -85,15 +85,15 @@
   <string name="of">の</string>
   <string name="error_failed_loading_license">ライセンス ファイルの読み込みに失敗しました</string>
   <string name="error_failed_parsing_license">ライセンス ファイルの解析に失敗しました</string>
-  <string name="git_awaiting_report">[%1$ 秒]プッシュ プロセスはリモート リポジトリからレポートの更新を待っています。</string>
-  <string name="git_non_existing">[%1$ 秒]リモート参照は存在しなかった。</string>
-  <string name="git_not_attempted">[%s]プッシュ プロセス hasn\'t まだこの ref を更新しようとしています。</string>
-  <string name="git_ok">[%1$ 秒]成功は、リモート参照を押してください。</string>
-  <string name="git_rejected_nondelete">[%1$ 秒]リモート側許可していないのでサポート/refs 削除リモート参照の更新は拒否されました。</string>
-  <string name="git_rejected_nonfastforward">[%1$ 秒]非早送り更新の原因となるよう、リモート参照の更新は拒否されました。</string>
-  <string name="git_rejected_other_reason">[%1$ 秒]リモート参照の更新は拒否されました。</string>
-  <string name="git_rejected_other_reason_detailed">[%1$ 秒]リモート参照の更新が拒否されました %1$s。</string>
-  <string name="git_rejected_remote_changed">[%1$ 秒]リモート リポジトリにある古いオブジェクト id は、予想される古いオブジェクトの定義と同じではなかったため、リモート参照の更新は拒否されました。</string>
+  <string name="git_awaiting_report">[%1$s]プッシュ プロセスはリモート リポジトリからレポートの更新を待っています。</string>
+  <string name="git_non_existing">[%1$s]リモート参照は存在しなかった。</string>
+  <string name="git_not_attempted">[%1$s]プッシュ プロセス hasn\'t まだこの ref を更新しようとしています。</string>
+  <string name="git_ok">[%1$s]成功は、リモート参照を押してください。</string>
+  <string name="git_rejected_nondelete">[%1$s]リモート側許可していないのでサポート/refs 削除リモート参照の更新は拒否されました。</string>
+  <string name="git_rejected_nonfastforward">[%1$s]非早送り更新の原因となるよう、リモート参照の更新は拒否されました。</string>
+  <string name="git_rejected_other_reason">[%1$s]リモート参照の更新は拒否されました。</string>
+  <string name="git_rejected_other_reason_detailed">[%1$s]リモート参照の更新が拒否されました %2$s。</string>
+  <string name="git_rejected_remote_changed">[%1$s]リモート リポジトリにある古いオブジェクト id は、予想される古いオブジェクトの定義と同じではなかったため、リモート参照の更新は拒否されました。</string>
   <string name="git_uptodate">[%1$s] リモート ref が最新の状態</string>
   <string name="git_server_details">サーバー: %1$s</string>
   <string name="opening_project">プロジェクトを開く</string>
@@ -122,5 +122,12 @@
   <string name="term_examples">例:</string>
   <string name="git_push_success">プロジェクトが正常にアップロードされました。</string>
   <string name="connection">サーバーとの接続を確立しています.</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>あなたはへの無料のとおりです。</h2>
+<p>シェア、コピー、およびいかなる媒体またはフォーマットで材料を再配布する。適応、リミックス、変換、さらには商業的に、いかなる目的のための材料の上に構築。 ライセンサーは、限り、あなたはライセンス条項に従って、これらの自由を取り消すことはできません。</p>
+<h2>以下の条件の下で：</h2>
+<p>
+    <b>アトリビューション</b> -あなたは、適切な信用を与えるライセンスへのリンクを提供し、変更が行われたかどうかを示す必要があります。 あなたがではなく、ライセンサーは、あなたやあなたの使用を支持していると示唆するような方法で、任意の合理的な方法でそれを行うことができる。 <br/> <b>同一条件許諾</b> -あなた<b>は</b>リミックス、材料に変換、またはビルドする場合は、オリジナルと同じライセンスの下であなたの貢献を配布する必要があります。 <br/> <b>追加の制限はありません</b> -あなたは法律用語や法的にライセンス許可何もしてから他の人を制限する技術的措置を適用されない場合があります。
+</p>
+<h2>注意事項：</h2>
+<p>あなたの使用が適用される例外または制限によって許可されているパブリックドメインまたは材料の要素のライセンスに準拠する必要はありません。一切の保証は与えられていない。 ライセンスは、あなたの意図された使用のために必要な権限のすべてを与えていない場合があります。 例えば、このような宣伝、プライバシー、または人格権などその他の権利はあなたが材料をどのように使用するか制限してもよい。</p>]]></string>
 </resources>

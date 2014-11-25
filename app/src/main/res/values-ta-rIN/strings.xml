@@ -43,30 +43,30 @@
   <string name="malformed_translation_archive">தவறான மொழிபெயர்ப்பு காப்பகத்தை</string>
   <string name="translation_import_failed">மொழிபெயர்ப்பு இறக்குமதி செய்வதில் தோல்வி</string>
   <string name="import_ready_title">மொழிபெயர்ப்பு இறக்குமதி செய்ய தயாராக</string>
-  <string name="import_ready_message">நீங்கள் \"% 2 $ s\" திட்டம் ஒரு \"% 1 $ s\" மொழி ஒரு மொழிபெயர்ப்பு இறக்குமதி உள்ளீர்கள்.</string>
+  <string name="import_ready_message">நீங்கள் \"%2$s\" திட்டம் ஒரு \"%1$s\" மொழி ஒரு மொழிபெயர்ப்பு இறக்குமதி உள்ளீர்கள்.</string>
   <string name="internet_not_available">நீங்கள் ஒரு செயலில் இணைய இணைப்பு இல்லை.</string>
   <string name="title_activity_upload_wizard">மொழிபெயர்ப்பு பதிவேற்றம்</string>
   <string name="upload_wizard_intro">நீங்கள் உங்கள் மொழிபெயர்ப்பு பதிவேற்ற உள்ளீர்கள். நாம் இப்போது உங்கள் மொழிபெயர்ப்பு பதிவேற்றம் செய்வதற்கு தயாராக உள்ளது உறுதி ஒரு சில காசோலைகளை செய்ய.</string>
   <string name="label_continue">தொடர்க</string>
   <string name="upload_wizard_overview">பதிவேற்றம் விமர்சனம்</string>
   <string name="label_project_details">திட்ட விவரங்கள்</string>
-  <string name="project_details">\"% 1 $ s\" \"% 3 $ ங்கள்\" மொழி \"% 2 $ s\" மொழி இருந்து மொழிபெயர்க்க.</string>
+  <string name="project_details">\"%1$s\" \"%1$s்\" மொழி \"%2$s\" மொழி இருந்து மொழிபெயர்க்க.</string>
   <string name="click_for_details">விவரங்களுக்கு கிளிக் செய்யவும்</string>
   <string name="label_project_settings">திட்ட அமைப்புகள்</string>
   <string name="error_target_and_source_are_same">மூல மற்றும் இலக்கு மொழிகளில் அதே இருந்தால்</string>
   <string name="error_chapter_title_missing">தலைப்பு காணாமல்.</string>
   <string name="error_chapter_reference_missing">குறிப்பு காணாமல்.</string>
-  <string name="label_validate_chapter">பாடம்:% 1 $ s</string>
+  <string name="label_validate_chapter">பாடம்:%1$s</string>
   <string name="dialog_validation_errors">மதிப்பீட்டு பிழைகள்</string>
   <string name="validation_errors">மொழிபெயர்ப்பு தீர்க்கப்படாத பிழைகள் உள்ளன. பின்னர் இந்த சரிசெய்ய மீண்டும் முயற்சிக்கவும்.</string>
-  <string name="error_frames_not_translated">% 1 $ s பிரேம்கள் மொழிபெயர்க்க.</string>
+  <string name="error_frames_not_translated">%1$s பிரேம்கள் மொழிபெயர்க்க.</string>
   <string name="dialog_validation_warnings">மதிப்பீட்டு எச்சரிக்கைகள்</string>
   <string name="validation_warnings">தீர்க்கப்படாத எச்சரிக்கைகள் உள்ளன. நீங்கள் இந்த மொழிபெயர்ப்பு பதிவேற்ற வேண்டும் உறுதியாக உள்ளீர்களா?</string>
   <string name="no_translated_chapters">எதுவும் இன்னும் மொழிபெயர்க்க.</string>
   <string name="label_chapters">அத்தியாயங்கள்</string>
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">அந்த மூல மொழியில் availble எந்த அத்தியாயங்கள் உள்ளன</string>
-  <string name="now_viewing_frame">இப்போது அத்தியாயம்% சட்ட% 2 $ s 1 $ ங்கள் பார்க்கும்.</string>
+  <string name="now_viewing_frame">இப்போது அத்தியாயம் சட்ட%2$s %1$s ங்கள் பார்க்கும்.</string>
   <string name="unknown_chapter">தெரியாத அத்தியாயம்</string>
   <string name="label_frame">ஃப்ரேம்</string>
   <string name="label_translation_notes">மொழிபெயர்ப்பு குறிப்புகள்</string>
@@ -85,22 +85,22 @@
   <string name="of">இன்</string>
   <string name="error_failed_loading_license">உரிமம் கோப்பினை ஏற்ற தவறியது</string>
   <string name="error_failed_parsing_license">உரிமம் கோப்பை அலச தோல்வி</string>
-  <string name="git_awaiting_report">[% 1 $ s] புஷ் செயல்முறை தொலை களஞ்சியமாக இருந்து மேம்படுத்தல் அறிக்கைக்காக காத்திருப்பதாகவும்.</string>
-  <string name="git_non_existing">[% 1 $ s] தொலை தியத்தீராவிலே இல்லை.</string>
-  <string name="git_not_attempted">[% ங்கள்] புஷ் செயல்முறை இன்னும் இந்த ஆதாரம் புதுப்பிக்க முயற்சி.</string>
-  <string name="git_ok">தொலை தியத்தீராவிலே வேண்டும் [% 1 $ s] வெற்றி மிகுதி.</string>
-  <string name="git_rejected_nondelete">தொலை பக்க refs நீக்குதல் அனுமதிக்க / ஒத்து வராததால் [% 1 $ s] தொலை தியத்தீராவிலே மேம்படுத்தல், நிராகரிக்கப்பட்டது.</string>
-  <string name="git_rejected_nonfastforward">அது அல்லாத வேகமாக முன்னோக்கி மேம்படுத்தல் ஏற்படுத்தும் என [% 1 $ s] தொலை தியத்தீராவிலே மேம்படுத்தல், நிராகரிக்கப்பட்டது.</string>
-  <string name="git_rejected_other_reason">[% 1 $ s] தொலை தியத்தீராவிலே மேம்படுத்தல் நிராகரிக்கப்பட்டது.</string>
-  <string name="git_rejected_other_reason_detailed">[% 1 $ s] தொலை தியத்தீராவிலே மேம்படுத்தல் நிராகரிக்கப்பட்டது, ஏனெனில்% 1 $ s.</string>
-  <string name="git_rejected_remote_changed">தொலை களஞ்சியம் மீது பழைய பொருள் ஐடி வரையறுக்கப்பட்ட எதிர்பார்க்கப்படுகிறது பழைய பொருள் அதே இல்லை என்பதால் [% 1 $ s] தொலை தியத்தீராவிலே மேம்படுத்தல், நிராகரிக்கப்பட்டது.</string>
-  <string name="git_uptodate">[% 1 $ s] தொலை தியத்தீராவிலே தேதி வரை ஆகிறது</string>
-  <string name="git_server_details">சர்வர்:% 1 $ s</string>
+  <string name="git_awaiting_report">[%1$s] புஷ் செயல்முறை தொலை களஞ்சியமாக இருந்து மேம்படுத்தல் அறிக்கைக்காக காத்திருப்பதாகவும்.</string>
+  <string name="git_non_existing">[%1$s] தொலை தியத்தீராவிலே இல்லை.</string>
+  <string name="git_not_attempted">[%1$s] புஷ் செயல்முறை இன்னும் இந்த ஆதாரம் புதுப்பிக்க முயற்சி.</string>
+  <string name="git_ok">தொலை தியத்தீராவிலே வேண்டும் [%1$s] வெற்றி மிகுதி.</string>
+  <string name="git_rejected_nondelete">தொலை பக்க refs நீக்குதல் அனுமதிக்க / ஒத்து வராததால் [%1$s] தொலை தியத்தீராவிலே மேம்படுத்தல், நிராகரிக்கப்பட்டது.</string>
+  <string name="git_rejected_nonfastforward">அது அல்லாத வேகமாக முன்னோக்கி மேம்படுத்தல் ஏற்படுத்தும் என [%1$s] தொலை தியத்தீராவிலே மேம்படுத்தல், நிராகரிக்கப்பட்டது.</string>
+  <string name="git_rejected_other_reason">[%1$s] தொலை தியத்தீராவிலே மேம்படுத்தல் நிராகரிக்கப்பட்டது.</string>
+  <string name="git_rejected_other_reason_detailed">[%1$s] தொலை தியத்தீராவிலே மேம்படுத்தல் நிராகரிக்கப்பட்டது, ஏனெனில%1$s.</string>
+  <string name="git_rejected_remote_changed">தொலை களஞ்சியம் மீது பழைய பொருள் ஐடி வரையறுக்கப்பட்ட எதிர்பார்க்கப்படுகிறது பழைய பொருள் அதே இல்லை என்பதால் [%1$s] தொலை தியத்தீராவிலே மேம்படுத்தல், நிராகரிக்கப்பட்டது.</string>
+  <string name="git_uptodate">[%1$s] தொலை தியத்தீராவிலே தேதி வரை ஆகிறது</string>
+  <string name="git_server_details">சர்வர்:%1$s</string>
   <string name="opening_project">திறக்கிறது திட்டம்</string>
   <string name="loading_key_terms">முக்கிய சொற்கள் ஏற்றுகிறது</string>
   <string name="loading_translation_notes">நீங்கள் மொழிபெயர்ப்பு குறிப்புகள்</string>
-  <string name="loading_target_language">நீங்கள் இலக்கு மொழி:% 1 $ s</string>
-  <string name="loading_project">நீங்கள் திட்டம்:% 1 $ s</string>
+  <string name="loading_target_language">நீங்கள் இலக்கு மொழி:%1$s</string>
+  <string name="loading_project">நீங்கள் திட்டம்:%1$s</string>
   <string name="error_git_stage">மாற்றங்கள் நடத்தினர்</string>
   <string name="submitting_security_keys">பாதுகாப்பு விசைகளை பரிமாற்றுகிறது ...</string>
   <string name="error_missing_ssh_keys">ssh விசைகள் உருவாக்கப்பட்டு</string>
@@ -122,5 +122,12 @@
   <string name="term_examples">எடுத்துக்காட்டுகள்:</string>
   <string name="git_push_success">திட்டம் வெற்றிகரமாக பதிவேற்றப்பட்டது</string>
   <string name="connection">சர்வர் இணைப்பை ஏற்படுத்துகிறது ...</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>நீங்கள் இலவசமாக:</h2>
+<p>பகிர்ந்து, நகல், மற்றும் எந்த நடுத்தர அல்லது வடிவத்தில் பொருள் மறுவிநியோகம்; , ரீமிக்ஸ், பொருத்து மாற்றும், மற்றும் வணிகரீதியாக எந்த நோக்கத்திற்காக பொருள் மீது கட்டமைக்க. நீங்கள் உரிம விதிமுறைகளை பின்பற்ற என உரிமம் நீண்ட இந்த சுதந்திரங்கள் திரும்பப் முடியாது.</p>
+<h2>பின்வரும் நிபந்தனைகளின் கீழ்:</h2>
+<p>
+    <b>கற்பித்து</b> - நீங்கள், அதற்கான கடன் கொடுக்க உரிமத்திற்கான இணைப்பை வழங்கும், மற்றும் மாற்றங்கள் செய்யப்பட்டன என்றால் கண்டிப்பாக குறிப்பிடவேண்டும். நீங்கள் ஆனால் உரிமம் நீங்கள் அல்லது உங்கள் பயன்படுத்த ஒப்புதல் அறிவுறுத்துகிறது என்று எந்த வழியில், எந்த நியாயமான முறையில் அவ்வாறு செய்யலாம்; <br/> <b>முகமூடியை</b> - நீங்கள் ரீமிக்ஸ், பொருள் மீது மாற்றும், அல்லது உருவாக்க விரும்பினால், நீங்கள் அசல் அதே உரிமத்தின் கீழ் உங்கள் பங்களிப்புகளை விநியோகிக்க வேண்டும்; <br/> <b>கூடுதல் கட்டுப்பாடுகள்</b> - நீங்கள் சட்ட விதிமுறைகளை அல்லது சட்டபூர்வமாக உரிமம் அனுமதி எதற்காகவது மற்றவர்கள் கட்டுப்படுத்தும் தொழில்நுட்ப நடவடிக்கைகள் விண்ணப்பிக்க முடியாது.
+</p>
+<h2>அறிவிப்புகள்:</h2>
+<p>நீங்கள் உங்கள் பயன்பாடு ஒரு பொருந்தும் விதிவிலக்கு அல்லது வரையறை மூலம் அனுமதி அமைந்துள்ள பொதுக் களம் அல்லது பொருள் கூறுகள் உரிமம் இணங்க வேண்டும்; இல்லை உத்தரவாதங்கள் கொடுக்கப்பட்ட. உரிமம் உங்கள் நோக்கம் பயன்படுத்த தேவையான அனுமதிகள் அனைத்து கொடுக்க முடியாது. உதாரணமாக, போன்ற விளம்பரம், தனியுரிமை, அல்லது தார்மீக உரிமைகள் போன்ற பிற உரிமைகள் நீங்கள் பொருள் பயன்படுத்த எப்படி குறைக்க கூடும்.</p>]]></string>
 </resources>

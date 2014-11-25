@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="pref_default_remember_position">true</string>
+    <string name="pref_default_remember_position" translatable="false">true</string>
 
-    <string name="pref_default_highlight_key_terms">true</string>
+    <string name="pref_default_highlight_key_terms" translatable="false">true</string>
 
-    <string name="pref_default_translation_typeface">GentiumPlus.ttf</string>
-    <string-array name="pref_translation_typeface_values">
+    <string name="pref_default_translation_typeface" translatable="false">GentiumPlus.ttf</string>
+    <string-array name="pref_translation_typeface_values" translatable="false">
         <item>GentiumPlus.ttf</item>
     </string-array>
 
-    <string name="pref_default_typeface_size">25</string>
-    <string-array name="pref_typeface_size_values">
+    <string name="pref_default_typeface_size" translatable="false">25</string>
+    <string-array name="pref_typeface_size_values" translatable="false">
         <item>20</item>
         <item>25</item>
         <item>30</item>
     </string-array>
 
-    <string name="pref_default_autosave">5000</string>
-    <string-array name="pref_autosave_values">
+    <string name="pref_default_autosave" translatable="false">5000</string>
+    <string-array name="pref_autosave_values" translatable="false">
         <item>0</item>
         <item>1000</item>
         <item>5000</item>
         <item>10000</item>
     </string-array>
 
-    <string name="pref_default_auth_server">ts.door43.org</string>
+    <string name="pref_default_auth_server" translatable="false">ts.door43.org</string>
 
-    <string name="pref_default_auth_server_port">9095</string>
+    <string name="pref_default_auth_server_port" translatable="false">9095</string>
 
-    <string name="pref_default_git_server">gitolite3@ts.door43.org</string>
+    <string name="pref_default_git_server" translatable="false">gitolite3@ts.door43.org</string>
 
-    <string name="pref_default_git_server_port">9299</string>
+    <string name="pref_default_git_server_port" translatable="false">9299</string>
 
-    <string name="pref_default_media_server">https://api.unfoldingword.org</string>
+    <string name="pref_default_media_server" translatable="false">https://api.unfoldingword.org</string>
 
-    <string name="pref_default_export_format">dokuwiki</string>
-    <string-array name="pref_export_format_values">
+    <string name="pref_default_export_format" translatable="false">dokuwiki</string>
+    <string-array name="pref_export_format_values" translatable="false">
         <item>dokuwiki</item>
         <item>project</item>
     </string-array>

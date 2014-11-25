@@ -43,30 +43,30 @@
   <string name="malformed_translation_archive">Hitilafu archive tafsiri</string>
   <string name="translation_import_failed">Alishindwa kuagiza tafsiri</string>
   <string name="import_ready_title">Tayari kuagiza tafsiri</string>
-  <string name="import_ready_message">Wewe ni kuhusu kuagiza tafsiri kwa \"% 1 $ s\" lugha katika mradi wa \"% 2 $ s\".</string>
+  <string name="import_ready_message">Wewe ni kuhusu kuagiza tafsiri kwa \"%1$s\" lugha katika mradi wa \"%2$s\".</string>
   <string name="internet_not_available">Huna kazi internet connection.</string>
   <string name="title_activity_upload_wizard">Tafsiri Pakia</string>
   <string name="upload_wizard_intro">Wewe ni kuhusu kupakia tafsiri yako. Sisi sasa kufanya uchunguzi chache kuhakikisha tafsiri yako ni tayari kupakiwa.</string>
   <string name="label_continue">Kuendelea</string>
   <string name="upload_wizard_overview">Pakia mapitio</string>
   <string name="label_project_details">Maelezo ya mradi</string>
-  <string name="project_details">\"% 1 $ s\" kutafsiriwa kutoka \"% 2 $ s\" lugha katika \"% 3 $ s\" lugha.</string>
+  <string name="project_details">\"%1$s\" kutafsiriwa kutoka \"%2$s\" lugha katika \"%3$s\" lugha.</string>
   <string name="click_for_details">Bonyeza kwa maelezo</string>
   <string name="label_project_settings">Mazingira ya mradi</string>
   <string name="error_target_and_source_are_same">chanzo na lengo lugha ni sawa</string>
   <string name="error_chapter_title_missing">cheo ni kukosa.</string>
   <string name="error_chapter_reference_missing">kumbukumbu ni kukosa.</string>
-  <string name="label_validate_chapter">Sura:% 1 $ s</string>
+  <string name="label_validate_chapter">Sura:%1$s</string>
   <string name="dialog_validation_errors">Uthibitisho Makosa</string>
   <string name="validation_errors">Kuna makosa ufumbuzi katika tafsiri. Tafadhali kusahihisha haya kisha kujaribu tena.</string>
-  <string name="error_frames_not_translated">% 1 $ s muafaka si kutafsiriwa.</string>
+  <string name="error_frames_not_translated">%1$s muafaka si kutafsiriwa.</string>
   <string name="dialog_validation_warnings">Uthibitisho Maonyo</string>
   <string name="validation_warnings">Kuna onyo kutafutiwa ufumbuzi. Una uhakika unataka kupakia tafsiri hii?</string>
   <string name="no_translated_chapters">Chochote kimetafsiriwa bado.</string>
   <string name="label_chapters">Sura</string>
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Hakuna sura availble katika lugha chanzo</string>
-  <string name="now_viewing_frame">Sasa kuangalia sura% 1 $ s katika sura% 2 $ s.</string>
+  <string name="now_viewing_frame">Sasa kuangalia sura%1$s katika sura%1$s.</string>
   <string name="unknown_chapter">Sura haijulikani</string>
   <string name="label_frame">Sura</string>
   <string name="label_translation_notes">Tafsiri Notes</string>
@@ -85,22 +85,22 @@
   <string name="of">ya</string>
   <string name="error_failed_loading_license">Imeshindwa kupakia faili ya leseni</string>
   <string name="error_failed_parsing_license">Imeshindwa kuchanganua faili leseni</string>
-  <string name="git_awaiting_report">[% 1 $ s] Push mchakato anasubiri update ripoti kutoka kijijini there.</string>
-  <string name="git_non_existing">[% 1 $ s] Remote ref hayupo.</string>
-  <string name="git_not_attempted">[% S] Push mchakato bado alijaribu update ref hii.</string>
-  <string name="git_ok">[% 1 $ s] Mafanikio kushinikiza kijijini ref.</string>
-  <string name="git_rejected_nondelete">[% 1 $ s] Remote ref update lilikataliwa, kwa sababu upande wa kijijini haina msaada / kuruhusu kufuta refs.</string>
-  <string name="git_rejected_nonfastforward">[% 1 $ s] Remote ref update ilikataliwa, kama ingekuwa kusababisha zisizo kufunga-mbele update.</string>
-  <string name="git_rejected_other_reason">[% 1 $ s] Remote ref update lilikataliwa.</string>
-  <string name="git_rejected_other_reason_detailed">[% 1 $ s] Remote ref update lilikataliwa, kwa sababu% 1 $ s.</string>
-  <string name="git_rejected_remote_changed">[% 1 $ s] Remote ref update lilikataliwa, kwa sababu miaka kitu id juu ya kijijini there alikuwa si sawa kama inavyoelezwa na umri inatarajiwa kitu.</string>
-  <string name="git_uptodate">[% 1 $ s] kijijini ref ni hadi tarehe</string>
-  <string name="git_server_details">Server:% 1 $ s</string>
+  <string name="git_awaiting_report">[%1$s] Push mchakato anasubiri update ripoti kutoka kijijini there.</string>
+  <string name="git_non_existing">[%1$s] Remote ref hayupo.</string>
+  <string name="git_not_attempted">[%1$s] Push mchakato bado alijaribu update ref hii.</string>
+  <string name="git_ok">[%1$s] Mafanikio kushinikiza kijijini ref.</string>
+  <string name="git_rejected_nondelete">[%1$s] Remote ref update lilikataliwa, kwa sababu upande wa kijijini haina msaada / kuruhusu kufuta refs.</string>
+  <string name="git_rejected_nonfastforward">%1$s] Remote ref update ilikataliwa, kama ingekuwa kusababisha zisizo kufunga-mbele update.</string>
+  <string name="git_rejected_other_reason">[%1$s] Remote ref update lilikataliwa.</string>
+  <string name="git_rejected_other_reason_detailed">[%1$s] Remote ref update lilikataliwa, kwa sababu%2$s.</string>
+  <string name="git_rejected_remote_changed">[%1$s] Remote ref update lilikataliwa, kwa sababu miaka kitu id juu ya kijijini there alikuwa si sawa kama inavyoelezwa na umri inatarajiwa kitu.</string>
+  <string name="git_uptodate">[%1$s] kijijini ref ni hadi tarehe</string>
+  <string name="git_server_details">Server:%1$s</string>
   <string name="opening_project">Ufunguzi wa mradi</string>
   <string name="loading_key_terms">Upakiaji suala muhimu</string>
   <string name="loading_translation_notes">Maelezo upakiaji tafsiri</string>
-  <string name="loading_target_language">Lugha upakiaji lengo:% 1 $ s</string>
-  <string name="loading_project">Upakiaji mradi:% 1 $ s</string>
+  <string name="loading_target_language">Lugha upakiaji lengo:%1$s</string>
+  <string name="loading_project">Upakiaji mradi:%1$s</string>
   <string name="error_git_stage">Mabadiliko hakuweza lilifanya</string>
   <string name="submitting_security_keys">Kuhamisha funguo usalama ...</string>
   <string name="error_missing_ssh_keys">funguo SSH si yanayotokana</string>
@@ -122,5 +122,12 @@
   <string name="term_examples">Mifano:</string>
   <string name="git_push_success">Mradi mara kwa mafanikio uploaded</string>
   <string name="connection">Kuanzisha uhusiano na server ...</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>Wewe ni bure kwa:</h2>
+<p>Kushiriki, nakala, na kugawanya vifaa katika kati yoyote au format; Kukabiliana, remix, kubadilisha, na kujenga juu ya nyenzo kwa madhumuni yoyote, hata kibiashara. leseni hawezi kubatilisha uhuru haya kwa muda mrefu kama wewe kufuata masharti ya leseni.</p>
+<h2>Chini ya masharti yafuatayo:</h2>
+<p>
+    <b>Attribution</b> - Lazima kutoa mikopo inafaa, kutoa kiungo kwa leseni, na zinaonyesha kama mabadiliko yalifanywa. Unaweza kufanya hivyo kwa namna yoyote ya kuridhisha, lakini si kwa njia yoyote kwamba anapendekeza leseni tillstyrker wewe au matumizi yako; <br/> <b>ShareAlike</b> - Kama remix, kubadilisha, au kujenga juu ya vifaa, lazima kusambaza michango yako chini ya leseni sawa na ya awali, <br/> <b>Hakuna vikwazo ziada</b> - Unaweza si kuomba masharti ya kisheria au hatua kiteknolojia kwamba kisheria kuzuia wengine kutoka kufanya kitu chochote vibali na leseni.
+</p>
+<h2>Matangazo:</h2>
+<p>Huna kuzingatia leseni kwa ajili ya mambo ya nyenzo katika uwanja wa umma au ambapo matumizi yako inaruhusiwa na ubaguzi husika au juu; Hakuna dhamana wanapewa. leseni inaweza kukupa yote ya ruhusa muhimu kwa ajili ya matumizi yako yaliyokusudiwa. Kwa mfano, haki nyingine kama vile utangazaji, faragha, au haki ya maadili kunaweza kupunguza jinsi ya kutumia nyenzo.</p>]]></string>
 </resources>

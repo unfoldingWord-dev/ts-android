@@ -122,5 +122,12 @@
   <string name="term_examples">Ví dụ:</string>
   <string name="git_push_success">Dự án đã được tải lên thành công</string>
   <string name="connection">Thiết lập kết nối với hệ phục vụ...</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>Bạn được tự do:</h2>
+<p>Chia sẻ, sao chép và phân phối lại vật liệu trong bất kỳ định dạng hoặc vừa; Thích ứng, remix, chuyển đổi, và xây dựng dựa trên các tài liệu cho mọi mục đích, kể cả thương mại. Người cấp phép không thể thu hồi những quyền tự do miễn là bạn làm theo các điều khoản cấp phép.</p>
+<h2>Theo các điều khoản sau đây:</h2>
+<p>
+    <b>Ghi công</b> - Bạn phải cung cấp tín dụng phù hợp, cung cấp một liên kết đến các giấy phép, và cho biết nếu thay đổi đã được thực hiện. Bạn có thể làm như vậy bằng bất cứ cách hợp lý, nhưng không phải trong bất kỳ cách nào cho thấy người cấp phép xác nhận bạn hoặc việc sử dụng; <br/> <b>Chia sẻ tương tự</b> - Nếu bạn remix, biến đổi, hoặc xây dựng dựa trên các tài liệu, bạn phải phân phối đóng góp của bạn theo giấy phép giống như bản gốc; <br/> <b>Không hạn chế bổ sung</b> - Bạn có thể không áp dụng điều khoản pháp lý hoặc biện pháp công nghệ đó một cách hợp pháp hạn chế người khác làm bất cứ điều gì giấy phép giấy phép.
+</p>
+<h2>Thông báo:</h2>
+<p>Bạn không cần phải thực hiện theo giấy phép cho các yếu tố của vật liệu trong phạm vi công cộng hoặc nơi sử dụng của bạn được cho phép một ngoại lệ áp dụng hoặc hạn chế; Không có bảo đảm được đưa ra. Giấy phép có thể không cung cấp cho bạn tất cả các quyền cần thiết cho mục đích sử dụng của bạn. Ví dụ, các quyền khác như công khai, riêng tư, hoặc các quyền nhân thân có thể hạn chế như thế nào bạn sử dụng vật liệu.</p>]]></string>
 </resources>

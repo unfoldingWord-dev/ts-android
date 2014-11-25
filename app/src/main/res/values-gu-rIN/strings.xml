@@ -43,30 +43,30 @@
   <string name="malformed_translation_archive">દૂષિત અનુવાદ આર્કાઇવ</string>
   <string name="translation_import_failed">અનુવાદ આયાત કરવામાં નિષ્ફળ</string>
   <string name="import_ready_title">અનુવાદ આયાત કરવા માટે તૈયાર</string>
-  <string name="import_ready_message">તમે \"% 2 $\" પ્રોજેક્ટ માં \"% 1 $\" ભાષા માટે અનુવાદ આયાત કરવા વિશે છે.</string>
+  <string name="import_ready_message">તમે \"%2$s\" પ્રોજેક્ટ માં \"%1$s\" ભાષા માટે અનુવાદ આયાત કરવા વિશે છે.</string>
   <string name="internet_not_available">તમે સક્રિય ઇન્ટરનેટ કનેક્શન જરૂર નથી.</string>
   <string name="title_activity_upload_wizard">અનુવાદ અપલોડ કરો</string>
   <string name="upload_wizard_intro">તમે તમારી ભાષાંતર અપલોડ વિશે છે. હવે અમે તમારા અનુવાદ અપલોડ કરવા માટે તૈયાર છે તેની ખાતરી કરવા માટે થોડા ચકાસે કરશે.</string>
   <string name="label_continue">ચાલુ રાખો</string>
   <string name="upload_wizard_overview">અપલોડ કરો સમીક્ષા</string>
   <string name="label_project_details">પ્રોજેક્ટ વિગતો</string>
-  <string name="project_details">\"% 1 $\" એ \"% 3 $ s\" ભાષા માં \"% 2 $\" ભાષા ભાષાંતર.</string>
+  <string name="project_details">\"%1$s\" એ \"%3$s\" ભાષા માં \"%2$s\" ભાષા ભાષાંતર.</string>
   <string name="click_for_details">વિગતો માટે ક્લિક કરો</string>
   <string name="label_project_settings">પ્રોજેક્ટ સેટિંગ્સ</string>
   <string name="error_target_and_source_are_same">સ્ત્રોત અને લક્ષ્ય ભાષા જ છે</string>
   <string name="error_chapter_title_missing">આ શીર્ષક ખૂટે છે.</string>
   <string name="error_chapter_reference_missing">આ સંદર્ભ ગુમ થયેલ છે.</string>
-  <string name="label_validate_chapter">પ્રકરણ:% 1 $</string>
+  <string name="label_validate_chapter">પ્રકરણ:%1$s</string>
   <string name="dialog_validation_errors">માન્યતા ભૂલો</string>
   <string name="validation_errors">અનુવાદ વણઉકલ્યા ભૂલો છે. તો પછી આ સુધારવા કરીને ફરીથી પ્રયત્ન કરો.</string>
-  <string name="error_frames_not_translated">% 1 $ ફ્રેમ અનુવાદિત કરવામાં આવ્યું નથી.</string>
+  <string name="error_frames_not_translated">%1$s ફ્રેમ અનુવાદિત કરવામાં આવ્યું નથી.</string>
   <string name="dialog_validation_warnings">માન્યતા ચેતવણી</string>
   <string name="validation_warnings">વણઉકેલાયેલી ચેતવણીઓ છે. તમે આ અનુવાદ અપલોડ કરવા માંગો છો તમને ખાતરી છે?</string>
   <string name="no_translated_chapters">નથીંગ હજુ સુધી અનુવાદિત કરવામાં આવી છે.</string>
   <string name="label_chapters">પ્રકરણ</string>
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">કે સ્રોત ભાષામાં ઉપલબ્ધ કોઈ પ્રકરણો છે</string>
-  <string name="now_viewing_frame">હવે પ્રકરણ% ફ્રેમ% 2 $ 1 $ જોઈ.</string>
+  <string name="now_viewing_frame">હવે પ્રકર ફ્રેમ%2$s %1$s જોઈ.</string>
   <string name="unknown_chapter">અજ્ઞાત પ્રકરણ</string>
   <string name="label_frame">ફ્રેમ</string>
   <string name="label_translation_notes">અનુવાદ નોંધો</string>
@@ -85,22 +85,22 @@
   <string name="of">ના</string>
   <string name="error_failed_loading_license">લાયસન્સ ફાઇલલાવવામાંનિષ્ફળ</string>
   <string name="error_failed_parsing_license">લાયસન્સ ફાઈલ વિશ્લેષણ કરવામાં નિષ્ફળ</string>
-  <string name="git_awaiting_report">[% 1 $] દબાણ પ્રક્રિયા દૂરસ્થ રીપોઝીટરી માંથી સુધારો અહેવાલ રાહ જોઈ રહી છે.</string>
-  <string name="git_non_existing">[% 1 $] દૂરસ્થ સંદર્ભ અસ્તિત્વમાં નહોતી.</string>
-  <string name="git_not_attempted">[% S] દબાણ પ્રક્રિયા હજુ સુધી આ સંદર્ભ સુધારવા માટે પ્રયાસ કર્યો નથી.</string>
-  <string name="git_ok">દૂરસ્થ સંદર્ભ [% 1 $] સફળતા દબાણ.</string>
-  <string name="git_rejected_nondelete">દૂરસ્થ બાજુ refs કાઢી નાંખવા માટે પરવાનગી આપે છે / આધાર આપતું નથી, કારણ કે [% 1 $] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી.</string>
-  <string name="git_rejected_nonfastforward">તે બિન ફાસ્ટ ફોરવર્ડ સુધારો કારણ બની શકે છે, કારણ કે [% 1 $] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી.</string>
-  <string name="git_rejected_other_reason">[% 1 $] દૂરસ્થ સંદર્ભ સુધારા ફગાવી દીધી હતી.</string>
-  <string name="git_rejected_other_reason_detailed">[% 1 $] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી, કારણ કે% 1 $.</string>
-  <string name="git_rejected_remote_changed">દૂરસ્થ રીપોઝીટરી પર જૂના પદાર્થ ને વ્યાખ્યાયિત અપેક્ષા જૂના પદાર્થ તરીકે જ ન હતી, કારણ કે [% 1 $] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી.</string>
-  <string name="git_uptodate">[% 1 $] દૂરસ્થ સંદર્ભ અદ્યતીત છે</string>
-  <string name="git_server_details">સર્વર:% 1 $</string>
+  <string name="git_awaiting_report">[%1$s] દબાણ પ્રક્રિયા દૂરસ્થ રીપોઝીટરી માંથી સુધારો અહેવાલ રાહ જોઈ રહી છે.</string>
+  <string name="git_non_existing">[%1$s] દૂરસ્થ સંદર્ભ અસ્તિત્વમાં નહોતી.</string>
+  <string name="git_not_attempted">[%1$s] દબાણ પ્રક્રિયા હજુ સુધી આ સંદર્ભ સુધારવા માટે પ્રયાસ કર્યો નથી.</string>
+  <string name="git_ok">દૂરસ્થ સંદર્ભ [%1$s] સફળતા દબાણ.</string>
+  <string name="git_rejected_nondelete">દૂરસ્થ બાજુ refs કાઢી નાંખવા માટે પરવાનગી આપે છે / આધાર આપતું નથી, કારણ કે [%1$s] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી.</string>
+  <string name="git_rejected_nonfastforward">તે બિન ફાસ્ટ ફોરવર્ડ સુધારો કારણ બની શકે છે, કારણ કે [%1$s] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી.</string>
+  <string name="git_rejected_other_reason">[%1$s] દૂરસ્થ સંદર્ભ સુધારા ફગાવી દીધી હતી.</string>
+  <string name="git_rejected_other_reason_detailed">[%1$s] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી, કારણ કે%1$s.</string>
+  <string name="git_rejected_remote_changed">દૂરસ્થ રીપોઝીટરી પર જૂના પદાર્થ ને વ્યાખ્યાયિત અપેક્ષા જૂના પદાર્થ તરીકે જ ન હતી, કારણ કે [%1$s] દૂરસ્થ સંદર્ભ સુધારો નકારી કાઢવામાં આવી હતી.</string>
+  <string name="git_uptodate">[%1$s] દૂરસ્થ સંદર્ભ અદ્યતીત છે</string>
+  <string name="git_server_details">સર્વર:%1$s</string>
   <string name="opening_project">ખુલી પ્રોજેક્ટ</string>
   <string name="loading_key_terms">કી શરતો લોડ કરી રહ્યું છે</string>
   <string name="loading_translation_notes">લોડ કરી રહ્યું છે અનુવાદ નોંધો</string>
-  <string name="loading_target_language">લોડ કરી રહ્યું છે લક્ષ્ય ભાષા:% 1 $</string>
-  <string name="loading_project">લોડ કરી રહ્યું છે પ્રોજેક્ટ:% 1 $</string>
+  <string name="loading_target_language">લોડ કરી રહ્યું છે લક્ષ્ય ભાષા:%1$s</string>
+  <string name="loading_project">લોડ કરી રહ્યું છે પ્રોજેક્ટ:%1$s</string>
   <string name="error_git_stage">ફેરફારો યોજાય કરી શકાયું નથી</string>
   <string name="submitting_security_keys">સુરક્ષા કીઓ તુનું થાનાંતર થઇ ર ...</string>
   <string name="error_missing_ssh_keys">આ ssh કીઓ પેદા કરવામાં આવી નથી</string>
@@ -122,5 +122,12 @@
   <string name="term_examples">ઉદાહરણો:</string>
   <string name="git_push_success">પ્રોજેક્ટ સફળતાપૂર્વક અપલોડ થઈ હતી</string>
   <string name="connection">સર્વર સાથે જોડાણ અધિષ્ઠાપિત ...</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>તમે મુક્ત છો:</h2>
+<p>શેર કરો, નકલ, અને કોઇ પણ મધ્યમ અથવા બંધારણમાં માં સામગ્રી છે redistribute; , રીમિક્સ, સ્વીકારવાનું પરિવર્તન, અને ધંધાકીય રીતે પણ કોઈપણ હેતુ માટે સામગ્રી પર બિલ્ડ. જો તમે લાઇસન્સની શરતો પાલન તરીકે પરવાનો તરીકે લાંબા સમય સુધી આ સ્વતંત્રતાઓ રદ કરી શકો છો.</p>
+<h2>નીચેની શરતો હેઠળ:</h2>
+<p>
+    <b>આરોપણ</b> - તમે યોગ્ય ક્રેડિટ આપે લાયસન્સ લિંક પૂરી પાડે છે, અને ફેરફારો કરવામાં આવ્યા હતા, જો બતાવવું જોઈએ. તમે નથી, પરંતુ આ પરવાનો તમને અથવા તમારા ઉપયોગ સમર્થન સૂચવે છે કે કોઈપણ રીતે, કોઈ પણ વાજબી રીતે આવું કરી શકે છે; <br/> <b>ShareAlike</b> - તમે રીમિક્સ, સામગ્રી પર પરિવર્તન, અથવા બિલ્ડ, તો તમે મૂળ જેવા જ લાયસન્સ હેઠળ તમારા યોગદાનની વિતરિત જ જોઈએ; <br/> <b>કોઈ અતિરિક્ત પ્રતિબંધો</b> - તમે કાનૂની શરતો અથવા કાયદેસર લાયસન્સ પરમિટ કશું કરવાનું ના અન્ય પ્રતિબંધિત છે કે ટેકનોલોજીકલ પગલાં લાગુ કરી શકે છે.
+</p>
+<h2>નોટિસ:</h2>
+<p>તમે તમારા ઉપયોગ લાગુ અપવાદ કે મર્યાદા દ્વારા પરવાનગી છે જ્યાં પબ્લિક ડોમેઇન કે તેવા માલ તત્વો માટે લાઇસન્સ સાથે પાલન કરવા માટે નથી; આ બોલ પર કોઈ વોરંટી આપવામાં આવે છે. લાયસન્સ તમે તમારા ઇચ્છિત ઉપયોગ માટે જરૂરી પરવાનગીઓ તમામ ન આપી શકે છે. ઉદાહરણ તરીકે, જેમ કે પ્રચાર, ગોપનીયતા અથવા નૈતિક અધિકાર તરીકે અન્ય અધિકારો તમે સામગ્રીનો ઉપયોગ કેવી રીતે મર્યાદિત કરી શકે છે.</p>]]></string>
 </resources>

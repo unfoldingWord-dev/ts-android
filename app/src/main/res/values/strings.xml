@@ -110,7 +110,7 @@
     <string name="choose_target_language">Choose The Target Language</string>
     <string name="project_archive_missing">Project archive not found</string>
     <string name="label_email">Email:</string>
-    <string name="search_language">Search for a language</string>
+    <string name="search_language" translatable="false">Search for a language</string>
     <string name="loading">Loading…</string>
     <string name="view_license">View License</string>
     <string name="license_deny">No Thanks</string>
@@ -122,14 +122,14 @@
     <string name="term_examples">Examples:</string>
     <string name="git_push_success">Project was successfully uploaded</string>
     <string name="connection">Establishing a connection with the server…</string>
-    <string name="choose_frame_to_start">Choose some source text from the left tab to get started</string>
-    <string name="key_terms">Key Terms</string>
-    <string name="return_to_important_terms">Return to Important Terms</string>
-    <string name="no_translation_notes">There are no translation notes</string>
-    <string name="label_important_terms">Important Terms</string>
-    <string name="translation_check_notice">We will now perform a few checks to ensure your translation is ready.</string>
-    <string name="translation_complete">Translation is complete</string>
-    <string name="preparing_upload">Preparing the project for uploading...</string>
+    <string name="choose_frame_to_start" translatable="false">Choose some source text from the left tab to get started</string>
+    <string name="key_terms" translatable="false">Key Terms</string>
+    <string name="return_to_important_terms" translatable="false">Return to Important Terms</string>
+    <string name="no_translation_notes" translatable="false">There are no translation notes</string>
+    <string name="label_important_terms" translatable="false">Important Terms</string>
+    <string name="translation_check_notice" translatable="false">We will now perform a few checks to ensure your translation is ready.</string>
+    <string name="translation_complete" translatable="false">Translation is complete</string>
+    <string name="preparing_upload" translatable="false">Preparing the project for uploading...</string>
     <string name="license"><![CDATA[<h2>You are free to:</h2><p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p><h2>Under the following terms:</h2><p><b>Attribution</b> - You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use;<br/><b>ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original;    <br/>    <b>No additional restrictions</b> -  You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.</p><h2>Notices:</h2><p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]></string>
 
 </resources>

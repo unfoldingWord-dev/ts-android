@@ -43,7 +43,7 @@
   <string name="malformed_translation_archive">Hatalı çeviri arşivi</string>
   <string name="translation_import_failed">Çeviri almak için başarısız oldu </string>
   <string name="import_ready_title">Hazır alma çeviri </string>
-  <string name="import_ready_message">\"S%1$için bir çeviri almak üzere\" dil \"ler\" proje%2$.</string>
+  <string name="import_ready_message">\"%1$siçin bir çeviri almak üzere\" dil \"ler\" proje%2$s.</string>
   <string name="internet_not_available">Etkin bir internet bağlantısı gerekmez.</string>
   <string name="title_activity_upload_wizard">Çeviri Yükle</string>
   <string name="upload_wizard_intro">Çeviri upload üzeresiniz. Şimdi birkaç denetler çeviri karşıya hazır olduğundan emin olmak için yapılacaktır.</string>
@@ -66,7 +66,7 @@
   <string name="label_chapters">Bölüm</string>
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Hiçbir fasıl kaynak dilde availble vardır </string>
-  <string name="now_viewing_frame">Şu an görüntülemekte bölüm s %2$s kare %1$.</string>
+  <string name="now_viewing_frame">Şu an görüntülemekte bölüm %2$s kare %1$s.</string>
   <string name="unknown_chapter">Bilinmeyen bölüm</string>
   <string name="label_frame">Çerçeve</string>
   <string name="label_translation_notes">Çeviri Notları</string>
@@ -85,16 +85,16 @@
   <string name="of">bu</string>
   <string name="error_failed_loading_license">Lisans dosyası yüklenemedi </string>
   <string name="error_failed_parsing_license">Lisans dosyası ayrıştırılamadı </string>
-  <string name="git_awaiting_report">uzak depodan süreçtir bekleyen güncelleştirme raporu İtme s] [% 1$.</string>
-  <string name="git_non_existing">s] Uzaktan ref yoktu [%1$.</string>
-  <string name="git_not_attempted">[%s] Basma işlemi henüz bu ref güncellemek için kalkışmadı.</string>
-  <string name="git_ok">s] Başarı uzak ref push [%1$.</string>
-  <string name="git_rejected_nondelete">güncelleme uzaktan yan/silme izin başvuruları desteklemediği için kabul edilmediğini s] Uzaktan ref [%1$.</string>
-  <string name="git_rejected_nonfastforward">s] güncelleştirmesi olmayan hızlı neden olarak kabul edilmediğini Uzak ref ileri update [%1$.</string>
-  <string name="git_rejected_other_reason">güncelleme reddedildi s] Uzaktan ref [%1$.</string>
-  <string name="git_rejected_other_reason_detailed">s] Uzaktan ref güncelleme reddedildi,% 1 çünkü [%1$$s.</string>
-  <string name="git_rejected_remote_changed">güncelleştirme, uzaktan depo eski nesne kimliği tanımlanan beklenen eski nesne olarak aynı olmadığı için kabul edilmediğini s] Uzaktan ref [%1$.</string>
-  <string name="git_uptodate">s] uzaktan ref güncel [%1$</string>
+  <string name="git_awaiting_report">uzak depodan süreçtir bekleyen güncelleştirme raporu İtme [%1$s].</string>
+  <string name="git_non_existing">Uzaktan ref yoktu [%1$s].</string>
+  <string name="git_not_attempted">[%1$s] Basma işlemi henüz bu ref güncellemek için kalkışmadı.</string>
+  <string name="git_ok"> Başarı uzak ref push [%1$s].</string>
+  <string name="git_rejected_nondelete">güncelleme uzaktan yan/silme izin başvuruları desteklemediği için kabul edilmediğini Uzaktan ref [%1$s].</string>
+  <string name="git_rejected_nonfastforward"> güncelleştirmesi olmayan hızlı neden olarak kabul edilmediğini Uzak ref ileri update [%1$s].</string>
+  <string name="git_rejected_other_reason">güncelleme reddedildi Uzaktan ref [%1$s].</string>
+  <string name="git_rejected_other_reason_detailed"> Uzaktan ref güncelleme reddedildi,%2$s çünkü [%1$s].</string>
+  <string name="git_rejected_remote_changed">güncelleştirme, uzaktan depo eski nesne kimliği tanımlanan beklenen eski nesne olarak aynı olmadığı için kabul edilmediğini Uzaktan ref [%1$s].</string>
+  <string name="git_uptodate">uzaktan ref güncel [%1$s]</string>
   <string name="git_server_details">Server: %1$s</string>
   <string name="opening_project">Açılış proje</string>
   <string name="loading_key_terms">Yükleme anahtar terimler</string>
@@ -122,5 +122,12 @@
   <string name="term_examples">Örnekler:</string>
   <string name="git_push_success">Proje başarılı şekilde gönderildi </string>
   <string name="connection">Sunucu ile bağlantı kurma... </string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>Sen serbesttir:</h2>
+<p>Paylaş, kopyalama ve herhangi bir ortamda ya da formatta malzemeyi yeniden dağıtma; , Remix, Uyum dönüşümü, ve hatta ticari, herhangi bir amaç için malzeme üzerine inşa. Eğer lisans koşullarını takip gibi lisansörü sürece bu özgürlükleri iptal edemezsiniz.</p>
+<h2>Aşağıdaki şartları altında:</h2>
+<p>
+    <b>Atıf</b> -, uygun kredi vermek lisansı için bir bağlantı sağlar ve değişiklikler yapılmış ise belirtmelidir. Sen ancak lisans size veya kullanımını onayladığı sürmeyecek bir şekilde, herhangi bir makul bir şekilde bunu yapabilir; <br/> <b>ShareAlike</b> - Eğer remix, malzeme üzerine dönüşümü, ya da inşa halinde, orijinal olarak aynı lisans altında katkıları dağıtmanız gerekir; <br/> <b>Hiçbir ek kısıtlamalar</b> - Sen hukuki terimleri ya da yasal lisans izinleri şey yapıyor diğerlerini kısıtlamak teknolojik önlemler geçerli olmayabilir.
+</p>
+<h2>Uyarılar:</h2>
+<p>Sen kullanımı uygulanabilir bir istisna veya sınırlama izin kamu malı veya malzemenin elemanları için lisans uymak zorunda değilsiniz; Hiçbir garanti verilmez. Lisans size amaçlanan kullanım için gerekli tüm izinlere vermeyebilir. Örneğin, tanıtım, gizlilik veya manevi haklar gibi diğer haklar size malzeme kullanımı nasıl sınırlandırabilir.</p>]]></string>
 </resources>

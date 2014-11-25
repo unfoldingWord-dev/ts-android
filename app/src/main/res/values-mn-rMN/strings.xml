@@ -43,23 +43,23 @@
   <string name="malformed_translation_archive">Буруу орчуулгын архив</string>
   <string name="translation_import_failed">Орчуулгыг импортлож чадсангүй</string>
   <string name="import_ready_title">Орчуулгыг импортлоход бэлэн</string>
-  <string name="import_ready_message">Та \"% 2 $ S\" төсөлд \"% 1 $ S\" хэлний орчуулгыг импортлох гэж байна.</string>
+  <string name="import_ready_message">Та \"%2$s\" төсөлд \"%1$s\" хэлний орчуулгыг импортлох гэж байна.</string>
   <string name="internet_not_available">Таньд идэвхтэй интернэт холболт байхгүй байна.</string>
   <string name="title_activity_upload_wizard">Орчуулга оруулах</string>
   <string name="upload_wizard_intro">Та өөрийн орчуулгыг байршуулах гэж байна. Бид одоо таны орчуулгыг байршуулахад бэлэн байгаа эсэхийг хангах зорилгоор хэд хэдэн шалгалтыг хийнэ.</string>
   <string name="label_continue">Үргэлжлүүлэх</string>
   <string name="upload_wizard_overview">Тоймыг байршуулах</string>
   <string name="label_project_details">Төслийн мэдээлэл</string>
-  <string name="project_details">\"%1$\" хэлнээс \"%2$s\"хэлэнд орчуулагдсан \"%3$S\".</string>
+  <string name="project_details">\"%1$s\" хэлнээс \"%2$s\"хэлэнд орчуулагдсан \"%3$s\".</string>
   <string name="click_for_details">Дэлгэрэнгүй мэдээллийг энд дарж авна уу</string>
   <string name="label_project_settings">Төслийн Тохиргоо</string>
   <string name="error_target_and_source_are_same">Эх хэл болон орчуулагдах хэл ижил байна</string>
   <string name="error_chapter_title_missing">Гарчиг байхгүй байна.</string>
   <string name="error_chapter_reference_missing">Лавлах материал байхгүй байна.</string>
-  <string name="label_validate_chapter">Бүлэг: %1$с</string>
+  <string name="label_validate_chapter">Бүлэг: %1$s</string>
   <string name="dialog_validation_errors">Баталгаажуулалтын алдаа</string>
   <string name="validation_errors">Орчуулгад шийдэгдээгүй алдаа байна. Эдгээрийг залруулсны дараа дахин оролдоод үз.</string>
-  <string name="error_frames_not_translated">%1$S хүрээ орчуулагдаагүй байна.</string>
+  <string name="error_frames_not_translated">%1$s хүрээ орчуулагдаагүй байна.</string>
   <string name="dialog_validation_warnings">Баталгаажуулалтын Анхааруулга</string>
   <string name="validation_warnings">Шийдэгдээгүй сэрэмжлүүлэг байна. Та энэ орчуулгыг байршуулахдаа итгэлтэй байна уу?</string>
   <string name="no_translated_chapters">Юу ч орчуулагдаагүй байна.</string>
@@ -87,7 +87,7 @@
   <string name="error_failed_parsing_license">Лицензийн файлыг задалж чадсангүй</string>
   <string name="git_awaiting_report">[%1$s] Түлхэх үйл явц нь алсын архиваас шинэчлэх тайланг хүлээж байна.</string>
   <string name="git_non_existing">[%1$s] Алсын эх үүсвэр байхгүй байна.</string>
-  <string name="git_not_attempted">[%] Түлхэх үйл явцыг энэхүү лавлагаанаас шинэчлэх оролдлого хийгээгүй байна.</string>
+  <string name="git_not_attempted">[%1$s] Түлхэх үйл явцыг энэхүү лавлагаанаас шинэчлэх оролдлого хийгээгүй байна.</string>
   <string name="git_ok">Алсын лавлагаанаас [%1$s] амжилттай түрлээ</string>
   <string name="git_rejected_nondelete">[%1$s] Алсын тал нь тухайн лавлагааг дэмжих/устгахыг зөвшөөрөх  устгахыг дэмжихгүй учраас Алсын лавлагааны шинэчлэлийг хийхгүй.</string>
   <string name="git_rejected_nonfastforward">[%1$s] Хурдан бус шилжүүлэгчийн шинэчлэлийг үүсгэдэг учраас алсын лавлагааг түзгэлзэнэ.</string>
@@ -122,5 +122,12 @@
   <string name="term_examples">Жишээ нь:</string>
   <string name="git_push_success">Төслийг амжилттай байршуулсан байна</string>
   <string name="connection">Сервертэй холболт хийж байна ...</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>Та дараах үйлдэл хийхэд чөлөөтэй. Үүнд:</h2>
+<p>Ямар ч хэрэгслээр, ямар ч форматаар байгаа материалыг хуваалцах, хуулах, дахин түгээх; ямар нэгэн зорилгоор бүр арилжааны зорилгоор ч өөрчлөх, хувиргах, сурталчилж болно. Таныг уг зөвшөөрлийн нөхцлийг биелүүлж байгаа тохиолдолд тусгай зөвшөөрлийг олгогч  эдгээр эрх чөлөөг хүчингүй болгохгүй.</p>
+<h2>Дараах нөхцлийн дагуу:</h2>
+<p>
+    <b> Тайлбар </> - Та зохих итгэлийг үзүүлж, зөвшөөрлийг авах холбоосыг өгч ямар нэгэн өөрчлөлт орсон бол тэдгээрийг дурьдах ёстой. лТа болон таны зөвшөөрлийг батлахыг зөвшөөрөл олгогчид санал болгох маягаар бус өөр учир шалтгаан бүхий аргаар хийж болно; <br/> <b> Ижлийг хуваалцах </> - Хэрвээ та материалыг өөрчлөх, хувиргах, сурталчилж байгаа бол та өөрийн хувь нэмрээ эх хувьтай ижил зөвшөөрлөөр түгээх ёстой болно; <br/> <b> ямар нэгэн нэмэлт хязгаарлалтгүй </> - Тусгай зөвшөөрлөөр бусад хүмүүсийг ямар нэгэн зүйл хийхээс хууль ёсоор хязгаарлах эрхзүйн нөхцөл болон технологийн арга хэмжээг ашиглахгүй.
+</p>
+<h2>Сануулга:</h2>
+<p>Та нийтийн домэйны материалын элемент юмуу ямар нэгэн хязгаарлалтаар зөвшөөрсөн хэрэглээний үед уг тусгай зөвшөөрлийг заавал мөрдөх шаардлагагүй. Үүнд ямар ч баталгаа өгөөгүй болно. Тусгай зөвшөөрлөөр таны хүссэн зориулалтаар ашиглах шаардлагатай зөвшөөрлийг өгч чадахгүй байж болох юм. Тухайлбал, Ил тод байдал, хувийн нууц, эсвэл ёс суртахууны эрх зэрэг бусад эрхээр материалыг хэрхэн ашиглахыг хязгаарлаж болно.</p>]]></string>
 </resources>

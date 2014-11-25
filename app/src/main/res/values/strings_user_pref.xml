@@ -9,8 +9,8 @@
     <string name="pref_description_remember_position">Display the last viewed page when starting the app</string>
 
     <!-- highlight keyt erms -->
-    <string name="pref_title_highlight_key_terms">Highlight key terms</string>
-    <string name="pref_description_highlight_key_terms">Display key terms as clickable links in the source text</string>
+    <string name="pref_title_highlight_key_terms" translatable="false">Highlight key terms</string>
+    <string name="pref_description_highlight_key_terms" translatable="false">Display key terms as clickable links in the source text</string>
 
     <!-- translation typeface -->
     <string name="pref_title_translation_typeface">Translation Typeface</string>
@@ -18,8 +18,8 @@
         <item>Gentium Plus</item>
     </string-array>
 
-    <string name="pref_title_typeface_size">Translation Typeface Size</string>
-    <string-array name="pref_typeface_size_titles">
+    <string name="pref_title_typeface_size" translatable="false">Translation Typeface Size</string>
+    <string-array name="pref_typeface_size_titles" translatable="false">
         <item>small</item>
         <item>medium</item>
         <item>large</item>

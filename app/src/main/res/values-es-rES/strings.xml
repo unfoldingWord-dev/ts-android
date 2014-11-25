@@ -122,5 +122,12 @@
   <string name="term_examples">Ejemplos:</string>
   <string name="git_push_success">El proyecto se ha cargado correctamente</string>
   <string name="connection">Establecer una conexión con el servidor...</string>
-    <string name="license"><![CDATA[]]></string>
+    <string name="license"><![CDATA[<h2>Usted es libre de:</h2>
+<p>Compartir, copiar y redistribuir el material en cualquier medio o formato; Adaptar, remix, transformar y construir sobre el material para cualquier propósito, incluso con fines comerciales. El licenciante no puede revocar estas libertades, siempre y cuando siga los términos de la licencia.</p>
+<h2>Bajo las siguientes condiciones:</h2>
+<p>
+    <b>Atribución</b> - Usted debe dar el crédito apropiado, proporcionar un enlace a la licencia, e indicar si se han realizado cambios. Usted puede hacerlo de cualquier manera razonable, pero no de cualquier manera que sugiere el licenciante usted o su uso respalda; <br/> <b>Compartir bajo la misma</b> - Si remezcla, transformar o ampliar el material, debe distribuir sus contribuciones bajo la misma licencia que el original; <br/> <b>No hay restricciones adicionales</b> - Usted puede no aplicarse términos legales o medidas tecnológicas que restringen legalmente a otros de hacer cualquier cosa que los permisos de licencia.
+</p>
+<h2>Avisos:</h2>
+<p>Usted no tiene que cumplir con la licencia para los elementos del material en el dominio público o cuando su uso está permitido por una excepción o limitación aplicable; No se dan garantías. La licencia no le puede dar todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos, tales como la publicidad, la privacidad, o derechos morales pueden limitar la forma en que utiliza el material.</p>]]></string>
 </resources>
