@@ -77,8 +77,10 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         }
 
         protected void onPostExecute(Void result) {
+            app().pauseAutoSave(true);
             // reload the center pane so we don't accidently overwrite a frame
             ((MainActivity) me.getActivity()).reloadCenterPane();
+            app().pauseAutoSave(false);
             // open up the chapters tab
             ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);
             // let the adapter redraw itself so the selected project is corectly highlighted
