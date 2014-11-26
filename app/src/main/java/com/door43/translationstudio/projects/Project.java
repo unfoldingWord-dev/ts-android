@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * Projects encapsulate the source text for a specific translation effort regardless of language.
  * This source text is subdivided into Chapters and Frames.
  */
-public class Project {
+public class Project extends Model {
     // so we can look up by index
     private List<Chapter> mChapters = new ArrayList<Chapter>();
     // so we can look up by id
@@ -59,6 +59,7 @@ public class Project {
      * @param description A short description of the project.
      */
     public Project(String title, String slug, String description) {
+        super("project");
         mTitle = title;
         mSlug = slug;
         mDescription = description;
@@ -85,11 +86,6 @@ public class Project {
             // remove the ready tag
             file.delete();
         }
-
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("translation_ready_"+mSlug+"_"+getSelectedTargetLanguage().getId(), isReady);
-        editor.apply();
     }
 
     /**
@@ -97,8 +93,8 @@ public class Project {
      * @return
      */
     public boolean getTranslationIsReady() {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        return settings.getBoolean("translation_ready_" + mSlug + "_" + getSelectedTargetLanguage().getId(), false);
+        File file = new File(getRepositoryPath(), TRANSLATION_READY_TAG);
+        return file.exists();
     }
 
     /**
@@ -122,6 +118,7 @@ public class Project {
      * Returns the project id a.k.a the project slug.
      * @return
      */
+    @Override
     public String getId() {
         return mSlug;
     }
@@ -303,6 +300,42 @@ public class Project {
     }
 
     /**
+     * Checks to see if this project is currently being translated in the selected target language
+     * @return
+     */
+    public boolean isTranslating() {
+        File dir = new File(Project.getRepositoryPath(getId(), getSelectedTargetLanguage().getId()));
+        String[] files = dir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return !s.equals(".git");
+            }
+        });
+        return files != null && files.length > 0;
+    }
+
+    /**
+     * Checks to see if this project is currently being translated in any language
+     * @return
+     */
+    public boolean isTranslatingGlobal() {
+        // TODO: we want to find all directories for this project regardless of language. Only chapters and frames are specific to language.
+        File dir = new File(Project.getProjectsPath());
+        String[] files = dir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                String[] pieces = s.split("-");
+                if(pieces.length == 3) {
+                    return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId());
+                } else {
+                    return false;
+                }
+            }
+        });
+        return files != null && files.length > 0;
+    }
+
+    /**
      * Returns the currently selected source language
      */
     public Language getSelectedSourceLanguage() {
@@ -353,7 +386,7 @@ public class Project {
         SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_target_language_"+mSlug, slug);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -416,7 +449,7 @@ public class Project {
         SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_source_language_"+mSlug, slug);
-        editor.commit();
+        editor.apply();
     }
 
     /**
@@ -464,12 +497,21 @@ public class Project {
     }
 
     /**
+     * Returns the absolute path to the directory of projects. e.g. the git directory.
+     * @return
+     */
+    public static String getProjectsPath() {
+        return MainContext.getContext().getFilesDir() + "/" + MainContext.getContext().getResources().getString(R.string.git_repository_dir);
+    }
+
+    /**
      * Returns the absoute repository path for the currently selected language
      * @return
      */
     public String getRepositoryPath() {
         return getRepositoryPath(getId(), getSelectedTargetLanguage().getId());
     }
+
 
     /**
      * Returns a list of source languages for this project
@@ -697,7 +739,6 @@ public class Project {
         return getRemotePath(getSelectedTargetLanguage());
     }
 
-
     public interface OnCommitComplete {
         public void success();
         public void error();
@@ -784,25 +825,5 @@ public class Project {
         public Language getLanguage() {
             return MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
         }
-    }
-
-    /**
-     * Sets whether or not the project is being translated
-     * @param hasTranslation
-     */
-    public void setIsTranslating(Boolean hasTranslation) {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("is_translating_"+mSlug, hasTranslation);
-        editor.commit();
-    }
-
-    /**
-     * Checks if the project is being translated
-     * @return
-     */
-    public Boolean getIsTranslating() {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        return settings.getBoolean("is_translating_"+mSlug, false);
     }
 }

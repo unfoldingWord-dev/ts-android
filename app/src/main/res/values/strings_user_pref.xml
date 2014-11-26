@@ -48,7 +48,7 @@
     <string name="pref_title_export_format">Export Format</string>
     <string-array name="pref_export_format_titles">
         <item>DokuWiki</item>
-        <item>translationStudio Project (enables import)</item>
+        <item>translationStudio Project</item>
     </string-array>
 
 </resources>

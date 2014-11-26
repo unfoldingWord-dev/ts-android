@@ -44,27 +44,4 @@ android:padding="20dp">
         android:smoothScrollbar="true" />
 </LinearLayout>
 
-<LinearLayout
-    android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom"
-    android:paddingTop="20dp"
-    android:baselineAligned="false"
-    android:layout_alignParentBottom="true"
-    android:id="@+id/linearLayout">
-
-    <Button
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/label_cancel"
-        android:id="@+id/cancelSwitchTargetLanguageButton"
-        android:layout_weight="1"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/bordered_button"
-        android:textColor="@color/dark_gray"
-        android:layout_marginRight="10dp" />
-
-</LinearLayout>
-
 </RelativeLayout>

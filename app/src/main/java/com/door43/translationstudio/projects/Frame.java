@@ -12,12 +12,11 @@ import java.util.ArrayList;
 /**
  * Frames encapsulates a specific piece of translated work
  */
-public class Frame {
+public class Frame extends Model {
     private String mChapterFrameId;
     private String mText;
     private String mId;
     private String mChapterId;
-    private String mImagePath;
     private Chapter mChapter;
     private Translation mTranslation;
     private TranslationNote mNotes;
@@ -29,6 +28,7 @@ public class Frame {
      * @param text a short description of the frame
      */
     public Frame(String chapterFrameId, String image, String text) {
+        super("frame");
         // parse id
         String[] pieces = chapterFrameId.split("-");
         if(pieces.length == 2) {
@@ -101,7 +101,6 @@ public class Frame {
             save();
         }
         mTranslation = new Translation(targetLanguage, translation);
-        mChapter.getProject().setIsTranslating(true);
     }
 
     /**
@@ -172,6 +171,7 @@ public class Frame {
      * Returns the frame id
      * @return
      */
+    @Override
     public String getId() {
         return mId;
     }
@@ -195,6 +195,7 @@ public class Frame {
             if(mTranslation.getText().isEmpty()) {
                 // delete empty file
                 file.delete();
+                mChapter.cleanDir(mTranslation.getLanguage());
             } else {
                 // write translation
                 if(!file.exists()) {
@@ -210,5 +211,13 @@ public class Frame {
                 }
             }
         }
+    }
+
+    /**
+     * Check if the frame is currently being translated
+     * @return
+     */
+    public boolean isTranslating() {
+        return !getTranslation().getText().isEmpty();
     }
 }

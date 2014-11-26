@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="3"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp"
-    android:paddingLeft="5dp"
     android:id="@+id/frameBody">
 
     <ImageView
@@ -18,23 +15,44 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
+        android:layout_weight="3"
         android:layout_height="fill_parent"
-        android:weightSum="2"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:layout_toRightOf="@+id/frameIcon"
+        android:layout_toEndOf="@+id/frameIcon"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Frame Id"
+            android:ellipsize="marquee"
             android:id="@+id/frameId"
-            android:textSize="@dimen/h4"
-            android:textColor="@color/black" />
+            android:marqueeRepeatLimit="marquee_forever"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/black"
+            android:singleLine="true"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Frame Description"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:text="Frame Description\ntestbla bla bla"
             android:id="@+id/frameDescription" />
     </LinearLayout>
-</LinearLayout>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/translationStatusIcon"
+        android:background="@drawable/ic_wrench_dark"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:paddingBottom="1dp"
+        android:layout_alignBottom="@+id/frameIcon" />
+</RelativeLayout>

@@ -8,8 +8,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
@@ -53,14 +55,14 @@ public class FrameItemAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        LinearLayout frameItemView;
+        RelativeLayout frameItemView;
 
         // if it's not recycled, initialize some attributes
         if (view == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            frameItemView = (LinearLayout)inflater.inflate(R.layout.fragment_pane_left_frames_item, null);
+            frameItemView = (RelativeLayout)inflater.inflate(R.layout.fragment_pane_left_frames_item, null);
         } else {
-            frameItemView = (LinearLayout)view;
+            frameItemView = (RelativeLayout)view;
         }
 
         // image
@@ -81,15 +83,25 @@ public class FrameItemAdapter extends BaseAdapter {
         TextView frameDescription = (TextView)frameItemView.findViewById(R.id.frameDescription);
         frameDescription.setText(getFrameItem(i).getText());
 
+        // translation in progress
+        ImageView translationIcon = (ImageView)frameItemView.findViewById(R.id.translationStatusIcon);
+        if(getFrameItem(i).isTranslating()) {
+            translationIcon.setVisibility(View.VISIBLE);
+        } else {
+            translationIcon.setVisibility(View.GONE);
+        }
+
         // highlight selected frame
         if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getChapterFrameId() == getFrameItem(i).getChapterFrameId()) {
             frameItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             frameDescription.setTextColor(Color.WHITE);
             frameTitle.setTextColor(Color.WHITE);
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench));
         } else {
             frameItemView.setBackgroundColor(Color.TRANSPARENT);
             frameDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
             frameTitle.setTextColor(mContext.getResources().getColor(R.color.black));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench_dark));
         }
 
         return frameItemView;

@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="3"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp"
-    android:paddingLeft="5dp">
+    android:weightSum="3">
 
     <ImageView
         android:layout_width="@dimen/project_list_item_image_width"
@@ -17,23 +14,47 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
+        android:layout_weight="3"
         android:layout_height="fill_parent"
-        android:weightSum="2"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp">
+        android:paddingLeft="2dp"
+        android:paddingRight="2dp"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:layout_toRightOf="@+id/projectIcon"
+        android:layout_toEndOf="@+id/projectIcon"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Project Title"
             android:id="@+id/projectTitle"
-            android:textSize="@dimen/h4"
-            android:textColor="@color/black" />
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/black"
+            android:singleLine="true"
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Project Description"
-            android:id="@+id/projectDescription" />
+            android:text="Project Description\ntest"
+            android:id="@+id/projectDescription"
+            android:ellipsize="end"
+            android:maxLines="2" />
+
     </LinearLayout>
-</LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/translationStatusIcon"
+        android:background="@drawable/ic_wrench_dark"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:paddingBottom="1dp"
+        android:layout_alignBottom="@+id/projectIcon" />
+
+</RelativeLayout>

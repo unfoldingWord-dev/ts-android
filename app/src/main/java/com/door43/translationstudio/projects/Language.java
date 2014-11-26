@@ -44,7 +44,7 @@ public class Language {
     /**
      * Returns the human readable language name
      * @return
-     */
+    */
     public String getName() {
         return mName;
     }

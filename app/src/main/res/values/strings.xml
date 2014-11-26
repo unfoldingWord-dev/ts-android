@@ -38,7 +38,7 @@
     <string name="export_to_app">Export to app</string>
     <string name="export_to_sd">Export to SD</string>
     <string name="import_from_sd">Import from SD</string>
-    <string name="export_as_project">Format: Translation Studio Project</string>
+    <string name="export_as_project">Format: translationStudio Project</string>
     <string name="export_as_dokuwiki">Format: DokuWiki</string>
     <string name="malformed_translation_archive">Malformed translation archive</string>
     <string name="translation_import_failed">Failed to import the translation</string>

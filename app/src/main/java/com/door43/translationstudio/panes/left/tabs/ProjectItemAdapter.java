@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
@@ -48,14 +48,14 @@ public class ProjectItemAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        LinearLayout projectItemView;
+        RelativeLayout projectItemView;
 
         // if it's not recycled, initialize some attributes
         if (view == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            projectItemView = (LinearLayout)inflater.inflate(R.layout.fragment_pane_left_projects_item, null);
+            projectItemView = (RelativeLayout)inflater.inflate(R.layout.fragment_pane_left_projects_item, null);
         } else {
-            projectItemView = (LinearLayout)view;
+            projectItemView = (RelativeLayout)view;
         }
 
         // image
@@ -76,15 +76,25 @@ public class ProjectItemAdapter extends BaseAdapter {
         TextView projectDescription = (TextView)projectItemView.findViewById(R.id.projectDescription);
         projectDescription.setText(getProjectItem(i).getDescription());
 
+        // translation in progress
+        ImageView translationIcon = (ImageView)projectItemView.findViewById(R.id.translationStatusIcon);
+        if(getProjectItem(i).isTranslating()) {
+            translationIcon.setVisibility(View.VISIBLE);
+        } else {
+            translationIcon.setVisibility(View.GONE);
+        }
+
         // highlight selected project
         if(mContext.getSharedProjectManager().getSelectedProject() != null && mContext.getSharedProjectManager().getSelectedProject().getId() == getProjectItem(i).getId()) {
             projectItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             projectDescription.setTextColor(Color.WHITE);
             projectTitle.setTextColor(Color.WHITE);
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench));
         } else {
             projectItemView.setBackgroundColor(Color.TRANSPARENT);
             projectDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
             projectTitle.setTextColor(mContext.getResources().getColor(R.color.black));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench_dark));
         }
 
         return projectItemView;

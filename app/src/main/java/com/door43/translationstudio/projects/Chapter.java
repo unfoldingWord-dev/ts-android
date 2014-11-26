@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Chapters encapsulate a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation
  */
-public class Chapter {
+public class Chapter extends Model {
     private static final String REFERENCE_FILE = "reference.txt";
     private static final String TITLE_FILE = "title.txt";
     // so we can look up by index
@@ -36,6 +36,7 @@ public class Chapter {
      * @param reference a short description of the chapter
      */
     public Chapter(String id, String title, String reference) {
+        super("chapter");
         mId = id;
         mTitle = title;
         mReference = reference;
@@ -103,7 +104,6 @@ public class Chapter {
             save();
         }
         mTitleTranslation = new Translation(targetLanguage, translation);
-        mProject.setIsTranslating(true);
     }
 
     /**
@@ -149,7 +149,6 @@ public class Chapter {
             save();
         }
         mReferenceTranslation = new Translation(targetLanguage, translation);
-        mProject.setIsTranslating(true);
     }
 
     /**
@@ -286,12 +285,6 @@ public class Chapter {
      */
     public String getImagePath() {
         // TODO: the universal image loader does not support multiple callbacks on a single image so the first frame doesn't load it's image on startup.
-        // as a work around chapters load a copy of the first frame's image.
-//        if(getFrame(0) != null) {
-//            return getFrame(0).getImagePath();
-//        } else {
-//            return null;
-//        }
         return "sourceTranslations/"+getProject().getId()+"/en/images/"+getProject().getId()+"-"+getId()+"-00.jpg";
     }
 
@@ -324,6 +317,7 @@ public class Chapter {
                 if(mReferenceTranslation.getText().isEmpty()) {
                     // delete empty file
                     refFile.delete();
+                    cleanDir(mReferenceTranslation.getLanguage());
                 } else {
                     // write translation
                     if(!refFile.exists()) {
@@ -347,6 +341,7 @@ public class Chapter {
                 if(mTitleTranslation.getText().isEmpty()) {
                     // delete empty file
                     titleFile.delete();
+                    cleanDir(mTitleTranslation.getLanguage());
                 } else {
                     // write translation
                     if(!titleFile.exists()) {
@@ -366,10 +361,32 @@ public class Chapter {
     }
 
     /**
+     * Removes empty chapter directory
+     * @param translationLanguage the language of the chapter in question
+     */
+    public void cleanDir(Language translationLanguage) {
+        File dir = new File(Project.getRepositoryPath(mProject.getId(), translationLanguage.getId()) + getId());
+        String[] files = dir.list();
+        if(files != null && files.length == 0) {
+            dir.delete();
+        }
+    }
+
+    /**
      * Checks if the chapter has started being translated
      * @return
      */
     public boolean translationInProgress() {
         return !getReferenceTranslation().getText().isEmpty() || !getTitleTranslation().getText().isEmpty();
+    }
+
+    /**
+     * Check if the chapter is currently being translated
+     * @return
+     */
+    public boolean isTranslating() {
+        File dir = new File(Project.getRepositoryPath(mProject.getId(), mProject.getSelectedTargetLanguage().getId()) + getId());
+        String[] files = dir.list();
+        return files != null && files.length > 0;
     }
 }
