@@ -1,8 +1,8 @@
 package com.door43.translationstudio.projects;
 
-import android.util.Log;
-
+import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -194,18 +194,28 @@ public class Frame extends Model {
             File file = new File(path);
             if(mTranslation.getText().isEmpty()) {
                 // delete empty file
-                file.delete();
-                mChapter.cleanDir(mTranslation.getLanguage());
+                if(file.exists()) {
+                    file.delete();
+                    MainContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
+                    mChapter.cleanDir(mTranslation.getLanguage());
+                }
             } else {
                 // write translation
                 if(!file.exists()) {
                     file.getParentFile().mkdirs();
-                }
-                try {
+                }  try {
+                    Boolean notifyTranslationChanged = false;
+                    if(!file.exists()) {
+                        notifyTranslationChanged = true;
+                    }
                     file.createNewFile();
                     PrintStream ps = new PrintStream(file);
                     ps.print(mTranslation.getText());
                     ps.close();
+                    if(notifyTranslationChanged) {
+                        MainContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
+                        mChapter.cleanDir(mTranslation.getLanguage());
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

@@ -1,6 +1,8 @@
 package com.door43.translationstudio.projects;
 
+import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -369,6 +371,10 @@ public class Chapter extends Model {
         String[] files = dir.list();
         if(files != null && files.length == 0) {
             dir.delete();
+            MainContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
+        } else if(dir.exists()) {
+            // the chapter has translations.
+            MainContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
         }
     }
 

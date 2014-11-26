@@ -41,4 +41,25 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
     public int getSelectedTabIndex() {
         return mTabsPager.getSelectedTabIndex();
     }
+
+    /**
+     * Reloads the projects tab
+     */
+    public void reloadProjectsTab() {
+        mTabsPager.reloadProjectsTab();
+    }
+
+    /**
+     * Reloads the chapters tab
+     */
+    public void reloadChaptersTab() {
+        mTabsPager.reloadChaptersTab();
+    }
+
+    /**
+     * Reloads the frames tab
+     */
+    public void reloadFramesTab() {
+        mTabsPager.reloadFramesTab();
+    }
 }

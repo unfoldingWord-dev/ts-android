@@ -3,7 +3,8 @@ package com.door43.translationstudio;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
-import com.door43.translationstudio.events.LanguageModalDismissedEvent;
+import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
+import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.spannables.CustomMovementMethod;
 import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
@@ -24,8 +25,6 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
 
-import android.animation.ObjectAnimator;
-import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -42,17 +41,12 @@ import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
-import android.text.Html;
 import android.text.Layout;
-import android.text.Selection;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -598,7 +592,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         // positive x distance moves right
         final double maxFlingAngle = 20;
-        final float minFlingDistance = 100;
+        final float minFlingDistance = 50;
         final float minFlingVelocity = 20;
         float distanceX = event2.getX() - event1.getX();
         float distanceY = event2.getY() - event1.getY();
@@ -956,6 +950,25 @@ public class MainActivity extends TranslatorBaseActivity {
         } else {
             app().showToastMessage(R.string.internet_not_available);
         }
+    }
+
+    /**
+     * Triggered any time a frame is cleaned (deleted)
+     * @param event
+     */
+    @Subscribe
+    public void frameTranslationStatusChanged(FrameTranslationStatusChangedEvent event) {
+        mLeftPane.reloadFramesTab();
+    }
+
+    /**
+     * Triggered any time a chapter is cleaned (deleted)
+     * @param event
+     */
+    @Subscribe
+    public void chapterTranslationStatusChanged(ChapterTranslationStatusChangedEvent event) {
+        mLeftPane.reloadChaptersTab();
+        mLeftPane.reloadProjectsTab();
     }
 
     @Override

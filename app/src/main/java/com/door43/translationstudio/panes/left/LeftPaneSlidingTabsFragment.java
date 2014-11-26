@@ -30,6 +30,9 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
     private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
     private int mDefaultPage = 0;
     private int mSelectedTabColor = 0;
+    private ProjectsTabFragment mProjectsTab = new ProjectsTabFragment();
+    private ChaptersTabFragment mChaptersTab = new ChaptersTabFragment();
+    private FramesTabFragment mFramesTab = new FramesTabFragment();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -37,9 +40,9 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
 
         if(tabs.size() == 0) {
             // Tabs
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.projects), new ProjectsTabFragment()));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.chapters), new ChaptersTabFragment()));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.frames), new FramesTabFragment()));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.projects), mProjectsTab));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.chapters), mChaptersTab));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.frames), mFramesTab));
         }
 
         // ViewPager
@@ -95,5 +98,26 @@ public class LeftPaneSlidingTabsFragment extends Fragment {
         } else {
             mSelectedTabColor = color;
         }
+    }
+
+    /**
+     * Notifies the projects adapter that the dataset has changed
+     */
+    public void reloadProjectsTab() {
+        mProjectsTab.NotifyAdapterDataSetChanged();
+    }
+
+    /**
+     * Notifies the chapters adapter that the dataset has changed
+     */
+    public void reloadChaptersTab() {
+        mChaptersTab.NotifyAdapterDataSetChanged();
+    }
+
+    /**
+     * Notifies the frames adapter that the dataset has changed
+     */
+    public void reloadFramesTab() {
+        mFramesTab.NotifyAdapterDataSetChanged();
     }
 }
