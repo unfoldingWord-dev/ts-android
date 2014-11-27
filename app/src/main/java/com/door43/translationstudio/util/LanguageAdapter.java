@@ -1,34 +1,55 @@
 package com.door43.translationstudio.util;
 
 import android.content.Context;
+import android.media.Image;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Created by joel on 10/7/2014.
  */
 public class LanguageAdapter extends ArrayAdapter<Language> implements Filterable {
     private List<Language> mLanguageList;
-    private List<Language> mOrigLanguageList;
+    private List<Language> mOrigLanguageList = new ArrayList<Language>();
     private Context mContext;
     private LanguageFilter mLanguageFilter;
+    private final Boolean mIsSourceLanguages;
 
-    public LanguageAdapter(List<Language> languageList, Context context) {
+    public LanguageAdapter(List<Language> languageList, Context context, Boolean isSourceLanguages) {
         super(context, R.layout.fragment_target_language_list_item, languageList);
-        mLanguageList = languageList;
-        mOrigLanguageList = languageList;
+        mIsSourceLanguages = isSourceLanguages;
         mContext = context;
+        if(isSourceLanguages) {
+            mOrigLanguageList = languageList;
+            mLanguageList = languageList;
+        } else {
+            // sort target languages placing those with progress on top.
+            ListIterator<Language> li = languageList.listIterator(languageList.size());
+            while(li.hasPrevious()) {
+                Language l = li.previous();
+                if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
+                    mOrigLanguageList.add(0, l);
+                } else {
+                    mOrigLanguageList.add(l);
+                }
+            }
+            mLanguageList = mOrigLanguageList;
+        }
     }
 
     @Override
@@ -44,22 +65,30 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
     public View getView(int position, View convertView, ViewGroup parent) {
         View v = convertView;
         LanguageHolder holder = new LanguageHolder();
+        Language l = mLanguageList.get(position);
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.fragment_target_language_list_item, null);
             TextView nameText = (TextView) v.findViewById(R.id.target_language_name);
             TextView idText = (TextView) v.findViewById(R.id.target_language_id);
+            ImageView wrenchImage = (ImageView) v.findViewById(R.id.translationStatusIcon);
             holder.languageNameView = nameText;
             holder.languageIdView = idText;
+            holder.translationStatusIcon = wrenchImage;
             v.setTag(holder);
         } else {
             holder = (LanguageHolder)v.getTag();
         }
 
-        Language l = mLanguageList.get(position);
+
         holder.languageNameView.setText(l.getName());
         holder.languageIdView.setText(l.getId());
+        if(!mIsSourceLanguages && l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
+            holder.translationStatusIcon.setVisibility(View.VISIBLE);
+        } else {
+            holder.translationStatusIcon.setVisibility(View.GONE);
+        }
         return v;
     }
 
@@ -73,6 +102,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
     private static class LanguageHolder {
         public TextView languageNameView;
         public TextView languageIdView;
+        public ImageView translationStatusIcon;
     }
 
     @Override

@@ -1,5 +1,8 @@
 package com.door43.translationstudio.projects;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 /**
  * Created by joel on 9/5/2014.
  */
@@ -70,5 +73,53 @@ public class Language {
             return ((Language)obj).getId().equals(getId());
         }
         return false;
+    }
+
+    /**
+     * Checks if any translation progress has been made on this language.
+     * @param project the project for which translation work is searched for
+     * @return
+     */
+    public boolean isTranslating(final Project project) {
+        if(project == null) return isTranslating();
+
+        File dir = new File(Project.getRepositoryPath(project.getId(), getId()));
+        String[] files = dir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return !s.equals(".git");
+            }
+        });
+        return files != null && files.length > 0;
+
+
+    }
+
+    /**
+     * Checks if any translations have been made for this language for any project
+     * @return
+     */
+    public boolean isTranslating() {
+        File dir = new File(Project.getProjectsPath());
+        String[] files = dir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                String[] pieces = s.split("-");
+                if(pieces.length == 3) {
+                    if(pieces[2].equals(getId())) {
+                        // check if there are translations in the project
+                        String[] translationFiles = file.list(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File file, String s) {
+                                return !s.equals(".git");
+                            }
+                        });
+                        return translationFiles != null && translationFiles.length > 0;
+                    }
+                }
+                return false;
+            }
+        });
+        return files != null && files.length > 0;
     }
 }

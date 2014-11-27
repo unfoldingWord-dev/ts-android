@@ -46,9 +46,9 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
 
         // add items to list view
         if(willShowSourceLanguages) {
-            adapter = new LanguageAdapter(p.getSourceLanguages(), this);
+            adapter = new LanguageAdapter(p.getSourceLanguages(), this, showSourceLanguages);
         } else {
-            adapter = new LanguageAdapter(MainContext.getContext().getSharedProjectManager().getLanguages(), this);
+            adapter = new LanguageAdapter(MainContext.getContext().getSharedProjectManager().getLanguages(), this, showSourceLanguages);
         }
 
         list.setAdapter(adapter);

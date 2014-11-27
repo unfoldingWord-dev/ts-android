@@ -165,6 +165,9 @@ public class MainActivity extends TranslatorBaseActivity {
             app().pauseAutoSave(true);
             reloadCenterPane();
             app().pauseAutoSave(false);
+            mLeftPane.reloadFramesTab();
+            mLeftPane.reloadChaptersTab();
+            mLeftPane.reloadProjectsTab();
         } else {
             // don't reload the center pane the first time the app starts.
             mActivityIsInitializing = false;
