@@ -48,8 +48,8 @@ public class UpdateManager {
                     e.printStackTrace();
                     return;
                 }
-                String databasePath = pInfo.applicationInfo.dataDir + "/app_webview/databases/file__0/1";
-                SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(MainContext.getContext(), databasePath);
+//                String databasePath = pInfo.applicationInfo.dataDir;
+                SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(MainContext.getContext(), pInfo.applicationInfo.dataDir);
                 migrationHelper.migrateDatabase(new SQLiteMigrationHelper.OnProgressCallback() {
                     @Override
                     public void onProgress(double progress, String message) {

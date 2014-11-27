@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
@@ -24,21 +25,21 @@ import java.util.List;
  * This class handles the db migration from 1.x to 2.x.
  */
 public class SQLiteMigrationHelper extends SQLiteOpenHelper {
-    private static final int DATABASE_VERSION = 1;
-    private static final String DATABASE_NAME = "Database";
     private static final ProjectManager mProjectManager = MainContext.getContext().getSharedProjectManager();
     // these percents are just guestimates for how much work will be required to migrate. They don't have to be exact.
     private final double PERCENT_FRAMES = 80.0;
     private final double PERCENT_CHAPTERS = 20.0;
     private double mProgress = 0;
-    private static Context mContext;
+    private static MainApplication mContext;
     private static final String TAG = "MigrationSQL";
     private static String mDatabasePath;
+    private static String mInfoDatabasePath;
 
-    public SQLiteMigrationHelper(Context context, String databasePath) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    public SQLiteMigrationHelper(MainApplication context, String applicationDirectory) {
+        super(context, "Database", null, 1);
         mContext = context;
-        mDatabasePath = databasePath;
+        mDatabasePath = applicationDirectory + "/app_webview/databases/file__0/1";
+        mInfoDatabasePath = applicationDirectory + "/app_webview/Local Storage/file__0.localstorage";
     }
 
     @Override
@@ -63,11 +64,51 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
         }
 
         if(p != null) {
+            int selectedTargetLanguageId = -1;
+            int selectedFrameId = -1;
+            int selectedChapterId = -1;
+
+            // load the translations
             if(!new File(mDatabasePath).exists()) {
                 Log.d(TAG, "The database could not be found at "+mDatabasePath);
                 return;
             }
             SQLiteDatabase db = SQLiteDatabase.openDatabase(mDatabasePath, null, SQLiteDatabase.OPEN_READONLY);
+
+            // fetch the selected target language
+            if(new File(mInfoDatabasePath).exists()) {
+                SQLiteDatabase infoDB = SQLiteDatabase.openDatabase(mInfoDatabasePath, null, SQLiteDatabase.OPEN_READONLY);
+                String query = "SELECT * FROM ItemTable";
+                Cursor cursor = infoDB.rawQuery(query, null);
+                if(cursor.moveToFirst()) {
+                    // find preferences
+                    do {
+                        String key = cursor.getString(cursor.getColumnIndex("key"));
+                        if(key.equals("agree_to_terms")) {
+                            String value = cursor.getString(cursor.getColumnIndex("value"));
+                            mContext.setHasAcceptedTerms(value.equals("YES"));
+                        } else if(key.equals("selected_target_language_id")) {
+                            int value = cursor.getInt(cursor.getColumnIndex("value"));
+                            selectedTargetLanguageId = value;
+                        } else if(key.equals("translation_rtl")) {
+                            // TODO: we don't offer rtl support yet.
+                        } else if(key.equals("book")) {
+                            // we know this will always be 'obs' in 1.x
+                        } else if(key.equals("frame")) {
+                            int value = cursor.getInt(cursor.getColumnIndex("value"));
+                            selectedFrameId = value;
+                        } else if(key.equals("story")) {
+                            int value = cursor.getInt(cursor.getColumnIndex("value"));
+                            selectedChapterId = value;
+                        }
+                    } while(cursor.moveToNext());
+
+                    // load preferences
+                    // TODO: we need to finish the migration of preferences
+                }
+            }
+
+
 
             // migrate the stories
             String query = "select s.story, s.story_title, s.story_ref, l.language_code from stories as s left join languages as l on l.id=s.language_id where s.source=0";
@@ -117,6 +158,9 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
             } else {
                 Log.d(TAG, "could note move the db cursor");
             }
+
+            // migrate the selected language
+
         } else {
             Log.d(TAG, "The migration project could not be found");
         }
