@@ -659,6 +659,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * Updates the center pane with the selected source frame text and any existing translations
      */
     public void reloadCenterPane() {
+        invalidateOptionsMenu();
         // load the text
         final Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
@@ -980,6 +981,16 @@ public class MainActivity extends TranslatorBaseActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_activity_actions, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        Boolean projectEnabled = app().getSharedProjectManager().getSelectedProject() != null;
+        menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled);
+        menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
+        menu.findItem(R.id.action_share).setVisible(projectEnabled);
+        menu.findItem(R.id.action_sync).setVisible(projectEnabled);
+        return true;
     }
 
     @Override
