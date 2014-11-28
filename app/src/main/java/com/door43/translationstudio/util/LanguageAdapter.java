@@ -39,11 +39,13 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
             mLanguageList = languageList;
         } else {
             // sort target languages placing those with progress on top.
-            ListIterator<Language> li = languageList.listIterator(languageList.size());
-            while(li.hasPrevious()) {
-                Language l = li.previous();
+            ListIterator<Language> li = languageList.listIterator();
+            int translatedIndex = 0;
+            while(li.hasNext()) {
+                Language l = li.next();
                 if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
-                    mOrigLanguageList.add(0, l);
+                    mOrigLanguageList.add(translatedIndex, l);
+                    translatedIndex ++;
                 } else {
                     mOrigLanguageList.add(l);
                 }
