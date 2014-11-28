@@ -2,6 +2,7 @@ package com.door43.translationstudio.util;
 
 import android.content.Context;
 import android.media.Image;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,27 +31,38 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
     private LanguageFilter mLanguageFilter;
     private final Boolean mIsSourceLanguages;
 
-    public LanguageAdapter(List<Language> languageList, Context context, Boolean isSourceLanguages) {
+    public LanguageAdapter(final List<Language> languageList, Context context, Boolean isSourceLanguages) {
         super(context, R.layout.fragment_target_language_list_item, languageList);
         mIsSourceLanguages = isSourceLanguages;
         mContext = context;
-        if(isSourceLanguages) {
-            mOrigLanguageList = languageList;
-            mLanguageList = languageList;
-        } else {
-            // sort target languages placing those with progress on top.
-            ListIterator<Language> li = languageList.listIterator();
-            int translatedIndex = 0;
-            while(li.hasNext()) {
-                Language l = li.next();
-                if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
-                    mOrigLanguageList.add(translatedIndex, l);
-                    translatedIndex ++;
-                } else {
-                    mOrigLanguageList.add(l);
+        mOrigLanguageList = languageList;
+        mLanguageList = languageList;
+        // place translated languages at the top of the list
+        if(!isSourceLanguages) {
+            Handler handler = new Handler();
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    List<Language> tempList = new ArrayList<Language>();
+
+                    // sort target languages placing those with progress on top.
+                    ListIterator<Language> li = languageList.listIterator();
+                    int translatedIndex = 0;
+                    while(li.hasNext()) {
+                        Language l = li.next();
+                        if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
+                            tempList.add(translatedIndex, l);
+                            translatedIndex ++;
+                        } else {
+                            tempList.add(l);
+                        }
+                    }
+                    mLanguageList = tempList;
+                    mOrigLanguageList = tempList;
+                    LanguageAdapter.this.notifyDataSetChanged();
                 }
-            }
-            mLanguageList = mOrigLanguageList;
+            };
+            handler.postDelayed(r, 100);
         }
     }
 
