@@ -64,9 +64,9 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
         }
 
         if(p != null) {
-            int selectedTargetLanguageId = -1;
-            int selectedFrameId = -1;
-            int selectedChapterId = -1;
+            int selectedTargetLanguageDBId = -1;
+            int selectedFrameDBId = -1;
+            int selectedChapterDBId = -1;
 
             // load the translations
             if(!new File(mDatabasePath).exists()) {
@@ -75,10 +75,10 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
             }
             SQLiteDatabase db = SQLiteDatabase.openDatabase(mDatabasePath, null, SQLiteDatabase.OPEN_READONLY);
 
-            // fetch the selected target language
+            // fetch the selected target language and last frame and chapter
             if(new File(mInfoDatabasePath).exists()) {
                 SQLiteDatabase infoDB = SQLiteDatabase.openDatabase(mInfoDatabasePath, null, SQLiteDatabase.OPEN_READONLY);
-                String query = "SELECT * FROM ItemTable";
+                String query = "SELECT key, CAST(value AS TEXT) AS value FROM ItemTable";
                 Cursor cursor = infoDB.rawQuery(query, null);
                 if(cursor.moveToFirst()) {
                     // find preferences
@@ -89,29 +89,52 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
                             mContext.setHasAcceptedTerms(value.equals("YES"));
                         } else if(key.equals("selected_target_language_id")) {
                             int value = cursor.getInt(cursor.getColumnIndex("value"));
-                            selectedTargetLanguageId = value;
+                            selectedTargetLanguageDBId = value;
                         } else if(key.equals("translation_rtl")) {
                             // TODO: we don't offer rtl support yet.
                         } else if(key.equals("book")) {
                             // we know this will always be 'obs' in 1.x
                         } else if(key.equals("frame")) {
                             int value = cursor.getInt(cursor.getColumnIndex("value"));
-                            selectedFrameId = value;
+                            if(value <= 0) value = 1;
+                            selectedFrameDBId = value;
                         } else if(key.equals("story")) {
                             int value = cursor.getInt(cursor.getColumnIndex("value"));
-                            selectedChapterId = value;
+                            if(value <= 0) value = 1;
+                            selectedChapterDBId = value;
                         }
                     } while(cursor.moveToNext());
 
                     // load preferences
-                    // TODO: we need to finish the migration of preferences
+                    mContext.setActiveProject("obs");
+                    // load selected language
+                    query = "SELECT language_code FROM languages WHERE id = '"+selectedTargetLanguageDBId+"'";
+                    cursor = db.rawQuery(query, null);
+                    if(cursor.moveToFirst()) {
+                        p.setSelectedTargetLanguage(cursor.getString(0));
+                    }
+                    // load selcted chapter
+                    query = "SELECT story FROM stories WHERE id = '"+selectedChapterDBId+"'";
+                    cursor = db.rawQuery(query, null);
+                    if(cursor.moveToFirst()) {
+                        mContext.setActiveChapter(cursor.getString(0));
+                        p.setSelectedChapter(cursor.getString(0));
+                    }
+                    // load selcted frame
+                    query = "SELECT frame FROM frames WHERE id = '"+selectedFrameDBId+"'";
+                    cursor = db.rawQuery(query, null);
+                    if(cursor.moveToFirst()) {
+                        mContext.setActiveFrame(cursor.getString(0));
+                        p.getSelectedChapter().setSelectedFrame(cursor.getString(0));
+                    }
+
+                    // we disable the welcome because we want them to see the last active frame they had.
+                    mContext.setShouldShowWelcome(false);
                 }
             }
 
-
-
             // migrate the stories
-            String query = "select s.story, s.story_title, s.story_ref, l.language_code from stories as s left join languages as l on l.id=s.language_id where s.source=0";
+            String query = "SELECT s.story, s.story_title, s.story_ref, l.language_code FROM stories AS s LEFT JOIN languages AS l ON l.id=s.language_id WHERE s.source=0";
             Cursor cursor = db.rawQuery(query, null);
             int numRows = cursor.getCount();
             if (cursor.moveToFirst()) {

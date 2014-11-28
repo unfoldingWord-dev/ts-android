@@ -67,30 +67,6 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                         app().generateKeys();
                     }
 
-                    // load previously viewed frame
-                    publishProgress(getResources().getString(R.string.loading_preferences));
-                    if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-                        String frameId = app().getLastActiveFrame();
-                        String chapterId = app().getLastActiveChapter();
-                        String projectSlug = app().getLastActiveProject();
-                        app().getSharedProjectManager().setSelectedProject(projectSlug);
-
-                        if(app().getSharedProjectManager().getSelectedProject() != null) {
-                            // load the saved project without displaying a notice to the user
-                            app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
-
-                            app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
-                            if (app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
-                                app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
-                            }
-                        }
-                    } else {
-                        // load the default project without display a notice to the user
-                        if(app().getSharedProjectManager().getSelectedProject() != null) {
-                            app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
-                        }
-                    }
-
                     // handle app version changes
                     SharedPreferences settings = getSharedPreferences(MainApplication.PREFERENCES_TAG, MODE_PRIVATE);
                     SharedPreferences.Editor editor = settings.edit();
@@ -98,6 +74,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                     PackageInfo pInfo = null;
                     try {
                         pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                        editor.putInt("last_version_code", pInfo.versionCode);
+                        editor.apply();
                         if(pInfo.versionCode > lastVersionCode) {
                             // update!
                             mProgress = 0;
@@ -112,7 +90,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
                                 @Override
                                 public void onSuccess() {
-
+                                    // load after the migration
+                                    loadSelectedProject();
                                 }
 
                                 @Override
@@ -120,11 +99,13 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                                     // TODO: display an error message to the user.
                                 }
                             });
+                        } else {
+                            // load the app by default
+                            loadSelectedProject();
                         }
-                        editor.putInt("last_version_code", pInfo.versionCode);
-                        editor.apply();
                     } catch (PackageManager.NameNotFoundException e) {
-                        e.printStackTrace();
+                        // just load the app by default
+                        loadSelectedProject();
                     }
                 }
             });
@@ -139,6 +120,32 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         protected void onPostExecute(Void item) {
             mProgressTextView.setText(getResources().getString(R.string.launching_translator));
             startMainActivity();
+        }
+
+        private void loadSelectedProject() {
+            // load previously viewed frame
+            publishProgress(getResources().getString(R.string.loading_preferences));
+            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
+                String frameId = app().getLastActiveFrame();
+                String chapterId = app().getLastActiveChapter();
+                String projectSlug = app().getLastActiveProject();
+                app().getSharedProjectManager().setSelectedProject(projectSlug);
+
+                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                    // load the saved project without displaying a notice to the user
+                    app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+
+                    app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
+                    if (app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
+                        app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
+                    }
+                }
+            } else {
+                // load the default project without display a notice to the user
+                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                    app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+                }
+            }
         }
     }
 }
