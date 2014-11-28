@@ -77,6 +77,7 @@ public class MainApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_save_and_sync, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_sharing, false);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_advanced, false);
 
         mProjectManager = new ProjectManager(this);
         mTranslationManager = new TranslationManager(this);

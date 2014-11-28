@@ -990,6 +990,8 @@ public class MainActivity extends TranslatorBaseActivity {
         menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
         menu.findItem(R.id.action_share).setVisible(projectEnabled);
         menu.findItem(R.id.action_sync).setVisible(projectEnabled);
+        Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
+        menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
         return true;
     }
 

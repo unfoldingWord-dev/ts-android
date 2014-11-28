@@ -40,4 +40,6 @@
         <item>dokuwiki</item>
         <item>project</item>
     </string-array>
+
+    <string name="pref_default_advanced_settings" translatable="false">false</string>
 </resources>

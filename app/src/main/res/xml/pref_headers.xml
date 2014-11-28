@@ -13,4 +13,8 @@
     <header
         android:fragment="com.door43.translationstudio.SettingsActivity$SharingPreferenceFragment"
         android:title="@string/pref_header_sharing" />
+
+    <header
+        android:fragment="com.door43.translationstudio.SettingsActivity$AdvancedPreferenceFragment"
+        android:title="@string/pref_header_advanced" />
 </preference-headers>

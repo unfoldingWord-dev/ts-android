@@ -35,6 +35,8 @@ import java.util.List;
  * Android Design: Settings</a> for design guidelines and the <a
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
+ *
+ * NOTE: if you add new preference categories be sure to update MainApplication to load their default values.
  */
 public class SettingsActivity extends PreferenceActivity {
     /**
@@ -55,6 +57,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
     public static final String KEY_PREF_TYPEFACE_SIZE = "typeface_size";
     public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
+    public static final String KEY_PREF_ADVANCED_SETTINGS = "advanced_settings";
 
     /**
      * Removes references to self to avoid memory leaks
@@ -152,11 +155,17 @@ public class SettingsActivity extends PreferenceActivity {
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.pref_sharing);
 
-        // Add 'save' preferences, and a corresponding header.
+        // Add 'upload' preferences, and a corresponding header.
         preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_synchronization);
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.pref_save_and_sync);
+
+        // add advanced preferences and coresponding hreader
+        preferenceHeader = new PreferenceCategory(this);
+        preferenceHeader.setTitle(R.string.pref_header_advanced);
+        getPreferenceScreen().addPreference(preferenceHeader);
+        addPreferencesFromResource(R.xml.pref_advanced);
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -347,6 +356,19 @@ public class SettingsActivity extends PreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
+        }
+    }
+
+    /**
+     * This fragment shows security preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class AdvancedPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.pref_advanced);
         }
     }
 }
