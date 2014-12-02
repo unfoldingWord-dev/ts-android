@@ -24,6 +24,7 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.TranslationNote;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
@@ -60,8 +61,9 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
 
     public void showNotes(TranslationNote note) {
         if(note == null) {
-            app().showToastMessage(getResources().getString(R.string.error_note_missing));
-            ((MainActivity)getActivity()).closeDrawers();
+            if(getActivity() != null) {
+                ((MainActivity) getActivity()).closeDrawers();
+            }
             return;
         }
 
@@ -72,7 +74,7 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
         onShow();
 
         // load the notes
-        final Project p = app().getSharedProjectManager().getSelectedProject();
+        final Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         mNotesView.removeAllViews();
 
         // notes

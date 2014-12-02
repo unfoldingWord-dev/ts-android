@@ -99,17 +99,25 @@ public class ProjectManager {
         for(Language l:languages) {
             // only download changed languages or languages that don't have any source
             boolean hasNewVersion = getLanguage(l.getId()).getDateModified() < l.getDateModified();
+            boolean neededUpdate = false;
             if(hasNewVersion || mDataStore.fetchSourceText(p.getId(), l.getId(), false) == null) {
                 mDataStore.fetchSourceText(p.getId(), l.getId(), true);
+                neededUpdate = true;
             }
             if(hasNewVersion || mDataStore.fetchTermsText(p.getId(), l.getId(), false) == null) {
                 mDataStore.fetchTermsText(p.getId(), l.getId(), true);
+                neededUpdate = true;
             }
             if(hasNewVersion || mDataStore.fetchTranslationNotes(p.getId(), l.getId(), false) == null) {
                 mDataStore.fetchTranslationNotes(p.getId(), l.getId(), true);
+                neededUpdate = true;
+            }
+
+            // reload the source if this is the currently selected project
+            if(neededUpdate && p.getId().equals(mSelectedProjectId) && getSelectedProject().getSelectedSourceLanguage().equals(l)) {
+                fetchProjectSource(p, false);
             }
         }
-        // TODO: if this is the currently selected project we should reload it.
     }
 
     /**
@@ -153,7 +161,9 @@ public class ProjectManager {
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
         }
         loadNotes(notes, p);
-        mContext.closeProgressDialog();
+        if(displayNotice) {
+            mContext.closeProgressDialog();
+        }
     }
 
     /**

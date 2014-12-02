@@ -1049,6 +1049,17 @@ public class MainActivity extends TranslatorBaseActivity {
 
                         app().closeProgressDialog();
                         app().showToastMessage(R.string.project_updates_downloaded);
+
+                        // reload the center pane
+                        Handler mainHandler = new Handler(getMainLooper());
+                        Runnable myRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                reloadCenterPane();
+                            }
+                        };
+                        mainHandler.post(myRunnable);
+
                     }
                 };
                 t.start();

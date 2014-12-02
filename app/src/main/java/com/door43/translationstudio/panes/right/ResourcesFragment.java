@@ -122,7 +122,7 @@ public class ResourcesFragment extends TranslatorBaseFragment {
         mNotesFragment.show();
         Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
-            mNotesFragment.showNotes(MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getTranslationNotes());
+            mNotesFragment.showNotes(p.getSelectedChapter().getSelectedFrame().getTranslationNotes());
         }
     }
 
