@@ -1030,6 +1030,27 @@ public class MainActivity extends TranslatorBaseActivity {
                     app().showToastMessage(R.string.choose_a_project);
                 }
                 return true;
+            case R.id.action_update:
+                Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        app().showProgressDialog(R.string.downloading_updates);
+
+                        // check for updates to current projects
+                        int numProjects = app().getSharedProjectManager().numProjects();
+                        for (int i = 0; i < numProjects; i ++) {
+                            app().getSharedProjectManager().downloadProjectUpdates(app().getSharedProjectManager().getProject(i));
+                        }
+
+                        // check for new projects to download
+                        app().getSharedProjectManager().downloadNewProjects();
+
+                        app().closeProgressDialog();
+                        app().showToastMessage(R.string.project_updates_downloaded);
+                    }
+                };
+                t.start();
+                return true;
             case R.id.action_chapter_settings:
                 if(app().getSharedProjectManager().getSelectedProject() != null && app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
                     showChapterSettingsMenu();

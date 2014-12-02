@@ -78,6 +78,33 @@ public class ProjectManager {
     }
 
     /**
+     * Downloads the latest version of the project catalog from the server
+     */
+    public void downloadNewProjects() {
+        String catalog = mDataStore.fetchProjectCatalog(true);
+        // TODO: download source languages for each project.
+        // TODO: load source langauge for each project.
+        // downloadProjectUpdates(p);
+    }
+
+    /**
+     * Downloads the latest version of the project resources from the server
+     * @param p
+     */
+    public void downloadProjectUpdates(Project p) {
+        // download the source language catalog
+        String catalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
+        List<Language> languages = loadSourceLanguageCatalog(p, catalog);
+        for(Language l:languages) {
+            // download all of the source text. We don't load it right now
+            mDataStore.fetchSourceText(p.getId(), l.getId(), true);
+            mDataStore.fetchTermsText(p.getId(), l.getId(), true);
+            mDataStore.fetchTranslationNotes(p.getId(), l.getId(), true);
+        }
+        // TODO: if this is the currently selected project we should reload it.
+    }
+
+    /**
      * Loads the source for a single project.
      * A loading notice will be displayed to the user
      * This should be called from within a thread
@@ -99,20 +126,20 @@ public class ProjectManager {
         }
         if(p == null) return;
 
-        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId());
+        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId(), false);
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
         }
         loadProject(source, p);
-        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId());
+        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
         }
         loadTerms(terms, p);
-        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId());
+        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
@@ -382,7 +409,7 @@ public class ProjectManager {
             }
         }
         // begin loading projects
-        String projectsCatalog = mDataStore.fetchProjectCatalog();
+        String projectsCatalog = mDataStore.fetchProjectCatalog(false);
         loadProjectsCatalog(projectsCatalog);
     }
 
@@ -410,7 +437,7 @@ public class ProjectManager {
                     mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
                     Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
                     addProject(p);
-                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId());
+                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
                     loadSourceLanguageCatalog(p, sourceLanguageCatalog);
                 } else {
 //                    Log.w(TAG, "missing required parameters in the project catalog");
@@ -422,14 +449,20 @@ public class ProjectManager {
         }
     }
 
-    private void loadSourceLanguageCatalog(Project p, String sourceLangaugeCatalog) {
+    /**
+     * Loads the source languages into the given project
+     * @param p the project into which the source languages will be loaded
+     * @param sourceLangaugeCatalog the catalog of source languages
+     */
+    private List<Language> loadSourceLanguageCatalog(Project p, String sourceLangaugeCatalog) {
+        List<Language> importedLanguages = new ArrayList<Language>();
         // parse source languages
         JSONArray json;
         try {
             json = new JSONArray(sourceLangaugeCatalog);
         } catch (JSONException e) {
             Log.w(TAG, e.getMessage());
-            return;
+            return new ArrayList<Language>();
         }
 
         // load the data
@@ -448,6 +481,7 @@ public class ProjectManager {
 
                             if(p != null) {
                                 p.addSourceLanguage(l);
+                                importedLanguages.add(l);
                             } else {
 //                                Log.w(TAG, "project not found");
                             }
@@ -463,6 +497,7 @@ public class ProjectManager {
                 continue;
             }
         }
+        return importedLanguages;
     }
 
     /**
