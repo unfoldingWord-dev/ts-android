@@ -1031,6 +1031,8 @@ public class MainActivity extends TranslatorBaseActivity {
                 }
                 return true;
             case R.id.action_update:
+                // TODO: we need to display a better ui and progress indicator. Probably a dialog that users can cancel to stop the download.
+
                 Thread t = new Thread() {
                     @Override
                     public void run() {

@@ -239,10 +239,13 @@ public class Project extends Model {
      * Adds a language to the project
      * @param l the language to add
      */
-    public void addSourceLanguage(Language l) {
+    public boolean addSourceLanguage(Language l) {
         if(!mSourceLanguageMap.containsKey(l.getId())) {
             mSourceLanguageMap.put(l.getId(), l);
             mSourceLanguages.add(l);
+            return true;
+        } else {
+            return false;
         }
     }
 

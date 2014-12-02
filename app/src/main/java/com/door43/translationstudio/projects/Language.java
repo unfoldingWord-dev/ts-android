@@ -7,13 +7,28 @@ import java.io.FilenameFilter;
  * Created by joel on 9/5/2014.
  */
 public class Language {
-    private String mCode;
-    private String mName;
-    private Direction mDirection;
+    private final String mCode;
+    private final String mName;
+    private final Direction mDirection;
+    private final int mDateModified;
     private int mSessionVersion; // this is used for target language
 
-    public enum Direction {
+    public static enum Direction {
         LeftToRight, RightToLeft
+    }
+
+    /**
+     * Create a new language
+     * @param code the language code
+     * @param name the name of the language
+     * @param direction the text direction
+     * @param dateModified the timestamp when the language was last updated
+     */
+    public Language(String code, String name, Direction direction, int dateModified) {
+        mCode = code;
+        mName = name;
+        mDirection = direction;
+        mDateModified = dateModified;
     }
 
     /**
@@ -26,6 +41,15 @@ public class Language {
         mCode = code;
         mName = name;
         mDirection = direction;
+        mDateModified = 0;
+    }
+
+    /**
+     * Returns the timestamp when the language was last modified
+     * @return
+     */
+    public int getDateModified() {
+        return mDateModified;
     }
 
     /**

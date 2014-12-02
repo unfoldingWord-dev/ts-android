@@ -82,9 +82,10 @@ public class ProjectManager {
      */
     public void downloadNewProjects() {
         String catalog = mDataStore.fetchProjectCatalog(true);
-        // TODO: download source languages for each project.
-        // TODO: load source langauge for each project.
-        // downloadProjectUpdates(p);
+        List<Project> projects = loadProjectsCatalog(catalog);
+        for(Project p:projects) {
+            downloadProjectUpdates(p);
+        }
     }
 
     /**
@@ -96,10 +97,17 @@ public class ProjectManager {
         String catalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
         List<Language> languages = loadSourceLanguageCatalog(p, catalog);
         for(Language l:languages) {
-            // download all of the source text. We don't load it right now
-            mDataStore.fetchSourceText(p.getId(), l.getId(), true);
-            mDataStore.fetchTermsText(p.getId(), l.getId(), true);
-            mDataStore.fetchTranslationNotes(p.getId(), l.getId(), true);
+            // only download changed languages or languages that don't have any source
+            boolean hasNewVersion = getLanguage(l.getId()).getDateModified() < l.getDateModified();
+            if(hasNewVersion || mDataStore.fetchSourceText(p.getId(), l.getId(), false) == null) {
+                mDataStore.fetchSourceText(p.getId(), l.getId(), true);
+            }
+            if(hasNewVersion || mDataStore.fetchTermsText(p.getId(), l.getId(), false) == null) {
+                mDataStore.fetchTermsText(p.getId(), l.getId(), true);
+            }
+            if(hasNewVersion || mDataStore.fetchTranslationNotes(p.getId(), l.getId(), false) == null) {
+                mDataStore.fetchTranslationNotes(p.getId(), l.getId(), true);
+            }
         }
         // TODO: if this is the currently selected project we should reload it.
     }
@@ -152,10 +160,13 @@ public class ProjectManager {
      * Adds a project to the manager
      * @param p the project to add
      */
-    private void addProject(Project p) {
+    private boolean addProject(Project p) {
         if(!mProjectMap.containsKey(p.getId())) {
             mProjectMap.put(p.getId(), p);
             mProjects.add(p);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -163,11 +174,25 @@ public class ProjectManager {
      * Adds a source lanuage to the manager
      * @param l the language to add
      */
-    private void addLanguage(Language l) {
+    private boolean addLanguage(Language l) {
         if(!mLanguagesMap.containsKey(l.getId())) {
             mLanguagesMap.put(l.getId(), l);
             mLanguagesNameMap.put(l.getName(), l);
             mLanguages.add(l);
+            return true;
+        } else if(getLanguage(l.getId()).getDateModified() == 0) {
+            // replace plain target languages with source languages because they contain more information
+            // remove
+            mLanguagesMap.remove(l.getId());
+            mLanguagesNameMap.remove(l.getName());
+            mLanguages.remove(l);
+            // add
+            mLanguagesMap.put(l.getId(), l);
+            mLanguagesNameMap.put(l.getName(), l);
+            mLanguages.add(l);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -417,14 +442,15 @@ public class ProjectManager {
      * Loads the projects catalog
      * @param projectsCatalog
      */
-    private void loadProjectsCatalog(String projectsCatalog) {
+    private List<Project> loadProjectsCatalog(String projectsCatalog) {
+        List<Project> importedProjects = new ArrayList<Project>();
         // load projects
         JSONArray json;
         try {
             json = new JSONArray(projectsCatalog);
         } catch (JSONException e) {
             Log.w(TAG, e.getMessage());
-            return;
+            return new ArrayList<Project>();
         }
 
         // load the data
@@ -436,7 +462,9 @@ public class ProjectManager {
                     mProgress += PERCENT_PROJECTS / numProjects;
                     mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
                     Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
-                    addProject(p);
+                    if(addProject(p)) {
+                        importedProjects.add(p);
+                    }
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
                     loadSourceLanguageCatalog(p, sourceLanguageCatalog);
                 } else {
@@ -447,6 +475,7 @@ public class ProjectManager {
                 continue;
             }
         }
+        return importedProjects;
     }
 
     /**
@@ -476,12 +505,13 @@ public class ProjectManager {
                         if(Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
                             // add the language
                             Language.Direction langDir = jsonLanguage.get("direction").toString() == "ltr" ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
-                            Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir);
+                            Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir, Integer.parseInt(jsonLanguage.get("date_modified").toString()));
                             addLanguage(l);
+
+                            importedLanguages.add(l);
 
                             if(p != null) {
                                 p.addSourceLanguage(l);
-                                importedLanguages.add(l);
                             } else {
 //                                Log.w(TAG, "project not found");
                             }
