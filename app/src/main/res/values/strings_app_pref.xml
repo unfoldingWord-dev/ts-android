@@ -4,6 +4,6 @@
     <string name="keys_dir" translatable="false">ssh</string>
     <string name="dokuwiki_export_dir" translatable="false">dokuwiki</string>
     <string name="imported_projects_dir" translatable="false">imported</string>
-    <string name="github_oauth2">2239a252d2c683c1e73824edaee7909416134a3c</string>
+    <string name="github_oauth2" translatable="false">2239a252d2c683c1e73824edaee7909416134a3c</string>
     <!--9d19fbf358d4b0ca32c8b316a98d007571b8e2bd-->
 </resources>

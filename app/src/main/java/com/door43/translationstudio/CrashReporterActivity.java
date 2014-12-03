@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
@@ -185,6 +186,8 @@ public class CrashReporterActivity extends TranslatorBaseActivity {
         }
 
         protected void onPostExecute(Void item) {
+            Intent splashIntent = new Intent(CrashReporterActivity.this, SplashScreenActivity.class);
+            startActivity(splashIntent);
             finish();
         }
     }

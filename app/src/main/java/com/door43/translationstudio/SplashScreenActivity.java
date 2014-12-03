@@ -23,8 +23,6 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
     private SplashScreenActivity me = this;
     private TextView mProgressTextView;
     private ProgressBar mProgressBar;
-    private Boolean mInitializing = false;
-    private Boolean mFinishedLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +47,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
             if (files.length > 0) {
                 Intent intent = new Intent(this, CrashReporterActivity.class);
                 startActivity(intent);
+                finish();
+                return;
             }
         }
 
@@ -56,27 +56,10 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         task.execute();
     }
 
-    public void onPause() {
-        super.onPause();
-        mInitializing = true;
-    }
-
-    public void onResume() {
-        super.onResume();
-        mInitializing = false;
-        if(mFinishedLoading) {
-            startMainActivity();
-        }
-    }
-
     public void startMainActivity() {
-        if(!mInitializing) {
-             Intent splashIntent = new Intent(this, MainActivity.class);
-            startActivity(splashIntent);
-            finish();
-        } else {
-            mFinishedLoading = true;
-        }
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     private class LoadAppTask extends AsyncTask<Void, String, Void> {
@@ -90,9 +73,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 @Override
                 public void onProgress(double progress, String message) {
                     mProgress = (int)(progress * 100); // project manager returns 100 based percent values not 10,000
-                    if(!mInitializing) {
-                        publishProgress(message);
-                    }
+                    publishProgress(message);
                 }
 
                 @Override
@@ -100,9 +81,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                     // Generate the ssh keys
                     if(!app().hasKeys()) {
                         // this is so short we don't update the progress bar
-                        if(!mInitializing) {
-                            publishProgress(getResources().getString(R.string.generating_security_keys));
-                        }
+                        publishProgress(getResources().getString(R.string.generating_security_keys));
                         app().generateKeys();
                     }
 
@@ -118,17 +97,13 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                         if(pInfo.versionCode > lastVersionCode) {
                             // update!
                             mProgress = 0;
-                            if(!mInitializing) {
-                                publishProgress("Performing updates");
-                            }
+                            publishProgress("Performing updates");
                             UpdateManager updater = new UpdateManager(lastVersionCode, pInfo.versionCode);
                             updater.run(new UpdateManager.OnProgressCallback() {
                                 @Override
                                 public void onProgress(double progress, String message) {
                                     mProgress = (int)(progress * 100); // update manager returns 100 based percent values not 10,000
-                                    if(!mInitializing) {
-                                        publishProgress(message);
-                                    }
+                                    publishProgress(message);
                                 }
 
                                 @Override
@@ -167,9 +142,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
         private void loadSelectedProject() {
             // load previously viewed frame
-            if(!mInitializing) {
-                publishProgress(getResources().getString(R.string.loading_preferences));
-            }
+            publishProgress(getResources().getString(R.string.loading_preferences));
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
                 String frameId = app().getLastActiveFrame();
                 String chapterId = app().getLastActiveChapter();

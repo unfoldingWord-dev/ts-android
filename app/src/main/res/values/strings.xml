@@ -133,15 +133,14 @@
     <string name="license"><![CDATA[<h2>You are free to:</h2><p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p><h2>Under the following terms:</h2><p><b>Attribution</b> - You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use;<br/><b>ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original;    <br/>    <b>No additional restrictions</b> -  You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.</p><h2>Notices:</h2><p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]></string>
     <string name="choose_a_project" translatable="false">Please open a project first.</string>
     <string name="choose_a_chapter" translatable="false">Please open a chapter first</string>
-    <string name="menu_update">Update</string>
-    <string name="project_updates_downloaded">Projects have been successfully updated</string>
-    <string name="downloading_updates">Downloading updates</string>
-    <string name="title_activity_crash_reporter">Crash Report</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="crash_reports">This app appears to have crashed recently. Would you like to upload a report of this error to the developers?</string>
-    <string name="crash_details">What were you doing just before the app crashed?</string>
-    <string name="crash_details_label">Optional notes</string>
-    <string name="progress_restoring_app">Restoring app...</string>
+    <string name="menu_update" translatable="false">Update</string>
+    <string name="project_updates_downloaded" translatable="false">Projects have been successfully updated</string>
+    <string name="downloading_updates" translatable="false">Downloading updates</string>
+    <string name="title_activity_crash_reporter" translatable="false">Crash Report</string>
+    <string name="action_settings" translatable="false">Settings</string>
+    <string name="crash_reports" translatable="false">This app appears to have crashed recently. Would you like to upload a report of this error to the developers?</string>
+    <string name="crash_details" translatable="false">What were you doing just before the app crashed?</string>
+    <string name="crash_details_label" translatable="false">Optional notes</string>
+    <string name="progress_restoring_app" translatable="false">Restoring app...</string>
 
 </resources>
