@@ -12,6 +12,7 @@ import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.translations.TranslationManager;
+import com.door43.translationstudio.util.CustomExceptionHandler;
 import com.door43.translationstudio.util.DummyDialogListener;
 import com.door43.translationstudio.util.MainContext;
 import com.jcraft.jsch.JSch;
@@ -66,11 +68,17 @@ public class MainApplication extends Application {
     private static Activity mMainActivity;
     private Term mSelectedKeyTerm;
     private boolean mShowImportantTerms;
+    public static final String STACKTRACE_DIR = "stacktrace";
 
     public void onCreate() {
 
         // initialize basic functions with link to main application
         new MainContext(this);
+
+        if(!(Thread.getDefaultUncaughtExceptionHandler() instanceof CustomExceptionHandler)) {
+            File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
+            Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(dir));
+        }
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.

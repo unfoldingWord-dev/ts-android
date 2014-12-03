@@ -30,6 +30,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
 
         // connectAsync adapter
         listView.setAdapter(mChapterItemAdapter);
+        listView.deferNotifyDataSetChanged();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {

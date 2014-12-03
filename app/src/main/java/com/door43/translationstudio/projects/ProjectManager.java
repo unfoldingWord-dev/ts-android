@@ -23,8 +23,6 @@ import java.util.regex.Pattern;
 
 /**
  * The project manager handles all of the projects within the app.
- * TODO: need to provide progress information so we can display appropriate information while the user is waiting for the app to load. e.g. a loading screen while projects are parsed.
- * TODO: parsing tasks need to be ran asyncronously
  * Created by joel on 8/29/2014.
  */
 public class ProjectManager {
@@ -47,11 +45,6 @@ public class ProjectManager {
     private final double PERCENT_PROJECTS = 10.0;
     private final double PERCENT_PROJECT_SOURCE = 20.0;
     private double mProgress = 0;
-
-//    // so we can look up by index
-//    private static List<Language> mTargetLanguages = new ArrayList<Language>();
-//    // so we can look up by id
-//    private static Map<String, Language> mTargetLanguageMap = new HashMap<String, Language>();
 
     private static String mSelectedProjectId;
     private static MainApplication mContext;
@@ -78,7 +71,7 @@ public class ProjectManager {
     }
 
     /**
-     * Downloads the latest version of the project catalog from the server
+     * Downloads any new projects from the server
      */
     public void downloadNewProjects() {
         String catalog = mDataStore.fetchProjectCatalog(true);
@@ -431,7 +424,10 @@ public class ProjectManager {
                 JSONObject jsonLanguage = json.getJSONObject(i);
                 if(jsonLanguage.has("lc") && jsonLanguage.has("ln")) {
                     mProgress += PERCENT_TARGET_LANGUAGES / numLanguages;
-                    mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
+                    // publish updates every 100 languages to ease up on the ui
+                    if(i % 100 == 0) {
+                        mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
+                    }
                     // TODO: it would be best to include the language direction in the target language list
                     Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
                     addLanguage(l);

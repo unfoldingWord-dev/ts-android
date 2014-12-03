@@ -24,7 +24,7 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_sync"
-        android:title="@string/menu_sync"
+        android:title="@string/menu_upload"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_info"

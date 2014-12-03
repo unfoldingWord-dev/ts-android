@@ -13,6 +13,9 @@ import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import java.io.File;
+import java.io.FilenameFilter;
+
 /**
  * Created by joel on 9/29/2014.
  */
@@ -20,6 +23,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
     private SplashScreenActivity me = this;
     private TextView mProgressTextView;
     private ProgressBar mProgressBar;
+    private Boolean mInitializing = false;
+    private Boolean mFinishedLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +37,46 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         mProgressBar.setMax(10000);
         mProgressBar.setProgress(0);
 
+        // check if we crashed
+        File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
+        if(dir.exists()) {
+            String[] files = dir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return !new File(file, s).isDirectory();
+                }
+            });
+            if (files.length > 0) {
+                Intent intent = new Intent(this, CrashReporterActivity.class);
+                startActivity(intent);
+            }
+        }
+
         LoadAppTask task = new LoadAppTask();
         task.execute();
     }
 
+    public void onPause() {
+        super.onPause();
+        mInitializing = true;
+    }
+
     public void onResume() {
         super.onResume();
+        mInitializing = false;
+        if(mFinishedLoading) {
+            startMainActivity();
+        }
     }
 
     public void startMainActivity() {
-        Intent splashIntent = new Intent(this, MainActivity.class);
-        startActivity(splashIntent);
-        finish();
+        if(!mInitializing) {
+             Intent splashIntent = new Intent(this, MainActivity.class);
+            startActivity(splashIntent);
+            finish();
+        } else {
+            mFinishedLoading = true;
+        }
     }
 
     private class LoadAppTask extends AsyncTask<Void, String, Void> {
@@ -51,11 +84,15 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
+
+            // begin loading app resources
             app().getSharedProjectManager().init(new ProjectManager.OnProgressCallback() {
                 @Override
                 public void onProgress(double progress, String message) {
                     mProgress = (int)(progress * 100); // project manager returns 100 based percent values not 10,000
-                    publishProgress(message);
+                    if(!mInitializing) {
+                        publishProgress(message);
+                    }
                 }
 
                 @Override
@@ -63,7 +100,9 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                     // Generate the ssh keys
                     if(!app().hasKeys()) {
                         // this is so short we don't update the progress bar
-                        publishProgress(getResources().getString(R.string.generating_security_keys));
+                        if(!mInitializing) {
+                            publishProgress(getResources().getString(R.string.generating_security_keys));
+                        }
                         app().generateKeys();
                     }
 
@@ -79,13 +118,17 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                         if(pInfo.versionCode > lastVersionCode) {
                             // update!
                             mProgress = 0;
-                            publishProgress("Performing updates");
+                            if(!mInitializing) {
+                                publishProgress("Performing updates");
+                            }
                             UpdateManager updater = new UpdateManager(lastVersionCode, pInfo.versionCode);
                             updater.run(new UpdateManager.OnProgressCallback() {
                                 @Override
                                 public void onProgress(double progress, String message) {
                                     mProgress = (int)(progress * 100); // update manager returns 100 based percent values not 10,000
-                                    publishProgress(message);
+                                    if(!mInitializing) {
+                                        publishProgress(message);
+                                    }
                                 }
 
                                 @Override
@@ -124,7 +167,9 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
         private void loadSelectedProject() {
             // load previously viewed frame
-            publishProgress(getResources().getString(R.string.loading_preferences));
+            if(!mInitializing) {
+                publishProgress(getResources().getString(R.string.loading_preferences));
+            }
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
                 String frameId = app().getLastActiveFrame();
                 String chapterId = app().getLastActiveChapter();

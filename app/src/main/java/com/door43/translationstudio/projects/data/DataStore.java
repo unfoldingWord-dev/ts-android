@@ -3,6 +3,7 @@ package com.door43.translationstudio.projects.data;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.ServerUtilities;
 
 import org.apache.http.util.ByteArrayBuffer;
 
@@ -62,43 +63,10 @@ public class DataStore {
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
-            download(url, file);
+            ServerUtilities.downloadFile(url, file);
         }
         return loadJSONAsset(path);
     }
-
-    /**
-     * Downloads a file from a url and stores it on the device
-     * @param url the url that will be downloaded
-     * @param destFile the destination file
-     */
-    private boolean download(URL url, File destFile) {
-        if(!destFile.exists()) {
-            destFile.getParentFile().mkdirs();
-        }
-        try {
-            URLConnection conn = url.openConnection();
-            conn.setReadTimeout(5000);
-            conn.setConnectTimeout(5000);
-
-            InputStream is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-
-            ByteArrayBuffer bab = new ByteArrayBuffer(5000);
-            int current = 0;
-            while ((current = bis.read()) != -1) {
-                bab.append((byte) current);
-            }
-            FileOutputStream fos = new FileOutputStream(destFile);
-            fos.write(bab.toByteArray());
-            fos.flush();
-            fos.close();
-        } catch(IOException e) {
-            return false;
-        }
-        return true;
-    }
-
     /**
      * Retusn a json array of target languages
      */
@@ -125,7 +93,7 @@ public class DataStore {
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
-            download(url, file);
+            ServerUtilities.downloadFile(url, file);
         }
         return loadJSONAsset(path);
     }
@@ -142,7 +110,7 @@ public class DataStore {
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
-            download(url, file);
+            ServerUtilities.downloadFile(url, file);
         }
         return loadJSONAsset(path);
     }
@@ -165,7 +133,7 @@ public class DataStore {
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
-            download(url, file);
+            ServerUtilities.downloadFile(url, file);
         }
         return loadJSONAsset(path);
     }

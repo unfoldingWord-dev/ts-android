@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".MainApplication"
+        android:name="com.door43.translationstudio.MainApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
@@ -22,7 +22,7 @@
         </provider>
 
         <activity
-            android:name=".TermsActivity"
+            android:name="com.door43.translationstudio.TermsActivity"
             android:label="@string/app_name"
             android:theme="@style/TitledTheme" >
             <intent-filter>
@@ -32,29 +32,29 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SplashScreenActivity"
+            android:name="com.door43.translationstudio.SplashScreenActivity"
             android:label="@string/app_name"
             android:theme="@style/SettingTheme" >
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name="com.door43.translationstudio.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustNothing" >
         </activity>
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.door43.translationstudio.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName="com.door43.translationstudio.MainActivity"
             android:theme="@style/TitledTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
-            android:name=".ChapterSettingActivity"
+            android:name="com.door43.translationstudio.ChapterSettingActivity"
             android:label="@string/title_activity_chapter_setting"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName="com.door43.translationstudio.MainActivity"
             android:theme="@style/TitledTheme"
             android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
@@ -62,7 +62,7 @@
                 android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
-            android:name=".LanguageSelectorActivity"
+            android:name="com.door43.translationstudio.LanguageSelectorActivity"
             android:label="@string/title_activity_language_selector"
             android:theme="@style/TitledTheme" >
             <meta-data
@@ -70,16 +70,16 @@
                 android:value="com.door43.translationstudio.ChapterSettingActivity" />
         </activity>
         <activity
-            android:name=".SharingActivity"
+            android:name="com.door43.translationstudio.SharingActivity"
             android:label="@string/title_activity_sharing"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName="com.door43.translationstudio.MainActivity"
             android:theme="@style/TitledTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
-            android:name=".FileExplorerActivity"
+            android:name="com.door43.translationstudio.FileExplorerActivity"
             android:label="@string/title_activity_file_explorer"
             android:theme="@style/TitledTheme" >
             <meta-data
@@ -87,18 +87,24 @@
                 android:value="com.door43.translationstudio.SharingActivity" />
         </activity>
         <activity
-            android:name=".uploadwizard.UploadWizardActivity"
+            android:name="com.door43.translationstudio.uploadwizard.UploadWizardActivity"
             android:label="@string/title_activity_upload_wizard"
             android:theme="@style/TitledTheme" >
         </activity>
         <activity
-            android:name=".ProjectSettingsActivity"
+            android:name="com.door43.translationstudio.ProjectSettingsActivity"
             android:label="@string/title_activity_project_settings"
-            android:theme="@style/TitledTheme"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName="com.door43.translationstudio.MainActivity"
+            android:theme="@style/TitledTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
+        </activity>
+        <activity
+            android:theme="@style/TitledTheme"
+            android:windowSoftInputMode="adjustPan"
+            android:name="com.door43.translationstudio.CrashReporterActivity"
+            android:label="@string/title_activity_crash_reporter" >
         </activity>
     </application>
 

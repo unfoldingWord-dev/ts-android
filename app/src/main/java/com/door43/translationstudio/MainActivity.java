@@ -19,6 +19,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
+import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -629,31 +630,7 @@ public class MainActivity extends TranslatorBaseActivity {
         }
     }
 
-    /**
-     * This method will cause a view to fade out after which it fires a callback where operations can be performed.
-     * lastly it will fade back in.
-     * TODO: this should be placed in a utility class
-     */
-    public static void fadeOutActionInAnimation(final View view, final Handler.Callback callback) {
-        final Animation in = new AlphaAnimation(0.0f, 1.0f);
-        in.setDuration(TEXT_FADE_SPEED);
-        final Animation out = new AlphaAnimation(1.0f, 0.0f);
-        out.setDuration(TEXT_FADE_SPEED);
-        out.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                callback.handleMessage(null);
-                view.startAnimation(in);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-        view.startAnimation(out);
-    }
 
     /**
      * Updates the center pane with the selected source frame text and any existing translations
@@ -680,7 +657,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
-                fadeOutActionInAnimation(mTranslationTitleText, new Handler.Callback() {
+                AnimationUtilities.fadeOutIn(mTranslationTitleText, new Handler.Callback() {
                     @Override
                     public boolean handleMessage(Message message) {
                         mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
@@ -689,7 +666,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 });
             } else {
                 // display translated title
-                fadeOutActionInAnimation(mTranslationTitleText, new Handler.Callback() {
+                AnimationUtilities.fadeOutIn(mTranslationTitleText, new Handler.Callback() {
                     @Override
                     public boolean handleMessage(Message message) {
                         mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
@@ -699,17 +676,17 @@ public class MainActivity extends TranslatorBaseActivity {
             }
 
             // source translation
-            fadeOutActionInAnimation(mSourceTitleText, new Handler.Callback() {
+            AnimationUtilities.fadeOutIn(mSourceTitleText, new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message message) {
-                    mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + p.getSelectedChapter().getTitle());
+                    mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + chapter.getTitle());
                     return false;
                 }
             });
-            fadeOutActionInAnimation(mSourceFrameNumText, new Handler.Callback() {
+            AnimationUtilities.fadeOutIn(mSourceFrameNumText, new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message message) {
-                    mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " " + getResources().getString(R.string.of) + " " + p.getSelectedChapter().numFrames());
+                    mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " " + getResources().getString(R.string.of) + " " + chapter.numFrames());
                     return false;
                 }
             });

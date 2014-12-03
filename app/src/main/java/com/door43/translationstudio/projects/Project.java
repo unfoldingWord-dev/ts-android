@@ -329,6 +329,7 @@ public class Project extends Model {
             public boolean accept(File file, String s) {
                 String[] pieces = s.split("-");
                 if(pieces.length == 3) {
+                    // TODO: check if the directory is empty
                     return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId());
                 } else {
                     return false;

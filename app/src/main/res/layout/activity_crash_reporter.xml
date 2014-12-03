@@ -1,0 +1,80 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dp"
+        android:layout_above="@+id/linearLayout4">
+
+        <TextView android:text="@string/crash_reports" android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/dark_gray"
+            android:textSize="@dimen/h5"
+            android:paddingBottom="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/dark_gray"
+            android:text="@string/crash_details_label"
+            android:id="@+id/textView3"
+            android:textStyle="bold" />
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="top"
+            android:scrollbars="vertical"
+            android:textColor="@color/dark_gray"
+            android:inputType="text|textMultiLine"
+            android:id="@+id/crashDescriptioneditText"
+            android:background="@color/light_gray"
+            android:hint="@string/crash_details"
+            android:imeOptions="actionDone"
+            android:padding="5dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout4"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:gravity="bottom"
+            android:id="@+id/linearLayout3">
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_cancel"
+                android:background="@drawable/bordered_button"
+                android:id="@+id/cancelButton"
+                android:textColor="@color/blue"
+                android:layout_marginRight="5dp"
+                android:layout_weight="1" />
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/menu_upload"
+                android:id="@+id/okButton"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"
+                android:background="@color/blue"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
