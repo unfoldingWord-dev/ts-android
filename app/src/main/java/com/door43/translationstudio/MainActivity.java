@@ -6,8 +6,6 @@ import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
-import com.door43.translationstudio.spannables.CustomMovementMethod;
-import com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.TermSpan;
@@ -103,7 +101,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private TextView mTranslationTitleText;
     private ImageView mNextFrameView;
     private ImageView mPreviousFrameView;
-    private CustomMultiAutoCompleteTextView mTranslationEditText;
+    private EditText mTranslationEditText;
     private int mSourceTextMotionDownX = 0;
     private int mSourceTextMotionDownY = 0;
     private static final int TEXT_FADE_SPEED = 100;
@@ -219,7 +217,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
         mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
         mPreviousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
-        mTranslationEditText = (CustomMultiAutoCompleteTextView)mCenterPane.findViewById(R.id.inputText);
+        mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
 
         mTranslationEditText.setEnabled(false);
 
@@ -430,8 +428,7 @@ public class MainActivity extends TranslatorBaseActivity {
                         Layout layout = widget.getLayout();
                         int line = layout.getLineForVertical(y);
                         int off = layout.getOffsetForHorizontal(line, x);
-                        ClickableSpan[] link = buffer.getSpans(off, off,
-                                ClickableSpan.class);
+                        ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
 
                         if (link.length != 0) {
                             if (action == MotionEvent.ACTION_UP) {
@@ -478,12 +475,11 @@ public class MainActivity extends TranslatorBaseActivity {
                         Layout layout = widget.getLayout();
                         int line = layout.getLineForVertical(y);
                         int off = layout.getOffsetForHorizontal(line, x);
-                        ClickableSpan[] link = buffer.getSpans(off, off,
-                                ClickableSpan.class);
+                        ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
 
                         if (link.length != 0) {
                             if (action == MotionEvent.ACTION_UP) {
-                                motionEvent.getX();
+//                                motionEvent.getX();
                                 link[0].onClick(widget);
                             }
                             return mTranslationGestureDetector.onTouchEvent(motionEvent);

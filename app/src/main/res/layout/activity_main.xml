@@ -127,7 +127,7 @@
                             android:textColor="@color/gray"
                             android:paddingTop="5dp" />
 
-                        <com.door43.translationstudio.spannables.CustomMultiAutoCompleteTextView
+                        <EditText
                             android:layout_width="match_parent"
                             android:layout_height="fill_parent"
                             android:id="@+id/inputText"
