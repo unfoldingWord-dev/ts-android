@@ -46,6 +46,7 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.TypedValue;
@@ -274,9 +275,8 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
             @Override
             public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
-                // remove title
+                // remove actionbar title
                 actionMode.setTitle(null);
-//                actionMode.setCustomView(null);
 
                 // customize menu
                 MenuInflater inflater = actionMode.getMenuInflater();
