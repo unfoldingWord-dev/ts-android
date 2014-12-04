@@ -107,6 +107,8 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mSourceTextMotionDownX = 0;
     private int mSourceTextMotionDownY = 0;
     private static final int TEXT_FADE_SPEED = 100;
+    private int mTranslationTextMotionDownX = 0;
+    private int mTranslationTextMotionDownY = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -375,12 +377,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         });
 
-        // hook up gesture detectors
-        mTranslationEditText.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                return mTranslationGestureDetector.onTouchEvent(event);
-            }
-        });
+        // TODO: do we need this?
         mTranslationEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -394,14 +391,9 @@ public class MainActivity extends TranslatorBaseActivity {
         // enable scrolling
         mSourceText.setMovementMethod(new ScrollingMovementMethod());
 
-        // make links in the source text clickable
-//        MovementMethod m = mSourceText.getMovementMethod();
-//        if ((m == null) || !(m instanceof LinkMovementMethod)) {
-//            if (mSourceText.getLinksClickable()) {
-//                mSourceText.setMovementMethod(LinkMovementMethod.getInstance());
-//            }
-//        }
+
         mSourceText.setFocusable(true);
+
         /*
         * LinkMovementMethod disables parent gesture events for the spans.
         * So we manually enable the clicking event in order to support scrolling on top of spans.
@@ -455,10 +447,54 @@ public class MainActivity extends TranslatorBaseActivity {
                 return mSourceGestureDetector.onTouchEvent(motionEvent);
             }
         });
+        mTranslationEditText.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                TextView widget = (TextView) view;
+                Object text = widget.getText();
+                if (text instanceof Spanned) {
+                    Spannable buffer = (Spannable) text;
 
+                    int action = motionEvent.getAction();
+                    int x = (int) motionEvent.getX();
+                    int y = (int) motionEvent.getY();
 
-        // make links in the translation text clickable without losing selection capabilities.
-        mTranslationEditText.setMovementMethod(new CustomMovementMethod());
+                    if(action == MotionEvent.ACTION_DOWN) {
+                        mTranslationTextMotionDownX = x;
+                        mTranslationTextMotionDownY = y;
+                    } else if (action == MotionEvent.ACTION_UP) {
+                        // don't click spans when dragging. we give a little wiggle room just in case
+                        int maxSpanClickWiggle = 5;
+                        if(Math.abs(mTranslationTextMotionDownX - x) > maxSpanClickWiggle || Math.abs(mTranslationTextMotionDownY - y) > maxSpanClickWiggle) {
+                            return mTranslationGestureDetector.onTouchEvent(motionEvent);
+                        }
+
+                        x -= widget.getTotalPaddingLeft();
+                        y -= widget.getTotalPaddingTop();
+
+                        x += widget.getScrollX();
+                        y += widget.getScrollY();
+
+                        Layout layout = widget.getLayout();
+                        int line = layout.getLineForVertical(y);
+                        int off = layout.getOffsetForHorizontal(line, x);
+                        ClickableSpan[] link = buffer.getSpans(off, off,
+                                ClickableSpan.class);
+
+                        if (link.length != 0) {
+                            if (action == MotionEvent.ACTION_UP) {
+                                motionEvent.getX();
+                                link[0].onClick(widget);
+                            }
+                            return mTranslationGestureDetector.onTouchEvent(motionEvent);
+                        }
+                    }
+
+                }
+
+                return mTranslationGestureDetector.onTouchEvent(motionEvent);
+            }
+        });
 
         // display help text when sourceText is empty.
         final TextView helpText = (TextView)findViewById(R.id.helpTextView);
