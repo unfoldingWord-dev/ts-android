@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">សកម្មភាពសម្រាប់កំណត់នៃគម្រោង</string>
   <string name="source_language_has_no_chapters">គ្មានចំណងជើងជំពូកនៅក្នុងឯកសារជាភាសាប្រភពដើម</string>
   <string name="now_viewing_frame">ឥឡូវនេះ កំពុងមើលហ្វ្រេម %1$s នៅក្នុងជំពូក %2$s។</string>
-  <string name="unknown_chapter">អត់ស្គាល់ចំណងជើងជំពូក</string>
+  <string name="missing_chapter">អត់ស្គាល់ចំណងជើងជំពូក</string>
   <string name="label_frame">ហ្វ្រេម</string>
   <string name="label_translation_notes">កំណត់សម្គាល់សម្រាប់ការបកប្រែឯកសារ</string>
   <string name="error_term_missing">រកមិនឃើញមានពាក្យ</string>

@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Hakuna sura availble katika lugha chanzo</string>
   <string name="now_viewing_frame">Sasa kuangalia sura%1$s katika sura%1$s.</string>
-  <string name="unknown_chapter">Sura haijulikani</string>
+  <string name="missing_chapter">Sura haijulikani</string>
   <string name="label_frame">Sura</string>
   <string name="label_translation_notes">Tafsiri Notes</string>
   <string name="error_term_missing">mrefu hakuweza kupatikana</string>

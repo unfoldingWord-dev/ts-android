@@ -39,7 +39,7 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     public void syncSelectedProject() {
         if(!mContext.hasRegisteredKeys()) {
-            mContext.showProgressDialog(R.string.connection);
+            mContext.showProgressDialog(R.string.loading);
             // set up a tcp connection
             if(mTcpClient == null) {
                 mTcpClient = new TCPClient(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, mContext.getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, mContext.getResources().getString(R.string.pref_default_auth_server_port))), me);

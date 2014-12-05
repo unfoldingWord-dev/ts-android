@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Il n\'y a pas de chapitres disponibles dans cette langue source</string>
   <string name="now_viewing_frame">Maintenant, la visualisation d\'image %1$s dans le chapitre %2$s.</string>
-  <string name="unknown_chapter">Inconnue le chapitre</string>
+  <string name="missing_chapter">Inconnue le chapitre</string>
   <string name="label_frame">Cadre</string>
   <string name="label_translation_notes">Notes De Traduction</string>
   <string name="error_term_missing">Le terme n\'a pas pu être trouvé</string>

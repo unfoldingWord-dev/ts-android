@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">そのソース言語で章 availble はありません。</string>
   <string name="now_viewing_frame">今章 %2$s でフレーム %1$s を表示します。</string>
-  <string name="unknown_chapter">不明な章</string>
+  <string name="missing_chapter">不明な章</string>
   <string name="label_frame">フレーム</string>
   <string name="label_translation_notes">翻訳のノート</string>
   <string name="error_term_missing">言葉は見つかりませんでした。</string>

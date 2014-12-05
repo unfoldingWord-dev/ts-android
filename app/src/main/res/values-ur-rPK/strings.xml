@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">پروجیکٹسیٹانگسیکٹاواٹی</string>
   <string name="source_language_has_no_chapters">اس ماخذ کی زبان میں کوئی ابواب اوایلبلی ہیں ۔</string>
   <string name="now_viewing_frame">اب فریم %1$s باب %2$s میں دیکھ رہے ہیں ۔</string>
-  <string name="unknown_chapter">نامعلوم باب</string>
+  <string name="missing_chapter">نامعلوم باب</string>
   <string name="label_frame">فریم</string>
   <string name="label_translation_notes">ترجمہ نوٹ</string>
   <string name="error_term_missing">اصطلاح ڈھونڈا نہیں جا سکا</string>

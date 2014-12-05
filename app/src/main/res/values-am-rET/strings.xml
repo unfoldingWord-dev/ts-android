@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">የፕሮጄክት መዋቅሮች እንቅስቃሴ</string>
   <string name="source_language_has_no_chapters">በምንጩ ቋንቋ ውስጥ ምንም ዓይነት ምዕራፎች አልቀረቡም።</string>
   <string name="now_viewing_frame">አሁን ማዕቀፉን ይመልከቱ %1$s  በምዕራፍ ውስጥ %2$s።</string>
-  <string name="unknown_chapter">የማይታወቅ ምዕራፍ</string>
+  <string name="missing_chapter">የማይታወቅ ምዕራፍ</string>
   <string name="label_frame">ማዕቀፍ</string>
   <string name="label_translation_notes">የትርጉም ሥራ ማስታወሻዎች</string>
   <string name="error_term_missing">ደንቡ አልተገኘም።</string>

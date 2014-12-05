@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">ఆ మూలం భాషలో availble ఎటువంటి శాఖలు ఉన్నాయి</string>
   <string name="now_viewing_frame">ఇప్పుడు అధ్యాయం లో ఫ్రేమ్%2$s %1$s యొక్క చూసే.</string>
-  <string name="unknown_chapter">తెలియని అధ్యాయం</string>
+  <string name="missing_chapter">తెలియని అధ్యాయం</string>
   <string name="label_frame">ఫ్రేమ్</string>
   <string name="label_translation_notes">అనువాద గమనికలు</string>
   <string name="error_term_missing">పదం దొరకలేదు</string>

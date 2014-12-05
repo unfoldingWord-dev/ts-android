@@ -28,7 +28,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
             if(mProject != null && mProject.getSelectedChapter() == null) {
-                app().showToastMessage(R.string.source_language_has_no_chapters);
+                app().showToastMessage(R.string.missing_chapter); // the language does not contain any chapters
                 Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
                 languageIntent.putExtra("sourceLanguages", true);
                 startActivity(languageIntent);

@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">उस स्रोत भाषा में कोई अध्याय availble हैं</string>
   <string name="now_viewing_frame">अब सीमा %1$s अध्याय %2$s में देख रहे हैं वो।</string>
-  <string name="unknown_chapter">अज्ञात अध्याय</string>
+  <string name="missing_chapter">अज्ञात अध्याय</string>
   <string name="label_frame">फ़्रेम</string>
   <string name="label_translation_notes">अनुवाद नोट्स</string>
   <string name="error_term_missing">शब्द ढूँढ़ा नहीं जा सका</string>

@@ -84,7 +84,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity {
             if(upload) {
                 mDialog.setMessage(getResources().getString(R.string.push_msg_init));
             } else {
-                mDialog.setMessage(getResources().getString(R.string.progress_restoring_app));
+                mDialog.setMessage(getResources().getString(R.string.loading));
             }
             // show the dialog
             mainHandler.post(new Runnable() {

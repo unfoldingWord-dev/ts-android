@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">அந்த மூல மொழியில் availble எந்த அத்தியாயங்கள் உள்ளன</string>
   <string name="now_viewing_frame">இப்போது அத்தியாயம் சட்ட%2$s %1$s ங்கள் பார்க்கும்.</string>
-  <string name="unknown_chapter">தெரியாத அத்தியாயம்</string>
+  <string name="missing_chapter">தெரியாத அத்தியாயம்</string>
   <string name="label_frame">ஃப்ரேம்</string>
   <string name="label_translation_notes">மொழிபெயர்ப்பு குறிப்புகள்</string>
   <string name="error_term_missing">கால காணலாம்</string>

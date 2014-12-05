@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">هیچ availble فصل در آن زبان منبع وجود دارد</string>
   <string name="now_viewing_frame">در حال حاضر قاب %1$s در فصل %2$s مشاهده.</string>
-  <string name="unknown_chapter">فصل ناشناخته</string>
+  <string name="missing_chapter">فصل ناشناخته</string>
   <string name="label_frame">قاب</string>
   <string name="label_translation_notes">یادداشت های ترجمه</string>
   <string name="error_term_missing">اصطلاح یافت نمی شود</string>

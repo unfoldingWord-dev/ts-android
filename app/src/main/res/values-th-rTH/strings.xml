@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Availble บทที่ไม่มีในภาษาต้นฉบับนั้น</string>
   <string name="now_viewing_frame">ตอนนี้ ดูเฟรม %1$s ในบทที่ 2$ s</string>
-  <string name="unknown_chapter">บทที่ไม่รู้จัก</string>
+  <string name="missing_chapter">บทที่ไม่รู้จัก</string>
   <string name="label_frame">เฟรม</string>
   <string name="label_translation_notes">หมายเหตุผู้แปล</string>
   <string name="error_term_missing">ไม่พบคำว่า</string>

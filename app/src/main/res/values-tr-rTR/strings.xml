@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Hiçbir fasıl kaynak dilde availble vardır </string>
   <string name="now_viewing_frame">Şu an görüntülemekte bölüm %2$s kare %1$s.</string>
-  <string name="unknown_chapter">Bilinmeyen bölüm</string>
+  <string name="missing_chapter">Bilinmeyen bölüm</string>
   <string name="label_frame">Çerçeve</string>
   <string name="label_translation_notes">Çeviri Notları</string>
   <string name="error_term_missing">Vadeli bulunamadı </string>

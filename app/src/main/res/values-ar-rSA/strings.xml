@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">لا توجد فصول افايلبلي في تلك اللغة المصدر</string>
   <string name="now_viewing_frame">عرض الآن الاطار%1$s في الفصل%2$s.</string>
-  <string name="unknown_chapter">غير معروف الفصل</string>
+  <string name="missing_chapter">غير معروف الفصل</string>
   <string name="label_frame">إطار</string>
   <string name="label_translation_notes">ملاحظات الترجمة</string>
   <string name="error_term_missing">تعذر العثور على المدى</string>

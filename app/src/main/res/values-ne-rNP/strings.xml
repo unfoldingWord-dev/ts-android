@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">प्रोजेक्ट सेटिंग गतिविधि</string>
   <string name="source_language_has_no_chapters">त्यो  स्रोत भाषामा कुनै अध्यायहरु उपलब्ध छैनन्</string>
   <string name="now_viewing_frame">अब अध्याय मा फ्रेम%2$s %1$s हेर्न।</string>
-  <string name="unknown_chapter">अज्ञात अध्याय</string>
+  <string name="missing_chapter">अज्ञात अध्याय</string>
   <string name="label_frame">फ्रेम</string>
   <string name="label_translation_notes">अनुवाद नोट्स</string>
   <string name="error_term_missing">सर्त भेट्टाउन सकिएन</string>

@@ -1030,7 +1030,7 @@ public class MainActivity extends TranslatorBaseActivity {
             AnimationUtilities.fadeOutIn(mSourceFrameNumText, new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message message) {
-                    mSourceFrameNumText.setText(getResources().getString(R.string.label_frame) + " " + (frameIndex + 1) + " " + getResources().getString(R.string.of) + " " + chapter.numFrames());
+                    mSourceFrameNumText.setText(String.format(getResources().getString(R.string.currently_viewed_frame_index), (frameIndex + 1), chapter.numFrames()));
                     return false;
                 }
             });

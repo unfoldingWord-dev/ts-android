@@ -70,7 +70,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         final Project p = app().getSharedProjectManager().getSelectedProject();
         if(p == null) finish();
 
-        MainContext.getContext().showProgressDialog(R.string.preparing_sharing);
+        MainContext.getContext().showProgressDialog(R.string.loading);
 
         // stage and commit changes to the project
         p.commit(new Project.OnCommitComplete() {
@@ -119,7 +119,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         Intent i = new Intent(Intent.ACTION_SEND);
                                         i.setType("application/zip");
                                         i.putExtra(Intent.EXTRA_STREAM, u);
-                                        startActivity(Intent.createChooser(i, getResources().getString(R.string.label_email)));
+                                        startActivity(Intent.createChooser(i, "Email:"));
                                     } else {
                                         app().showToastMessage(R.string.project_archive_missing);
                                     }
@@ -166,7 +166,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     app().zip(sourcePath, dest.getAbsolutePath());
                                     if(dest.exists() && dest.isFile()) {
                                         // TODO: define a global list of notification id's that we can use.
-                                        app().showToastMessage(getResources().getString(R.string.project_exported_to) + " " + dest.getParentFile().getAbsolutePath(), Toast.LENGTH_SHORT);
+                                        app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), dest.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
                                     } else {
                                         app().showToastMessage(R.string.project_archive_missing);
                                     }

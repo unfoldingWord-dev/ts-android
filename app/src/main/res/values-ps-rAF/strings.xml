@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">پروژه اېچ ټي اېم اېل فعاليت </string>
   <string name="source_language_has_no_chapters">نه شته، چې په غلطۍ سرچينې، چې ژبه </string>
   <string name="now_viewing_frame">ملا حظه اوس چوكاټ %1$s په اتم فصل کې %2$s.</string>
-  <string name="unknown_chapter">بي نام و نشانۍ فصل</string>
+  <string name="missing_chapter">بي نام و نشانۍ فصل</string>
   <string name="label_frame">چوكاټ </string>
   <string name="label_translation_notes">د ژباړې ليكونو </string>
   <string name="error_term_missing">نه په اصطلاح پيدا كېږي </string>

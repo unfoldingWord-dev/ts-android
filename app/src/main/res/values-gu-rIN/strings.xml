@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">કે સ્રોત ભાષામાં ઉપલબ્ધ કોઈ પ્રકરણો છે</string>
   <string name="now_viewing_frame">હવે પ્રકર ફ્રેમ%2$s %1$s જોઈ.</string>
-  <string name="unknown_chapter">અજ્ઞાત પ્રકરણ</string>
+  <string name="missing_chapter">અજ્ઞાત પ્રકરણ</string>
   <string name="label_frame">ફ્રેમ</string>
   <string name="label_translation_notes">અનુવાદ નોંધો</string>
   <string name="error_term_missing">શબ્દ મળી શક્યું નથી</string>

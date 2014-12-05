@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">പ്രൊജക്ട് ക്രമീകരണ പ്രവൃത്തി</string>
   <string name="source_language_has_no_chapters">സ്രോതസ്സ് ഭാഷയില്‍ അധ്യായങ്ങള്‍ ഒന്നും ലഭ്യമല്ല</string>
   <string name="now_viewing_frame">ഇപ്പോള്‍ കാണുന്നത് അധ്യായം %2$ലെ ഫ്രെയിം %1$ ആണ്</string>
-  <string name="unknown_chapter">അജ്ഞാതമായ അധ്യായം</string>
+  <string name="missing_chapter">അജ്ഞാതമായ അധ്യായം</string>
   <string name="label_frame">ഫ്രെയിം</string>
   <string name="label_translation_notes">പരിഭാഷാ കുറിപ്പുകള്‍</string>
   <string name="error_term_missing">ആ പദം കണ്ടെത്താനായില്ല</string>

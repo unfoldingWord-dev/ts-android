@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">प्रोजेक्टसेटिंग्जकृती</string>
   <string name="source_language_has_no_chapters">त्या स्त्रोत भाषेत कोणतेही चॅप्टर्स उपलब्ध नाहीत</string>
   <string name="now_viewing_frame">आता दिसतेय फ्रेम %1$s चॅप्टर %2$s मधील.</string>
-  <string name="unknown_chapter">माहीत नसलेला चॅप्टर</string>
+  <string name="missing_chapter">माहीत नसलेला चॅप्टर</string>
   <string name="label_frame">फ्रेम</string>
   <string name="label_translation_notes">भाषांतर नोंदी</string>
   <string name="error_term_missing">संद्न्या सापडली नाही</string>

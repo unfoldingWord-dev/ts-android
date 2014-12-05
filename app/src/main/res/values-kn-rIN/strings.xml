@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">ಮೂಲ ಭಾಷೆಯಲ್ಲಿ availble, ಯಾವುದೇ ಅಧ್ಯಾಯಗಳು ಇವೆ</string>
   <string name="now_viewing_frame">ಈಗ ಅಧ್ಯಾಯ ಫ್ರೇಮ್%2$s %1$s ನೋಡುವ.</string>
-  <string name="unknown_chapter">ಅಪರಿಚಿತ ಅಧ್ಯಾಯ</string>
+  <string name="missing_chapter">ಅಪರಿಚಿತ ಅಧ್ಯಾಯ</string>
   <string name="label_frame">ಫ್ರೇಮ್</string>
   <string name="label_translation_notes">ಅನುವಾದ ಟಿಪ್ಪಣಿಗಳು</string>
   <string name="error_term_missing">ಪದ ಪತ್ತೆಯಾಗಿಲ್ಲ</string>

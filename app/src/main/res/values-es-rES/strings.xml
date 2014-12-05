@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">No hay capítulos disponibles en ese idioma de origen</string>
   <string name="now_viewing_frame">Viendo ahora marco de %1$s \" en el capítulo de %2$s.</string>
-  <string name="unknown_chapter">Desconocido capítulo</string>
+  <string name="missing_chapter">Desconocido capítulo</string>
   <string name="label_frame">Marco</string>
   <string name="label_translation_notes">Notas De Traducción</string>
   <string name="error_term_missing">El término no se pudo encontrar</string>

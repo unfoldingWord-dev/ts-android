@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Không có không có availble chương trong đó ngôn ngữ nguồn</string>
   <string name="now_viewing_frame">Bây giờ xem ảnh %1$s trong chương %2$s.</string>
-  <string name="unknown_chapter">Không rõ chương</string>
+  <string name="missing_chapter">Không rõ chương</string>
   <string name="label_frame">Khung</string>
   <string name="label_translation_notes">Dịch ghi chú</string>
   <string name="error_term_missing">Không tìm thấy thuật ngữ</string>

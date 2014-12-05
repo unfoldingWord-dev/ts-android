@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">Төслийн тохиргооны ажлууд</string>
   <string name="source_language_has_no_chapters">Энэ эх хэлэнд бүлэг байхгүй байна.</string>
   <string name="now_viewing_frame">Одоо %2$s бүлэг дотор %1$s хүрээ харагдаж байна.</string>
-  <string name="unknown_chapter">Үл мэдэгдэх бүлэг</string>
+  <string name="missing_chapter">Үл мэдэгдэх бүлэг</string>
   <string name="label_frame">Хүрээ</string>
   <string name="label_translation_notes">Орчуулгын тэмдэглэл</string>
   <string name="error_term_missing">Нэр томъёо олдсонгүй</string>

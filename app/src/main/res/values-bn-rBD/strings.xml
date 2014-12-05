@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">যে উৎস ভাষা availble কোন অধ্যায়ে আছে</string>
   <string name="now_viewing_frame">এখন অধ্যায়ে মধ্যে ফ্রেম%2$s %1$s দেখছেন.</string>
-  <string name="unknown_chapter">অজানা অধ্যায়ের</string>
+  <string name="missing_chapter">অজানা অধ্যায়ের</string>
   <string name="label_frame">ফ্রেম</string>
   <string name="label_translation_notes">অনুবাদ নোট</string>
   <string name="error_term_missing">শব্দটি খুঁজে পাওয়া যাবে না</string>

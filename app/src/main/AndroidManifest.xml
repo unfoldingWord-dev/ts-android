@@ -93,7 +93,7 @@
         </activity>
         <activity
             android:name="com.door43.translationstudio.ProjectSettingsActivity"
-            android:label="@string/title_activity_project_settings"
+            android:label="@string/label_project_settings"
             android:parentActivityName="com.door43.translationstudio.MainActivity"
             android:theme="@style/TitledTheme" >
             <meta-data

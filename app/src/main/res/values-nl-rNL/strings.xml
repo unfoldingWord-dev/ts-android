@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Er zijn geen hoofdstukken beschikbaar zijn in die brontaal</string>
   <string name="now_viewing_frame">Nu bekijken frame %1$s in hoofdstuk %2$s.</string>
-  <string name="unknown_chapter">Onbekend hoofdstuk</string>
+  <string name="missing_chapter">Onbekend hoofdstuk</string>
   <string name="label_frame">Frame</string>
   <string name="label_translation_notes">Vertaling Opmerkingen</string>
   <string name="error_term_missing">De termijn kan niet worden gevonden</string>

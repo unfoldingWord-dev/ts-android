@@ -80,8 +80,6 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 public void onSuccess() {
                     // Generate the ssh keys
                     if(!app().hasKeys()) {
-                        // this is so short we don't update the progress bar
-                        publishProgress(getResources().getString(R.string.generating_security_keys));
                         app().generateKeys();
                     }
 

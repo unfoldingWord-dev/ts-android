@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Нет главах availble в том, что исходный язык</string>
   <string name="now_viewing_frame">Теперь просмотр кадра %1$s в главе\"%2$s.</string>
-  <string name="unknown_chapter">Неизвестная глава</string>
+  <string name="missing_chapter">Неизвестная глава</string>
   <string name="label_frame">Рамка</string>
   <string name="label_translation_notes">Перевод Заметки</string>
   <string name="error_term_missing">Термин не может быть найден</string>

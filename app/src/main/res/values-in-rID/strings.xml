@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">ProjectSettingsActivity</string>
   <string name="source_language_has_no_chapters">Ada tidak ada availble bab dalam bahasa sumber</string>
   <string name="now_viewing_frame">Sekarang melihat bingkai %1$s dalam Bab %2$s.</string>
-  <string name="unknown_chapter">Bab tidak diketahui</string>
+  <string name="missing_chapter">Bab tidak diketahui</string>
   <string name="label_frame">Bingkai</string>
   <string name="label_translation_notes">Catatan terjemahan</string>
   <string name="error_term_missing">Istilah tidak dapat ditemukan</string>

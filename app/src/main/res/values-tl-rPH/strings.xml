@@ -67,7 +67,7 @@
   <string name="title_activity_project_settings">MgaSettingNgAktibidadSaProyekto</string>
   <string name="source_language_has_no_chapters">Walang mga kabanata na makukuha sa pinagmulang wika</string>
   <string name="now_viewing_frame">Tinitingnan na ngayon ang frame %1$s sa kabanatang %2$s.</string>
-  <string name="unknown_chapter">Hindi kilalang kabanata</string>
+  <string name="missing_chapter">Hindi kilalang kabanata</string>
   <string name="label_frame">Frame</string>
   <string name="label_translation_notes">Mga tala ng Pagsasalin</string>
   <string name="error_term_missing">Ang termino ay hindi mahanap</string>
