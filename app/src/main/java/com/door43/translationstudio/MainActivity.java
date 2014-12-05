@@ -70,7 +70,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -110,6 +109,9 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mTranslationTextMotionDownY = 0;
     private ProgressBar mTranslationProgressBar;
     private ProgressBar mSourceProgressBar;
+    private Timer mAutosaveTimer;
+    private boolean mAutosaveEnabled;
+    private boolean mProcessingTranslation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,11 +146,27 @@ public class MainActivity extends TranslatorBaseActivity {
                     openLeftDrawer();
                 }
             }
-            app().pauseAutoSave(true);
             reloadCenterPane();
-            app().pauseAutoSave(false);
         }
         closeTranslationKeyboard();
+    }
+
+    /**
+     * Enables autosave
+     */
+    private void enableAutosave() {
+        mAutosaveEnabled = true;
+    }
+
+    /**
+     * Disables autosave and cancels any pending timers
+     */
+    private void disableAutosave() {
+        mAutosaveEnabled = false;
+        if(mAutosaveTimer != null) {
+            mAutosaveTimer.cancel();
+            mAutosaveTimer = null;
+        }
     }
 
     @Override
@@ -167,9 +185,7 @@ public class MainActivity extends TranslatorBaseActivity {
     protected void onResume() {
         super.onResume();
         if(!mActivityIsInitializing) {
-            app().pauseAutoSave(true);
             reloadCenterPane();
-            app().pauseAutoSave(false);
             mLeftPane.reloadFramesTab();
             mLeftPane.reloadChaptersTab();
             mLeftPane.reloadProjectsTab();
@@ -532,8 +548,6 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // automatically save changes to inputText
         mTranslationEditText.addTextChangedListener(new TextWatcher() {
-            private Timer timer = new Timer();
-
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
 
@@ -547,15 +561,17 @@ public class MainActivity extends TranslatorBaseActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
-                timer.cancel();
+                if(mAutosaveTimer != null) {
+                    mAutosaveTimer.cancel();
+                }
                 if (saveDelay != -1) {
-                    timer = new Timer();
-                    if (!app().pauseAutoSave()) {
-                        timer.schedule(new TimerTask() {
+                    mAutosaveTimer = new Timer();
+                    if (mAutosaveEnabled) {
+                        mAutosaveTimer.schedule(new TimerTask() {
                             @Override
                             public void run() {
                                 // save the changes
-                                me.save();
+                                MainActivity.this.save();
                             }
                         }, saveDelay);
                     }
@@ -752,7 +768,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * Begins or restarts parsing the note tags.
      * @param text
      */
-    private void parsePassageNoteTags(String text) {
+    private void highlightTranslationSpans(String text) {
         highlightTranslationSpans(text, false);
     }
 
@@ -761,6 +777,8 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param text
      */
     private void highlightTranslationSpans(final String text, final Boolean isNewNote) {
+        // disable the view so we don't save it
+        mProcessingTranslation = true;
         if(mHighlightTranslationThread != null) {
             mHighlightTranslationThread.stop();
         }
@@ -858,12 +876,16 @@ public class MainActivity extends TranslatorBaseActivity {
                     @Override
                     public void onPostExecute() {
                         if(mNotedResult.getText() != null) {
+                            disableAutosave();
                             mTranslationEditText.setText(mNotedResult.getText());
                             mTranslationEditText.setSelection(0);
+                            enableAutosave();
                         }
                         mTranslationEditText.setVisibility(View.VISIBLE);
                         mTranslationEditText.startAnimation(in);
                         mTranslationProgressBar.startAnimation(outProgress);
+                        // re-enable the view so we can save it
+                        mProcessingTranslation = false;
                     }
                 };
 
@@ -911,6 +933,14 @@ public class MainActivity extends TranslatorBaseActivity {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
+    /**
+     * This handles a horizontal fling that a user may make to move between frames
+     * @param event1
+     * @param event2
+     * @param velocityX
+     * @param velocityY
+     * @return
+     */
     private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         // positive x distance moves right
         final double maxFlingAngle = 30; // this restricts the angle at which you must swipe in order to be considered a fling.
@@ -938,22 +968,19 @@ public class MainActivity extends TranslatorBaseActivity {
                 p.getSelectedChapter().setSelectedFrame(f.getId());
                 mLeftPane.selectTab(mLeftPane.getSelectedTabIndex());
             }
-            app().pauseAutoSave(true);
             reloadCenterPane();
-            app().pauseAutoSave(false);
             return true;
         } else {
-            // TODO: might be cool to perform some simple animation to indicate you can swipe.
             return false;
         }
     }
-
-
 
     /**
      * Updates the center pane with the selected source frame text and any existing translations
      */
     public void reloadCenterPane() {
+        // auto save is disabled to prevent accidently saving into the wrong frame
+        disableAutosave();
         invalidateOptionsMenu();
         // load the text
         final Project p = app().getSharedProjectManager().getSelectedProject();
@@ -970,8 +997,7 @@ public class MainActivity extends TranslatorBaseActivity {
             // target translation
             final Translation translation = frame.getTranslation();
 
-
-            parsePassageNoteTags(translation.getText());
+            highlightTranslationSpans(translation.getText());
 
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
@@ -1039,6 +1065,7 @@ public class MainActivity extends TranslatorBaseActivity {
             // nothing was selected so open the project selector
             openLeftDrawer();
         }
+        enableAutosave();
     }
 
     // Checks if a frame has been selected in the app
@@ -1052,9 +1079,6 @@ public class MainActivity extends TranslatorBaseActivity {
      */
     public void closeDrawers() {
         mRootView.closeDrawers();
-        app().pauseAutoSave(true);
-        reloadCenterPane();
-        app().pauseAutoSave(false);
     }
 
     public void openLeftDrawer() {
@@ -1071,14 +1095,13 @@ public class MainActivity extends TranslatorBaseActivity {
      * Saves the translated content found in inputText
      */
     public void save() {
-        if (!app().pauseAutoSave() && frameIsSelected() && app().getSharedProjectManager().getSelectedProject().hasChosenTargetLanguage()) {
-            // do not allow saves to stack up when saves are running slowly.
-            app().pauseAutoSave(true);
+        if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && app().getSharedProjectManager().getSelectedProject().hasChosenTargetLanguage()) {
+            disableAutosave();
             String inputTextValue = ((EditText) findViewById(R.id.inputText)).getText().toString();
             Frame f = app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
             f.setTranslation(inputTextValue);
             f.save();
-            app().pauseAutoSave(false);
+            enableAutosave();
         }
     }
 
@@ -1360,7 +1383,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 if(matcher.end() < text.length()) {
                     updatedResult.append(text.substring(matcher.end(), text.length()));
                 }
-                parsePassageNoteTags(updatedResult.getText().toString());
+                highlightTranslationSpans(updatedResult.getText().toString());
             }
             return null;
         }

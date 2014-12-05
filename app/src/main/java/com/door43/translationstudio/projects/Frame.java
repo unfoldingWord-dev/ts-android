@@ -99,6 +99,9 @@ public class Frame extends Model {
     public void setTranslation(String translation, Language targetLanguage) {
         if(mTranslation != null && !mTranslation.isLanguage(targetLanguage) && !mTranslation.isSaved()) {
             save();
+        } else if(mTranslation != null && translation.equals(mTranslation.getText())){
+            // don't do anything if the translation hasn't changed
+            return;
         }
         mTranslation = new Translation(targetLanguage, translation);
     }

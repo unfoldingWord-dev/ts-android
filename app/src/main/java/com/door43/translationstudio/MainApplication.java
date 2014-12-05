@@ -58,7 +58,6 @@ public class MainApplication extends Application {
     private ProgressDialog mProgressDialog;
     private TranslationManager mTranslationManager;
     public static final String PREFERENCES_TAG = "com.door43.translationstudio";
-    private boolean mPauseAutoSave = false;
     private ImageLoader mImageLoader;
     private Activity mCurrentDialogActivity;
     private Map<String, ArrayList<String>> mNotificationsMap = new HashMap<String, ArrayList<String>>();
@@ -455,22 +454,6 @@ public class MainApplication extends Application {
     public String getLastActiveFrame() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         return settings.getString("frame_id", "");
-    }
-
-    /**
-     * Flags the app to pause the auto save functionality
-     * @param shouldPause
-     */
-    public void pauseAutoSave(boolean shouldPause) {
-        mPauseAutoSave = shouldPause;
-    }
-
-    /**
-     * Checks if the auto save is paused
-     * @return
-     */
-    public boolean pauseAutoSave() {
-        return mPauseAutoSave;
     }
 
     /**
