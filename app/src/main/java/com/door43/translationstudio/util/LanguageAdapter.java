@@ -40,32 +40,39 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
         mLanguageList = languageList;
         // place translated languages at the top of the list
         if(!isSourceLanguages) {
-            SortTask task = new SortTask();
-            task.execute(languageList);
-//            Handler handler = new Handler();
-//            Runnable r = new Runnable() {
-//                @Override
-//                public void run() {
-//                    List<Language> tempList = new ArrayList<Language>();
-//
-//                    // sort target languages placing those with progress on top.
-//                    ListIterator<Language> li = languageList.listIterator();
-//                    int translatedIndex = 0;
-//                    while(li.hasNext()) {
-//                        Language l = li.next();
-//                        if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
-//                            tempList.add(translatedIndex, l);
-//                            translatedIndex ++;
-//                        } else {
-//                            tempList.add(l);
-//                        }
-//                    }
-//                    mLanguageList = tempList;
-//                    mOrigLanguageList = tempList;
-//                    LanguageAdapter.this.notifyDataSetChanged();
-//                }
-//            };
-//            handler.postDelayed(r, 100);
+            // test
+            ThreadableUI thread = new ThreadableUI() {
+                @Override
+                public void onStop() {
+
+                }
+
+                @Override
+                public void run() {
+                    List<Language> tempList = new ArrayList<Language>();
+
+                    // sort target languages placing those with progress on top.
+                    ListIterator<Language> li = languageList.listIterator();
+                    int translatedIndex = 0;
+                    while(li.hasNext()) {
+                        Language l = li.next();
+                        if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
+                            tempList.add(translatedIndex, l);
+                            translatedIndex ++;
+                        } else {
+                            tempList.add(l);
+                        }
+                    }
+                    mLanguageList = tempList;
+                    mOrigLanguageList = tempList;
+                }
+
+                @Override
+                public void onPostExecute() {
+                    LanguageAdapter.this.notifyDataSetChanged();
+                }
+            };
+            thread.start(mContext);
         }
     }
 
@@ -163,34 +170,6 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
                 mLanguageList = (List<Language>) filterResults.values;
                 notifyDataSetChanged();
             }
-        }
-    }
-
-    private class SortTask extends AsyncTask<List<Language>, Void, Void> {
-        @Override
-        protected Void doInBackground(List<Language>... lists) {
-            List<Language> tempList = new ArrayList<Language>();
-
-            // sort target languages placing those with progress on top.
-            ListIterator<Language> li = lists[0].listIterator();
-            int translatedIndex = 0;
-            while(li.hasNext()) {
-                Language l = li.next();
-                if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
-                    tempList.add(translatedIndex, l);
-                    translatedIndex ++;
-                } else {
-                    tempList.add(l);
-                }
-            }
-            mLanguageList = tempList;
-            mOrigLanguageList = tempList;
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void item) {
-            LanguageAdapter.this.notifyDataSetChanged();
         }
     }
 }

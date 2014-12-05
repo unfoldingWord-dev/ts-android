@@ -20,6 +20,7 @@ import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
+import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
@@ -44,7 +45,6 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.util.TypedValue;
@@ -67,6 +67,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -91,8 +92,8 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mActionBarHeight;
     private int mStatusBarHeight;
     private boolean mActivityIsInitializing;
-    private TermsHighlighterTask mTermsTask;
-    private PassageNotesHighlighterTask mPassageNoteTask;
+    private ThreadableUI mHighlightTranslationThread;
+    private ThreadableUI mHighlightSourceThread;
 
     // center view fields for caching
     private TextView mSourceText;
@@ -107,6 +108,8 @@ public class MainActivity extends TranslatorBaseActivity {
     private static final int TEXT_FADE_SPEED = 100;
     private int mTranslationTextMotionDownX = 0;
     private int mTranslationTextMotionDownY = 0;
+    private ProgressBar mTranslationProgressBar;
+    private ProgressBar mSourceProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -218,6 +221,8 @@ public class MainActivity extends TranslatorBaseActivity {
         mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
         mPreviousFrameView = (ImageView)mCenterPane.findViewById(R.id.hasPreviousFrameImageView);
         mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
+        mTranslationProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.translationProgressBar);
+        mSourceProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.sourceProgressBar);
 
         mTranslationEditText.setEnabled(false);
 
@@ -319,7 +324,7 @@ public class MainActivity extends TranslatorBaseActivity {
                             taggedText += selectionAfter;
 
                             // parse all passage note tags
-                            parsePassageNoteTags(taggedText, true);
+                            highlightTranslationSpans(taggedText, true);
                         } else {
                             app().showToastMessage(R.string.notes_cannot_overlap);
                         }
@@ -479,7 +484,6 @@ public class MainActivity extends TranslatorBaseActivity {
 
                         if (link.length != 0) {
                             if (action == MotionEvent.ACTION_UP) {
-//                                motionEvent.getX();
                                 link[0].onClick(widget);
                             }
                             return mTranslationGestureDetector.onTouchEvent(motionEvent);
@@ -573,52 +577,334 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     /**
+     * Parses the source text for key terms and generates clickable links.
+     * @param frame The frame that contains the source text to parse
+     */
+    private void highlightSourceSpans(final Frame frame) {
+        if(mHighlightSourceThread != null) {
+            mHighlightSourceThread.stop();
+        }
+        // this thread handles the fading animations
+        mHighlightSourceThread = new ThreadableUI() {
+            private ThreadableUI mTaskThread;
+
+            @Override
+            public void onStop() {
+                // kill children if this thread is stopped
+                if(mTaskThread != null) {
+                    mTaskThread.stop();
+                }
+            }
+
+            @Override
+            public void run() {
+                // progress bar animations
+                final Animation inProgress = new AlphaAnimation(0.0f, 1.0f);
+                inProgress.setDuration(TEXT_FADE_SPEED);
+                final Animation outProgress = new AlphaAnimation(1.0f, 0.0f);
+                outProgress.setDuration(TEXT_FADE_SPEED);
+                outProgress.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        mSourceProgressBar.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                // source text animations
+                final Animation in = new AlphaAnimation(0.0f, 1.0f);
+                in.setDuration(TEXT_FADE_SPEED);
+                final Animation out = new AlphaAnimation(1.0f, 0.0f);
+                out.setDuration(TEXT_FADE_SPEED);
+
+                // This thread handles the actual parsing
+                mTaskThread = new ThreadableUI() {
+                    private String mKeyedText = frame.getText();
+                    private List<Term> mTerms = frame.getChapter().getProject().getTerms();
+
+                    @Override
+                    public void onStop() {
+
+                    }
+
+                    @Override
+                    public void run() {
+//                        String keyedText = params[0].getText();
+                        Vector<Boolean> indicies = new Vector<Boolean>();
+                        indicies.setSize(mKeyedText.length());
+                        for(Term t:mTerms) {
+                            StringBuffer buf = new StringBuffer();
+                            Pattern p = Pattern.compile("\\b" + t.getName() + "\\b");
+                            // TRICKY: we need to run two matches at the same time in order to keep track of used indicies in the string
+                            Matcher matcherSourceText = p.matcher(frame.getText());
+                            Matcher matcherKeyedText = p.matcher(mKeyedText);
+
+                            while (matcherSourceText.find() && matcherKeyedText.find()) {
+                                // ensure the key term was found in an area of the string that does not overlap another key term.
+                                if(indicies.get(matcherSourceText.start()) == null && indicies.get(matcherSourceText.end()) == null) {
+                                    // build important terms list.
+                                    frame.addImportantTerm(matcherSourceText.group());
+                                    // build the link
+                                    String key = "<a>" + matcherSourceText.group() + "</a>";
+                                    // lock indicies to prevent key term collisions
+                                    for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {
+                                        indicies.set(i, true);
+                                    }
+
+                                    // insert the key into the keyedText
+                                    matcherKeyedText.appendReplacement(buf, key);
+                                } else {
+                                    // do nothing. this is a key collision
+                                    // e.g. the key term "life" collided with "eternal life".
+                                }
+                            }
+                            matcherKeyedText.appendTail(buf);
+                            mKeyedText = buf.toString();
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+                        if(mKeyedText != null && app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
+//                            final String textResult = mKeyedText;
+                            // load the highlighted text
+                            String[] pieces = mKeyedText.split("<a>");
+                            mSourceText.setText("");
+                            mSourceText.append(pieces[0]);
+                            for (int i = 1; i < pieces.length; i++) {
+                                // get closing anchor
+                                String[] linkChunks = pieces[i].split("</a>");
+                                TermSpan term = new TermSpan(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view, FancySpan span) {
+                                        showTermDetails(span.getSpanId());
+                                    }
+                                });
+                                mSourceText.append(term.toCharSequence());
+                                try {
+                                    mSourceText.append(linkChunks[1]);
+                                } catch (Exception e) {
+                                }
+                            }
+                        } else {
+                            // just display the plain source text
+                            mSourceText.setText(frame.getText());
+                        }
+                        mSourceText.setVisibility(View.VISIBLE);
+                        mSourceText.startAnimation(in);
+                        mSourceProgressBar.startAnimation(outProgress);
+                        // scroll to top
+                        mSourceText.scrollTo(0, 0);
+                        mRightPane.reloadTerm();
+                    }
+                };
+
+                // begin task after animation
+                out.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        mSourceText.setVisibility(View.INVISIBLE);
+                        mTaskThread.start(MainActivity.this);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
+                });
+
+                // begin animations
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // clear old animations in case they haven't finished yet
+                        mSourceText.clearAnimation();
+                        mSourceProgressBar.clearAnimation();
+
+                        mSourceText.startAnimation(out);
+                        mSourceProgressBar.setVisibility(View.VISIBLE);
+                        mSourceProgressBar.startAnimation(inProgress);
+                    }
+                });
+            }
+
+            @Override
+            public void onPostExecute() {
+
+            }
+        };
+        mHighlightSourceThread.start(this);
+    }
+
+    /**
      * Begins or restarts parsing the note tags.
      * @param text
      */
     private void parsePassageNoteTags(String text) {
-        parsePassageNoteTags(text, false);
+        highlightTranslationSpans(text, false);
     }
 
     /**
      * Begins or restarts parsing the note tags
      * @param text
      */
-    private void parsePassageNoteTags(final String text, Boolean isNewNote) {
-        if(mPassageNoteTask != null && !mPassageNoteTask.isCancelled()) {
-            mPassageNoteTask.cancel(true);
+    private void highlightTranslationSpans(final String text, final Boolean isNewNote) {
+        if(mHighlightTranslationThread != null) {
+            mHighlightTranslationThread.stop();
         }
-        final Animation in = new AlphaAnimation(0.0f, 1.0f);
-        in.setDuration(TEXT_FADE_SPEED);
-        final Animation out = new AlphaAnimation(1.0f, 0.0f);
-        out.setDuration(TEXT_FADE_SPEED);
-        mPassageNoteTask = new PassageNotesHighlighterTask(isNewNote, new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message message) {
-                mTranslationEditText.setVisibility(View.VISIBLE);
-                mTranslationEditText.startAnimation(in);
-                return false;
-            }
-        });
-        out.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {}
+        mHighlightTranslationThread = new ThreadableUI() {
+            private ThreadableUI mTaskThread;
 
             @Override
-            public void onAnimationEnd(Animation animation) {
-                mTranslationEditText.setVisibility(View.INVISIBLE);
-                mPassageNoteTask.execute(text);
+            public void onStop() {
+                // kill children if this thread is stopped
+                if(mTaskThread != null) {
+                    mTaskThread.stop();
+                }
             }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {}
-        });
-        this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTranslationEditText.startAnimation(out);
+                // progress bar animations
+                final Animation inProgress = new AlphaAnimation(0.0f, 1.0f);
+                inProgress.setDuration(TEXT_FADE_SPEED);
+                final Animation outProgress = new AlphaAnimation(1.0f, 0.0f);
+                outProgress.setDuration(TEXT_FADE_SPEED);
+                outProgress.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        mTranslationProgressBar.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                // translation animations
+                final Animation in = new AlphaAnimation(0.0f, 1.0f);
+                in.setDuration(TEXT_FADE_SPEED);
+                final Animation out = new AlphaAnimation(1.0f, 0.0f);
+                out.setDuration(TEXT_FADE_SPEED);
+
+                mTaskThread = new ThreadableUI() {
+                    private TextView mNotedResult;
+
+                    @Override
+                    public void onStop() {
+
+                    }
+
+                    @Override
+                    public void run() {
+                        NoteSpan.reset();
+                        mNotedResult = new TextView(MainActivity.this);
+                        NoteSpan needsUpdate = null;
+                        Pattern p = Pattern.compile(NoteSpan.REGEX_NOTE, Pattern.DOTALL);
+                        Matcher matcher = p.matcher(text);
+                        int lastEnd = 0;
+                        while(matcher.find()) {
+                            if(matcher.start() > lastEnd) {
+                                // add the last piece
+                                mNotedResult.append(text.substring(lastEnd, matcher.start()));
+                            }
+                            lastEnd = matcher.end();
+
+                            NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
+                            note.setOnClickListener(new FancySpan.OnClickListener() {
+                                @Override
+                                public void onClick(View view, FancySpan span) {
+                                    openPassageNoteDialog((NoteSpan)span);
+                                }
+                            });
+                            if(note.getNoteText().isEmpty()) {
+                                needsUpdate = note;
+                            }
+                            mNotedResult.append(note.toCharSequence());
+                        }
+                        if(lastEnd < text.length()) {
+                            // add the last bit of text to the view
+                            String remainingText = text.substring(lastEnd, text.length());
+                            mNotedResult.append(remainingText);
+                        } else if(text.length() > 0) {
+                            // TRICKY: adding a line break at the end makes is easier to type after the spannable
+                            mNotedResult.append("\n");
+                        }
+
+                        // display a dialog to populate the empty note.
+                        if(needsUpdate != null && isNewNote) {
+                            openPassageNoteDialog(needsUpdate);
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+                        if(mNotedResult.getText() != null) {
+                            mTranslationEditText.setText(mNotedResult.getText());
+                            mTranslationEditText.setSelection(0);
+                        }
+                        mTranslationEditText.setVisibility(View.VISIBLE);
+                        mTranslationEditText.startAnimation(in);
+                        mTranslationProgressBar.startAnimation(outProgress);
+                    }
+                };
+
+                // execute stask after animation
+                out.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        mTranslationEditText.setVisibility(View.INVISIBLE);
+                        mTaskThread.start(MainActivity.this);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+                    }
+                });
+
+                // begin animations
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // clear animations in case they haven't finished yet
+                        mTranslationEditText.clearAnimation();
+                        mTranslationProgressBar.clearAnimation();
+
+                        mTranslationEditText.startAnimation(out);
+                        mTranslationProgressBar.setVisibility(View.VISIBLE);
+                        mTranslationProgressBar.startAnimation(inProgress);
+                    }
+                });
             }
-        });
+
+            @Override
+            public void onPostExecute() {
+
+            }
+        };
+        mHighlightTranslationThread.start(this);
     }
 
     public void closeTranslationKeyboard() {
@@ -627,9 +913,9 @@ public class MainActivity extends TranslatorBaseActivity {
 
     private boolean handleFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
         // positive x distance moves right
-        final double maxFlingAngle = 20;
-        final float minFlingDistance = 50;
-        final float minFlingVelocity = 20;
+        final double maxFlingAngle = 30; // this restricts the angle at which you must swipe in order to be considered a fling.
+        final float minFlingDistance = 50; // the minimum distance you must swipe
+        final float minFlingVelocity = 20; // the minimum speed of the swipe
         float distanceX = event2.getX() - event1.getX();
         float distanceY = event2.getY() - event1.getY();
 
@@ -723,67 +1009,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 }
             });
 
-            // be sure the terms highlighter task is stopped so it doesn't overwrite the new text.
-            if(mTermsTask != null && !mTermsTask.isCancelled()) {
-                mTermsTask.cancel(true);
-            }
-
-            // set up task to highlight the source text key terms. This also loads the important terms into the frame
-            final Animation in = new AlphaAnimation(0.0f, 1.0f);
-            in.setDuration(TEXT_FADE_SPEED);
-            final Animation out = new AlphaAnimation(1.0f, 0.0f);
-            out.setDuration(TEXT_FADE_SPEED);
-            mTermsTask = new TermsHighlighterTask(p.getTerms(), new OnHighlightProgress() {
-                @Override
-                public void onSuccess(String result) {
-                    if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
-                        final String textResult = result;
-                        // load the highlighted text
-                        String[] pieces = textResult.split("<a>");
-                        mSourceText.setText("");
-                        mSourceText.append(pieces[0]);
-                        for (int i = 1; i < pieces.length; i++) {
-                            // get closing anchor
-                            String[] linkChunks = pieces[i].split("</a>");
-                            TermSpan term = new TermSpan(linkChunks[0], linkChunks[0], new FancySpan.OnClickListener() {
-                                @Override
-                                public void onClick(View view, FancySpan span) {
-                                    showTermDetails(span.getSpanId());
-                                }
-                            });
-                            mSourceText.append(term.toCharSequence());
-                            try {
-                                mSourceText.append(linkChunks[1]);
-                            } catch (Exception e) {
-                            }
-                        }
-                    } else {
-                        // just display the plain source text
-                        mSourceText.setText(frame.getText());
-                    }
-                    mSourceText.setVisibility(View.VISIBLE);
-                    mSourceText.startAnimation(in);
-                    // scroll to top
-                    mSourceText.scrollTo(0, 0);
-                    mRightPane.reloadTerm();
-                }
-            });
-            out.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    mSourceText.setVisibility(View.INVISIBLE);
-                    mTermsTask.execute(frame);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animation animation) {
-                }
-            });
-            mSourceText.startAnimation(out);
+            highlightSourceSpans(frame);
 
             // navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
@@ -1091,125 +1317,6 @@ public class MainActivity extends TranslatorBaseActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-        }
-    }
-
-    /**
-     * A task to highlight key terms in the source text
-     */
-    private class TermsHighlighterTask extends AsyncTask<Frame, String, String> {
-        private OnHighlightProgress mCallback;
-        private List<Term> mTerms = new ArrayList<Term>();
-
-        public TermsHighlighterTask(List<Term> terms, OnHighlightProgress callback) {
-            mCallback = callback;
-            mTerms = terms;
-        }
-
-        @Override
-        protected String doInBackground(Frame... params) {
-            String keyedText = params[0].getText();
-            Vector<Boolean> indicies = new Vector<Boolean>();
-            indicies.setSize(keyedText.length());
-            for(Term t:mTerms) {
-                StringBuffer buf = new StringBuffer();
-                Pattern p = Pattern.compile("\\b" + t.getName() + "\\b");
-                // TRICKY: we need to run two matches at the same time in order to keep track of used indicies in the string
-                Matcher matcherSourceText = p.matcher(params[0].getText());
-                Matcher matcherKeyedText = p.matcher(keyedText);
-
-                while (matcherSourceText.find() && matcherKeyedText.find()) {
-                    // ensure the key term was found in an area of the string that does not overlap another key term.
-                    if(indicies.get(matcherSourceText.start()) == null && indicies.get(matcherSourceText.end()) == null) {
-                        // build important terms list.
-                        params[0].addImportantTerm(matcherSourceText.group());
-                        // build the link
-                        String key = "<a>" + matcherSourceText.group() + "</a>";
-                        // lock indicies to prevent key term collisions
-                        for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {
-                            indicies.set(i, true);
-                        }
-
-                        // insert the key into the keyedText
-                        matcherKeyedText.appendReplacement(buf, key);
-                    } else {
-                        // do nothing. this is a key collision
-                        // e.g. the key term "life" collided with "eternal life".
-                    }
-                }
-                matcherKeyedText.appendTail(buf);
-                keyedText = buf.toString();
-            }
-            return keyedText;
-        }
-
-        protected void onPostExecute(String result) {
-            mCallback.onSuccess(result);
-        }
-    }
-
-    /**
-     * An interface tfor the terms highlight task
-     */
-    private interface OnHighlightProgress {
-//        void onProgress(String result);
-        void onSuccess(String result);
-    }
-
-    /**
-     * A task to highlight passage notes in the translation text
-     */
-    private class PassageNotesHighlighterTask extends AsyncTask<String, String, CharSequence> {
-        private Boolean mRequestEmptyDefinitions;
-        private Handler.Callback mCallback;
-
-        public PassageNotesHighlighterTask(Boolean requestEmptyDefinitions, Handler.Callback callback) {
-            mRequestEmptyDefinitions = requestEmptyDefinitions;
-            mCallback = callback;
-        }
-
-        @Override
-        protected CharSequence doInBackground(String... params) {
-            NoteSpan.reset();
-            TextView notedResult = new TextView(me);
-            NoteSpan needsUpdate = null;
-            Pattern p = Pattern.compile(NoteSpan.REGEX_NOTE, Pattern.DOTALL);
-            Matcher matcher = p.matcher(params[0]);
-            int lastEnd = 0;
-            while(matcher.find()) {
-                if(matcher.start() > lastEnd) {
-                    // add the last piece
-                    notedResult.append(params[0].substring(lastEnd, matcher.start()));
-                }
-                lastEnd = matcher.end();
-
-                NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
-                note.setOnClickListener(new FancySpan.OnClickListener() {
-                    @Override
-                    public void onClick(View view, FancySpan span) {
-                        openPassageNoteDialog((NoteSpan)span);
-                    }
-                });
-                if(note.getNoteText().isEmpty()) {
-                    needsUpdate = note;
-                }
-                notedResult.append(note.toCharSequence());
-            }
-            if(lastEnd < params[0].length()) {
-                notedResult.append(params[0].substring(lastEnd, params[0].length()));
-            }
-
-            // display a dialog to populate the empty note.
-            if(needsUpdate != null && mRequestEmptyDefinitions) {
-                openPassageNoteDialog(needsUpdate);
-            }
-            return notedResult.getText();
-        }
-
-        protected void onPostExecute(CharSequence result) {
-            mTranslationEditText.setText(result);
-            mTranslationEditText.setSelection(0);
-            mCallback.handleMessage(null);
         }
     }
 

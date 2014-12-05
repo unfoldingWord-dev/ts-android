@@ -89,6 +89,13 @@
                             android:paddingTop="5dp" />
                     </RelativeLayout>
 
+                    <ProgressBar
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/sourceProgressBar"
+                        android:layout_gravity="center"
+                        android:visibility="invisible" />
+
                 </FrameLayout>
 
                 <FrameLayout
@@ -112,6 +119,13 @@
                         android:layout_marginRight="10dp"
                         android:alpha=".09"
                         android:adjustViewBounds="false" />
+
+                    <ProgressBar
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/translationProgressBar"
+                        android:layout_gravity="center"
+                        android:visibility="invisible" />
 
                     <LinearLayout
                         android:orientation="vertical"
