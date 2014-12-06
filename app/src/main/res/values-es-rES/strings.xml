@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">No se pudo crear el repositorio</string>
   <string name="terms_title">Condiciones de Uso</string>
   <string name="terms">Para utilizar esta aplicación, usted debe estar de acuerdo para publicar su obra bajo los términos de la licencia Creative Commons Attribution-ShareAlike 4.0 de Licencia Internacional</string>
-  <string name="advanced_settings">Configuración Avanzada</string>
-  <string name="regenerate_keys">Regenerar las Claves SSH</string>
+    <string name="regenerate_keys">Regenerar las Claves SSH</string>
   <string name="close">Cerrar</string>
   <string name="chapter_title_field">Título De Capítulo:</string>
   <string name="chapter_reference_field">El Capítulo De Referencia:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">La generación de claves de seguridad</string>
   <string name="loading_preferences">Carga de preferencias</string>
   <string name="launching_translator">El lanzamiento de traductor</string>
-  <string name="of">de</string>
-  <string name="error_failed_loading_license">No se pudo cargar el archivo de licencia</string>
+    <string name="error_failed_loading_license">No se pudo cargar el archivo de licencia</string>
   <string name="error_failed_parsing_license">Error al analizar el archivo de licencia</string>
   <string name="git_awaiting_report">[%1$s] Push proceso está a la espera de informe de actualización desde un repositorio remoto.</string>
   <string name="git_non_existing">[%1$s] Remoto ref no existe.</string>

@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">تعذر إنشاء مستودع</string>
   <string name="terms_title">شروط الاستخدام</string>
   <string name="terms">من أجل استخدام هذا التطبيق، يجب أن توافق على الافراج عن عملك تحت شروط رخصة المشاع الإبداعي الدولي للوثائق الحرة 4.0</string>
-  <string name="advanced_settings">إعدادات متقدمة</string>
-  <string name="regenerate_keys">تجديد مفاتيح SSH</string>
+    <string name="regenerate_keys">تجديد مفاتيح SSH</string>
   <string name="close">قريب</string>
   <string name="chapter_title_field">الفصل العنوان:</string>
   <string name="chapter_reference_field">الفصل المرجعي:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">توليد مفاتيح الأمان</string>
   <string name="loading_preferences">تفضيلات تحميل</string>
   <string name="launching_translator">إطلاق الترجمة</string>
-  <string name="of">من</string>
-  <string name="error_failed_loading_license">فشل تحميل ملف الترخيص</string>
+    <string name="error_failed_loading_license">فشل تحميل ملف الترخيص</string>
   <string name="error_failed_parsing_license">فشل تحليل ملف الترخيص</string>
   <string name="git_awaiting_report">[%1$s] عملية دفع ينتظر تقرير التحديث من مستودع بعيد.</string>
   <string name="git_non_existing">[%1$s] المرجع بعيد لم تكن موجودة.</string>

@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">Tidak dapat membuat repositori</string>
   <string name="terms_title">Persyaratan penggunaan</string>
   <string name="terms">Untuk menggunakan aplikasi ini, Anda harus setuju untuk melepaskan pekerjaan Anda di bawah persyaratan lisensi Creative Commons Attribution-ShareAlike 4.0 internasional</string>
-  <string name="advanced_settings">Pengaturan lanjutan</string>
-  <string name="regenerate_keys">Regenerasi SSH kunci</string>
+    <string name="regenerate_keys">Regenerasi SSH kunci</string>
   <string name="close">Tutup</string>
   <string name="chapter_title_field">Judul bab:</string>
   <string name="chapter_reference_field">Bab referensi:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">Menghasilkan kunci keamanan</string>
   <string name="loading_preferences">Loading preferensi</string>
   <string name="launching_translator">Meluncurkan penerjemah</string>
-  <string name="of">dari</string>
-  <string name="error_failed_loading_license">Gagal untuk memuat file lisensi</string>
+    <string name="error_failed_loading_license">Gagal untuk memuat file lisensi</string>
   <string name="error_failed_parsing_license">Gagal untuk mem-parsing file lisensi</string>
   <string name="git_awaiting_report">[%1$s] Mendorong proses menunggu update laporan dari repositori berjarak.</string>
   <string name="git_non_existing">[%1$s] Ref jauh tidak ada.</string>

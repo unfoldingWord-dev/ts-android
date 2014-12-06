@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">भण्डार सिर्जना गर्न सकेन</string>
   <string name="terms_title">प्रयोगका शर्तहरु</string>
   <string name="terms">यो एप्स प्रयोग  गर्नको लागि , तपाईँले सबैको रचनात्मक अधिकार --ShareAlike 4.0 अन्तर्राष्ट्रिय लाइसेन्स सर्तहरू अन्तर्गत आफ्नो काम जारी गर्न सहमत हुनुपर्छ</string>
-  <string name="advanced_settings">उच्च श्रेणीको सेटिङ</string>
-  <string name="regenerate_keys">SSH कीई तरिकाहरू पुन:उत्पन्न</string>
+    <string name="regenerate_keys">SSH कीई तरिकाहरू पुन:उत्पन्न</string>
   <string name="close">बन्द</string>
   <string name="chapter_title_field">अध्याय शीर्षक:</string>
   <string name="chapter_reference_field">अध्याय सन्दर्भ:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">सुरक्षा कीई उत्पन्न हुँदै</string>
   <string name="loading_preferences">प्राथमिकताहरू लोड हुँदै</string>
   <string name="launching_translator">अनुवादक सुरुवात हुँदै</string>
-  <string name="of">को</string>
-  <string name="error_failed_loading_license">लाइसेन्स फाइल लोड हुन  असफल</string>
+    <string name="error_failed_loading_license">लाइसेन्स फाइल लोड हुन  असफल</string>
   <string name="error_failed_parsing_license">लाइसेन्स फाइलको  पदवर्णन व्याख्या गर्न असफल</string>
   <string name="git_awaiting_report">[%1$s] पुस्  प्रक्रिया  टाढाको रिपोर्ट अद्यावधिक गर्न  पर्खाइमा छ।</string>
   <string name="git_non_existing">[%1$s] रिमोट रेफ अस्तित्वमा छैन ।</string>

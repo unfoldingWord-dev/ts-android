@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">Hindi makagawa ng lalagyan</string>
   <string name="terms_title">Mga tuntunin ng Pagamit</string>
   <string name="terms">Upang gamitin ang app na ito, dapat kang sumang-ayon upang i-release ang iyong trabaho sa ilalim ng mga tuntunin ng Creative Commons Attribution-ShareAlike 4.0 International na Lisensya</string>
-  <string name="advanced_settings">Mga Advance na mga Setting</string>
-  <string name="regenerate_keys">I-regenerate ang mga SSH Key</string>
+    <string name="regenerate_keys">I-regenerate ang mga SSH Key</string>
   <string name="close">Isara</string>
   <string name="chapter_title_field">Pamagat ng Kabanata</string>
   <string name="chapter_reference_field">Sanggunian ng Kabanata</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">Bumubuo ng mga key sa seguridad</string>
   <string name="loading_preferences">Nilo-load ang mga kagustuhan</string>
   <string name="launching_translator">Ang paglulunsad ng tagasalin</string>
-  <string name="of">ng</string>
-  <string name="error_failed_loading_license">Nabigong i-load ang file ng lisensya</string>
+    <string name="error_failed_loading_license">Nabigong i-load ang file ng lisensya</string>
   <string name="error_failed_parsing_license">Nabigong i-parse ang file ng lisensya</string>
   <string name="git_awaiting_report">[%1$s] Ang proseso ng Push ay naghihintay ng ulat sa update mula sa remote imbakan.</string>
   <string name="git_non_existing">[%1$s] Ang remote ref ay hindi umiiral</string>

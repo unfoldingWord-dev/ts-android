@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">રીપોઝીટરી બનાવી શકાયું નહી</string>
   <string name="terms_title">ઉપયોગની શરતો</string>
   <string name="terms">આ એપ્લિકેશનનો ઉપયોગ કરવા માટે, તમે ક્રિએટીવ કોમન્સ એટ્રિબ્યુશન- ShareAlike 4.0 ઇન્ટરનેશનલ લાઇસન્સ હેઠળ તમારા કાર્ય રીલિઝ સંમત થવું પડશે</string>
-  <string name="advanced_settings">ઉન્નત સેટિંગ્સ</string>
-  <string name="regenerate_keys">SSH કીઝ પુનઃપેદા</string>
+    <string name="regenerate_keys">SSH કીઝ પુનઃપેદા</string>
   <string name="close">બંધ કરો</string>
   <string name="chapter_title_field">પ્રકરણ શીર્ષક:</string>
   <string name="chapter_reference_field">પ્રકરણ સંદર્ભ:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">સુરક્ષા કીઓ પેદા</string>
   <string name="loading_preferences">લોડ કરી રહ્યું છે પસંદગીઓ</string>
   <string name="launching_translator">લાવો અનુવાદક</string>
-  <string name="of">ના</string>
-  <string name="error_failed_loading_license">લાયસન્સ ફાઇલલાવવામાંનિષ્ફળ</string>
+    <string name="error_failed_loading_license">લાયસન્સ ફાઇલલાવવામાંનિષ્ફળ</string>
   <string name="error_failed_parsing_license">લાયસન્સ ફાઈલ વિશ્લેષણ કરવામાં નિષ્ફળ</string>
   <string name="git_awaiting_report">[%1$s] દબાણ પ્રક્રિયા દૂરસ્થ રીપોઝીટરી માંથી સુધારો અહેવાલ રાહ જોઈ રહી છે.</string>
   <string name="git_non_existing">[%1$s] દૂરસ્થ સંદર્ભ અસ્તિત્વમાં નહોતી.</string>

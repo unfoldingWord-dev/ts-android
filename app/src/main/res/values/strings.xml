@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
-    <string name="app_name">translationStudio</string>
+    <string name="app_name" translatable="false">translationStudio</string>
     <string name="projects">Projects</string>
     <string name="chapters">Chapters</string>
     <string name="frames">Frames</string>
     <string name="label_ok">OK</string>
     <string name="label_cancel">Cancel</string>
-    <string name="error_task_running">A task is already running</string>
-    <string name="error_out_of_memory">Out of memory</string>
-    <string name="error_repository_not_found">Repository Not Found</string>
+    <string name="error_task_running" translatable="false">A task is already running</string>
+    <string name="error_out_of_memory" translatable="false">Out of memory</string>
+    <string name="error_repository_not_found" translatable="false">Repository Not Found</string>
     <string name="push_msg_init">Sending to server</string>
     <string name="error_could_not_create_repository" translatable="false">Could not create repository</string>
     <string name="terms_title">Terms of Use</string>
@@ -32,9 +32,9 @@
     <string name="missing_external_storage">External storage is not available</string>
     <!-- Notifies the user that the project was successfully saved to a location on the phone -->
     <string name="project_exported_to">Project saved to <xliff:g id="file_path" example="/storage/sdcard1/">%1$s</xliff:g></string>
-    <string name="project_share_exception">The project cannot be shared</string>
+    <string name="project_share_exception" translatable="false">The project cannot be shared</string>
     <string name="title_activity_file_explorer">File Explorer</string>
-    <string name="missing_file">The file does not exist</string>
+    <string name="missing_file" translatable="false">The file does not exist</string>
     <string name="export_to_app">Export to app</string>
     <string name="export_to_sd">Export to SD Card</string>
     <string name="import_from_sd">Import from SD Card</string>
@@ -124,8 +124,17 @@
     <string name="translation_check_notice">We will now perform a few checks to ensure your translation is ready.</string>
     <string name="translation_complete">Translation is complete</string>
     <string name="preparing_upload">Preparing the project for uploading</string>
-    <!-- This is the license agreement to use the app. It is formatted as HTML within the CDATA tag -->
-    <string name="license"><![CDATA[<h2>You are free to:</h2><p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p><h2>Under the following terms:</h2><p><b>Attribution</b> - You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use;<br/><b>ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original;    <br/>    <b>No additional restrictions</b> -  You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.</p><h2>Notices:</h2><p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]></string>
+    <!-- This is the license agreement to use the app. It is formatted as HTML within the CDATA tag, however for the purpose of translation we must place the html in a seperate html file. -->
+    <string name="license"><![CDATA[<h2>You are free to:</h2>
+<p>Share, copy, and redistribute the material in any medium or format; Adapt, remix, transform, and build upon the material for any purpose, even commercially. The licensor cannot revoke these freedoms as long as you follow the license terms.</p>
+<h2>Under the following terms:</h2>
+<p>
+    <b>Attribution</b> - You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use;
+    <br/><b>ShareAlike</b> - If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original;
+    <br/><b>No additional restrictions</b> -  You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
+</p>
+<h2>Notices:</h2>
+<p>You do not have to comply with the license for elements of the material in the public domain or where your use is permitted by an applicable exception or limitation; No warranties are given. The license may not give you all of the permissions necessary for your intended use. For example, other rights such as publicity, privacy, or moral rights may limit how you use the material.</p>]]></string>
     <string name="choose_a_project">Please open a project first.</string>
     <string name="choose_a_chapter">Please open a chapter first</string>
     <string name="project_updates_downloaded">Projects have been successfully updated</string>
@@ -134,4 +143,5 @@
     <string name="crash_reports">This app appears to have crashed recently. Would you like to upload a report of this error to the developers?</string>
     <string name="crash_details">What were you doing just before the app crashed?</string>
     <string name="crash_details_label">Optional notes</string>
+    <string name="settings">Settings</string>
 </resources>

@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">Kon het niet maken repository</string>
   <string name="terms_title">Voorwaarden van Gebruik</string>
   <string name="terms">In deze app te kunnen gebruiken, moet u akkoord gaan met het loslaten van je werk onder de voorwaarden van de Creative Commons Attribution-ShareAlike 4.0 Internationale Licentie</string>
-  <string name="advanced_settings">Geavanceerde Instellingen</string>
-  <string name="regenerate_keys">Regenereren van SSH-Sleutels</string>
+    <string name="regenerate_keys">Regenereren van SSH-Sleutels</string>
   <string name="close">Sluiten</string>
   <string name="chapter_title_field">Hoofdstuk Titel:</string>
   <string name="chapter_reference_field">Hoofdstuk Referentie:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">Het genereren van beveiligingssleutels</string>
   <string name="loading_preferences">Laden voorkeuren</string>
   <string name="launching_translator">De lancering van de vertaler</string>
-  <string name="of">van</string>
-  <string name="error_failed_loading_license">Niet laden van het licentiebestand</string>
+    <string name="error_failed_loading_license">Niet laden van het licentiebestand</string>
   <string name="error_failed_parsing_license">Failed to parse het licentie bestand</string>
   <string name="git_awaiting_report">[%1$s] Push wachten op de update verslag van remote repository.</string>
   <string name="git_non_existing">[%1$s] Externe ref niet bestaat.</string>

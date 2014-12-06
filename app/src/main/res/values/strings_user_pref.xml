@@ -1,23 +1,24 @@
 <resources>
-    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_settings" translatable="false">@string/settings</string>
 
-    <!-- Example General settings -->
+    <!-- This is the title for general settings -->
     <string name="pref_header_general">General</string>
 
-    <!-- remember last page -->
+    <!-- Indicates that the app will remember the last page the user was on the next time the app is opened -->
     <string name="pref_title_remember_position">Remember last page</string>
     <string name="pref_description_remember_position">Display the last viewed page when starting the app</string>
 
-    <!-- highlight keyt erms -->
+    <!-- Indicates that the app will highlight important terms as clickable links -->
     <string name="pref_title_highlight_key_terms">Highlight key terms</string>
     <string name="pref_description_highlight_key_terms">Display key terms as clickable links in the source text</string>
 
-    <!-- translation typeface -->
+    <!-- The font typeface that will be used for rendering the translation text -->
     <string name="pref_title_translation_typeface">Translation Typeface</string>
-    <string-array name="pref_translation_typeface_titles">
+    <string-array name="pref_translation_typeface_titles" translatable="false">
         <item>Gentium Plus</item>
     </string-array>
 
+    <!-- The font size of the translation typeface -->
     <string name="pref_title_typeface_size">Translation Typeface Size</string>
     <string-array name="pref_typeface_size_titles">
         <item>small</item>
@@ -25,9 +26,7 @@
         <item>large</item>
     </string-array>
 
-    <!-- settings for Save and Sync -->
     <string name="pref_header_synchronization">Upload</string>
-    <string name="pref_title_autosave">Auto Save</string>
     <string name="pref_title_autosave_delay">Auto Save Changes</string>
     <string-array name="pref_autosave_titles">
         <item>Immediately</item>

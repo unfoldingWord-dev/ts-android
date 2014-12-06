@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">መረጃ ማከማቻውን መፍጠር አልቻለም።</string>
   <string name="terms_title">ለመጠቀም ሊጠብቁት የሚገባዎት ግደታዎች</string>
   <string name="terms">ይህን ሶፍት ዌር ለመጠቀም፣ ሥራዎትን በተለመደው የፈጠራ ሥራ ዕውቅና - ተመሳሳይን መጋራት 4.0 ዓለም አቀፍ ፈቃድ ሥራ ለመልቀቅ መስማማት ይጠበቅብዎታል።</string>
-  <string name="advanced_settings">የተሻሻሉ መዋቅሮች</string>
-  <string name="regenerate_keys">SSH የተባሉትን ቁልፎች እንደገና መፍጠር</string>
+    <string name="regenerate_keys">SSH የተባሉትን ቁልፎች እንደገና መፍጠር</string>
   <string name="close">መዝጋት</string>
   <string name="chapter_title_field">የምዕራፍ ርዕስ፤</string>
   <string name="chapter_reference_field">የምዕራፉ ተያያዥ</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">የደኅንነት ቁልፎችን መፍጠር</string>
   <string name="loading_preferences">ምርጫዎችን እየጫነ ነው</string>
   <string name="launching_translator">ተርጓሚዎችን እያስተዋወቀ ነው።</string>
-  <string name="of">ማዝጋት</string>
-  <string name="error_failed_loading_license">የፈቃዱን ፋይል ለማስገባት አልቻለም</string>
+    <string name="error_failed_loading_license">የፈቃዱን ፋይል ለማስገባት አልቻለም</string>
   <string name="error_failed_parsing_license">የፈቃዱን ፋይል መተንተን አልቻለም</string>
   <string name="git_awaiting_report">[%1$s] ሂደቱን መጫን በሩቅ ካለው መረጃ ማከማቻ የየዕለቱን ሪፖርት እያቆየ ነው።</string>
   <string name="git_non_existing">[%1$] የሩቅ ማስተያያ አልነበረም።</string>

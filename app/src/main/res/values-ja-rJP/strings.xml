@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">リポジトリを作成できませんでした。</string>
   <string name="terms_title">利用規約</string>
   <string name="terms">このアプリを使用するのには、クリエイティブコモンズ帰属-同一条件許諾 4.0 国際ライセンスの条件の下であなたの作品をリリースする同意する必要があります。</string>
-  <string name="advanced_settings">高度な設定</string>
-  <string name="regenerate_keys">SSH キー再生成します。</string>
+    <string name="regenerate_keys">SSH キー再生成します。</string>
   <string name="close">閉じる</string>
   <string name="chapter_title_field">章のタイトル:</string>
   <string name="chapter_reference_field">章の参照:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">セキュリティ キーを生成します。</string>
   <string name="loading_preferences">環境設定の読み込み</string>
   <string name="launching_translator">トランスレーターを起動します。</string>
-  <string name="of">の</string>
-  <string name="error_failed_loading_license">ライセンス ファイルの読み込みに失敗しました</string>
+    <string name="error_failed_loading_license">ライセンス ファイルの読み込みに失敗しました</string>
   <string name="error_failed_parsing_license">ライセンス ファイルの解析に失敗しました</string>
   <string name="git_awaiting_report">[%1$s]プッシュ プロセスはリモート リポジトリからレポートの更新を待っています。</string>
   <string name="git_non_existing">[%1$s]リモート参照は存在しなかった。</string>

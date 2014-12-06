@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">களஞ்சியமாக உருவாக்க முடியவில்லை</string>
   <string name="terms_title">விதிமுறைகள்</string>
   <string name="terms">இந்த பயன்பாட்டை பயன்படுத்த பொருட்டு, நீங்கள் ஆக்கப்பூர்வமான காமன்ஸ் Attribution-ShareAlike 4.0 சர்வதேச உரிமத்தின் நிபந்தனைகளின் கீழ் உங்கள் வெளியிட ஒப்புக்கொள்ள வேண்டும்</string>
-  <string name="advanced_settings">மேம்பட்ட அமைப்புகள்</string>
-  <string name="regenerate_keys">SSH விசைகள் மறுஉற்பத்தி</string>
+    <string name="regenerate_keys">SSH விசைகள் மறுஉற்பத்தி</string>
   <string name="close">மூடு</string>
   <string name="chapter_title_field">பாடம் தலைப்பு:</string>
   <string name="chapter_reference_field">பாடம் குறிப்பு:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">பாதுகாப்பு விசைகளை உருவாக்குகிறது</string>
   <string name="loading_preferences">விருப்பத்தேர்வுகள் ஏற்றம்</string>
   <string name="launching_translator">தொடங்குவதில் மொழிபெயர்ப்பாளர்</string>
-  <string name="of">இன்</string>
-  <string name="error_failed_loading_license">உரிமம் கோப்பினை ஏற்ற தவறியது</string>
+    <string name="error_failed_loading_license">உரிமம் கோப்பினை ஏற்ற தவறியது</string>
   <string name="error_failed_parsing_license">உரிமம் கோப்பை அலச தோல்வி</string>
   <string name="git_awaiting_report">[%1$s] புஷ் செயல்முறை தொலை களஞ்சியமாக இருந்து மேம்படுத்தல் அறிக்கைக்காக காத்திருப்பதாகவும்.</string>
   <string name="git_non_existing">[%1$s] தொலை தியத்தீராவிலே இல்லை.</string>

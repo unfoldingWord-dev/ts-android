@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">ശേഖരം സൃഷ്ടിക്കാന്‍ സാധിച്ചില്ല</string>
   <string name="terms_title">ഉപയോഗത്തിന്‍റെ വ്യവസ്ഥകള്‍</string>
   <string name="terms">ഈ ആപ്പ് ഉപയോഗിക്കുന്നതിനായി നിങ്ങളുടെ വര്‍ക്കുകള്‍  ക്രിയേറ്റീവ് കോമണ്‍സ് ആട്രിബ്യൂഷന്‍ -ഷെയര്‍ എ ലൈക്ക് 4.0 ഇന്‍റര്‍നാഷണല്‍ ലൈസന്‍സ് വ്യവസ്ഥകള്‍ അനുസരിച്ച്  റിലീസ് ചെയ്യാമെന്ന് നിങ്ങള്‍ സമ്മതിക്കണം</string>
-  <string name="advanced_settings">നൂതനമായ ക്രമീകരണം</string>
-  <string name="regenerate_keys">എസ് എസ് എച്ച് കീകള്‍ റീജനറേറ്റ് ചെയ്യുക</string>
+    <string name="regenerate_keys">എസ് എസ് എച്ച് കീകള്‍ റീജനറേറ്റ് ചെയ്യുക</string>
   <string name="close">അവസാനിപ്പിക്കുക</string>
   <string name="chapter_title_field">അധ്യായത്തിന്‍റെ ശീര്‍ഷകം</string>
   <string name="chapter_reference_field">അധ്യായത്തിന്‍റെ പരാമര്‍ശം</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">സുരക്ഷാ കീകള്‍ ഉണ്ടാക്കുകയാണ്</string>
   <string name="loading_preferences">ലോഡിംഗ് മുന്‍ഗണനകള്‍</string>
   <string name="launching_translator">പരിഭാഷകനെ അവതരിപ്പിക്കുന്നു</string>
-  <string name="of">അതിന്‍റെ</string>
-  <string name="error_failed_loading_license">ലൈസന്‍സ് ഫയല്‍ ലോഡ്  ചെയ്യുവാന്‍ സാധിച്ചില്ല</string>
+    <string name="error_failed_loading_license">ലൈസന്‍സ് ഫയല്‍ ലോഡ്  ചെയ്യുവാന്‍ സാധിച്ചില്ല</string>
   <string name="error_failed_parsing_license">ലൈസന്‍സ് ഫയല്‍ വിശകലനം ചെയ്യുവാന്‍ സാധിച്ചില്ല</string>
   <string name="git_awaiting_report">[%1$s]പുഷ് പ്രക്രിയ വിദൂര ശേഖരത്തില്‍ നിന്നുള്ള അപ്ഡേറ്റ് റിപ്പോര്‍ട്ടിനായി കാത്തിരിക്കുകയാണ്.</string>
   <string name="git_non_existing">[%1$s] വിദൂര പരാമര്‍ശം നിലവിലില്ല</string>

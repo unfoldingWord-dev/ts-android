@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">ಭಂಡಾರ ರಚಿಸಲಾಗಲಿಲ್ಲ</string>
   <string name="terms_title">ಬಳಕೆಯ ನಿಯಮಗಳು</string>
   <string name="terms">ಈ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸಲು, ನೀವು ಕ್ರಿಯೇಟಿವ್ ಕಾಮನ್ಸ್-ShareAlike 4.0 ಅಂತರರಾಷ್ಟ್ರೀಯ ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿ ನಿಮ್ಮ ಕೆಲಸ ಬಿಡುಗಡೆ ಒಪ್ಪಿಕೊಳ್ಳಬೇಕು</string>
-  <string name="advanced_settings">ಸುಧಾರಿತ ಸೆಟ್ಟಿಂಗ್ಗಳು</string>
-  <string name="regenerate_keys">SSH ಕೀಗಳನ್ನು ಮತ್ತೆ</string>
+    <string name="regenerate_keys">SSH ಕೀಗಳನ್ನು ಮತ್ತೆ</string>
   <string name="close">ಮುಚ್ಚು</string>
   <string name="chapter_title_field">ಅಧ್ಯಾಯ ಶೀರ್ಷಿಕೆ:</string>
   <string name="chapter_reference_field">ಅಧ್ಯಾಯ ರೆಫರೆನ್ಸ್:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">ಭದ್ರತೆ ಉತ್ಪಾದಿಸುವ</string>
   <string name="loading_preferences">ಆದ್ಯತೆಗಳನ್ನು ಲೋಡ್</string>
   <string name="launching_translator">ಪ್ರಾರಂಭಿಸುವ ಅನುವಾದಕ</string>
-  <string name="of">ಆಫ್</string>
-  <string name="error_failed_loading_license">ಪರವಾನಗಿ ಫೈಲ್ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</string>
+    <string name="error_failed_loading_license">ಪರವಾನಗಿ ಫೈಲ್ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</string>
   <string name="error_failed_parsing_license">ಪರವಾನಗಿ ಫೈಲ್ ಅನ್ನು ಪಾರ್ಸ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</string>
   <string name="git_awaiting_report">[%1$s] ಪುಷ್ ಪ್ರಕ್ರಿಯೆ ದೂರಸ್ಥ ಭಂಡಾರ ನವೀಕರಣ ವರದಿ ನಿರೀಕ್ಷಿಸುತ್ತಿದೆ.</string>
   <string name="git_non_existing">[%1$s] ರಿಮೋಟ್ ಉಲ್ಲೇಖ ಇರಲಿಲ್ಲ.</string>

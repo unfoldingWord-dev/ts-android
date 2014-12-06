@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">সংগ্রহস্থলের তৈরী করা যায়নি</string>
   <string name="terms_title">ব্যবহারের শর্তাবলী</string>
   <string name="terms">এই অ্যাপ্লিকেশন ব্যবহার করতে, আপনাকে ক্রিয়েটিভ কমন্স অ্যাট্রিবিউশন- ShareAlike 4.0 আন্তর্জাতিক লাইসেন্স এর অধীনে পদ আপনার কাজ প্রকাশ করার একমত হতে হবে</string>
-  <string name="advanced_settings">উন্নত সেটিংস</string>
-  <string name="regenerate_keys">SSH কী পুনর্জীবিত</string>
+    <string name="regenerate_keys">SSH কী পুনর্জীবিত</string>
   <string name="close">ঘনিষ্ঠ</string>
   <string name="chapter_title_field">অধ্যায় শিরোনাম:</string>
   <string name="chapter_reference_field">অধ্যায় রেফারেন্স:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">নিরাপত্তা কি জেনারেট</string>
   <string name="loading_preferences">লোড হচ্ছে পছন্দ</string>
   <string name="launching_translator">লঞ্চ অনুবাদক</string>
-  <string name="of">এর</string>
-  <string name="error_failed_loading_license">লাইসেন্স ফাইল লোড করতে ব্যর্থ</string>
+    <string name="error_failed_loading_license">লাইসেন্স ফাইল লোড করতে ব্যর্থ</string>
   <string name="error_failed_parsing_license">লাইসেন্স ফাইল বিশ্লেষণ করতে ব্যর্থ</string>
   <string name="git_awaiting_report">[%1$s] পুশ প্রক্রিয়া দূরবর্তী সংগ্রহস্থল থেকে হালনাগাদ রিপোর্ট অপেক্ষা করছে.</string>
   <string name="git_non_existing">[%1$s] রিমোট সুত্র অস্তিত্ব ছিলো না.</string>

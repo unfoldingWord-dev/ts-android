@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">پيدا نه شي خزانې</string>
   <string name="terms_title">په كار د </string>
   <string name="terms">اتقاق تاسو بايد د خوشې کېدو د خپل کار د تخليق commons attribution sharealike 4.0 د نړيوالو د استعمال لۀ پاره, ددې لپاره چې په دغه غوښتن ليك</string>
-  <string name="advanced_settings">و اېچ ټي اېم اېل</string>
-  <string name="regenerate_keys">يو ځل بيا د حمل كيلي SSH</string>
+    <string name="regenerate_keys">يو ځل بيا د حمل كيلي SSH</string>
   <string name="close">راپوري كوو</string>
   <string name="chapter_title_field">خطاب فصل کې:</string>
   <string name="chapter_reference_field">څپركې اخځ:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">حمل امنيتي كيلو </string>
   <string name="loading_preferences">ډ رجحانونه </string>
   <string name="launching_translator">ژباړن په درېاب كuډ </string>
-  <string name="of">د</string>
-  <string name="error_failed_loading_license">قصو ور كړلو ډ ته د جواز د دوتنه</string>
+    <string name="error_failed_loading_license">قصو ور كړلو ډ ته د جواز د دوتنه</string>
   <string name="error_failed_parsing_license">قصو ور كړلو ته اجازه ليک د فايل تحليلوې</string>
   <string name="git_awaiting_report">[%1$s] پوري انتظار په ليرې پرتو سيمو څخه د رپوټ په هکله تازه معلومات خزانې.</string>
   <string name="git_non_existing">[%1$s] و مخکينې ليرې پرتو سيمو نه شته.</string>

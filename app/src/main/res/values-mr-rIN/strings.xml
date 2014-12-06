@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">रिपॉझिटरी बनवता आली नाही</string>
   <string name="terms_title">वापराच्या अटी</string>
   <string name="terms">हे अॅप वापरण्यासाठी, तुम्ही तुमचे काम Creative Commons Attribution-ShareAlike 4.0 International License च्या अटींखाली रिलीज करण्याचे मान्य करणे आवश्यक आहे</string>
-  <string name="advanced_settings">प्रगत सेटिंग्ज</string>
-  <string name="regenerate_keys">SSH कीज पुन्हा निर्माण करा</string>
+    <string name="regenerate_keys">SSH कीज पुन्हा निर्माण करा</string>
   <string name="close">बंद करा</string>
   <string name="chapter_title_field">चॅप्टर शीर्षक:</string>
   <string name="chapter_reference_field">चॅप्टर संदर्भ:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">सिक्युरिटी कीज निर्माण करत आहे</string>
   <string name="loading_preferences">प्रिफ्रन्सेस लोड करत आहे</string>
   <string name="launching_translator">ट्रान्सलेटर सुरू करत आहे</string>
-  <string name="of">पैकी</string>
-  <string name="error_failed_loading_license">लायसन्स फाईल लोड करणे असफल</string>
+    <string name="error_failed_loading_license">लायसन्स फाईल लोड करणे असफल</string>
   <string name="error_failed_parsing_license">लायसन्स फाईल पार्स करणे असफल</string>
   <string name="git_awaiting_report">[%1$s] पुश प्रक्रिया रिमोट रिपॉझिटरीकडून अपडेट रिपोर्टची वाट पाहात आहे.</string>
   <string name="git_non_existing">[%1$s] रिमोट संदर्भ अस्तित्वात नव्हता.</string>

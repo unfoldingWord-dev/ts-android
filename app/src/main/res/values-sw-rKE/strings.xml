@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">Hakuweza kujenga there</string>
   <string name="terms_title">Masharti ya Matumizi</string>
   <string name="terms">Ili kutumia programu hii, lazima kukubaliana na kutolewa kazi yako chini ya masharti ya Creative Commons Attribution Share-Alike 4.0 Kimataifa Leseni</string>
-  <string name="advanced_settings">Mazingira ya juu</string>
-  <string name="regenerate_keys">Regenerate funguo za SSH</string>
+    <string name="regenerate_keys">Regenerate funguo za SSH</string>
   <string name="close">Karibu</string>
   <string name="chapter_title_field">Sura Title:</string>
   <string name="chapter_reference_field">Sura Rejea:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">Kuzalisha funguo za usalama</string>
   <string name="loading_preferences">Upakiaji upendeleo</string>
   <string name="launching_translator">Uzinduzi translator</string>
-  <string name="of">ya</string>
-  <string name="error_failed_loading_license">Imeshindwa kupakia faili ya leseni</string>
+    <string name="error_failed_loading_license">Imeshindwa kupakia faili ya leseni</string>
   <string name="error_failed_parsing_license">Imeshindwa kuchanganua faili leseni</string>
   <string name="git_awaiting_report">[%1$s] Push mchakato anasubiri update ripoti kutoka kijijini there.</string>
   <string name="git_non_existing">[%1$s] Remote ref hayupo.</string>

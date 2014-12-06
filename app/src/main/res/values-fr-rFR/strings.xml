@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">Ne pouvait pas créer un référentiel</string>
   <string name="terms_title">Conditions d\'Utilisation</string>
   <string name="terms">Afin d\'utiliser cette application, vous devez d\'accord pour publier votre travail sous les termes de la licence Creative Commons Attribution-ShareAlike 4.0 Licence Internationale</string>
-  <string name="advanced_settings">Paramètres Avancés</string>
-  <string name="regenerate_keys">Régénérer des Clés SSH</string>
+    <string name="regenerate_keys">Régénérer des Clés SSH</string>
   <string name="close">Fermer</string>
   <string name="chapter_title_field">Titre De Chapitre:</string>
   <string name="chapter_reference_field">Le Chapitre De Référence:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">La génération des clés de sécurité</string>
   <string name="loading_preferences">Chargement de vos préférences</string>
   <string name="launching_translator">Lancement de traducteur</string>
-  <string name="of">de</string>
-  <string name="error_failed_loading_license">Impossible de charger le fichier de licence</string>
+    <string name="error_failed_loading_license">Impossible de charger le fichier de licence</string>
   <string name="error_failed_parsing_license">Failed to parse le fichier de licence</string>
   <string name="git_awaiting_report">[%1$s] Appuyez processus est en attente du rapport de mise à jour d\'un dépôt distant.</string>
   <string name="git_non_existing">[%1$s] Remote ref n\'existait pas.</string>

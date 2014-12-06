@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">Não pode criar repositório</string>
   <string name="terms_title">Termos de Uso</string>
   <string name="terms">Para usar este aplicativo, você deve concordar em liberar o seu trabalho sob os termos da Creative Commons Attribution-ShareAlike 4.0 Licença Internacional</string>
-  <string name="advanced_settings">Configurações Avançadas</string>
-  <string name="regenerate_keys">Gerar Chaves SSH</string>
+    <string name="regenerate_keys">Gerar Chaves SSH</string>
   <string name="close">Fechar</string>
   <string name="chapter_title_field">Título Do Capítulo:</string>
   <string name="chapter_reference_field">Capítulo Referência:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">Geração de chaves de segurança</string>
   <string name="loading_preferences">Carregamento de preferências</string>
   <string name="launching_translator">Lançamento tradutor</string>
-  <string name="of">de</string>
-  <string name="error_failed_loading_license">Falha ao carregar o arquivo de licença</string>
+    <string name="error_failed_loading_license">Falha ao carregar o arquivo de licença</string>
   <string name="error_failed_parsing_license">Não foi possível analisar o arquivo de licença</string>
   <string name="git_awaiting_report">[%1$s] processo de emissão está aguardando relatório de atualização do repositório remoto.</string>
   <string name="git_non_existing">[%1$s] Remoto ref não existe.</string>

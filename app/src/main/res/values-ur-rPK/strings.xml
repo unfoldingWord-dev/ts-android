@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">ذخیرہ نہیں بنا سکا</string>
   <string name="terms_title">استعمال کی شرائط</string>
   <string name="terms">اس اپلی کیشن کو استعمال کرنے کے لیے آپ آپ کے کام کو تخلیقی العام لگاؤ شاریلاکی 4.0 انٹرنیشنل لائسنس کی شرائط کے تحت رہائی کے لئے اتفاق کرنا چاہیے</string>
-  <string name="advanced_settings">اعلی سیٹنگیں</string>
-  <string name="regenerate_keys">SSH کی چابیاں تخیلق کریں ۔</string>
+    <string name="regenerate_keys">SSH کی چابیاں تخیلق کریں ۔</string>
   <string name="close">بند کریں</string>
   <string name="chapter_title_field">باب کا عنوان:</string>
   <string name="chapter_reference_field">باب کا حوالہ:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">سلامتی کلیدوں کی تخلیق کر رہا ہے</string>
   <string name="loading_preferences">ترجیحات لوڈ کر رہا ہے</string>
   <string name="launching_translator">چلانے کے مترجم</string>
-  <string name="of">کی</string>
-  <string name="error_failed_loading_license">لائسنس مسل لوڈ نہیں کر سکا</string>
+    <string name="error_failed_loading_license">لائسنس مسل لوڈ نہیں کر سکا</string>
   <string name="error_failed_parsing_license">لائسنس فائل کی تشریح کرنے میں ناکام رہے</string>
   <string name="git_awaiting_report">[%1$s] پش عمل بعید ذخیرہ سے اپ ڈیٹ کی رپورٹ کا منتظر ہے ۔</string>
   <string name="git_non_existing">[%1$s] بعید ماخوذ موجود نہیں تھا ۔</string>

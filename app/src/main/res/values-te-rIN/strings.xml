@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">రిపోజిటరీ సృష్టించలేకపోయింది</string>
   <string name="terms_title">ఉపయోగ నిబంధనలు</string>
   <string name="terms">ఈ అనువర్తనం ఉపయోగించడానికి, మీరు క్రియేటివ్ కామన్స్ ఆపాదింపు-యథాతథ పంచుకోలు 4.0 అంతర్జాతీయ లైసెన్స్ నిబంధనలను మీ పని విడుదల అంగీకరించాలి</string>
-  <string name="advanced_settings">అధునాతన సెట్టింగ్లు</string>
-  <string name="regenerate_keys">SSH కీలు పునరుత్పత్తి</string>
+    <string name="regenerate_keys">SSH కీలు పునరుత్పత్తి</string>
   <string name="close">Close</string>
   <string name="chapter_title_field">చాప్టర్ శీర్షిక:</string>
   <string name="chapter_reference_field">చాప్టర్ సూచన:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">భద్రతా కీలు ఉత్పత్తి</string>
   <string name="loading_preferences">ప్రాధాన్యతలు లోడ్ అవుతున్నాయి</string>
   <string name="launching_translator">ప్రారంభించడం అనువాదకుడు</string>
-  <string name="of">యొక్క</string>
-  <string name="error_failed_loading_license">లైసెన్స్ లోడ్ విఫలమైంది</string>
+    <string name="error_failed_loading_license">లైసెన్స్ లోడ్ విఫలమైంది</string>
   <string name="error_failed_parsing_license">లైసెన్స్ ఫైలు అన్వయించడంలో విఫలమైంది</string>
   <string name="git_awaiting_report">[%1$s] పుష్ ప్రక్రియ రిమోట్ రిపోజిటరీ నుండి నవీకరణ నివేదిక కోసం వేచి ఉంది.</string>
   <string name="git_non_existing">[%1$s] రిమోట్ ref లేవని.</string>

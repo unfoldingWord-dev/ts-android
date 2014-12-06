@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">مخزن را ایجاد کند</string>
   <string name="terms_title">شرایط استفاده</string>
   <string name="terms">برای استفاده از این برنامه، شما باید موافق انتشار کار خود را تحت شرایط خلاق عوام کرییتیو کامانز، مجوز بین المللی 4.0</string>
-  <string name="advanced_settings">تنظیمات پیشرفته</string>
-  <string name="regenerate_keys">SSH کلید های بازسازی</string>
+    <string name="regenerate_keys">SSH کلید های بازسازی</string>
   <string name="close">بستن</string>
   <string name="chapter_title_field">عنوان فصل:</string>
   <string name="chapter_reference_field">مرجع فصل:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">تولید کلیدهای امنیتی</string>
   <string name="loading_preferences">در حال بارگذاری تنظیمات</string>
   <string name="launching_translator">راه اندازی مترجم</string>
-  <string name="of">از</string>
-  <string name="error_failed_loading_license">ناموفق در بارگیری پرونده مجوز</string>
+    <string name="error_failed_loading_license">ناموفق در بارگیری پرونده مجوز</string>
   <string name="error_failed_parsing_license">عدم موفقیت در تجزیه پرونده مجوز</string>
   <string name="git_awaiting_report">[%1$s] فرآیند فشار گزارش به روز رسانی از مخزن دور انتظار است.</string>
   <string name="git_non_existing">[%1$s] کد عکس از راه دور وجود نداشت.</string>

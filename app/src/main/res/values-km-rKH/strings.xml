@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">មិនអាចបង្កើតឃ្លាំងឯកសារបាន</string>
   <string name="terms_title">លក្ខខណ្ឌប្រើប្រាស់</string>
   <string name="terms">ដើម្បីប្រើកូនកម្មវិធីនេះបាន អ្នកត្រូវតែយល់ព្រមបញ្ចេញការងារអ្នកលក្ខខណ្ឌរបស់ Creative Commons Attribution-ShareAlike 4.0 International License</string>
-  <string name="advanced_settings">កំណត់កម្រិតខ្ពស់</string>
-  <string name="regenerate_keys">បង្កើតឃី SSH</string>
+    <string name="regenerate_keys">បង្កើតឃី SSH</string>
   <string name="close">បង្កើតឃី SSH</string>
   <string name="chapter_title_field">ចំណងជើងជំពូក:</string>
   <string name="chapter_reference_field">ឯកសារយោងនៃជំពូក:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">កំពុងបង្កើតគន្លឹះសុវត្ថិភាព</string>
   <string name="loading_preferences">កំពុងផ្ទុកឯកសារកំណត់នៃអាទិភាព</string>
   <string name="launching_translator">កំពុងចាប់ផ្ដើមដំណើរការកម្មវិធីបកប្រែ</string>
-  <string name="of">នៃ</string>
-  <string name="error_failed_loading_license">ការផ្ទុកឯកសារអនុញ្ញាត (អាជ្ញាប័ណ្ណ) មិនបានសម្រេច</string>
+    <string name="error_failed_loading_license">ការផ្ទុកឯកសារអនុញ្ញាត (អាជ្ញាប័ណ្ណ) មិនបានសម្រេច</string>
   <string name="error_failed_parsing_license">ការញែកឯកសារអនុញ្ញាត (អាជ្ញាប័ណ្ណ) មិនបានសម្រេច</string>
   <string name="git_awaiting_report">ដំណើរការរុញ [%1$s] កំពុងរង់ចាំរបាយការណ៍ថ្មីបំផុតនៃឃ្លាំងទិន្នន័យពីចម្ងាយ។</string>
   <string name="git_non_existing">មិនមានឯកសារយោងពីចម្ងាយរបស់ [%1$s]។</string>

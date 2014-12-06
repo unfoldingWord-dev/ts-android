@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">Không thể tạo kho lưu trữ</string>
   <string name="terms_title">Điều khoản sử dụng</string>
   <string name="terms">Để sử dụng ứng dụng này, bạn phải đồng ý để phát hành công việc của bạn theo các điều khoản của phát hành theo giấy phép Creative Commons Attribution-ShareAlike 4.0 quốc tế</string>
-  <string name="advanced_settings">Thiết đặt chuyên sâu</string>
-  <string name="regenerate_keys">Tái sinh SSH phím</string>
+    <string name="regenerate_keys">Tái sinh SSH phím</string>
   <string name="close">Đóng</string>
   <string name="chapter_title_field">Tiêu đề chương:</string>
   <string name="chapter_reference_field">Tham khảo chương:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">Tạo ra phím bảo mật</string>
   <string name="loading_preferences">Tải sở thích</string>
   <string name="launching_translator">Tung ra dịch</string>
-  <string name="of">của</string>
-  <string name="error_failed_loading_license">Không thể nạp tệp giấy phép</string>
+    <string name="error_failed_loading_license">Không thể nạp tệp giấy phép</string>
   <string name="error_failed_parsing_license">Thất bại trong việc phân tích cú pháp tệp giấy phép</string>
   <string name="git_awaiting_report">[%1$s] Đẩy quá trình đang chờ Cập Nhật báo cáo từ kho lưu trữ từ xa.</string>
   <string name="git_non_existing">[%1$s] Ref từ xa không tồn tại.</string>

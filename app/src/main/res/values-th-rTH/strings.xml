@@ -14,8 +14,7 @@
   <string name="error_could_not_create_repository">ไม่สามารถสร้างที่เก็บ</string>
   <string name="terms_title">เงื่อนไขการใช้</string>
   <string name="terms">ใช้ app นี้ คุณต้องยอมรับลั่นทำงานภายใต้เงื่อนไขของความคิดสร้างสรรค์คอมมอนส์แสดงที่มา-ShareAlike 4.0 นานาชาติอนุญาต</string>
-  <string name="advanced_settings">การตั้งค่าขั้นสูง</string>
-  <string name="regenerate_keys">สร้าง SSH คีย์</string>
+    <string name="regenerate_keys">สร้าง SSH คีย์</string>
   <string name="close">ปิด</string>
   <string name="chapter_title_field">ชื่อบท:</string>
   <string name="chapter_reference_field">บทอ้างอิง:</string>
@@ -82,8 +81,7 @@
   <string name="generating_security_keys">สร้างคีย์ความปลอดภัย</string>
   <string name="loading_preferences">การโหลดการตั้งค่า</string>
   <string name="launching_translator">เปิดตัวแปล</string>
-  <string name="of">ของ</string>
-  <string name="error_failed_loading_license">ไม่สามารถโหลดแฟ้มลิขสิทธิ์</string>
+    <string name="error_failed_loading_license">ไม่สามารถโหลดแฟ้มลิขสิทธิ์</string>
   <string name="error_failed_parsing_license">ไม่สามารถแยกแฟ้มลิขสิทธิ์</string>
   <string name="git_awaiting_report">[%1$s] กระบวนการผลักดันกำลังรอรายงานการปรับปรุงจากที่เก็บระยะไกล</string>
   <string name="git_non_existing">[%1$s] การอ้างอิงระยะไกลไม่มีอยู่</string>
