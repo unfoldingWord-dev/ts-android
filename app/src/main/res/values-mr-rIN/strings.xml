@@ -32,12 +32,16 @@
   <string name="translation_import_failed">भाषांतर इंपोर्ट करणे असफल</string>
   <string name="internet_not_available">तुमच्याकडे सक्रीय इंटरनेट जोडणी नाही.</string>
   <string name="title_activity_upload_wizard">भाषांतर अपलोड</string>
+  <string name="upload_wizard_intro">तुम्ही तुमचे भाषांतर अपलोड करणार आहात.</string>
   <string name="label_continue">सुरू ठेवा</string>
   <string name="upload_wizard_overview">अपलोड रिव्ह्यू</string>
   <string name="label_project_details">प्रोजेक्ट तपशील</string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> हे <xliff:g id="language" example="English">\"%2$s\"</xliff:g> या भाषेतून <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> या भाषेत भाषांतरीत केले जात आहे.</string>
   <string name="click_for_details">तपशीलावर क्लिक करा</string>
   <string name="label_project_settings">प्रोजेक्ट सेटिंग्ज</string>
   <string name="error_target_and_source_are_same">स्त्रोत व लक्ष्य भाषा सारखीच आहे</string>
+  <string name="error_chapter_title_missing">या चॅप्टरला शीर्षक दिले नाही</string>
+  <string name="error_chapter_reference_missing">या चॅप्टरला संदर्भ दिला नाही</string>
   <string name="label_validate_chapter">चॅप्टर: %1$s</string>
   <string name="dialog_validation_errors">वैधीकरण त्रुट्या</string>
   <string name="validation_errors">भाषांतरात दुरुस्त न केलेल्या त्रुट्या आहेत. कृपया त्या दुरुस्त करा व पुन्हा प्रयत्न करा.</string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">दुरुस्त न केलेले वैधीकरण इशारे अद्याप आहेत. तुम्हाला नक्की हे भाषांतर अपलोड करायचे आहे?</string>
   <string name="no_translated_chapters">अद्याप काहीही भाषांतरित झालेले नाही.</string>
   <string name="label_chapters">चॅप्टर्स</string>
+  <string name="now_viewing_frame">आता दिसतेय फ्रेम <xliff:g id="number" example="1">%1$s</xliff:g> चॅप्टर <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>मधील.</string>
   <string name="label_translation_notes">भाषांतर नोंदी</string>
   <string name="label_passage_note">पॅसेज नोंद:</string>
   <string name="label_delete">काढून टाका</string>
+  <string name="source_language_instructions">स्त्रोत भाषा भाषांतरीत आहेत.</string>
+  <string name="target_language_instructions">लक्ष्य भाषा भाषांतरीत झालेल्या नाहीत वा काम चालू आहे.</string>
   <string name="translation_notes_title">भाषांतर नोंदी:</string>
   <string name="translation_notes_important_terms_title">महत्वाच्या संद्न्या:</string>
   <string name="notes_cannot_overlap">नोंदी ओव्हरलॅप होऊ शकत नाहीत</string>
   <string name="loading_preferences">प्रिफ्रन्सेस लोड करत आहे</string>
   <string name="launching_translator">ट्रान्सलेटर सुरू करत आहे</string>
+  <string name="currently_viewed_frame_index">फ्रेम <xliff:g id="current_frame" example="2">%1$s</xliff:g> एकूण <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">प्रोजेक्ट उघडत आहे</string>
   <string name="loading_key_terms">मुख्य संद्न्या लोड करत आहे</string>
   <string name="loading_translation_notes">भाषांतर नोंदी लोड करत आहे</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">तुमची फाईल निवडा</string>
   <string name="choose_source_language">स्त्रोत भाषा निवडा</string>
   <string name="choose_target_language">लक्ष्य भाषा निवडा</string>
+  <string name="search_language">भाषेकरिता शोघ घ्या</string>
   <string name="loading">लोड करत आहे...</string>
   <string name="view_license">लायसेन्स पाहा</string>
   <string name="license_deny">नको आभार</string>
@@ -72,6 +81,13 @@
   <string name="related_terms">हे सुद्धा पाहा:</string>
   <string name="term_examples">उदाहरणे:</string>
   <string name="git_push_success">प्रोजेक्ट यशस्वीपणे अपलोड झाला</string>
+  <string name="choose_frame_to_start">सुरुवात करण्यासाठी डावीकडील टॅबमधून काही स्त्रोत मजकूर निवडा</string>
+  <string name="return_to_important_terms">महत्वाच्या संज्ञांकडे परता</string>
+  <string name="no_translation_notes">कोणत्याही भाषांतर नोंदी नाहीत</string>
+  <string name="label_important_terms">महत्वाच्या संज्ञा</string>
+  <string name="translation_check_notice">तुमचे भाषांतर अपलोड करण्यासाठी तयार असल्याची खातरजमा करण्यासाठी आम्ही आता काही तपासण्या करू.</string>
+  <string name="translation_complete">भाषांतर पूर्ण आहे.</string>
+  <string name="preparing_upload">प्रोजेक्ट अपलोड करण्यासाठी तयार करत आहे</string>
   <string name="license"><![CDATA[<h2>तुम्ही हे करण्यास मोकळे आहात:</h2>
 <p>कोणत्याही स्वरूपात ही सामग्री शेअर, कॉपी व पुनर्वितरीत करणे; कोणत्याही उद्देशाने, कोणत्याही स्वरूपात, अगदी व्यावसायिकपणेही, स्वीकारणे, पुन्हा मिसळणे, बदलाव करणे व त्यावर उभारणी करणे. तुम्ही परवाना अटींचे पालन करत आहात तोपर्यंत परवानेदार ही स्वातंत्र्ये बंद करू शकत नाही.</p>
 <h2>खालील अटींनुसार:</h2>
@@ -80,5 +96,13 @@
 </p>
 <h2>सूचना:</h2>
 <p>सार्वजनिक डोमेनमधील सामग्रीच्या घटकांसाठी किंवा लागू अपवाद वा मर्यादा यांद्वारा जेथे आपल्या वापराला मान्यता आहे तेथे तुम्ही परवान्याचे पालन करण्याची गरज नाही; कोणत्याही हम्या दिलेल्या नाहीत. परवाना तुम्हाला तुमच्या इच्छित वापराला आवश्यक त्या सर्व संमत्या कदाचित देणार नाही.  उदाहरणार्थ, प्रसिद्धी, खाजगीयता वा नैतिक हक्क यांसारखे अन्य हक्क तुमच्या सामग्रीच्या वापरावर मर्यादा आणू शकतात.</p>]]></string>
+  <string name="choose_a_project">कृपया आधी प्रोजेक्ट उघडा.</string>
+  <string name="choose_a_chapter">कृपया आधी चॅप्टर उघडा</string>
+  <string name="project_updates_downloaded">प्रोजेक्ट यशस्वीपणे अपलोड झाला आहे</string>
+  <string name="downloading_updates">अपडे़ट्स डाउनलोड करत आहे</string>
+  <string name="title_activity_crash_reporter">त्रुटी अहवाल</string>
+  <string name="crash_reports">हे अॅप अलिकडेच क्रॅश झाल्याचे दिसतेय. तुम्हाला या त्रुटीचा अहवाल विकासकांना अपलोड करायचा आहे?</string>
+  <string name="crash_details">अॅप क्रॅश होण्याच्या अगदी आधी तुम्ही काय करत होता?</string>
+  <string name="crash_details_label">वैकल्पिक नोंदी</string>
   <string name="settings">सेटिंग्ज</string>
 </resources>

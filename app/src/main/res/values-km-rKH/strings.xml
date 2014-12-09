@@ -32,12 +32,16 @@
   <string name="translation_import_failed">ការនាំចូលឯកសារបកប្រែមិនបានសម្រេច</string>
   <string name="internet_not_available">អ្នកមិនមានការភ្ជាប់ប្រព័ន្ធអ៊ីនធឺណិតដែលកំពុងដំណើរការ។</string>
   <string name="title_activity_upload_wizard">អាប់ឡូដ (បង្ហោះ) ឯកសារបកប្រែ</string>
+  <string name="upload_wizard_intro">អ្នកកំពុងតែអាប់ឡូដ (បង្ហោះ) ឯកសារបកប្រែអ្នកហើយ។ </string>
   <string name="label_continue">បន្ត</string>
   <string name="upload_wizard_overview">ពិនិត្យមើលឯកសារអាប់ឡូដ (បង្ហោះ) ឡើងវិញ</string>
   <string name="label_project_details">លម្អិតនៃគម្រោង</string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g>កំពុងទទួលបានការបកប្រែពីភាសា<xliff:g id="language" example="English">\"%2$s\"</xliff:g>ទៅជាភាសា<xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g>។1</string>
   <string name="click_for_details">ចុចមើលលម្អិត</string>
   <string name="label_project_settings">កំណត់នៃគម្រោង</string>
   <string name="error_target_and_source_are_same">ភាសាប្រភពដើម និងគោលដៅដូចគ្នា</string>
+  <string name="error_chapter_title_missing">កំពុងបាត់ចំណងជើងជំពូក</string>
+  <string name="error_chapter_reference_missing">កំពុងបាត់ចំណងជើងជំពូក</string>
   <string name="label_validate_chapter">ជំពូក: %1$s</string>
   <string name="dialog_validation_errors">ការចុះសុពលភាពមានកំហុស</string>
   <string name="validation_errors">មានកំហុសដែលមិនបានដោះស្រាយក្នុងការបកប្រែឯកសារ។ សូមតម្រូវកំហុសទាំងនេះ រួចហើយព្យាយាមម្ដងទៀត។</string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">មានបញ្ហាព្រមានប្រាប់ដែលមិនទាន់ដោះស្រាយ។ តើអ្នកប្រាកដទេថា អ្នកចង់អាប់ឡូដ (បង្ហោះ) ឯកសារបកប្រែនេះ?</string>
   <string name="no_translated_chapters">មិនទាន់មានការបកប្រែឯកសារនៅឡើយ។</string>
   <string name="label_chapters">ជំពូក(នានា)</string>
+  <string name="now_viewing_frame">កំពុងមើលហ្វ្រេមទី <xliff:g id="number" example="1">%1$s</xliff:g>ក្នុងជំពូក <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>។</string>
   <string name="label_translation_notes">កំណត់សម្គាល់សម្រាប់ការបកប្រែឯកសារ</string>
   <string name="label_passage_note">កំណត់សម្គាល់នៃវគ្គ ឬផ្នែក:</string>
   <string name="label_delete">លុប</string>
+  <string name="source_language_instructions">បានបញ្ចប់ការបកប្រែភាសាប្រភពដើម។</string>
+  <string name="target_language_instructions">មិនទាន់បានបកប្រែទៅជាភាសាគោលដៅ ឬការងារកំពុងស្ថិតក្នុងដំណើរការ។</string>
   <string name="translation_notes_title">កំណត់សម្គាល់សម្រាប់ការបកប្រែឯកសារ: </string>
   <string name="translation_notes_important_terms_title">ពាក្យសំខាន់ៗ:</string>
   <string name="notes_cannot_overlap">កំណត់សម្គាល់មិនអាចត្រួតគ្នាបាន</string>
   <string name="loading_preferences">កំពុងផ្ទុកឯកសារកំណត់នៃអាទិភាព</string>
   <string name="launching_translator">កំពុងចាប់ផ្ដើមដំណើរការកម្មវិធីបកប្រែ</string>
+  <string name="currently_viewed_frame_index">ហ្វ្រេមទី <xliff:g id="current_frame" example="2">%1$s</xliff:g> នៃ <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">កំពុងបើកគម្រោង</string>
   <string name="loading_key_terms">កំពុងផ្ទុកពាក្យសំខាន់ៗ</string>
   <string name="loading_translation_notes">កំពុងផ្ទុកកំណត់សម្គាល់សម្រាប់ការបកប្រែ</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">ជ្រើសយកឯកសារអ្នក</string>
   <string name="choose_source_language">ជ្រើសយកភាសាប្រភពដើម</string>
   <string name="choose_target_language">ជ្រើសយកភាសាគោលដៅ</string>
+  <string name="search_language">ស្វែងរកមើលភាសាមួយ</string>
   <string name="loading">កំពុងផ្ទុក...</string>
   <string name="view_license">មើលឯកសារអនុញ្ញាត (អាជ្ញាប័ណ្ណ)</string>
   <string name="license_deny">ទេ! អរគុណច្រើន</string>
@@ -72,6 +81,13 @@
   <string name="related_terms">លើសពីនេះ មើល:</string>
   <string name="term_examples">ឧទាហរណ៍:</string>
   <string name="git_push_success">បានអាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោងជាស្ថាពរហើយ</string>
+  <string name="choose_frame_to_start">ជ្រើសយកអត្ថបទប្រភពដើមមួយចំនួយចេញពីថេបខាងឆ្វេងដើម្បីចាប់ផ្ដើម</string>
+  <string name="return_to_important_terms">ត្រឡប់ទៅកម្រងពាក្យសំខាន់ៗ</string>
+  <string name="no_translation_notes">មិនមានកំណត់សម្គាល់សម្រាប់ការបកប្រែនេះទេ</string>
+  <string name="label_important_terms">កម្រងពាក្យសំខាន់ៗ:</string>
+  <string name="translation_check_notice">ឥឡូវនេះ យើងនឹងអនុវត្តការពិនិត្យអក្ខរាវិរុទ្ធពីរបីពាក្យប្រយោជន៍ធានាឲ្យបានថា ការបកប្រែរបស់អ្នកមានលក្ខណៈស្រេចបាច់ហើយ។</string>
+  <string name="translation_complete">ការបកប្រែបានចប់សព្វគ្រប់</string>
+  <string name="preparing_upload">កំពុងរៀបចំគម្រោងសម្រាប់អាប់ឡូដ (បង្ហោះ)</string>
   <string name="license"><![CDATA[<h2>អ្នកមានសិទ្ធិ:</h2>
 <p>ចែករំលែក, ចម្លង, និងចែកចាយឯកសារតាមប្រព័ន្ធឃោសនាផ្សព្វផ្សាយសាធារណៈ (medium) ឬទម្រង់ណាមួយដែលមានជាអាទិ៍ៈ យកលំនាំតាម, កាត់តចងក្រង, ផ្លាស់ប្ដូរទ្រង់ទ្រាយ, និងធ្វើជាមូលដ្ឋាននៃសេចក្ដីសម្អាងលើឯកសារនេះសម្រាប់គោលបំណងណាមួយ (បើទោះជាក្នុងលក្ខណៈពាណិជ្ជកម្មក៏ដោយ)។ បុគ្គល ឬស្ថាប័នដែលចេញលិខិតអនុញ្ញាត (អាជ្ញាប័ណ្ណ) មិនអាចដកហូតសិទ្ធិសេរីភាពទាំងនេះបានឡើយ ដរាបណាអ្នកអនុវត្តតាមលក្ខខ័ណ្ឌទូទៅនៃអាជ្ញាប័ណ្ណនេះ។</p>
 <h2>ស្ថិតក្រោមលក្ខខ័ណ្ឌទូទៅខាងក្រោម:</h2>
@@ -80,5 +96,13 @@
 </p>
 <h2>កំណត់សម្គាល់:</h2>
 <p>អ្នកមិនត្រូវអនុវត្តតាមអាជ្ញាប័ណ្ណនេះសម្រាប់កត្តាសំខាន់ៗនៃឯកសារនេះនៅតាមនាទីសាធារណៈ ឬកន្លែងដែលការប្រើប្រាស់របស់អ្នកទទួលបានការអនុញ្ញាតតាមរយៈការលើកលែង ឬការកំណត់ដែលអាចអនុវត្តបានណាមួយ; មិនមានការធានាណាមួយដែលត្រូវបានផ្ដល់ឲ្យនោះឡើយ។ អាជ្ញាប័ណ្ណនេះមិនអាចផ្ដល់ឲ្យអ្នកនូវគ្រប់ការអនុញ្ញាតដែលសំខាន់ចាំបាច់សម្រាប់ចេតនានៃការប្រើរបស់អ្នកឡើយ។ ឧទាហរណ៍ៈ សិទ្ធិផ្សេងៗទៀតដែលមានប្រភេទដូចជា ការផ្សាយជាសាធារណៈ, សិទ្ធិឯកជន, ឬសិទ្ធិរៀបរៀងអាចនឹងកម្រិតនូវរបៀបដែលអ្នកនឹងប្រើឯកសារនេះ។</p>]]></string>
+  <string name="choose_a_project">សូមបើកគម្រោងមួយជាមុនសិន។</string>
+  <string name="choose_a_chapter">សូមបើកជំពូកមួយជាមុនសិន</string>
+  <string name="project_updates_downloaded">បានអាប់ដេតគម្រោងនានាជាស្ថាពរហើយ</string>
+  <string name="downloading_updates">កំពុងដោនឡូដ (ទាញយក) អាប់ដេតនានា</string>
+  <string name="title_activity_crash_reporter">របាយការណ៍កំហុស</string>
+  <string name="crash_reports">កូនកម្មវិធីនេះលេចចេញឲ្យឃើញមានការគាំងដំណើរការនាពេលថ្មីៗនេះ។ តើអ្នកចង់អាប់ឡូដ (បង្ហាោះ) របាយការណ៍ស្ដីពីកំហុសនេះទៅកាន់អ្នកបង្កើតកម្មវិធីឬ?</string>
+  <string name="crash_details">នៅមុនពេលបន្តិចដែលកូនកម្មវិធីបានគាំងដំណើរការ តើអ្នកកំពុងតែធ្វីអ្វីនៅពេលនោះ?</string>
+  <string name="crash_details_label">កំណត់សម្គាល់បន្ទាប់បន្សំ</string>
   <string name="settings">កំណត់(នានា)</string>
 </resources>

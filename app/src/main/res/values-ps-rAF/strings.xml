@@ -32,12 +32,16 @@
   <string name="translation_import_failed">قصو ور كړلو وارد کړي د ژباړې </string>
   <string name="internet_not_available">نه لري چې يوه فعاله انټرنېټ څخه دي.</string>
   <string name="title_activity_upload_wizard">د ژباړې ورلېښي </string>
+  <string name="upload_wizard_intro">چې تاسو ته ستاسو د ژباړې كړئ.</string>
   <string name="label_continue">دوام </string>
   <string name="upload_wizard_overview">ورلېښئ کتنه وکړي</string>
   <string name="label_project_details">پروژه په اړه </string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> ترجمه کيږي له <xliff:g id="language" example="English">\"%2$s\"</xliff:g> ڎب د <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> ژبہ.</string>
   <string name="click_for_details">د دې پيښې په هکله باندې كلېك كړى</string>
   <string name="label_project_settings">پروژه اېچ ټي اېم اېل </string>
   <string name="error_target_and_source_are_same">مورينو ڎبو ژبې دي او هم</string>
+  <string name="error_chapter_title_missing">فصل خطاب د کمه ده.</string>
+  <string name="error_chapter_reference_missing">فصل اخځ د کمه ده.</string>
   <string name="label_validate_chapter">فصل: %1$s</string>
   <string name="dialog_validation_errors">د باوركړن غلطو</string>
   <string name="validation_errors">شته، چې په ناحلو مسئلو د ژباړې دي. صحي راضي يو ځل بيا د دې او هڅه کوي. </string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">ناحلو مسئلو اخطارونه وركړي دي. تاسو ډاډمن يم چې تاسو يې غواړئ دا د ژباړې راپيدا؟</string>
   <string name="no_translated_chapters">ترجمه کړې، خو تر اوسه شوي دي.</string>
   <string name="label_chapters">مبحثونه</string>
+  <string name="now_viewing_frame">ملا حظه چوكاټ <xliff:g id="number" example="1">%1$s</xliff:g> په اتم فصل کې <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>.</string>
   <string name="label_translation_notes">د ژباړې ليكونو </string>
   <string name="label_passage_note">نوټ په تيريدلو سره:</string>
   <string name="label_delete">پوښتن ړنگول </string>
+  <string name="source_language_instructions">مورينو ڎبو ڎب اړنو پوره كيږي.</string>
+  <string name="target_language_instructions">هدف ژبو ژباړل شوي نه دي او يا هم د پرمختګ په حال کی دي.</string>
   <string name="translation_notes_title">د ژباړې ليكونو:</string>
   <string name="translation_notes_important_terms_title">مهم شرايط:</string>
   <string name="notes_cannot_overlap">نه شي کولای نوټونو ناخيړې </string>
   <string name="loading_preferences">ډ رجحانونه </string>
   <string name="launching_translator">ژباړن په درېاب كuډ </string>
+  <string name="currently_viewed_frame_index"> چوكاټ <xliff:g id="current_frame" example="2">%1$s</xliff:g> د <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">پرانيستونكي پروژه </string>
   <string name="loading_key_terms">کليدي ساحو ډ </string>
   <string name="loading_translation_notes">ډ نوټونو د ژباړې خدمتونه</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">ستاسو فايل غوره </string>
   <string name="choose_source_language">د سرچينې ژبې غوره</string>
   <string name="choose_target_language">د ژبې غوره هدف </string>
+  <string name="search_language"> جست و جوي د يوه ژبه ده</string>
   <string name="loading">باروله …</string>
   <string name="view_license">ملا حظه كوي اجازه ليک </string>
   <string name="license_deny">شكر نه </string>
@@ -72,6 +81,13 @@
   <string name="related_terms">هم ليدل:</string>
   <string name="term_examples">مخ بېلگو:</string>
   <string name="git_push_success">و ورلېښه پروژې په بريالۍ توګه كولم</string>
+  <string name="choose_frame_to_start">يو شمېر غوره سرچينې له متن د ټکۍ ته پيل شوې ده</string>
+  <string name="return_to_important_terms">په يوه مهمه برخه ده</string>
+  <string name="no_translation_notes">نه شته، چې د ژباړې نوټونه دي</string>
+  <string name="label_important_terms">مهم شرايط</string>
+  <string name="translation_check_notice">اوس موږ به يو څو چکونه ترسره شي ستاسو د ژباړې خدمتونه چمتو دی. </string>
+  <string name="translation_complete">د ژباړې بشپړ شوی دی</string>
+  <string name="preparing_upload">د تيارولو لپاره د پروژې ورلېښې </string>
   <string name="license"><![CDATA[<h2>تاسو ته په وړيا دي: </h2>
 <p>درج کې ونډه، او بيا گنارلو غواړي چې واکمن د مادي په واسطه او يا بڼه; څاي لري، د هغو جذبول نوروې، او د جوړولو لپاره د مواد په موخه، آن د نفعه.  تاج بخش اجازه تر لاسه نه شي کولای د دى خطا بخښنه په توګه د هغوی له خپلو حقونو ته د منښتليك شرايط. </p>
 <h2>وروسته په اړوند: </h2>
@@ -80,5 +96,13 @@
 </p>
 <h2>گواښ ليكونو:</h2>
 <p>نه لري چې تاسو ته د منلو لپاره د جواز د مادي په عامه او يا ډومېن كې چې ستا په كار له خوا د رخصت كيږي د كار ونوړې يوه استثنا ده او يا تحديد; تضمين نه ور كيږو. نه اجازه ليک د ښايي تاسو ته د ټولو لپاره د پرېښلې ستاسو په نيت لري.  د بېلګې په توګه، د نورو د حقونو په شان، د او اخلاقي او يا هم د حقونو د بريد، چې څنګه د مواد په كار دي. </p>]]></string>
+  <string name="choose_a_project">مهرباني وك ړي يوه پروژه. </string>
+  <string name="choose_a_chapter">ريد راضي يو فصل</string>
+  <string name="project_updates_downloaded">پروژو په بريالۍ توګه داخل شوي وي</string>
+  <string name="downloading_updates">مطلب په اخيستلو اوسمهالولونه </string>
+  <string name="title_activity_crash_reporter">غلطي رپوٹ</string>
+  <string name="crash_reports">داسې بريښي، چې دا کار د ایپ الوتکه په دې وروستيو وختونو کې دي. به تاسو ته د يو رپوټ د فايل دا چې دىخلکو؟</string>
+  <string name="crash_details">تاسو څه دمخه د ایپ الوتکه؟ </string>
+  <string name="crash_details_label">غوراويز ليكونو </string>
   <string name="settings">اېچ ټي اېم اېل</string>
 </resources>

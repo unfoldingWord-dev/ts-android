@@ -4,7 +4,15 @@
   <string name="pref_header_general">सर्वसामान्य</string>
   <string name="pref_title_remember_position">शेवटचे पृष्ठ लक्षात ठेवा</string>
   <string name="pref_description_remember_position">अॅप सेट करत असताना शेवट पाहिलेले पृष्ठ दर्शवा</string>
+  <string name="pref_title_highlight_key_terms">महत्वाच्या संज्ञा ठळक करा</string>
+  <string name="pref_description_highlight_key_terms">स्त्रोत मजकूरात महत्वाच्या संज्ञा क्लिक करण्याजोग्या लिंक्स म्हणून दर्शवा</string>
   <string name="pref_title_translation_typeface">भाषांतर टाईपफेस</string>
+  <string name="pref_title_typeface_size">भाषांतर टाईपफेस आकार</string>
+  <string-array name="pref_typeface_size_titles">
+    <item>लहान</item>
+    <item>मध्यम</item>
+    <item>मोठा</item>
+  </string-array>
   <string name="pref_header_synchronization">अपलोड करा</string>
   <string name="pref_title_autosave_delay">बदल स्वयं जतन करा</string>
   <string-array name="pref_autosave_titles">
@@ -20,4 +28,7 @@
   <string name="pref_title_media_server">Media Server</string>
   <string name="pref_header_sharing">शेअर करत आहे</string>
   <string name="pref_title_export_format">Export Format</string>
+  <string name="pref_header_advanced">प्रगत</string>
+  <string name="pref_title_advanced_settings">प्रगत सेटिंग्ज सक्षम करा</string>
+  <string name="pref_description_advanced_settings">नेव्हिगेशन बारमध्ये प्रगत सेटिंग्ज बटण दर्शवा</string>
 </resources>

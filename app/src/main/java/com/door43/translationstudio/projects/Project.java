@@ -533,8 +533,8 @@ public class Project extends Model {
     public String export() throws IOException {
         String translationVersion = getLocalTranslationVersion();
         String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
-        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.dokuwiki_export_dir) + "/");
-        File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion + "/");
+        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.dokuwiki_export_dir));
+        File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion);
         Boolean commitSucceeded = true;
         Pattern pattern = Pattern.compile(NoteSpan.REGEX_OPEN_TAG + "((?!" + NoteSpan.REGEX_CLOSE_TAG + ").)*" + NoteSpan.REGEX_CLOSE_TAG);
         Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");

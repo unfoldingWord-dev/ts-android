@@ -32,12 +32,16 @@
   <string name="translation_import_failed">Nabigong i-import ang pagsasalin</string>
   <string name="internet_not_available">Wala kang aktibong koneksyon sa internet.</string>
   <string name="title_activity_upload_wizard">Mag-upload ng Pagsasalin</string>
+  <string name="upload_wizard_intro">Ikaw ay mag-upload ng iyong pagsasalin.</string>
   <string name="label_continue">Magpatuloy</string>
   <string name="upload_wizard_overview">Mag-upload ng Review</string>
   <string name="label_project_details">Detalye ng Proyekto</string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> ay sinasalin mula sa <xliff:g id="language" example="English">\"%2$s\"</xliff:g> na wika sa <xliff:g id="language" example="Deutsch">\"%3s\"</xliff:g> na wika.</string>
   <string name="click_for_details">Pindutin para sa mga detalye</string>
   <string name="label_project_settings">Mga Setting ng Proyekto</string>
   <string name="error_target_and_source_are_same">Ang wika ng pinagmulan at target ay pareho</string>
+  <string name="error_chapter_title_missing">Ang pamagat ng kabanata ay kulang</string>
+  <string name="error_chapter_reference_missing">Ang sangunian ng kabanata ay kulang</string>
   <string name="label_validate_chapter">Kabanata: %1$s</string>
   <string name="dialog_validation_errors">Mga kamalian sa pagpapatunay</string>
   <string name="validation_errors">May mga hindi nalutas na mga pagkakamali sa pagsasalin. Pakiwasto ang mga ito pagkatapos ay subukang muli.</string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">May mga hindi nalutas na babala. Sigurado ka bang gusto mong i-upload itong isinalin?</string>
   <string name="no_translated_chapters">Wala pang naisalin.</string>
   <string name="label_chapters">Mga Kabanata</string>
+  <string name="now_viewing_frame">Tinitingnan ang frame na <xliff:g id="number" example="1">%1$s</xliff:g> sa kabanata na <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>.</string>
   <string name="label_translation_notes">Mga tala ng Pagsasalin</string>
   <string name="label_passage_note">Sipi Tala:</string>
   <string name="label_delete">Burahin</string>
+  <string name="source_language_instructions">Pinagmulan na mga wika ay nakumpleto na sa pagsasalin.</string>
+  <string name="target_language_instructions">Target na mga wika ay hindi nai-translate o mga gawa na nagaganap.</string>
   <string name="translation_notes_title">Tala ng Pagsasalin:</string>
   <string name="translation_notes_important_terms_title">Importanteng mga Termino</string>
   <string name="notes_cannot_overlap">Hindi maaaring isanib ang Mga Tala</string>
   <string name="loading_preferences">Nilo-load ang mga kagustuhan</string>
   <string name="launching_translator">Ang paglulunsad ng tagasalin</string>
+  <string name="currently_viewed_frame_index">Frame <xliff:g id="current_frame" example="2">%1$s</xliff:g> ng <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">Pagbubukas ng proyekto</string>
   <string name="loading_key_terms">Nilo-load ang mga tuntunin</string>
   <string name="loading_translation_notes">Nilo-load ang mga listahan ng pagsalin</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">Piliin ang iyong kikil</string>
   <string name="choose_source_language">Piliin ang Wikang Pinagmulan</string>
   <string name="choose_target_language">Pilliin ang Target na Wika</string>
+  <string name="search_language">Maghanap ng wika</string>
   <string name="loading">Naglo-load...</string>
   <string name="view_license">Tingnan ang Lisensya</string>
   <string name="license_deny">Huwag na Salamat</string>
@@ -72,6 +81,13 @@
   <string name="related_terms">Tingnan din ang:</string>
   <string name="term_examples">Mga Halimbawa:</string>
   <string name="git_push_success">Ang proyekto ay matagumpay na na-upload</string>
+  <string name="choose_frame_to_start">Pumili ng ilang pinagmulang teksto mula sa kaliwang tab upang makapagsimula</string>
+  <string name="return_to_important_terms">Bumalik sa Mahalagang Mga Tuntunin</string>
+  <string name="no_translation_notes">Walang mga tala sa pagsasalin</string>
+  <string name="label_important_terms">Mahalagang Mga Tuntunin</string>
+  <string name="translation_check_notice">Susubukan naming magsagawa ngayon ng ilang mga pagsusuri upang matiyak na ang iyong pagsasalin ay handa na.</string>
+  <string name="translation_complete">Ang pagsasalin ay kumpleto na</string>
+  <string name="preparing_upload">Inihahanda ang mga proyekto para sa pag-upload</string>
   <string name="license"><![CDATA[<h2>Ikaw ay malaya na:</h2>
 <p>Ibahagi, kopyahin, at muling ipamahagi ang materyal sa anumang uri, o ayos; Iangkop, i-remix, ibahin ang anyo, at bumuo sa mga materyal para sa anumang layunin, kahit pa pangkomersyo. Ang tagapaglisensya ay hindi maaaring bawiin ang mga kalayaang ito hangga\'t sinusunod mo ang mga tuntunin ng lisensya.</p>
 <h2>Sa ilalim ng sumusunod na mga tuntunin:</h2>
@@ -84,5 +100,13 @@
 </p>
 <h2>Mga Paunawa:</h2>
 <p>Hindi mo kailangang sumunod sa lisensya para sa mga elemento ng materyal sa pampublikong domain o kung saan ang iyong paggamit ay pinahihintulutan ng isang angkop na pagbubukod o limitasyon; Walang mga garantiya ang ibinigay. Ang lisensya ay hindi maaaring magbigay sa iyo ng lahat ng mga pahintulot na kinakailangan para sa iyong nilalayong paggamit. Halimbawa, ang iba pang mga karapatan tulad ng publisidad, pribasiya, o moral na karapatan ay maaaring maglimita sa kung paano mo gagamitin ang materyal.</p>]]></string>
+  <string name="choose_a_project">Mangyaring buksan muna ang isang proyekto.</string>
+  <string name="choose_a_chapter">Mangyaring buksan muna ang isang kabanata</string>
+  <string name="project_updates_downloaded">Mga proyekto ay matagumpay na na-update</string>
+  <string name="downloading_updates">Nagda-download ng mga update</string>
+  <string name="title_activity_crash_reporter">Pagkakamali sa Ulat</string>
+  <string name="crash_reports">Lumilitaw ang app na ito na nag-crash kamakailan. Gusto mo bang mag-upload ng isang ulat ng error na ito sa mga developer?</string>
+  <string name="crash_details">Ano ang iyong ginagawa bago nag-crash ang app?</string>
+  <string name="crash_details_label">opsyonal na mga tala</string>
   <string name="settings">Mga setting</string>
 </resources>

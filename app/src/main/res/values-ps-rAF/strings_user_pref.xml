@@ -4,7 +4,15 @@
   <string name="pref_header_general">جنرال</string>
   <string name="pref_title_remember_position">په ياد تېر مخ </string>
   <string name="pref_description_remember_position">ملا حظه نمود پاڼه د هغه مهال د لاس پوري </string>
+  <string name="pref_title_highlight_key_terms">دغه مهم شرايط </string>
+  <string name="pref_description_highlight_key_terms">نموداري د مهمو کلکایبل سره د تړاو له امله له متن په دي</string>
   <string name="pref_title_translation_typeface">د ژباړې typeface</string>
+  <string name="pref_title_typeface_size">د ژباړې typeface غټ تياگانو </string>
+  <string-array name="pref_typeface_size_titles">
+    <item>کُشنئی</item>
+    <item>منځ گوړي</item>
+    <item>لوئے زڑے</item>
+  </string-array>
   <string name="pref_header_synchronization">ورلېښې</string>
   <string name="pref_title_autosave_delay">ځان گاډي خوندي بدلونونه</string>
   <string-array name="pref_autosave_titles">
@@ -20,4 +28,7 @@
   <string name="pref_title_media_server">د رسنيو د پالنگر </string>
   <string name="pref_header_sharing">ونډوله</string>
   <string name="pref_title_export_format">بهر لېږلو جوړښت </string>
+  <string name="pref_header_advanced">پرمخ تللو</string>
+  <string name="pref_title_advanced_settings">وړتيا و اېچ ټي اېم اېل</string>
+  <string name="pref_description_advanced_settings">ترقي ور د اېچ ټي اېم اېل تڼئ باندې د سمندر والي په پټه </string>
 </resources>
