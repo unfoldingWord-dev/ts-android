@@ -25,8 +25,10 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -1290,8 +1292,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 return true;
             case R.id.action_update:
                 // TODO: we need to display a better ui and progress indicator. Probably a dialog that users can cancel to stop the download.
-
-                Thread t = new Thread() {
+                final Thread t = new Thread() {
                     @Override
                     public void run() {
                         app().showProgressDialog(R.string.downloading_updates);
@@ -1320,7 +1321,18 @@ public class MainActivity extends TranslatorBaseActivity {
 
                     }
                 };
-                t.start();
+
+                new AlertDialog.Builder(this)
+                        .setMessage(R.string.update_confirmation)
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                t.start();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
                 return true;
             case R.id.action_chapter_settings:
                 if(app().getSharedProjectManager().getSelectedProject() != null && app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {

@@ -4,7 +4,15 @@
   <string name="pref_header_general">አጠቃላይ</string>
   <string name="pref_title_remember_position">የመጨረሻውን ገጽ አስታውስ</string>
   <string name="pref_description_remember_position">ሶፍትዋሩን ሲጀምር በመጨረሻ የታየውን ገጽ አሳይ</string>
+  <string name="pref_title_highlight_key_terms">ቁልፍ የሆኑ ቃላቶች ላይ ያድምቁ</string>
+  <string name="pref_description_highlight_key_terms">በምንጩ ምንባብ ውስጥ ጠቅ ሊደረግ እንደሚገባው ዌብሳት አድርገው ቁልፍ ቃላቶቹን አሳይ</string>
   <string name="pref_title_translation_typeface">የትርጉም ሥራ ጽሑፍ መጻፊያ</string>
+  <string name="pref_title_typeface_size">የትርጉም የመጻፊያ መጠን</string>
+  <string-array name="pref_typeface_size_titles">
+    <item>ትንሽ</item>
+    <item>መካከለኛ</item>
+    <item>ትልቅ</item>
+  </string-array>
   <string name="pref_header_synchronization">መጫን</string>
   <string name="pref_title_autosave_delay">በራሱ የማቆየት ለውጦች</string>
   <string-array name="pref_autosave_titles">
@@ -20,4 +28,7 @@
   <string name="pref_title_media_server">የሚዲያ መቆጣጠሪያ</string>
   <string name="pref_header_sharing">መጋራት</string>
   <string name="pref_title_export_format">የመላኪያ ፎርማት</string>
+  <string name="pref_header_advanced">የተሻሻለ</string>
+  <string name="pref_title_advanced_settings">የተሻሻሉት መዋቅሮችን እንዲሠሩ ማስቻል</string>
+  <string name="pref_description_advanced_settings">በመፈለጊያ ዕዳግ ላይ በሚገኘው ቁልፍ ላይ የተሻሻሉትን መዋቅሮችን አሳይ</string>
 </resources>

@@ -98,4 +98,7 @@
   <string name="crash_details">ماذا كنت تفعل قبل تحطمت التطبيق؟</string>
   <string name="crash_details_label">ملاحظات اختياري</string>
   <string name="settings">الإعدادات</string>
+  <string name="update_confirmation">هل أنت متأكد أنك تريد تحميل التحديثات؟</string>
+  <string name="yes">نعم</string>
+  <string name="no">لا</string>
 </resources>

@@ -98,4 +98,7 @@
   <string name="crash_details">Bạn đã làm gì trước khi ứng dụng bị rơi?</string>
   <string name="crash_details_label">Ghi chú tùy chọn</string>
   <string name="settings">Cài đặt</string>
+  <string name="update_confirmation">Bạn có chắc chắn muốn tải về bản cập nhật?</string>
+  <string name="yes">Vâng</string>
+  <string name="no">Không</string>
 </resources>

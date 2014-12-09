@@ -98,4 +98,7 @@
   <string name="crash_details">Apa yang Anda lakukan sebelum app jatuh?</string>
   <string name="crash_details_label">Catatan opsional</string>
   <string name="settings">Pengaturan</string>
+  <string name="update_confirmation">Apakah Anda yakin ingin men-download update?</string>
+  <string name="yes">Ya</string>
+  <string name="no">Tidak</string>
 </resources>

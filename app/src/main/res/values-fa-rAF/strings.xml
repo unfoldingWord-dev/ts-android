@@ -105,4 +105,7 @@
   <string name="crash_details">آنچه شما انجام می دهند درست قبل از برنامه سقوط کرد؟</string>
   <string name="crash_details_label">یادداشت های اختیاری</string>
   <string name="settings">تنظیمات</string>
+  <string name="update_confirmation">آیا مطمئن هستید که می خواهید برای دانلود به روز رسانی؟</string>
+  <string name="yes">بله</string>
+  <string name="no">بدون</string>
 </resources>

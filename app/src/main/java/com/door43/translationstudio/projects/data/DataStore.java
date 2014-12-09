@@ -54,7 +54,7 @@ public class DataStore {
         String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/languages.json";
 
         if(checkServer) {
-            // https://api.unfoldingword.org/[project id]/txt/1/[project id]-catalog.json
+            // https://api.unfoldingword.org/obs/txt/1/obs-catalog.json
             URL url;
             try {
                 url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+projectSlug+"-catalog.json");
@@ -84,7 +84,7 @@ public class DataStore {
     public String fetchTermsText(String projectSlug, String languageCode, boolean checkServer) {
         String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/terms.json";
         if(checkServer) {
-            // https://api.unfoldingword.org/[project id]/txt/1/[langcode]/kt-[langcode].json
+            // https://api.unfoldingword.org/obs/txt/1/en/kt-en.json
             URL url;
             try {
                 url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+languageCode+"/kt-"+languageCode+".json");
@@ -124,7 +124,7 @@ public class DataStore {
     public String fetchSourceText(String projectSlug, String languageCode, boolean checkServer) {
         String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/" + languageCode + "/source.json";
         if(checkServer) {
-            // api.unfoldingword.org/[project id]/txt/1/[langcode]/[project id]-[langcode].json
+            // api.unfoldingword.org/obs/txt/1/en/obs-en.json
             URL url;
             try {
                 url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+languageCode+"/"+projectSlug+"-"+languageCode+".json");

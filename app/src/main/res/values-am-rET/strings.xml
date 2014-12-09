@@ -32,12 +32,16 @@
   <string name="translation_import_failed">ትርጉሙን ለማስገባት አልቻለም</string>
   <string name="internet_not_available">የሚሠራ ኢንተርኔት ሊኖርዎት አይጠበቅም።</string>
   <string name="title_activity_upload_wizard">የትርጉም ሥራዎን መጫን</string>
+  <string name="upload_wizard_intro">አሁን የተረጎሙትን ሊያስገቡ ተቃርበዋል።</string>
   <string name="label_continue">ቀጥል</string>
   <string name="upload_wizard_overview">የተከለሰውን ገጽ መጫን</string>
   <string name="label_project_details">የፕሮጄክት ዝርዝሮች</string>
+  <string name="project_details"><xliff:g id="language" example="English">\"%2$s\"</xliff:g> ቋንቋውን ወደ <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> ቋንቋ የተተረጎመውን <xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g></string>
   <string name="click_for_details">ለዝርዝሮች ይጫኑት</string>
   <string name="label_project_settings">የፕሮጄክት መዋቅሮች</string>
   <string name="error_target_and_source_are_same">የምንጩ እና የተቀባዩ  ቋንቋዎች አንድ ናቸው</string>
+  <string name="error_chapter_title_missing">የምዕራፉ ርዕስ ጎድሎአል።</string>
+  <string name="error_chapter_reference_missing">የምዕራፉ ማስተያያ ጎድሎአል።</string>
   <string name="label_validate_chapter">ምዕራፍ %1$s</string>
   <string name="dialog_validation_errors">ዕውቅና የመስጠት ስህተቶች</string>
   <string name="validation_errors">በትርጉም ሥራው ውስጥ ያልታረሙ ስህተቶች አሉ። እባክዎትን እነዚህን ያስተካክሉ እና እንደገና ይሞክሩ።</string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">በትርጉም ሥራው ውስጥ ያልታረሙ ማስጠንቀቂያዎች አሉ። የትርጉም ሥራዎትን ሊጭኑ ይፈልጋሉ እርግጠኞ ኖት?</string>
   <string name="no_translated_chapters">እስከ አሁን ምንም አልተተረጎመም።</string>
   <string name="label_chapters">ምዕራፎች</string>
+  <string name="now_viewing_frame">ክፈፉን ማየት <xliff:g id="number" example="1">%1$s</xliff:g> in chapter <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>።</string>
   <string name="label_translation_notes">የትርጉም ሥራ ማስታወሻዎች</string>
   <string name="label_passage_note">የምንባቡ ማስታወሻ፤</string>
   <string name="label_delete">ማጥፋት</string>
+  <string name="source_language_instructions">የምንጩ ቋንቋዎች ፍጹም የሆኑ ትርጉሞች ናቸው።</string>
+  <string name="target_language_instructions">ተቀባይ ቋንቋዎች አልተተረጎሙም ወይም ሥራውቸው በሂደት ላይ ናቸው።</string>
   <string name="translation_notes_title">የትርጉም ሥራ ማስታወሻዎች</string>
   <string name="translation_notes_important_terms_title">አስፈላጊ ደንቦች</string>
   <string name="notes_cannot_overlap">ማስታወሻዎች መደራረብ አይችሉም።</string>
   <string name="loading_preferences">ምርጫዎችን እየጫነ ነው</string>
   <string name="launching_translator">ተርጓሚዎችን እያስተዋወቀ ነው።</string>
+  <string name="currently_viewed_frame_index">ክፈፍ <xliff:g id="current_frame" example="2">%1$s</xliff:g> of <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">ፕሮጄክት መክፈት</string>
   <string name="loading_key_terms">ቁልፍ የሆኑ ደንቦችን መጫን</string>
   <string name="loading_translation_notes">የትርጉም ሥራ ማስታወሻዎች እየጫነ ነው</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">ፋይልዎትን ይምረጡ</string>
   <string name="choose_source_language">የምንጩን ቋንቋ ይምረጡ</string>
   <string name="choose_target_language">የተቀባዩን ቋንቋ ይምረጡ</string>
+  <string name="search_language">ቋንቋ ፈልግ</string>
   <string name="loading">እየጫነ ነው</string>
   <string name="view_license">ፈቃዱን አሳይ</string>
   <string name="license_deny">አመሰግናለሁ አልፈልግም</string>
@@ -72,7 +81,13 @@
   <string name="related_terms">ደግሞ ይመልከቱ፤</string>
   <string name="term_examples">ምሳሌዎች፤</string>
   <string name="git_push_success">ፕሮጄክቱ በተሳካ ሁኔታ ተጭኖአል።</string>
+  <string name="choose_frame_to_start">ለመጀመሪ ከምንጩ ምንባብ ከግራ ጠርዝ ላይ ይምረጡ</string>
+  <string name="return_to_important_terms">አስፈላጊ ወደሆነው ደንቦች መመለስ</string>
+  <string name="no_translation_notes">ምንም ዓይነት የትርጉም ማስታወሻዎች የሉም።</string>
   <string name="label_important_terms">አስፈላጊ ደንቦች</string>
+  <string name="translation_check_notice">የተረጎሙት ዝግጁ መሆኑን ለማረጋገጥ አሁን ትንሽ የፍተሻ ሥራዎችን እናከናውናለን።</string>
+  <string name="translation_complete">ትርጉሙ አልቆአል።</string>
+  <string name="preparing_upload">ፕሮጄክቱን ለማስገባት ማዘጋጀት</string>
   <string name="license"><![CDATA[<h2>ጄይ ሞኝ ነው።</h2>
 <p>ይጋሩ፣ ያባዙ፣ እና በማንኛውም ማባዣ ወይም ሁኔታ እንደገና ያሰራጩ፤ ያዳቅሉ፣ እንደገና ይከልሱ፣ ያድሱ፣ እና ለማንኛውም ዓላማ ማቴሪያሉን ያዳብሩ፤ ለገበያም ቢሆን። የፈቃዱን ገደታዎች እስከተከተሉ ድረስ ፈቃድ ሰጪው እነዚህን ነጻነቶች ሊያስቀር አይችልም።</p>
 <h2>በሚከተሉት ግዴታዎች ሥር፤</h2>
@@ -81,5 +96,13 @@
 </p>
 <h2>ማሳሰቢያዎች፤</h2>
 <p>በሕዝብ ፍጆታ ለሚውሉ የማቴሪያሉ ክፍሎች ወይም ተገቢነት ባለው ቦታዎች ወይም ውስን በሆኑ ቦታዎች አጠቃቀሞ በሚፈቀድበት ቦታዎች ላይ በፈቃዱ ሊገደዱ አይችሉም። ፈቃዱ የግድ ላሰቡት ፍጆታ ፈቃዶችን በሙሉ ሊሰጥዎት አይችልም። ለምሳሌ፦ ሌሎች መብቶች እንደ ለህዝብ ማሳወቅ፣ የግል መብት፣ ወይም የግብረገብ መብቶች ማቴሪያሉን እንዴት እንደሚጠቀሙ ሊወስኑት ይችላሉ።</p>]]></string>
+  <string name="choose_a_project">እባኮትን በመጀመሪያ ፕሮጄክቱን ይክፈቱ።</string>
+  <string name="choose_a_chapter">እባኮትን በመጀመሪያ ምዕራፉን ይክፈቱ።</string>
+  <string name="project_updates_downloaded">ፕሮጄክቶቹ በተሳካ ሁኔታ ተሻሽሎአል።</string>
+  <string name="downloading_updates">ማሻሻያዎቹን እያወረደ ነው።</string>
+  <string name="title_activity_crash_reporter">ስህተትን ማስታወቂያ</string>
+  <string name="crash_reports">ይህ ሶፍትዌር በቅርቡ ሊደመሰስ መሆኑን አሳይቶአል። ለሠሪዎቹ የዚህን ስህተት ማስታወቂያ ማስገባት ይፈልጋሉ?</string>
+  <string name="crash_details">ሶፍትዌሩ ከመደምሰሱ በፊት ምን እየሠሩ ነበር?</string>
+  <string name="crash_details_label">አማራጭ ማስታወሻዎች</string>
   <string name="settings">መዋቅሮች</string>
 </resources>

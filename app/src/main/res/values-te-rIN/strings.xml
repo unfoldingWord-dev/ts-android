@@ -98,4 +98,7 @@
   <string name="crash_details">ఏం మీరు అనువర్తనాన్ని క్రాష్ ముందు ఏమి జరిగింది?</string>
   <string name="crash_details_label">ఐచ్ఛికము గమనికలు</string>
   <string name="settings">సెట్టింగులు</string>
+  <string name="update_confirmation">మీరు నవీకరణలను డౌన్లోడ్ చేయాలని అనుకుంటున్నారా మీరు ఖచ్చితంగా అనుకుంటున్నారా?</string>
+  <string name="yes">అవును</string>
+  <string name="no">సంఖ్య</string>
 </resources>

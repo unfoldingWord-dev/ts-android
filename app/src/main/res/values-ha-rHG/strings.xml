@@ -32,12 +32,16 @@
   <string name="translation_import_failed">An kasa dauko abun da aka fassara</string>
   <string name="internet_not_available">Layinka na sadarwar yanar gizo baya aiki</string>
   <string name="title_activity_upload_wizard">Dora aikin da aka fassara</string>
+  <string name="upload_wizard_intro">Kana gaf da dora fassarar da kayi</string>
   <string name="label_continue">Cigaba</string>
   <string name="upload_wizard_overview">Duba aikin da ake dorawa</string>
   <string name="label_project_details">Bayanan aiki</string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> ana kan fassara shi daga <xliff:g id="language" example="English">\"%2$s\"</xliff:g> harshe zuwa harshen <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g>harshe</string>
   <string name="click_for_details">Taba nan don karin bayani</string>
   <string name="label_project_settings">Saitin aiki</string>
   <string name="error_target_and_source_are_same">Ba bambanci a tsakanin harshen asali da harshen karba</string>
+  <string name="error_chapter_title_missing">Taken babin ya bata</string>
+  <string name="error_chapter_reference_missing">Bayanin babin ya bata</string>
   <string name="label_validate_chapter">Babi %1$s</string>
   <string name="dialog_validation_errors">Kuskure</string>
   <string name="validation_errors">Akwai kura-kuran da ba a gyara ba a cikin aikin fassarar Ka gyara kuskuren kafin ka sake jarrabawa</string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">Akwai gargadin da ba a kiyaye ba Ka tabbata kana bukatar dora wannan aikin fassarar?</string>
   <string name="no_translated_chapters">Har yanzu ba abun da aka fassara fa.</string>
   <string name="label_chapters">Babuka</string>
+  <string name="now_viewing_frame">Duba fanni<xliff:g id="number" example="1">%1$s</xliff:g> a cikin babi <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g></string>
   <string name="label_translation_notes">Bayanin fassara</string>
   <string name="label_passage_note">Bayanin matani</string>
   <string name="label_delete">Share</string>
+  <string name="source_language_instructions">Harsunan asali sune kammallalar fassara</string>
+  <string name="target_language_instructions">Ba a fassara harsunan karbar ba, ko kuma ana kan fassara su.</string>
   <string name="translation_notes_title">Bayanin fassara</string>
   <string name="translation_notes_important_terms_title">Sharudda masu muhimmanci</string>
   <string name="notes_cannot_overlap">Kar a sha\'afa da bayanai</string>
   <string name="loading_preferences">Saukar da abunda aka muhimmanta</string>
   <string name="launching_translator">Gabatar da abun fassara</string>
+  <string name="currently_viewed_frame_index">Fanni <xliff:g id="current_frame" example="2">%1$s</xliff:g> na <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">Bude aiki</string>
   <string name="loading_key_terms">Saukar da muhimman bayanai</string>
   <string name="loading_translation_notes">Saukar da bayanin fassara</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">Zabi kundinka</string>
   <string name="choose_source_language">Zabi harshen Asali</string>
   <string name="choose_target_language">Zabi harshen Karba</string>
+  <string name="search_language">Bincika harshe</string>
   <string name="loading">Saukar da aiki</string>
   <string name="view_license">Duba lasisi</string>
   <string name="license_deny">A a madalla</string>
@@ -72,6 +81,13 @@
   <string name="related_terms">Ka kuma duba</string>
   <string name="term_examples">Misalai:</string>
   <string name="git_push_success">Anyi nasarar dora aiki</string>
+  <string name="choose_frame_to_start">Zabi wasu matanan asali daga bangaren hagu don farawa.</string>
+  <string name="return_to_important_terms">Dawo kan sharudda</string>
+  <string name="no_translation_notes">Babu bayanan fassara</string>
+  <string name="label_important_terms">Kayyadaddun Sharudda</string>
+  <string name="translation_check_notice">Yanzu za mu danyi gwaji don a tabbatar in fassararka/ki ta kammala.</string>
+  <string name="translation_complete">Fassara ta kammala</string>
+  <string name="preparing_upload">Har-hada aiki don dorawa</string>
   <string name="license"><![CDATA[<h2>Kana da \'yancin</h2>
 <p>Sake sarrafa wannan bayanin ta hanyar kofar shi, juya shi, canja shi ta hanya mai ma\'ana ko yada shi ta kowacce irin kafar sadarwa akan kowane irin dalili, ko da kuwa hanyar ta hada da neman kudi ne. Ba za a taba soke lasisin da ya bayar da \'yancin yin hakan ba makawar dai ba saba ma dokokin da aka shata ba.</p>
 <h2>Karkashin wadannan sharudan da aka shata:</h2>
@@ -80,5 +96,13 @@
 </p>
 <h2>Fadakarwa:</h2>
 <p>Ba wai dole bane sai ka bi sharuddan wannan izini ba idan ka samu kanka a wani wuri ko hali mai tsari na mussamman da ya ba aikinka wani \'yanci ko iyakokin da ya kamata ka kiyaye Mai yiwuwa ne wannan  lasisin ba zai baka damar samun dukkanin izinin da zaka bukata ba domin gudanar da aikin naka. Misali, wasu sharudda masu alaka  da sha\'anin sirri, yada labarai ko tarbiyya na iya kawo cikas a wurin gudanar da wannan aikin</p>]]></string>
+  <string name="choose_a_project">Ka fara buda aiki tukuna.</string>
+  <string name="choose_a_chapter">Ka fara buda babi tukuna.</string>
+  <string name="project_updates_downloaded">Anyi nasarar sabunta ayukan duka</string>
+  <string name="downloading_updates">Ana sabunta bayanai</string>
+  <string name="title_activity_crash_reporter">Akwai matsala</string>
+  <string name="crash_reports">Wannan mahajar ta samu matsala Kana da bukatar mika koken wannan matsalar ga masu wanna shafin?</string>
+  <string name="crash_details">Me kakeyi kafin wannan mahajar ta samu matsala?</string>
+  <string name="crash_details_label">Zabi</string>
   <string name="settings">Saitin</string>
 </resources>

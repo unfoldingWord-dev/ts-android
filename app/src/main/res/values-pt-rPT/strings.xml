@@ -98,4 +98,7 @@
   <string name="crash_details">O que você estava fazendo pouco antes do app caiu?</string>
   <string name="crash_details_label">Notas opcionais</string>
   <string name="settings">Configurações</string>
+  <string name="update_confirmation">Tem certeza de que quer fazer download de atualizações?</string>
+  <string name="yes">Sim</string>
+  <string name="no">Não</string>
 </resources>

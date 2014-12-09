@@ -98,4 +98,7 @@
   <string name="crash_details">શું તમે એપ્લિકેશન ક્રેશ પહેલા કરી રહ્યા હતા?</string>
   <string name="crash_details_label">વૈકલ્પિક નોંધો</string>
   <string name="settings">સેટિંગ્સ</string>
+  <string name="update_confirmation">તમે સુધારાઓ ડાઉનલોડ કરવા માંગો તમે ખાતરી રહ્યાં છો?</string>
+  <string name="yes">હા</string>
+  <string name="no">કોઈ</string>
 </resources>

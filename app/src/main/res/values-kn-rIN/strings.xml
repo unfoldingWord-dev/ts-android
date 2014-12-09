@@ -98,4 +98,7 @@
   <string name="crash_details">ನೀವು ಅಪ್ಲಿಕೇಶನ್ ಅಪ್ಪಳಿಸಿತು ಮುನ್ನ ಮಾಡಿದಿರಿ?</string>
   <string name="crash_details_label">ಐಚ್ಛಿಕ ಟಿಪ್ಪಣಿಗಳು</string>
   <string name="settings">ಸೆಟ್ಟಿಂಗ್ಗಳು</string>
+  <string name="update_confirmation">ನವೀಕರಣಗಳನ್ನು ಡೌನ್ಲೋಡ್ ಬಯಸುವ ನೀವು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?</string>
+  <string name="yes">ಹೌದು</string>
+  <string name="no">ಯಾವುದೇ</string>
 </resources>

@@ -98,4 +98,7 @@
   <string name="crash_details">என்ன நீங்கள் பயன்பாட்டை முறிந்தது முன் தான் செய்து கொண்டிருக்கிறாய்?</string>
   <string name="crash_details_label">விருப்ப குறிப்புகள்</string>
   <string name="settings">அமைப்புகள்</string>
+  <string name="update_confirmation">நீங்கள் மேம்படுத்தல்கள் பதிவிறக்க வேண்டும் என்று உறுதியாக இருக்கிறீர்களா?</string>
+  <string name="yes">ஆம்</string>
+  <string name="no">இல்லை</string>
 </resources>

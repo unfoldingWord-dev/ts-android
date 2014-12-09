@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 20
-    buildToolsVersion '20.0.0'
+    buildToolsVersion '21.1.1'
 
     defaultConfig {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 20
-        versionCode 43
+        versionCode 44
         versionName "2.0.1"
     }
     buildTypes {

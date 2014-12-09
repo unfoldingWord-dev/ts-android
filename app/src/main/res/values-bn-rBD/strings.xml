@@ -98,4 +98,7 @@
   <string name="crash_details">আপনি কি অ্যাপ্লিকেশন ক্র্যাশ ঠিক আগে এরকম হয়?</string>
   <string name="crash_details_label">ঐচ্ছিক নোট</string>
   <string name="settings">সেটিংস</string>
+  <string name="update_confirmation">আপনি আপডেট ডাউনলোড করতে চান আপনি কি নিশ্চিত?</string>
+  <string name="yes">হাঁ</string>
+  <string name="no">না</string>
 </resources>

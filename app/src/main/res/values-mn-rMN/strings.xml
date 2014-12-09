@@ -32,12 +32,16 @@
   <string name="translation_import_failed">Орчуулгыг импортлож чадсангүй</string>
   <string name="internet_not_available">Таньд идэвхтэй интернэт холболт байхгүй байна.</string>
   <string name="title_activity_upload_wizard">Орчуулга оруулах</string>
+  <string name="upload_wizard_intro">Та орчуулга байршуулах гэж байна.</string>
   <string name="label_continue">Үргэлжлүүлэх</string>
   <string name="upload_wizard_overview">Тоймыг байршуулах</string>
   <string name="label_project_details">Төслийн мэдээлэл</string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> -г <xliff:g id="language" example="English">\"%2$s\"</xliff:g> хэлнээс <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> хэлэнд орчуулав.</string>
   <string name="click_for_details">Дэлгэрэнгүй мэдээллийг энд дарж авна уу</string>
   <string name="label_project_settings">Төслийн Тохиргоо</string>
   <string name="error_target_and_source_are_same">Эх хэл болон орчуулагдах хэл ижил байна</string>
+  <string name="error_chapter_title_missing">Бүлгийн гарчиг байхгүй байна</string>
+  <string name="error_chapter_reference_missing">Бүлгийн лавлах байхгүй байна</string>
   <string name="label_validate_chapter">Бүлэг: %1$с</string>
   <string name="dialog_validation_errors">Баталгаажуулалтын алдаа</string>
   <string name="validation_errors">Орчуулгад шийдэгдээгүй алдаа байна. Эдгээрийг залруулсны дараа дахин оролдоод үз.</string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">Шийдэгдээгүй сэрэмжлүүлэг байна. Та энэ орчуулгыг байршуулахдаа итгэлтэй байна уу?</string>
   <string name="no_translated_chapters">Юу ч орчуулагдаагүй байна.</string>
   <string name="label_chapters">Бүлгүүд</string>
+  <string name="now_viewing_frame">Харах хүрээ <xliff:g id="number" example="1">%1$s</xliff:g> бүлэгт <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>.</string>
   <string name="label_translation_notes">Орчуулгын тэмдэглэл</string>
   <string name="label_passage_note">Тэмдэглэл:</string>
   <string name="label_delete">Устгах</string>
+  <string name="source_language_instructions">Эх хэлнүүд нь бүрэн орчуулагдсан байна.</string>
+  <string name="target_language_instructions">Зорилтот хэлнүүдэд орчуулга хийгдсэн эсхүл ажил үргэлжилж байна.</string>
   <string name="translation_notes_title">Орчуулгын тэмдэглэл</string>
   <string name="translation_notes_important_terms_title">Чухал нөхцлүүд:</string>
   <string name="notes_cannot_overlap">Тэмдэглэл давхцаж болохгүй</string>
   <string name="loading_preferences">Тохиргоог ачаалж байна</string>
   <string name="launching_translator">Орчуулагчийг эхлүүлж байна</string>
+  <string name="currently_viewed_frame_index">Хүрээ <xliff:g id="current_frame" example="2">%1$s</xliff:g> of <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">Төслийг нээх</string>
   <string name="loading_key_terms">Гол нэр томъёог ачаалаж байна</string>
   <string name="loading_translation_notes">Орчуулгын тэмдэглэлийг ачааллаж байна</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">Файлаа сонгоно уу</string>
   <string name="choose_source_language">Эх хэлийг сонгоно уу</string>
   <string name="choose_target_language">Орчуулах хэлийг сонгоно уу</string>
+  <string name="search_language">Хэл хайх</string>
   <string name="loading">Ачаалж байна ...</string>
   <string name="view_license">Тусгай зөвшөөрлийг харах</string>
   <string name="license_deny">Үгүй. Баярлалаа</string>
@@ -72,6 +81,13 @@
   <string name="related_terms">Үүнийг бас харна уу:</string>
   <string name="term_examples">Жишээ нь:</string>
   <string name="git_push_success">Төслийг амжилттай байршуулсан байна</string>
+  <string name="choose_frame_to_start">Эхлэхийн тулд зүүн табнаас эх бичвэрийг сонгох</string>
+  <string name="return_to_important_terms">Чухал нөхцөл рүү буцах</string>
+  <string name="no_translation_notes">Ямар ч орчуулгын тэмдэглэл байхгүй байна</string>
+  <string name="label_important_terms">Чухал нэр томъёонууд</string>
+  <string name="translation_check_notice">Бид одоо таны орчуулга бэлэн болсон эсэхийг магадлахын тулд бага зэрэг шалгалт хийнэ.</string>
+  <string name="translation_complete">Орчуулга дууссан байна</string>
+  <string name="preparing_upload">Төслийг байршуулахад бэлдэх</string>
   <string name="license"><![CDATA[<h2>Та дараах үйлдэл хийхэд чөлөөтэй. Үүнд:</h2>
 <p>Ямар ч хэрэгслээр, ямар ч форматаар байгаа материалыг хуваалцах, хуулах, дахин түгээх; ямар нэгэн зорилгоор бүр арилжааны зорилгоор ч өөрчлөх, хувиргах, сурталчилж болно. Таныг уг зөвшөөрлийн нөхцлийг биелүүлж байгаа тохиолдолд тусгай зөвшөөрлийг олгогч  эдгээр эрх чөлөөг хүчингүй болгохгүй.</p>
 <h2>Дараах нөхцлийн дагуу:</h2>
@@ -80,5 +96,13 @@
 </p>
 <h2>Сануулга:</h2>
 <p>Та нийтийн домэйны материалын элемент юмуу ямар нэгэн хязгаарлалтаар зөвшөөрсөн хэрэглээний үед уг тусгай зөвшөөрлийг заавал мөрдөх шаардлагагүй. Үүнд ямар ч баталгаа өгөөгүй болно. Тусгай зөвшөөрлөөр таны хүссэн зориулалтаар ашиглах шаардлагатай зөвшөөрлийг өгч чадахгүй байж болох юм. Тухайлбал, Ил тод байдал, хувийн нууц, эсвэл ёс суртахууны эрх зэрэг бусад эрхээр материалыг хэрхэн ашиглахыг хязгаарлаж болно.</p>]]></string>
+  <string name="choose_a_project">Эхлээд энэхүү төслийг нээнэ үү.</string>
+  <string name="choose_a_chapter">Бүлгийг эхлээд нээнэ үү.</string>
+  <string name="project_updates_downloaded">Төсөл амжилттай шинэчлэгдсэн байна</string>
+  <string name="downloading_updates">Шинэчлэлийг татаж байна</string>
+  <string name="title_activity_crash_reporter">Алдааны тайлан</string>
+  <string name="crash_reports">Энэхүү програм саяхан зогссон байна. Та энэхүү алдааны тайланг хөгжүүлэгчид зориулж байршуулах уу?</string>
+  <string name="crash_details">Та программыг зогсохоос өмнөхөн юу хийж байсан бэ?</string>
+  <string name="crash_details_label">Нэмэлт тэмдэглэл</string>
   <string name="settings">Тохиргоо</string>
 </resources>
