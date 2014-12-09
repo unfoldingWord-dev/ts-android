@@ -192,31 +192,31 @@ public class SharingActivity extends TranslatorBaseActivity {
 //                }
 
 
-//            mSharingTools.add(new SharingToolItem("Export to nearby device", descriptionResource, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
-//                @Override
-//                public void run() {
-//                    Thread thread = new Thread() {
-//                        public void run() {
-//                            app().showProgressDialog(R.string.exporting_project);
-//                            try {
-//                                // tar
-//                                File dest = new File(internalDestDir, getArchiveName(p));
-//                                app().tar(p.getRepositoryPath(), dest.getAbsolutePath());
-//                                if (dest.exists() && dest.isFile()) {
-//                                    // TODO: serve the archive to listening devices
-//                                    app().showToastMessage("archive is ready");
-//                                } else {
-//                                    app().showToastMessage("Project archive not found");
+                mSharingTools.add(new SharingToolItem(R.string.export_to_device, descriptionResource, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+                    @Override
+                    public void run() {
+//                        Thread thread = new Thread() {
+//                            public void run() {
+//                                app().showProgressDialog(R.string.exporting_project);
+//                                try {
+//                                    // tar
+//                                    File dest = new File(internalDestDir, getArchiveName(p));
+//                                    app().tar(p.getRepositoryPath(), dest.getAbsolutePath());
+//                                    if (dest.exists() && dest.isFile()) {
+//                                        // TODO: serve the archive to listening devices
+//                                        app().showToastMessage("archive is ready");
+//                                    } else {
+//                                        app().showToastMessage("Project archive not found");
+//                                    }
+//                                } catch (IOException e) {
+//                                    app().showException(e);
 //                                }
-//                            } catch (IOException e) {
-//                                app().showException(e);
+//                                app().closeProgressDialog();
 //                            }
-//                            app().closeProgressDialog();
-//                        }
-//                    };
-//                    thread.start();
-//                }
-//            }));
+//                        };
+//                        thread.start();
+                    }
+                }));
 
 
 
