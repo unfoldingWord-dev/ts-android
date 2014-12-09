@@ -98,7 +98,7 @@
   <string name="crash_details">あなたはアプリがクラッシュした直前に何をしていました？</string>
   <string name="crash_details_label">オプションの注意事項</string>
   <string name="settings">設定</string>
-  <string name="update_confirmation">あなたは更新をダウンロードしてもよろしいていますか？</string>
+  <string name="update_confirmation">これは、サーバーから更新をダウンロードし続けるのだろうか？</string>
   <string name="yes">はい</string>
   <string name="no">ノー</string>
 </resources>

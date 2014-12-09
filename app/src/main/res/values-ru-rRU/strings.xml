@@ -98,7 +98,7 @@
   <string name="crash_details">Что вы делали непосредственно перед приложение разбился?</string>
   <string name="crash_details_label">Дополнительные примечания</string>
   <string name="settings">Параметры</string>
-  <string name="update_confirmation">Вы уверены, что хотите загружать обновления?</string>
+  <string name="update_confirmation">Это будут загружать обновления с сервера, продолжить?</string>
   <string name="yes">Да</string>
   <string name="no">Нет</string>
 </resources>

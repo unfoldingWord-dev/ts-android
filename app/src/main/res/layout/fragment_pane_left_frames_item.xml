@@ -50,7 +50,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/translationStatusIcon"
-        android:background="@drawable/ic_wrench_dark"
+        android:background="@drawable/ic_pencil_dark"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:paddingBottom="1dp"

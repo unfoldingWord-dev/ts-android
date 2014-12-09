@@ -98,7 +98,7 @@
   <string name="crash_details">อะไรคือสิ่งที่คุณทำเพียงแค่การตรวจสอบก่อนที่จะล้มเหลว?</string>
   <string name="crash_details_label">ถ้าต้องการบันทึก</string>
   <string name="settings">การตั้งค่า</string>
-  <string name="update_confirmation">คุณแน่ใจว่าคุณต้องการที่จะดาวน์โหลดการปรับปรุง?</string>
+  <string name="update_confirmation">นี้จะดาวน์โหลดอัพเดทจากเซิร์ฟเวอร์ต่อหรือไม่?</string>
   <string name="yes">ใช่</string>
   <string name="no">ไม่</string>
 </resources>

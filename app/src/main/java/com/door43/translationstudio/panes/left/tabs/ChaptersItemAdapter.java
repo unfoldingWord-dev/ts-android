@@ -96,12 +96,12 @@ public class ChaptersItemAdapter extends BaseAdapter {
             chapterItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             chapterDescription.setTextColor(Color.WHITE);
             chapterTitle.setTextColor(Color.WHITE);
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
         } else {
             chapterItemView.setBackgroundColor(Color.TRANSPARENT);
             chapterDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
             chapterTitle.setTextColor(mContext.getResources().getColor(R.color.black));
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench_dark));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
         }
 
         return chapterItemView;

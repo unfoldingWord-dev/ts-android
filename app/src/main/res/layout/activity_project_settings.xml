@@ -60,7 +60,7 @@
                 android:layout_height="wrap_content"
                 android:text="Change"
                 android:id="@+id/switchTargetLanguageButton"
-                android:drawableRight="@drawable/ic_wrench_dark"
+                android:drawableRight="@drawable/ic_pencil_dark"
                 android:padding="4dp"
                 android:background="@drawable/bordered_button"
                 android:layout_marginTop="5dp"

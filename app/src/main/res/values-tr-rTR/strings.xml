@@ -98,7 +98,7 @@
   <string name="crash_details">Ne uygulaması çöktü hemen önce yapıyordunuz?</string>
   <string name="crash_details_label">Opsiyonel notlar</string>
   <string name="settings">Ayarları</string>
-  <string name="update_confirmation">Eğer güncellemeleri indirmek istediğinizden emin misiniz?</string>
+  <string name="update_confirmation">Bu sunucudan güncellemeleri indirir, devam?</string>
   <string name="yes">Evet</string>
   <string name="no">Hayır</string>
 </resources>

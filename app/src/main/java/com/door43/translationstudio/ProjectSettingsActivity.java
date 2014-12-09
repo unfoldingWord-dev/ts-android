@@ -68,7 +68,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         targetLanguageBtn.setText(mProject.getSelectedTargetLanguage().getName());
         sourceLanguageBtn.setText(mProject.getSelectedSourceLanguage().getName());
         if (mProject.getSelectedTargetLanguage().isTranslating(mProject)) {
-            targetLanguageBtn.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_wrench_dark, 0);
+            targetLanguageBtn.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_pencil_dark, 0);
         } else {
             targetLanguageBtn.setCompoundDrawables(null, null, null, null);
         }

@@ -96,12 +96,12 @@ public class FrameItemAdapter extends BaseAdapter {
             frameItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             frameDescription.setTextColor(Color.WHITE);
             frameTitle.setTextColor(Color.WHITE);
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
         } else {
             frameItemView.setBackgroundColor(Color.TRANSPARENT);
             frameDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
             frameTitle.setTextColor(mContext.getResources().getColor(R.color.black));
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench_dark));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
         }
 
         return frameItemView;

@@ -98,7 +98,7 @@
   <string name="crash_details">क्या आप अनुप्रयोग दुर्घटनाग्रस्त हो जाने से बस से पहले क्या कर रहे थे?</string>
   <string name="crash_details_label">वैकल्पिक नोट्स</string>
   <string name="settings">सेटिंग्स</string>
-  <string name="update_confirmation">आप अद्यतन डाउनलोड करना चाहते हैं आप यकीन कर रहे हैं?</string>
+  <string name="update_confirmation">इस सर्वर से अद्यतन डाउनलोड जाएगा, जारी रखें?</string>
   <string name="yes">हाँ</string>
   <string name="no">ना</string>
 </resources>

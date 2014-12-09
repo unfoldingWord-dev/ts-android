@@ -98,7 +98,7 @@
   <string name="crash_details">Ulikuwa unafanya nini kabla ya programu kugonga?</string>
   <string name="crash_details_label">Maelezo Hiari</string>
   <string name="settings">Mazingira</string>
-  <string name="update_confirmation">Je, una uhakika unataka kupakua updates?</string>
+  <string name="update_confirmation">Hii kushusha updates kutoka server, kuendelea?</string>
   <string name="yes">Ndiyo</string>
   <string name="no">Hakuna</string>
 </resources>

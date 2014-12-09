@@ -89,12 +89,12 @@ public class ProjectItemAdapter extends BaseAdapter {
             projectItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             projectDescription.setTextColor(Color.WHITE);
             projectTitle.setTextColor(Color.WHITE);
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
         } else {
             projectItemView.setBackgroundColor(Color.TRANSPARENT);
             projectDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
             projectTitle.setTextColor(mContext.getResources().getColor(R.color.black));
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_wrench_dark));
+            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
         }
 
         return projectItemView;

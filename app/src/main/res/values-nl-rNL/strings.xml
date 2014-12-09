@@ -98,7 +98,7 @@
   <string name="crash_details">Wat deed je vlak voordat de app crashte?</string>
   <string name="crash_details_label">Optionele notities</string>
   <string name="settings">Instellingen</string>
-  <string name="update_confirmation">Bent u zeker dat u updates wilt downloaden?</string>
+  <string name="update_confirmation">Dit zal update van de server te downloaden, ga dan verder?</string>
   <string name="yes">Ja</string>
   <string name="no">Geen</string>
 </resources>

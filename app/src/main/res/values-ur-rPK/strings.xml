@@ -105,7 +105,7 @@
   <string name="crash_details">کیا آپ کو اے پی پی کی گر کر تباہ ہو صرف اس سے پہلے کیا کر رہے تھے؟</string>
   <string name="crash_details_label">اختیاری نوٹوں</string>
   <string name="settings">سیٹنگیں</string>
-  <string name="update_confirmation">آپ اپ ڈیٹ ڈاؤن لوڈ کرنا چاہتے ہیں آپ کو یقین ہے؟</string>
+  <string name="update_confirmation">اس سرور سے اپ ڈیٹ ڈاؤن لوڈ کریں گے، جاری رہے؟</string>
   <string name="yes">جی ہاں</string>
   <string name="no">کوئی</string>
 </resources>

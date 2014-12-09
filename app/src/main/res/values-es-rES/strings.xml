@@ -105,7 +105,7 @@
   <string name="crash_details">¿Qué estaba haciendo justo antes de la aplicación se estrelló?</string>
   <string name="crash_details_label">Notas opcionales</string>
   <string name="settings">Configuración</string>
-  <string name="update_confirmation">¿Seguro que deseas descargar actualizaciones?</string>
+  <string name="update_confirmation">Esto descargará actualizaciones desde el servidor, continúe?</string>
   <string name="yes">Si</string>
   <string name="no">No</string>
 </resources>
