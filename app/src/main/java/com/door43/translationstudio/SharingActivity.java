@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.FileUtilities;
@@ -195,6 +196,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                 mSharingTools.add(new SharingToolItem(R.string.export_to_device, descriptionResource, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
+                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                        startActivity(intent);
 //                        Thread thread = new Thread() {
 //                            public void run() {
 //                                app().showProgressDialog(R.string.exporting_project);

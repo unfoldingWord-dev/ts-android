@@ -150,8 +150,6 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="title_activity_device_to_device">Device to Device Sharing</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
     <string name="export_to_device">Export to nearby device</string>
 
 </resources>
