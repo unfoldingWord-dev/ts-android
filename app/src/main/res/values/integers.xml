@@ -2,5 +2,6 @@
 <resources>
 
     <integer name="min_source_lang_checking_level">3</integer>
-
+    <!--This indicates the version at which the terms of use and related documents is at. If incremented users must agree to the new version before continueing to use the app-->
+    <integer name="terms_of_use_version">2</integer>
 </resources>

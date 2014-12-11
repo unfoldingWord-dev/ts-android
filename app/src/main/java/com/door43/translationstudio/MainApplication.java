@@ -558,7 +558,8 @@ public class MainApplication extends Application {
      */
     public boolean hasAcceptedTerms() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getBoolean("has_accepted_terms", false);
+        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
+        return settings.getBoolean("has_accepted_terms_v"+termsVersion, false);
     }
 
     /**
@@ -568,7 +569,8 @@ public class MainApplication extends Application {
     public void setHasAcceptedTerms(Boolean hasAcceptedTerms) {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean("has_accepted_terms", hasAcceptedTerms);
+        int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
+        editor.putBoolean("has_accepted_terms_v"+termsVersion, hasAcceptedTerms);
         editor.apply();
     }
 

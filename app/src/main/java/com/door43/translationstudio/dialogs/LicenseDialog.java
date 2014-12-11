@@ -1,6 +1,7 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -8,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -18,10 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Created by joel on 9/29/2014.
+ * This dialog will display a string resource along with a single ok button at the bottom of the view.
  */
 public class LicenseDialog extends DialogFragment {
-    private final LicenseDialog me = this;
+    private ScrollView mScrollView;
+    private DialogInterface.OnDismissListener mDismissListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,36 +35,55 @@ public class LicenseDialog extends DialogFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.dialog_license, container, false);
-        TextView licenseText = (TextView) v.findViewById(R.id.license_text);
+        Bundle args = getArguments();
+        int resourceId = args.getInt("resourceId", 0);
 
-        // load the license html
+        // inflate the views
+        View mView = inflater.inflate(R.layout.dialog_license, container, false);
+        TextView mLicenseText = (TextView) mView.findViewById(R.id.license_text);
+        mScrollView = (ScrollView)mView.findViewById(R.id.scrollView);
+        Button mDismissButton = (Button)mView.findViewById(R.id.dismiss_license_btn);
 
-            String licenseString = getResources().getString(R.string.license);
-            // display license text
-            licenseText.setText(Html.fromHtml(licenseString));
+        // validate the arguments
+        if(resourceId == 0) {
+            dismiss();
+        }
+
+        // load the string
+        String licenseString = getResources().getString(resourceId);
+        mLicenseText.setText(Html.fromHtml(licenseString));
 
         // enable button
-        Button dismissBtn = (Button)v.findViewById(R.id.dismiss_license_btn);
-        dismissBtn.setOnClickListener(new View.OnClickListener() {
+        mDismissButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                me.dismiss();
+                LicenseDialog.this.dismiss();
             }
         });
-        return v;
+        return mView;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
         // safety check
         if (getDialog() == null) {
             return;
         }
-
         getDialog().getWindow().setLayout(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+        // scroll to the top
+        mScrollView.smoothScrollTo(0, 0);
+    }
 
+    @Override
+    public void onDismiss(DialogInterface dialogInterface) {
+        if(mDismissListener != null) {
+            mDismissListener.onDismiss(dialogInterface);
+        }
+        super.onDismiss(dialogInterface);
+    }
+
+    public void setOnDismissListener(DialogInterface.OnDismissListener listener) {
+        mDismissListener = listener;
     }
 }

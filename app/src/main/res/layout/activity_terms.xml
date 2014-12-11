@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/terms"
                 android:textColor="@color/dark_gray"
-                android:textSize="@dimen/h4"
+                android:textSize="@dimen/h5"
                 android:gravity="center" />
 
             <LinearLayout
@@ -45,14 +45,34 @@
                 android:padding="20dp">
 
                 <Button
-                    android:layout_width="wrap_content"
+                    android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/view_license"
                     android:id="@+id/license_btn"
-                    android:background="@drawable/bordered_button"
+                    android:background="@null"
                     android:padding="10dp"
                     android:textColor="@color/blue"
-                    android:textSize="@dimen/h4" />
+                    android:textSize="@dimen/h5" />
+
+                <Button
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/view_translation_guidelines"
+                    android:id="@+id/translation_guidelines_btn"
+                    android:background="@null"
+                    android:padding="10dp"
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/h5" />
+
+                <Button
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/view_statement_of_faith"
+                    android:id="@+id/statement_of_faith_btn"
+                    android:background="@null"
+                    android:padding="10dp"
+                    android:textColor="@color/blue"
+                    android:textSize="@dimen/h5" />
             </LinearLayout>
 
         </LinearLayout>

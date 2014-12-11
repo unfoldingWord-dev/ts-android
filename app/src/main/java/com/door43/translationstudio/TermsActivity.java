@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -14,7 +15,8 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * This activity checks if the user has accepted the terms of use before continuing to load the app
  */
 public class TermsActivity extends TranslatorBaseActivity {
-    private LicenseDialog licenseDialog;
+    private LicenseDialog mLicenseDialog;
+    private Boolean mDialogIsOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +46,21 @@ public class TermsActivity extends TranslatorBaseActivity {
             licenseBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    showLicense();
+                    showLicenseDialog(R.string.license);
+                }
+            });
+            Button guidelinesBtn = (Button)findViewById(R.id.translation_guidelines_btn);
+            guidelinesBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showLicenseDialog(R.string.translation_guidlines);
+                }
+            });
+            Button faithBtn = (Button)findViewById(R.id.statement_of_faith_btn);
+            faithBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showLicenseDialog(R.string.statement_of_faith);
                 }
             });
         }
@@ -60,9 +76,27 @@ public class TermsActivity extends TranslatorBaseActivity {
     }
 
     /**
-     * Displays the license dialog
+     * Displays a license dialog with the given resource as the text
+     * @param stringResource the string resource to display in the dialog.
      */
-    public void showLicense() {
+    private void showLicenseDialog(int stringResource) {
+        if(mLicenseDialog == null) {
+            mLicenseDialog = new LicenseDialog();
+        }
+
+        if(mDialogIsOpen) {
+            return;
+        } else {
+            mDialogIsOpen = true;
+        }
+
+        mLicenseDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                mDialogIsOpen = false;
+            }
+        });
+
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
@@ -70,10 +104,9 @@ public class TermsActivity extends TranslatorBaseActivity {
         }
         ft.addToBackStack(null);
 
-        // Create and show the dialog.
-        if(licenseDialog == null) {
-            licenseDialog = new LicenseDialog();
-        }
-        licenseDialog.show(ft, "dialog");
+        Bundle args = new Bundle();
+        args.putInt("resourceId", stringResource);
+        mLicenseDialog.setArguments(args);
+        mLicenseDialog.show(ft, "dialog");
     }
 }
