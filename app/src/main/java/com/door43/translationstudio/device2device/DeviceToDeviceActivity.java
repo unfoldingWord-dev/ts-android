@@ -17,78 +17,36 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 public class DeviceToDeviceActivity extends ActionBarActivity {
+    private boolean mStartAsServer = false;
+    private Server mService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_to_device);
 
-        new ThreadableUI() {
+        Bundle extras = getIntent().getExtras();
+        if(extras != null) {
+            mStartAsServer = extras.getBoolean("startAsServer", false);
+        }
+        final int serverPort = 8838;
+        final int clientPort = 9939;
 
-            @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                // broadcast 10 times once every 5 seconds
-//                int runs = 10;
-//                while(runs >0) {
-//                    Log.d("test", "pinging network");
-//                    try {
-//                        NetworkUtils.broadcast(DeviceToDeviceActivity.this);
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
-//                    try {
-//                        Thread.sleep(5000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    runs --;
-//                }
-
-
-//                WifiManager wifi = (WifiManager) DeviceToDeviceActivity.this.getSystemService(Context.WIFI_SERVICE);
-//                WifiManager.MulticastLock lock = wifi.createMulticastLock("dk.aboaya.pingpong");
-//                lock.acquire();
-//                DatagramSocket serverSocket;
-//                try {
-//                    serverSocket = new DatagramSocket(19876);
-//                } catch (SocketException e) {
-//                    e.printStackTrace();
-//                    lock.release();
-//                    return;
-//                }
-//                try {
-//                    serverSocket.setSoTimeout(15000); //15 sec wait for the client to connect
-//                } catch (SocketException e) {
-//                    e.printStackTrace();
-//                    lock.release();
-//                    return;
-//                }
-//                byte[] data = new byte[255];
-//                DatagramPacket packet = new DatagramPacket(data, data.length);
-//                try {
-//                    serverSocket.receive(packet);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    lock.release();
-//                    return;
-//                }
-//                lock.release();
-//                String s = new String(packet.getData());
-//                System.out.println(s);
-            }
-
-            @Override
-            public void onPostExecute() {
-
-            }
-        }.start(this);
+        // TODO: client and server should extend the same base class.
+//        if(mStartAsServer) {
+        mService = new Server(DeviceToDeviceActivity.this, serverPort);
+        mService.start(clientPort);
+//        } else {
+//            Client service = new Client(DeviceToDeviceActivity.this);
+//        }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        mService.stop();
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

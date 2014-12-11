@@ -197,7 +197,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, DeviceToDeviceActivity.class);
-                        startActivity(intent);
+                        Bundle extras = new Bundle();
+                        extras.putBoolean("startAsServer", true);
+                        startActivity(intent, extras);
 //                        Thread thread = new Thread() {
 //                            public void run() {
 //                                app().showProgressDialog(R.string.exporting_project);
