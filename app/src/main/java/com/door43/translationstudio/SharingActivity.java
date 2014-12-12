@@ -181,8 +181,6 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }, removeableMedia != null , R.string.missing_external_storage));
 
-                // TODO: for now this is disabled until we get around to finishing the import. This is important to have so that 1.x exports can be loaded into 2.x
-//                if(exportAsProject) {
                 mSharingTools.add(new SharingToolItem(R.string.import_from_sd, descriptionResource, R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
@@ -190,54 +188,28 @@ public class SharingActivity extends TranslatorBaseActivity {
                         startActivityForResult(intent, exportAsProject ? IMPORT_PROJECT_FROM_SD_REQUEST : IMPORT_DOKUWIKI_FROM_SD_REQUEST);
                     }
                 }, removeableMedia != null, R.string.missing_external_storage));
-//                }
 
-
-                mSharingTools.add(new SharingToolItem(R.string.export_to_device, descriptionResource, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(R.string.export_to_device, R.string.export_as_project, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, DeviceToDeviceActivity.class);
                         Bundle extras = new Bundle();
                         extras.putBoolean("startAsServer", true);
-                        startActivity(intent, extras);
-//                        Thread thread = new Thread() {
-//                            public void run() {
-//                                app().showProgressDialog(R.string.exporting_project);
-//                                try {
-//                                    // tar
-//                                    File dest = new File(internalDestDir, getArchiveName(p));
-//                                    app().tar(p.getRepositoryPath(), dest.getAbsolutePath());
-//                                    if (dest.exists() && dest.isFile()) {
-//                                        // TODO: serve the archive to listening devices
-//                                        app().showToastMessage("archive is ready");
-//                                    } else {
-//                                        app().showToastMessage("Project archive not found");
-//                                    }
-//                                } catch (IOException e) {
-//                                    app().showException(e);
-//                                }
-//                                app().closeProgressDialog();
-//                            }
-//                        };
-//                        thread.start();
+                        intent.putExtras(extras);
+                        startActivity(intent);
                     }
                 }));
 
-
-
-//            mSharingTools.add(new SharingToolItem("Import from nearby device", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
-//                @Override
-//                public void run() {
-//                    Thread thread = new Thread() {
-//                        public void run() {
-//                            app().showProgressDialog(R.string.importing_project);
-//                            // TODO: watch for listening devices and download the shared project
-//                            app().closeProgressDialog();
-//                        }
-//                    };
-//                    thread.start();
-//                }
-//            }));
+                mSharingTools.add(new SharingToolItem(R.string.import_to_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                        Bundle extras = new Bundle();
+                        extras.putBoolean("startAsServer", false);
+                        intent.putExtras(extras);
+                        startActivity(intent);
+                    }
+                }));
 
                 mAdapter.notifyDataSetChanged();
                 MainContext.getContext().closeProgressDialog();

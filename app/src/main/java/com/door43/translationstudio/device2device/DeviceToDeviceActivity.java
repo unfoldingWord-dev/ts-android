@@ -1,51 +1,93 @@
 package com.door43.translationstudio.device2device;
 
-import android.content.Context;
-import android.net.wifi.WifiManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.translationstudio.network.Client;
+import com.door43.translationstudio.network.Peer;
+import com.door43.translationstudio.network.Service;
+import com.door43.translationstudio.network.Server;
+import com.door43.translationstudio.util.TranslatorBaseActivity;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
-
-public class DeviceToDeviceActivity extends ActionBarActivity {
+public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private boolean mStartAsServer = false;
-    private Server mService;
+    private Service mService;
+    private DevicePeerAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_to_device);
 
-        Bundle extras = getIntent().getExtras();
-        if(extras != null) {
-            mStartAsServer = extras.getBoolean("startAsServer", false);
-        }
-        final int serverPort = 8838;
-        final int clientPort = 9939;
+        mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
+        final int clientUDPPort = 9939;
+        final Handler handler = new Handler(getMainLooper());
 
-        // TODO: client and server should extend the same base class.
-//        if(mStartAsServer) {
-        mService = new Server(DeviceToDeviceActivity.this, serverPort);
-        mService.start(clientPort);
-//        } else {
-//            Client service = new Client(DeviceToDeviceActivity.this);
-//        }
+        // set up the threads
+        if(mStartAsServer) {
+            mService = new Server(DeviceToDeviceActivity.this, clientUDPPort);
+        } else {
+            mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
+                @Override
+                public void onError(final Exception e) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            app().showException(e);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFoundServer(final Peer server) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(mAdapter != null) {
+                                mAdapter.setPeerList(mService.getPeers());
+                            }
+                            app().showToastMessage("Found server " + server.getIpAddress());
+                        }
+                    });
+                }
+
+                @Override
+                public void onLostServer(final Peer server) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(mAdapter != null) {
+                                mAdapter.setPeerList(mService.getPeers());
+                            }
+                            app().showToastMessage("Lost server " + server.getIpAddress());
+                        }
+                    });
+                }
+            });
+        }
+
+        // set up the ui
+        ListView peerListView = (ListView)findViewById(R.id.peerListView);
+        mAdapter = new DevicePeerAdapter(mService.getPeers(), this); // TRICKY: when using this in threads we need to make sure it's not null due to order of initialization.
+        peerListView.setAdapter(mAdapter);
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        app().showToastMessage("stopping service");
         mService.stop();
 
+    }
+
+    public void onResume() {
+        super.onResume();
+        app().showToastMessage("starting service");
+        mService.start();
     }
 
     @Override

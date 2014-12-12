@@ -209,4 +209,5 @@
     </string>
     <string name="view_statement_of_faith">View Statement of Faith</string>
     <string name="view_translation_guidelines">View Translation Guidelines</string>
+    <string name="import_to_device">Import from nearby device</string>
 </resources>
