@@ -14,6 +14,8 @@ import java.util.Map;
  * This class operates as a client on the local network.
  * The client will listen for UDP broadcast messages from servers.
  * The client can connect to a server's TCP port as detailed in the UDP message.
+ * Once the client and server are connected they may communicate by passing strings back and forth
+ * using the writeTo() method.
  */
 public class Client extends Service {
     private final int mClientUDPPort;

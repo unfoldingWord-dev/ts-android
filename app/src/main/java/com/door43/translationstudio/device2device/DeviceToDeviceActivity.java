@@ -17,6 +17,8 @@ import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.network.Server;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import java.net.Socket;
+
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private boolean mStartAsServer = false;
     private Service mService;
@@ -148,6 +150,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     Server s = (Server)mService;
                     s.writeTo(mAdapter.getItem(i), "Sup?");
                     // TODO: being sharing with the client
+                    s.openFileSocket(mAdapter.getItem(i), new Server.OnSocketEventListener() {
+
+                        @Override
+                        public void onOpen(Socket socket) {
+                            // TODO: send something to the client
+                        }
+                    });
                 } else {
                     Client c = (Client)mService;
                     c.connectToServer(mAdapter.getItem(i));

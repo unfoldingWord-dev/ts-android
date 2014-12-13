@@ -52,7 +52,8 @@ public class BroadcastListenerRunnable implements Runnable {
         // begin listening
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                byte[] recvBuf = new byte[15000];
+                // TODO: it's not really safe to hard code the byte size.
+                byte[] recvBuf = new byte[1024];
                 if (socket == null || socket.isClosed()) {
                     socket = new DatagramSocket(mPort);
                 }

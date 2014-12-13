@@ -29,6 +29,14 @@ public abstract class Service {
     }
 
     /**
+     * Commads prepend every message between the client and server so everyone knows what's going on.
+     */
+    protected enum Command {
+        MESSAGE, // just a normal message
+        FILE_SOCKET // a socket request so we can transfer a file
+    }
+
+    /**
      * Returns the broadcast ip address
      * @return
      * @throws IOException
@@ -129,6 +137,16 @@ public abstract class Service {
      */
     public ArrayList<Peer> getPeers() {
         return new ArrayList<Peer>(mPeers.values());
+    }
+
+    /**
+     * Builds a notification indicating the peer should connect to an awaiting socket port.
+     * @param port the port to which the peer should connect.
+     * @return
+     */
+    public String buildSocketNotification(int port) {
+
+        return Command.FILE_SOCKET.toString() + port;
     }
 
     public abstract void start();
