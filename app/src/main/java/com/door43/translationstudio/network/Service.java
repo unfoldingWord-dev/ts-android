@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public abstract class Service {
     protected final Context mContext;
-    protected Map<String, Peer> mPeers = new HashMap<String, Peer>();
+    private Map<String, Peer> mPeers = new HashMap<String, Peer>();
 
     public Service(Context context) {
         mContext = context;
@@ -33,7 +33,7 @@ public abstract class Service {
      * @return
      * @throws IOException
      */
-    public InetAddress getBroadcastAddress() {
+    public InetAddress getBroadcastAddress() throws UnknownHostException {
         WifiManager wifi = (WifiManager)mContext.getSystemService(Context.WIFI_SERVICE);
         DhcpInfo dhcp = wifi.getDhcpInfo();
         // handle null somehow
@@ -42,11 +42,7 @@ public abstract class Service {
         byte[] quads = new byte[4];
         for (int k = 0; k < 4; k++)
             quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-        try {
-            return InetAddress.getByAddress(quads);
-        } catch (UnknownHostException e) {
-            return null;
-        }
+       return InetAddress.getByAddress(quads);
     }
 
     /**
@@ -114,6 +110,16 @@ public abstract class Service {
         } else {
             mPeers.get(p.getIpAddress()).touch();
             return false;
+        }
+    }
+
+    /**
+     * Removes a peer from the list of peers
+     * @param p the peer to be removed
+     */
+    protected void removePeer(Peer p) {
+        if(mPeers.containsKey(p.getIpAddress())) {
+            mPeers.remove(p.getIpAddress());
         }
     }
 

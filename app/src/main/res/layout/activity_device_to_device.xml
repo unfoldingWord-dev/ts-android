@@ -4,8 +4,41 @@
     android:layout_height="match_parent"
     tools:context="com.door43.translationstudio.device2device.DeviceToDeviceActivity">
 
-    <ListView
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/export_to_device"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:background="@color/dark_gray"
+            android:autoText="false"
+            android:id="@+id/titleText" />
+
+        <ListView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/peerListView" />
+    </LinearLayout>
+
+    <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/peerListView" />
+        android:id="@+id/progressBar"
+        android:layout_alignWithParentIfMissing="false"
+        android:layout_centerInParent="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/searching_for_devices"
+        android:textColor="@color/gray"
+        android:id="@+id/progressTextView"
+        android:layout_centerInParent="true"
+        android:layout_below="@+id/progressBar" />
 </RelativeLayout>

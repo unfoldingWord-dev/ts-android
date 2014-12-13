@@ -200,7 +200,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }));
 
-                mSharingTools.add(new SharingToolItem(R.string.import_to_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(R.string.import_from_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, DeviceToDeviceActivity.class);

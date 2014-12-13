@@ -4,7 +4,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.network.Client;
@@ -17,6 +21,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private boolean mStartAsServer = false;
     private Service mService;
     private DevicePeerAdapter mAdapter;
+    private ProgressBar mProgressBar;
+    private TextView mProgressText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +35,51 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
         // set up the threads
         if(mStartAsServer) {
-            mService = new Server(DeviceToDeviceActivity.this, clientUDPPort);
+            mService = new Server(DeviceToDeviceActivity.this, clientUDPPort, new Server.OnServerEventListener() {
+
+                @Override
+                public void onError(final Exception e) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO: it would be nice to place this in a log that could be submitted to github later on.
+                            app().showException(e);
+                            finish();
+                        }
+                    });
+                }
+
+                @Override
+                public void onFoundClient(Peer client) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updatePeerList();
+                        }
+                    });
+                }
+
+                @Override
+                public void onLostClient(Peer client) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updatePeerList();
+                        }
+                    });
+                }
+
+                @Override
+                public void onMessageReceived(final Peer client, final String message) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO: handle the message
+                            app().showToastMessage(message);
+                        }
+                    });
+                }
+            });
         } else {
             mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
                 @Override
@@ -37,7 +87,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
+                            // TODO: it would be nice to place this in a log that could be submitted to github later on.
                             app().showException(e);
+                            finish();
                         }
                     });
                 }
@@ -47,10 +99,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if(mAdapter != null) {
-                                mAdapter.setPeerList(mService.getPeers());
-                            }
-                            app().showToastMessage("Found server " + server.getIpAddress());
+                            updatePeerList();
                         }
                     });
                 }
@@ -60,10 +109,20 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if(mAdapter != null) {
-                                mAdapter.setPeerList(mService.getPeers());
-                            }
-                            app().showToastMessage("Lost server " + server.getIpAddress());
+                            updatePeerList();
+                        }
+                    });
+                }
+
+                @Override
+                public void onMessageReceived(final Peer server, final String message) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // TODO: handle the message
+                            app().showToastMessage(message);
+                            Client c = (Client)mService;
+                            c.writeTo(server, "What do you want?!");
                         }
                     });
                 }
@@ -71,23 +130,69 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         }
 
         // set up the ui
+        mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
+        mProgressText = (TextView)findViewById(R.id.progressTextView);
+        TextView titleText = (TextView)findViewById(R.id.titleText);
+        if(mStartAsServer) {
+            titleText.setText(R.string.export_to_device);
+        } else {
+            titleText.setText(R.string.import_from_device);
+        }
         ListView peerListView = (ListView)findViewById(R.id.peerListView);
-        mAdapter = new DevicePeerAdapter(mService.getPeers(), this); // TRICKY: when using this in threads we need to make sure it's not null due to order of initialization.
+        mAdapter = new DevicePeerAdapter(mService.getPeers(), mStartAsServer, this);
         peerListView.setAdapter(mAdapter);
+        peerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if(mStartAsServer) {
+                    Server s = (Server)mService;
+                    s.writeTo(mAdapter.getItem(i), "Sup?");
+                    // TODO: being sharing with the client
+                } else {
+                    Client c = (Client)mService;
+                    c.connectToServer(mAdapter.getItem(i));
+                }
+            }
+        });
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        app().showToastMessage("stopping service");
         mService.stop();
 
     }
 
+    @Override
     public void onResume() {
         super.onResume();
-        app().showToastMessage("starting service");
         mService.start();
+    }
+
+    /**
+     * Updates the peer list on the screen
+     */
+    public void updatePeerList() {
+        // TRICKY: when using this in threads we need to make sure everything has been initialized and not null
+        // update the progress bar dispaly
+        if(mProgressBar != null) {
+            if(mService.getPeers().size() == 0) {
+                mProgressBar.setVisibility(View.VISIBLE);
+            } else {
+                mProgressBar.setVisibility(View.GONE);
+            }
+        }
+        if(mProgressText != null) {
+            if(mService.getPeers().size() == 0) {
+                mProgressText.setVisibility(View.VISIBLE);
+            } else {
+                mProgressText.setVisibility(View.GONE);
+            }
+        }
+        // update the adapter
+        if(mAdapter != null) {
+            mAdapter.setPeerList(mService.getPeers());
+        }
     }
 
     @Override
@@ -104,8 +209,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        // TODO: we could have additional menu items to adjust the sharing settings.
+        if (id == R.id.action_share_to_all) {
             return true;
         }
 

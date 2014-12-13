@@ -17,12 +17,14 @@ import java.util.ArrayList;
  * Created by joel on 12/11/2014.
  */
 public class DevicePeerAdapter extends BaseAdapter {
+    private final boolean mIsServer;
     private ArrayList<Peer> mPeerList;
     private final Context mContext;
 
-    public DevicePeerAdapter(ArrayList<Peer> peerList, Context context) {
+    public DevicePeerAdapter(ArrayList<Peer> peerList, boolean isServer, Context context) {
         mPeerList = peerList;
         mContext = context;
+        mIsServer = isServer;
     }
 
     /**
@@ -60,16 +62,16 @@ public class DevicePeerAdapter extends BaseAdapter {
             peerItemView = (LinearLayout)view;
         }
 
-        // icon
-        // TODO: we need a better icon
-
         // ip address
         TextView ipAddressView = (TextView)peerItemView.findViewById(R.id.ipAddressText);
         ipAddressView.setText(getItem(i).getIpAddress());
 
-        // port
-        TextView portView = (TextView)peerItemView.findViewById(R.id.portNumberText);
-        portView.setText(getItem(i).getPort() + "");
+        TextView instructionsText = (TextView)peerItemView.findViewById(R.id.instructionsText);
+        if(mIsServer) {
+            instructionsText.setText(R.string.click_to_share);
+        } else {
+            instructionsText.setText(R.string.click_to_import);
+        }
 
         return peerItemView;
     }

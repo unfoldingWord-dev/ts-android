@@ -1,8 +1,11 @@
 package com.door43.translationstudio.network;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.nio.channels.DatagramChannel;
 
 /**
  * This class listens for broadcast messages from servers.
@@ -22,13 +25,31 @@ public class BroadcastListenerRunnable implements Runnable {
 
     @Override
     public void run() {
-        DatagramSocket socket;
+        // set up the socket for listening
+        DatagramChannel channel;
         try {
-            socket = new DatagramSocket(mPort);
+            channel = DatagramChannel.open();
+        } catch (IOException e) {
+            mListener.onError(e);
+            return;
+        }
+        DatagramSocket socket = channel.socket();
+        // TRICKY: we set the address to reusable so we don't get port binding errors when turning the client on and off.
+        try {
+            socket.setReuseAddress(true);
         } catch (SocketException e) {
             mListener.onError(e);
             return;
         }
+        InetSocketAddress socketAddress = new InetSocketAddress(mPort);
+        try {
+            socket.bind(socketAddress);
+        } catch (SocketException e) {
+            mListener.onError(e);
+            return;
+        }
+
+        // begin listening
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 byte[] recvBuf = new byte[15000];

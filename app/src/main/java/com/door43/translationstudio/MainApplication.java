@@ -360,7 +360,7 @@ public class MainApplication extends Application {
         getCurrentActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(mProgressDialog == null || mCurrentDialogActivity != mMainActivity) { // was using: getCurrentActivity()
+                if(mMainActivity != null && (mProgressDialog == null || mCurrentDialogActivity != mMainActivity)) { // was using: getCurrentActivity()
                     closeProgressDialog();
                     mProgressDialog = new ProgressDialog(mMainActivity); // was using: getCurrentActivity()
                 }
