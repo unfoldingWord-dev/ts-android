@@ -13,10 +13,13 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.LanguageAdapter;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+
+import java.util.List;
 
 
 public class LanguageSelectorActivity extends TranslatorBaseActivity {
@@ -46,7 +49,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
 
         // add items to list view
         if(willShowSourceLanguages) {
-            adapter = new LanguageAdapter(p.getSourceLanguages(), this, showSourceLanguages);
+            adapter = new LanguageAdapter((List<Language>)(List<?>)p.getSourceLanguages(), this, showSourceLanguages);
         } else {
             adapter = new LanguageAdapter(MainContext.getContext().getSharedProjectManager().getLanguages(), this, showSourceLanguages);
         }

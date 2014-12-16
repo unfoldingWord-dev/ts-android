@@ -40,6 +40,13 @@ public class ProjectManager {
     // so we can look up by name
     private static Map<String, Language> mLanguagesNameMap = new HashMap<String, Language>();
 
+    // so we can look up by index
+    private static List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
+    // so we can look up by id
+    private static Map<String, SourceLanguage> mSourceLanguagesMap = new HashMap<String, SourceLanguage>();
+    // so we can look up by name
+    private static Map<String, SourceLanguage> mSourceLanguagesNameMap = new HashMap<String, SourceLanguage>();
+
     // these constants are used to bind the progress bar to within certain ranges for the data.
     private final double PERCENT_TARGET_LANGUAGES = 70.0;
     private final double PERCENT_PROJECTS = 10.0;
@@ -88,11 +95,12 @@ public class ProjectManager {
     public void downloadProjectUpdates(Project p) {
         // download the source language catalog
         String catalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
-        List<Language> languages = loadSourceLanguageCatalog(p, catalog);
-        for(Language l:languages) {
+        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, catalog);
+        for(SourceLanguage l:languages) {
             // only download changed languages or languages that don't have any source
-            boolean hasNewVersion = getLanguage(l.getId()).getDateModified() < l.getDateModified();
+            boolean hasNewVersion = getSourceLanguage(l.getId()).getDateModified() < l.getDateModified();
             boolean neededUpdate = false;
+            // TODO: we need to update to support Bible translation project
             if(hasNewVersion || mDataStore.fetchSourceText(p.getId(), l.getId(), false) == null) {
                 mDataStore.fetchSourceText(p.getId(), l.getId(), true);
                 neededUpdate = true;
@@ -135,20 +143,20 @@ public class ProjectManager {
         }
         if(p == null) return;
 
-        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId(), false);
+        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getVariantId(), false);
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
         }
         loadProject(source, p);
-        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId(), false);
+        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getVariantId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
         }
         loadTerms(terms, p);
-        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId(), false);
+        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getVariantId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
@@ -183,17 +191,43 @@ public class ProjectManager {
             mLanguagesNameMap.put(l.getName(), l);
             mLanguages.add(l);
             return true;
-        } else if(getLanguage(l.getId()).getDateModified() == 0) {
-            // replace plain target languages with source languages because they contain more information
-            // remove
-            mLanguagesMap.remove(l.getId());
-            mLanguagesNameMap.remove(l.getName());
-            mLanguages.remove(l);
-            // add
-            mLanguagesMap.put(l.getId(), l);
-            mLanguagesNameMap.put(l.getName(), l);
-            mLanguages.add(l);
+//        } else if(getLanguage(l.getId()).getDateModified() == 0) {
+//            // replace plain target languages with source languages because they contain more information
+//            // remove
+//            mLanguagesMap.remove(l.getId());
+//            mLanguagesNameMap.remove(l.getName());
+//            mLanguages.remove(l);
+//            // add
+//            mLanguagesMap.put(l.getId(), l);
+//            mLanguagesNameMap.put(l.getName(), l);
+//            mLanguages.add(l);
+//            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Adds a source lanuage to the manager
+     * @param l the language to add
+     */
+    private boolean addSourceLanguage(SourceLanguage l) {
+        if(!mSourceLanguagesMap.containsKey(l.getId())) {
+            mSourceLanguagesMap.put(l.getId(), l);
+            mSourceLanguagesNameMap.put(l.getName(), l);
+            mSourceLanguages.add(l);
             return true;
+//        } else if(getLanguage(l.getId()).getDateModified() == 0) {
+//            // replace plain target languages with source languages because they contain more information
+//            // remove
+//            mLanguagesMap.remove(l.getId());
+//            mLanguagesNameMap.remove(l.getName());
+//            mLanguages.remove(l);
+//            // add
+//            mLanguagesMap.put(l.getId(), l);
+//            mLanguagesNameMap.put(l.getName(), l);
+//            mLanguages.add(l);
+//            return true;
         } else {
             return false;
         }
@@ -239,6 +273,19 @@ public class ProjectManager {
     }
 
     /**
+     * Returns a source language by id
+     * @param id the langyage id a.k.a language code
+     * @return null if the language does not exist
+     */
+    public SourceLanguage getSourceLanguage(String id) {
+        if(mSourceLanguagesMap.containsKey(id)) {
+            return mSourceLanguagesMap.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Finds a language by the human readable name
      * @param name the name of the language
      * @return null if the language does not exist
@@ -252,6 +299,19 @@ public class ProjectManager {
     }
 
     /**
+     * Finds a language by the human readable name
+     * @param name the name of the language
+     * @return null if the language does not exist
+     */
+    private Language getSourceLanguageByName(String name) {
+        if(mSourceLanguagesNameMap.containsKey(name)) {
+            return mSourceLanguagesNameMap.get(name);
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Returns a source lanuage
      * @param index the language index
      * @return null if the language does not exist
@@ -259,6 +319,19 @@ public class ProjectManager {
     public Language getLanguage(int index) {
         if(index < mLanguages.size() && index >= 0) {
             return mLanguages.get(index);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a source lanuage
+     * @param index the language index
+     * @return null if the language does not exist
+     */
+    public SourceLanguage getSourceLanguage(int index) {
+        if(index < mSourceLanguages.size() && index >= 0) {
+            return mSourceLanguages.get(index);
         } else {
             return null;
         }
@@ -489,8 +562,8 @@ public class ProjectManager {
      * @param p the project into which the source languages will be loaded
      * @param sourceLangaugeCatalog the catalog of source languages
      */
-    private List<Language> loadSourceLanguageCatalog(Project p, String sourceLangaugeCatalog) {
-        List<Language> importedLanguages = new ArrayList<Language>();
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLangaugeCatalog) {
+        List<SourceLanguage> importedLanguages = new ArrayList<SourceLanguage>();
         if(sourceLangaugeCatalog == null) {
             return importedLanguages;
         }
@@ -500,7 +573,7 @@ public class ProjectManager {
             json = new JSONArray(sourceLangaugeCatalog);
         } catch (Exception e) {
             Log.w(TAG, e.getMessage());
-            return new ArrayList<Language>();
+            return new ArrayList<SourceLanguage>();
         }
 
         // load the data
@@ -512,11 +585,17 @@ public class ProjectManager {
                     if(jsonStatus.has("checking_level")) {
                         // require minimum language checking level
                         if(Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                            // add the language
-                            Language.Direction langDir = jsonLanguage.get("direction").toString() == "ltr" ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
-                            Language l = new Language(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir, Integer.parseInt(jsonLanguage.get("date_modified").toString()));
-                            addLanguage(l);
+                            // Some languages may have multiple variations of a translation e.g. literal or dynamic. However, these are project specific
+                            String variant = null;
+                            if(jsonLanguage.has("name")) {
+                                variant = jsonLanguage.get("name").toString();
+                            }
+                            // language direction
+                            Language.Direction langDir = jsonLanguage.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
+                            SourceLanguage l = new SourceLanguage(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir, variant, Integer.parseInt(jsonLanguage.get("date_modified").toString()));
 
+                            // For the most part source and target languages can be used interchangably, however there are some cases were we need some extra information in source languages.
+                            addSourceLanguage(l);
                             importedLanguages.add(l);
 
                             if(p != null) {
@@ -724,6 +803,14 @@ public class ProjectManager {
      */
     public List<Language> getLanguages() {
         return mLanguages;
+    }
+
+    /**
+     * Returns a list of languages
+     * @return
+     */
+    public List<SourceLanguage> getSourceLanguages() {
+        return mSourceLanguages;
     }
 
     public interface OnProgressCallback {

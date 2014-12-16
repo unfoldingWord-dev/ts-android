@@ -41,7 +41,6 @@ public abstract class ThreadableUI {
      */
     public void start() {
         if(!isInterrupted() && !mHasStarted) {
-            Log.d("ThreadableUI", "Starting thread " + mId);
             mHasStarted = true;
             mThread.start();
         }
@@ -63,7 +62,6 @@ public abstract class ThreadableUI {
         // TRICKY: we set a variable so we know if the thread has been interrupted before it has started.
         mInterrupted = true;
         if(mHasStarted && !mThread.isInterrupted()) {
-            Log.d("ThreadableUI", "Stopping thread "+ mId);
             onStop();
             mThread.interrupt();
         }

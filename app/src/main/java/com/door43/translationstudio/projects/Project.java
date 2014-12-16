@@ -36,8 +36,8 @@ public class Project extends Model {
     private List<Chapter> mChapters = new ArrayList<Chapter>();
     // so we can look up by id
     private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
-    private List<Language> mSourceLanguages = new ArrayList<Language>();
-    private Map<String,Language> mSourceLanguageMap = new HashMap<String, Language>();
+    private List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
+    private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
     private List<Term> mTerms = new ArrayList<Term>();
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
 
@@ -239,9 +239,9 @@ public class Project extends Model {
      * Adds a language to the project
      * @param l the language to add
      */
-    public boolean addSourceLanguage(Language l) {
-        if(!mSourceLanguageMap.containsKey(l.getId())) {
-            mSourceLanguageMap.put(l.getId(), l);
+    public boolean addSourceLanguage(SourceLanguage l) {
+        if(!mSourceLanguageMap.containsKey(l.getVariantId())) {
+            mSourceLanguageMap.put(l.getVariantId(), l);
             mSourceLanguages.add(l);
             return true;
         } else {
@@ -342,8 +342,8 @@ public class Project extends Model {
     /**
      * Returns the currently selected source language
      */
-    public Language getSelectedSourceLanguage() {
-        Language selectedLanguage = getSourceLanguage(mSelectedSourceLanguageId);
+    public SourceLanguage getSelectedSourceLanguage() {
+        SourceLanguage selectedLanguage = getSourceLanguage(mSelectedSourceLanguageId);
         if(selectedLanguage == null) {
             // auto select the first chapter if no other chapter has been selected
             int defaultLanguageIndex = 0;
@@ -469,7 +469,7 @@ public class Project extends Model {
      * @param id the language code
      * @return null if the language does not exist
      */
-    public Language getSourceLanguage(String id) {
+    public SourceLanguage getSourceLanguage(String id) {
         if(mSourceLanguageMap.containsKey(id)) {
             return mSourceLanguageMap.get(id);
         } else {
@@ -482,7 +482,7 @@ public class Project extends Model {
      * @param index the language index
      * @return null if the language does not exist
      */
-    public Language getSourceLanguage(int index){
+    public SourceLanguage getSourceLanguage(int index){
         if(index < mSourceLanguages.size() && index >= 0) {
             return mSourceLanguages.get(index);
         } else {
@@ -521,7 +521,7 @@ public class Project extends Model {
      * Returns a list of source languages for this project
      * @return
      */
-    public List<Language> getSourceLanguages() {
+    public List<SourceLanguage> getSourceLanguages() {
         return mSourceLanguages;
     }
 
