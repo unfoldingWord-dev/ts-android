@@ -105,4 +105,7 @@
   <string name="crash_details">នៅមុនពេលបន្តិចដែលកូនកម្មវិធីបានគាំងដំណើរការ តើអ្នកកំពុងតែធ្វីអ្វីនៅពេលនោះ?</string>
   <string name="crash_details_label">កំណត់សម្គាល់បន្ទាប់បន្សំ</string>
   <string name="settings">កំណត់(នានា)</string>
+  <string name="update_confirmation">នេះនឹងទាញយក (ដោនឡូដ) អាប់ដេតនានាពីសឺវើ (ម៉ាស៊ីនមេ) បន្ត?</string>
+  <string name="yes">បាទ/ចាស</string>
+  <string name="no">ទេ</string>
 </resources>

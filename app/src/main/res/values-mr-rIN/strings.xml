@@ -105,4 +105,7 @@
   <string name="crash_details">अॅप क्रॅश होण्याच्या अगदी आधी तुम्ही काय करत होता?</string>
   <string name="crash_details_label">वैकल्पिक नोंदी</string>
   <string name="settings">सेटिंग्ज</string>
+  <string name="update_confirmation">यामुळे सर्व्हरवरून अद्यतने डाउनलोड केली जातील, सुरू ठेवायचे?</string>
+  <string name="yes">होय</string>
+  <string name="no">नाही</string>
 </resources>

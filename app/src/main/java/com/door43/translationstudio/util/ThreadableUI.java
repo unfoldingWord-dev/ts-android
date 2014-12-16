@@ -2,15 +2,23 @@ package com.door43.translationstudio.util;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 /**
  * This class allows you to execute operations in a seperate thread and then finish up by running some code on the ui thread
  */
 public abstract class ThreadableUI {
-    private Thread mThread;
+    private final Thread mThread;
+    private final int mId;
+    private static int mThreadCount;
+    private boolean mInterrupted;
+    private boolean mHasStarted;
 
+    public ThreadableUI(Context context) {
+        mThreadCount++;
+        mId = mThreadCount;
 
-    public void start(Context context) {
+        // create a new thread and handler
         final Handler handler = new Handler(context.getMainLooper());
         mThread = new Thread() {
             @Override
@@ -26,19 +34,25 @@ public abstract class ThreadableUI {
                 });
             }
         };
-        mThread.start();
     }
 
     /**
-     * Check if the thread is alive
+     * Starts the thread
+     */
+    public void start() {
+        if(!isInterrupted() && !mHasStarted) {
+            Log.d("ThreadableUI", "Starting thread " + mId);
+            mHasStarted = true;
+            mThread.start();
+        }
+    }
+
+    /**
+     * Check if the thread has been interrupted
      * @return
      */
-    public boolean isAlive() {
-        if(mThread != null) {
-            return mThread.isAlive();
-        } else {
-            return false;
-        }
+    public boolean isInterrupted() {
+        return mThread.isInterrupted() || mInterrupted;
     }
 
     /**
@@ -46,11 +60,21 @@ public abstract class ThreadableUI {
      * WARNING: this may not be the safest way to terminate the thread
      */
     public void stop() {
-        if(mThread != null) {
+        // TRICKY: we set a variable so we know if the thread has been interrupted before it has started.
+        mInterrupted = true;
+        if(mHasStarted && !mThread.isInterrupted()) {
+            Log.d("ThreadableUI", "Stopping thread "+ mId);
             onStop();
             mThread.interrupt();
-            mThread = null;
         }
+    }
+
+    /**
+     * Return the id of thread
+     * @return
+     */
+    public int getId() {
+        return mId;
     }
 
     /**

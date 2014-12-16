@@ -13,6 +13,7 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
 
@@ -41,7 +42,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
         // place translated languages at the top of the list
         if(!isSourceLanguages) {
             // test
-            ThreadableUI thread = new ThreadableUI() {
+            ThreadableUI thread = new ThreadableUI(context) {
                 @Override
                 public void onStop() {
 
@@ -72,7 +73,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
                     LanguageAdapter.this.notifyDataSetChanged();
                 }
             };
-            thread.start(mContext);
+            thread.start();
         }
     }
 

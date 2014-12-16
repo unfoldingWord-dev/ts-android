@@ -1,1 +1,15 @@
-[{"title":"Open Bible Stories","desc":"50 key stories of the Bible","slug":"obs","catalog":"https://api.unfoldingword.org/obs/txt/1/obs-catalog.json"}]
+[
+  {
+    "title": "Open Bible Stories",
+    "desc": "50 key stories of the Bible",
+    "slug": "obs",
+    "catalog": "https://api.unfoldingword.org/obs/txt/1/obs-catalog.json"
+  },
+  {
+    "title": "Gospel of Luke",
+    "desc": "Gospel",
+    "meta": ["Bible", "New Testament"],
+    "slug": "luk",
+    "catalog": "https://api.unfoldingword.org/bible/txt/1/luk-catalog.json"
+  }
+]

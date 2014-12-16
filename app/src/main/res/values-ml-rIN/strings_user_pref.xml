@@ -4,7 +4,15 @@
   <string name="pref_header_general">പൊതുവായ</string>
   <string name="pref_title_remember_position">അവസാന പേജ് ഓര്‍മ്മിക്കുക</string>
   <string name="pref_description_remember_position">ആപ്പ് ആരംഭിക്കുമ്പോള്‍ അവസാനം കണ്ട പേജ് കാണിക്കുക</string>
+  <string name="pref_title_highlight_key_terms">പ്രധാന വ്യവസ്ഥകള്‍ ഹൈലൈറ്റ് ചെയ്യുക</string>
+  <string name="pref_description_highlight_key_terms">പ്രധാന വ്യവസ്ഥകള്‍ സോഴ്സ് ടെക്സ്റ്റില്‍ ക്ലിക്ക് ചെയ്യാവുന്ന ലിങ്ക് ആയി പ്രദര്‍ശിപ്പിക്കുക</string>
   <string name="pref_title_translation_typeface">പരിഭാഷയുടെ ടൈപ്പ്ഫേസ്</string>
+  <string name="pref_title_typeface_size">തര്‍ജ്ജമയുടെ ടൈപ്പ്ഫേസ് സൈസ്</string>
+  <string-array name="pref_typeface_size_titles">
+    <item>ചെറുത്</item>
+    <item> ഇടത്തരം</item>
+    <item>വലുത്</item>
+  </string-array>
   <string name="pref_header_synchronization">അപ്‍ലോഡ് ചെയ്യുക</string>
   <string name="pref_title_autosave_delay">ഓട്ടോ സേവ് മാറ്റങ്ങള്‍</string>
   <string-array name="pref_autosave_titles">
@@ -20,4 +28,7 @@
   <string name="pref_title_media_server">മീഡിയ സെര്‍വര്‍</string>
   <string name="pref_header_sharing">പങ്കു വയ്ക്കുന്നു</string>
   <string name="pref_title_export_format">എക്സ്പോര്‍ട്ട് മാതൃക</string>
+  <string name="pref_header_advanced"> ആധുനികം</string>
+  <string name="pref_title_advanced_settings">ആധുനിക സജ്ജീകരണം പ്രാപ്തമാക്കുക</string>
+  <string name="pref_description_advanced_settings">അഡ്വാന്‍സ്‍ഡ് സെറ്റിംഗ് ബട്ടണ്‍ നാവിഗേഷന്‍ ബാറില്‍ കാണിക്കുക</string>
 </resources>

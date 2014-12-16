@@ -138,40 +138,43 @@ public class KeyTermFragment extends TranslatorBaseFragment {
                 return;
             }
 
-            Frame frame = MainContext.getContext().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
-            TranslationNote note = frame.getTranslationNotes();
-
-            mTermLayout.setVisibility(View.GONE);
-            mImportantTermsLayout.setVisibility(View.VISIBLE);
-
-            mImportantTerms.setText("");
-            int numImportantTerms = 0;
-
             final Project p = app().getSharedProjectManager().getSelectedProject();
+            if(p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
+                Frame frame = p.getSelectedChapter().getSelectedFrame();
+                TranslationNote note = frame.getTranslationNotes();
 
-            // show the related terms for this frame
-            for(String term:frame.getImportantTerms()) {
-                final Term importantTerm = p.getTerm(term);
-                if(importantTerm != null) {
-                    final String termName = term;
-                    SpannableString link = new SpannableString(importantTerm.getName());
-                    ClickableSpan cs = new ClickableSpan() {
-                        @Override
-                        public void onClick(View widget) {
-                            ((MainActivity)getActivity()).showTermDetails(termName);
-                        }
-                    };
-                    link.setSpan(cs, 0, importantTerm.getName().length(), 0);
-                    mImportantTerms.append(link);
-                } else {
-                    mImportantTerms.append(term);
+                mTermLayout.setVisibility(View.GONE);
+                mImportantTermsLayout.setVisibility(View.VISIBLE);
+
+                mImportantTerms.setText("");
+                int numImportantTerms = 0;
+
+                // show the related terms for this frame
+                for (String term : frame.getImportantTerms()) {
+                    final Term importantTerm = p.getTerm(term);
+                    if (importantTerm != null) {
+                        final String termName = term;
+                        SpannableString link = new SpannableString(importantTerm.getName());
+                        ClickableSpan cs = new ClickableSpan() {
+                            @Override
+                            public void onClick(View widget) {
+                                ((MainActivity) getActivity()).showTermDetails(termName);
+                            }
+                        };
+                        link.setSpan(cs, 0, importantTerm.getName().length(), 0);
+                        mImportantTerms.append(link);
+                    } else {
+                        mImportantTerms.append(term);
+                    }
+                    numImportantTerms++;
+                    if (numImportantTerms < frame.getImportantTerms().size()) {
+                        mImportantTerms.append(", ");
+                    }
                 }
-                numImportantTerms++;
-                if(numImportantTerms < frame.getImportantTerms().size()) {
-                    mImportantTerms.append(", ");
-                }
+                onShow();
+            } else {
+                // the frame is not selected
             }
-            onShow();
         }
     }
 

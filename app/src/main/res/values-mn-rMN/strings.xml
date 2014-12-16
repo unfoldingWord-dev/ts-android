@@ -105,4 +105,7 @@
   <string name="crash_details">Та программыг зогсохоос өмнөхөн юу хийж байсан бэ?</string>
   <string name="crash_details_label">Нэмэлт тэмдэглэл</string>
   <string name="settings">Тохиргоо</string>
+  <string name="update_confirmation">Серверээс шинэчлэлийг татах болно, үргэлжлүүлэх үү?</string>
+  <string name="yes">Тийм</string>
+  <string name="no">Үгүй</string>
 </resources>

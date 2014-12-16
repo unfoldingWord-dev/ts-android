@@ -109,4 +109,7 @@
   <string name="crash_details">Ano ang iyong ginagawa bago nag-crash ang app?</string>
   <string name="crash_details_label">opsyonal na mga tala</string>
   <string name="settings">Mga setting</string>
+  <string name="update_confirmation">Ito ay magda-download ng mga update mula sa server, magpatuloy?</string>
+  <string name="yes">Uu</string>
+  <string name="no">Hindi</string>
 </resources>

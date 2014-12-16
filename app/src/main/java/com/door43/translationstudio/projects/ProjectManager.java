@@ -491,11 +491,14 @@ public class ProjectManager {
      */
     private List<Language> loadSourceLanguageCatalog(Project p, String sourceLangaugeCatalog) {
         List<Language> importedLanguages = new ArrayList<Language>();
+        if(sourceLangaugeCatalog == null) {
+            return importedLanguages;
+        }
         // parse source languages
         JSONArray json;
         try {
             json = new JSONArray(sourceLangaugeCatalog);
-        } catch (JSONException e) {
+        } catch (Exception e) {
             Log.w(TAG, e.getMessage());
             return new ArrayList<Language>();
         }

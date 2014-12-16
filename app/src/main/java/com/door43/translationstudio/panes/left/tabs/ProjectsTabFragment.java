@@ -39,6 +39,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 // save changes to the current frame first
                 ((MainActivity)me.getActivity()).save();
                 if(app().getSharedProjectManager().getSelectedProject() == null || !app().getSharedProjectManager().getSelectedProject().getId().equals(((Project)mProjectItemAdapter.getItem(i)).getId())) {
+                    // reload the center pane so we don't accidently overwrite a frame
+                    ((MainActivity) me.getActivity()).reloadCenterPane();
                     // select the project
                     app().getSharedProjectManager().setSelectedProject(i);
                     // load the project source
@@ -75,7 +77,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         }
 
         protected void onPostExecute(Void result) {
-            // reload the center pane so we don't accidently overwrite a frame
+            // populate the center pane
             ((MainActivity) me.getActivity()).reloadCenterPane();
             // open up the chapters tab
             ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);

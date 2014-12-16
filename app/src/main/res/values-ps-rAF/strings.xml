@@ -105,4 +105,7 @@
   <string name="crash_details">تاسو څه دمخه د ایپ الوتکه؟ </string>
   <string name="crash_details_label">غوراويز ليكونو </string>
   <string name="settings">اېچ ټي اېم اېل</string>
+  <string name="update_confirmation">دا به له منبع څخه پلاس راشی او تازه بشی.</string>
+  <string name="yes">هو </string>
+  <string name="no">نه </string>
 </resources>

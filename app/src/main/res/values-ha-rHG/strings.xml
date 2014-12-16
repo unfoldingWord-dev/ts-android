@@ -105,4 +105,7 @@
   <string name="crash_details">Me kakeyi kafin wannan mahajar ta samu matsala?</string>
   <string name="crash_details_label">Zabi</string>
   <string name="settings">Saitin</string>
+  <string name="update_confirmation"> Wannan zai sabunta bayanai daga shafin yannar gizo, ko zaka/ki ci gaba?</string>
+  <string name="yes">Eh</string>
+  <string name="no">A\'a</string>
 </resources>

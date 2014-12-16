@@ -19,6 +19,7 @@ import java.net.URLConnection;
 /**
  * The data store handles all of the text and media resources within the app.
  * This class will look for data locally as well as on the server.
+ * The api can be found at https://door43.org/en/dev/api/unfoldingword
  */
 public class DataStore {
     private static MainApplication mContext;

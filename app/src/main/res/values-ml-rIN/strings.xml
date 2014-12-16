@@ -32,12 +32,19 @@
   <string name="translation_import_failed">പരിഭാഷ ഇംപോര്‍ട്ട് ചെയ്യുവാന്‍ സാധിച്ചില്ല</string>
   <string name="internet_not_available">നിങ്ങള്‍ക്ക് സജീവമായുള്ള ഇന്‍റര്‍നെറ്റ് കണക്ഷന്‍ ഇല്ല</string>
   <string name="title_activity_upload_wizard">പരിഭാഷ അപ്‍ലോഡ് ചെയ്യുക</string>
+  <string name="upload_wizard_intro">നിങ്ങള്‍ തര്‍ജ്ജമ അപ്‍ലോഡ് ചെയ്യാന്‍ പോകുകയാണ്
+
+</string>
   <string name="label_continue">തുടരുക</string>
   <string name="upload_wizard_overview">അവലോകനം അപ്‍ലോഡ് ചെയ്യുക</string>
   <string name="label_project_details">പ്രൊജക്ടിന്‍റെ  വിശദാംശങ്ങള്‍</string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> തര്‍ജ്ജമ ചെയ്യേണ്ടത്  <xliff:g id="language" example="English">\"%2$s\"</xliff:g> ഇനിപ്പറയുന്ന<xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g>ഭാഷ.</string>
   <string name="click_for_details">വിശദാംശങ്ങള്‍ക്കായി ക്ലിക്ക് ചെയ്യുക.</string>
   <string name="label_project_settings">പ്രൊജക്ട് ക്രമീകരണം</string>
   <string name="error_target_and_source_are_same">സ്രോതസ്സ് ഭാഷയും ഉദ്ദിഷ്ട ഭാഷയും ഒന്നുതന്നെയാണ്</string>
+  <string name="error_chapter_title_missing">അധ്യായത്തിന്‍റെ ശീര്‍ഷകം കാണുന്നില്ല
+</string>
+  <string name="error_chapter_reference_missing">അധ്യായത്തിന്‍റെ പരാമര്‍ശം കാണുന്നില്ല</string>
   <string name="label_validate_chapter">അധ്യായം: %1$</string>
   <string name="dialog_validation_errors">നിര്‍ണ്ണയത്തിലെ പിശകുകള്‍</string>
   <string name="validation_errors">പരിഭാഷയില്‍ പരിഹരിക്കാനാകാത്ത പിശകുകള്‍ ഉണ്ട് ദയവായി ഇവ പരിഹരിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക</string>
@@ -46,14 +53,18 @@
   <string name="validation_warnings">പരിഹരിക്കപ്പെടാത്ത മുന്നറിയിപ്പുകള്‍ ഉണ്ട് ഈ പരിഭാഷ അപ്‍ലോഡ് ചെയ്യണമെന്ന് നിങ്ങള്‍ക്ക് ഉറപ്പാണോ?</string>
   <string name="no_translated_chapters">ഇതുവരെ ഒന്നുംതന്നെ പരിഭാഷപ്പെടുത്തിയിട്ടില്ല</string>
   <string name="label_chapters">അധ്യായങ്ങള്‍</string>
+  <string name="now_viewing_frame">കാണുന്ന ഫ്രെയിം<xliff:g id="number" example="1">%1$s</xliff:g> അധ്യായത്തിലെ <xliff:g id="അധ്യായം" ഉദാഹരണം="1. സൃഷ്ടി">%2$s</xliff:g>.</string>
   <string name="label_translation_notes">പരിഭാഷാ കുറിപ്പുകള്‍</string>
   <string name="label_passage_note">ഖണ്ഡികാ കുറിപ്പുകള്‍</string>
   <string name="label_delete">ഡിലീറ്റ് ചെയ്യുക</string>
+  <string name="source_language_instructions">സ്രോതസ്സ് ഭാഷ തര്‍ജ്ജമ പൂര്‍ത്തിയാക്കിയതാണ്</string>
+  <string name="target_language_instructions">ഉദ്ദിഷ്ട ഭാഷ തര്‍ജ്ജമ പൂര്‍ത്തിയായിട്ടില്ല, അല്ലെങ്കില്‍ ജോലി പുരോഗമിക്കുന്നു</string>
   <string name="translation_notes_title">പരിഭാഷാ കുറിപ്പുകള്‍</string>
   <string name="translation_notes_important_terms_title">പ്രധാനപ്പെട്ട പദങ്ങള്‍</string>
   <string name="notes_cannot_overlap">കുറിപ്പുകള്‍ പരിധി കവിയാന്‍ പാടില്ല</string>
   <string name="loading_preferences">ലോഡിംഗ് മുന്‍ഗണനകള്‍</string>
   <string name="launching_translator">പരിഭാഷകനെ അവതരിപ്പിക്കുന്നു</string>
+  <string name="currently_viewed_frame_index">ഫ്രെയിം <xliff:g id="current_frame" example="2">%1$s</xliff:g> of <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">തുടക്കത്തിലെ പ്രൊജക്ട്</string>
   <string name="loading_key_terms">പ്രധാന പദങ്ങള്‍ ലോഡ് ചെയ്യുന്നു</string>
   <string name="loading_translation_notes">പരിഭാഷാ കുറിപ്പുകള്‍ ലോഡ് ചെയ്യുന്നു.</string>
@@ -63,6 +74,7 @@
   <string name="choose_file">നിങ്ങളുടെ ഫയല്‍ തിരഞ്ഞെടുക്കുക</string>
   <string name="choose_source_language">സ്രോതസ്സ് ഭാഷ തിരഞ്ഞെടുക്കുക</string>
   <string name="choose_target_language">ഉദ്ദിഷ്ട ഭാഷ തിരഞ്ഞെടുക്കുക</string>
+  <string name="search_language">ഒരു ഭാഷ തിരയുക</string>
   <string name="loading">ലോഡ് ചെയ്യുന്നു</string>
   <string name="view_license">ലൈസന്‍സ് കാണുക</string>
   <string name="license_deny">വേണ്ട, നന്ദി</string>
@@ -72,6 +84,13 @@
   <string name="related_terms">ഇവയും കാണുക:</string>
   <string name="term_examples">ഉദാഹരണങ്ങള്‍:</string>
   <string name="git_push_success">പ്രൊജക്ട് വിജയകരമായി അപ്‍ലോഡ് ചെയ്തിരിക്കുന്നു.</string>
+  <string name="choose_frame_to_start">തുടങ്ങുവാനായി ഇടതു ടാബില്‍ നിന്നും കുറച്ച്  സോഴ്സ് ടെക്സ്റ്റ് തിരഞ്ഞെടുക്കുക</string>
+  <string name="return_to_important_terms">പ്രധാന വ്യവസ്ഥയിലക്ക് മടങ്ങുക</string>
+  <string name="no_translation_notes">തര്‍ജ്ജമയുടെ അറിയിപ്പുകള്‍ ഒന്നും ഇല്ല</string>
+  <string name="label_important_terms">പ്രധാന വ്യവസ്ഥകള്‍</string>
+  <string name="translation_check_notice">നിങ്ങളുടെ തര്‍ജ്ജമ തയ്യാറാണോ എന്ന് ഉറപ്പാക്കാന്‍ ഞങ്ങള്‍ ചില പരിശോനകള്‍ നടത്തുന്നതാണ്.</string>
+  <string name="translation_complete">തര്‍ജ്ജമ പൂര്‍ത്തിയായി</string>
+  <string name="preparing_upload">പ്രൊജക്ട് അപ്‍ലോഡ് ചെയ്യാന്‍ തയ്യാറെടുക്കുന്നു</string>
   <string name="license"><![CDATA[<h2>നിങ്ങള്‍ക്കിത് ചെയ്യാന്‍ സ്വാതന്ത്ര്യമുണ്ടായിരിക്കും</h2>
 <p>ഈ ഉള്ളടക്കം പങ്കുവയ്ക്കുന്നത്, പകര്‍ത്തുന്നത്, അല്ലെങ്കില്‍ ഏതെങ്കിലും രൂപത്തില്‍ പുനര്‍വിതരണം ചെയ്യുന്നത്; ഈ ഉള്ളടക്കം ഏതെങ്കിലും ഉദ്ദേശ്യത്തിനായി, വാണിജ്യപരമായി ആണെങ്കിലും, അനുരൂപമാക്കുന്നത്,റീ മിക്സ് ചെയ്യുന്നത്, ഒപ്പം അതില്‍ കൂട്ടിചേര്‍ക്കല്‍ വരുത്തുന്നത്. നിങ്ങള്‍ ലൈസന്‍സ് വ്യവസ്ഥകള്‍ പാലിക്കുന്നിടത്തോളം കാലം ലൈസന്‍സ് ഉടമയ്ക്ക് ഈ സ്വാതന്ത്ര്യം പിന്‍വലിക്കാന്‍ സാധിക്കൊല്ല.</p>
 <h2>ഇനിപ്പറയുന്ന വ്യവസ്ഥകള്‍ അനുസരിച്ച് :</h2>
@@ -80,5 +99,16 @@
 </p>
 <h2>അറിയിപ്പുകള്‍ :</h2>
 <p>പബ്ലിക് ഡൊമൈനില്‍ അല്ലെങ്കില്‍ നിങ്ങളുടെ ഉപയോഗം ബാധകമായ ഒഴിവാക്കല്‍ അല്ലെങ്കില്‍ പരിമിതപ്പെടുത്തല്‍ കൊണ്ട്   അനുവദിച്ചിട്ടുള്ളയിടങ്ങളില്‍;    അല്ലെങ്കില്‍ വാറണ്ടി നല്‍കിയിട്ടില്ലാത്തിടത്ത് ഉള്ളടക്കത്തിന്‍റെ ഘടകങ്ങള്‍ക്കായി നിങ്ങള്‍ ലൈസന്‍സ് പാലിക്കേണ്ട ആവശ്യമില്ല. നിങ്ങള്‍ പ്രതീക്ഷിക്കുന്ന ഉപയോഗത്തിനാവശ്യമായ എല്ലാ അനുമതികളും ഈ ലൈസന്‍സ് നിങ്ങള്‍ക്ക്  നല്‍കിയേക്കില്ല. ഉദാഹരണത്തിന്, പ്രചരണം, സ്വകാര്യത, അല്ലെങ്കില്‍ ധാര്‍മ്മിക അവകാശങ്ങള്‍ പോലുള്ള അവകാശങ്ങള്‍ നിങ്ങള്‍ ഉള്ളടക്കം എങ്ങിനെ ഉപയോഗിക്കുന്നു എന്നതിനെ പരിമിതപ്പെടുത്തിയേക്കാം</p>]]></string>
+  <string name="choose_a_project">ദയവായി ആദ്യം പ്രൊജക്ട് തുറക്കുക</string>
+  <string name="choose_a_chapter">ദയവായി ആദ്യം അധ്യായം തുറക്കുക</string>
+  <string name="project_updates_downloaded">പ്രൊജക്ട് വിജയകരമായി പുതുക്കിയിരിക്കുന്നു</string>
+  <string name="downloading_updates">അപ്ഡേറ്റുകള്‍ ഡൗണ്‍ലോഡ് ചെയ്യുന്നു</string>
+  <string name="title_activity_crash_reporter">എറര്‍ റിപ്പോര്‍ട്ട്</string>
+  <string name="crash_reports"> ഈ ആപ്പ് ഈയിടെ തകര്‍ക്കപ്പെട്ടതായി കാണുന്നു ഈ എറര്‍ ഡെവലപ്പര്‍ക്ക് റിപ്പോര്‍ട്ട് ചെയ്യാന്‍ നിങ്ങള്‍ ആഗ്രഹിക്കുന്നോ?</string>
+  <string name="crash_details">ആപ്പ് ക്രാഷ് ആകുന്നതിനു തൊട്ട്മുമ്പ് നിങ്ങള്‍ എന്താണ് ചെയ്തുകൊണ്ടിരുന്നത്?</string>
+  <string name="crash_details_label">ഐച്ഛികമായ അറിയിപ്പുകള്‍</string>
   <string name="settings">ക്രമീകരണങ്ങള്‍</string>
+  <string name="update_confirmation">[സിഡിഎടിഎ[ഇത് സെര്വറില് നിന്നുള്ള അപ്ഡേറ്റുകള് ഡൗണ് ലോഡ് ചെയ്യും, തുടരാമോ?</string>
+  <string name="yes">സിഡിഎടിഎ[ഉവ്വ്]]</string>
+  <string name="no">സിഡിഎടിഎ[ഇല്ല]</string>
 </resources>

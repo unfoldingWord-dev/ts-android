@@ -105,4 +105,7 @@
   <string name="crash_details">ሶፍትዌሩ ከመደምሰሱ በፊት ምን እየሠሩ ነበር?</string>
   <string name="crash_details_label">አማራጭ ማስታወሻዎች</string>
   <string name="settings">መዋቅሮች</string>
+  <string name="update_confirmation">ይህ ከሰርቨሩ ላይ ማሻሻያዎችን ያወርዳል፤ ይቀጥል?</string>
+  <string name="yes">Yes</string>
+  <string name="no">No</string>
 </resources>
