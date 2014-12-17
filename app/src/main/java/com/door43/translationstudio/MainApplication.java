@@ -362,13 +362,15 @@ public class MainApplication extends Application {
         getCurrentActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(mMainActivity != null && (mProgressDialog == null || mCurrentDialogActivity != mMainActivity)) { // was using: getCurrentActivity()
-                    closeProgressDialog();
-                    mProgressDialog = new ProgressDialog(mMainActivity); // was using: getCurrentActivity()
-                }
-                mProgressDialog.setMessage(message);
-                if(!mProgressDialog.isShowing()) {
-                    mProgressDialog.show();
+                if(mMainActivity != null) {
+                    if (mProgressDialog == null || mCurrentDialogActivity != mMainActivity) { // was using: getCurrentActivity()
+                        closeProgressDialog();
+                        mProgressDialog = new ProgressDialog(mMainActivity); // was using: getCurrentActivity()
+                    }
+                    mProgressDialog.setMessage(message);
+                    if (!mProgressDialog.isShowing()) {
+                        mProgressDialog.show();
+                    }
                 }
             }
         });

@@ -17,6 +17,7 @@ import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.network.Server;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import java.net.ServerSocket;
 import java.net.Socket;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
@@ -124,7 +125,19 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             // TODO: handle the message
                             app().showToastMessage(message);
                             Client c = (Client)mService;
-                            c.writeTo(server, "What do you want?!");
+                            String[] data = Service.readResonse(message);
+                            // TODO: we need to create a wrapper class for the parsed response
+                            if(data[0].equals("filesocket")) {
+                                c.writeTo(server, Service.buildResponse("ok", "give me the file!"));
+                                c.receiveDataSocket(server, Integer.parseInt(data[1]), new Service.OnSocketEventListener() {
+                                    @Override
+                                    public void onOpen(Socket peer) {
+                                        // TODO: the socket has been connected.
+                                    }
+                                });
+                            } else {
+                                c.writeTo(server, Service.buildResponse("ok", "What do you want?!"));
+                            }
                         }
                     });
                 }
@@ -147,17 +160,21 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(mStartAsServer) {
-                    Server s = (Server)mService;
-                    s.writeTo(mAdapter.getItem(i), "Sup?");
-                    // TODO: being sharing with the client
-                    s.openFileSocket(mAdapter.getItem(i), new Server.OnSocketEventListener() {
+                    // the server has accepted the client
+                    final Server s = (Server)mService;
+                    final Peer p = mAdapter.getItem(i);
 
+                    // open a separate port for sending files
+                    ServerSocket fileSocket = s.openDataSocket(new Service.OnSocketEventListener() {
                         @Override
-                        public void onOpen(Socket socket) {
-                            // TODO: send something to the client
+                        public void onOpen(Socket client) {
+                            s.writeTo(p,Service.buildResponse("ok", "we're sending the file now!"));
                         }
                     });
+                    // send the port number to the client
+                    s.writeTo(mAdapter.getItem(i), Service.buildResponse("filesocket", fileSocket.getLocalPort() + ""));
                 } else {
+                    // the client is requesting to connect to the server
                     Client c = (Client)mService;
                     c.connectToServer(mAdapter.getItem(i));
                 }

@@ -74,51 +74,6 @@ public class Server extends Service {
     }
 
     /**
-     * Opens a new temporary socket for transfering a file and lets the client know it should connect to it.
-     * @deprecated I don't think we should attempt to throw too much into the client and server classes.
-     * They work well at establishing initial contact. We should place this elsewhere.
-     */
-    public void openFileSocket(Peer peer, final OnSocketEventListener listener) {
-        final ServerSocket serverSocket;
-        try {
-            serverSocket = new ServerSocket(0);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        // begin listening for the socket connection
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Socket socket = null;
-                try {
-                    socket = serverSocket.accept();
-                    listener.onOpen(socket);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
-                try {
-                    serverSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        t.start();
-
-        // notify client that it should connect to the socket
-        // TODO: this should just pop up on the client's display.
-        writeTo(peer, buildSocketNotification(serverSocket.getLocalPort()));
-        // TODO: Debugging... we wouldn't close this normally
-        try {
-            serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Manage the server instance on it's own thread
      */
     private class ServerThread implements Runnable {
@@ -238,7 +193,4 @@ public class Server extends Service {
         public void onMessageReceived(Peer client, String message);
     }
 
-    public interface OnSocketEventListener {
-        public void onOpen(Socket socket);
-    }
 }
