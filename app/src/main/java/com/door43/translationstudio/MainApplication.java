@@ -678,12 +678,14 @@ public class MainApplication extends Application {
 
         while ((ze = zis.getNextEntry()) != null) {
             filename = ze.getName();
+            File f = new File(destPath, filename);
             if (ze.isDirectory()) {
-                File f = new File(destPath, filename);
                 f.mkdirs();
                 continue;
             }
-            FileOutputStream fout = new FileOutputStream(new File(destPath, filename).getAbsolutePath());
+            f.getParentFile().mkdirs();
+            f.createNewFile();
+            FileOutputStream fout = new FileOutputStream(f.getAbsolutePath());
             while ((count = zis.read(buffer)) != -1) {
                 fout.write(buffer, 0, count);
             }

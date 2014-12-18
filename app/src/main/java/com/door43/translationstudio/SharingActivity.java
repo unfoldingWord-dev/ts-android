@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.zip.ZipException;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
@@ -279,8 +280,6 @@ public class SharingActivity extends TranslatorBaseActivity {
                             SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
                             String timestamp = s.format(new Date());
                             File exportDir = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
-
-                            // TODO: validate that file is a zip
 
                             // extract
                             try {
