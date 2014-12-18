@@ -134,37 +134,11 @@ public abstract class Service {
     }
 
     /**
-     * Builds a notification indicating the peer should connect to an awaiting socket port.
-     * @param command the command to send
-     * @param data the data to send along with the command
-     * @return
-     */
-    public static String buildResponse(String command, String data) {
-        if(command == null || command.isEmpty()) throw new IllegalArgumentException("The command cannot be null or empty");
-        if(data == null) data = "";
-        return command.toString() + ":" + data;
-    }
-
-    /**
-     * Reads a response from a connection and splits it into the command and message.
-     * @param response the raw response
-     * @return
-     */
-    public static String[] readResonse(String response) {
-        if(response == null || response.isEmpty()) throw new StringIndexOutOfBoundsException("The response is empty");
-        String[] pieces = response.split(":", 2);
-        if(pieces.length == 1) {
-            pieces = new String[] {response, ""};
-        }
-        return pieces;
-    }
-
-    /**
      * Opens a new temporary socket for transfering a file and lets the client know it should connect to it.
      * @deprecated I don't think we should attempt to throw too much into the client and server classes.
      * They work well at establishing initial contact. We should place this elsewhere.
      */
-    public ServerSocket openDataSocket(final OnSocketEventListener listener) {
+    public ServerSocket createSenderSocket(final OnSocketEventListener listener) {
         final ServerSocket serverSocket;
         try {
             serverSocket = new ServerSocket(0);
@@ -179,7 +153,7 @@ public abstract class Service {
                 Socket socket;
                 try {
                     socket = serverSocket.accept();
-                    listener.onOpen(socket);
+                    listener.onOpen(new Connection(socket));
                 } catch (IOException e) {
                     e.printStackTrace();
                     return;
@@ -200,14 +174,14 @@ public abstract class Service {
      * @param listener
      * @return
      */
-    public void receiveDataSocket(final Peer peer, int port, final OnSocketEventListener listener) {
+    public void createReceiverSocket(final Peer peer, final int port, final OnSocketEventListener listener) {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     InetAddress serverAddr = InetAddress.getByName(peer.getIpAddress());
-                    Socket socket = new Socket(serverAddr, peer.getPort());
-                    listener.onOpen(socket);
+                    Socket socket = new Socket(serverAddr, port);
+                    listener.onOpen(new Connection(socket));
                 } catch(UnknownHostException e) {
                     Thread.currentThread().interrupt();
                 } catch (IOException e) {
@@ -223,7 +197,7 @@ public abstract class Service {
 
 
     public interface OnSocketEventListener {
-        public void onOpen(Socket peer);
+        public void onOpen(Connection connection);
 
     }
 }

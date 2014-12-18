@@ -126,11 +126,7 @@ public class Client extends Service {
      */
     public void writeTo(Peer server, String message) {
         if(mServerConnections.containsKey(server.getIpAddress())) {
-            try {
-                mServerConnections.get(server.getIpAddress()).write(message);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            mServerConnections.get(server.getIpAddress()).write(message);
         }
     }
 
@@ -169,15 +165,11 @@ public class Client extends Service {
 
             // begin listening to server
             while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    String message = mConnection.readLine();
-                    if(message == null) {
-                        Thread.currentThread().interrupt();
-                    } else {
-                        mListener.onMessageReceived(mServer, message);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                String message = mConnection.readLine();
+                if(message == null) {
+                    Thread.currentThread().interrupt();
+                } else {
+                    mListener.onMessageReceived(mServer, message);
                 }
             }
             // close the connection

@@ -190,27 +190,27 @@ public class SharingActivity extends TranslatorBaseActivity {
                 }, removeableMedia != null, R.string.missing_external_storage));
 
                 // TODO: the device to device sharing is partly developed, but will not be available until later.
-                mSharingTools.add(new SharingToolItem(R.string.export_to_device, R.string.export_as_project, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
-                    @Override
-                    public void run() {
-                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
-                        Bundle extras = new Bundle();
-                        extras.putBoolean("startAsServer", true);
-                        intent.putExtras(extras);
-                        startActivity(intent);
-                    }
-                }));
-
-                mSharingTools.add(new SharingToolItem(R.string.import_from_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
-                    @Override
-                    public void run() {
-                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
-                        Bundle extras = new Bundle();
-                        extras.putBoolean("startAsServer", false);
-                        intent.putExtras(extras);
-                        startActivity(intent);
-                    }
-                }));
+//                mSharingTools.add(new SharingToolItem(R.string.export_to_device, R.string.export_as_project, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+//                    @Override
+//                    public void run() {
+//                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+//                        Bundle extras = new Bundle();
+//                        extras.putBoolean("startAsServer", true);
+//                        intent.putExtras(extras);
+//                        startActivity(intent);
+//                    }
+//                }));
+//
+//                mSharingTools.add(new SharingToolItem(R.string.import_from_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+//                    @Override
+//                    public void run() {
+//                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+//                        Bundle extras = new Bundle();
+//                        extras.putBoolean("startAsServer", false);
+//                        intent.putExtras(extras);
+//                        startActivity(intent);
+//                    }
+//                }));
 
                 mAdapter.notifyDataSetChanged();
                 MainContext.getContext().closeProgressDialog();

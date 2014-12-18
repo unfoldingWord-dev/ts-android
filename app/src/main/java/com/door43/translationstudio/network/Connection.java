@@ -44,10 +44,15 @@ public class Connection {
      * @param message
      * @throws IOException
      */
-    public void write(String message) throws IOException {
-        mWriter.write(message);
-        mWriter.newLine();
-        mWriter.flush();
+    public void write(String message) {
+        try {
+            mWriter.write(message);
+            mWriter.newLine();
+            mWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            close();
+        }
     }
 
     /**
@@ -55,8 +60,14 @@ public class Connection {
      * @return
      * @throws IOException
      */
-    public String readLine() throws IOException {
-        return mReader.readLine();
+    public String readLine() {
+        try {
+            return mReader.readLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+            close();
+            return null;
+        }
     }
 
     /**

@@ -12,13 +12,21 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.network.Client;
+import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.network.Server;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
-import java.net.Socket;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private boolean mStartAsServer = false;
@@ -124,19 +132,42 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         public void run() {
                             // TODO: handle the message
                             app().showToastMessage(message);
-                            Client c = (Client)mService;
-                            String[] data = Service.readResonse(message);
+                            final Client c = (Client)mService;
+                            String[] data = chunk(message, ":");
                             // TODO: we need to create a wrapper class for the parsed response
                             if(data[0].equals("filesocket")) {
-                                c.writeTo(server, Service.buildResponse("ok", "give me the file!"));
-                                c.receiveDataSocket(server, Integer.parseInt(data[1]), new Service.OnSocketEventListener() {
+//                              // create a socket to connect to the file socket
+                                c.createReceiverSocket(server, Integer.parseInt(data[1]), new Service.OnSocketEventListener() {
                                     @Override
-                                    public void onOpen(Socket peer) {
-                                        // TODO: the socket has been connected.
+                                    public void onOpen(Connection connection) {
+                                        connection.setOnCloseListener(new Connection.OnCloseListener() {
+                                            @Override
+                                            public void onClose() {
+                                                // TODO: the socket for transferring the file has closed
+                                            }
+                                        });
+                                        // begin listening for the file
+                                        try {
+                                            DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
+                                            File file = new File(getExternalCacheDir() + "transferred/" + System.currentTimeMillis() + ".zip");
+                                            file.getParentFile().mkdirs();
+                                            file.createNewFile();
+                                            OutputStream out = new FileOutputStream(file.getAbsolutePath());
+                                            byte[] buffer = new byte[8 * 1024];
+                                            int count;
+                                            // TODO: display a progress bar. We will probably need to send the size of the file with the port #
+                                            while ((count = in.read(buffer)) > 0)
+                                            {
+                                                out.write(buffer, 0, count);
+                                            }
+                                            // TODO: do something with the file
+                                        } catch (IOException e) {
+                                            app().showException(e);
+                                        }
                                     }
                                 });
                             } else {
-                                c.writeTo(server, Service.buildResponse("ok", "What do you want?!"));
+//                                c.writeTo(server, Service.buildResponse("ok", "What do you want?!"));
                             }
                         }
                     });
@@ -165,14 +196,50 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     final Peer p = mAdapter.getItem(i);
 
                     // open a separate port for sending files
-                    ServerSocket fileSocket = s.openDataSocket(new Service.OnSocketEventListener() {
+                    ServerSocket fileSocket = s.createSenderSocket(new Service.OnSocketEventListener() {
                         @Override
-                        public void onOpen(Socket client) {
-                            s.writeTo(p,Service.buildResponse("ok", "we're sending the file now!"));
+                        public void onOpen(Connection connection) {
+                            // send an archive to the connection
+
+                            // create test file
+                            File temp = new File(getCacheDir(), "temp.txt");
+//                            temp.getParentFile().mkdirs();
+//                            try {
+//                                OutputStreamWriter outFile = new OutputStreamWriter(new FileOutputStream(temp));
+//                                outFile.write("Hello world!");
+//                            } catch (IOException e) {
+//                                app().showException(e);
+//                                return;
+//                            }
+                            File zipFile = new File(getCacheDir(), "temp.zip");
+
+                            // zip test file
+                            try {
+                                app().zip(temp.getAbsolutePath(), zipFile.getAbsolutePath());
+                            } catch (IOException e) {
+                                app().showException(e);
+                                return;
+                            }
+
+                            // send the file to the connection
+                            // TODO: first we should tell client about the available projects
+                            // TODO: display a progress bar when the files are being transferred (on each client list item)
+                            try {
+                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
+                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(zipFile)));
+                                byte[] buffer = new byte[8 * 1024];
+                                int count;
+                                while ((count = in.read(buffer)) > 0)
+                                {
+                                    out.write(buffer, 0, count);
+                                }
+                            } catch (IOException e) {
+                                app().showException(e);
+                            }
                         }
                     });
                     // send the port number to the client
-                    s.writeTo(mAdapter.getItem(i), Service.buildResponse("filesocket", fileSocket.getLocalPort() + ""));
+                    s.writeTo(mAdapter.getItem(i), "filesocket:"+fileSocket.getLocalPort());
                 } else {
                     // the client is requesting to connect to the server
                     Client c = (Client)mService;
@@ -193,6 +260,23 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     public void onResume() {
         super.onResume();
         mService.start();
+    }
+
+    /**
+     * Splits a string by delimiter into two pieces
+     * @param string the string to split
+     * @param delimiter
+     * @return
+     */
+    private String[] chunk(String string, String delimiter) {
+        if(string == null || string.isEmpty()) {
+            return new String[]{"", ""};
+        }
+        String[] pieces = string.split(delimiter, 2);
+        if(pieces.length == 1) {
+            pieces = new String[] {string, ""};
+        }
+        return pieces;
     }
 
     /**
