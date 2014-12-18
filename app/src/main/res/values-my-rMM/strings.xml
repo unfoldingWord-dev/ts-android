@@ -36,7 +36,7 @@
   <string name="label_continue">ဆက္ပါ</string>
   <string name="upload_wizard_overview">ျပန္ၾကည့္ပါကို တင္ပါ</string>
   <string name="label_project_details">စီမံကိန္း အေသးစိတ္မ်ား</string>
-  <string name="project_details"><xliff:g id="ပေရာဂ်က္" ဥပမာ="သမၼက်န္းပံုျပင္မ်ားဖြင့္ပါ">\"%1$s\"</xliff:g> သည္   <xliff:g id="ဘာသာစကားမွ ဘာသာျပန္ဆိုထားျခင္းျဖစ္သည္" ဥပမာ="အဂၤလိပ္">\"%2$s\"</xliff:g> သာသာစကားကို  <xliff:g id="ဘာသာစကားသို႔" ဥပမာ="ဂ်ာမန္">\"%3$s\"</xliff:g>ဘာသာစကား။</string>
+  <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> သည္   <xliff:g id="source_language" example="English">\"%2$s\"</xliff:g> သာသာစကားကို  <xliff:g id="target_language" example="Deutsch">\"%3$s\"</xliff:g>ဘာသာစကား။</string>
   <string name="click_for_details">အေသးစိတ္မ်ားအတြက္ ကလစ္ႏွိပ္ပါ</string>
   <string name="label_project_settings">စီမံကိန္းဆက္တင္မ်ား</string>
   <string name="error_target_and_source_are_same">ရင္းျမစ္ႏွင့္ ရည္ရြယ္သည့္ဘာသာစကားက ထပ္တူညီသည္</string>
@@ -50,7 +50,7 @@
   <string name="validation_warnings">၄င္းတို႔မွာ ဘာသာျပန္တြင္ မျပင္ရေသးသည့္ သတိေပးခ်က္မ်ား ျဖစ္သည္။ ဤဘာသာျပန္မူကို တင္ခ်င္တာ သင္ေသခ်ာလား?</string>
   <string name="no_translated_chapters">ဘာမွ ဘာသာမျပန္ထားပါ။</string>
   <string name="label_chapters">အခဏ္မ်ား</string>
-  <string name="now_viewing_frame">ျမင္ရသည့္ ေဘာင္ <xliff:g id="နံပါတ္" ဥပမာ="1">%1$s</xliff:g>  ခန္း၌ <xliff:g id="အခန္း" ဥပမာ="1. ဖန္တီးမူ">%2$s</xliff:g>။</string>
+  <string name="now_viewing_frame">ျမင္ရသည့္ ေဘာင္ <xliff:g id="number" example="1">%1$s</xliff:g>  ခန္း၌ <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>။</string>
   <string name="label_translation_notes">ဘာသာျပန္ျခင္း မွတ္ခ်က္မ်ား</string>
   <string name="label_passage_note">စာပုဒ္ မွတ္ခ်က္:</string>
   <string name="label_delete">ဖ်တ္ပါ</string>
@@ -61,7 +61,7 @@
   <string name="notes_cannot_overlap">မွတ္ခ်က္မ်ားသည္ ထပ္တူက်၍မရပါ။</string>
   <string name="loading_preferences">ႏွစ္သက္မူမ်ား တင္ေပးျခင္း</string>
   <string name="launching_translator">ဘာသာျပန္သူ ထုတ္ေပးျခင္း</string>
-  <string name="currently_viewed_frame_index">ေဘာင္<xliff:g id="လက္ရွိ_ေဘာင္" ဥပမာ="2">%1$s</xliff:g> ၏ <xliff:g id="စုစုေပါင္း_ေဘာင္မ်ား" ဥပမာ="10">%2$s</xliff:g></string>
+  <string name="currently_viewed_frame_index">ေဘာင္<xliff:g id="current_frame" example="2">%1$s</xliff:g> ၏ <xliff:g id="total_frames" example="10">%2$s</xliff:g></string>
   <string name="opening_project">စီမံကိန္းဖြင့္ေနသည္</string>
   <string name="loading_key_terms">အဓိကအသံုးအႏူန္းမ်ားကိုတင္ေနသည္</string>
   <string name="loading_translation_notes">ဘာသာျပန္ျခင္း မွတ္ခ်က္မ်ားကိုတင္ေနသည္</string>

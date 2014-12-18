@@ -49,7 +49,7 @@
     <string name="upload_wizard_overview">Upload Review</string>
     <string name="label_project_details">Project details</string>
     <!-- Indicates how the project is being translated. e.g. Open Bible Stories is being translated from the English language into the Deutsch language -->
-    <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> is being translated from the <xliff:g id="language" example="English">\"%2$s\"</xliff:g> language into the <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> language.</string>
+    <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> is being translated from the <xliff:g id="source_language" example="English">\"%2$s\"</xliff:g> language into the <xliff:g id="target_language" example="Deutsch">\"%3$s\"</xliff:g> language.</string>
     <string name="click_for_details">Click for details</string>
     <string name="label_project_settings">Project Settings</string>
     <string name="error_target_and_source_are_same">The source and target languages are the same</string>
