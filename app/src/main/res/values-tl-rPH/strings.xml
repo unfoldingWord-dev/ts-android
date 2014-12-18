@@ -88,7 +88,7 @@
   <string name="translation_check_notice">Susubukan naming magsagawa ngayon ng ilang mga pagsusuri upang matiyak na ang iyong pagsasalin ay handa na.</string>
   <string name="translation_complete">Ang pagsasalin ay kumpleto na</string>
   <string name="preparing_upload">Inihahanda ang mga proyekto para sa pag-upload</string>
-  <string name="license"><![CDATA[<h2>Ikaw ay malaya na:</h2>
+  <string name="license"><h2>Ikaw ay malaya na:</h2>
 <p>Ibahagi, kopyahin, at muling ipamahagi ang materyal sa anumang uri, o ayos; Iangkop, i-remix, ibahin ang anyo, at bumuo sa mga materyal para sa anumang layunin, kahit pa pangkomersyo. Ang tagapaglisensya ay hindi maaaring bawiin ang mga kalayaang ito hangga\'t sinusunod mo ang mga tuntunin ng lisensya.</p>
 <h2>Sa ilalim ng sumusunod na mga tuntunin:</h2>
 <p>
@@ -99,7 +99,7 @@
 <b>Walang karagdagang paghihigpit</b> - Hindi ka maaaring maglapat ng mga legal na tuntunin o teknolohikal na mga panukala na legal na hinihigpitan ang iba sa paggawa ng kahit anong mga pinahihintulutan ng lisensya.
 </p>
 <h2>Mga Paunawa:</h2>
-<p>Hindi mo kailangang sumunod sa lisensya para sa mga elemento ng materyal sa pampublikong domain o kung saan ang iyong paggamit ay pinahihintulutan ng isang angkop na pagbubukod o limitasyon; Walang mga garantiya ang ibinigay. Ang lisensya ay hindi maaaring magbigay sa iyo ng lahat ng mga pahintulot na kinakailangan para sa iyong nilalayong paggamit. Halimbawa, ang iba pang mga karapatan tulad ng publisidad, pribasiya, o moral na karapatan ay maaaring maglimita sa kung paano mo gagamitin ang materyal.</p>]]></string>
+<p>Hindi mo kailangang sumunod sa lisensya para sa mga elemento ng materyal sa pampublikong domain o kung saan ang iyong paggamit ay pinahihintulutan ng isang angkop na pagbubukod o limitasyon; Walang mga garantiya ang ibinigay. Ang lisensya ay hindi maaaring magbigay sa iyo ng lahat ng mga pahintulot na kinakailangan para sa iyong nilalayong paggamit. Halimbawa, ang iba pang mga karapatan tulad ng publisidad, pribasiya, o moral na karapatan ay maaaring maglimita sa kung paano mo gagamitin ang materyal.</p></string>
   <string name="choose_a_project">Mangyaring buksan muna ang isang proyekto.</string>
   <string name="choose_a_chapter">Mangyaring buksan muna ang isang kabanata</string>
   <string name="project_updates_downloaded">Mga proyekto ay matagumpay na na-update</string>
@@ -112,4 +112,6 @@
   <string name="update_confirmation">Ito ay magda-download ng mga update mula sa server, magpatuloy?</string>
   <string name="yes">Uu</string>
   <string name="no">Hindi</string>
+  <string name="view_statement_of_faith">Tignan ang Pahayag ng Pananampalataya</string>
+  <string name="view_translation_guidelines">Tignan Ang Mga Alituntunin ng Pagsasalin</string>
 </resources>

@@ -4,7 +4,15 @@
   <string name="pref_header_general">အေထြေထြ</string>
   <string name="pref_title_remember_position">ျပီးခဲ့သည့္ စာမ်က္ႏွာကို မွတ္သားပါ</string>
   <string name="pref_description_remember_position">အပ္စ္စခ်ိန္တြင္ ေနာက္ဆံုးၾကည့္ခဲ့သည့္ စာမ်က္ႏွာကို ျပသပါ</string>
+  <string name="pref_title_highlight_key_terms">ျမင္သာေအာင္လုပ္ထားသည့္ အဓိက အသုံးအႏူန္းမ်ား</string>
+  <string name="pref_description_highlight_key_terms">အဓိကအသံုးအႏူန္းမ်ားကို ရင္းျမစ္စာသားတြင္ ကလစ္လုပ္ႏိုင္သည့္ လင့္မ်ားအျဖစ္ ျပသပါ</string>
   <string name="pref_title_translation_typeface">ဘာသာျပန္ျခင္းTypeface</string>
+  <string name="pref_title_typeface_size">ဘာသာျပန္ဆိုမူ Typeface အရြယ္</string>
+  <string-array name="pref_typeface_size_titles">
+    <item>အေသး</item>
+    <item>အလတ္</item>
+    <item>အၾကီး</item>
+  </string-array>
   <string name="pref_header_synchronization">တင္ပါ</string>
   <string name="pref_title_autosave_delay">အလိုအေလ်ာက္ သိမ္းပါေျပာင္းလဲးခ်က္မ်ား</string>
   <string-array name="pref_autosave_titles">
@@ -20,4 +28,7 @@
   <string name="pref_title_media_server">မီဒီယာဆာဗာ</string>
   <string name="pref_header_sharing">မ်ေ၀ျခင္း</string>
   <string name="pref_title_export_format">ပံုစံ တင္ပို႔သည္</string>
+  <string name="pref_header_advanced">အဆင့္ျမင့္ျပီးေသာ</string>
+  <string name="pref_title_advanced_settings">အဆင့္ျမင့္ျပီးေသာ ဆက္တင္မ်ားကို ျပဳလုပ္ပါ</string>
+  <string name="pref_description_advanced_settings">လမ္းျပ ဘားမွအဆင့္ျမင့္ျပီးေသာ ဆက္တင္မ်ားခလုတ္ကို ျပသပါ</string>
 </resources>

@@ -32,12 +32,16 @@
   <string name="translation_import_failed">ဘာသာျပန္ျခင္းကို တင္သြင္းရန္ မေအာင္ျမင္ပါ</string>
   <string name="internet_not_available">သင့္တြင္ ဖြင့္ထားသည့္ အင္တာနက္ မရွိပါ။</string>
   <string name="title_activity_upload_wizard">ဘာသာျပန္ျခင္း တင္သည္</string>
+  <string name="upload_wizard_intro">သင္၏ ဘာသာျပန္ဆိုမူကို သင္က အပ္လုပ္တင္ေတာ့မည္။</string>
   <string name="label_continue">ဆက္ပါ</string>
   <string name="upload_wizard_overview">ျပန္ၾကည့္ပါကို တင္ပါ</string>
   <string name="label_project_details">စီမံကိန္း အေသးစိတ္မ်ား</string>
+  <string name="project_details"><xliff:g id="ပေရာဂ်က္" ဥပမာ="သမၼက်န္းပံုျပင္မ်ားဖြင့္ပါ">\"%1$s\"</xliff:g> သည္   <xliff:g id="ဘာသာစကားမွ ဘာသာျပန္ဆိုထားျခင္းျဖစ္သည္" ဥပမာ="အဂၤလိပ္">\"%2$s\"</xliff:g> သာသာစကားကို  <xliff:g id="ဘာသာစကားသို႔" ဥပမာ="ဂ်ာမန္">\"%3$s\"</xliff:g>ဘာသာစကား။</string>
   <string name="click_for_details">အေသးစိတ္မ်ားအတြက္ ကလစ္ႏွိပ္ပါ</string>
   <string name="label_project_settings">စီမံကိန္းဆက္တင္မ်ား</string>
   <string name="error_target_and_source_are_same">ရင္းျမစ္ႏွင့္ ရည္ရြယ္သည့္ဘာသာစကားက ထပ္တူညီသည္</string>
+  <string name="error_chapter_title_missing">အခန္းေခါင္းစဥ္ ေပ်ာက္ေနသည္</string>
+  <string name="error_chapter_reference_missing">အခန္း ကိုးကားခ်က္ ေပ်ာက္ေနသည္</string>
   <string name="label_validate_chapter">အခဏ္း: %1$s</string>
   <string name="dialog_validation_errors">အေထာက္အထားျပျခင္း အမွားမ်ား</string>
   <string name="validation_errors">၄င္းတို႔မွာ ဘာသာျပန္တြင္ မျပင္ရေသးသည့္ အမွားမ်ားျဖစ္သည္။ ေက်းဇူးျပဳ၍ ၄င္းတို႔ကိုျပင္ျပီး ျပန္ၾကိဳဳးစားပါ။</string>
@@ -46,14 +50,18 @@
   <string name="validation_warnings">၄င္းတို႔မွာ ဘာသာျပန္တြင္ မျပင္ရေသးသည့္ သတိေပးခ်က္မ်ား ျဖစ္သည္။ ဤဘာသာျပန္မူကို တင္ခ်င္တာ သင္ေသခ်ာလား?</string>
   <string name="no_translated_chapters">ဘာမွ ဘာသာမျပန္ထားပါ။</string>
   <string name="label_chapters">အခဏ္မ်ား</string>
+  <string name="now_viewing_frame">ျမင္ရသည့္ ေဘာင္ <xliff:g id="နံပါတ္" ဥပမာ="1">%1$s</xliff:g>  ခန္း၌ <xliff:g id="အခန္း" ဥပမာ="1. ဖန္တီးမူ">%2$s</xliff:g>။</string>
   <string name="label_translation_notes">ဘာသာျပန္ျခင္း မွတ္ခ်က္မ်ား</string>
   <string name="label_passage_note">စာပုဒ္ မွတ္ခ်က္:</string>
   <string name="label_delete">ဖ်တ္ပါ</string>
+  <string name="source_language_instructions">ရင္းျမစ္ဘာသာစကားမ်ားသည္ ျပီးျပည့္စံုသည့္ ဘာသာျပန္ဆိုမူမ်ားျဖစ္သည္။</string>
+  <string name="target_language_instructions">ပစ္မွတ္ထားသည့္ ဘာသာစကာမ်ားအား ဘာသာမျပန္ဆိုရေသးပါ သုိ႔မဟုတ္ ျပန္ဆိုေနတုန္းျဖစ္သည္။</string>
   <string name="translation_notes_title">ဘာသာျပန္ျခင္း မွတ္ခ်က္မ်ား:</string>
   <string name="translation_notes_important_terms_title">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ား:</string>
   <string name="notes_cannot_overlap">မွတ္ခ်က္မ်ားသည္ ထပ္တူက်၍မရပါ။</string>
   <string name="loading_preferences">ႏွစ္သက္မူမ်ား တင္ေပးျခင္း</string>
   <string name="launching_translator">ဘာသာျပန္သူ ထုတ္ေပးျခင္း</string>
+  <string name="currently_viewed_frame_index">ေဘာင္<xliff:g id="လက္ရွိ_ေဘာင္" ဥပမာ="2">%1$s</xliff:g> ၏ <xliff:g id="စုစုေပါင္း_ေဘာင္မ်ား" ဥပမာ="10">%2$s</xliff:g></string>
   <string name="opening_project">စီမံကိန္းဖြင့္ေနသည္</string>
   <string name="loading_key_terms">အဓိကအသံုးအႏူန္းမ်ားကိုတင္ေနသည္</string>
   <string name="loading_translation_notes">ဘာသာျပန္ျခင္း မွတ္ခ်က္မ်ားကိုတင္ေနသည္</string>
@@ -63,6 +71,7 @@
   <string name="choose_file">သင့္ဖိုင္ကိုေရြးပါ</string>
   <string name="choose_source_language">ရင္းျမစ္ဘာသာစကားကိုေရြးပါ</string>
   <string name="choose_target_language">ရည္ရြယ္သည့္ ဘာသာစကားကိုေရြးပါ</string>
+  <string name="search_language">ဘာသာစကားရွာပါ</string>
   <string name="loading">တင္ေနသည္...</string>
   <string name="view_license">လိုင္စင္ၾကည့္ပါ</string>
   <string name="license_deny">ရပါျပီ၊ ေက်းဇူးတင္ပါတယ္</string>
@@ -72,14 +81,28 @@
   <string name="related_terms">လည္းပဲ ၾကည့္ပါ:</string>
   <string name="term_examples">ဥပမာ:</string>
   <string name="git_push_success">စီမံကိန္းအား ေအာင္ျမင္စြာ တင္ျပီးသည္</string>
+  <string name="choose_frame_to_start">စတင္ရန္ ဘယ္ဘက္အျပားမွ ရင္းျမစ္စာသားအခ်ိဳ႔ကို ေရြးပါ</string>
+  <string name="return_to_important_terms">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ားသို႔ ျပန္သြားပါ</string>
+  <string name="no_translation_notes">ဘာသာျပန္ဆိုမူ မွတ္စုမ်ားမရွိပါ</string>
   <string name="label_important_terms">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ား</string>
-  <string name="license"><![CDATA[<h2>သင့္သည္လြတ္လပ္စြာ</h2>
+  <string name="translation_check_notice">သင့္ဘာသာျပန္ဆိုမူက အဆင့္သင့္ျဖစ္တာေသခ်ာေစရန္ စစ္ေဆးမူ ကၽြႏု္ပ္တို႔က အနည္းငယ္ျပဳလုပ္မည္။</string>
+  <string name="translation_complete">ဘာသာျပန္ဆိုမူ ျပီးဆံုးျပီ</string>
+  <string name="preparing_upload">ပေရာဂ်က္အား အပ္လုပ္တင္ရန္ ျပင္ဆင္ေနသည္</string>
+  <string name="license"><h2>သင့္သည္လြတ္လပ္စြာ</h2>
 <p>ပစၥည္းကိုမည္သည့္ ၾကားခံသုိ႔မဟုတ္ ပံုစံျဖင့္မဆို မ်ေ၀၊ ကူးယူျပီး ျပန္လည္ ထုတ္ေ၀ႏိုင္သည္; မည္သည္္ရည္ရြယ္ခ်က္အတြက္မဆို၊ စီးပြားျဖစ္ေတာင္မွ၊ ပစၥည္းအား ျပန္ေရာေႏွာႏိုင္သည္၊လိုက္ဖက္ေအာင္ျပင္ဆင္ႏိုင္ျပီး ဆက္လက္တည္ေဆာက္ႏိုင္သည္။ သင္သည္ လိုင္စင္ စည္းကမ္းခ်က္မ်ားကို လိုက္နာသ၍ လိုင္စင္ပိုင္သူသည္ ဤလြတ္လပ္ခြင့္မ်ားကို ျပန္ရုတ္သိမ္း၍မရပါ။</p>
 <h2>ေအာက္ပါစည္းကမ္းခ်က္မ်ားေအာက္တြင္:</h2>
 <p>
     <b>ထည့္သြင္းခ်က္</b> - သင္သည္ သင့္ေလ်ာ္ေသာ ခရစ္ဒစ္ေပး ရမည္ျဖစ္ျပီး၊ လင့္တစ္ခုကို လိုင္စင္သို႔ေပးရမည္ႏွင့္ ေျပာင္းလဲးခ်က္ မ်ားျပဳလုပ္ပါက ညႊန္းဆိုရမည္။ သင္သည္၄င္းတို႔ကို မည္သည့္ဆီေလ်ာ္ေသာ လုပ္နည္းလုပ္ထံုးျဖင့္မဆို  ျပဳလုပ္ႏိုင္သည္၊ သို႔ေသာ္ လိုင္စင္ထုတ္ေပးသူက သင့္အား  ေထာက္ခံခ်က္ေပးသည့္ပံုစံျဖင့္ သို႔မဟုတ္ သင့္သံုးစြဲမူ ေထာက္ခံခ်က္ေပးသည့္ပံုစံျဖင့္ ေတာ့မရပါ;   <br/>      <b>ႏွစ္သက္မူတစ္ခုကို မ်ေ၀ျခင္း </b> - ပစၥည္းအား ျပန္ေရာေႏွာႏိုင္သည္၊လိုက္ဖက္ေအာင္ျပင္ဆင္ႏိုင္ျပီး ဆက္လက္တည္ေဆာက္လ်င္၊ သင့္ထည့္၀င္ မူကို လိုင္စင္တူတစ္ခုတည္းမွာ မူလပံုစံ အေနျဖင့္ ထည့္သြင္းရမည္;  <br/>      <b>ထပ္ေလာင္း ကန္႔သတ္ခ်က္မ်ား မရွိေစရ </b> - သင္သည္ အျခားသူမ်ားသည္ လိုင္စင္ခြင့္ျပဳခ်က္ေအာက္တြင္ မည္သည့္ျပဳလုပ္သည့္ အရာကိုမဆို တရား၀င္ ကန္႔သတ္ႏိုင္သည့္ တရား၀င္စည္းကမ္းခ်က္မ်ား သို႔မဟုတ္ နည္းပညာတိုင္း ထြာခ်က္မ်ားအား အသံုးမခ်ရပါ။
 </p>
 <h2>မွတ္ခ်က္မ်ား:</h2>
-<p>ပစၥည္း၏ အခရာအတြက္ အမ်ားသံုးဒိုမိန္းတြင္ လိုင္စင္အား သင္လိုက္နာရန္မလိုပါ သို႔မဟုတ္ သင္သံုးသည့္ေနရာသည္ အက်ံဴး၀င္သည့္ ျခြင္းခ်က္သို႔မဟုတ္ ကန္႔သတ္ခ်က္မွ ခြင့္ျပဳထားလ်င္လိုင္စင္အား သင္လိုက္နာရန္မလိုပါ; မည္သည့္ အာမခံခ်က္မ်ား မွမေပးထားပါ။ သင့္ၾကံရြယ္သည့္ သံုးစြဲမူအတြက္ လိုင္စင္သည္ လိုအပ္သည့္ ခြင့္ျပဳခ်က္မ်ား အားလံုးကို မေပးႏိုင္ပါ။ ဥပမာ၊ ေက်ာ္ၾကားမူ၊ ပုဂၢိဳလ္ေရးသို႔မဟုတ္ အက်င့္စာရိတၱစသည့္ အခြင့္အေရးမ်ားအား သင္ပစၥည္းအသံုးျပဳပံုေပၚ မူတည္ျပီး ကန္႔သတ္ထားႏိုင္သည္။</p>]]></string>
+<p>ပစၥည္း၏ အခရာအတြက္ အမ်ားသံုးဒိုမိန္းတြင္ လိုင္စင္အား သင္လိုက္နာရန္မလိုပါ သို႔မဟုတ္ သင္သံုးသည့္ေနရာသည္ အက်ံဴး၀င္သည့္ ျခြင္းခ်က္သို႔မဟုတ္ ကန္႔သတ္ခ်က္မွ ခြင့္ျပဳထားလ်င္လိုင္စင္အား သင္လိုက္နာရန္မလိုပါ; မည္သည့္ အာမခံခ်က္မ်ား မွမေပးထားပါ။ သင့္ၾကံရြယ္သည့္ သံုးစြဲမူအတြက္ လိုင္စင္သည္ လိုအပ္သည့္ ခြင့္ျပဳခ်က္မ်ား အားလံုးကို မေပးႏိုင္ပါ။ ဥပမာ၊ ေက်ာ္ၾကားမူ၊ ပုဂၢိဳလ္ေရးသို႔မဟုတ္ အက်င့္စာရိတၱစသည့္ အခြင့္အေရးမ်ားအား သင္ပစၥည္းအသံုးျပဳပံုေပၚ မူတည္ျပီး ကန္႔သတ္ထားႏိုင္သည္။</p></string>
+  <string name="choose_a_project">ေက်းဇူးျပဳ၍ ပေရာဂ်က္ကို အရင္ဖြင့္ပါ။</string>
+  <string name="choose_a_chapter">ေက်းဇူးျပဳ၍ အခန္းကို အရင္ဖြင့္ပါ။</string>
+  <string name="project_updates_downloaded">ပေရာဂ်က္အား ေအာင္ျမင္စြာ အပ္ဒိပ္လုပ္ျပီးပါျပီ</string>
+  <string name="downloading_updates">အပ္ဒိပ္မ်ားကို ေဒါင္းလုပ္လုပ္ေနသည္</string>
+  <string name="title_activity_crash_reporter">အမွား အေၾကာင္းၾကားစာ</string>
+  <string name="crash_reports">ဤ အပ္စ္သည္ မၾကာေသးမီက ကြဲသြားခဲ့ပံုရသည္။ အပ္စ္ေရးသူမ်ားထံသုိ႔ ဤအမွားအေၾကာင္းၾကားစာကို အပ္လုပ္တက္ခ်င္ပါသလား?</string>
+  <string name="crash_details">အပ္စ္မကြဲခင္က သင္ဘာလုပ္ေနလဲး?</string>
+  <string name="crash_details_label">ေရြးစရာ မွတ္စုမ်ား</string>
   <string name="settings">ဆက္တင္မ်ား</string>
 </resources>

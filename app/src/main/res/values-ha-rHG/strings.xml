@@ -88,14 +88,14 @@
   <string name="translation_check_notice">Yanzu za mu danyi gwaji don a tabbatar in fassararka/ki ta kammala.</string>
   <string name="translation_complete">Fassara ta kammala</string>
   <string name="preparing_upload">Har-hada aiki don dorawa</string>
-  <string name="license"><![CDATA[<h2>Kana da \'yancin</h2>
+  <string name="license"><h2>Kana da \'yancin</h2>
 <p>Sake sarrafa wannan bayanin ta hanyar kofar shi, juya shi, canja shi ta hanya mai ma\'ana ko yada shi ta kowacce irin kafar sadarwa akan kowane irin dalili, ko da kuwa hanyar ta hada da neman kudi ne. Ba za a taba soke lasisin da ya bayar da \'yancin yin hakan ba makawar dai ba saba ma dokokin da aka shata ba.</p>
 <h2>Karkashin wadannan sharudan da aka shata:</h2>
 <p>
     Dolene a alakanta aikin da mai shi na asali da kuma tushen wurin da aka samo izinin yin sauye-sauyen, haka kuma da bayani mai gamsarwa in har anyi wasu sauye-sauye a cikin gundarin aikin. Kana iya yin hakan ne ta hanyar da ta kamata. Idan ka yi wasu canje-canjen da doka ta aminta da su, to fa dole ne kai ma ka raba wannan aikin tare da bayar da cikakken izini ga duk wanda ke son shima yayi amfani da wannan aikin kamar yanda kai ma aka baka, ba tare da sa wata doka ko sharuddan da za su hana kowa yin hakan ba.
 </p>
 <h2>Fadakarwa:</h2>
-<p>Ba wai dole bane sai ka bi sharuddan wannan izini ba idan ka samu kanka a wani wuri ko hali mai tsari na mussamman da ya ba aikinka wani \'yanci ko iyakokin da ya kamata ka kiyaye Mai yiwuwa ne wannan  lasisin ba zai baka damar samun dukkanin izinin da zaka bukata ba domin gudanar da aikin naka. Misali, wasu sharudda masu alaka  da sha\'anin sirri, yada labarai ko tarbiyya na iya kawo cikas a wurin gudanar da wannan aikin</p>]]></string>
+<p>Ba wai dole bane sai ka bi sharuddan wannan izini ba idan ka samu kanka a wani wuri ko hali mai tsari na mussamman da ya ba aikinka wani \'yanci ko iyakokin da ya kamata ka kiyaye Mai yiwuwa ne wannan  lasisin ba zai baka damar samun dukkanin izinin da zaka bukata ba domin gudanar da aikin naka. Misali, wasu sharudda masu alaka  da sha\'anin sirri, yada labarai ko tarbiyya na iya kawo cikas a wurin gudanar da wannan aikin</p></string>
   <string name="choose_a_project">Ka fara buda aiki tukuna.</string>
   <string name="choose_a_chapter">Ka fara buda babi tukuna.</string>
   <string name="project_updates_downloaded">Anyi nasarar sabunta ayukan duka</string>

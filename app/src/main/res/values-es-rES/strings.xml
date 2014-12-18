@@ -88,14 +88,14 @@
   <string name="translation_check_notice">Ahora vamos a realizar algunas verificaciones para asegurar que su traducción está lista.</string>
   <string name="translation_complete">La traducción es completa</string>
   <string name="preparing_upload">Preparación del proyecto para la carga</string>
-  <string name="license"><![CDATA[<h2>Eres libre de:</h2>
+  <string name="license"><h2>Eres libre de:</h2>
 <p>Compartir, copiar y redistribuir el material en cualquier medio o formato; Adaptar, remix, transformar y construir sobre el material para cualquier propósito, incluso comercialmente. El licenciante no puede revocar esas libertades mientras sigues los términos de licencia.</p>
 <h2>Bajo los siguientes términos:</h2>
 <p><b>Atribución</b> - debe dar el crédito apropiado, proporciona un enlace a la licencia e indicar si se realizaron cambios. Puede hacerlo de cualquier manera razonable, pero de ninguna manera que sugiere que el licenciante respalda usted o su uso;
     <br/> <b>CompartirIgual</b> - si usted remix, transforma o construir sobre el material, deben distribuir sus contribuciones bajo la misma licencia que la original;
     <br/> <b>Sin restricciones adicionales</b> - no puede aplicar los términos legales o medidas tecnológicas que restringen legalmente otros de hacer algo la licencia permite.</p>
 <h2>Nota:</h2>
-<p>Usted no tiene que cumplir con la licencia para los elementos del material en el dominio público o donde su uso está permitido por una excepción aplicable o limitación; No reciben ninguna garantía. La licencia no puede darle todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos como la publicidad, privacidad o moral pueden limitar derechos cómo usar el material.</p>]]></string>
+<p>Usted no tiene que cumplir con la licencia para los elementos del material en el dominio público o donde su uso está permitido por una excepción aplicable o limitación; No reciben ninguna garantía. La licencia no puede darle todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos como la publicidad, privacidad o moral pueden limitar derechos cómo usar el material.</p></string>
   <string name="choose_a_project">Por favor, abra un proyecto primero.</string>
   <string name="choose_a_chapter">Por favor, abra un capítulo primero</string>
   <string name="project_updates_downloaded">Los proyectos se han actualizado correctamente</string>
@@ -108,4 +108,6 @@
   <string name="update_confirmation">Esto descargará actualizaciones desde el servidor, continúe?</string>
   <string name="yes">Si</string>
   <string name="no">No</string>
+  <string name="view_statement_of_faith">Ver Declaración de Fe</string>
+  <string name="view_translation_guidelines">Ver Directrices de Traducción</string>
 </resources>
