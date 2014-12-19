@@ -110,19 +110,21 @@ public class ProjectManager {
                         mDataStore.fetchSourceText(p.getId(), l.getId(), r.getId(), true);
                         neededUpdate = true;
                     }
+
+                    if(hasNewVersion || mDataStore.fetchTermsText(p.getId(), l.getId(), r.getId(), false) == null) {
+                        mDataStore.fetchTermsText(p.getId(), l.getId(), r.getId(), true);
+                        neededUpdate = true;
+                    }
+                    if(hasNewVersion || mDataStore.fetchTranslationNotes(p.getId(), l.getId(), r.getId(), false) == null) {
+                        mDataStore.fetchTranslationNotes(p.getId(), l.getId(), r.getId(), true);
+                        neededUpdate = true;
+                    }
                 }
             } else {
-                // TODO: download missing resources
+                // TODO: download missing resources as well
             }
 
-            if(hasNewVersion || mDataStore.fetchTermsText(p.getId(), l.getId(), false) == null) {
-                mDataStore.fetchTermsText(p.getId(), l.getId(), true);
-                neededUpdate = true;
-            }
-            if(hasNewVersion || mDataStore.fetchTranslationNotes(p.getId(), l.getId(), false) == null) {
-                mDataStore.fetchTranslationNotes(p.getId(), l.getId(), true);
-                neededUpdate = true;
-            }
+
 
             // reload the source if this is the currently selected project
             if(neededUpdate && p.getId().equals(mSelectedProjectId) && getSelectedProject().getSelectedSourceLanguage().equals(l)) {
@@ -160,13 +162,13 @@ public class ProjectManager {
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
         }
         loadProject(source, p);
-        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId(), false);
+        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
         }
         loadTerms(terms, p);
-        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId(), false);
+        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));

@@ -12,7 +12,7 @@ public abstract class ThreadableUI {
     private final int mId;
     private static int mThreadCount;
     private boolean mInterrupted;
-    private boolean mHasStarted;
+    private boolean mHasStarted = false;
 
     public ThreadableUI(Context context) {
         mThreadCount++;

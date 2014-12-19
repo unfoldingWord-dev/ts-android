@@ -611,6 +611,7 @@ public class MainActivity extends TranslatorBaseActivity {
             @Override
             public void onStop() {
                 // kill children if this thread is stopped
+                mHighlightSourceThread = null;
                 if(mTaskThread != null) {
                     mTaskThread.stop();
                 }
@@ -669,6 +670,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onStop() {
+                        mTaskThread = null;
                         // the thread was killed
                         mSourceText.clearAnimation();
                         mSourceText.startAnimation(in);
@@ -804,7 +806,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
             @Override
             public void onPostExecute() {
-
+                mHighlightSourceThread = null;
             }
         };
         mHighlightSourceThread.start();
@@ -833,6 +835,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
             @Override
             public void onStop() {
+                mHighlightTranslationThread = null;
                 // kill children if this thread is stopped
                 if(mTaskThread != null) {
                     mTaskThread.stop();
@@ -890,6 +893,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onStop() {
+                        mTaskThread = null;
                         mTranslationEditText.clearAnimation();
                         mTranslationEditText.startAnimation(in);
                         mTranslationProgressBar.clearAnimation();
@@ -1011,7 +1015,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
             @Override
             public void onPostExecute() {
-
+                mHighlightTranslationThread = null;
             }
         };
         mHighlightTranslationThread.start();

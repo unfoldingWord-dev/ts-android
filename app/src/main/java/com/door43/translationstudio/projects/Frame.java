@@ -150,8 +150,7 @@ public class Frame extends Model {
      * @return
      */
     public String getImagePath() {
-        // TODO: let each language use it's own images. right now everything is english.
-        return "sourceTranslations/"+getChapter().getProject().getId()+"/en/images/"+getChapter().getProject().getId()+"-"+getChapterFrameId()+".jpg";
+        return "sourceTranslations/"+getChapter().getProject().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapter().getProject().getId()+"-"+getChapterFrameId()+".jpg";
     }
 
     /**

@@ -100,13 +100,13 @@ public class DataStore {
      * Returns a json array of key terms
      * Terms are case sensitive
      */
-    public String fetchTermsText(String projectSlug, String languageCode, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/terms.json";
+    public String fetchTermsText(String projectId, String languageId, String resourceId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR+projectId+"/"+languageId+"/"+resourceId+"/terms.json";
         if(checkServer) {
             // https://api.unfoldingword.org/obs/txt/1/en/kt-en.json
             URL url;
             try {
-                url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+languageCode+"/kt-"+languageCode+".json");
+                url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/kt-"+languageId+".json");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 return null;
@@ -117,13 +117,13 @@ public class DataStore {
         return loadJSONAsset(path);
     }
 
-    public String fetchTranslationNotes(String projectSlug, String languageCode, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR+projectSlug+"/"+languageCode+"/notes.json";
+    public String fetchTranslationNotes(String projectId, String languageId, String resourceId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR+projectId+"/"+languageId+"/"+resourceId+"/notes.json";
         if(checkServer) {
             // https://api.unfoldingword.org/obs/txt/1/en/tN-en.json
             URL url;
             try {
-                url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+languageCode+"/tN-"+languageCode+".json");
+                url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/tN-"+languageId+".json");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 return null;
@@ -136,17 +136,17 @@ public class DataStore {
 
     /**
      * Returns a json object of source text for a specific project and language
-     * @param projectSlug the slug of the project for which the source text will be returned
-     * @param languageCode the language code for which the source text will be returned
+     * @param projectId the slug of the project for which the source text will be returned
+     * @param languageId the language code for which the source text will be returned
      * @return
      */
-    public String fetchSourceText(String projectSlug, String languageCode, String resource, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/" + languageCode + "/" + resource + "/source.json";
+    public String fetchSourceText(String projectId, String languageId, String resourceId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
         if(checkServer) {
             // api.unfoldingword.org/obs/txt/1/en/obs-en.json
             URL url;
             try {
-                url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+languageCode+"/"+projectSlug+"-"+languageCode+".json");
+                url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/"+projectId+"-"+languageId+".json");
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 return null;
