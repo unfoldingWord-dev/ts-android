@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "ulb",
+    "name": "unfoldingWord Literal Bible",
+    "date_modified": 20141207,
+    "status": {
+      "checking_entity": "Distant Shores Media; Wycliffe Associates",
+      "checking_level": "3",
+      "comments": "Original source text.",
+      "contributors": "Wycliffe Associates",
+      "publish_date": "2014-12-07",
+      "source_text": "en",
+      "source_text_version": "3.1.1",
+      "version": "3.1.1"
+    },
+    "source": "https://api.unfoldingword.org/ts/txt/2/luk/en/ulb/source.json",
+    "terms": "https://api.unfoldingword.org/ts/txt/2/luk/en/ulb/terms.json",
+    "notes": "https://api.unfoldingword.org/ts/txt/2/luk/en/ulb/notes.json"
+  },
+  {
+    "slug": "udb",
+    "name": "unfoldingWord Dynamic Bible",
+    "date_modified": 20141207,
+    "status": {
+      "checking_entity": "Distant Shores Media; Wycliffe Associates",
+      "checking_level": "3",
+      "comments": "Original source text.",
+      "contributors": "Wycliffe Associates",
+      "publish_date": "2014-12-07",
+      "source_text": "en",
+      "source_text_version": "3.1.1",
+      "version": "3.1.1"
+    },
+    "source": "https://api.unfoldingword.org/ts/txt/2/luk/en/udb/source.json",
+    "terms": "https://api.unfoldingword.org/ts/txt/2/luk/en/udb/terms.json",
+    "notes": "https://api.unfoldingword.org/ts/txt/2/luk/en/udb/notes.json"
+  }
+]

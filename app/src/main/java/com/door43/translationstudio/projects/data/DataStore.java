@@ -41,18 +41,18 @@ public class DataStore {
             return "";
         } else {
             // TODO: check for stored catalogs
-            return loadJSONAsset(SOURCE_TRANSLATIONS_DIR + "projects.json");
+            return loadJSONAsset(SOURCE_TRANSLATIONS_DIR + "projects_catalog.json");
         }
     }
 
     /**
      * Returns a json array of source languages for a specific project
-     * This should not be ran on the main thread.
+     * This should not be ran on the main thread when checking the server
      * @param projectSlug the slug of the project for which languages will be returned
      * @return
      */
     public String fetchSourceLanguageCatalog(String projectSlug, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/languages.json";
+        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/languages_catalog.json";
 
         if(checkServer) {
             // https://api.unfoldingword.org/obs/txt/1/obs-catalog.json
@@ -65,11 +65,29 @@ public class DataStore {
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
             ServerUtilities.downloadFile(url, file);
+            // TODO: I'm not sure that we are actually reading from this file because we never change the path.
         }
         return loadJSONAsset(path);
     }
+
+
     /**
-     * Retusn a json array of target languages
+     * Returns a json array of the resources for a specific language
+     * @param projectSlug
+     * @param languageSlug
+     * @param checkServer
+     * @return
+     */
+    public String fetchResourceCatalog(String projectSlug, String languageSlug, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/" + languageSlug + "/resources_catalog.json";
+        if(checkServer) {
+            // TODO: check the server
+        }
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns a json array of target languages
      */
     public String fetchTargetLanguageCatalog() {
         // TODO: check for updates on the server
@@ -122,8 +140,8 @@ public class DataStore {
      * @param languageCode the language code for which the source text will be returned
      * @return
      */
-    public String fetchSourceText(String projectSlug, String languageCode, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/" + languageCode + "/source.json";
+    public String fetchSourceText(String projectSlug, String languageCode, String resource, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/" + languageCode + "/" + resource + "/source.json";
         if(checkServer) {
             // api.unfoldingword.org/obs/txt/1/en/obs-en.json
             URL url;

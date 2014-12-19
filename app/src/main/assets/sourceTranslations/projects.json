@@ -1,8 +1,0 @@
-[
-  {
-    "title": "Open Bible Stories",
-    "desc": "50 key stories of the Bible",
-    "slug": "obs",
-    "catalog": "https://api.unfoldingword.org/obs/txt/1/obs-catalog.json"
-  }
-]

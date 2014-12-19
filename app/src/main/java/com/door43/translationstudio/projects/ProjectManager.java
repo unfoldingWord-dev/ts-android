@@ -90,21 +90,31 @@ public class ProjectManager {
 
     /**
      * Downloads the latest version of the project resources from the server
+     * TODO: this method is in major need of repair.
      * @param p
      */
     public void downloadProjectUpdates(Project p) {
         // download the source language catalog
-        String catalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
-        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, catalog);
+        String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
+        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog);
         for(SourceLanguage l:languages) {
             // only download changed languages or languages that don't have any source
+            // TODO: this date check will not work because the loadSourceLanguageCatalog overwrites it
             boolean hasNewVersion = getSourceLanguage(l.getId()).getDateModified() < l.getDateModified();
             boolean neededUpdate = false;
-            // TODO: we need to update to support Bible translation project
-            if(hasNewVersion || mDataStore.fetchSourceText(p.getId(), l.getId(), false) == null) {
-                mDataStore.fetchSourceText(p.getId(), l.getId(), true);
-                neededUpdate = true;
+            if(hasNewVersion) {
+                String resourceCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), true);
+                List<Resource> resources = loadResourcesCatalog(l, resourceCatalog);
+                for(Resource r:resources) {
+                    if(hasNewVersion || mDataStore.fetchSourceText(p.getId(), l.getId(), r.getId(),  false) == null) {
+                        mDataStore.fetchSourceText(p.getId(), l.getId(), r.getId(), true);
+                        neededUpdate = true;
+                    }
+                }
+            } else {
+                // TODO: download missing resources
             }
+
             if(hasNewVersion || mDataStore.fetchTermsText(p.getId(), l.getId(), false) == null) {
                 mDataStore.fetchTermsText(p.getId(), l.getId(), true);
                 neededUpdate = true;
@@ -143,20 +153,20 @@ public class ProjectManager {
         }
         if(p == null) return;
 
-        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getVariantId(), false);
+        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
         }
         loadProject(source, p);
-        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getVariantId(), false);
+        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
         }
         loadTerms(terms, p);
-        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getVariantId(), false);
+        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
@@ -537,10 +547,10 @@ public class ProjectManager {
         for(int i=0; i<numProjects; i++) {
             try {
                 JSONObject jsonProject = json.getJSONObject(i);
-                if(jsonProject.has("title") && jsonProject.has("slug") && jsonProject.has("desc")) {
+                if(jsonProject.has("slug") && jsonProject.has("date_modified")) {
                     mProgress += PERCENT_PROJECTS / numProjects;
                     mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
-                    Project p = new Project(jsonProject.get("title").toString(), jsonProject.get("slug").toString(), jsonProject.get("desc").toString());
+                    Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
                     if(addProject(p)) {
                         importedProjects.add(p);
                     }
@@ -580,33 +590,54 @@ public class ProjectManager {
         for(int i=0; i<json.length(); i++) {
             try {
                 JSONObject jsonLanguage = json.getJSONObject(i);
-                if(jsonLanguage.has("language") && jsonLanguage.has("status") && jsonLanguage.has("string") && jsonLanguage.has("direction")) {
-                    JSONObject jsonStatus = jsonLanguage.getJSONObject("status");
-                    if(jsonStatus.has("checking_level")) {
-                        // require minimum language checking level
-                        if(Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                            // Some languages may have multiple variations of a translation e.g. literal or dynamic. However, these are project specific
-                            String variant = null;
-                            if(jsonLanguage.has("name")) {
-                                variant = jsonLanguage.get("name").toString();
-                            }
-                            // language direction
-                            Language.Direction langDir = jsonLanguage.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
-                            SourceLanguage l = new SourceLanguage(jsonLanguage.get("language").toString(), jsonLanguage.get("string").toString(), langDir, variant, Integer.parseInt(jsonLanguage.get("date_modified").toString()));
+                if(jsonLanguage.has("language") && jsonLanguage.has("project")) {
+                    JSONObject jsonLangInfo = jsonLanguage.getJSONObject("language");
+                    JSONObject jsonProjInfo = jsonLanguage.getJSONObject("project");
 
-                            // For the most part source and target languages can be used interchangably, however there are some cases were we need some extra information in source languages.
-                            addSourceLanguage(l);
-                            importedLanguages.add(l);
-
-                            if(p != null) {
-                                p.addSourceLanguage(l);
-                            } else {
-//                                Log.w(TAG, "project not found");
-                            }
-                        }
-                    } else {
-//                        Log.w(TAG, "missing required parameters in the source language catalog");
+                    // load the rest of the project info
+                    // TRICKY: we need to load at least one version of the project title to begin with.
+                    // Then whenever the languages changes the appropriate title and description will be loaded
+                    if(p.getTitle() == null) {
+                        p.setTitle(jsonProjInfo.getString("name"));
+                        p.setDescription(jsonProjInfo.getString("desc"));
                     }
+
+                    // TODO: we need to handle the meta.
+
+//                    if(jsonStatus.has("checking_level")) {
+                        // require minimum language checking level
+//                    if(Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
+                        // Some languages may have multiple variations of a translation e.g. literal or dynamic. However, these are project specific
+//                    String variant = null;
+//                    if(jsonLanguage.has("name")) {
+//                        variant = jsonLanguage.get("name").toString();
+//                    }
+
+                    // load language
+                    Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
+                    SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
+
+                    // load resources
+                    String resourcesCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), false);
+                    List<Resource> importedResources = loadResourcesCatalog(l, resourcesCatalog);
+
+                    // only resources with the minium checking level will get imported, so it's possible we'll need to skip a language
+                    if(importedResources.size() > 0) {
+                        // For the most part source and target languages can be used interchangably, however there are some cases were we need some extra information in source languages.
+                        addSourceLanguage(l);
+                        importedLanguages.add(l);
+
+                        if (p != null) {
+                            p.addSourceLanguage(l);
+                        } else {
+//                                Log.w(TAG, "project not found");
+                        }
+                    }
+
+//                    }
+//                    } else {
+////                        Log.w(TAG, "missing required parameters in the source language catalog");
+//                    }
                 } else {
 //                    Log.w(TAG, "missing required parameters in the source language catalog");
                 }
@@ -616,6 +647,51 @@ public class ProjectManager {
             }
         }
         return importedLanguages;
+    }
+
+    /**
+     * Loads the resources into the given source language
+     * @param l the source language
+     * @param resourcesCatalog the json resources
+     */
+    private List<Resource> loadResourcesCatalog(SourceLanguage l, String resourcesCatalog) {
+        List<Resource> importedResources = new ArrayList<Resource>();
+        if(resourcesCatalog == null) {
+            return importedResources;
+        }
+        // parse resources
+        JSONArray json;
+        try {
+            json = new JSONArray(resourcesCatalog);
+        } catch (Exception e) {
+            Log.w(TAG, e.getMessage());
+            return new ArrayList<Resource>();
+        }
+
+        // load the data
+        for(int i=0; i<json.length(); i++) {
+            try {
+                JSONObject jsonResource = json.getJSONObject(i);
+                if(jsonResource.has("slug") && jsonResource.has("name") && jsonResource.has("date_modified") && jsonResource.has("status")) {
+                    // verify the checking level
+                    JSONObject jsonStatus = jsonResource.getJSONObject("status");
+                    if(jsonStatus.has("checking_level")) {
+                        if (Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
+                            // load resource
+                            Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonResource.getInt("date_modified"));
+                            l.addResource(r);
+                            importedResources.add(r);
+                        }
+                    }
+                } else {
+                    // missing required parameters
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
+        return importedResources;
     }
 
     /**

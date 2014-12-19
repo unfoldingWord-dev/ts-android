@@ -1,0 +1,16 @@
+[
+  {
+    "project": {
+      "name": "Luke",
+      "desc": "Gospel",
+      "meta": ["Bible", "New Testament"]
+    },
+    "language": {
+      "slug": "en",
+      "name": "English",
+      "direction": "ltr",
+      "date_modified": "20141207"
+    },
+    "res_catalog": "https://api.unfoldingword.org/ts/txt/2/luk/en/resources.json"
+  }
+]

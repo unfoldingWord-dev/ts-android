@@ -41,9 +41,10 @@ public class Project extends Model {
     private List<Term> mTerms = new ArrayList<Term>();
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
 
-    private final String mTitle;
+    private String mTitle;
     private final String mSlug;
-    private final String mDescription;
+    private int mDateModified;
+    private String mDescription;
     private String mSelectedChapterId;
     private String mSelectedSourceLanguageId;
     private String mSelectedTargetLanguageId;
@@ -53,7 +54,44 @@ public class Project extends Model {
     private static final String TRANSLATION_READY_TAG = "READY";
 
     /**
+     * Creates a new project
+     * TODO: I'm not sure that we need the dateModified
+     * @param slug
+     * @param dateModified
+     */
+    public Project(String slug, int dateModified) {
+        super("project");
+        mSlug = slug;
+        mDateModified = dateModified;
+        // load the selected language
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
+        mSelectedTargetLanguageId = settings.getString("selected_target_language_"+mSlug, null);
+    }
+
+    /**
+     * Sets the title of the project. This can only be set once
+     * @param title
+     */
+    public void setTitle(String title) {
+        if(mTitle == null) {
+            mTitle = title;
+        }
+    }
+
+    /**
+     * Sets the description of the project. This can only be set once
+     * @param description
+     */
+    public void setDescription(String description) {
+        if(mDescription == null) {
+            mDescription = description;
+        }
+    }
+
+    /**
      * Create a new project
+     * @deprecated
      * @param title The human readable title of the project.
      * @param slug The machine readable slug identifying the project.
      * @param description A short description of the project.
@@ -240,8 +278,8 @@ public class Project extends Model {
      * @param l the language to add
      */
     public boolean addSourceLanguage(SourceLanguage l) {
-        if(!mSourceLanguageMap.containsKey(l.getVariantId())) {
-            mSourceLanguageMap.put(l.getVariantId(), l);
+        if(!mSourceLanguageMap.containsKey(l.getId())) {
+            mSourceLanguageMap.put(l.getId(), l);
             mSourceLanguages.add(l);
             return true;
         } else {

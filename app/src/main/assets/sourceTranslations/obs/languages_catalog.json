@@ -1,0 +1,16 @@
+[
+  {
+    "project": {
+      "name": "Open Bible Stories",
+      "desc": "50 key stories of the Bible",
+      "meta": []
+    },
+    "language": {
+      "slug": "en",
+      "name": "English",
+      "direction": "ltr",
+      "date_modified": "20141207"
+    },
+    "res_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/en/resources.json"
+  }
+]
