@@ -738,7 +738,11 @@ public class ProjectManager {
                     }
 
                     // add translation notes to the frame
-                    p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(notes));
+                    if(p.getChapter(chapterId) != null && p.getChapter(chapterId).getFrame(frameId) != null) {
+                        p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(notes));
+                    } else {
+                        // no chapter or frame exists for that note
+                    }
                 } else {
 //                    Log.w(TAG, "missing required parameters in the source notes");
                 }

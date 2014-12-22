@@ -150,7 +150,7 @@ public class Frame extends Model {
      * @return
      */
     public String getImagePath() {
-        return "sourceTranslations/"+getChapter().getProject().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapter().getProject().getId()+"-"+getChapterFrameId()+".jpg";
+        return "sourceTranslations/"+getChapter().getProject().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapterFrameId()+".jpg";
     }
 
     /**

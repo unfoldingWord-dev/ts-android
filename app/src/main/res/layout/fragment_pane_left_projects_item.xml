@@ -6,16 +6,17 @@
     android:weightSum="3">
 
     <ImageView
-        android:layout_width="@dimen/project_list_item_image_width"
+        android:layout_width="@dimen/list_item_image_width"
         android:layout_height="@dimen/project_list_item_image_height"
         android:id="@+id/projectIcon"
-        android:background="@color/gray" />
+        android:background="@color/light_gray" />
 
     <LinearLayout
+        android:id="@+id/bodyLayout"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_weight="3"
-        android:layout_height="fill_parent"
+        android:layout_height="@dimen/project_list_item_image_height"
         android:paddingLeft="2dp"
         android:paddingRight="2dp"
         android:paddingTop="1dp"
@@ -55,6 +56,6 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:paddingBottom="1dp"
-        android:layout_alignBottom="@+id/projectIcon" />
+        android:layout_alignBottom="@+id/bodyLayout" />
 
 </RelativeLayout>

@@ -7,15 +7,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
+import com.door43.translationstudio.util.AnimationUtilities;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 /**
@@ -24,6 +23,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 public class ChaptersItemAdapter extends BaseAdapter {
 
     private final MainApplication mContext;
+    private final float mImageWidth;
 
     /**
      * Creates a new Chapter adapter
@@ -31,6 +31,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
      */
     public ChaptersItemAdapter(MainApplication c) {
         mContext = c;
+        mImageWidth = mContext.getResources().getDimension(R.dimen.list_item_image_width);
     }
 
     @Override
@@ -43,8 +44,8 @@ public class ChaptersItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int i) {
-        return getChapterItem(i);
+    public Chapter getItem(int i) {
+        return mContext.getSharedProjectManager().getSelectedProject().getChapter(i);
     }
 
     @Override
@@ -53,61 +54,84 @@ public class ChaptersItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(final int i, View view, ViewGroup viewGroup) {
-        RelativeLayout chapterItemView;
+    public View getView(int position, View convertView, final ViewGroup parent) {
+        View v = convertView;
+        ViewHolder holder = new ViewHolder();
+        Chapter c = getItem(position);
+        String imageUri = "assets://"+ c.getImagePath();
 
-        // if it's not recycled, initialize some attributes
-        if (view == null) {
+        if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            chapterItemView = (RelativeLayout)inflater.inflate(R.layout.fragment_pane_left_chapters_item, null);
+            v = inflater.inflate(R.layout.fragment_pane_left_chapters_item, null);
+            holder.icon = (ImageView)v.findViewById(R.id.chapterIcon);
+            holder.bodyLayout = (LinearLayout)v.findViewById(R.id.bodyLayout);
+            holder.title = (TextView)v.findViewById(R.id.chapterTitle);
+            holder.description = (TextView)v.findViewById(R.id.chapterDescription);
+            holder.translationIcon = (ImageView)v.findViewById(R.id.translationStatusIcon);
+            v.setTag(holder);
         } else {
-            chapterItemView = (RelativeLayout)view;
+            holder = (ViewHolder)v.getTag();
         }
 
+        holder.icon.clearAnimation();
+        holder.bodyLayout.clearAnimation();
+
+        holder.title.setText(c.getTitle());
+        holder.description.setText(c.getDescription());
+
+        // translation in progress
+        if(c.isTranslating()) {
+            holder.translationIcon.setVisibility(View.VISIBLE);
+        } else {
+            holder.translationIcon.setVisibility(View.GONE);
+        }
+
+        // highlight the selected chapter
+        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getId() == c.getId()) {
+            v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            holder.description.setTextColor(Color.WHITE);
+            holder.title.setTextColor(Color.WHITE);
+            holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
+        } else {
+            v.setBackgroundColor(Color.TRANSPARENT);
+            holder.description.setTextColor(mContext.getResources().getColor(R.color.gray));
+            holder.title.setTextColor(mContext.getResources().getColor(R.color.black));
+            holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
+        }
 
         // image
-        final ImageView chapterIcon = (ImageView)chapterItemView.findViewById(R.id.chapterIcon);
-        String imageUri = "assets://"+ getChapterItem(i).getImagePath();
+        holder.icon.setVisibility(View.GONE);
+        ViewGroup.LayoutParams params = holder.bodyLayout.getLayoutParams();
+        params.width = parent.getWidth();
+        holder.bodyLayout.setLayoutParams(params);
+
+        final ViewHolder staticHolder = holder;
+
+        // load image
         mContext.getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                chapterIcon.setImageBitmap(loadedImage);
+                // load values
+                staticHolder.icon.setImageBitmap(loadedImage);
+                staticHolder.icon.setVisibility(View.VISIBLE);
+
+                // animate views
+                AnimationUtilities.slideInLeft(staticHolder.icon);
+                AnimationUtilities.resizeWidth(staticHolder.bodyLayout, parent.getWidth(), parent.getWidth() - mImageWidth);
             }
         });
 
-        // title
-        TextView chapterTitle = (TextView)chapterItemView.findViewById(R.id.chapterTitle);
-        chapterTitle.setText(getChapterItem(i).getTitle());
-
-        // description
-        TextView chapterDescription = (TextView)chapterItemView.findViewById(R.id.chapterDescription);
-        chapterDescription.setText(getChapterItem(i).getDescription());
-
-        // translation in progress
-        ImageView translationIcon = (ImageView)chapterItemView.findViewById(R.id.translationStatusIcon);
-        if(getChapterItem(i).isTranslating()) {
-            translationIcon.setVisibility(View.VISIBLE);
-        } else {
-            translationIcon.setVisibility(View.GONE);
-        }
-
-        // highlight selected chapter
-        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getId() == getChapterItem(i).getId()) {
-            chapterItemView.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
-            chapterDescription.setTextColor(Color.WHITE);
-            chapterTitle.setTextColor(Color.WHITE);
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
-        } else {
-            chapterItemView.setBackgroundColor(Color.TRANSPARENT);
-            chapterDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
-            chapterTitle.setTextColor(mContext.getResources().getColor(R.color.black));
-            translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
-        }
-
-        return chapterItemView;
+        return v;
     }
 
-    private Chapter getChapterItem(int i) {
-        return mContext.getSharedProjectManager().getSelectedProject().getChapter(i);
+    /**
+     * Improves performance
+     */
+    private static class ViewHolder {
+        public ImageView icon;
+        public LinearLayout bodyLayout;
+        public TextView title;
+        public TextView description;
+        public ImageView translationIcon;
     }
 }

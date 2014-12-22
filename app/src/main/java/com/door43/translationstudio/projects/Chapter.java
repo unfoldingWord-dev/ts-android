@@ -287,7 +287,7 @@ public class Chapter extends Model {
      */
     public String getImagePath() {
         // TODO: the universal image loader does not support multiple callbacks on a single image so the first frame doesn't load it's image on startup.
-        return "sourceTranslations/"+getProject().getId()+"/"+getProject().getSelectedSourceLanguage().getId()+"/"+getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getProject().getId()+"-"+getId()+"-00.jpg";
+        return "sourceTranslations/"+getProject().getId()+"/"+getProject().getSelectedSourceLanguage().getId()+"/"+getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getId()+"-00.jpg";
     }
 
     /**
