@@ -40,6 +40,7 @@ public class Project extends Model {
     private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
     private List<Term> mTerms = new ArrayList<Term>();
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
+    private List<String> mMetaCategory = new ArrayList<String>();
 
     private String mTitle;
     private final String mSlug;
@@ -258,6 +259,39 @@ public class Project extends Model {
             return getChapter(defaultChapterIndex);
         } else {
             return selectedChapter;
+        }
+    }
+
+    /**
+     * Adds a meta category to the project
+     * @param m
+     */
+    public void addMetaCategory(String m) {
+        if(!mMetaCategory.contains(m)) {
+            mMetaCategory.add(m);
+        }
+    }
+
+    /**
+     * Returns an array of meta categories for this project
+     * @return
+     */
+    public String[] getMetaCategories() {
+        return mMetaCategory.toArray(new String[mMetaCategory.size()]);
+    }
+
+
+    /**
+     * Returns the id of a meta category b
+     * @param index
+     * @return
+     */
+    public String getMeta(int index) {
+        String[] meta = getMetaCategories();
+        if(index < meta.length && index >= 0) {
+            return meta[index];
+        } else {
+            return null;
         }
     }
 

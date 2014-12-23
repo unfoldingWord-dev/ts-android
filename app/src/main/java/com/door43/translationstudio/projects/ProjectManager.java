@@ -33,6 +33,10 @@ public class ProjectManager {
     // so we can look up by id
     private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
 
+    // meta projects
+    private static Map<String, MetaProject> mMetaProjectMap = new HashMap<String, MetaProject>();
+    private static Map<String, Object> mListableProjectMap = new HashMap<String, Object>();
+
     // so we can look up by index
     private static List<Language> mLanguages = new ArrayList<Language>();
     // so we can look up by id
@@ -96,7 +100,7 @@ public class ProjectManager {
     public void downloadProjectUpdates(Project p) {
         // download the source language catalog
         String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
-        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog);
+        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, null, languageCatalog);
         for(SourceLanguage l:languages) {
             // only download changed languages or languages that don't have any source
             // TODO: this date check will not work because the loadSourceLanguageCatalog overwrites it
@@ -190,6 +194,78 @@ public class ProjectManager {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Adds a meta project to the manager
+     * @param p
+     * @return
+     */
+    private boolean addMetaProject(MetaProject p) {
+        if(!mMetaProjectMap.containsKey(p.getId())) {
+            mMetaProjectMap.put(p.getId(), p);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Adds a project to the list of projects visible in the projects list.
+     * @param p
+     */
+    public void addListableProject(Project p) {
+        if(!mListableProjectMap.containsKey(p.getId())) {
+            mListableProjectMap.put(p.getId(), p);
+        }
+    }
+
+    /**
+     * Adds a meta project to the list of projects visible in the projects list.
+     * When clicked on users will navigate through the meta projects until they
+     * select a real project at which point normal application flow will continue.
+     * @param p
+     */
+    public void addListableProject(MetaProject p) {
+        if(!mListableProjectMap.containsKey("m-"+p.getId())) {
+            mListableProjectMap.put("m-"+p.getId(), p);
+        }
+    }
+
+    /**
+     * Returns the project or meta-project by id.
+     * @param id
+     * @return
+     */
+    public Object getListableProject(String id) {
+        if(mListableProjectMap.containsKey(id)) {
+            return mListableProjectMap.get(id);
+        } else if(mListableProjectMap.containsKey("m-"+id)) {
+            return mListableProjectMap.get("m-"+id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the number of projects that are to be displayed in the project list.
+     * @return
+     */
+    public int numListableProjects() {
+        return mListableProjectMap.size();
+    }
+
+    /**
+     * Get a meta project by id
+     * @param id
+     * @return
+     */
+    private MetaProject getMetaProject(String id) {
+        if(mMetaProjectMap.containsKey(id)) {
+            return mMetaProjectMap.get(id);
+        } else {
+            return null;
         }
     }
 
@@ -481,7 +557,7 @@ public class ProjectManager {
     }
 
     /**
-     * Returns the number of projects in the app
+     * Returns the number of projects in the app.
      * @return
      */
     public int numProjects() {
@@ -553,11 +629,52 @@ public class ProjectManager {
                     mProgress += PERCENT_PROJECTS / numProjects;
                     mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
                     Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
+
+                    // load meta
+                    MetaProject rootMeta = null;
+                    if(jsonProject.has("meta")) {
+                        JSONArray jsonMeta = jsonProject.getJSONArray("meta");
+                        if(jsonMeta.length() > 0) {
+                            // get the root meta
+                            String metaSlug = jsonMeta.get(0).toString();
+                            rootMeta = getMetaProject(metaSlug);
+                            if(rootMeta == null) {
+                                rootMeta = new MetaProject(metaSlug);
+                                addMetaProject(rootMeta);
+                            }
+                            p.addMetaCategory(rootMeta.getId());
+                            // load children meta
+                            MetaProject currentMeta = rootMeta;
+                            for (int j = 1; j < jsonMeta.length(); j++) {
+                                MetaProject meta = new MetaProject(jsonMeta.get(j).toString());
+                                if(currentMeta.getMetaChild(meta.getId()) != null) {
+                                    // load already created meta
+                                    currentMeta = currentMeta.getMetaChild(meta.getId());
+                                } else {
+                                    // create new meta
+                                    currentMeta.addChild(meta);
+                                    currentMeta = meta;
+                                }
+                                p.addMetaCategory(meta.getId());
+                            }
+                            // close with the project
+                            currentMeta.addChild(p);
+                        }
+                    }
+
+                    // add project or meta to the project list
+                    if(rootMeta == null) {
+                        addListableProject(p);
+                    } else {
+                        addListableProject(rootMeta);
+                    }
+
+                    // add project to the internal list and continue loading
                     if(addProject(p)) {
                         importedProjects.add(p);
                     }
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
-                    loadSourceLanguageCatalog(p, sourceLanguageCatalog);
+                    loadSourceLanguageCatalog(p, rootMeta, sourceLanguageCatalog);
                 } else {
 //                    Log.w(TAG, "missing required parameters in the project catalog");
                 }
@@ -574,7 +691,7 @@ public class ProjectManager {
      * @param p the project into which the source languages will be loaded
      * @param sourceLangaugeCatalog the catalog of source languages
      */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLangaugeCatalog) {
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, MetaProject rootMeta, String sourceLangaugeCatalog) {
         List<SourceLanguage> importedLanguages = new ArrayList<SourceLanguage>();
         if(sourceLangaugeCatalog == null) {
             return importedLanguages;
@@ -598,26 +715,36 @@ public class ProjectManager {
 
                     // load the rest of the project info
                     // TRICKY: we need to load at least one version of the project title to begin with.
-                    // Then whenever the languages changes the appropriate title and description will be loaded
+                    // Then whenever the selected language changes the appropriate title and description will be loaded
                     if(p.getTitle() == null) {
                         p.setTitle(jsonProjInfo.getString("name"));
                         p.setDescription(jsonProjInfo.getString("desc"));
                     }
 
-                    // TODO: we need to handle the meta.
-
-//                    if(jsonStatus.has("checking_level")) {
-                        // require minimum language checking level
-//                    if(Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                        // Some languages may have multiple variations of a translation e.g. literal or dynamic. However, these are project specific
-//                    String variant = null;
-//                    if(jsonLanguage.has("name")) {
-//                        variant = jsonLanguage.get("name").toString();
-//                    }
-
                     // load language
                     Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
+
+                    // load the project meta translations
+                    if(jsonProjInfo.has("meta") && rootMeta != null) {
+                        JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
+                        if(jsonMeta.length() > 0) {
+                            MetaProject currentMeta = rootMeta;
+                            for (int j = 0; j < jsonMeta.length(); j++) {
+                                currentMeta.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
+                                if(p.getMeta(j) != null) {
+                                    currentMeta = currentMeta.getMetaChild(p.getMeta(j+1));
+                                } else {
+                                    Log.d(TAG, "missing meta category in project");
+                                    break;
+                                }
+                            }
+                        } else {
+                            Log.d(TAG, "missing project meta translations");
+                        }
+                    } else if(rootMeta != null) {
+                        Log.d(TAG, "missing project meta translations");
+                    }
 
                     // load resources
                     String resourcesCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), false);
@@ -632,14 +759,9 @@ public class ProjectManager {
                         if (p != null) {
                             p.addSourceLanguage(l);
                         } else {
-//                                Log.w(TAG, "project not found");
+//                          Log.w(TAG, "project not found");
                         }
                     }
-
-//                    }
-//                    } else {
-////                        Log.w(TAG, "missing required parameters in the source language catalog");
-//                    }
                 } else {
 //                    Log.w(TAG, "missing required parameters in the source language catalog");
                 }

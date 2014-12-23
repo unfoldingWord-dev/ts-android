@@ -7,6 +7,7 @@
   {
     "slug": "luk",
     "date_modified": "20141207",
+    "meta":["bible", "nt"],
     "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/luk/languages.json"
   }
 ]

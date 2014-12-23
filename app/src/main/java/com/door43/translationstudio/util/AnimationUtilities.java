@@ -58,9 +58,9 @@ public class AnimationUtilities {
      * Fades in the view
      * @param view
      */
-    public static void fadeIn(final View view) {
+    public static void fadeIn(final View view, int duration) {
         final Animation in = new AlphaAnimation(0.0f, 1.0f);
-        in.setDuration(ANIMATION_SPEED);
+        in.setDuration(duration);
         view.setAnimation(in);
     }
 

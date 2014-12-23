@@ -2,8 +2,7 @@
   {
     "project": {
       "name": "Open Bible Stories",
-      "desc": "50 key stories of the Bible",
-      "meta": []
+      "desc": "50 key stories of the Bible"
     },
     "language": {
       "slug": "en",
