@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
@@ -36,12 +36,12 @@ public class ProjectItemAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mContext.getSharedProjectManager().numProjects();
+        return mContext.getSharedProjectManager().numListableProjects();
     }
 
     @Override
-    public Project getItem(int i) {
-        return mContext.getSharedProjectManager().getProject(i);
+    public Model getItem(int i) {
+        return mContext.getSharedProjectManager().getListableProject(i);
     }
 
     @Override
@@ -53,8 +53,8 @@ public class ProjectItemAdapter extends BaseAdapter {
     public View getView(int position, View convertView, final ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = new ViewHolder();
-        Project p = getItem(position);
-        String imageUri = "assets://"+ p.getImagePath();
+        Model m = getItem(position);
+        String imageUri = "assets://"+ m.getImagePath();
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -72,11 +72,11 @@ public class ProjectItemAdapter extends BaseAdapter {
         holder.icon.clearAnimation();
         holder.bodyLayout.clearAnimation();
 
-        holder.title.setText(p.getTitle());
-        holder.description.setText(p.getDescription());
+        holder.title.setText(m.getTitle());
+        holder.description.setText(m.getDescription());
 
         // translation in progress
-        if(p.isTranslating()) {
+        if(m.isTranslating()) {
             holder.translationIcon.setVisibility(View.VISIBLE);
         } else {
             holder.translationIcon.setVisibility(View.GONE);

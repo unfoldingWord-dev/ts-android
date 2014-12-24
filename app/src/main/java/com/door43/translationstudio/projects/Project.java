@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * Projects encapsulate the source text for a specific translation effort regardless of language.
  * This source text is subdivided into Chapters and Frames.
  */
-public class Project extends Model {
+public class Project implements Model {
     // so we can look up by index
     private List<Chapter> mChapters = new ArrayList<Chapter>();
     // so we can look up by id
@@ -61,7 +61,6 @@ public class Project extends Model {
      * @param dateModified
      */
     public Project(String slug, int dateModified) {
-        super("project");
         mSlug = slug;
         mDateModified = dateModified;
         // load the selected language
@@ -98,7 +97,6 @@ public class Project extends Model {
      * @param description A short description of the project.
      */
     public Project(String title, String slug, String description) {
-        super("project");
         mTitle = title;
         mSlug = slug;
         mDescription = description;
@@ -387,6 +385,11 @@ public class Project extends Model {
             }
         });
         return files != null && files.length > 0;
+    }
+
+    @Override
+    public String getType() {
+        return "project";
     }
 
     /**

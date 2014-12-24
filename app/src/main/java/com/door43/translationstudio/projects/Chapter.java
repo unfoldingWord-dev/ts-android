@@ -15,7 +15,7 @@ import java.util.Map;
 /**
  * Chapters encapsulate a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation
  */
-public class Chapter extends Model {
+public class Chapter implements Model {
     private static final String REFERENCE_FILE = "reference.txt";
     private static final String TITLE_FILE = "title.txt";
     // so we can look up by index
@@ -38,7 +38,6 @@ public class Chapter extends Model {
      * @param reference a short description of the chapter
      */
     public Chapter(String id, String title, String reference) {
-        super("chapter");
         mId = id;
         mTitle = title;
         mReference = reference;
@@ -394,5 +393,10 @@ public class Chapter extends Model {
         File dir = new File(Project.getRepositoryPath(mProject.getId(), mProject.getSelectedTargetLanguage().getId()) + getId());
         String[] files = dir.list();
         return files != null && files.length > 0;
+    }
+
+    @Override
+    public String getType() {
+        return "chapter";
     }
 }

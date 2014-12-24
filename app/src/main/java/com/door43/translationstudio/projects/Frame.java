@@ -12,7 +12,7 @@ import java.util.ArrayList;
 /**
  * Frames encapsulates a specific piece of translated work
  */
-public class Frame extends Model {
+public class Frame implements Model {
     private String mChapterFrameId;
     private String mText;
     private String mId;
@@ -28,7 +28,6 @@ public class Frame extends Model {
      * @param text a short description of the frame
      */
     public Frame(String chapterFrameId, String image, String text) {
-        super("frame");
         // parse id
         String[] pieces = chapterFrameId.split("-");
         if(pieces.length == 2) {
@@ -178,6 +177,17 @@ public class Frame extends Model {
         return mId;
     }
 
+    @Override
+    public String getTitle() {
+        return mChapterFrameId;
+    }
+
+    @Override
+    public String getDescription() {
+        // a subset of the text is used for the description
+        return mText.substring(0, 50) + "...";
+    }
+
     /**
      * Returns the chapter id
      * @return
@@ -231,5 +241,10 @@ public class Frame extends Model {
      */
     public boolean isTranslating() {
         return !getTranslation().getText().isEmpty();
+    }
+
+    @Override
+    public String getType() {
+        return "frame";
     }
 }

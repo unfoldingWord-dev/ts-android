@@ -1,6 +1,11 @@
 package com.door43.translationstudio.projects;
 
+import com.door43.translationstudio.util.MainContext;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -8,28 +13,113 @@ import java.util.Map;
  * real projects into categories. Meta projects are basically linked lists that may chain together
  * multiple meta projects before terminating at a real project.
  */
-public class MetaProject {
-    private final String mSlug;
+public class MetaProject implements Model {
+    private final String mId;
 //    private MetaProject mMetaChild;
 //    private Project mProjectChild;
     private Map<String, Object> mChildrenMap = new HashMap<String, Object>();
-    private Map<String, Translation> mLanguageMap = new HashMap<String, Translation>();
+    private Map<String, Translation> mTranslationMap = new HashMap<String, Translation>();
+    private List<Translation> mTranslations = new ArrayList<Translation>();
+    private String mSelectedTranslationId;
 
     /**
      * Creates a new meta project that contains a sub meta project
      * @param slug
      */
     public MetaProject(String slug) {
-        mSlug = slug;
+        mId = slug;
     }
 
+    public Translation getSelectedTranslation() {
+        Translation selectedTranslation = getTranslation(mSelectedTranslationId);
+        if(selectedTranslation == null) {
+            // auto select the first chapter if no other chapter has been selected
+            int defaultLanguageIndex = 0;
+            setSelectedTranslation(defaultLanguageIndex);
+            return getTranslation(defaultLanguageIndex);
+        } else {
+            return selectedTranslation;
+        }
+    }
+
+    public boolean setSelectedTranslation(int index) {
+        Translation t = getTranslation(index);
+        if(t != null) {
+            mSelectedTranslationId = t.getLanguage().getId();
+//            storeSelectedSourceLanguage(mSelectedSourceLanguageId);
+        }
+        return t != null;
+    }
+
+    public boolean setSelectedTranslation(String id) {
+        if(mTranslationMap.containsKey(id)) {
+            mSelectedTranslationId = id;
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Returns the meta project id
      * @return
      */
     public String getId() {
-        return mSlug;
+        return mId;
+    }
+
+    @Override
+    public String getTitle() {
+        Translation t;
+        // try to use the current device language
+        t = getTranslation(Locale.getDefault().getLanguage());
+        if(t != null) {
+            return t.getText();
+        }
+
+        // use the currently selected source language
+        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        if(p != null) {
+            t = getTranslation(p.getSelectedSourceLanguage().getId());
+            if (t != null) {
+                return t.getText();
+            }
+        }
+
+        // try to use english
+        t = getTranslation("en");
+        if(t != null) {
+            return t.getText();
+        }
+
+        // just use the first language we find.
+        t = getSelectedTranslation();
+        if(t != null) {
+            return t.getText();
+        } else {
+            return mId;
+        }
+    }
+
+    @Override
+    public String getDescription() {
+        return "";
+    }
+
+    @Override
+    public String getImagePath() {
+        return "";
+    }
+
+    @Override
+    public boolean isTranslating() {
+        // TODO: we'll need to check if any of the children are translating.
+        return false;
+    }
+
+    @Override
+    public String getType() {
+        return "meta-project";
     }
 
     /**
@@ -78,8 +168,35 @@ public class MetaProject {
      * @param translation
      */
     public void addTranslation(Translation translation) {
-        if(!mLanguageMap.containsKey(translation.getLanguage().getId())) {
-            mLanguageMap.put(translation.getLanguage().getId(), translation);
+        if(!mTranslationMap.containsKey(translation.getLanguage().getId())) {
+            mTranslationMap.put(translation.getLanguage().getId(), translation);
+            mTranslations.add(translation);
+        }
+    }
+
+    /**
+     * Returns a translation by id
+     * @param id
+     * @return
+     */
+    public Translation getTranslation(String id) {
+        if(mTranslationMap.containsKey(id)) {
+            return mTranslationMap.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a translation by index
+     * @param index
+     * @return
+     */
+    public Translation getTranslation(int index) {
+        if(index < mTranslations.size() && index >= 0) {
+            return mTranslations.get(index);
+        } else {
+            return null;
         }
     }
 }

@@ -35,7 +35,9 @@ public class ProjectManager {
 
     // meta projects
     private static Map<String, MetaProject> mMetaProjectMap = new HashMap<String, MetaProject>();
-    private static Map<String, Object> mListableProjectMap = new HashMap<String, Object>();
+
+    private static List<Model> mListableProjects = new ArrayList<Model>();
+    private static Map<String, Model> mListableProjectMap = new HashMap<String, Model>();
 
     // so we can look up by index
     private static List<Language> mLanguages = new ArrayList<Language>();
@@ -218,6 +220,7 @@ public class ProjectManager {
     public void addListableProject(Project p) {
         if(!mListableProjectMap.containsKey(p.getId())) {
             mListableProjectMap.put(p.getId(), p);
+            mListableProjects.add(p);
         }
     }
 
@@ -230,6 +233,7 @@ public class ProjectManager {
     public void addListableProject(MetaProject p) {
         if(!mListableProjectMap.containsKey("m-"+p.getId())) {
             mListableProjectMap.put("m-"+p.getId(), p);
+            mListableProjects.add(p);
         }
     }
 
@@ -238,11 +242,24 @@ public class ProjectManager {
      * @param id
      * @return
      */
-    public Object getListableProject(String id) {
+    public Model getListableProject(String id) {
         if(mListableProjectMap.containsKey(id)) {
             return mListableProjectMap.get(id);
         } else if(mListableProjectMap.containsKey("m-"+id)) {
             return mListableProjectMap.get("m-"+id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the project or meta-project by index
+     * @param index
+     * @return
+     */
+    public Model getListableProject(int index) {
+        if(index < mListableProjects.size() && index >= 0) {
+            return mListableProjects.get(index);
         } else {
             return null;
         }
@@ -261,7 +278,7 @@ public class ProjectManager {
      * @param id
      * @return
      */
-    private MetaProject getMetaProject(String id) {
+    public MetaProject getMetaProject(String id) {
         if(mMetaProjectMap.containsKey(id)) {
             return mMetaProjectMap.get(id);
         } else {
