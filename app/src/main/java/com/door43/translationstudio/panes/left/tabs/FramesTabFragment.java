@@ -55,7 +55,7 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
     @Override
     public void NotifyAdapterDataSetChanged() {
         if(mModelItemAdapter != null) {
-            mModelItemAdapter.notifyDataSetChanged();
+            mModelItemAdapter.changeDataSet(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrames());
         }
     }
 }

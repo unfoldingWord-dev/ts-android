@@ -52,7 +52,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
     @Override
     public void NotifyAdapterDataSetChanged() {
         if(mModelItemAdapter != null) {
-            mModelItemAdapter.notifyDataSetChanged();
+            mModelItemAdapter.changeDataSet(app().getSharedProjectManager().getSelectedProject().getChapters());
         }
     }
 }
