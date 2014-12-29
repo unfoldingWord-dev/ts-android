@@ -266,6 +266,14 @@ public class ProjectManager {
     }
 
     /**
+     * Returns an array of listable projects
+     * @return
+     */
+    public Model[] getListableProjects() {
+        return mListableProjects.toArray(new Model[mListableProjects.size()]);
+    }
+
+    /**
      * Returns the number of projects that are to be displayed in the project list.
      * @return
      */

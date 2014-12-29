@@ -247,4 +247,19 @@ public class Frame implements Model {
     public String getType() {
         return "frame";
     }
+
+    /**
+     * Checks if this is the currently selected frame.
+     * @return
+     */
+    @Override
+    public boolean isSelected() {
+        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        if(p == null) return false;
+        Chapter c = p.getSelectedChapter();
+        if(c == null) return false;
+        Frame f = c.getSelectedFrame();
+        if(f == null) return false;
+        return p.getId().equals(getChapter().getProject().getId()) && c.getId().equals(getChapter().getId()) && f.getId().equals(getId());
+    }
 }

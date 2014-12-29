@@ -20,28 +20,30 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectItemAdapter extends BaseAdapter {
+public class ModelItemAdapter extends BaseAdapter {
 
     private final MainApplication mContext;
     private final float mImageWidth;
+    private Model[] mModels;
 
     /**
-     * Creates a new Project adapter
-     * @param c The activity context
-     */
-    public ProjectItemAdapter(MainApplication c) {
+    * Creates a new Project adapter
+    * @param c The activity context
+    */
+    public ModelItemAdapter(MainApplication c, Model[] models) {
         mContext = c;
-        mImageWidth = mContext.getResources().getDimension(R.dimen.list_item_image_width);
+        mModels = models;
+        mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
     }
 
     @Override
     public int getCount() {
-        return mContext.getSharedProjectManager().numListableProjects();
+        return mModels.length;
     }
 
     @Override
     public Model getItem(int i) {
-        return mContext.getSharedProjectManager().getListableProject(i);
+        return mModels[i];
     }
 
     @Override
@@ -58,11 +60,11 @@ public class ProjectItemAdapter extends BaseAdapter {
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.fragment_pane_left_projects_item, null);
-            holder.icon = (ImageView)v.findViewById(R.id.projectIcon);
+            v = inflater.inflate(R.layout.fragment_model_list_item, null);
+            holder.icon = (ImageView)v.findViewById(R.id.modelImage);
             holder.bodyLayout = (LinearLayout)v.findViewById(R.id.bodyLayout);
-            holder.title = (TextView)v.findViewById(R.id.projectTitle);
-            holder.description = (TextView)v.findViewById(R.id.projectDescription);
+            holder.title = (TextView)v.findViewById(R.id.modelTitle);
+            holder.description = (TextView)v.findViewById(R.id.modelDescription);
             holder.translationIcon = (ImageView)v.findViewById(R.id.translationStatusIcon);
             v.setTag(holder);
         } else {
@@ -83,7 +85,7 @@ public class ProjectItemAdapter extends BaseAdapter {
         }
 
         // highlight selected project
-        if(mContext.getSharedProjectManager().getSelectedProject() != null && mContext.getSharedProjectManager().getSelectedProject().getId() == getItem(position).getId()) {
+        if(getItem(position).isSelected()) {
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             holder.description.setTextColor(Color.WHITE);
             holder.title.setTextColor(Color.WHITE);
@@ -118,6 +120,15 @@ public class ProjectItemAdapter extends BaseAdapter {
         });
 
         return v;
+    }
+
+    /**
+     * Changes the dataset
+     * @param models
+     */
+    public void changeDataSet(Model[] models) {
+        mModels = models;
+        notifyDataSetChanged();
     }
 
     /**

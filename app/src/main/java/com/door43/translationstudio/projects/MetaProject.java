@@ -17,7 +17,7 @@ public class MetaProject implements Model {
     private final String mId;
 //    private MetaProject mMetaChild;
 //    private Project mProjectChild;
-    private Map<String, Object> mChildrenMap = new HashMap<String, Object>();
+    private Map<String, Model> mChildrenMap = new HashMap<String, Model>();
     private Map<String, Translation> mTranslationMap = new HashMap<String, Translation>();
     private List<Translation> mTranslations = new ArrayList<Translation>();
     private String mSelectedTranslationId;
@@ -123,6 +123,23 @@ public class MetaProject implements Model {
     }
 
     /**
+     * Checks if the meta project is the currently selected one.
+     * This will be true of the selected project is somewhere within it's children.
+     * @return
+     */
+    @Override
+    public boolean isSelected() {
+        for(Model m:mChildrenMap.values()) {
+            if(!m.isSelected()) {
+                continue;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Adds a meta child to this meta project
      * @param meta
      */
@@ -146,8 +163,8 @@ public class MetaProject implements Model {
      * Returns the child of the meta project
      * @return
      */
-    public Object[] getChildren() {
-        return mChildrenMap.values().toArray();
+    public Model[] getChildren() {
+        return mChildrenMap.values().toArray(new Model[mChildrenMap.size()]);
     }
 
     /**

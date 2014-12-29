@@ -3,13 +3,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="3"
-    android:id="@+id/frameBody">
+    android:weightSum="3">
 
     <ImageView
         android:layout_width="@dimen/model_list_item_image_width"
         android:layout_height="@dimen/model_list_item_image_height"
-        android:id="@+id/frameIcon"
+        android:id="@+id/modelImage"
         android:background="@color/light_gray" />
 
     <LinearLayout
@@ -18,21 +17,21 @@
         android:layout_width="fill_parent"
         android:layout_weight="3"
         android:layout_height="@dimen/model_list_item_image_height"
-        android:paddingLeft="2dp"
+        android:paddingLeft="5dp"
         android:paddingRight="2dp"
         android:paddingTop="1dp"
         android:paddingBottom="1dp"
-        android:layout_toRightOf="@+id/frameIcon"
-        android:layout_toEndOf="@+id/frameIcon"
+        android:layout_toRightOf="@+id/modelImage"
+        android:layout_toEndOf="@+id/modelImage"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true">
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Frame Id"
+            android:text="Model Title"
+            android:id="@+id/modelTitle"
             android:ellipsize="marquee"
-            android:id="@+id/frameId"
             android:marqueeRepeatLimit="marquee_forever"
             android:textSize="@dimen/h5"
             android:textColor="@color/black"
@@ -42,11 +41,13 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:text="Model Description\ntest"
+            android:id="@+id/modelDescription"
             android:ellipsize="end"
-            android:maxLines="2"
-            android:text="Frame Description\ntestbla bla bla"
-            android:id="@+id/frameDescription" />
+            android:maxLines="2" />
+
     </LinearLayout>
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -56,4 +57,5 @@
         android:layout_alignParentRight="true"
         android:paddingBottom="1dp"
         android:layout_alignBottom="@+id/bodyLayout" />
+
 </RelativeLayout>

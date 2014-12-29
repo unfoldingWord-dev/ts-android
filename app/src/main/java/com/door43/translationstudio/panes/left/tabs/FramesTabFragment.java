@@ -17,7 +17,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
  */
 public class FramesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private FramesTabFragment me = this;
-    private FrameItemAdapter mFrameItemAdapter;
+    private ModelItemAdapter mModelItemAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -25,9 +25,9 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         ListView listView = (ListView)view.findViewById(R.id.frames_list_view);
 
         // create adapter
-        if(mFrameItemAdapter == null) mFrameItemAdapter = new FrameItemAdapter(app());
+        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrames());
 
-        listView.setAdapter(mFrameItemAdapter);
+        listView.setAdapter(mModelItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -54,8 +54,8 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        if(mFrameItemAdapter != null) {
-            mFrameItemAdapter.notifyDataSetChanged();
+        if(mModelItemAdapter != null) {
+            mModelItemAdapter.notifyDataSetChanged();
         }
     }
 }

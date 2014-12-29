@@ -4,11 +4,8 @@
     android:layout_height="fill_parent"
     android:background="@color/white">
 
-    <TextView
+    <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Hello world!"
-        android:id="@+id/textView4"
-        android:layout_gravity="center_horizontal" />
+        android:id="@+id/listView" />
 </LinearLayout>

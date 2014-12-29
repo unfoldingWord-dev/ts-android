@@ -19,6 +19,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 /**
  * Created by joel on 9/2/2014.
+ * @deprecated
  */
 public class ChaptersItemAdapter extends BaseAdapter {
 
@@ -31,7 +32,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
      */
     public ChaptersItemAdapter(MainApplication c) {
         mContext = c;
-        mImageWidth = mContext.getResources().getDimension(R.dimen.list_item_image_width);
+        mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
     }
 
     @Override
@@ -87,7 +88,7 @@ public class ChaptersItemAdapter extends BaseAdapter {
         }
 
         // highlight the selected chapter
-        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getId() == c.getId()) {
+        if(c.isSelected()) {
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             holder.description.setTextColor(Color.WHITE);
             holder.title.setTextColor(Color.WHITE);

@@ -12,22 +12,26 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.MetaProjectDialog;
+import com.door43.translationstudio.events.SelectedProjectFromMetaEvent;
 import com.door43.translationstudio.projects.MetaProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.AsyncTaskResultEvent;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
+import com.squareup.otto.Subscribe;
 
 /**
  * Created by joel on 8/29/2014.
  */
 public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private ProjectsTabFragment me = this;
-    private ProjectItemAdapter mProjectItemAdapter;
+    private ModelItemAdapter mModelItemAdapter;
+
+    public ProjectsTabFragment() {
+        MainContext.getEventBus().register(this);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -35,18 +39,18 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         ListView listView = (ListView)view.findViewById(R.id.projects_list_view);
 
         // create adapter
-        if(mProjectItemAdapter == null) mProjectItemAdapter = new ProjectItemAdapter(app());
+        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getListableProjects());
 
         // connectAsync adapter
-        listView.setAdapter(mProjectItemAdapter);
+        listView.setAdapter(mModelItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // TRICKY: the project list may contain meta projects as well as normal projects.
                 // save changes to the current frame first
                 ((MainActivity)me.getActivity()).save();
-                Model m = mProjectItemAdapter.getItem(i);
-                boolean isProject = m.getType().equals(new Project(null, 0).getType());
+                Model m = mModelItemAdapter.getItem(i);
+                boolean isProject = m.getClass().equals(Project.class);
 
                 if(isProject) {
                     // this is a normal project
@@ -63,8 +67,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        if(mProjectItemAdapter != null) {
-            mProjectItemAdapter.notifyDataSetChanged();
+        if(mModelItemAdapter != null) {
+            mModelItemAdapter.notifyDataSetChanged();
         }
     }
 
@@ -130,5 +134,10 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             // let the adapter redraw itself so the selected project is corectly highlighted
             NotifyAdapterDataSetChanged();
         }
+    }
+
+    @Subscribe
+    public void onSelectedProjectFromMeta(SelectedProjectFromMetaEvent event) {
+        handleProjectSelection(event.getProject());
     }
 }

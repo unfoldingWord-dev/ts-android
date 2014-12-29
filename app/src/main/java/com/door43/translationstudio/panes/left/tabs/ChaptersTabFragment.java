@@ -9,7 +9,6 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -18,7 +17,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
  */
 public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification{
     private ChaptersTabFragment me = this;
-    private ChaptersItemAdapter mChapterItemAdapter;
+    private ModelItemAdapter mModelItemAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -26,10 +25,10 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         ListView listView = (ListView)view.findViewById(R.id.chapters_list_view);
 
         // create adapter
-        if(mChapterItemAdapter == null) mChapterItemAdapter = new ChaptersItemAdapter(app());
+        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getSelectedProject().getChapters());
 
         // connectAsync adapter
-        listView.setAdapter(mChapterItemAdapter);
+        listView.setAdapter(mModelItemAdapter);
         listView.deferNotifyDataSetChanged();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -52,8 +51,8 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        if(mChapterItemAdapter != null) {
-            mChapterItemAdapter.notifyDataSetChanged();
+        if(mModelItemAdapter != null) {
+            mModelItemAdapter.notifyDataSetChanged();
         }
     }
 }

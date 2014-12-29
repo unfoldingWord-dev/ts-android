@@ -3,15 +3,12 @@ package com.door43.translationstudio.panes.left.tabs;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
@@ -22,6 +19,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 /**
  * Created by joel on 8/29/2014.
+ * @deprecated
  */
 public class FrameItemAdapter extends BaseAdapter {
 
@@ -34,7 +32,7 @@ public class FrameItemAdapter extends BaseAdapter {
      */
     public FrameItemAdapter(MainApplication c) {
         mContext = c;
-        mImageWidth = mContext.getResources().getDimension(R.dimen.list_item_image_width);
+        mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
     }
 
     @Override
@@ -90,7 +88,7 @@ public class FrameItemAdapter extends BaseAdapter {
         }
 
         // highlight the selected frame
-        if(mContext.getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame().getId() == f.getId()) {
+        if(f.isSelected()) {
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             holder.description.setTextColor(Color.WHITE);
             holder.title.setTextColor(Color.WHITE);

@@ -280,18 +280,18 @@ public class Project implements Model {
 
 
     /**
-     * Returns the id of a meta category b
-     * @param index
-     * @return
-     */
-    public String getMeta(int index) {
-        String[] meta = getMetaCategories();
-        if(index < meta.length && index >= 0) {
-            return meta[index];
-        } else {
-            return null;
-        }
-    }
+          * Returns the id of a meta category b
+          * @param index
+          * @return
+          */
+         public String getMeta(int index) {
+             String[] meta = getMetaCategories();
+             if(index < meta.length && index >= 0) {
+                 return meta[index];
+             } else {
+                 return null;
+             }
+         }
 
     /**
      * Adds a chapter to the project
@@ -390,6 +390,17 @@ public class Project implements Model {
     @Override
     public String getType() {
         return "project";
+        }
+
+    /**
+     * Checks if this project is the currently selected one
+     * @return
+     */
+    @Override
+    public boolean isSelected() {
+        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        if(p == null) return false;
+        return p.getId().equals(getId());
     }
 
     /**
@@ -816,6 +827,14 @@ public class Project implements Model {
      */
     public String getRemotePath() {
         return getRemotePath(getSelectedTargetLanguage());
+    }
+
+    /**
+     * Returns the chapters in this project
+     * @return
+     */
+    public Model[] getChapters() {
+        return mChapters.toArray(new Model[mChapters.size()]);
     }
 
     public interface OnCommitComplete {

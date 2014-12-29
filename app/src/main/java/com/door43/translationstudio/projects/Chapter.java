@@ -399,4 +399,25 @@ public class Chapter implements Model {
     public String getType() {
         return "chapter";
     }
+
+    /**
+     * Checks if this is the currently selected chapter
+     * @return
+     */
+    @Override
+    public boolean isSelected() {
+        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        if(p == null) return false;
+        Chapter c = p.getSelectedChapter();
+        if(c == null) return false;
+        return p.getId().equals(getProject().getId()) && c.getId().equals(getId());
+    }
+
+    /**
+     * Returns the frames in this chapter
+     * @return
+     */
+    public Model[] getFrames() {
+        return mFrames.toArray(new Model[mFrameMap.size()]);
+    }
 }
