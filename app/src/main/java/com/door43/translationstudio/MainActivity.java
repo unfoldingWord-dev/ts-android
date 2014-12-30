@@ -7,6 +7,7 @@ import com.door43.translationstudio.dialogs.MetaProjectDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
+import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
@@ -268,7 +269,7 @@ public class MainActivity extends TranslatorBaseActivity {
                     ft.addToBackStack(null);
 
                     app().closeToastMessage();
-                    
+
                     LanguageResourceDialog newFragment = new LanguageResourceDialog();
                     Bundle args = new Bundle();
                     args.putString("projectId", p.getId());
@@ -1111,11 +1112,6 @@ public class MainActivity extends TranslatorBaseActivity {
         // load the text
         final Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
-            // empty
-//            if(mSelectedFrame == null || !mSelectedFrame.getChapter().getProject().getId().equals(p.getId())) {
-//                mTranslationEditText.setText("");
-//            }
-
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
             mTranslationEditText.setEnabled(true);
             final int frameIndex = p.getSelectedChapter().getFrameIndex(mSelectedFrame);
@@ -1162,14 +1158,8 @@ public class MainActivity extends TranslatorBaseActivity {
                         SpannableStringBuilder span = new SpannableStringBuilder(languageName + resourceName + chapterName);
                         span.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.blue)), languageName.length(), languageName.length() + resourceName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         mSourceTitleText.setText(span);
-//                        mSourceTitleText.setTextColor(getResources().getColor(R.color.blue));
-//                        mSourceTitleText.setBackgroundResource(R.drawable.language_resources_selector);
-//                        mChangeResourceBtnIcon.setVisibility(View.VISIBLE);
                     } else {
                         mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + chapter.getTitle());
-//                        mSourceTitleText.setTextColor(getResources().getColor(R.color.gray));
-//                        mSourceTitleText.setBackgroundResource(R.drawable.language_resources_empty);
-//                        mChangeResourceBtnIcon.setVisibility(View.GONE);
                     }
                     return false;
                 }
@@ -1387,6 +1377,31 @@ public class MainActivity extends TranslatorBaseActivity {
     public void chapterTranslationStatusChanged(ChapterTranslationStatusChangedEvent event) {
         mLeftPane.reloadChaptersTab();
         mLeftPane.reloadProjectsTab();
+    }
+
+    @Subscribe
+    public void languageResourceSelectionChanged(LanguageResourceSelectedEvent event) {
+        final Project p = app().getSharedProjectManager().getSelectedProject();
+        p.getSelectedSourceLanguage().setSelectedResource(event.getResource().getId());
+        new ThreadableUI(this) {
+
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                // reload the source so we get the correct language resource
+                app().getSharedProjectManager().fetchProjectSource(p);
+            }
+
+            @Override
+            public void onPostExecute() {
+                // refresh the ui
+                reloadCenterPane();
+            }
+        }.start();
     }
 
     @Override

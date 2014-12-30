@@ -38,4 +38,9 @@ public class Resource {
     public int getDateModified() {
         return mDateModified;
     }
+
+    @Override
+    public String toString() {
+        return mName;
+    }
 }

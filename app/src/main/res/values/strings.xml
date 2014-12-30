@@ -213,4 +213,5 @@
     <string name="share_to_all" translatable="false">Share to all</string>
     <string name="click_to_import" translatable="false">Click to import</string>
     <string name="searching_for_devices" translatable="false">Searching for devices</string>
+    <string name="language_resources">Versions</string>
 </resources>
