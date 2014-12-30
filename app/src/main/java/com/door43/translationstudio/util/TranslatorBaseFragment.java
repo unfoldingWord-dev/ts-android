@@ -18,7 +18,7 @@ public class TranslatorBaseFragment extends Fragment {
      * @return
      */
     protected MainApplication app() {
-        return (MainApplication)getActivity().getApplicationContext();
+        return MainContext.getContext();
     }
 
     public void onResume() {

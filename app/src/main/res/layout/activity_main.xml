@@ -53,7 +53,9 @@
 
                     <RelativeLayout
                         android:layout_width="fill_parent"
-                        android:layout_height="fill_parent">
+                        android:layout_height="fill_parent"
+                        android:paddingTop="2dp">
+
 
                         <TextView
                             android:layout_width="fill_parent"
@@ -62,7 +64,10 @@
                             android:id="@+id/sourceTitleText"
                             android:gravity="center"
                             android:textColor="@color/gray"
-                            android:paddingTop="5dp" />
+                            android:layout_centerHorizontal="true"
+                            android:background="@drawable/language_resources_selector"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp" />
 
                         <TextView
                             android:layout_width="match_parent"
@@ -87,6 +92,7 @@
                             android:layout_alignParentBottom="true"
                             android:textColor="@color/gray"
                             android:paddingTop="5dp" />
+
                     </RelativeLayout>
 
                     <ProgressBar
@@ -127,19 +133,23 @@
                         android:layout_gravity="center"
                         android:visibility="invisible" />
 
-                    <LinearLayout
+                    <RelativeLayout
                         android:orientation="vertical"
                         android:layout_width="fill_parent"
-                        android:layout_height="fill_parent">
+                        android:layout_height="fill_parent"
+                        android:paddingTop="2dp">
 
                         <TextView
-                            android:layout_width="fill_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Language: Chapter"
                             android:id="@+id/translationTitleText"
                             android:gravity="center"
                             android:textColor="@color/gray"
-                            android:paddingTop="5dp" />
+                            android:layout_centerHorizontal="true"
+                            android:background="@drawable/language_resources_empty"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginRight="2dp" />
 
                         <EditText
                             android:layout_width="match_parent"
@@ -156,9 +166,10 @@
                             android:paddingBottom="5dp"
                             android:focusable="true"
                             android:inputType="textNoSuggestions|text|textMultiLine"
-                            android:fontFamily="GentiumPlus"/>
+                            android:fontFamily="GentiumPlus"
+                            android:layout_below="@+id/translationTitleText" />
 
-                    </LinearLayout>
+                    </RelativeLayout>
 
                 </FrameLayout>
 
@@ -168,21 +179,21 @@
     </LinearLayout>
 
     <RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingRight="@dimen/drawer_edge_width"
-    android:background="@color/blue"
-    android:layout_gravity="start"
-    android:id="@+id/leftPaneContent">
-    </RelativeLayout>
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:paddingRight="@dimen/drawer_edge_width"
+         android:background="@color/blue"
+         android:layout_gravity="start"
+         android:id="@+id/leftPaneContent">
+         </RelativeLayout>
 
     <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:paddingLeft="@dimen/drawer_edge_width"
-        android:background="@color/purple"
-        android:layout_gravity="end"
-        android:id="@+id/rightPaneContent">
-    </RelativeLayout>
+             android:layout_width="wrap_content"
+             android:layout_height="match_parent"
+             android:paddingLeft="@dimen/drawer_edge_width"
+             android:background="@color/purple"
+             android:layout_gravity="end"
+             android:id="@+id/rightPaneContent">
+         </RelativeLayout>
 
 </android.support.v4.widget.DrawerLayout>

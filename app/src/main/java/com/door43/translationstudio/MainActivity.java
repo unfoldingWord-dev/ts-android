@@ -2,6 +2,8 @@ package com.door43.translationstudio;
 
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
+import com.door43.translationstudio.dialogs.LanguageResourceDialog;
+import com.door43.translationstudio.dialogs.MetaProjectDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
@@ -31,6 +33,7 @@ import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -45,10 +48,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.SpannedString;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -116,6 +123,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private boolean mAutosaveEnabled;
     private boolean mProcessingTranslation;
     private Frame mSelectedFrame;
+//    private ImageView mChangeResourceBtnIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -236,6 +244,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private void initPanes() {
         mSourceText = (TextView)mCenterPane.findViewById(R.id.sourceText);
         mSourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
+//        mChangeResourceBtnIcon = (ImageView)mCenterPane.findViewById(R.id.changeResourceBtn);
         mSourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
         mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
         mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
@@ -243,6 +252,31 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
         mTranslationProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.translationProgressBar);
         mSourceProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.sourceProgressBar);
+
+
+        mSourceTitleText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Project p = app().getSharedProjectManager().getSelectedProject();
+                if(p != null && p.getSelectedSourceLanguage().getResources().length > 1) {
+                    // Create and show the dialog.
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                    if (prev != null) {
+                        ft.remove(prev);
+                    }
+                    ft.addToBackStack(null);
+
+                    app().closeToastMessage();
+                    
+                    LanguageResourceDialog newFragment = new LanguageResourceDialog();
+                    Bundle args = new Bundle();
+                    args.putString("projectId", p.getId());
+                    newFragment.setArguments(args);
+                    newFragment.show(ft, "dialog");
+                }
+            }
+        });
 
         mTranslationEditText.setEnabled(false);
 
@@ -1121,7 +1155,22 @@ public class MainActivity extends TranslatorBaseActivity {
             AnimationUtilities.fadeOutIn(mSourceTitleText, new Handler.Callback() {
                 @Override
                 public boolean handleMessage(Message message) {
-                    mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + chapter.getTitle());
+                    if(p.getSelectedSourceLanguage().getResources().length > 1) {
+                        String languageName = p.getSelectedSourceLanguage().getName() + " - ";
+                        String resourceName = p.getSelectedSourceLanguage().getSelectedResource().getName();
+                        String chapterName = ": " + chapter.getTitle();
+                        SpannableStringBuilder span = new SpannableStringBuilder(languageName + resourceName + chapterName);
+                        span.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.blue)), languageName.length(), languageName.length() + resourceName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        mSourceTitleText.setText(span);
+//                        mSourceTitleText.setTextColor(getResources().getColor(R.color.blue));
+//                        mSourceTitleText.setBackgroundResource(R.drawable.language_resources_selector);
+//                        mChangeResourceBtnIcon.setVisibility(View.VISIBLE);
+                    } else {
+                        mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + chapter.getTitle());
+//                        mSourceTitleText.setTextColor(getResources().getColor(R.color.gray));
+//                        mSourceTitleText.setBackgroundResource(R.drawable.language_resources_empty);
+//                        mChangeResourceBtnIcon.setVisibility(View.GONE);
+                    }
                     return false;
                 }
             });
