@@ -411,53 +411,12 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Stores the active chapter in the app preferences so it can load automatically next time.
-     * @param id
-     */
-    public void setActiveChapter(String id) {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("chapter_id", id);
-        editor.apply();
-    }
-
-    /**
-     * Stores the active frame in the app preferences so it can load automatically next time.
-     * @param id
-     */
-    public void setActiveFrame(String id) {
-        if (id == null) id = "";
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("frame_id", id);
-        editor.apply();
-    }
-
-    /**
      * Returns the active project from the preferences
      * @return
      */
     public String getLastActiveProject() {
         SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
         return settings.getString("project_slug", "");
-    }
-
-    /**
-     * Returns the active chapter from the preferences
-     * @return
-     */
-    public String getLastActiveChapter() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getString("chapter_id", "");
-    }
-
-    /**
-     * Returns the active from from the preferences
-     * @return
-     */
-    public String getLastActiveFrame() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getString("frame_id", "");
     }
 
     /**

@@ -117,14 +117,14 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
                     query = "SELECT story FROM stories WHERE id = '"+selectedChapterDBId+"'";
                     cursor = db.rawQuery(query, null);
                     if(cursor.moveToFirst()) {
-                        mContext.setActiveChapter(cursor.getString(0));
+//                        mContext.setActiveChapter(cursor.getString(0));
                         p.setSelectedChapter(cursor.getString(0));
                     }
                     // load selcted frame
                     query = "SELECT frame FROM frames WHERE id = '"+selectedFrameDBId+"'";
                     cursor = db.rawQuery(query, null);
                     if(cursor.moveToFirst()) {
-                        mContext.setActiveFrame(cursor.getString(0));
+//                        mContext.setActiveFrame(cursor.getString(0));
                         p.getSelectedChapter().setSelectedFrame(cursor.getString(0));
                     }
 

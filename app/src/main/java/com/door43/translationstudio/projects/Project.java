@@ -46,12 +46,12 @@ public class Project implements Model {
     private final String mSlug;
     private int mDateModified;
     private String mDescription;
-    private String mSelectedChapterId;
+    private String mSelectedChapterId = null;
     private String mSelectedSourceLanguageId;
     private String mSelectedTargetLanguageId;
     public static final String GLOBAL_PROJECT_SLUG = "uw";
     private static final String TAG = "project";
-    private static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
+    public static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
     private static final String TRANSLATION_READY_TAG = "READY";
 
     /**
@@ -63,6 +63,23 @@ public class Project implements Model {
     public Project(String slug, int dateModified) {
         mSlug = slug;
         mDateModified = dateModified;
+        // load the selected language
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
+        mSelectedTargetLanguageId = settings.getString("selected_target_language_"+mSlug, null);
+    }
+
+    /**
+     * Create a new project
+     * @deprecated
+     * @param title The human readable title of the project.
+     * @param slug The machine readable slug identifying the project.
+     * @param description A short description of the project.
+     */
+    public Project(String title, String slug, String description) {
+        mTitle = title;
+        mSlug = slug;
+        mDescription = description;
         // load the selected language
         SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
         mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
@@ -87,23 +104,6 @@ public class Project implements Model {
         if(mDescription == null) {
             mDescription = description;
         }
-    }
-
-    /**
-     * Create a new project
-     * @deprecated
-     * @param title The human readable title of the project.
-     * @param slug The machine readable slug identifying the project.
-     * @param description A short description of the project.
-     */
-    public Project(String title, String slug, String description) {
-        mTitle = title;
-        mSlug = slug;
-        mDescription = description;
-        // load the selected language
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
-        mSelectedTargetLanguageId = settings.getString("selected_target_language_"+mSlug, null);
     }
 
     /**
@@ -227,6 +227,7 @@ public class Project implements Model {
         Chapter c = getChapter(id);
         if(c != null) {
             mSelectedChapterId = c.getId();
+            storeSelectedChapter(c.getId());
         }
         return c != null;
     }
@@ -240,8 +241,21 @@ public class Project implements Model {
         Chapter c = getChapter(index);
         if(c != null) {
             mSelectedChapterId = c.getId();
+            storeSelectedChapter(c.getId());
         }
         return c != null;
+    }
+
+    /**
+     * stores the selected chapter in the preferences so we can load it the next time the app starts
+     * @param id
+     */
+    private void storeSelectedChapter(String id) {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("selected_chapter_"+mSlug, id);
+        editor.remove("selected_frame_"+mSlug); // the frame needs to reset each time so it doesn't propogate between chapters
+        editor.apply();
     }
 
     /**
@@ -249,6 +263,9 @@ public class Project implements Model {
      * @return
      */
     public Chapter getSelectedChapter() {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        mSelectedChapterId = settings.getString("selected_chapter_"+mSlug, null);
+
         Chapter selectedChapter = getChapter(mSelectedChapterId);
         if(selectedChapter == null) {
             // auto select the first chapter if no other chapter has been selected

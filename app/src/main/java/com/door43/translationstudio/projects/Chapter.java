@@ -1,5 +1,7 @@
 package com.door43.translationstudio.projects;
 
+import android.content.SharedPreferences;
+
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
@@ -234,6 +236,7 @@ public class Chapter implements Model {
         Frame f = getFrame(id);
         if(f != null) {
             mSelectedFrameId = f.getId();
+            storeSelectedFrame(f.getId());
         }
         return f != null;
     }
@@ -247,8 +250,20 @@ public class Chapter implements Model {
         Frame f = getFrame(index);
         if(f != null) {
             mSelectedFrameId = f.getId();
+            storeSelectedFrame(f.getId());
         }
         return f != null;
+    }
+
+    /**
+     * stores the selected frame in the preferences so we can load it the next time the app starts
+     * @param id
+     */
+    private void storeSelectedFrame(String id) {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("selected_frame_"+getProject().getId(), id);
+        editor.apply();
     }
 
     /**
@@ -256,6 +271,9 @@ public class Chapter implements Model {
      * @return
      */
     public Frame getSelectedFrame() {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        mSelectedFrameId = settings.getString("selected_frame_"+getProject().getId(), null);
+
         Frame selectedFrame = getFrame(mSelectedFrameId);
         if(selectedFrame == null) {
             // auto select the first frame if no other frame has been selected
