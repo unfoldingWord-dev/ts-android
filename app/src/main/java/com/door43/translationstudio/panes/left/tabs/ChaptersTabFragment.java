@@ -9,6 +9,8 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Chapter;
+import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -25,7 +27,13 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         ListView listView = (ListView)view.findViewById(R.id.chapters_list_view);
 
         // create adapter
-        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getSelectedProject().getChapters());
+        if(mModelItemAdapter == null) {
+            if(app().getSharedProjectManager().getSelectedProject() == null) {
+                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{});
+            } else {
+                mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getSelectedProject().getChapters());
+            }
+        }
 
         // connectAsync adapter
         listView.setAdapter(mModelItemAdapter);
@@ -51,7 +59,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        if(mModelItemAdapter != null) {
+        if(mModelItemAdapter != null && app().getSharedProjectManager().getSelectedProject() != null) {
             mModelItemAdapter.changeDataSet(app().getSharedProjectManager().getSelectedProject().getChapters());
         }
     }

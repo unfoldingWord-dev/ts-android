@@ -74,7 +74,6 @@ public class TranslationNotesFragment extends TranslatorBaseFragment {
         onShow();
 
         // load the notes
-        final Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         mNotesView.removeAllViews();
 
         // notes

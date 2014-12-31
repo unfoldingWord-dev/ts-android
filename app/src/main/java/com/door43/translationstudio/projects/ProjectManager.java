@@ -504,9 +504,10 @@ public class ProjectManager {
         Project selectedProject = getProject(mSelectedProjectId);;
         if(selectedProject == null) {
             // auto select the first project if no other project has been selected
-            int defaultProjectIndex = 0;
-            setSelectedProject(defaultProjectIndex);
-            return getProject(defaultProjectIndex);
+//            int defaultProjectIndex = 0;
+//            setSelectedProject(defaultProjectIndex);
+//            return getProject(defaultProjectIndex);
+            return null;
         } else {
             return selectedProject;
         }
@@ -769,7 +770,7 @@ public class ProjectManager {
                     Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
 
-                    // load sudo projects
+                    // load sudo project names
                     if(jsonProjInfo.has("meta") && rootMeta != null) {
                         JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {

@@ -1128,7 +1128,7 @@ public class MainActivity extends TranslatorBaseActivity {
         final Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
-            mTranslationEditText.setEnabled(true);
+            mTranslationEditText.setFocusable(true);
             final int frameIndex = p.getSelectedChapter().getFrameIndex(mSelectedFrame);
             final Chapter chapter = p.getSelectedChapter();
 
@@ -1210,7 +1210,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
             mSelectedFrame = null;
             mTranslationEditText.setText("");
-            mTranslationEditText.setEnabled(false);
+            mTranslationEditText.setFocusable(false);
             mTranslationTitleText.setText("");
             mSourceTitleText.setText("");
             mSourceText.setText("");
@@ -1392,6 +1392,7 @@ public class MainActivity extends TranslatorBaseActivity {
     @Subscribe
     public void languageResourceSelectionChanged(LanguageResourceSelectedEvent event) {
         final Project p = app().getSharedProjectManager().getSelectedProject();
+        if(p == null) return;
         p.getSelectedSourceLanguage().setSelectedResource(event.getResource().getId());
         new ThreadableUI(this) {
 

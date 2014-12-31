@@ -204,6 +204,10 @@ public class KeyTermFragment extends TranslatorBaseFragment {
 
 
         final Project p = app().getSharedProjectManager().getSelectedProject();
+        if(p == null) {
+            hide();
+            return;
+        };
         mRelatedTerms.setText("");
         mTermName.setText(term.getName());
         mTermDescriptionWebView.setVisibility(View.GONE);
