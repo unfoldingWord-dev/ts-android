@@ -271,8 +271,10 @@ public class Chapter implements Model {
      * @return
      */
     public Frame getSelectedFrame() {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        mSelectedFrameId = settings.getString("selected_frame_"+getProject().getId(), null);
+        if(MainContext.getContext().rememberLastPosition()) {
+            SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+            mSelectedFrameId = settings.getString("selected_frame_" + getProject().getId(), null);
+        }
 
         Frame selectedFrame = getFrame(mSelectedFrameId);
         if(selectedFrame == null) {

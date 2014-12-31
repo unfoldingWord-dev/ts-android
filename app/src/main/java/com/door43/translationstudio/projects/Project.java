@@ -263,8 +263,10 @@ public class Project implements Model {
      * @return
      */
     public Chapter getSelectedChapter() {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        mSelectedChapterId = settings.getString("selected_chapter_"+mSlug, null);
+        if(MainContext.getContext().rememberLastPosition()) {
+            SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+            mSelectedChapterId = settings.getString("selected_chapter_" + mSlug, null);
+        }
 
         Chapter selectedChapter = getChapter(mSelectedChapterId);
         if(selectedChapter == null) {

@@ -1,10 +1,12 @@
 package com.door43.translationstudio.projects;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
+import com.door43.translationstudio.util.MainContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -459,6 +461,7 @@ public class ProjectManager {
         Project p = getProject(id);
         if(p != null) {
             mSelectedProjectId = p.getId();
+            storeSelectedProject(p.getId());
         }
         return p != null;
     }
@@ -472,8 +475,20 @@ public class ProjectManager {
         Project p = getProject(index);
         if(p != null) {
             mSelectedProjectId = p.getId();
+            storeSelectedProject(p.getId());
         }
         return p != null;
+    }
+
+    /**
+     * stores the selected frame in the preferences so we can load it the next time the app starts
+     * @param id
+     */
+    private void storeSelectedProject(String id) {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(MainContext.getContext().PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("selected_project", id);
+        editor.apply();
     }
 
     /**
@@ -481,13 +496,17 @@ public class ProjectManager {
      * @return
      */
     public Project getSelectedProject() {
+        if(MainContext.getContext().rememberLastPosition()) {
+            SharedPreferences settings = MainContext.getContext().getSharedPreferences(MainContext.getContext().PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+            mSelectedProjectId = settings.getString("selected_project", null);
+        }
+
         Project selectedProject = getProject(mSelectedProjectId);;
         if(selectedProject == null) {
             // auto select the first project if no other project has been selected
-//            int defaultProjectIndex = 0;
-//            setSelectedProject(defaultProjectIndex);
-//            return getProject(defaultProjectIndex);
-            return null;
+            int defaultProjectIndex = 0;
+            setSelectedProject(defaultProjectIndex);
+            return getProject(defaultProjectIndex);
         } else {
             return selectedProject;
         }

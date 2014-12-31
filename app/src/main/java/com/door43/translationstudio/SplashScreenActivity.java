@@ -142,19 +142,10 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
             // load previously viewed frame
             publishProgress(getResources().getString(R.string.loading_preferences));
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-//                String frameId = app().getLastActiveFrame();
-//                String chapterId = app().getLastActiveChapter();
-                String projectSlug = app().getLastActiveProject();
-                app().getSharedProjectManager().setSelectedProject(projectSlug);
 
                 if(app().getSharedProjectManager().getSelectedProject() != null) {
                     // load the saved project without displaying a notice to the user
                     app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
-
-//                    app().getSharedProjectManager().getSelectedProject().setSelectedChapter(chapterId);
-//                    if (app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
-//                        app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(frameId);
-//                    }
                 }
             } else {
                 // load the default project without display a notice to the user

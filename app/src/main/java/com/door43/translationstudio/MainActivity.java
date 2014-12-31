@@ -1185,11 +1185,6 @@ public class MainActivity extends TranslatorBaseActivity {
             } else {
                 mPreviousFrameView.setVisibility(View.INVISIBLE);
             }
-
-            // updates preferences so the app opens to the last opened frame
-            app().setActiveProject(p.getId());
-//            app().setActiveChapter(p.getSelectedChapter().getId());
-//            app().setActiveFrame(mSelectedFrame.getId());
         } else {
             // stop all text processing and clear everything out.
             if(mHighlightSourceThread != null) {

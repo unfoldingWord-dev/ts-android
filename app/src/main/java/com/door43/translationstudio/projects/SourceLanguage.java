@@ -122,8 +122,10 @@ public class SourceLanguage extends Language {
      * @return
      */
     public Resource getSelectedResource() {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
-        mSelectedResourceId = settings.getString("selected_language_resource_"+mProject.getId(), null);
+        if(MainContext.getContext().rememberLastPosition()) {
+            SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+            mSelectedResourceId = settings.getString("selected_language_resource_" + mProject.getId(), null);
+        }
 
         Resource selectedResource = getResource(mSelectedResourceId);
         if(selectedResource == null) {

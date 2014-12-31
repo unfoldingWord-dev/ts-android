@@ -117,6 +117,14 @@ public class MainApplication extends Application {
     }
 
     /**
+     * Checks if the app should use the saved positions.
+     * @return
+     */
+    public boolean rememberLastPosition() {
+        return getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)));
+    }
+
+    /**
      * Moves an asset into the cache directory and returns a file reference to it
      * @param path
      * @return
@@ -396,27 +404,6 @@ public class MainApplication extends Application {
 //                Log.d("error", e.getMessage());
             }
         }
-    }
-
-    /**
-     * Stores the active project in the app preferences so it can load automatically next time.
-     * @param slug
-     */
-    public void setActiveProject(String slug) {
-        if (slug == null) slug = "";
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString("project_slug", slug);
-        editor.apply();
-    }
-
-    /**
-     * Returns the active project from the preferences
-     * @return
-     */
-    public String getLastActiveProject() {
-        SharedPreferences settings = getSharedPreferences(PREFERENCES_TAG, MODE_PRIVATE);
-        return settings.getString("project_slug", "");
     }
 
     /**

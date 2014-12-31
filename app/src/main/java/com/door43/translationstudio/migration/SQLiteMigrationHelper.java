@@ -105,8 +105,6 @@ public class SQLiteMigrationHelper extends SQLiteOpenHelper {
                         }
                     } while(cursor.moveToNext());
 
-                    // load preferences
-                    mContext.setActiveProject("obs");
                     // load selected language
                     query = "SELECT language_code FROM languages WHERE id = '"+selectedTargetLanguageDBId+"'";
                     cursor = db.rawQuery(query, null);
