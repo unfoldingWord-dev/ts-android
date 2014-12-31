@@ -9,6 +9,7 @@ import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
+import com.door43.translationstudio.network.BroadcastListenerRunnable;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.TermSpan;
@@ -31,8 +32,11 @@ import com.squareup.otto.Subscribe;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -124,7 +128,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private boolean mAutosaveEnabled;
     private boolean mProcessingTranslation;
     private Frame mSelectedFrame;
-//    private ImageView mChangeResourceBtnIcon;
+    private boolean mKeyboardIsOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -216,6 +220,22 @@ public class MainActivity extends TranslatorBaseActivity {
         return mLeftPane;
     }
 
+    private void onKeyboardChanged(View root) {
+        Rect r = new Rect();
+        root.getWindowVisibleDisplayFrame(r);
+        int screenHeight = root.getRootView().getHeight();
+        int heightDiff = screenHeight - (r.bottom - r.top);
+        if(heightDiff > 100) {
+            if(mKeyboardIsOpen) return;
+            mKeyboardIsOpen = true;
+            onKeyboardOpen(r);
+        } else {
+            if(!mKeyboardIsOpen) return;
+            mKeyboardIsOpen = false;
+            onKeyboardClose(r);
+        }
+    }
+
     /**
      * Triggered when the keyboard opens
      * @param r the dimensions of the visible area
@@ -303,33 +323,28 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // get the statusbar height
         mStatusBarHeight = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        final int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (resourceId > 0) {
             mStatusBarHeight = getResources().getDimensionPixelSize(resourceId);
         }
 
-        // hack to watch for the soft keyboard open and close
-        final View activityRootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);
-        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            private boolean mWasOpened;
-            private final Rect mRect= new Rect();
-
+        // watch for the soft keyboard open and close
+        final View rootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                activityRootView.getWindowVisibleDisplayFrame(mRect);
-                int heightDiff = activityRootView.getRootView().getHeight() - (mRect.bottom - mRect.top);
-                boolean isOpen = heightDiff > 100;
-                if (isOpen == mWasOpened) {
-                    return;
-                }
-                mWasOpened = isOpen;
-                if(isOpen) {
-                    onKeyboardOpen(mRect);
-                } else {
-                    onKeyboardClose(mRect);
-                }
+                onKeyboardChanged(rootView);
             }
         });
+
+        // Register a listener for when the input method changes (e.g. the keyboard)
+        IntentFilter filter = new IntentFilter(Intent.ACTION_INPUT_METHOD_CHANGED);
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                onKeyboardChanged(rootView);
+            }
+        }, filter);
 
         // set custom commands for input text selection
         mTranslationEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
