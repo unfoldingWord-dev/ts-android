@@ -328,6 +328,7 @@ public class Project implements Model {
      */
     public boolean addSourceLanguage(SourceLanguage l) {
         if(!mSourceLanguageMap.containsKey(l.getId())) {
+            l.setProject(this);
             mSourceLanguageMap.put(l.getId(), l);
             mSourceLanguages.add(l);
             return true;

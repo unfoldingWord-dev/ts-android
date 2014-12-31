@@ -750,7 +750,7 @@ public class ProjectManager {
                     Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
 
-                    // load the project meta translations
+                    // load sudo projects
                     if(jsonProjInfo.has("meta") && rootMeta != null) {
                         JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
@@ -771,7 +771,7 @@ public class ProjectManager {
                         Log.d(TAG, "missing project meta translations");
                     }
 
-                    // load resources
+                    // load translation versions
                     String resourcesCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), false);
                     List<Resource> importedResources = loadResourcesCatalog(l, resourcesCatalog);
 

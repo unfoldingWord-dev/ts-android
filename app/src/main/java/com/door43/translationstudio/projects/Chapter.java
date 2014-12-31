@@ -28,7 +28,7 @@ public class Chapter implements Model {
     private String mId;
     private String mTitle;
     private String mReference;
-    private String mSelectedFrameId;
+    private String mSelectedFrameId = null;
     private Project mProject;
     private Translation mTitleTranslation;
     private Translation mReferenceTranslation;

@@ -1,5 +1,9 @@
 package com.door43.translationstudio.projects;
 
+import android.content.SharedPreferences;
+
+import com.door43.translationstudio.util.MainContext;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,12 +17,11 @@ public class SourceLanguage extends Language {
     private final int mDateModified;
     private Map<String, Resource> mResourceMap = new HashMap<String, Resource>();
     private List<Resource> mResources = new ArrayList<Resource>();
-    private String mSelectedResourceId;
+    private String mSelectedResourceId = null;
+    private Project mProject;
 
     public SourceLanguage(String code, String name, Direction direction,  int dateModified) {
         super(code, name, direction);
-//        if(variant != null && variant.isEmpty()) variant = null;
-//        mVariant = variant;
         mDateModified = dateModified;
     }
 
@@ -40,19 +43,6 @@ public class SourceLanguage extends Language {
     public Resource[] getResources() {
         return mResourceMap.values().toArray(new Resource[]{});
     }
-
-    /**
-     * Returns the combination of language code and variant name.
-     * If there is no variant then just the language id is returned.
-     * @return
-     */
-//    public String getVariantId() {
-//        if(mVariant != null) {
-//            return getId() + "_" + mVariant;
-//        } else {
-//            return getId();
-//        }
-//    }
 
     /**
      * Returns the timestamp when the language was last modified
@@ -97,6 +87,7 @@ public class SourceLanguage extends Language {
         Resource r = getResource(id);
         if(r != null) {
             mSelectedResourceId = r.getId();
+            storeSelectedResource(r.getId());
         }
         return r != null;
     }
@@ -110,8 +101,20 @@ public class SourceLanguage extends Language {
         Resource r = getResource(index);
         if(r != null) {
             mSelectedResourceId = r.getId();
+            storeSelectedResource(r.getId());
         }
         return r != null;
+    }
+
+    /**
+     * stores the selected resource in the preferences so we can load it the next time the app starts
+     * @param id
+     */
+    private void storeSelectedResource(String id) {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("selected_language_resource_"+mProject.getId(), id);
+        editor.apply();
     }
 
     /**
@@ -119,6 +122,9 @@ public class SourceLanguage extends Language {
      * @return
      */
     public Resource getSelectedResource() {
+        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        mSelectedResourceId = settings.getString("selected_language_resource_"+mProject.getId(), null);
+
         Resource selectedResource = getResource(mSelectedResourceId);
         if(selectedResource == null) {
             // auto select the first resource if no other resource has been selected.
@@ -128,5 +134,13 @@ public class SourceLanguage extends Language {
         } else {
             return selectedResource;
         }
+    }
+
+    /**
+     * Sets the project this source language belongs to
+     * @param project
+     */
+    public void setProject(Project project) {
+        mProject = project;
     }
 }
