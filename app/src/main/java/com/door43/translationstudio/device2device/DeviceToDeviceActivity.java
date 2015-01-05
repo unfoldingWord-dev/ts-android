@@ -16,6 +16,7 @@ import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.network.Server;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.io.BufferedInputStream;
@@ -24,6 +25,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -144,12 +146,16 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                             @Override
                                             public void onClose() {
                                                 // TODO: the socket for transferring the file has closed
+                                                app().showToastMessage("file socket closed");
                                             }
                                         });
+                                        app().showToastMessage("downloading file");
                                         // begin listening for the file
+                                        // TODO: we should really break this try catch up so we can be more specific with reports
                                         try {
+                                            long time = System.currentTimeMillis();
                                             DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
-                                            File file = new File(getExternalCacheDir() + "transferred/" + System.currentTimeMillis() + ".zip");
+                                            File file = new File(getExternalCacheDir() + "transferred/" + time + ".zip");
                                             file.getParentFile().mkdirs();
                                             file.createNewFile();
                                             OutputStream out = new FileOutputStream(file.getAbsolutePath());
@@ -160,7 +166,31 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                             {
                                                 out.write(buffer, 0, count);
                                             }
-                                            // TODO: do something with the file
+                                            out.close();
+                                            in.close();
+
+                                            app().showToastMessage("unziping files");
+                                            // unzip
+                                            File extractedDirectory = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + time);
+                                            app().unzip(file.getAbsolutePath(), extractedDirectory.getAbsolutePath());
+                                            File[] files = extractedDirectory.listFiles(new FilenameFilter() {
+                                                @Override
+                                                public boolean accept(File file, String s) {
+                                                    return Project.validateProjectArchiveName(s);
+                                                }
+                                            });
+                                            if(files.length == 1) {
+                                                // import the project
+                                                app().showToastMessage("importing file");
+                                                if(Project.importProject(files[0])) {
+                                                    app().showToastMessage(R.string.success);
+                                                } else {
+                                                    // failed to import translation
+                                                    app().showToastMessage(R.string.translation_import_failed);
+                                                }
+                                            } else {
+                                                app().showToastMessage(R.string.malformed_translation_archive);
+                                            }
                                         } catch (IOException e) {
                                             app().showException(e);
                                         }
@@ -200,9 +230,33 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         @Override
                         public void onOpen(Connection connection) {
                             // send an archive to the connection
+                            Project p = app().getSharedProjectManager().getSelectedProject();
+                            if(p != null) {
+                                try {
+                                    String path = p.export();
+                                    File archive = new File(path);
+
+                                    // send the file to the connection
+                                    // TODO: first we should tell client about the available projects
+                                    // TODO: display a progress bar when the files are being transferred (on each client list item)
+                                    DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
+                                    DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
+                                    byte[] buffer = new byte[8 * 1024];
+                                    int count;
+                                    while ((count = in.read(buffer)) > 0)
+                                    {
+                                        out.write(buffer, 0, count);
+                                    }
+                                    out.close();
+                                    in.close();
+                                } catch (IOException e) {
+                                    app().showException(e);
+                                    return;
+                                }
+                            }
 
                             // create test file
-                            File temp = new File(getCacheDir(), "temp.txt");
+//                            File temp = new File(getCacheDir(), "temp.txt");
 //                            temp.getParentFile().mkdirs();
 //                            try {
 //                                OutputStreamWriter outFile = new OutputStreamWriter(new FileOutputStream(temp));
@@ -211,31 +265,22 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 //                                app().showException(e);
 //                                return;
 //                            }
-                            File zipFile = new File(getCacheDir(), "temp.zip");
+//                            File zipFile = new File(getCacheDir(), "temp.zip");
 
                             // zip test file
-                            try {
-                                app().zip(temp.getAbsolutePath(), zipFile.getAbsolutePath());
-                            } catch (IOException e) {
-                                app().showException(e);
-                                return;
-                            }
+//                            try {
+//                                app().zip(temp.getAbsolutePath(), zipFile.getAbsolutePath());
+//                            } catch (IOException e) {
+//                                app().showException(e);
+//                                return;
+//                            }
 
-                            // send the file to the connection
-                            // TODO: first we should tell client about the available projects
-                            // TODO: display a progress bar when the files are being transferred (on each client list item)
-                            try {
-                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
-                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(zipFile)));
-                                byte[] buffer = new byte[8 * 1024];
-                                int count;
-                                while ((count = in.read(buffer)) > 0)
-                                {
-                                    out.write(buffer, 0, count);
-                                }
-                            } catch (IOException e) {
-                                app().showException(e);
-                            }
+
+//                            try {
+//
+//                            } catch (IOException e) {
+//                                app().showException(e);
+//                            }
                         }
                     });
                     // send the port number to the client

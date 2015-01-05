@@ -1,6 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
+import android.widget.Toast;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -10,6 +11,7 @@ import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.StorageUtils;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
@@ -632,15 +634,70 @@ public class Project implements Model {
     }
 
     /**
-     * Exports the project with the currently selected target language in DokuWiki format
-     * This is a process heavy method and should not be ran on the main thread
-     * @return the path to the export directory
+     * Exports the project with the currently selected target language as a translationStudio project
+     * This is process heavery and should not be ran on the main thread.
+     * @return the path to the export archive
      */
     public String export() throws IOException {
-        String translationVersion = getLocalTranslationVersion();
         String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
-        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.dokuwiki_export_dir));
-        File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion);
+        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
+        Boolean commitSucceeded = true;
+
+        // commit changes to repo
+        Repo repo = new Repo(getRepositoryPath());
+        try {
+            // only commit if the repo is dirty
+            if(!repo.getGit().status().call().isClean()) {
+                // add
+                AddCommand add = repo.getGit().add();
+                add.addFilepattern(".").call();
+
+                // commit
+                CommitCommand commit = repo.getGit().commit();
+                commit.setAll(true);
+                commit.setMessage("auto save");
+                commit.call();
+            }
+        } catch (Exception e) {
+            commitSucceeded = false;
+        }
+
+        // TRICKY: this has to be read after we commit changes to the repo
+        String translationVersion = getLocalTranslationVersion();
+        File outputZipFile = new File(exportDir, projectComplexName + "_" + translationVersion + ".zip");
+
+        // clean up old exports
+        String[] cachedExports = exportDir.list();
+        if(cachedExports != null) {
+            for (int i = 0; i < cachedExports.length; i++) {
+                String[] pieces = cachedExports[i].split("_");
+                if (pieces[0].equals(projectComplexName) && !pieces[1].equals(translationVersion)) {
+                    File oldDir = new File(exportDir, cachedExports[i]);
+                    FileUtilities.deleteRecursive(oldDir);
+                }
+            }
+        }
+
+        // return the already exported project
+        // TRICKY: we can only rely on this when all changes are commited to the repo
+        if(outputZipFile.isFile() && commitSucceeded) {
+            return outputZipFile.getAbsolutePath();
+        }
+
+        // export the project
+        exportDir.mkdirs();
+        MainContext.getContext().zip(getRepositoryPath(), outputZipFile.getAbsolutePath());
+        return outputZipFile.getAbsolutePath();
+    }
+
+    /**
+     * Exports the project with the currently selected target language in DokuWiki format
+     * This is a process heavy method and should not be ran on the main thread
+     * @return the path to the export archive
+     */
+    public String exportDW() throws IOException {
+        String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
+        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
         Boolean commitSucceeded = true;
         Pattern pattern = Pattern.compile(NoteSpan.REGEX_OPEN_TAG + "((?!" + NoteSpan.REGEX_CLOSE_TAG + ").)*" + NoteSpan.REGEX_CLOSE_TAG);
         Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");
@@ -664,6 +721,10 @@ public class Project implements Model {
         } catch (Exception e) {
             commitSucceeded = false;
         }
+
+        // TRICKY: this has to be read after we commit changes to the repo
+        String translationVersion = getLocalTranslationVersion();
+        File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion);
 
         // clean up old exports
         String[] cachedExports = exportDir.list();
@@ -905,6 +966,8 @@ public class Project implements Model {
      * @return
      */
     public static TranslationArchiveInfo getTranslationArchiveInfo(String archiveName) {
+        String[] parts = archiveName.split("_");
+        String name = parts[0];
         if(validateProjectArchiveName(archiveName)) {
             String[] fields = archiveName.toLowerCase().split("-");
             return new TranslationArchiveInfo(fields[0], fields[1], fields[2]);

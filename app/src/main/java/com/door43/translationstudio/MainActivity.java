@@ -129,6 +129,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private boolean mProcessingTranslation;
     private Frame mSelectedFrame;
     private boolean mKeyboardIsOpen = false;
+    private BroadcastReceiver mMessageReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -340,12 +341,14 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // Register a listener for when the input method changes (e.g. the keyboard)
         IntentFilter filter = new IntentFilter(Intent.ACTION_INPUT_METHOD_CHANGED);
-        registerReceiver(new BroadcastReceiver() {
+        mMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 onKeyboardChanged(rootView);
             }
-        }, filter);
+        };
+        // TRICKY: we need to unregister this when the activity is destroyed
+        registerReceiver(mMessageReceiver, filter);
 
         // set custom commands for input text selection
         mTranslationEditText.setCustomSelectionActionModeCallback(new ActionMode.Callback() {
@@ -959,7 +962,7 @@ public class MainActivity extends TranslatorBaseActivity {
                         Pattern p = Pattern.compile(NoteSpan.REGEX_NOTE, Pattern.DOTALL);
                         Matcher matcher = p.matcher(text);
                         int lastEnd = 0;
-                        while(matcher.find() && !Thread.currentThread().isInterrupted()) {
+                        while(matcher.find() && !isInterrupted()) {
                             if(matcher.start() > lastEnd) {
                                 // add the last piece
                                 mNotedResult.append(text.substring(lastEnd, matcher.start()));
@@ -978,7 +981,7 @@ public class MainActivity extends TranslatorBaseActivity {
                             }
                             mNotedResult.append(note.toCharSequence());
                         }
-                        if(Thread.currentThread().isInterrupted())  return;
+                        if(isInterrupted())  return;
                         if(lastEnd < text.length()) {
                             // add the last bit of text to the view
                             String remainingText = text.substring(lastEnd, text.length());
@@ -996,12 +999,13 @@ public class MainActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onPostExecute() {
-                        if(Thread.currentThread().isInterrupted()) return;
-                        if(mNotedResult.getText() != null) {
-                            disableAutosave();
-                            mTranslationEditText.setText(mNotedResult.getText());
-                            mTranslationEditText.setSelection(0);
-                            enableAutosave();
+                        if(!isInterrupted()) {
+                            if (mNotedResult.getText() != null) {
+                                disableAutosave();
+                                mTranslationEditText.setText(mNotedResult.getText());
+                                mTranslationEditText.setSelection(0);
+                                enableAutosave();
+                            }
                         }
                         onStop();
                         // re-enable the view so we can save it
@@ -1357,6 +1361,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
     @Override
     public void onDestroy() {
+        unregisterReceiver(mMessageReceiver);
         super.onDestroy();
     }
 

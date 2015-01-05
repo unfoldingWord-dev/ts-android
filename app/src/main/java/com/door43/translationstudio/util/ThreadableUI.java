@@ -2,6 +2,7 @@ package com.door43.translationstudio.util;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 /**
@@ -23,6 +24,7 @@ public abstract class ThreadableUI {
         mThread = new Thread() {
             @Override
             public void run() {
+                Looper.prepare();
                 // execute the tasks
                 ThreadableUI.this.run();
                 // execute cleanup on the ui thread

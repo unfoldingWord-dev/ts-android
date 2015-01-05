@@ -13,7 +13,7 @@ import java.util.Map;
  * real projects into categories. Meta projects are basically linked lists that may chain together
  * multiple meta projects before terminating at a real project.
  */
-public class MetaProject implements Model {
+public class SudoProject implements Model {
     private final String mId;
 //    private MetaProject mMetaChild;
 //    private Project mProjectChild;
@@ -26,7 +26,7 @@ public class MetaProject implements Model {
      * Creates a new meta project that contains a sub meta project
      * @param slug
      */
-    public MetaProject(String slug) {
+    public SudoProject(String slug) {
         mId = slug;
     }
 
@@ -113,7 +113,13 @@ public class MetaProject implements Model {
 
     @Override
     public boolean isTranslating() {
-        // TODO: we'll need to check if any of the children are translating.
+        for(Model m:mChildrenMap.values()) {
+            if(!m.isTranslating()) {
+                continue;
+            } else {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -143,7 +149,7 @@ public class MetaProject implements Model {
      * Adds a meta child to this meta project
      * @param meta
      */
-    public void addChild(MetaProject meta) {
+    public void addChild(SudoProject meta) {
         if(!mChildrenMap.containsKey("m-"+meta.getId())) {
             mChildrenMap.put("m-" + meta.getId(), meta);
         }
@@ -172,9 +178,9 @@ public class MetaProject implements Model {
      * @param id
      * @return
      */
-    public MetaProject getMetaChild(String id) {
+    public SudoProject getMetaChild(String id) {
         if(mChildrenMap.containsKey("m-"+id)) {
-            return (MetaProject) mChildrenMap.get("m-"+id);
+            return (SudoProject) mChildrenMap.get("m-"+id);
         } else {
             return null;
         }

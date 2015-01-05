@@ -11,7 +11,7 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.SelectedProjectFromMetaEvent;
 import com.door43.translationstudio.panes.left.tabs.ModelItemAdapter;
-import com.door43.translationstudio.projects.MetaProject;
+import com.door43.translationstudio.projects.SudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
@@ -28,7 +28,7 @@ public class MetaProjectDialog extends DialogFragment {
 
         Bundle args = getArguments();
         final String id = args.getString("metaId");
-        MetaProject p = MainContext.getContext().getSharedProjectManager().getMetaProject(id);
+        SudoProject p = MainContext.getContext().getSharedProjectManager().getMetaProject(id);
         if(p != null) {
             ListView listView = (ListView)v.findViewById(R.id.listView);
             // create adapter
@@ -40,9 +40,9 @@ public class MetaProjectDialog extends DialogFragment {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Model m = mModelItemAdapter.getItem(i);
-                    if(m.getClass().equals(MetaProject.class)) {
+                    if(m.getClass().equals(SudoProject.class)) {
                         // re-load list
-                        mModelItemAdapter.changeDataSet(((MetaProject)m).getChildren());
+                        mModelItemAdapter.changeDataSet(((SudoProject)m).getChildren());
                     } else {
                         // return the selected project.
                         Project p = (Project)m;

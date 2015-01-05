@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.zip.ZipException;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
@@ -107,7 +106,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     String  sourcePath = p.getRepositoryPath();
                                     if(exportAsDokuwiki) {
                                         // export to Doku Wiki
-                                        sourcePath = p.export();
+                                        sourcePath = p.exportDW();
                                     }
 
                                     // zip
@@ -148,7 +147,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 
                                     if(exportAsDokuwiki) {
                                         // export to Doku Wiki
-                                        sourcePath = p.export();
+                                        sourcePath = p.exportDW();
                                     }
 
                                     // try to locate the removable sd card
@@ -190,28 +189,27 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }, removeableMedia != null, R.string.missing_external_storage));
 
-                // TODO: the device to device sharing is partly developed, but will not be available until later.
-//                mSharingTools.add(new SharingToolItem(R.string.export_to_device, R.string.export_as_project, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
-//                    @Override
-//                    public void run() {
-//                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
-//                        Bundle extras = new Bundle();
-//                        extras.putBoolean("startAsServer", true);
-//                        intent.putExtras(extras);
-//                        startActivity(intent);
-//                    }
-//                }));
-//
-//                mSharingTools.add(new SharingToolItem(R.string.import_from_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
-//                    @Override
-//                    public void run() {
-//                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
-//                        Bundle extras = new Bundle();
-//                        extras.putBoolean("startAsServer", false);
-//                        intent.putExtras(extras);
-//                        startActivity(intent);
-//                    }
-//                }));
+                mSharingTools.add(new SharingToolItem(R.string.export_to_device, R.string.export_as_project, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                        Bundle extras = new Bundle();
+                        extras.putBoolean("startAsServer", true);
+                        intent.putExtras(extras);
+                        startActivity(intent);
+                    }
+                }));
+
+                mSharingTools.add(new SharingToolItem(R.string.import_from_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                        Bundle extras = new Bundle();
+                        extras.putBoolean("startAsServer", false);
+                        intent.putExtras(extras);
+                        startActivity(intent);
+                    }
+                }));
 
                 mAdapter.notifyDataSetChanged();
                 MainContext.getContext().closeProgressDialog();
@@ -279,12 +277,12 @@ public class SharingActivity extends TranslatorBaseActivity {
                             // place extracted archive into timestamped directory to prevent archives with no folder structure from throwing files everywhere
                             SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
                             String timestamp = s.format(new Date());
-                            File exportDir = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+                            File extractedDirectory = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
 
                             // extract
                             try {
-                                app().unzip(archiveFile.getAbsolutePath(), exportDir.getAbsolutePath());
-                                File[] files = exportDir.listFiles(new FilenameFilter() {
+                                app().unzip(archiveFile.getAbsolutePath(), extractedDirectory.getAbsolutePath());
+                                File[] files = extractedDirectory.listFiles(new FilenameFilter() {
                                     @Override
                                     public boolean accept(File file, String s) {
                                         return Project.validateProjectArchiveName(s);
@@ -306,8 +304,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                             }
 
                             // clean up
-                            if(exportDir.exists()) {
-                                FileUtilities.deleteRecursive(exportDir);
+                            if(extractedDirectory.exists()) {
+                                FileUtilities.deleteRecursive(extractedDirectory);
                             }
 
                             app().closeProgressDialog();

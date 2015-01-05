@@ -14,10 +14,9 @@ import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.MetaProjectDialog;
 import com.door43.translationstudio.events.SelectedProjectFromMetaEvent;
-import com.door43.translationstudio.projects.MetaProject;
+import com.door43.translationstudio.projects.SudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.squareup.otto.Subscribe;
@@ -57,7 +56,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                     handleProjectSelection((Project)m);
                 } else {
                     // this is a meta project
-                    handleMetaSelection((MetaProject)m);
+                    handleMetaSelection((SudoProject)m);
                 }
             }
         });
@@ -102,7 +101,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      * Handles the selection of a meta project
      * @param p
      */
-    private void handleMetaSelection(MetaProject p) {
+    private void handleMetaSelection(SudoProject p) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {

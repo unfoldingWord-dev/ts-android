@@ -36,7 +36,7 @@ public class ProjectManager {
     private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
 
     // meta projects
-    private static Map<String, MetaProject> mMetaProjectMap = new HashMap<String, MetaProject>();
+    private static Map<String, SudoProject> mMetaProjectMap = new HashMap<String, SudoProject>();
 
     private static List<Model> mListableProjects = new ArrayList<Model>();
     private static Map<String, Model> mListableProjectMap = new HashMap<String, Model>();
@@ -207,7 +207,7 @@ public class ProjectManager {
      * @param p
      * @return
      */
-    private boolean addMetaProject(MetaProject p) {
+    private boolean addMetaProject(SudoProject p) {
         if(!mMetaProjectMap.containsKey(p.getId())) {
             mMetaProjectMap.put(p.getId(), p);
             return true;
@@ -233,7 +233,7 @@ public class ProjectManager {
      * select a real project at which point normal application flow will continue.
      * @param p
      */
-    public void addListableProject(MetaProject p) {
+    public void addListableProject(SudoProject p) {
         if(!mListableProjectMap.containsKey("m-"+p.getId())) {
             mListableProjectMap.put("m-"+p.getId(), p);
             mListableProjects.add(p);
@@ -289,7 +289,7 @@ public class ProjectManager {
      * @param id
      * @return
      */
-    public MetaProject getMetaProject(String id) {
+    public SudoProject getMetaProject(String id) {
         if(mMetaProjectMap.containsKey(id)) {
             return mMetaProjectMap.get(id);
         } else {
@@ -677,7 +677,7 @@ public class ProjectManager {
                     Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
 
                     // load meta
-                    MetaProject rootMeta = null;
+                    SudoProject rootMeta = null;
                     if(jsonProject.has("meta")) {
                         JSONArray jsonMeta = jsonProject.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
@@ -685,14 +685,14 @@ public class ProjectManager {
                             String metaSlug = jsonMeta.get(0).toString();
                             rootMeta = getMetaProject(metaSlug);
                             if(rootMeta == null) {
-                                rootMeta = new MetaProject(metaSlug);
+                                rootMeta = new SudoProject(metaSlug);
                                 addMetaProject(rootMeta);
                             }
                             p.addMetaCategory(rootMeta.getId());
                             // load children meta
-                            MetaProject currentMeta = rootMeta;
+                            SudoProject currentMeta = rootMeta;
                             for (int j = 1; j < jsonMeta.length(); j++) {
-                                MetaProject meta = new MetaProject(jsonMeta.get(j).toString());
+                                SudoProject meta = new SudoProject(jsonMeta.get(j).toString());
                                 if(currentMeta.getMetaChild(meta.getId()) != null) {
                                     // load already created meta
                                     currentMeta = currentMeta.getMetaChild(meta.getId());
@@ -737,7 +737,7 @@ public class ProjectManager {
      * @param p the project into which the source languages will be loaded
      * @param sourceLangaugeCatalog the catalog of source languages
      */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, MetaProject rootMeta, String sourceLangaugeCatalog) {
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, SudoProject rootMeta, String sourceLangaugeCatalog) {
         List<SourceLanguage> importedLanguages = new ArrayList<SourceLanguage>();
         if(sourceLangaugeCatalog == null) {
             return importedLanguages;
@@ -775,7 +775,7 @@ public class ProjectManager {
                     if(jsonProjInfo.has("meta") && rootMeta != null) {
                         JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
-                            MetaProject currentMeta = rootMeta;
+                            SudoProject currentMeta = rootMeta;
                             for (int j = 0; j < jsonMeta.length(); j++) {
                                 currentMeta.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
                                 if(p.getMeta(j) != null) {
