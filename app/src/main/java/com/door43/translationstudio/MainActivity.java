@@ -226,11 +226,9 @@ public class MainActivity extends TranslatorBaseActivity {
         int screenHeight = root.getRootView().getHeight();
         int heightDiff = screenHeight - (r.bottom - r.top);
         if(heightDiff > 100) {
-            if(mKeyboardIsOpen) return;
             mKeyboardIsOpen = true;
             onKeyboardOpen(r);
         } else {
-            if(!mKeyboardIsOpen) return;
             mKeyboardIsOpen = false;
             onKeyboardClose(r);
         }
@@ -255,8 +253,11 @@ public class MainActivity extends TranslatorBaseActivity {
 
     private void resizeRootView(Rect r) {
         ViewGroup.LayoutParams params = mRootView.getLayoutParams();
-        params.height = r.bottom - mActionBarHeight - mStatusBarHeight;
-        mRootView.setLayoutParams(params);
+        int newHeight = r.bottom - mActionBarHeight - mStatusBarHeight;
+        if(newHeight != params.height) {
+            params.height = newHeight;
+            mRootView.setLayoutParams(params);
+        }
     }
 
     /**
@@ -1129,6 +1130,7 @@ public class MainActivity extends TranslatorBaseActivity {
         if(frameIsSelected()) {
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
             mTranslationEditText.setFocusable(true);
+            mTranslationEditText.setEnabled(true);
             final int frameIndex = p.getSelectedChapter().getFrameIndex(mSelectedFrame);
             final Chapter chapter = p.getSelectedChapter();
 
@@ -1210,6 +1212,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
             mSelectedFrame = null;
             mTranslationEditText.setText("");
+            mTranslationEditText.setEnabled(false);
             mTranslationEditText.setFocusable(false);
             mTranslationTitleText.setText("");
             mSourceTitleText.setText("");

@@ -65,9 +65,11 @@ public class ProjectManager {
     private static MainApplication mContext;
     private static final String TAG = "ProjectManager";
     private OnProgressCallback mCallback;
+    private static boolean mHasLoaded = false;
 
     public ProjectManager(MainApplication context) {
         mContext = context;
+        mDataStore = new DataStore(mContext);
     }
 
     /**
@@ -75,9 +77,8 @@ public class ProjectManager {
      */
     public void init(OnProgressCallback callback) {
         // make sure we only call this once.
-        if(mDataStore == null) {
+        if(!mHasLoaded) {
             mCallback = callback;
-            mDataStore = new DataStore(mContext);
             // begin loading target languages
             String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
             loadTargetLanguagesCatalog(targetLanguageCatalog);
