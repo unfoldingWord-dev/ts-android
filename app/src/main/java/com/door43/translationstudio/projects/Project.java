@@ -638,7 +638,7 @@ public class Project implements Model {
      * This is process heavery and should not be ran on the main thread.
      * @return the path to the export archive
      */
-    public String export() throws IOException {
+    public String exportProject() throws IOException {
         String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
         Boolean commitSucceeded = true;
@@ -699,6 +699,7 @@ public class Project implements Model {
         String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
         Boolean commitSucceeded = true;
+
         Pattern pattern = Pattern.compile(NoteSpan.REGEX_OPEN_TAG + "((?!" + NoteSpan.REGEX_CLOSE_TAG + ").)*" + NoteSpan.REGEX_CLOSE_TAG);
         Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");
         exportDir.mkdirs();
@@ -724,6 +725,7 @@ public class Project implements Model {
 
         // TRICKY: this has to be read after we commit changes to the repo
         String translationVersion = getLocalTranslationVersion();
+        File outputZipFile = new File(exportDir, projectComplexName + "_" + translationVersion + ".zip");
         File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion);
 
         // clean up old exports
@@ -738,8 +740,8 @@ public class Project implements Model {
 
         // return the already exported project
         // TRICKY: we can only rely on this when all changes are commited to the repo
-        if(outputDir.isDirectory() && commitSucceeded) {
-            return outputDir.getAbsolutePath();
+        if(outputZipFile.isFile() && commitSucceeded) {
+            return outputZipFile.getAbsolutePath();
         }
 
         // export the project
@@ -839,7 +841,12 @@ public class Project implements Model {
                 ps.close();
             }
         }
-        return outputDir.getAbsolutePath();
+
+        // zip
+        MainContext.getContext().zip(outputDir.getAbsolutePath(), outputZipFile.getAbsolutePath());
+        // cleanup
+        FileUtilities.deleteRecursive(outputDir);
+        return outputZipFile.getAbsolutePath();
     }
 
     /**
@@ -925,11 +932,38 @@ public class Project implements Model {
 
     /**
      * Imports a Translation Studio Project from a directory
-     * @param archiveDir the directory that will be imported
+     * @param archiveFile the directory that will be imported
      * @return
      */
-    public static boolean importProject(File archiveDir) {
-        TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(archiveDir.getName());
+    public static boolean importProject(File archiveFile) {
+        // extract archive
+        long timestamp = System.currentTimeMillis();
+        File extractedDirectory = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+        File importDirectory;
+        try {
+            // extract into a timestamped directory so we don't accidently throw files all over the place
+            MainContext.getContext().unzip(archiveFile.getAbsolutePath(), extractedDirectory.getAbsolutePath());
+            File[] files = extractedDirectory.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return Project.validateProjectArchiveName(s);
+                }
+            });
+            if(files.length == 1) {
+                importDirectory = files[0];
+            } else {
+                // malformed archive
+                extractedDirectory.delete();
+                return false;
+            }
+        } catch (IOException e) {
+            extractedDirectory.delete();
+            e.printStackTrace();
+            return false;
+        }
+
+        // read project info
+        TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(importDirectory.getName());
         if(translationInfo != null) {
             // locate existing project
             Project p = MainContext.getContext().getSharedProjectManager().getProject(translationInfo.projectId);
@@ -937,9 +971,9 @@ public class Project implements Model {
                 File repoDir = new File(Project.getRepositoryPath(p.getId(), translationInfo.languageId));
                 if(repoDir.exists()) {
                     // merge repos
-                    File archiveGitDir = new File(archiveDir, ".git");
+                    File archiveGitDir = new File(importDirectory, ".git");
                     FileUtilities.deleteRecursive(archiveGitDir);
-                    File[] files = archiveDir.listFiles();
+                    File[] files = importDirectory.listFiles();
                     for(File f:files) {
                         if(!FileUtilities.moveOrCopy(f, new File(repoDir, f.getName()))) {
                             // TODO: record list of files that cannot be coppied and display to the user
@@ -948,15 +982,18 @@ public class Project implements Model {
                     }
                     translationInfo.getLanguage().touch();
                     // TODO: perform a git diff to see if there are any changes
+                    extractedDirectory.delete();
                     return true;
                 } else {
                     // add as new repo
-                    return FileUtilities.moveOrCopy(archiveDir, repoDir);
+                    extractedDirectory.delete();
+                    return FileUtilities.moveOrCopy(importDirectory, repoDir);
                 }
             } else {
                 // TODO: create a new project and add it to the project manager.
             }
         }
+        extractedDirectory.delete();
         return false;
     }
 
@@ -968,8 +1005,12 @@ public class Project implements Model {
     public static TranslationArchiveInfo getTranslationArchiveInfo(String archiveName) {
         String[] parts = archiveName.split("_");
         String name = parts[0];
-        if(validateProjectArchiveName(archiveName)) {
-            String[] fields = archiveName.toLowerCase().split("-");
+        // TRICKY: older version of the app mistakenly included the leading directory separator
+        while(name.startsWith("/")) {
+            name = name.substring(name.indexOf("/"));
+        }
+        if(validateProjectArchiveName(name)) {
+            String[] fields = name.toLowerCase().split("-");
             return new TranslationArchiveInfo(fields[0], fields[1], fields[2]);
         }
         return null;

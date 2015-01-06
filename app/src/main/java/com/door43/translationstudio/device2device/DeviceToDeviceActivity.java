@@ -170,6 +170,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                             in.close();
 
                                             app().showToastMessage("unziping files");
+                                            // TODO: the project should handle all the unziping.
                                             // unzip
                                             File extractedDirectory = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + time);
                                             app().unzip(file.getAbsolutePath(), extractedDirectory.getAbsolutePath());
@@ -233,7 +234,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             Project p = app().getSharedProjectManager().getSelectedProject();
                             if(p != null) {
                                 try {
-                                    String path = p.export();
+                                    String path = p.exportProject();
                                     File archive = new File(path);
 
                                     // send the file to the connection

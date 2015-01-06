@@ -23,6 +23,8 @@ import com.door43.translationstudio.util.SharingToolItem;
 import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -103,20 +105,22 @@ public class SharingActivity extends TranslatorBaseActivity {
                             public void run() {
                                 app().showProgressDialog(R.string.exporting_project);
                                 try {
-                                    String  sourcePath = p.getRepositoryPath();
-                                    if(exportAsDokuwiki) {
-                                        // export to Doku Wiki
-                                        sourcePath = p.exportDW();
-                                    }
+                                    String  archivePath;
 
-                                    // zip
-                                    File dest = new File(internalDestDir, getArchiveName(p));
-                                    dest.getParentFile().mkdirs();
-                                    app().zip(sourcePath, dest.getAbsolutePath());
+                                    if(exportAsDokuwiki) {
+                                        archivePath = p.exportDW();
+                                    } else {
+                                        archivePath = p.exportProject();
+                                    }
+                                    File archiveFile = new File(archivePath);
+                                    File output = new File(internalDestDir, archiveFile.getName());
+
+                                    // copy exported archive to the sharing directory
+                                    FileUtils.copyFile(archiveFile, output);
 
                                     // share
-                                    if(dest.exists() && dest.isFile()) {
-                                        Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", dest);
+                                    if(output.exists() && output.isFile()) {
+                                        Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", output);
                                         Intent i = new Intent(Intent.ACTION_SEND);
                                         i.setType("application/zip");
                                         i.putExtra(Intent.EXTRA_STREAM, u);
@@ -142,13 +146,15 @@ public class SharingActivity extends TranslatorBaseActivity {
                                 Looper.prepare();
                                 app().showProgressDialog(R.string.exporting_project);
                                 try {
-                                    File externalDestDir = null;
-                                    String sourcePath = p.getRepositoryPath();
+                                    File externalDestDir;
+                                    String archivePath;
 
                                     if(exportAsDokuwiki) {
-                                        // export to Doku Wiki
-                                        sourcePath = p.exportDW();
+                                        archivePath = p.exportDW();
+                                    } else {
+                                        archivePath = p.exportProject();
                                     }
+                                    File archiveFile = new File(archivePath);
 
                                     // try to locate the removable sd card
                                     StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
@@ -160,14 +166,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         return;
                                     }
                                     externalDestDir.mkdirs();
+                                    File output = new File(externalDestDir, archiveFile.getName());
 
-                                    // tar
-                                    File dest = new File(externalDestDir, getArchiveName(p));
-                                    dest.getParentFile().mkdirs();
-                                    app().zip(sourcePath, dest.getAbsolutePath());
-                                    if(dest.exists() && dest.isFile()) {
-                                        // TODO: define a global list of notification id's that we can use.
-                                        app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), dest.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
+                                    // copy the exported archive to the sd card
+                                    FileUtils.copyFile(archiveFile, output);
+
+                                    if(output.exists() && output.isFile()) {
+                                        app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
                                     } else {
                                         app().showToastMessage(R.string.project_archive_missing);
                                     }
@@ -224,22 +229,6 @@ public class SharingActivity extends TranslatorBaseActivity {
         });
     }
 
-    /**
-     * Generates the archive name for the project
-     * @param p
-     * @return
-     */
-    private String getArchiveName(Project p) {
-        String exportFormat = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_EXPORT_FORMAT, MainContext.getContext().getResources().getString(R.string.pref_default_export_format));
-        String name = p.getGlobalProjectId()+"-"+p.getId()+"-"+p.getSelectedTargetLanguage().getId();
-        if(exportFormat.equals("dokuwiki")) {
-            name = name + "_" + exportFormat;
-        }
-        SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
-        String timestamp = s.format(new Date());
-        return name + "_" + timestamp + ".zip";
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu items for use in the action bar
@@ -274,38 +263,10 @@ public class SharingActivity extends TranslatorBaseActivity {
                         public void run() {
                             app().showProgressDialog(R.string.importing_project);
 
-                            // place extracted archive into timestamped directory to prevent archives with no folder structure from throwing files everywhere
-                            SimpleDateFormat s = new SimpleDateFormat("ddMMyyyyhhmmss");
-                            String timestamp = s.format(new Date());
-                            File extractedDirectory = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
-
-                            // extract
-                            try {
-                                app().unzip(archiveFile.getAbsolutePath(), extractedDirectory.getAbsolutePath());
-                                File[] files = extractedDirectory.listFiles(new FilenameFilter() {
-                                    @Override
-                                    public boolean accept(File file, String s) {
-                                        return Project.validateProjectArchiveName(s);
-                                    }
-                                });
-                                if(files.length == 1) {
-                                    // TODO: it would be nice if we could double check with the user before running the import.
-                                    if(Project.importProject(files[0])) {
-                                        app().showToastMessage(R.string.success);
-                                    } else {
-                                        // failed to import translation
-                                        app().showToastMessage(R.string.translation_import_failed);
-                                    }
-                                } else {
-                                    app().showToastMessage(R.string.malformed_translation_archive);
-                                }
-                            } catch (IOException e) {
-                                app().showException(e);
-                            }
-
-                            // clean up
-                            if(extractedDirectory.exists()) {
-                                FileUtilities.deleteRecursive(extractedDirectory);
+                            if(Project.importProject(archiveFile)) {
+                                app().showToastMessage(R.string.success);
+                            } else {
+                                app().showToastMessage(R.string.translation_import_failed);
                             }
 
                             app().closeProgressDialog();

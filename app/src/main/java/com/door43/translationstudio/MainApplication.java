@@ -556,7 +556,8 @@ public class MainApplication extends Application {
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
                 dest));
         if (sourceFile.isDirectory()) {
-            zipSubFolder(out, sourceFile, sourceFile.getParent().length());
+            // TRICKY: we add 1 to the base path length to exclude the leading path separator
+            zipSubFolder(out, sourceFile, sourceFile.getParent().length() + 1);
         } else {
             byte data[] = new byte[BUFFER];
             FileInputStream fi = new FileInputStream(sourcePath);
