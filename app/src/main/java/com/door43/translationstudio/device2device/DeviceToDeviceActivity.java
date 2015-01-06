@@ -169,28 +169,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                             out.close();
                                             in.close();
 
-                                            app().showToastMessage("unziping files");
-                                            // TODO: the project should handle all the unziping.
-                                            // unzip
-                                            File extractedDirectory = new File(getCacheDir() + "/" + getResources().getString(R.string.imported_projects_dir) + "/" + time);
-                                            app().unzip(file.getAbsolutePath(), extractedDirectory.getAbsolutePath());
-                                            File[] files = extractedDirectory.listFiles(new FilenameFilter() {
-                                                @Override
-                                                public boolean accept(File file, String s) {
-                                                    return Project.validateProjectArchiveName(s);
-                                                }
-                                            });
-                                            if(files.length == 1) {
-                                                // import the project
-                                                app().showToastMessage("importing file");
-                                                if(Project.importProject(files[0])) {
-                                                    app().showToastMessage(R.string.success);
-                                                } else {
-                                                    // failed to import translation
-                                                    app().showToastMessage(R.string.translation_import_failed);
-                                                }
+                                            // import the project
+                                            app().showToastMessage("importing file");
+                                            if(Project.importProject(file)) {
+                                                app().showToastMessage(R.string.success);
                                             } else {
-                                                app().showToastMessage(R.string.malformed_translation_archive);
+                                                // failed to import translation
+                                                app().showToastMessage(R.string.translation_import_failed);
                                             }
                                         } catch (IOException e) {
                                             app().showException(e);
