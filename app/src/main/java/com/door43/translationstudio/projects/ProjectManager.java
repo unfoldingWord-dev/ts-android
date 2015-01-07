@@ -270,6 +270,7 @@ public class ProjectManager {
 
     /**
      * Returns an array of listable projects
+     * This may be a mix of projects and sudo projects.
      * @return
      */
     public Model[] getListableProjects() {
@@ -347,6 +348,14 @@ public class ProjectManager {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Returns an array of projects
+     * @return
+     */
+    public Project[] getProjects() {
+        return mProjects.toArray(new Project[mProjects.size()]);
     }
 
     /**

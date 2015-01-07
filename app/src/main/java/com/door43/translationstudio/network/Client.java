@@ -37,7 +37,7 @@ public class Client extends Service {
      * Begins listening for server broadcasts and sets up some house keeping utilties
      */
     @Override
-    public void start() {
+    public void start(final String serviceName) {
         if(mIsRunning) return;
         mIsRunning = true;
 
@@ -53,11 +53,13 @@ public class Client extends Service {
                 String[] pieces = message.split(":");
                 if(pieces != null && pieces.length == 3) {
                     String service = pieces[0];
-                    int version = Integer.parseInt(pieces[1]);
-                    int port = Integer.parseInt(pieces[2]);
-                    Peer p = new Peer(senderIP, port, service, version);
-                    if(addPeer(p)) {
-                        mListener.onFoundServer(p);
+                    if(service.equals(serviceName)) {
+                        int version = Integer.parseInt(pieces[1]);
+                        int port = Integer.parseInt(pieces[2]);
+                        Peer p = new Peer(senderIP, port, service, version);
+                        if (addPeer(p)) {
+                            mListener.onFoundServer(p);
+                        }
                     }
                 } else {
                     mListener.onError(new IndexOutOfBoundsException("The client expected three pieces of data from the server but received "+ message));

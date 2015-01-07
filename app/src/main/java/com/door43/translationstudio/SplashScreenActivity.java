@@ -29,8 +29,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        mProgressTextView = (TextView)findViewById(R.id.progressTextView);
-        mProgressBar = (ProgressBar)findViewById(R.id.progressBar);
+        mProgressTextView = (TextView)findViewById(R.id.loadingText);
+        mProgressBar = (ProgressBar)findViewById(R.id.loadingBar);
         // we need a high precision bar because we are loading a ton of things
         mProgressBar.setMax(10000);
         mProgressBar.setProgress(0);

@@ -67,10 +67,10 @@ public class DevicePeerAdapter extends BaseAdapter {
         ipAddressView.setText(getItem(i).getIpAddress());
 
         TextView instructionsText = (TextView)peerItemView.findViewById(R.id.instructionsText);
-        if(mIsServer) {
-            instructionsText.setText(R.string.click_to_share);
+        if(getItem(i).isConnected()) {
+            instructionsText.setText(R.string.connected);
         } else {
-            instructionsText.setText(R.string.click_to_import);
+            instructionsText.setText(R.string.click_to_connect);
         }
 
         return peerItemView;

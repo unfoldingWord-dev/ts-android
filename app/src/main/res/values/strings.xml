@@ -209,9 +209,11 @@
     <string name="view_statement_of_faith">View Statement of Faith</string>
     <string name="view_translation_guidelines">View Translation Guidelines</string>
     <string name="import_from_device" translatable="false">Import from nearby device</string>
-    <string name="click_to_share" translatable="false">Click to share</string>
+    <!-- Indicates the user should click on the item in order to connect to the server -->
+    <string name="click_to_connect" translatable="false">Click to connect</string>
+    <!-- Indicates the peer has connected to the server -->
+    <string name="connected" translatable="false">Connected</string>
     <string name="share_to_all" translatable="false">Share to all</string>
-    <string name="click_to_import" translatable="false">Click to import</string>
     <string name="searching_for_devices" translatable="false">Searching for devices</string>
     <string name="language_resources">Versions</string>
 </resources>

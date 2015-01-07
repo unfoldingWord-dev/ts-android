@@ -10,6 +10,7 @@ public class Peer {
     private String mServiceName = "";
     private int mVersion = 0;
     private long mLastSeenAt = 0;
+    private boolean mIsConnected = false;
 
     /**
      * Specifies a new peer (likely a client)
@@ -84,5 +85,21 @@ public class Peer {
      */
     public void touch() {
         mLastSeenAt = System.currentTimeMillis();
+    }
+
+    /**
+     * Checks if the peer is connected.
+     * @return
+     */
+    public boolean isConnected() {
+        return mIsConnected;
+    }
+
+    /**
+     * Sets the connection status of the peer
+     * @param isConnected
+     */
+    public void setIsConnected(Boolean isConnected) {
+        mIsConnected = isConnected;
     }
 }

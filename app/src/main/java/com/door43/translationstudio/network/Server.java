@@ -35,11 +35,11 @@ public class Server extends Service {
     /**
      * This will cause the server to begin listening on a port for connections and advertise it's services to the network
      */
-    public void start() {
+    public void start(String serviceName) {
         if(mIsRunning) return;
         mIsRunning = true;
 
-        mServerThread = new Thread(new ServerThread());
+        mServerThread = new Thread(new ServerThread(serviceName));
         mServerThread.start();
     }
 
@@ -73,6 +73,15 @@ public class Server extends Service {
      * Manage the server instance on it's own thread
      */
     private class ServerThread implements Runnable {
+        private final String mServiceName;
+
+        /**
+         * The name of the service that will be broadcast on the network
+         * @param serviceName
+         */
+        public ServerThread(String serviceName) {
+            mServiceName = serviceName;
+        }
 
         public void run() {
             Socket socket;
@@ -102,7 +111,7 @@ public class Server extends Service {
             }
 
             // we send the client the app:version:port. e.g. tS:47:5653
-            mBroadcastThread = new Thread(new BroadcastRunnable("tS:" + pInfo.versionCode + ":" + serverTCPPort, broadcastAddress, mClientUDPPort, mBroadcastFrequency, new BroadcastRunnable.OnBroadcastEventListener() {
+            mBroadcastThread = new Thread(new BroadcastRunnable(mServiceName + ":" + pInfo.versionCode + ":" + serverTCPPort, broadcastAddress, mClientUDPPort, mBroadcastFrequency, new BroadcastRunnable.OnBroadcastEventListener() {
                 @Override
                 public void onError(Exception e) {
                     mServerThread.interrupt();

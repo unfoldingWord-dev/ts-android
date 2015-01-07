@@ -192,7 +192,11 @@ public abstract class Service {
         t.start();
     }
 
-    public abstract void start();
+    /**
+     *
+     * @param serviceName the name of the service being advertised or listened for on the network
+     */
+    public abstract void start(String serviceName);
     public abstract void stop();
 
 

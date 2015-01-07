@@ -24,13 +24,13 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/progressBar" />
+        android:id="@+id/loadingBar" />
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/loading"
-        android:id="@+id/progressTextView"
+        android:id="@+id/loadingText"
         android:gravity="center"
         android:padding="10dp" />
 

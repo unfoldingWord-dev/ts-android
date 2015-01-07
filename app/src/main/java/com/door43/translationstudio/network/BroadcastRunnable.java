@@ -6,7 +6,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 
 /**
- * Sets of a broadcaster to send packets to everyone on the network
+ * Sets up a broadcaster to send packets to everyone on the network.
  */
 public class BroadcastRunnable implements Runnable {
     private final int mPort;
