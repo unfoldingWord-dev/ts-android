@@ -16,19 +16,36 @@ public abstract class TranslatorBaseActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // we need to set the current activity right away so we can properly use the context
-        app().setCurrentActivity(this);
+//        app().setCurrentActivity(this);
     }
 
     protected void onResume() {
         super.onResume();
-        MainContext.getEventBus().register(this);
+//        MainContext.getEventBus().register(this);
         // set the current activity so that core classes can access the ui when nessesary.
+//        app().setCurrentActivity(this);
+    }
+
+    public void onStart() {
+        super.onStart();
+        MainContext.getEventBus().register(this);
         app().setCurrentActivity(this);
     }
 
+    public void onPause() {
+        // don't receive events when in the background
+//        MainContext.getEventBus().unregister(this);
+        super.onPause();
+    }
+
     protected void onDestroy() {
-        clearReferences();
+//        clearReferences();
         super.onDestroy();
+    }
+
+    public void onStop() {
+        clearReferences();
+        super.onStop();
     }
 
     /**

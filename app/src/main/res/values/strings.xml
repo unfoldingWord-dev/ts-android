@@ -216,4 +216,5 @@
     <string name="share_to_all" translatable="false">Share to all</string>
     <string name="searching_for_devices" translatable="false">Searching for devices</string>
     <string name="language_resources">Versions</string>
+    <string name="import_project">Import Project</string>
 </resources>

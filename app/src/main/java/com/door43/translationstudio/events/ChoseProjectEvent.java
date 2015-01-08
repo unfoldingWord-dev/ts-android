@@ -1,15 +1,19 @@
 package com.door43.translationstudio.events;
 
+import android.app.DialogFragment;
+
 import com.door43.translationstudio.projects.Project;
 
 /**
   * This events communicates the chosen project from the MetaProjectDialog to the ProjectsTabFragment.
   */
- public class SelectedProjectFromMetaEvent {
+ public class ChoseProjectEvent {
     private final Project mProject;
+    private final DialogFragment mDialog;
 
-    public SelectedProjectFromMetaEvent(Project p) {
+    public ChoseProjectEvent(Project p, DialogFragment f) {
         mProject = p;
+        mDialog = f;
     }
 
     /**
@@ -18,5 +22,9 @@ import com.door43.translationstudio.projects.Project;
      */
     public Project getProject() {
         return mProject;
+    }
+
+    public DialogFragment getDialog() {
+        return mDialog;
     }
  }

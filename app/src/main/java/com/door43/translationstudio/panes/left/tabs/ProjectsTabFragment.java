@@ -12,8 +12,8 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.MetaProjectDialog;
-import com.door43.translationstudio.events.SelectedProjectFromMetaEvent;
+import com.door43.translationstudio.dialogs.ChooseProjectDialog;
+import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.SudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
@@ -111,7 +111,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
         app().closeToastMessage();
         // Create and show the dialog.
-        MetaProjectDialog newFragment = new MetaProjectDialog();
+        ChooseProjectDialog newFragment = new ChooseProjectDialog();
         Bundle args = new Bundle();
         args.putString("metaId", p.getId());
         newFragment.setArguments(args);
@@ -137,7 +137,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     }
 
     @Subscribe
-    public void onSelectedProjectFromMeta(SelectedProjectFromMetaEvent event) {
+    public void onSelectedProjectFromMeta(ChoseProjectEvent event) {
         handleProjectSelection(event.getProject());
+        event.getDialog().dismiss();
     }
 }

@@ -23,13 +23,27 @@ public class TranslatorBaseFragment extends Fragment {
 
     public void onResume() {
         super.onResume();
+//        MainContext.getEventBus().register(this);
+    }
+
+    public void onPause() {
+        // don't receive events when in the background
+//        MainContext.getEventBus().unregister(this);
+        super.onPause();
+    }
+
+    public void onStart() {
+        super.onStart();
         MainContext.getEventBus().register(this);
     }
 
-
+    public void onStop() {
+        MainContext.getEventBus().unregister(this);
+        super.onStop();
+    }
 
     public void onDestroy() {
-        MainContext.getEventBus().unregister(this);
+//        MainContext.getEventBus().unregister(this);
         super.onDestroy();
     }
 

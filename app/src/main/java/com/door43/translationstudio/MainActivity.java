@@ -3,13 +3,11 @@ package com.door43.translationstudio;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
-import com.door43.translationstudio.dialogs.MetaProjectDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
-import com.door43.translationstudio.network.BroadcastListenerRunnable;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.TermSpan;
@@ -38,7 +36,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -53,15 +50,12 @@ import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.SpannedString;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -1397,6 +1391,10 @@ public class MainActivity extends TranslatorBaseActivity {
         mLeftPane.reloadProjectsTab();
     }
 
+    /**
+     * Triggered any time a language resource is selected e.g. udb or ulb.
+     * @param event
+     */
     @Subscribe
     public void languageResourceSelectionChanged(LanguageResourceSelectedEvent event) {
         final Project p = app().getSharedProjectManager().getSelectedProject();

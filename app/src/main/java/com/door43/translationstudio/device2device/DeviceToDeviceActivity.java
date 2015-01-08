@@ -1,5 +1,7 @@
 package com.door43.translationstudio.device2device;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -11,17 +13,22 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.dialogs.ChooseProjectDialog;
+import com.door43.translationstudio.dialogs.ImportProjectDialog;
+import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.network.Client;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.network.Server;
 import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.SudoProject;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.squareup.otto.Subscribe;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,8 +46,6 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import javax.xml.transform.Source;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private static final String MSG_PROJECT_ARCHIVE = "pa";
@@ -325,42 +330,53 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         JSONObject json = new JSONObject();
                         try {
                             json.put("id", p.getId());
-                            // for better readability we attempt to give the project list in the preferred language of the client
+
+                            // for better readability we attempt to give the project details in the preferred language of the client
                             SourceLanguage shownLanguage = null;
                             if(preferredSourceLanguages.size() > 0) {
                                 for(SourceLanguage prefferedLang:preferredSourceLanguages) {
                                     shownLanguage = p.getSourceLanguage(prefferedLang.getId());
                                     if(shownLanguage != null) {
-                                        json.put("name", p.getTitle(shownLanguage));
-                                        json.put("description", p.getDescription(shownLanguage));
-                                        SudoProject[] sudoProjects = p.getSudoProjects();
-                                        JSONArray sudoProjectsJson = new JSONArray();
-                                        for(SudoProject sp:sudoProjects) {
-                                            sudoProjectsJson.put(sp.getTitle(shownLanguage));
-                                        }
-                                        json.put("meta", sudoProjectsJson);
+
                                         break;
                                     }
                                 }
                             }
                             // use the default language
                             if(shownLanguage == null) {
-                                // use the default language
-                                json.put("name", p.getTitle());
-                                json.put("description", p.getDescription());
-                                SudoProject[] sudoProjects = p.getSudoProjects();
-                                JSONArray sudoProjectsJson = new JSONArray();
-                                for(SudoProject sp:sudoProjects) {
-                                    sudoProjectsJson.put(sp.getTitle());
-                                }
-                                json.put("meta", sudoProjectsJson);
+                                shownLanguage = p.getSelectedSourceLanguage();
                             }
 
+                            // project details
+                            JSONObject projectInfoJson = new JSONObject();
+                            projectInfoJson.put("name", p.getTitle(shownLanguage));
+                            projectInfoJson.put("description", p.getDescription(shownLanguage));
+                            // TRICKY: since we are only providing the project details in a single source language we don't need to include the meta id's
+                            SudoProject[] sudoProjects = p.getSudoProjects();
+                            JSONArray sudoProjectsJson = new JSONArray();
+                            for(SudoProject sp:sudoProjects) {
+                                sudoProjectsJson.put(sp.getTitle(shownLanguage));
+                            }
+                            projectInfoJson.put("meta", sudoProjectsJson);
+                            json.put("project", projectInfoJson);
+
+                            // project details language
+                            JSONObject projectLanguageJson = new JSONObject();
+                            projectLanguageJson.put("slug", shownLanguage.getId());
+                            projectLanguageJson.put("name", shownLanguage.getName());
+                            if(shownLanguage.getDirection() == Language.Direction.RightToLeft) {
+                                projectLanguageJson.put("direction", "rtl");
+                            } else {
+                                projectLanguageJson.put("direction", "ltr");
+                            }
+                            json.put("language", projectLanguageJson);
+
+                            // available target languages
                             Language[] targetLanguages = p.getActiveTargetLanguages();
                             JSONArray languagesJson = new JSONArray();
                             for(Language l:targetLanguages) {
                                 JSONObject langJson = new JSONObject();
-                                langJson.put("id", l.getId());
+                                langJson.put("slug", l.getId());
                                 langJson.put("name", l.getName());
                                 if(l.getDirection() == Language.Direction.RightToLeft) {
                                     langJson.put("direction", "rtl");
@@ -369,7 +385,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 }
                                 languagesJson.put(langJson);
                             }
-                            json.put("languages", languagesJson);
+                            json.put("target_languages", languagesJson);
                             projectsJson.put(json);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -510,7 +526,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             });
         } else if(data[0].equals(MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
-            final String rawProjectList = data[1];
+            String rawProjectList = data[1];
+            final ArrayList<Project> availableProjects = new ArrayList<Project>();
 
             JSONArray json = null;
             try {
@@ -529,34 +546,67 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             for(int i=0; i<json.length(); i++) {
                 try {
                     JSONObject projectJson = json.getJSONObject(i);
-                    if (projectJson.has("id") && projectJson.has("name") && projectJson.has("languages")) {
-                        String id = projectJson.getString("id");
-                        String name = projectJson.getString("name");
-                        String description = "";
+                    if (projectJson.has("id") && projectJson.has("project") && projectJson.has("language") && projectJson.has("target_languages")) {
+                        Project p = new Project(projectJson.getString("id"));
 
-                        // load languages
-                        JSONArray languagesJson = projectJson.getJSONArray("languages");
+                        // source language (just for project info)
+                        JSONObject sourceLangJson = projectJson.getJSONObject("language");
+                        String sourceLangDirection = sourceLangJson.getString("direction");
+                        Language.Direction langDirection;
+                        if(sourceLangDirection.toLowerCase().equals("ltr")) {
+                            langDirection = Language.Direction.LeftToRight;
+                        } else {
+                            langDirection = Language.Direction.RightToLeft;
+                        }
+                        SourceLanguage sourceLanguage = new SourceLanguage(sourceLangJson.getString("slug"), sourceLangJson.getString("name"), langDirection, 0);
+                        p.addSourceLanguage(sourceLanguage);
+                        p.setSelectedSourceLanguage(sourceLanguage.getId());
+
+                        // project info
+                        JSONObject projectInfoJson = projectJson.getJSONObject("project");
+                        p.setTitle(projectInfoJson.getString("name"));
+                        if(projectInfoJson.has("description")) {
+                            p.setDescription(projectInfoJson.getString("description"));
+                        }
+
+                        // meta (sudo projects)
+                        // TRICKY: we are actually getting the meta names instead of the id's since we only receive one translation of the project info
+                        if (projectInfoJson.has("meta")) {
+                            JSONArray metaJson = projectInfoJson.getJSONArray("meta");
+                            SudoProject currentSudoProject = null;
+                            for(int j=0; j<metaJson.length(); j++) {
+                                // create sudo project out of the meta name
+                                SudoProject sp  = new SudoProject(metaJson.getString(j));
+                                // link to parent sudo project
+                                if(currentSudoProject != null) {
+                                    currentSudoProject.addChild(sp);
+                                }
+                                // add to project
+                                p.addSudoProject(sp);
+                                currentSudoProject = sp;
+                            }
+                        }
+
+                        // available translation languages
+                        JSONArray languagesJson = projectJson.getJSONArray("target_languages");
                         ArrayList<Language> languages = new ArrayList<Language>();
                         for(int j=0; j<languagesJson.length(); j++) {
                             JSONObject langJson = languagesJson.getJSONObject(j);
-                            String languageId = langJson.getString("id");
+                            String languageId = langJson.getString("slug");
                             String languageName = langJson.getString("name");
                             String direction  = langJson.getString("direction");
-                            // TODO: the direction is either rtl or ltr. We need to put this into the language.
-                            Language l = new Language(languageId, languageName, Language.Direction.RightToLeft);
-                            languages.add(l);
+                            Language.Direction langDir;
+                            if(direction.toLowerCase().equals("ltr")) {
+                                langDir = Language.Direction.LeftToRight;
+                            } else {
+                                langDir = Language.Direction.RightToLeft;
+                            }
+                            Language l = new Language(languageId, languageName, langDir);
+                            p.addTargetLanguage(l);
                         }
-
-                        if (projectJson.has("description")) {
-                            description = projectJson.getString("description");
-                        }
-
-                        // load meta if it exists
-                        if (projectJson.has("meta")) {
-                            // TODO: load meta
-                        }
-
-                        // TODO: collect all these projects in a list
+                        availableProjects.add(p);
+                    } else {
+                        // TODO: invalid response
                     }
                 } catch(final JSONException e) {
                     handle.post(new Runnable() {
@@ -572,10 +622,57 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 @Override
                 public void run() {
                     app().closeProgressDialog();
+                    // TODO: we don't have the meta projects configured quite right yet.
+                    showProjectSelectionDialog(availableProjects.toArray(new Model[availableProjects.size()]));
                 }
             });
-
-            // TODO: display a window to browse the projects
         }
+    }
+
+    /**
+     * Displays a dialog to choose the project to import
+     * @param models an array of projects and sudo projects to choose from
+     */
+    private void showProjectSelectionDialog(Model[] models) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        app().closeToastMessage();
+        // Create and show the dialog.
+        ChooseProjectDialog newFragment = new ChooseProjectDialog();
+        newFragment.setModelList(models);
+        newFragment.show(ft, "dialog");
+    }
+
+    /**
+     * Triggered when the client chooses a project from the server's project list
+     * @param event
+     */
+    @Subscribe
+    public void onSelectedProjectFromMeta(ChoseProjectEvent event) {
+        showProjectLanguageSelectionDialog(event.getProject());
+    }
+
+    /**
+     * Displays a dialog to choose the languages that will be imported with the project.
+     * @param p
+     */
+    private void showProjectLanguageSelectionDialog(Project p) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        app().closeToastMessage();
+        // Create and show the dialog.
+        ImportProjectDialog newFragment = new ImportProjectDialog();
+        newFragment.setProject(p);
+        newFragment.show(ft, "dialog");
     }
 }

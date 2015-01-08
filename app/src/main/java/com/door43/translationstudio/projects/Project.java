@@ -38,6 +38,8 @@ public class Project implements Model {
     private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
     private List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
     private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
+    private List<Language> mTargetLanguages = new ArrayList<Language>();
+    private Map<String,Language> mTargetLanguageMap = new HashMap<String, Language>();
     private List<Term> mTerms = new ArrayList<Term>();
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
     private List<SudoProject> mSudoProjects = new ArrayList<SudoProject>();
@@ -57,13 +59,28 @@ public class Project implements Model {
 
     /**
      * Creates a new project
-     * TODO: I'm not sure that we need the dateModified
-     * @param slug
-     * @param dateModified
+     * @param slug the project slug
+     * @param dateModified the date the project was last modified (usualy when pulled from the server)
      */
     public Project(String slug, int dateModified) {
         mSlug = slug;
         mDateModified = dateModified;
+        init();
+    }
+
+    /**
+     * Creates a new project
+     * @param slug the project slug
+     */
+    public Project(String slug) {
+        mSlug = slug;
+        init();
+    }
+
+    /**
+     * Initializes default settings in the project
+     */
+    private void init() {
         // load the selected language
         SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
         mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
@@ -355,8 +372,8 @@ public class Project implements Model {
     }
 
     /**
-     * Adds a language to the project
-     * @param l the language to add
+     * Adds a source language to the project
+     * @param l the source language to add
      */
     public boolean addSourceLanguage(SourceLanguage l) {
         if(!mSourceLanguageMap.containsKey(l.getId())) {
@@ -367,6 +384,31 @@ public class Project implements Model {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Adds a target language to the project.
+     * This is just used when importing translations from device to device.
+     * @param l the target language to add
+     * @return
+     */
+    public boolean addTargetLanguage(Language l) {
+        if(!mTargetLanguageMap.containsKey(l.getId())) {
+            mTargetLanguageMap.put(l.getId(), l);
+            mTargetLanguages.add(l);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Returns an array of target languages.
+     * This is just used when importing translations from device to device.
+     * @return
+     */
+    public Language[] getTargetLanguages() {
+        return mTargetLanguages.toArray(new Language[mTargetLanguages.size()]);
     }
 
     /**
