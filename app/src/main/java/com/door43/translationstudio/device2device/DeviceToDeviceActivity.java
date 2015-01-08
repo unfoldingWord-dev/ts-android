@@ -16,7 +16,11 @@ import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.network.Server;
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.SudoProject;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import org.json.JSONArray;
@@ -32,6 +36,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+import javax.xml.transform.Source;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private static final String MSG_PROJECT_ARCHIVE = "pa";
@@ -177,7 +186,20 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 app().showProgressDialog(R.string.loading);
                             }
                         });
-                        c.writeTo(server, MSG_PROJECT_LIST);
+
+                        // Include the suggested language(s) in which the results should be returned (if possible)
+                        // This just makes it easier for users to read the results
+                        JSONArray preferredLanguagesJson = new JSONArray();
+                        // device language
+                        preferredLanguagesJson.put(Locale.getDefault().getLanguage());
+                        // current project language
+                        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+                        if(p != null) {
+                            preferredLanguagesJson.put(p.getSelectedSourceLanguage());
+                        }
+                        // english as default
+                        preferredLanguagesJson.put("en");
+                        c.writeTo(server, MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
                     }
                 }
             }
@@ -279,7 +301,22 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         if(client.isConnected()) {
             if(data[0].equals(MSG_PROJECT_LIST)) {
                 // send the project list to the client
-//                String projectList = "";
+
+                // read preferred source language (for better readability on the client)
+                List<SourceLanguage> preferredSourceLanguages = new ArrayList<SourceLanguage>();
+                try {
+                    JSONArray preferredLanguagesJson = new JSONArray(data[1]);
+                    for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
+                        SourceLanguage lang = MainContext.getContext().getSharedProjectManager().getSourceLanguage(preferredLanguagesJson.getString(i));
+                        if(lang != null) {
+                            preferredSourceLanguages.add(lang);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                // locate available projects
                 JSONArray projectsJson = new JSONArray();
                 Project[] projects = app().getSharedProjectManager().getProjects();
                 // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
@@ -288,10 +325,46 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         JSONObject json = new JSONObject();
                         try {
                             json.put("id", p.getId());
-                            // TODO: the client should suply it's preferred language then the project should give the project information in that preferred language is possible.
-                            json.put("name", p.getTitle());
-                            json.put("description", p.getDescription());
-                            // TODO: need to get the languages that are currently being translated. The project will need to read this from the disk
+                            // for better readability we attempt to give the project list in the preferred language of the client
+                            SourceLanguage shownLanguage = null;
+                            if(preferredSourceLanguages.size() > 0) {
+                                for(SourceLanguage prefferedLang:preferredSourceLanguages) {
+                                    shownLanguage = p.getSourceLanguage(prefferedLang.getId());
+                                    if(shownLanguage != null) {
+                                        json.put("name", p.getTitle(shownLanguage));
+                                        json.put("description", p.getDescription(shownLanguage));
+                                        SudoProject[] sudoProjects = p.getSudoProjects();
+                                        JSONArray sudoProjectsJson = new JSONArray();
+                                        for(SudoProject sp:sudoProjects) {
+                                            sudoProjectsJson.put(sp.getTitle(shownLanguage));
+                                        }
+                                        json.put("meta", sudoProjectsJson);
+                                        break;
+                                    }
+                                }
+                            }
+                            // use the default language
+                            if(shownLanguage == null) {
+                                // use the default language
+                                json.put("name", p.getTitle());
+                                json.put("description", p.getDescription());
+                                SudoProject[] sudoProjects = p.getSudoProjects();
+                                JSONArray sudoProjectsJson = new JSONArray();
+                                for(SudoProject sp:sudoProjects) {
+                                    sudoProjectsJson.put(sp.getTitle());
+                                }
+                                json.put("meta", sudoProjectsJson);
+                            }
+
+                            Language[] targetLanguages = p.getActiveTargetLanguages();
+                            JSONArray languagesJson = new JSONArray();
+                            for(Language l:targetLanguages) {
+                                JSONObject langJson = new JSONObject();
+                                langJson.put("id", l.getId());
+                                langJson.put("name", l.getName());
+                                languagesJson.put(langJson);
+                            }
+                            json.put("languages", languagesJson);
                             projectsJson.put(json);
                         } catch (JSONException e) {
                             e.printStackTrace();

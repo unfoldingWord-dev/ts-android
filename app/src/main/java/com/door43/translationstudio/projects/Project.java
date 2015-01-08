@@ -1,7 +1,6 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
-import android.widget.Toast;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -11,7 +10,6 @@ import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
-import com.door43.translationstudio.util.StorageUtils;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
@@ -42,7 +40,8 @@ public class Project implements Model {
     private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
     private List<Term> mTerms = new ArrayList<Term>();
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
-    private List<String> mMetaCategory = new ArrayList<String>();
+    private List<SudoProject> mSudoProjects = new ArrayList<SudoProject>();
+    private Map<String, SudoProject> mSudoProjectMap = new HashMap<String, SudoProject>();
 
     private String mTitle;
     private final String mSlug;
@@ -163,11 +162,31 @@ public class Project implements Model {
     }
 
     /**
+     * Returns the title of the project for the specified language
+     * @param l
+     * @return
+     */
+    public String getTitle(SourceLanguage l) {
+        // TODO: grab the correct title.
+        return mTitle;
+    }
+
+    /**
      * Returns the project title
      * @return
      */
     public String getTitle() {
         return mTitle;
+    }
+
+    /**
+     * Returns the description of the project for the specified language
+     * @param l
+     * @return
+     */
+    public String getDescription(SourceLanguage l) {
+        // TODO: grab the correct description
+        return mDescription;
     }
 
     /**
@@ -282,37 +301,46 @@ public class Project implements Model {
     }
 
     /**
-     * Adds a meta category to the project
-     * @param m
+     * Adds a sudo project. These are used to help categorize projects
+     * @param p
      */
-    public void addMetaCategory(String m) {
-        if(!mMetaCategory.contains(m)) {
-            mMetaCategory.add(m);
+    public void addSudoProject(SudoProject p) {
+        if(!mSudoProjectMap.containsKey(p.getId())) {
+            mSudoProjectMap.put(p.getId(), p);
+            mSudoProjects.add(p);
         }
+    }
+
+    /**
+     * Returns the number of sudo projects in this project
+     * @return
+     */
+    public int numSudoProjects() {
+        return mSudoProjects.size();
     }
 
     /**
      * Returns an array of meta categories for this project
      * @return
      */
-    public String[] getMetaCategories() {
-        return mMetaCategory.toArray(new String[mMetaCategory.size()]);
+    public SudoProject[] getSudoProjects() {
+        return mSudoProjects.toArray(new SudoProject[mSudoProjects.size()]);
     }
 
 
     /**
-          * Returns the id of a meta category b
-          * @param index
-          * @return
-          */
-         public String getMeta(int index) {
-             String[] meta = getMetaCategories();
-             if(index < meta.length && index >= 0) {
-                 return meta[index];
-             } else {
-                 return null;
-             }
-         }
+    * Returns the id of a meta category b
+    * @param index
+    * @return
+    */
+    public SudoProject getSudoProject(int index) {
+        SudoProject[] sudoProjects = getSudoProjects();
+        if(index < sudoProjects.length && index >= 0) {
+            return sudoProjects[index];
+        } else {
+            return null;
+        }
+    }
 
     /**
      * Adds a chapter to the project
@@ -430,6 +458,7 @@ public class Project implements Model {
      * @return
      */
     public boolean isTranslatingGlobal() {
+        // TODO: we need to verify this actually works.
         // TODO: we want to find all directories for this project regardless of language. Only chapters and frames are specific to language.
         File dir = new File(Project.getProjectsPath());
         String[] files = dir.list(new FilenameFilter() {
@@ -437,8 +466,13 @@ public class Project implements Model {
             public boolean accept(File file, String s) {
                 String[] pieces = s.split("-");
                 if(pieces.length == 3) {
-                    // TODO: check if the directory is empty
-                    return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId());
+                    // make sure the dir is not empty
+                    File[] contents = file.listFiles();
+                    if(contents != null && contents.length > 0) {
+                        return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId());
+                    } else {
+                        return false;
+                    }
                 } else {
                     return false;
                 }
@@ -449,6 +483,7 @@ public class Project implements Model {
 
     /**
      * Returns the currently selected source language
+     * TODO: in some cases it would be nice not to have the language automatically selected. However, this would require some work to migrate all the code to support this.
      */
     public SourceLanguage getSelectedSourceLanguage() {
         SourceLanguage selectedLanguage = getSourceLanguage(mSelectedSourceLanguageId);
@@ -923,6 +958,45 @@ public class Project implements Model {
      */
     public Model[] getChapters() {
         return mChapters.toArray(new Model[mChapters.size()]);
+    }
+
+    /**
+     * Returns an array of target languages thare are currently being translated
+     * @return
+     */
+    public Language[] getActiveTargetLanguages() {
+        File dir = new File(Project.getProjectsPath());
+        // find active project dirs
+        File[] files = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                String[] pieces = s.split("-");
+                if (pieces.length == 3) {
+                    // make sure dir is not empty
+                    File[] contents = file.listFiles();
+                    if (contents != null && contents.length > 0) {
+                        // find project dirs
+                        return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId());
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        });
+        // collect active languages
+        List<Language> languages = new ArrayList<Language>();
+        for(File f:files) {
+            String[] pieces = f.getName().split("-");
+            if(pieces.length == 3) {
+                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(pieces[2]);
+                if(l != null) {
+                    languages.add(l);
+                }
+            }
+        }
+        return languages.toArray(new Language[languages.size()]);
     }
 
     public interface OnCommitComplete {

@@ -68,6 +68,26 @@ public class SudoProject implements Model {
         return mId;
     }
 
+    /**
+     * Returns the title of the sudo projects for the specified language
+     * @param l
+     * @return
+     */
+    public String getTitle(Language l) {
+        Translation t = getTranslation(l.getId());
+        if (t != null) {
+            return t.getText();
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Returns the title of the sudo project.
+     * Sudo projects may contain different translations of it's title so we attempt to dynamically
+     * determine which language to use.
+     * @return
+     */
     @Override
     public String getTitle() {
         Translation t;

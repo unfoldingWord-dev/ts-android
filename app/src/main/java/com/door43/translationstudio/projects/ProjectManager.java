@@ -686,42 +686,42 @@ public class ProjectManager {
                     Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
 
                     // load meta
-                    SudoProject rootMeta = null;
+                    SudoProject rootSudoProject = null;
                     if(jsonProject.has("meta")) {
                         JSONArray jsonMeta = jsonProject.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
                             // get the root meta
                             String metaSlug = jsonMeta.get(0).toString();
-                            rootMeta = getMetaProject(metaSlug);
-                            if(rootMeta == null) {
-                                rootMeta = new SudoProject(metaSlug);
-                                addMetaProject(rootMeta);
+                            rootSudoProject = getMetaProject(metaSlug);
+                            if(rootSudoProject == null) {
+                                rootSudoProject = new SudoProject(metaSlug);
+                                addMetaProject(rootSudoProject);
                             }
-                            p.addMetaCategory(rootMeta.getId());
+                            p.addSudoProject(rootSudoProject);
                             // load children meta
-                            SudoProject currentMeta = rootMeta;
+                            SudoProject currentSudoProject = rootSudoProject;
                             for (int j = 1; j < jsonMeta.length(); j++) {
-                                SudoProject meta = new SudoProject(jsonMeta.get(j).toString());
-                                if(currentMeta.getMetaChild(meta.getId()) != null) {
+                                SudoProject sp = new SudoProject(jsonMeta.get(j).toString());
+                                if(currentSudoProject.getMetaChild(sp.getId()) != null) {
                                     // load already created meta
-                                    currentMeta = currentMeta.getMetaChild(meta.getId());
+                                    currentSudoProject = currentSudoProject.getMetaChild(sp.getId());
                                 } else {
                                     // create new meta
-                                    currentMeta.addChild(meta);
-                                    currentMeta = meta;
+                                    currentSudoProject.addChild(sp);
+                                    currentSudoProject = sp;
                                 }
-                                p.addMetaCategory(meta.getId());
+                                p.addSudoProject(sp);
                             }
                             // close with the project
-                            currentMeta.addChild(p);
+                            currentSudoProject.addChild(p);
                         }
                     }
 
                     // add project or meta to the project list
-                    if(rootMeta == null) {
+                    if(rootSudoProject == null) {
                         addListableProject(p);
                     } else {
-                        addListableProject(rootMeta);
+                        addListableProject(rootSudoProject);
                     }
 
                     // add project to the internal list and continue loading
@@ -729,7 +729,7 @@ public class ProjectManager {
                         importedProjects.add(p);
                     }
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
-                    loadSourceLanguageCatalog(p, rootMeta, sourceLanguageCatalog);
+                    loadSourceLanguageCatalog(p, rootSudoProject, sourceLanguageCatalog);
                 } else {
 //                    Log.w(TAG, "missing required parameters in the project catalog");
                 }
@@ -743,18 +743,19 @@ public class ProjectManager {
 
     /**
      * Loads the source languages into the given project
-     * @param p the project into which the source languages will be loaded
-     * @param sourceLangaugeCatalog the catalog of source languages
+     * @param p the project into which the source languages will be
+     * @param rootMeta TODO: I'm not sure we need this anymore.
+     * @param sourceLanguageCatalog the catalog of source languages
      */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, SudoProject rootMeta, String sourceLangaugeCatalog) {
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, SudoProject rootMeta, String sourceLanguageCatalog) {
         List<SourceLanguage> importedLanguages = new ArrayList<SourceLanguage>();
-        if(sourceLangaugeCatalog == null) {
+        if(sourceLanguageCatalog == null) {
             return importedLanguages;
         }
         // parse source languages
         JSONArray json;
         try {
-            json = new JSONArray(sourceLangaugeCatalog);
+            json = new JSONArray(sourceLanguageCatalog);
         } catch (Exception e) {
             Log.w(TAG, e.getMessage());
             return new ArrayList<SourceLanguage>();
@@ -781,14 +782,13 @@ public class ProjectManager {
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
 
                     // load sudo project names
-                    if(jsonProjInfo.has("meta") && rootMeta != null) {
+                    if(jsonProjInfo.has("meta") && p.numSudoProjects() > 0) {
                         JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
-                            SudoProject currentMeta = rootMeta;
                             for (int j = 0; j < jsonMeta.length(); j++) {
-                                currentMeta.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
-                                if(p.getMeta(j) != null) {
-                                    currentMeta = currentMeta.getMetaChild(p.getMeta(j+1));
+                                SudoProject sp = p.getSudoProject(j);
+                                if(sp != null) {
+                                    sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
                                 } else {
                                     Log.d(TAG, "missing meta category in project");
                                     break;
@@ -797,7 +797,7 @@ public class ProjectManager {
                         } else {
                             Log.d(TAG, "missing project meta translations");
                         }
-                    } else if(rootMeta != null) {
+                    } else if(p.numSudoProjects() > 0) {
                         Log.d(TAG, "missing project meta translations");
                     }
 
@@ -991,6 +991,48 @@ public class ProjectManager {
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
+                continue;
+            }
+        }
+    }
+
+    /**
+     * TODO: if we just store the project title and description as translations in the project then we won't need this method.
+     * we could just get the meta, description, and title translations from the project directly.
+     * Returns the project information in the given language.
+     * This only includes the name, description, and meta
+     */
+    public void loadProjectInfo(String id, SourceLanguage language) {
+        String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(id, false);
+
+        // parse source languages
+        JSONArray json;
+        try {
+            json = new JSONArray(sourceLanguageCatalog);
+        } catch (Exception e) {
+            Log.w(TAG, e.getMessage());
+            return;
+        }
+
+        // load the data
+        for(int i=0; i<json.length(); i++) {
+            try {
+                JSONObject jsonLanguage = json.getJSONObject(i);
+                if (jsonLanguage.has("project")) {
+                    // load project
+                    JSONObject jsonProjInfo = jsonLanguage.getJSONObject("project");
+                    jsonProjInfo.getString("name");
+                    jsonProjInfo.getString("desc");
+
+                    // load meta
+                    if(jsonProjInfo.has("meta")) {
+                        JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
+                        for (int j = 0; j < jsonMeta.length(); j++) {
+                            jsonMeta.get(j).toString();
+                        }
+                    }
+                }
+            } catch(JSONException e) {
                 continue;
             }
         }
