@@ -362,6 +362,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 JSONObject langJson = new JSONObject();
                                 langJson.put("id", l.getId());
                                 langJson.put("name", l.getName());
+                                if(l.getDirection() == Language.Direction.RightToLeft) {
+                                    langJson.put("direction", "rtl");
+                                } else {
+                                    langJson.put("direction", "ltr");
+                                }
                                 languagesJson.put(langJson);
                             }
                             json.put("languages", languagesJson);
@@ -504,14 +509,73 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
             });
         } else if(data[0].equals(MSG_PROJECT_LIST)) {
-            final String projectList = data[1];
-            // TODO: display the list of projects to the user.
+            // the sever gave us the list of available projects for import
+            final String rawProjectList = data[1];
+
+            JSONArray json = null;
+            try {
+                json = new JSONArray(rawProjectList);
+            } catch (final JSONException e) {
+                handle.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        app().showException(e);
+                    }
+                });
+                return;
+            }
+
+            // load the data
+            for(int i=0; i<json.length(); i++) {
+                try {
+                    JSONObject projectJson = json.getJSONObject(i);
+                    if (projectJson.has("id") && projectJson.has("name") && projectJson.has("languages")) {
+                        String id = projectJson.getString("id");
+                        String name = projectJson.getString("name");
+                        String description = "";
+
+                        // load languages
+                        JSONArray languagesJson = projectJson.getJSONArray("languages");
+                        ArrayList<Language> languages = new ArrayList<Language>();
+                        for(int j=0; j<languagesJson.length(); j++) {
+                            JSONObject langJson = languagesJson.getJSONObject(j);
+                            String languageId = langJson.getString("id");
+                            String languageName = langJson.getString("name");
+                            String direction  = langJson.getString("direction");
+                            // TODO: the direction is either rtl or ltr. We need to put this into the language.
+                            Language l = new Language(languageId, languageName, Language.Direction.RightToLeft);
+                            languages.add(l);
+                        }
+
+                        if (projectJson.has("description")) {
+                            description = projectJson.getString("description");
+                        }
+
+                        // load meta if it exists
+                        if (projectJson.has("meta")) {
+                            // TODO: load meta
+                        }
+
+                        // TODO: collect all these projects in a list
+                    }
+                } catch(final JSONException e) {
+                    handle.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            app().showException(e);
+                        }
+                    });
+                }
+            }
+
             handle.post(new Runnable() {
                 @Override
                 public void run() {
-                    app().showToastMessage(projectList);
+                    app().closeProgressDialog();
                 }
             });
+
+            // TODO: display a window to browse the projects
         }
     }
 }

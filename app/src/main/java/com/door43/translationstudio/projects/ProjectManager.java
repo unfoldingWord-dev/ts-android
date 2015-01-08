@@ -105,7 +105,7 @@ public class ProjectManager {
     public void downloadProjectUpdates(Project p) {
         // download the source language catalog
         String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
-        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, null, languageCatalog);
+        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog);
         for(SourceLanguage l:languages) {
             // only download changed languages or languages that don't have any source
             // TODO: this date check will not work because the loadSourceLanguageCatalog overwrites it
@@ -729,7 +729,7 @@ public class ProjectManager {
                         importedProjects.add(p);
                     }
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
-                    loadSourceLanguageCatalog(p, rootSudoProject, sourceLanguageCatalog);
+                    loadSourceLanguageCatalog(p, sourceLanguageCatalog);
                 } else {
 //                    Log.w(TAG, "missing required parameters in the project catalog");
                 }
@@ -744,10 +744,9 @@ public class ProjectManager {
     /**
      * Loads the source languages into the given project
      * @param p the project into which the source languages will be
-     * @param rootMeta TODO: I'm not sure we need this anymore.
      * @param sourceLanguageCatalog the catalog of source languages
      */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, SudoProject rootMeta, String sourceLanguageCatalog) {
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLanguageCatalog) {
         List<SourceLanguage> importedLanguages = new ArrayList<SourceLanguage>();
         if(sourceLanguageCatalog == null) {
             return importedLanguages;
@@ -991,48 +990,6 @@ public class ProjectManager {
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());
-                continue;
-            }
-        }
-    }
-
-    /**
-     * TODO: if we just store the project title and description as translations in the project then we won't need this method.
-     * we could just get the meta, description, and title translations from the project directly.
-     * Returns the project information in the given language.
-     * This only includes the name, description, and meta
-     */
-    public void loadProjectInfo(String id, SourceLanguage language) {
-        String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(id, false);
-
-        // parse source languages
-        JSONArray json;
-        try {
-            json = new JSONArray(sourceLanguageCatalog);
-        } catch (Exception e) {
-            Log.w(TAG, e.getMessage());
-            return;
-        }
-
-        // load the data
-        for(int i=0; i<json.length(); i++) {
-            try {
-                JSONObject jsonLanguage = json.getJSONObject(i);
-                if (jsonLanguage.has("project")) {
-                    // load project
-                    JSONObject jsonProjInfo = jsonLanguage.getJSONObject("project");
-                    jsonProjInfo.getString("name");
-                    jsonProjInfo.getString("desc");
-
-                    // load meta
-                    if(jsonProjInfo.has("meta")) {
-                        JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
-                        for (int j = 0; j < jsonMeta.length(); j++) {
-                            jsonMeta.get(j).toString();
-                        }
-                    }
-                }
-            } catch(JSONException e) {
                 continue;
             }
         }
