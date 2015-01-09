@@ -54,6 +54,7 @@ public class Project implements Model {
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
     private List<SudoProject> mSudoProjects = new ArrayList<SudoProject>();
     private Map<String, SudoProject> mSudoProjectMap = new HashMap<String, SudoProject>();
+    // TODO: the extension should be placed in the app settings
     public static final String PROJECT_EXTENSION = "tstudio";
 
     private String mTitle;
@@ -752,7 +753,7 @@ public class Project implements Model {
         JSONArray projectsJson = new JSONArray();
         stagingDir.mkdirs();
         Boolean stagingSucceeded = true;
-        String signature = "";
+        String gitCommit = "";
         String archivePath = "";
 
         // prepare manifest
@@ -794,7 +795,7 @@ public class Project implements Model {
             }
 
             // TRICKY: this has to be read after we commit changes to the repo
-            signature += getLocalTranslationVersion(l);
+            gitCommit += getLocalTranslationVersion(l);
 
             // update manifest
             JSONObject translationJson = new JSONObject();
@@ -805,7 +806,7 @@ public class Project implements Model {
                 translationJson.put("title", getTitle());
                 translationJson.put("target_language", l.getId());
                 translationJson.put("source_language", getSelectedSourceLanguage().getId());
-                translationJson.put("git_commit", signature);
+                translationJson.put("git_commit", gitCommit);
                 translationJson.put("path", projectComplexName);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -814,13 +815,14 @@ public class Project implements Model {
             projectsJson.put(translationJson);
 
             zipList.add(new File(repoPath));
-            // copy into staging area
-            FileUtils.copyDirectory(new File(repoPath), new File(stagingDir, projectComplexName));
         }
+        String signature = Security.md5(gitCommit);
+        String tag = signature.substring(0, 10);
 
         // close manifest
         try {
             manifestJson.put("projects", projectsJson);
+            manifestJson.put("signature", signature);
         } catch (JSONException e) {
             e.printStackTrace();
             return archivePath;
@@ -830,12 +832,10 @@ public class Project implements Model {
 
         // zip
         if(stagingSucceeded) {
-            String hash = Security.md5(signature);
-            // TODO: the extension should be placed in the app settings
-            File outputZipFile = new File(exportDir, hash + "." + PROJECT_EXTENSION);
+            File outputZipFile = new File(exportDir, GLOBAL_PROJECT_SLUG + "-" + getId() + "_" + tag + "." + PROJECT_EXTENSION);
 
             // create the archive if it does not already exist
-            if(!outputZipFile.isFile()) {
+            if(!outputZipFile.exists()) {
                 Zip.zip(zipList.toArray(new File[zipList.size()]), outputZipFile);
             }
 
