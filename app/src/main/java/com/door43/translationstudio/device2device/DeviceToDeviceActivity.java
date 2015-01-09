@@ -1,12 +1,8 @@
 package com.door43.translationstudio.device2device;
 
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,11 +44,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private static final String MSG_PROJECT_ARCHIVE = "pa";
@@ -542,7 +535,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         in.close();
 
                         // import the project
-                        if (Project.importProject(file)) {
+                        if (Project.importLegacyProjectArchive(file)) {
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {

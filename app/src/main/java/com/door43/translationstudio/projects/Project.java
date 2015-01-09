@@ -1,6 +1,9 @@
 package com.door43.translationstudio.projects;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -10,11 +13,18 @@ import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.Security;
+import com.door43.translationstudio.util.Zip;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.util.StringUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -44,6 +54,7 @@ public class Project implements Model {
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
     private List<SudoProject> mSudoProjects = new ArrayList<SudoProject>();
     private Map<String, SudoProject> mSudoProjectMap = new HashMap<String, SudoProject>();
+    public static final String PROJECT_EXTENSION = "tstudio";
 
     private String mTitle;
     private final String mSlug;
@@ -732,58 +743,124 @@ public class Project implements Model {
      * @return the path to the export archive
      */
     public String exportProject(Language[] languages) throws IOException {
-        String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
+        Context context = MainContext.getContext();
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
-        Boolean commitSucceeded = true;
+        File stagingDir = new File(exportDir, System.currentTimeMillis() + "");
+        ArrayList<File> zipList = new ArrayList<File>();
+        File manifestFile = new File(stagingDir, "manifest.json");
+        JSONObject manifestJson = new JSONObject();
+        JSONArray projectsJson = new JSONArray();
+        stagingDir.mkdirs();
+        Boolean stagingSucceeded = true;
+        String signature = "";
+        String archivePath = "";
 
-//        for(Language l:languages) {
-//
-//        }
-        // commit changes to repo
-        Repo repo = new Repo(getRepositoryPath());
+        // prepare manifest
         try {
-            // only commit if the repo is dirty
-            if(!repo.getGit().status().call().isClean()) {
-                // add
-                AddCommand add = repo.getGit().add();
-                add.addFilepattern(".").call();
-
-                // commit
-                CommitCommand commit = repo.getGit().commit();
-                commit.setAll(true);
-                commit.setMessage("auto save");
-                commit.call();
-            }
-        } catch (Exception e) {
-            commitSucceeded = false;
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            manifestJson.put("generator", "translationStudio");
+            manifestJson.put("version", pInfo.versionCode);
+            manifestJson.put("timestamp", System.currentTimeMillis());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return archivePath;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return archivePath;
         }
 
-        // TRICKY: this has to be read after we commit changes to the repo
-        String translationVersion = getLocalTranslationVersion();
-        File outputZipFile = new File(exportDir, projectComplexName + "_" + translationVersion + ".zip");
+        // stage all the translations
+        for(Language l:languages) {
+            String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + l.getId();
+            String repoPath = getRepositoryPath(getId(), l.getId());
+            // commit changes to repo
+            Repo repo = new Repo(repoPath);
+            try {
+                // only commit if the repo is dirty
+                if(!repo.getGit().status().call().isClean()) {
+                    // add
+                    AddCommand add = repo.getGit().add();
+                    add.addFilepattern(".").call();
 
-        // clean up old exports
-        String[] cachedExports = exportDir.list();
+                    // commit
+                    CommitCommand commit = repo.getGit().commit();
+                    commit.setAll(true);
+                    commit.setMessage("auto save");
+                    commit.call();
+                }
+            } catch (Exception e) {
+                stagingSucceeded = false;
+                continue;
+            }
+
+            // TRICKY: this has to be read after we commit changes to the repo
+            signature += getLocalTranslationVersion(l);
+
+            // update manifest
+            JSONObject translationJson = new JSONObject();
+            try {
+                translationJson.put("global_identifier", GLOBAL_PROJECT_SLUG);
+                translationJson.put("project", getId());
+                // TODO: we might want to get the title in each language
+                translationJson.put("title", getTitle());
+                translationJson.put("target_language", l.getId());
+                translationJson.put("source_language", getSelectedSourceLanguage().getId());
+                translationJson.put("git_commit", signature);
+                translationJson.put("path", projectComplexName);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return archivePath;
+            }
+            projectsJson.put(translationJson);
+
+            zipList.add(new File(repoPath));
+            // copy into staging area
+            FileUtils.copyDirectory(new File(repoPath), new File(stagingDir, projectComplexName));
+        }
+
+        // close manifest
+        try {
+            manifestJson.put("projects", projectsJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return archivePath;
+        }
+        FileUtils.write(manifestFile, manifestJson.toString());
+        zipList.add(manifestFile);
+
+        // zip
+        if(stagingSucceeded) {
+            String hash = Security.md5(signature);
+            // TODO: the extension should be placed in the app settings
+            File outputZipFile = new File(exportDir, hash + "." + PROJECT_EXTENSION);
+
+            // create the archive if it does not already exist
+            if(!outputZipFile.isFile()) {
+                Zip.zip(zipList.toArray(new File[zipList.size()]), outputZipFile);
+            }
+
+            archivePath = outputZipFile.getAbsolutePath();
+        }
+
+        // clean up old exports. Android should do this automatically, but we'll make sure
+        File[] cachedExports = exportDir.listFiles();
         if(cachedExports != null) {
-            for (int i = 0; i < cachedExports.length; i++) {
-                String[] pieces = cachedExports[i].split("_");
-                if (pieces[0].equals(projectComplexName) && !pieces[1].equals(translationVersion)) {
-                    File oldDir = new File(exportDir, cachedExports[i]);
-                    FileUtilities.deleteRecursive(oldDir);
+            for(File f:cachedExports) {
+                // trash cached files that are more than 12 hours old.
+                if(System.currentTimeMillis() - f.lastModified() > 1000 * 60 * 60 * 12) {
+                    if(f.isFile()) {
+                        f.delete();
+                    } else {
+                        FileUtilities.deleteRecursive(f);
+                    }
                 }
             }
         }
 
-        // return the already exported project
-        // TRICKY: we can only rely on this when all changes are commited to the repo
-        if(outputZipFile.isFile() && commitSucceeded) {
-            return outputZipFile.getAbsolutePath();
-        }
+        // clean up staging area
+        FileUtilities.deleteRecursive(stagingDir);
 
-        // export the project
-        exportDir.mkdirs();
-        MainContext.getContext().zip(getRepositoryPath(), outputZipFile.getAbsolutePath());
-        return outputZipFile.getAbsolutePath();
+        return archivePath;
     }
 
     /**
@@ -946,11 +1023,12 @@ public class Project implements Model {
     }
 
     /**
-     * Returns the latest git commit id for the project repo with the selected target language
+     * Returns the latest git commit id for the project repo with the given target language
+     * @param l the target language for the repo to check
      * @return
      */
-    public String getLocalTranslationVersion() {
-        Repo repo = new Repo(getRepositoryPath());
+    public String getLocalTranslationVersion(Language l) {
+        Repo repo = new Repo(getRepositoryPath(getId(), l.getId()));
         try {
             Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
             RevCommit commit = null;
@@ -969,6 +1047,14 @@ public class Project implements Model {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Returns the latest git commit id for the project repo with the selected target language
+     * @return
+     */
+    public String getLocalTranslationVersion() {
+        return getLocalTranslationVersion(getSelectedTargetLanguage());
     }
 
     /**
@@ -1066,70 +1152,152 @@ public class Project implements Model {
     }
 
     /**
+     * Imports a project directory into the system
+     * TODO: this should return information about the import. success, fails etc.
+     * @param projectDir the project directory that will be imported
+     * @return
+     */
+    private static boolean importProject(String projectId, String languageId, File projectDir) {
+        // locate existing project
+        Project p = MainContext.getContext().getSharedProjectManager().getProject(projectId);
+        if(p != null) {
+            File repoDir = new File(Project.getRepositoryPath(projectId, languageId));
+            if(repoDir.exists()) {
+                // merge into existing project
+                File archiveGitDir = new File(projectDir, ".git");
+                FileUtilities.deleteRecursive(archiveGitDir);
+                File[] files = projectDir.listFiles();
+                for(File f:files) {
+                    try {
+                        File destDir = new File(repoDir, f.getName());
+                        if(destDir.exists()) {
+                            FileUtilities.deleteRecursive(destDir);
+                        }
+                        FileUtils.moveDirectory(f, destDir);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return false;
+                        // TODO: record list of files that cannot be coppied and display to the user
+                    }
+                }
+                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
+                l.touch();
+                // TODO: perform a git diff to see if there are any changes
+                return true;
+            } else {
+                // import as new project
+                try {
+                    FileUtils.moveDirectory(projectDir, repoDir);
+                    return true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            // TODO: create a new project and add it to the project manager.
+        }
+        return false;
+    }
+
+    /**
+     * Imports a translationStudio project archive
+     * @param archive the archive that will be imported
+     * @return true if the import was successful
+     */
+    public static boolean importProjectArchive(File archive) {
+        // validate extension
+        String[] name = archive.getName().split("\\.");
+        Boolean success = false;
+        if(name[name.length - 1].equals(PROJECT_EXTENSION)) {
+            long timestamp = System.currentTimeMillis();
+            File extractedDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+
+            try {
+                Zip.unzip(archive, extractedDir);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            File manifest = new File(extractedDir, "manifest.json");
+            if(manifest.exists() && manifest.isFile()) {
+                try {
+                    JSONObject manifestJson = new JSONObject(FileUtils.readFileToString(manifest));
+                    // NOTE: the manifest contains extra information that we are not using right now
+                    if(manifestJson.has("projects")) {
+                        JSONArray projectsJson = manifestJson.getJSONArray("projects");
+                        for(int i=0; i<projectsJson.length(); i++) {
+                            JSONObject projJson = projectsJson.getJSONObject(i);
+                            if(projJson.has("path") && projJson.has("project") && projJson.has("target_language")) {
+                                File projectDir = new File(extractedDir, projJson.getString("path"));
+                                // TODO: export each project
+                                if(importProject(projJson.getString("project"), projJson.getString("target_language"), projectDir)) {
+                                    // yay!
+                                } else {
+                                    // import failed.
+                                }
+                            }
+                        }
+                        success = true;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // cleanup
+            FileUtilities.deleteRecursive(extractedDir);
+        }
+        return success;
+    }
+
+    /**
      * Imports a Translation Studio Project from a directory
+     * This is a legacy import method for archives exported by 2.0.2 versions of the app.
      * @param archiveFile the directory that will be imported
      * @return
      */
-    public static boolean importProject(File archiveFile) {
-        // extract archive
-        long timestamp = System.currentTimeMillis();
-        File extractedDirectory = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
-        File importDirectory;
-        try {
-            // extract into a timestamped directory so we don't accidently throw files all over the place
-            MainContext.getContext().unzip(archiveFile.getAbsolutePath(), extractedDirectory.getAbsolutePath());
-            File[] files = extractedDirectory.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return Project.validateProjectArchiveName(s);
+    public static boolean importLegacyProjectArchive(File archiveFile) {
+        String[] name = archiveFile.getName().split("\\.");
+        if(name[name.length - 1].equals("zip")) {
+            // extract archive
+            long timestamp = System.currentTimeMillis();
+            File extractedDirectory = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+            File importDirectory;
+            Boolean success = false;
+            try {
+                // extract into a timestamped directory so we don't accidently throw files all over the place
+                Zip.unzip(archiveFile, extractedDirectory);
+                File[] files = extractedDirectory.listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File file, String s) {
+                        return Project.validateProjectArchiveName(s);
+                    }
+                });
+                if(files.length == 1) {
+                    importDirectory = files[0];
+                } else {
+                    // malformed archive
+                    FileUtilities.deleteRecursive(extractedDirectory);
+                    return false;
                 }
-            });
-            if(files.length == 1) {
-                importDirectory = files[0];
-            } else {
-                // malformed archive
-                extractedDirectory.delete();
+            } catch (IOException e) {
+                FileUtilities.deleteRecursive(extractedDirectory);
+                e.printStackTrace();
                 return false;
             }
-        } catch (IOException e) {
-            extractedDirectory.delete();
-            e.printStackTrace();
+
+            // read project info
+            TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(importDirectory.getName());
+            if(translationInfo != null) {
+                success = importProject(translationInfo.projectId, translationInfo.languageId, importDirectory);
+            }
+            FileUtilities.deleteRecursive(extractedDirectory);
+            return success;
+        } else {
             return false;
         }
-
-        // read project info
-        TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(importDirectory.getName());
-        if(translationInfo != null) {
-            // locate existing project
-            Project p = MainContext.getContext().getSharedProjectManager().getProject(translationInfo.projectId);
-            if(p != null) {
-                File repoDir = new File(Project.getRepositoryPath(p.getId(), translationInfo.languageId));
-                if(repoDir.exists()) {
-                    // merge repos
-                    File archiveGitDir = new File(importDirectory, ".git");
-                    FileUtilities.deleteRecursive(archiveGitDir);
-                    File[] files = importDirectory.listFiles();
-                    for(File f:files) {
-                        if(!FileUtilities.moveOrCopy(f, new File(repoDir, f.getName()))) {
-                            // TODO: record list of files that cannot be coppied and display to the user
-//                            Log.w(TAG, "failed to import translation file "+f.getName());
-                        }
-                    }
-                    translationInfo.getLanguage().touch();
-                    // TODO: perform a git diff to see if there are any changes
-                    extractedDirectory.delete();
-                    return true;
-                } else {
-                    // add as new repo
-                    extractedDirectory.delete();
-                    return FileUtilities.moveOrCopy(importDirectory, repoDir);
-                }
-            } else {
-                // TODO: create a new project and add it to the project manager.
-            }
-        }
-        extractedDirectory.delete();
-        return false;
     }
 
     /**

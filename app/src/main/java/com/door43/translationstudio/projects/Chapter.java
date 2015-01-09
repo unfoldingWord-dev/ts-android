@@ -389,7 +389,7 @@ public class Chapter implements Model {
         File dir = new File(Project.getRepositoryPath(mProject.getId(), translationLanguage.getId()) + getId());
         String[] files = dir.list();
         if(files != null && files.length == 0) {
-            dir.delete();
+            FileUtilities.deleteRecursive(dir);
             MainContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
         } else if(dir.exists()) {
             // the chapter has translations.

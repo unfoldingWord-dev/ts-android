@@ -11,10 +11,10 @@ public class SharingToolItem {
     private Boolean mIsEnabled;
     private int mDisabledNotice;
 
-    public SharingToolItem(int nameResource, int descriptionResource, int iconResource, SharingToolAction action) {
+    public SharingToolItem(String nameResource, String descriptionResource, int iconResource, SharingToolAction action) {
         mAction = action;
-        mDescription = MainContext.getContext().getResources().getString(descriptionResource);
-        mName = MainContext.getContext().getResources().getString(nameResource);
+        mDescription = descriptionResource;
+        mName = nameResource;
         mIcon = iconResource;
         mIsEnabled = true;
         mDisabledNotice = 0;
@@ -27,10 +27,10 @@ public class SharingToolItem {
      * @param action the action to be performed
      * @param enabled sets the tool as enabled or disabled. when disabled a notice will be displayed
      */
-    public SharingToolItem(int nameResource, int descriptionResource, int icon, SharingToolAction action, Boolean enabled, int disabledNotice) {
+    public SharingToolItem(String nameResource, String descriptionResource, int icon, SharingToolAction action, Boolean enabled, int disabledNotice) {
         mAction = action;
-        mDescription = MainContext.getContext().getResources().getString(descriptionResource);
-        mName = MainContext.getContext().getResources().getString(nameResource);
+        mDescription = descriptionResource;
+        mName = nameResource;
         mIcon = icon;
         mIsEnabled = enabled;
         mDisabledNotice = disabledNotice;

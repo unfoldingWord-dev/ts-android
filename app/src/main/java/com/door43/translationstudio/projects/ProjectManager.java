@@ -6,8 +6,11 @@ import android.util.Log;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
+import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.Zip;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -524,12 +527,72 @@ public class ProjectManager {
     }
 
     /**
-     * Imports a 1.x translation (Doku Wiki) into a project.
-     * TODO: this needs to support 2.x translations as well! 2.x archives chapter files. 1.x combines them into one file. This will work for 2.x, but you'd have to do one file at a time.
-     * @param file the doku wiki file
+     * Imports a DokuWIki archive into a project
+     * @return
+     */
+    public boolean importTranslationArchive(File archive) {
+        String[] name = archive.getName().split("\\.");
+        Boolean success = true;
+        if(archive.exists() && archive.isFile() && name[name.length - 1].equals("zip")) {
+            long timestamp = System.currentTimeMillis();
+            File extractedDirectory = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+            try {
+                Zip.unzip(archive, extractedDirectory);
+            } catch (IOException e) {
+                e.printStackTrace();
+                FileUtilities.deleteRecursive(extractedDirectory);
+                return false;
+            }
+
+            File[] files = extractedDirectory.listFiles();
+            if(files.length > 0) {
+                // fix legacy 2.0.2 export (contained root directory in archive)
+                File realPath = extractedDirectory;
+                if(files.length == 1 && files[0].isDirectory()) {
+                    realPath = files[0];
+                    files = files[0].listFiles();
+                    if(files.length == 0) {
+                        FileUtilities.deleteRecursive(extractedDirectory);
+                        return false;
+                    }
+                }
+
+                // ensure this is not a legacy project archive
+                File gitDir = new File(realPath, ".git");
+                if(gitDir.exists() && gitDir.isDirectory()) {
+                    FileUtilities.deleteRecursive(extractedDirectory);
+                    return Project.importLegacyProjectArchive(archive);
+                }
+
+                // begin import
+                for(File f:files) {
+                    if(!importTranslation(f)) {
+                        success = false;
+                    }
+                }
+            }
+            FileUtilities.deleteRecursive(extractedDirectory);
+        }
+        return success;
+    }
+
+    /**
+     * Imports a DokuWiki file into a project.
+     * @param file
      * @return
      */
     public boolean importTranslation(File file) {
+        // TODO: need to impliment this.
+        // This will work differently from the legacy translation import because the chapter id is only available in the file name.
+        return false;
+    }
+
+    /**
+     * Imports a DokuWiki file into a project. This only works for 1.x exports
+     * @param file the doku wiki file
+     * @return
+     */
+    public boolean importLegacyTranslation(File file) {
         if(file.exists() && file.isFile()) {
             StringBuilder frameBuffer = new StringBuilder();
             String line, chapterId = "", frameId = "", chapterTitle = "";
@@ -576,10 +639,10 @@ public class ProjectManager {
                             // unexpected input
                             return false;
                         }
-                    } else if(line.length() > 12 && line.substring(0, 6).equals("======")) {
+                    } else if(line.length() >= 12 && line.substring(0, 6).equals("======")) {
                         // start of a new chapter
                         chapterTitle = line.substring(6, line.length() - 6).trim(); // this is saved at the end of the chapter
-                    } else if(line.length() > 4 && line.substring(0, 2).equals("{{")) {
+                    } else if(line.length() >= 4 && line.substring(0, 2).equals("{{")) {
                         // save the previous frame
                         if(project != null && !chapterId.isEmpty() && !frameId.isEmpty() && frameBuffer.length() > 0) {
                             Frame f = project.getChapter(chapterId).getFrame(frameId);

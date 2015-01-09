@@ -16,7 +16,6 @@ import android.widget.Toast;
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
@@ -26,11 +25,8 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
@@ -98,7 +94,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 mSharingTools.clear();
 
                 // define sharing tools
-                mSharingTools.add(new SharingToolItem(R.string.export_to_app, descriptionResource, R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Thread thread = new Thread() {
@@ -138,7 +134,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }));
 
-                mSharingTools.add(new SharingToolItem(R.string.export_to_sd, descriptionResource, R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Thread thread = new Thread() {
@@ -186,15 +182,15 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }, removeableMedia != null , R.string.missing_external_storage));
 
-                mSharingTools.add(new SharingToolItem(R.string.import_from_sd, descriptionResource, R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_sd), "", R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, FileExplorerActivity.class);
-                        startActivityForResult(intent, exportAsProject ? IMPORT_PROJECT_FROM_SD_REQUEST : IMPORT_DOKUWIKI_FROM_SD_REQUEST);
+                        startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
                     }
                 }, removeableMedia != null, R.string.missing_external_storage));
 
-                mSharingTools.add(new SharingToolItem(R.string.export_to_device, R.string.export_as_project, R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_device), getResources().getString(R.string.export_as_project), R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, DeviceToDeviceActivity.class);
@@ -205,7 +201,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }));
 
-                mSharingTools.add(new SharingToolItem(R.string.import_from_device, R.string.export_as_project, R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_device), getResources().getString(R.string.export_as_project), R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, DeviceToDeviceActivity.class);
@@ -253,64 +249,57 @@ public class SharingActivity extends TranslatorBaseActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
-            // import translation studio project from the sd card
-            if(data != null) {
-                final File archiveFile = new File(data.getExtras().getString("path"));
-                if(archiveFile.exists() && archiveFile.isFile()) {
-
-                    // thread to prepare import
-                    Runnable prepareImport = new Runnable() {
-                        public void run() {
-                            app().showProgressDialog(R.string.importing_project);
-
-                            if(Project.importProject(archiveFile)) {
-                                app().showToastMessage(R.string.success);
-                            } else {
-                                app().showToastMessage(R.string.translation_import_failed);
-                            }
-
-                            app().closeProgressDialog();
-                        }
-                    };
-
-                    // begin the import
-                    new Thread(prepareImport).start();
-                } else {
-                    app().showToastMessage(R.string.missing_file);
-                }
-            }
-        } else if(requestCode == IMPORT_DOKUWIKI_FROM_SD_REQUEST) {
-            // Import DokuWiki files
             if(data != null) {
                 final File file = new File(data.getExtras().getString("path"));
                 if(file.exists() && file.isFile()) {
-                    final ProjectManager pm = app().getSharedProjectManager();
-//                    Project p;
-//                    if(pm.numProjects() > 1) {
-//                        // TODO: display a dialog where the user can choose which project to import to.
-//                        app().showToastMessage("Doku Wiki import is not configured for import with multiple projects yet.");
-//                        return;
-//                    } else {
-//                        p = pm.getProject(0);
-//                    }
+                    String[] name = file.getName().split("\\.");
+                    Boolean success = false;
+                    if (name[name.length - 1].equals(Project.PROJECT_EXTENSION)) {
+                        // import translationStudio project
+                        Runnable prepareImport = new Runnable() {
+                            public void run() {
+                                app().showProgressDialog(R.string.importing_project);
+                                if (Project.importProjectArchive(file)) {
+                                    app().showToastMessage(R.string.success);
+                                } else {
+                                    app().showToastMessage(R.string.translation_import_failed);
+                                }
 
-//                    final Project project = p;
-
-                    // thread to prepare import
-                    Runnable prepareImport = new Runnable() {
-                        public void run() {
-                            app().showProgressDialog(R.string.importing_project);
-                            if(pm.importTranslation(file)) {
-                                app().showToastMessage(R.string.success);
-                            } else {
-                                app().showToastMessage(R.string.translation_import_failed);
+                                app().closeProgressDialog();
                             }
-                            app().closeProgressDialog();
-                        }
-                    };
-
-                    // begin the import
-                    new Thread(prepareImport).start();
+                        };
+                        new Thread(prepareImport).start();
+                    } else if(name[name.length - 1].equals("zip")) {
+                        // import DokuWiki files
+                        final ProjectManager pm = app().getSharedProjectManager();
+                        Runnable prepareImport = new Runnable() {
+                            public void run() {
+                                app().showProgressDialog(R.string.importing_project);
+                                if(pm.importTranslationArchive(file)) {
+                                    app().showToastMessage(R.string.success);
+                                } else {
+                                    app().showToastMessage(R.string.translation_import_failed);
+                                }
+                                app().closeProgressDialog();
+                            }
+                        };
+                        new Thread(prepareImport).start();
+                    } else if(name[name.length - 1].equals("txt")) {
+                        // import legacy 1.x DokuWiki files
+                        final ProjectManager pm = app().getSharedProjectManager();
+                        Runnable prepareImport = new Runnable() {
+                            public void run() {
+                                app().showProgressDialog(R.string.importing_project);
+                                if(pm.importLegacyTranslation(file)) {
+                                    app().showToastMessage(R.string.success);
+                                } else {
+                                    app().showToastMessage(R.string.translation_import_failed);
+                                }
+                                app().closeProgressDialog();
+                            }
+                        };
+                        new Thread(prepareImport).start();
+                    }
                 } else {
                     app().showToastMessage(R.string.missing_file);
                 }
