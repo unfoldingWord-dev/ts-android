@@ -1,6 +1,7 @@
 package com.door43.translationstudio.util;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -20,8 +21,10 @@ import com.door43.translationstudio.projects.Language;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 /**
  * Created by joel on 10/7/2014.
@@ -32,6 +35,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
     private Context mContext;
     private LanguageFilter mLanguageFilter;
     private final Boolean mIsSourceLanguages;
+    private Map<String, Language> mSelectedItems = new HashMap<String, Language>();
 
     public LanguageAdapter(final List<Language> languageList, Context context, Boolean isSourceLanguages) {
         super(context, R.layout.fragment_target_language_list_item, languageList);
@@ -114,11 +118,44 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
         } else {
             holder.translationStatusIcon.setVisibility(View.GONE);
         }
+        if(mSelectedItems.containsKey(l.getId())) {
+            v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            holder.languageNameView.setTextColor(Color.WHITE);
+            holder.languageIdView.setTextColor(Color.WHITE);
+        } else {
+            v.setBackgroundColor(Color.TRANSPARENT);
+            holder.languageNameView.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
+            holder.languageIdView.setTextColor(mContext.getResources().getColor(R.color.gray));
+        }
         return v;
     }
 
     public void resetData() {
         mLanguageList = mOrigLanguageList;
+    }
+
+    /**
+     * Toggles an item as being selected
+     * @param index
+     */
+    public void toggleSelected(int index) {
+        if(index >= 0 && index < mLanguageList.size()) {
+            Language l = getItem(index);
+            if(!mSelectedItems.containsKey(l.getId())) {
+                mSelectedItems.put(l.getId(), l);
+            } else {
+                mSelectedItems.remove(l.getId());
+            }
+            notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Returns an array of all the selected indices
+     * @return
+     */
+    public Language[] getSelectedItems() {
+        return mSelectedItems.values().toArray(new Language[mSelectedItems.size()]);
     }
 
     /**

@@ -505,11 +505,16 @@ public class Project implements Model {
         File dir = new File(Project.getProjectsPath());
         String[] files = dir.list(new FilenameFilter() {
             @Override
-            public boolean accept(File file, String s) {
-                String[] pieces = s.split("-");
+            public boolean accept(File file, String name) {
+                String[] pieces = name.split("-");
                 if(pieces.length == 3) {
                     // make sure the dir is not empty
-                    File[] contents = file.listFiles();
+                    String[] contents = new File(file, name).list(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File file, String s) {
+                            return !s.equals(".git");
+                        }
+                    });
                     if(contents != null && contents.length > 0) {
                         return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId());
                     } else {
@@ -712,14 +717,28 @@ public class Project implements Model {
 
     /**
      * Exports the project with the currently selected target language as a translationStudio project
-     * This is process heavery and should not be ran on the main thread.
+     * This is process heavy and should not be ran on the main thread.
      * @return the path to the export archive
+     * @throws IOException
      */
     public String exportProject() throws IOException {
+        return exportProject(new Language[]{getSelectedTargetLanguage()});
+    }
+
+    /**
+     * Exports the project in multiple languages as a translationStudio project.
+     * This is process heavy and should not be ran on the main thread.
+     * @param languages an array of target languages that will be exported
+     * @return the path to the export archive
+     */
+    public String exportProject(Language[] languages) throws IOException {
         String projectComplexName = GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + getSelectedTargetLanguage().getId();
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
         Boolean commitSucceeded = true;
 
+//        for(Language l:languages) {
+//
+//        }
         // commit changes to repo
         Repo repo = new Repo(getRepositoryPath());
         try {

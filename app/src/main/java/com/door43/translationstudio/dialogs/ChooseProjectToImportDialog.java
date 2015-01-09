@@ -10,21 +10,21 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChoseProjectEvent;
+import com.door43.translationstudio.events.ChoseProjectToImportEvent;
+import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.projects.SudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
 
 /**
- * This dialog displays a list view that allows the user to dig down through projects and meta projects.
- * When a real project is selected an event containing the project will be fired and the dialog dismissed.
- * If metaId is provided as a bundled argument that meta project's children will be displayed in the list
- * otherwise all listable projects will be shown.
- * setModelList takes presedence over the metaId.
+ * This is basically the same as the ChooseProjectDialog but with some alterations for importing projects.
+ * These will probably diverge later on so we are spliting them now.
  */
-public class ChooseProjectDialog extends DialogFragment {
+public class ChooseProjectToImportDialog extends DialogFragment {
     private ModelItemAdapter mModelItemAdapter;
     private Model[] mModelList = null;
+    private Peer mPeer;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.projects);
@@ -34,16 +34,6 @@ public class ChooseProjectDialog extends DialogFragment {
 
         if(mModelList != null) {
             if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), mModelList);
-        } else {
-            Bundle args = getArguments();
-            String id = args.getString("metaId");
-            SudoProject p = MainContext.getContext().getSharedProjectManager().getMetaProject(id);
-            if(p != null) {
-                if (mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), p.getChildren());
-            }
-        }
-
-        if(mModelItemAdapter != null) {
             // connect adapter
             listView.setAdapter(mModelItemAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -56,7 +46,7 @@ public class ChooseProjectDialog extends DialogFragment {
                     } else {
                         // return the selected project.
                         Project p = (Project)m;
-                        MainContext.getEventBus().post(new ChoseProjectEvent(p, ChooseProjectDialog.this));
+                        MainContext.getEventBus().post(new ChoseProjectToImportEvent(mPeer, p, ChooseProjectToImportDialog.this));
                         // NOTE: the caller should close this dialog
                     }
                 }
@@ -71,9 +61,9 @@ public class ChooseProjectDialog extends DialogFragment {
     /**
      * Specifies the model list to use in the dialog.
      * This must be called before showing the dialog.
-     * @deprecated this was used by the p2p import before splitting into a different dialog.
      */
-    public void setModels(Model[] models) {
+    public void setImportDetails(Peer server, Model[] models) {
+        mPeer = server;
         mModelList = models;
     }
 }

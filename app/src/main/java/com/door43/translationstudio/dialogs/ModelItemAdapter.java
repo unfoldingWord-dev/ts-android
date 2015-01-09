@@ -1,4 +1,4 @@
-package com.door43.translationstudio.panes.left.tabs;
+package com.door43.translationstudio.dialogs;
 
 import android.content.Context;
 import android.graphics.Bitmap;

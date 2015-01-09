@@ -138,6 +138,8 @@ public class MainActivity extends TranslatorBaseActivity {
         mRootView = (DrawerLayout)findViewById(R.id.drawer_layout);
         mRootView.setScrimColor(getResources().getColor(R.color.scrim));
 
+        // TODO need to make sure the projects have been loaded.
+
         initPanes();
 
         if(app().getSharedProjectManager().getSelectedProject() != null && app().getSharedProjectManager().getSelectedProject().getSelectedChapter() == null) {

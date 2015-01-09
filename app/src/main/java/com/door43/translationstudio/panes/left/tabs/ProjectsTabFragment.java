@@ -13,6 +13,7 @@ import android.widget.ListView;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectDialog;
+import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.SudoProject;
 import com.door43.translationstudio.projects.Model;
