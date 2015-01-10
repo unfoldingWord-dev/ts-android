@@ -82,7 +82,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:id="@+id/linearLayout6"
-        android:weightSum="2">
+        android:weightSum="2"
+        android:paddingTop="10dp">
 
         <Button
             android:layout_width="wrap_content"

@@ -866,6 +866,7 @@ public class Project implements Model {
     /**
      * Exports the project with the currently selected target language in DokuWiki format
      * This is a process heavy method and should not be ran on the main thread
+     * TODO: we need to update this so we don't include the root directory. We already support the new method (no root dir) as well as provide legacy suport for importing this format.
      * @return the path to the export archive
      */
     public String exportDW() throws IOException {

@@ -190,7 +190,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }, removeableMedia != null, R.string.missing_external_storage));
 
-                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_device), getResources().getString(R.string.export_as_project), R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, DeviceToDeviceActivity.class);
@@ -201,7 +201,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }));
 
-                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_device), getResources().getString(R.string.export_as_project), R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
                         Intent intent = new Intent(me, DeviceToDeviceActivity.class);

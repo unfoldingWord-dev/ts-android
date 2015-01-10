@@ -78,7 +78,9 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.description.setText(m.getDescription());
 
         // translation in progress
-        if(m.isTranslating()) {
+        boolean isTranslating = m.isTranslating();
+        boolean isTranslatingGlobal = m.isTranslatingGlobal();
+        if(isTranslating || isTranslatingGlobal) {
             holder.translationIcon.setVisibility(View.VISIBLE);
         } else {
             holder.translationIcon.setVisibility(View.GONE);
@@ -89,12 +91,20 @@ public class ModelItemAdapter extends BaseAdapter {
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             holder.description.setTextColor(Color.WHITE);
             holder.title.setTextColor(Color.WHITE);
-            holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
+            if(isTranslating) {
+                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
+            } else {
+                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_translation_small));
+            }
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
             holder.description.setTextColor(mContext.getResources().getColor(R.color.gray));
             holder.title.setTextColor(mContext.getResources().getColor(R.color.black));
-            holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
+            if(isTranslating) {
+                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
+            } else {
+                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_translation_small_dark));
+            }
         }
 
         // image
@@ -140,5 +150,6 @@ public class ModelItemAdapter extends BaseAdapter {
         public TextView title;
         public TextView description;
         public ImageView translationIcon;
+        public ImageView translationGlobalIcon;
     }
 }

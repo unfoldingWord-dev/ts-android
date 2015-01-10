@@ -38,7 +38,7 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
         View v = inflater.inflate(R.layout.dialog_import_project, container, false);
 
         if(mProject != null) {
-            final LanguageAdapter adapter = new LanguageAdapter(Arrays.asList(mProject.getTargetLanguages()), this.getActivity(), true);
+            final LanguageAdapter adapter = new LanguageAdapter(Arrays.asList(mProject.getTargetLanguages()), this.getActivity(), false);
 
             // TODO: populate the form and list.
             String imageUri = "assets://"+ mProject.getImagePath();
@@ -49,7 +49,8 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
             TextView title = (TextView)v.findViewById(R.id.modelTitle);
             TextView description = (TextView)v.findViewById(R.id.modelDescription);
             Button cancelButton = (Button)v.findViewById(R.id.buttonCancel);
-            Button okButton = (Button)v.findViewById(R.id.buttonOk);
+            final Button okButton = (Button)v.findViewById(R.id.buttonOk);
+            okButton.setBackgroundColor(getResources().getColor(R.color.gray));
             ListView list = (ListView)v.findViewById(R.id.languageListView);
 
             cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -62,11 +63,11 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // TODO: import project if languages have been selected otherwise display notice.
-                    MainContext.getContext().showToastMessage("Let's import this!");
                     Language[] selectedItems = adapter.getSelectedItems();
-                    MainContext.getEventBus().post(new ChoseProjectLanguagesToImportEvent(mPeer, mProject, selectedItems));
-                    dismiss();
+                    if(selectedItems.length > 0) {
+                        MainContext.getEventBus().post(new ChoseProjectLanguagesToImportEvent(mPeer, mProject, selectedItems));
+                        dismiss();
+                    }
                 }
             });
 
@@ -91,6 +92,11 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     adapter.toggleSelected(i);
+                    if(adapter.getSelectedItems().length > 0) {
+                        okButton.setBackgroundColor(getResources().getColor(R.color.blue));
+                    } else {
+                        okButton.setBackgroundColor(getResources().getColor(R.color.gray));
+                    }
                 }
             });
 

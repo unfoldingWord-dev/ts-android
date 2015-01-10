@@ -218,4 +218,5 @@
     <string name="language_resources">Versions</string>
     <string name="import_project">Import Project</string>
     <string name="no_projects_available_on_server">No projects are available on this server</string>
+    <string name="downloading">Downloading</string>
 </resources>

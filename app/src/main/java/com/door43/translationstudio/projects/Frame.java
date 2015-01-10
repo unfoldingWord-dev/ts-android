@@ -244,6 +244,11 @@ public class Frame implements Model {
     }
 
     @Override
+    public boolean isTranslatingGlobal() {
+        return false;
+    }
+
+    @Override
     public String getType() {
         return "frame";
     }

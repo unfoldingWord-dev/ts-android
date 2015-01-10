@@ -416,6 +416,11 @@ public class Chapter implements Model {
     }
 
     @Override
+    public boolean isTranslatingGlobal() {
+        return false;
+    }
+
+    @Override
     public String getType() {
         return "chapter";
     }

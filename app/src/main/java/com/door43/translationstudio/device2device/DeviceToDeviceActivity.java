@@ -1,6 +1,7 @@
 package com.door43.translationstudio.device2device;
 
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -53,18 +54,20 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private static final String MSG_PROJECT_LIST = "pl";
     private static final String MSG_AUTHORIZATION_ERROR = "ae";
     private static final String MSG_INVALID_REQUEST = "ir";
+    private static final String MSG_SERVER_ERROR = "se";
     private boolean mStartAsServer = false;
     private Service mService;
     private DevicePeerAdapter mAdapter;
     private ProgressBar mLoadingBar;
     private TextView mLoadingText;
-
+    private ProgressDialog mProgressDialog;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_to_device);
+        mProgressDialog = new ProgressDialog(this);
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
         final int clientUDPPort = 9939;
@@ -189,12 +192,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         // request a list of projects from the server.
                         // TODO: the response to this request should be cached until the server disconnects.
                         // TODO: later we may use a button instead of just clicking on the list item.
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                app().showProgressDialog(R.string.loading);
-                            }
-                        });
+                        showProgress(getResources().getString(R.string.loading));
 
                         // Include the suggested language(s) in which the results should be returned (if possible)
                         // This just makes it easier for users to read the results
@@ -399,7 +397,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 server.writeTo(client, MSG_PROJECT_LIST + ":" + projectsJson.toString());
             } else if(data[0].equals(MSG_PROJECT_ARCHIVE)) {
                 // send the project archive to the client
-                JSONObject json = null;
+                JSONObject json;
                 try {
                     json = new JSONObject(data[1]);
                 } catch (final JSONException e) {
@@ -418,7 +416,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             // validate requested target languages
                             Language[] activeLanguages = p.getActiveTargetLanguages();
                             JSONArray languagesJson = json.getJSONArray("target_languages");
-                            List<Language> requestedTranslations = new ArrayList<Language>();
+                            final List<Language> requestedTranslations = new ArrayList<Language>();
                             for (int i = 0; i < languagesJson.length(); i++) {
                                 String languageId = (String) languagesJson.get(i);
                                 for(Language l:activeLanguages) {
@@ -429,42 +427,48 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 }
                             }
                             if(requestedTranslations.size() > 0) {
-                                // open a socket to send the project
-                                ServerSocket fileSocket = server.createSenderSocket(new Service.OnSocketEventListener() {
-                                    @Override
-                                    public void onOpen(Connection connection) {
-                                        // send an archive of the current project to the connection
-                                        try {
-                                            // TODO: we need to export the project for each language. package them all together and send them off.
-                                            String path = p.exportProject();
-                                            File archive = new File(path);
-
-                                            // send the file to the connection
-                                            // TODO: first we should tell client about the available projects
-                                            // TODO: display a progress bar when the files are being transferred (on each client list item)
-                                            DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
-                                            DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
-                                            byte[] buffer = new byte[8 * 1024];
-                                            int count;
-                                            while ((count = in.read(buffer)) > 0)
-                                            {
-                                                out.write(buffer, 0, count);
-                                            }
-                                            out.close();
-                                            in.close();
-                                        } catch (final IOException e) {
-                                            handle.post(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    app().showException(e);
+                                String path = p.exportProject(requestedTranslations.toArray(new Language[requestedTranslations.size()]));
+                                final File archive = new File(path);
+                                if(archive.exists()) {
+                                    // open a socket to send the project
+                                    ServerSocket fileSocket = server.createSenderSocket(new Service.OnSocketEventListener() {
+                                        @Override
+                                        public void onOpen(Connection connection) {
+                                            // send an archive of the current project to the connection
+                                            try {
+                                                // send the file to the connection
+                                                // TODO: display a progress bar when the files are being transferred (on each client list item)
+                                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
+                                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
+                                                byte[] buffer = new byte[8 * 1024];
+                                                int count;
+                                                while ((count = in.read(buffer)) > 0)
+                                                {
+                                                    out.write(buffer, 0, count);
                                                 }
-                                            });
-                                            return;
+                                                out.close();
+                                                in.close();
+                                            } catch (final IOException e) {
+                                                handle.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        app().showException(e);
+                                                    }
+                                                });
+                                                return;
+                                            }
                                         }
-                                    }
-                                });
-                                // send the port number to the client
-                                server.writeTo(client, MSG_PROJECT_ARCHIVE +":" + fileSocket.getLocalPort());
+                                    });
+                                    // send details to the client so they can download
+                                    JSONObject infoJson = new JSONObject();
+                                    infoJson.put("port", fileSocket.getLocalPort());
+                                    infoJson.put("name", archive.getName());
+                                    infoJson.put("size", archive.getTotalSpace());
+                                    server.writeTo(client, MSG_PROJECT_ARCHIVE +":" + infoJson.toString());
+                                } else {
+                                    // the archive could not be created
+                                    server.writeTo(client, MSG_SERVER_ERROR);
+                                }
                             } else {
                                 // the client should have known better
                                 server.writeTo(client, MSG_INVALID_REQUEST);
@@ -476,6 +480,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                         server.writeTo(client, MSG_INVALID_REQUEST);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        server.writeTo(client, MSG_SERVER_ERROR);
                     }
                 } else {
                     server.writeTo(client, MSG_INVALID_REQUEST);
@@ -498,69 +505,91 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
         String[] data = chunk(message, ":");
         if(data[0].equals(MSG_PROJECT_ARCHIVE)) {
-            int port = Integer.parseInt(data[1]);
-            // the server is sending a project archive
-            client.createReceiverSocket(server, port, new Service.OnSocketEventListener() {
-                @Override
-                public void onOpen(Connection connection) {
-                    connection.setOnCloseListener(new Connection.OnCloseListener() {
-                        @Override
-                        public void onClose() {
-                            // the socket has closed
-                            handle.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    app().showToastMessage("file socket closed");
-                                }
-                            });
-                        }
-                    });
 
-                    // download archive
-                    // TODO: we should really break this try catch up so we can be more specific with reports
-                    try {
-                        long time = System.currentTimeMillis();
-                        DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
-                        File file = new File(getExternalCacheDir() + "transferred/" + time + ".zip");
-                        file.getParentFile().mkdirs();
-                        file.createNewFile();
-                        OutputStream out = new FileOutputStream(file.getAbsolutePath());
-                        byte[] buffer = new byte[8 * 1024];
-                        int count;
-                        // TODO: display a progress bar. We will probably need to send the size of the file with the port #
-                        while ((count = in.read(buffer)) > 0) {
-                            out.write(buffer, 0, count);
-                        }
-                        out.close();
-                        in.close();
+            // load data
+            JSONObject infoJson = null;
+            try {
+                infoJson = new JSONObject(data[1]);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                app().showException(e);
+                return;
+            }
 
-                        // import the project
-                        if (Project.importLegacyProjectArchive(file)) {
-                            handle.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    app().showToastMessage(R.string.success);
-                                }
-                            });
-                        } else {
-                            // failed to import translation
-                            handle.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    app().showToastMessage(R.string.translation_import_failed);
-                                }
-                            });
-                        }
-                    } catch (final IOException e) {
-                        handle.post(new Runnable() {
+            if(infoJson.has("port") && infoJson.has("size") && infoJson.has("name")) {
+                int port;
+                final long size;
+                final String name;
+                try {
+                    port = infoJson.getInt("port");
+                    size = infoJson.getLong("size");
+                    name = infoJson.getString("name");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    app().showException(e);
+                    return;
+                }
+                // the server is sending a project archive
+                client.createReceiverSocket(server, port, new Service.OnSocketEventListener() {
+                    @Override
+                    public void onOpen(Connection connection) {
+                        connection.setOnCloseListener(new Connection.OnCloseListener() {
                             @Override
-                            public void run() {
-                                app().showException(e);
+                            public void onClose() {
+                                // the socket has closed
+                                handle.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        app().showToastMessage("file socket closed");
+                                    }
+                                });
                             }
                         });
+
+                        // download archive
+                        showProgress(getResources().getString(R.string.downloading));
+                        try {
+                            DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
+                            File file = new File(getExternalCacheDir() + "transferred/" + name);
+                            file.getParentFile().mkdirs();
+                            file.createNewFile();
+                            OutputStream out = new FileOutputStream(file.getAbsolutePath());
+                            byte[] buffer = new byte[8 * 1024];
+                            int count;
+                            // TODO: display a progress bar. We will probably need to send the size of the file with the port #
+                            while ((count = in.read(buffer)) > 0) {
+                                out.write(buffer, 0, count);
+                            }
+                            out.close();
+                            in.close();
+
+                            // import the project
+                            if (Project.importProjectArchive(file)) {
+                                hideProgress();
+                                app().showToastMessage(R.string.success);
+                            } else {
+                                // failed to import translation
+                                handle.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        app().showToastMessage(R.string.translation_import_failed);
+                                    }
+                                });
+                            }
+                        } catch (final IOException e) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    app().showException(e);
+                                }
+                            });
+                        }
                     }
-                }
-            });
+                });
+            } else {
+                // the server did not give us the expected response.
+                app().showToastMessage("invalid response");
+            }
         } else if(data[0].equals(MSG_OK)) {
             // we are authorized to access the server
             server.setIsConnected(true);
@@ -667,7 +696,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             handle.post(new Runnable() {
                 @Override
                 public void run() {
-                    app().closeProgressDialog();
+                    hideProgress();
                     // TODO: we don't have the meta projects configured quite right yet.
                     if(availableProjects.size() > 0) {
                         showProjectSelectionDialog(server, availableProjects.toArray(new Model[availableProjects.size()]));
@@ -713,6 +742,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     public void onChoseProjectTranslationsToImport(ChoseProjectLanguagesToImportEvent event) {
         Handler handle = new Handler(getMainLooper());
 
+        showProgress(getResources().getString(R.string.loading));
+
         // send the request to the server
         Client c = (Client)mService;
         Peer server = event.getPeer();
@@ -747,5 +778,35 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         ChooseProjectLanguagesToImportDialog newFragment = new ChooseProjectLanguagesToImportDialog();
         newFragment.setImportDetails(peer, p);
         newFragment.show(ft, "dialog");
+    }
+
+    /**
+     * shows or updates the progress dialog
+     * @param message the message to display in the progress dialog.
+     */
+    private void showProgress(final String message) {
+        Handler handle = new Handler(getMainLooper());
+        handle.post(new Runnable() {
+            @Override
+            public void run() {
+                mProgressDialog.setMessage(message);
+                if(!mProgressDialog.isShowing()) {
+                    mProgressDialog.show();
+                }
+            }
+        });
+    }
+
+    /**
+     * closes the progress dialog
+     */
+    private void hideProgress() {
+        Handler handle = new Handler(getMainLooper());
+        handle.post(new Runnable() {
+            @Override
+            public void run() {
+                mProgressDialog.dismiss();
+            }
+        });
     }
 }

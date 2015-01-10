@@ -144,6 +144,18 @@ public class SudoProject implements Model {
     }
 
     @Override
+    public boolean isTranslatingGlobal() {
+        for(Model m:mChildrenMap.values()) {
+            if(!m.isTranslatingGlobal()) {
+                continue;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public String getType() {
         return "meta-project";
     }
