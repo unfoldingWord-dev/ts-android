@@ -33,7 +33,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         if(mModelList != null) {
-            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), mModelList);
+            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), mModelList, false);
             // connect adapter
             listView.setAdapter(mModelItemAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

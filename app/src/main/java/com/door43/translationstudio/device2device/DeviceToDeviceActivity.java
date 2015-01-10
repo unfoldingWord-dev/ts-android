@@ -602,7 +602,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         } else if(data[0].equals(MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
             String rawProjectList = data[1];
-            final ArrayList<Project> availableProjects = new ArrayList<Project>();
+            final ArrayList<Model> availableProjects = new ArrayList<Model>();
 
             JSONArray json = null;
             try {
@@ -679,9 +679,15 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             Language l = new Language(languageId, languageName, langDir);
                             p.addTargetLanguage(l);
                         }
-                        availableProjects.add(p);
+                        // finish linking the sudo projects together with the project so the menu can be rendered correctly
+                        if(p.numSudoProjects() > 0) {
+                            p.getSudoProject(p.numSudoProjects() - 1).addChild(p);
+                            availableProjects.add(p.getSudoProject(0));
+                        } else {
+                            availableProjects.add(p);
+                        }
                     } else {
-                        // TODO: invalid response
+                        app().showToastMessage("An invalid response was received from the server");
                     }
                 } catch(final JSONException e) {
                     handle.post(new Runnable() {
@@ -697,7 +703,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 @Override
                 public void run() {
                     hideProgress();
-                    // TODO: we don't have the meta projects configured quite right yet.
+                    // TODO: we don't have the meta projects configured quite right. We need to finish that to show meta information in the list.
                     if(availableProjects.size() > 0) {
                         showProjectSelectionDialog(server, availableProjects.toArray(new Model[availableProjects.size()]));
                     } else {

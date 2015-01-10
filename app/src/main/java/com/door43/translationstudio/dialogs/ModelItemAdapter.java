@@ -24,16 +24,32 @@ public class ModelItemAdapter extends BaseAdapter {
 
     private final MainApplication mContext;
     private final float mImageWidth;
+    private final boolean mIndicateSelected;
     private Model[] mModels;
 
     /**
-    * Creates a new Project adapter
-    * @param c The activity context
-    */
+     *
+     * @param c
+     * @param models
+     */
     public ModelItemAdapter(MainApplication c, Model[] models) {
         mContext = c;
         mModels = models;
         mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
+        mIndicateSelected = true;
+    }
+
+    /**
+     *
+     * @param c
+     * @param models
+     * @param indicatSelection if true the adapter will highlight models that are selected.
+     */
+    public ModelItemAdapter(MainApplication c, Model[] models, boolean indicatSelection) {
+        mContext = c;
+        mModels = models;
+        mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
+        mIndicateSelected = indicatSelection;
     }
 
     @Override
@@ -87,7 +103,7 @@ public class ModelItemAdapter extends BaseAdapter {
         }
 
         // highlight selected project
-        if(getItem(position).isSelected()) {
+        if(getItem(position).isSelected() && mIndicateSelected) {
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             holder.description.setTextColor(Color.WHITE);
             holder.title.setTextColor(Color.WHITE);
