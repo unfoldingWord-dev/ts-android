@@ -145,4 +145,13 @@ public class SourceLanguage extends Language {
     public void setProject(Project project) {
         mProject = project;
     }
+
+    /**
+     * Creates a source language from a generic language.
+     * @param l
+     * @return
+     */
+    public static SourceLanguage fromLanguage(Language l) {
+        return new SourceLanguage(l.getId(), l.getName(), l.getDirection(), 0);
+    }
 }

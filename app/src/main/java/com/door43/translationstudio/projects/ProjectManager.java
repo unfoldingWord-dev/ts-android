@@ -10,7 +10,6 @@ import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.Zip;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -831,17 +830,19 @@ public class ProjectManager {
                     JSONObject jsonLangInfo = jsonLanguage.getJSONObject("language");
                     JSONObject jsonProjInfo = jsonLanguage.getJSONObject("project");
 
-                    // load the rest of the project info
-                    // TRICKY: we need to load at least one version of the project title to begin with.
-                    // Then whenever the selected language changes the appropriate title and description will be loaded
-                    if(p.getTitle() == null) {
-                        p.setTitle(jsonProjInfo.getString("name"));
-                        p.setDescription(jsonProjInfo.getString("desc"));
-                    }
-
                     // load language
                     Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
+
+                    // load the rest of the project info
+                    // TRICKY: we need to specify a default title and description to use as a backup if asked for a translation that does not exist.
+                    // These methods will only accept a value once.
+                    p.setDefaultTitle(jsonProjInfo.getString("name"));
+                    p.setDefaultDescription(jsonProjInfo.getString("desc"));
+
+                    // load title and description translations.
+                    p.setTitle(jsonProjInfo.getString("name"), l);
+                    p.setDescription(jsonProjInfo.getString("desc"), l);
 
                     // load sudo project names
                     if(jsonProjInfo.has("meta") && p.numSudoProjects() > 0) {

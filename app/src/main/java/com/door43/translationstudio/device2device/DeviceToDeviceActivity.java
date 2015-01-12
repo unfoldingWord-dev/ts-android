@@ -639,9 +639,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
                         // project info
                         JSONObject projectInfoJson = projectJson.getJSONObject("project");
-                        p.setTitle(projectInfoJson.getString("name"));
+                        p.setDefaultTitle(projectInfoJson.getString("name"));
                         if(projectInfoJson.has("description")) {
-                            p.setDescription(projectInfoJson.getString("description"));
+                            p.setDefaultDescription(projectInfoJson.getString("description"));
                         }
 
                         // meta (sudo projects)

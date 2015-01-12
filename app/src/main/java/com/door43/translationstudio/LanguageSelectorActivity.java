@@ -8,14 +8,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.LanguageAdapter;
+import com.door43.translationstudio.dialogs.LanguageAdapter;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 

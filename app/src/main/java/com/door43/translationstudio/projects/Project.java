@@ -12,6 +12,7 @@ import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.Zip;
@@ -21,7 +22,6 @@ import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.util.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,13 +54,18 @@ public class Project implements Model {
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
     private List<SudoProject> mSudoProjects = new ArrayList<SudoProject>();
     private Map<String, SudoProject> mSudoProjectMap = new HashMap<String, SudoProject>();
+//    private Map<String, Translation> mTitleTranslationMap = new HashMap<String, Translation>();
+//    private List<Translation> mTitleTranslations = new ArrayList<Translation>();
+    private ListMap<Translation> mTitleTranslations = new ListMap<Translation>();
+    private ListMap<Translation> mDescriptionTranslations = new ListMap<Translation>();
+
     // TODO: the extension should be placed in the app settings
     public static final String PROJECT_EXTENSION = "tstudio";
 
-    private String mTitle;
+    private String mDefaultTitle;
     private final String mSlug;
     private int mDateModified;
-    private String mDescription;
+    private String mDefaultDescription;
     private String mSelectedChapterId = null;
     private String mSelectedSourceLanguageId;
     private String mSelectedTargetLanguageId;
@@ -107,9 +112,9 @@ public class Project implements Model {
      * @param description A short description of the project.
      */
     public Project(String title, String slug, String description) {
-        mTitle = title;
+        mDefaultTitle = title;
         mSlug = slug;
-        mDescription = description;
+        mDefaultDescription = description;
         // load the selected language
         SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
         mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
@@ -117,12 +122,12 @@ public class Project implements Model {
     }
 
     /**
-     * Sets the title of the project. This can only be set once
+     * Sets the title of the project.
      * @param title
      */
-    public void setTitle(String title) {
-        if(mTitle == null) {
-            mTitle = title;
+    public void setDefaultTitle(String title) {
+        if(mDefaultTitle == null) {
+            mDefaultTitle = title;
         }
     }
 
@@ -130,10 +135,28 @@ public class Project implements Model {
      * Sets the description of the project. This can only be set once
      * @param description
      */
-    public void setDescription(String description) {
-        if(mDescription == null) {
-            mDescription = description;
+    public void setDefaultDescription(String description) {
+        if(mDefaultDescription == null) {
+            mDefaultDescription = description;
         }
+    }
+
+    /**
+     * Adds a translation of the project title
+     * @param title the title of the project
+     * @param l the language the title is in
+     */
+    public void setTitle(String title, SourceLanguage l) {
+        mTitleTranslations.add(l.getId(), new Translation(l, title));
+    }
+
+    /**
+     * Adds a translation of the project description
+     * @param description the description of the project
+     * @param l the language the description is in
+     */
+    public void setDescription(String description, SourceLanguage l) {
+        mDescriptionTranslations.add(l.getId(), new Translation(l, description));
     }
 
     /**
@@ -165,14 +188,6 @@ public class Project implements Model {
     }
 
     /**
-     * Returns the global project id
-     * @return
-     */
-    public String getGlobalProjectId() {
-        return GLOBAL_PROJECT_SLUG;
-    }
-
-    /**
      * Dumps all the frames and chapters from the project
      */
     public void flush() {
@@ -196,8 +211,12 @@ public class Project implements Model {
      * @return
      */
     public String getTitle(SourceLanguage l) {
-        // TODO: grab the correct title.
-        return mTitle;
+        Translation t = mTitleTranslations.get(l.getId());
+        if(t != null) {
+            return t.getText();
+        } else {
+            return mDefaultTitle;
+        }
     }
 
     /**
@@ -205,7 +224,12 @@ public class Project implements Model {
      * @return
      */
     public String getTitle() {
-        return mTitle;
+        Translation t = mTitleTranslations.get(mSelectedSourceLanguageId);
+        if(t != null) {
+            return t.getText();
+        } else {
+            return mDefaultTitle;
+        }
     }
 
     /**
@@ -214,8 +238,12 @@ public class Project implements Model {
      * @return
      */
     public String getDescription(SourceLanguage l) {
-        // TODO: grab the correct description
-        return mDescription;
+        Translation t = mDescriptionTranslations.get(l.getId());
+        if(t != null) {
+            return t.getText();
+        } else {
+            return mDefaultDescription;
+        }
     }
 
     /**
@@ -223,7 +251,12 @@ public class Project implements Model {
      * @return
      */
     public String getDescription() {
-        return mDescription;
+        Translation t = mDescriptionTranslations.get(mSelectedSourceLanguageId);
+        if(t != null) {
+            return t.getText();
+        } else {
+            return mDefaultDescription;
+        }
     }
 
     /**
@@ -802,7 +835,6 @@ public class Project implements Model {
             try {
                 translationJson.put("global_identifier", GLOBAL_PROJECT_SLUG);
                 translationJson.put("project", getId());
-                // TODO: we might want to get the title in each language
                 translationJson.put("title", getTitle());
                 translationJson.put("target_language", l.getId());
                 translationJson.put("source_language", getSelectedSourceLanguage().getId());

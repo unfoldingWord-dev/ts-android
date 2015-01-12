@@ -1,10 +1,7 @@
-package com.door43.translationstudio.util;
+package com.door43.translationstudio.dialogs;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.media.Image;
-import android.os.AsyncTask;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +11,12 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -122,10 +118,12 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
             holder.languageNameView.setTextColor(Color.WHITE);
             holder.languageIdView.setTextColor(Color.WHITE);
+            holder.translationStatusIcon.setBackgroundResource(R.drawable.ic_pencil);
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
             holder.languageNameView.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
             holder.languageIdView.setTextColor(mContext.getResources().getColor(R.color.gray));
+            holder.translationStatusIcon.setBackgroundResource(R.drawable.ic_pencil_dark);
         }
         return v;
     }

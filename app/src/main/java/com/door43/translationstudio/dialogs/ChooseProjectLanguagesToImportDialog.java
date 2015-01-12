@@ -14,12 +14,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ChoseProjectLanguagesEvent;
 import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.LanguageAdapter;
 import com.door43.translationstudio.util.MainContext;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
@@ -40,7 +38,6 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
         if(mProject != null) {
             final LanguageAdapter adapter = new LanguageAdapter(Arrays.asList(mProject.getTargetLanguages()), this.getActivity(), false);
 
-            // TODO: populate the form and list.
             String imageUri = "assets://"+ mProject.getImagePath();
             final float imageWidth = getResources().getDimension(R.dimen.model_list_item_image_width);
 
@@ -83,7 +80,6 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
                 }
             });
 
-            // TODO: populate language list.
             // TODO: if we do not already have this project source provide an option to import the source in addition to the translation.
             // TRICKY: source languages do not have translation indicators on them so we set this to true.
 

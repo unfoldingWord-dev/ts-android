@@ -108,18 +108,22 @@ public class ModelItemAdapter extends BaseAdapter {
             holder.description.setTextColor(Color.WHITE);
             holder.title.setTextColor(Color.WHITE);
             if(isTranslating) {
-                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
+                holder.translationIcon.setBackgroundResource(R.drawable.ic_pencil);
+//                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil));
             } else {
-                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_translation_small));
+                holder.translationIcon.setBackgroundResource(R.drawable.ic_translation_small);
+//                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_translation_small));
             }
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
             holder.description.setTextColor(mContext.getResources().getColor(R.color.gray));
             holder.title.setTextColor(mContext.getResources().getColor(R.color.black));
             if(isTranslating) {
-                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
+                holder.translationIcon.setBackgroundResource(R.drawable.ic_pencil_dark);
+//                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_pencil_dark));
             } else {
-                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_translation_small_dark));
+                holder.translationIcon.setBackgroundResource(R.drawable.ic_translation_small_dark);
+//                holder.translationIcon.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_translation_small_dark));
             }
         }
 
