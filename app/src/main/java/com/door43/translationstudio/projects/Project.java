@@ -1185,21 +1185,21 @@ public class Project implements Model {
     }
 
     /**
-     * Imports a project directory into the system
-     * TODO: this should return information about the import. success, fails etc.
-     * @param projectDir the project directory that will be imported
+     * Performs the actual import of the project
+     * TODO: we already verified the project so just do it.
+     * @param status
      * @return
      */
-    private static boolean importProject(String projectId, String languageId, File projectDir) {
+    public static boolean importProject(ImportStatus status) {
         // locate existing project
-        Project p = MainContext.getContext().getSharedProjectManager().getProject(projectId);
+        Project p = MainContext.getContext().getSharedProjectManager().getProject(status.projectId);
         if(p != null) {
-            File repoDir = new File(Project.getRepositoryPath(projectId, languageId));
+            File repoDir = new File(Project.getRepositoryPath(status.projectId, status.languageId));
             if(repoDir.exists()) {
                 // merge into existing project
-                File archiveGitDir = new File(projectDir, ".git");
-                FileUtilities.deleteRecursive(archiveGitDir);
-                File[] files = projectDir.listFiles();
+                File sourceGitDir = new File(status.sourceDir, ".git");
+                FileUtilities.deleteRecursive(sourceGitDir);
+                File[] files = status.sourceDir.listFiles();
                 for(File f:files) {
                     try {
                         File destDir = new File(repoDir, f.getName());
@@ -1213,14 +1213,14 @@ public class Project implements Model {
                         // TODO: record list of files that cannot be coppied and display to the user
                     }
                 }
-                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
+                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(status.languageId);
                 l.touch();
                 // TODO: perform a git diff to see if there are any changes
                 return true;
             } else {
                 // import as new project
                 try {
-                    FileUtils.moveDirectory(projectDir, repoDir);
+                    FileUtils.moveDirectory(status.sourceDir, repoDir);
                     return true;
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -1233,11 +1233,44 @@ public class Project implements Model {
     }
 
     /**
+     * Performs some checks on a project to make sure it can be imported.
+     * TODO: this should return information about the import. success, fails etc.
+     * TODO: we need a method to check the import before actually running the import. That way we can ask the user about overwriting stuff.
+     * @param projectDir the project directory that will be imported
+     * @return
+     */
+    private static ImportStatus prepareImport(String projectId, String languageId, File projectDir) {
+        ImportStatus status = new ImportStatus(projectId, languageId, projectDir);
+
+        // locate existing project
+        Project p = MainContext.getContext().getSharedProjectManager().getProject(projectId);
+        if(p != null) {
+            File repoDir = new File(Project.getRepositoryPath(projectId, languageId));
+            if(repoDir.exists()) {
+                // the project already exists
+                status.addWarning("Project translation already exists");
+                // TODO: eventually it would be nice to see which files are in conflict and let the user choose what to import.
+                return status;
+            } else {
+                // new project translation
+                return status;
+            }
+        } else {
+            // new project source and translation
+            // TODO: eventually we should check if the import includes the source text as well. Then this should just be a warning. Letting the user know that the source will be imported as well.
+            status.addError("Missing project source");
+        }
+        return status;
+    }
+
+    /**
      * Imports a translationStudio project archive
      * @param archive the archive that will be imported
      * @return true if the import was successful
      */
-    public static boolean importProjectArchive(File archive) {
+    public static List<ImportStatus> prepareProjectArchiveImport(File archive) {
+        List<ImportStatus> importStatuses = new ArrayList<ImportStatus>();
+
         // validate extension
         String[] name = archive.getName().split("\\.");
         Boolean success = false;
@@ -1248,8 +1281,9 @@ public class Project implements Model {
             try {
                 Zip.unzip(archive, extractedDir);
             } catch (IOException e) {
+                FileUtilities.deleteRecursive(extractedDir);
                 e.printStackTrace();
-                return false;
+                return importStatuses;
             }
 
             File manifest = new File(extractedDir, "manifest.json");
@@ -1262,16 +1296,12 @@ public class Project implements Model {
                         for(int i=0; i<projectsJson.length(); i++) {
                             JSONObject projJson = projectsJson.getJSONObject(i);
                             if(projJson.has("path") && projJson.has("project") && projJson.has("target_language")) {
+                                // import the project
                                 File projectDir = new File(extractedDir, projJson.getString("path"));
-                                // TODO: export each project
-                                if(importProject(projJson.getString("project"), projJson.getString("target_language"), projectDir)) {
-                                    // yay!
-                                } else {
-                                    // import failed.
-                                }
+                                ImportStatus status = prepareImport(projJson.getString("project"), projJson.getString("target_language"), projectDir);
+                                importStatuses.add(status);
                             }
                         }
-                        success = true;
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1282,7 +1312,7 @@ public class Project implements Model {
             // cleanup
             FileUtilities.deleteRecursive(extractedDir);
         }
-        return success;
+        return importStatuses;
     }
 
     /**
@@ -1324,7 +1354,9 @@ public class Project implements Model {
             // read project info
             TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(importDirectory.getName());
             if(translationInfo != null) {
-                success = importProject(translationInfo.projectId, translationInfo.languageId, importDirectory);
+                ImportStatus status = prepareImport(translationInfo.projectId, translationInfo.languageId, importDirectory);
+                // TODO: for now we are just blindly importing legacy projects (dangerous). We'll need to update this method as well as the DokuWiki import method in order to properly handle these legacy projects
+                importProject(status);
             }
             FileUtilities.deleteRecursive(extractedDirectory);
             return success;
@@ -1364,6 +1396,7 @@ public class Project implements Model {
 
     /**
      * Stores information about a translation archive
+     * @deprecated this is legacy code for the old import methods
      */
     public static class TranslationArchiveInfo {
         public final String globalProjectId;
@@ -1382,6 +1415,51 @@ public class Project implements Model {
 
         public Language getLanguage() {
             return MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
+        }
+    }
+
+    /**
+     * Represents the status of the project import. This is generated before the import actually begins
+     * so that we can get user feedback on warnings before actually performing the import.
+     */
+    public static class ImportStatus {
+        public final File sourceDir;
+        public final String projectId;
+        public final String languageId;
+        private String mError;
+        private String mWarning;
+        private boolean mApproved = true;
+
+        public ImportStatus(String projectId, String languageId, File sourceDir) {
+            this.projectId = projectId;
+            this.languageId = languageId;
+            this.sourceDir = sourceDir;
+        }
+
+        public void addWarning(String s) {
+            mWarning = s;
+            mApproved = false;
+        }
+
+        public void addError(String s) {
+            mError = s;
+            mApproved = false;
+        }
+
+        public String getWarning() {
+            return mWarning;
+        }
+
+        public String getError() {
+            return mError;
+        }
+
+        public boolean isApproved() {
+            return mApproved;
+        }
+
+        public void setIsApproved(boolean approved) {
+            mApproved = approved;
         }
     }
 }

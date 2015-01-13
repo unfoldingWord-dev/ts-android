@@ -24,6 +24,7 @@ import java.util.Map;
  */
 public abstract class Service {
     protected final Context mContext;
+    private static int CONNECTION_TIMEOUT = 10000; // 10 seconds
     private Map<String, Peer> mPeers = new HashMap<String, Peer>();
 
     public Service(Context context) {
@@ -42,8 +43,9 @@ public abstract class Service {
 
         int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
         byte[] quads = new byte[4];
-        for (int k = 0; k < 4; k++)
+        for (int k = 0; k < 4; k++) {
             quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
+        }
        return InetAddress.getByAddress(quads);
     }
 
@@ -64,6 +66,7 @@ public abstract class Service {
                 }
             }
         } catch (SocketException ex) {
+            ex.printStackTrace();
         }
         return null;
     }
@@ -142,6 +145,7 @@ public abstract class Service {
         final ServerSocket serverSocket;
         try {
             serverSocket = new ServerSocket(0);
+            serverSocket.setSoTimeout(CONNECTION_TIMEOUT);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -181,6 +185,7 @@ public abstract class Service {
                 try {
                     InetAddress serverAddr = InetAddress.getByName(peer.getIpAddress());
                     Socket socket = new Socket(serverAddr, port);
+                    socket.setSoTimeout(CONNECTION_TIMEOUT);
                     listener.onOpen(new Connection(socket));
                 } catch(UnknownHostException e) {
                     Thread.currentThread().interrupt();

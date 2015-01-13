@@ -1,5 +1,7 @@
 package com.door43.translationstudio;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +16,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
+import com.door43.translationstudio.dialogs.ProjectImportApprovalDialog;
+import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.MainContext;
@@ -21,12 +25,14 @@ import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
 import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.squareup.otto.Subscribe;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
@@ -259,8 +265,33 @@ public class SharingActivity extends TranslatorBaseActivity {
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);
-                                if (Project.importProjectArchive(file)) {
-                                    app().showToastMessage(R.string.success);
+                                List<Project.ImportStatus> importStatuses = Project.prepareProjectArchiveImport(file);
+                                if (importStatuses.size() > 0) {
+                                    boolean importWarnings = false;
+                                    for(Project.ImportStatus s:importStatuses) {
+                                        if(!s.isApproved()) {
+                                            importWarnings = true;
+                                        }
+                                    }
+                                    if(importWarnings) {
+                                        // review the import status in a dialog
+                                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                                        if (prev != null) {
+                                            ft.remove(prev);
+                                        }
+                                        ft.addToBackStack(null);
+                                        app().closeToastMessage();
+                                        ProjectImportApprovalDialog newFragment = new ProjectImportApprovalDialog();
+                                        newFragment.setImportStatus(importStatuses);
+                                        newFragment.show(ft, "dialog");
+                                    } else {
+                                        // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
+                                        for(Project.ImportStatus s:importStatuses) {
+                                            Project.importProject(s);
+                                        }
+                                        app().showToastMessage(R.string.success);
+                                    }
                                 } else {
                                     app().showToastMessage(R.string.translation_import_failed);
                                 }
@@ -305,5 +336,17 @@ public class SharingActivity extends TranslatorBaseActivity {
                 }
             }
         }
+    }
+
+    @Subscribe
+    public void onProjectImportApproval(ProjectImportApprovalEvent event) {
+        app().showProgressDialog(R.string.loading);
+        for(Project.ImportStatus s:event.getStatuses()) {
+            if(s.isApproved()) {
+                // TODO: update the status with the result of the import and show the user a report when the imports are finished.
+                Project.importProject(s);
+            }
+        }
+        app().closeProgressDialog();
     }
 }

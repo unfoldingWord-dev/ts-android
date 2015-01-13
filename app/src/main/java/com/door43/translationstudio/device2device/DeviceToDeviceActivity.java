@@ -1,5 +1,6 @@
 package com.door43.translationstudio.device2device;
 
+import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -15,8 +16,10 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
 import com.door43.translationstudio.dialogs.ChooseProjectLanguagesToImportDialog;
+import com.door43.translationstudio.dialogs.ProjectImportApprovalDialog;
 import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.events.ChoseProjectToImportEvent;
+import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.network.Client;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
@@ -564,9 +567,34 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             in.close();
 
                             // import the project
-                            if (Project.importProjectArchive(file)) {
+                            List<Project.ImportStatus> importStatuses = Project.prepareProjectArchiveImport(file);
+                            if (importStatuses.size() > 0) {
+                                boolean importWarnings = false;
+                                for(Project.ImportStatus s:importStatuses) {
+                                    if(!s.isApproved()) {
+                                        importWarnings = true;
+                                    }
+                                }
+                                if(importWarnings) {
+                                    // review the import status in a dialog
+                                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                    Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                                    if (prev != null) {
+                                        ft.remove(prev);
+                                    }
+                                    ft.addToBackStack(null);
+                                    app().closeToastMessage();
+                                    ProjectImportApprovalDialog newFragment = new ProjectImportApprovalDialog();
+                                    newFragment.setImportStatus(importStatuses);
+                                    newFragment.show(ft, "dialog");
+                                } else {
+                                    // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
+                                    for(Project.ImportStatus s:importStatuses) {
+                                        Project.importProject(s);
+                                    }
+                                    app().showToastMessage(R.string.success);
+                                }
                                 hideProgress();
-                                app().showToastMessage(R.string.success);
                             } else {
                                 // failed to import translation
                                 handle.post(new Runnable() {
@@ -771,6 +799,19 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
             });
         }
+    }
+
+    @Subscribe
+    public void onProjectImportApproval(ProjectImportApprovalEvent event) {
+        showProgress(getResources().getString(R.string.loading));
+        for(Project.ImportStatus s:event.getStatuses()) {
+            if(s.isApproved()) {
+                // TODO: update the status with the result of the import and show the user a report when the imports are finished.
+                Project.importProject(s);
+            }
+        }
+        hideProgress();
+        app().showToastMessage(R.string.success);
     }
 
     /**

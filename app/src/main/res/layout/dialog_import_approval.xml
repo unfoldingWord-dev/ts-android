@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/linearLayout5"
+        android:layout_above="@+id/linearLayout6">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please review the import"
+            android:id="@+id/textView4"
+            android:textSize="@dimen/h4" />
+
+        <ListView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/importListView" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout6"
+        android:weightSum="2"
+        android:paddingTop="10dp">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_cancel"
+            android:id="@+id/buttonCancel"
+            android:background="@drawable/bordered_button"
+            android:padding="20dp"
+            android:textColor="@color/blue"
+            android:layout_weight="1"
+            android:layout_marginRight="5dp" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_ok"
+            android:id="@+id/buttonOk"
+            android:background="@color/blue"
+            android:textColor="@color/white"
+            android:padding="20dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>
