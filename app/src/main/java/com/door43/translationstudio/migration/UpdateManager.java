@@ -50,12 +50,17 @@ public class UpdateManager {
                 }
 //                String databasePath = pInfo.applicationInfo.dataDir;
                 SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(MainContext.getContext(), pInfo.applicationInfo.dataDir);
-                migrationHelper.migrateDatabase(new SQLiteMigrationHelper.OnProgressCallback() {
-                    @Override
-                    public void onProgress(double progress, String message) {
-                        UpdateManager.this.onProgress(progress, message);
-                    }
-                });
+                try {
+                    migrationHelper.migrateDatabase(new SQLiteMigrationHelper.OnProgressCallback() {
+                        @Override
+                        public void onProgress(double progress, String message) {
+                            UpdateManager.this.onProgress(progress, message);
+                        }
+                    });
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    UpdateManager.this.onProgress(100, "Migration may not have been successful.");
+                }
 
                 // backup database
                 File backup = new File(MainContext.getContext().getFilesDir(), "1.x_backup.sqlite3");

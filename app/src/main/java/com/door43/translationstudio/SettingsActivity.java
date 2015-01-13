@@ -69,6 +69,29 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
+    /**
+     * TRICKY: this was added after API 19 to fix a vulnerability.
+     * @param fragmentName
+     * @return
+     */
+    @Override
+    protected boolean isValidFragment(String fragmentName) {
+        // add any new preference fragments here so we can validate them
+        String[] validFragments = new String[] {
+                GeneralPreferenceFragment.class.getName(),
+                AdvancedPreferenceFragment.class.getName(),
+                SavePreferenceFragment.class.getName(),
+                SharingPreferenceFragment.class.getName()
+        };
+        boolean isValid = false;
+        for(String name:validFragments) {
+            if(fragmentName.equals(name)) {
+                isValid  = true;
+            }
+        }
+        return isValid;
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
