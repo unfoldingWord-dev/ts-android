@@ -1185,45 +1185,66 @@ public class Project implements Model {
     }
 
     /**
+     * This performs house cleaning operations after a project has been imported.
+     * You should still run this even if you just prepared the import but didn't actually import
+     * because some files get extracted durring the process.
+     * @param request the import status that will be cleaned
+     */
+    public static void cleanImport(ImportRequest request) {
+        if(request.sourceDir.exists()) {
+            FileUtilities.deleteRecursive(request.sourceDir);
+        }
+    }
+
+    /**
      * Performs the actual import of the project
      * TODO: we already verified the project so just do it.
-     * @param status
+     * @param request
      * @return
      */
-    public static boolean importProject(ImportStatus status) {
+    public static boolean importProject(ImportRequest request) {
         // locate existing project
-        Project p = MainContext.getContext().getSharedProjectManager().getProject(status.projectId);
+        Project p = MainContext.getContext().getSharedProjectManager().getProject(request.projectId);
         if(p != null) {
-            File repoDir = new File(Project.getRepositoryPath(status.projectId, status.languageId));
+            File repoDir = new File(Project.getRepositoryPath(request.projectId, request.languageId));
             if(repoDir.exists()) {
                 // merge into existing project
-                File sourceGitDir = new File(status.sourceDir, ".git");
-                FileUtilities.deleteRecursive(sourceGitDir);
-                File[] files = status.sourceDir.listFiles();
-                for(File f:files) {
-                    try {
-                        File destDir = new File(repoDir, f.getName());
-                        if(destDir.exists()) {
-                            FileUtilities.deleteRecursive(destDir);
-                        }
-                        FileUtils.moveDirectory(f, destDir);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return false;
-                        // TODO: record list of files that cannot be coppied and display to the user
+                File[] files = request.sourceDir.listFiles(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File file, String s) {
+                        return !s.equals(".git");
                     }
+                });
+                if(files != null) {
+                    for (File f : files) {
+                        try {
+                            File destDir = new File(repoDir, f.getName());
+                            if (destDir.exists()) {
+                                FileUtilities.deleteRecursive(destDir);
+                            }
+                            FileUtils.moveDirectory(f, destDir);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            return false;
+                            // TODO: record list of files that cannot be coppied and display to the user
+                        }
+                    }
+                    Language l = MainContext.getContext().getSharedProjectManager().getLanguage(request.languageId);
+                    l.touch();
+                    // TODO: perform a git diff to see if there are any changes
+                    return true;
+                } else {
+                    // TODO: the directory does not exist
+                    return false;
                 }
-                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(status.languageId);
-                l.touch();
-                // TODO: perform a git diff to see if there are any changes
-                return true;
             } else {
                 // import as new project
                 try {
-                    FileUtils.moveDirectory(status.sourceDir, repoDir);
+                    FileUtils.moveDirectory(request.sourceDir, repoDir);
                     return true;
                 } catch (IOException e) {
                     e.printStackTrace();
+                    return false;
                 }
             }
         } else {
@@ -1239,8 +1260,8 @@ public class Project implements Model {
      * @param projectDir the project directory that will be imported
      * @return
      */
-    private static ImportStatus prepareImport(String projectId, String languageId, File projectDir) {
-        ImportStatus status = new ImportStatus(projectId, languageId, projectDir);
+    private static ImportRequest prepareImport(String projectId, String languageId, File projectDir) {
+        ImportRequest request = new ImportRequest(projectId, languageId, projectDir);
 
         // locate existing project
         Project p = MainContext.getContext().getSharedProjectManager().getProject(projectId);
@@ -1248,28 +1269,29 @@ public class Project implements Model {
             File repoDir = new File(Project.getRepositoryPath(projectId, languageId));
             if(repoDir.exists()) {
                 // the project already exists
-                status.addWarning("Project translation already exists");
+                request.addWarning("Project translation already exists");
                 // TODO: eventually it would be nice to see which files are in conflict and let the user choose what to import.
-                return status;
+                return request;
             } else {
                 // new project translation
-                return status;
+                return request;
             }
         } else {
             // new project source and translation
             // TODO: eventually we should check if the import includes the source text as well. Then this should just be a warning. Letting the user know that the source will be imported as well.
-            status.addError("Missing project source");
+            request.addError("Missing project source");
         }
-        return status;
+        return request;
     }
 
     /**
-     * Imports a translationStudio project archive
+     * Prepares a translationStudio project archive for import.
+     * This leaves files around so be sure to run the importcleanup when finished.
      * @param archive the archive that will be imported
      * @return true if the import was successful
      */
-    public static List<ImportStatus> prepareProjectArchiveImport(File archive) {
-        List<ImportStatus> importStatuses = new ArrayList<ImportStatus>();
+    public static List<ImportRequest> prepareProjectArchiveImport(File archive) {
+        List<ImportRequest> importRequests = new ArrayList<ImportRequest>();
 
         // validate extension
         String[] name = archive.getName().split("\\.");
@@ -1283,7 +1305,7 @@ public class Project implements Model {
             } catch (IOException e) {
                 FileUtilities.deleteRecursive(extractedDir);
                 e.printStackTrace();
-                return importStatuses;
+                return importRequests;
             }
 
             File manifest = new File(extractedDir, "manifest.json");
@@ -1298,8 +1320,8 @@ public class Project implements Model {
                             if(projJson.has("path") && projJson.has("project") && projJson.has("target_language")) {
                                 // import the project
                                 File projectDir = new File(extractedDir, projJson.getString("path"));
-                                ImportStatus status = prepareImport(projJson.getString("project"), projJson.getString("target_language"), projectDir);
-                                importStatuses.add(status);
+                                ImportRequest request = prepareImport(projJson.getString("project"), projJson.getString("target_language"), projectDir);
+                                importRequests.add(request);
                             }
                         }
                     }
@@ -1309,10 +1331,8 @@ public class Project implements Model {
                     e.printStackTrace();
                 }
             }
-            // cleanup
-            FileUtilities.deleteRecursive(extractedDir);
         }
-        return importStatuses;
+        return importRequests;
     }
 
     /**
@@ -1321,7 +1341,7 @@ public class Project implements Model {
      * @param archiveFile the directory that will be imported
      * @return
      */
-    public static boolean importLegacyProjectArchive(File archiveFile) {
+    public static boolean prepareLegacyProjectArchiveImport(File archiveFile) {
         String[] name = archiveFile.getName().split("\\.");
         if(name[name.length - 1].equals("zip")) {
             // extract archive
@@ -1354,9 +1374,10 @@ public class Project implements Model {
             // read project info
             TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(importDirectory.getName());
             if(translationInfo != null) {
-                ImportStatus status = prepareImport(translationInfo.projectId, translationInfo.languageId, importDirectory);
+                ImportRequest request = prepareImport(translationInfo.projectId, translationInfo.languageId, importDirectory);
                 // TODO: for now we are just blindly importing legacy projects (dangerous). We'll need to update this method as well as the DokuWiki import method in order to properly handle these legacy projects
-                importProject(status);
+                importProject(request);
+                cleanImport(request);
             }
             FileUtilities.deleteRecursive(extractedDirectory);
             return success;
@@ -1422,7 +1443,7 @@ public class Project implements Model {
      * Represents the status of the project import. This is generated before the import actually begins
      * so that we can get user feedback on warnings before actually performing the import.
      */
-    public static class ImportStatus {
+    public static class ImportRequest {
         public final File sourceDir;
         public final String projectId;
         public final String languageId;
@@ -1430,7 +1451,7 @@ public class Project implements Model {
         private String mWarning;
         private boolean mApproved = true;
 
-        public ImportStatus(String projectId, String languageId, File sourceDir) {
+        public ImportRequest(String projectId, String languageId, File sourceDir) {
             this.projectId = projectId;
             this.languageId = languageId;
             this.sourceDir = sourceDir;

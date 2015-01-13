@@ -287,6 +287,8 @@ public class MainActivity extends TranslatorBaseActivity {
                     ft.addToBackStack(null);
 
                     app().closeToastMessage();
+                    
+                    save();
 
                     LanguageResourceDialog newFragment = new LanguageResourceDialog();
                     Bundle args = new Bundle();

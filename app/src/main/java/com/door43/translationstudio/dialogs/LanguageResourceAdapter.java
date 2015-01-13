@@ -61,7 +61,7 @@ public class LanguageResourceAdapter extends BaseAdapter {
             textView.setTextColor(Color.WHITE);
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
-            textView.setTextColor(mContext.getResources().getColor(R.color.gray));
+            textView.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
         }
 
         return v;

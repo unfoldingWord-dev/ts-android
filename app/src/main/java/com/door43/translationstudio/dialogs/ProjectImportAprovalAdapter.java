@@ -1,17 +1,14 @@
 package com.door43.translationstudio.dialogs;
 
 import android.content.Context;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
 
@@ -23,7 +20,7 @@ import java.util.List;
 public class ProjectImportAprovalAdapter extends BaseAdapter {
 
     private final Context mContext;
-    private List<Project.ImportStatus> mStatuses;
+    private List<Project.ImportRequest> mStatuses;
 
     public ProjectImportAprovalAdapter(Context context) {
         mContext = context;
@@ -35,7 +32,7 @@ public class ProjectImportAprovalAdapter extends BaseAdapter {
     }
 
     @Override
-    public Project.ImportStatus getItem(int i) {
+    public Project.ImportRequest getItem(int i) {
         return mStatuses.get(i);
     }
 
@@ -47,7 +44,7 @@ public class ProjectImportAprovalAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View convertView, ViewGroup viewGroup) {
         View v;
-        final Project.ImportStatus item = getItem(i);
+        final Project.ImportRequest item = getItem(i);
         boolean showSeparator = false;
 
         if(convertView == null) {
@@ -116,11 +113,11 @@ public class ProjectImportAprovalAdapter extends BaseAdapter {
         return v;
     }
 
-    public void addImportStatuses(List<Project.ImportStatus> statuses) {
+    public void addImportStatuses(List<Project.ImportRequest> statuses) {
         mStatuses = statuses;
     }
 
-    public List<Project.ImportStatus> getImportStatuses() {
+    public List<Project.ImportRequest> getImportStatuses() {
         return mStatuses;
     }
 }

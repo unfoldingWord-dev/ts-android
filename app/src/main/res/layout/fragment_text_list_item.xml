@@ -9,7 +9,7 @@
         android:layout_height="@dimen/model_list_item_height"
         android:text="New Text"
         android:textSize="@dimen/h5"
-        android:textColor="@color/black"
+        android:textColor="@color/dark_gray"
         android:id="@+id/textView"
         android:ellipsize="end"
         android:maxLines="2"

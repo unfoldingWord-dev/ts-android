@@ -219,4 +219,5 @@
     <string name="import_project">Import Project</string>
     <string name="no_projects_available_on_server">No projects are available on this server</string>
     <string name="downloading">Downloading</string>
+    <string name="confirm_import">Please confirm what you want to import.</string>
 </resources>
