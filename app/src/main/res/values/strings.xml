@@ -142,6 +142,7 @@
     <string name="project_updates_downloaded">Projects have been successfully updated</string>
     <string name="downloading_updates">Downloading updates</string>
     <string name="title_activity_crash_reporter">Error Report</string>
+    <string name="title_activity_bug_reporter">Bug Report</string>
     <string name="crash_reports">This app appears to have crashed recently. Would you like to upload a report of this error to the developers?</string>
     <string name="crash_details">What were you doing just before the app crashed?</string>
     <string name="crash_details_label">Optional notes</string>

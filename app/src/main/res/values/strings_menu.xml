@@ -5,6 +5,7 @@
     <string name="menu_upload">Upload</string>
     <string name="menu_share">Share</string>
     <string name="menu_info" translatable="false">App Info</string>
+    <string name="menu_bug">Report Bug</string>
     <string name="menu_chapter_settings">Chapter Settings</string>
     <string name="menu_project_settings">Project Settings</string>
     <string name="menu_resources">Resources</string>

@@ -110,6 +110,12 @@
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
+            android:name=".BugReporterActivity"
+            android:label="@string/title_activity_bug_reporter"
+            android:theme="@style/TitledTheme"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
             android:parentActivityName=".SharingActivity" >

@@ -31,6 +31,10 @@
         android:title="@string/menu_info"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_bug"
+        android:title="@string/menu_bug"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_update"
         android:title="@string/menu_update"
         app:showAsAction="never" />

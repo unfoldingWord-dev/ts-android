@@ -1344,6 +1344,14 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     /**
+     * Opens the bug reporter
+     */
+    public void openBugReporter() {
+        Intent intent = new Intent(this, BugReporterActivity.class);
+        startActivity(intent);
+    }
+
+    /**
      * opens the app info dialog
      */
     public void openInfo() {
@@ -1500,6 +1508,9 @@ public class MainActivity extends TranslatorBaseActivity {
                 return true;
             case R.id.action_info:
                 openInfo();
+                return true;
+            case R.id.action_bug:
+                openBugReporter();
                 return true;
             case R.id.action_library:
                 openLeftDrawer();
