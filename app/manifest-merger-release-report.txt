@@ -186,14 +186,24 @@ ADDED from AndroidManifest.xml:106:9
 		ADDED from AndroidManifest.xml:109:13
 	android:name
 		ADDED from AndroidManifest.xml:107:13
-activity#com.door43.translationstudio.device2device.DeviceToDeviceActivity
+activity#com.door43.translationstudio.BugReporterActivity
 ADDED from AndroidManifest.xml:112:9
 	android:label
 		ADDED from AndroidManifest.xml:114:13
-	android:parentActivityName
+	android:windowSoftInputMode
+		ADDED from AndroidManifest.xml:116:13
+	android:theme
 		ADDED from AndroidManifest.xml:115:13
 	android:name
 		ADDED from AndroidManifest.xml:113:13
+activity#com.door43.translationstudio.device2device.DeviceToDeviceActivity
+ADDED from AndroidManifest.xml:118:9
+	android:label
+		ADDED from AndroidManifest.xml:120:13
+	android:parentActivityName
+		ADDED from AndroidManifest.xml:121:13
+	android:name
+		ADDED from AndroidManifest.xml:119:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from TranslationStudio.libraries:SlidingLayer:unspecified:22:5
