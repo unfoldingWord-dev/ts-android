@@ -94,52 +94,20 @@ public class ProjectManager {
      */
     public void downloadNewProjects() {
         String catalog = mDataStore.fetchProjectCatalog(true);
-        List<Project> projects = loadProjectsCatalog(catalog);
-        for(Project p:projects) {
-            downloadProjectUpdates(p);
-        }
+        loadProjectsCatalog(catalog, true);
     }
 
     /**
      * Downloads the latest version of the project resources from the server
-     * TODO: this method is in major need of repair.
      * @param p
      */
     public void downloadProjectUpdates(Project p) {
         // download the source language catalog
         String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
-        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog);
+        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog, true);
         for(SourceLanguage l:languages) {
-            // only download changed languages or languages that don't have any source
-            // TODO: this date check will not work because the loadSourceLanguageCatalog overwrites it
-            boolean hasNewVersion = getSourceLanguage(l.getId()).getDateModified() < l.getDateModified();
-            boolean neededUpdate = false;
-            if(hasNewVersion) {
-                String resourceCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), true);
-                List<Resource> resources = loadResourcesCatalog(l, resourceCatalog);
-                for(Resource r:resources) {
-                    if(hasNewVersion || mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), false) == null) {
-                        mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), true);
-                        neededUpdate = true;
-                    }
-
-                    if(hasNewVersion || mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), false) == null) {
-                        mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), true);
-                        neededUpdate = true;
-                    }
-                    if(hasNewVersion || mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), false) == null) {
-                        mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), true);
-                        neededUpdate = true;
-                    }
-                }
-            } else {
-                // TODO: download missing resources as well
-            }
-
-
-
             // reload the source if this is the currently selected project
-            if(neededUpdate && p.getId().equals(mSelectedProjectId) && getSelectedProject().getSelectedSourceLanguage().equals(l)) {
+            if(p.getId().equals(mSelectedProjectId) && getSelectedProject().getSelectedSourceLanguage().equals(l)) {
                 fetchProjectSource(p, false);
             }
         }
@@ -201,6 +169,7 @@ public class ProjectManager {
             mProjects.add(p);
             return true;
         } else {
+            getProject(p.getId()).setDateModified(p.getDateModified());
             return false;
         }
     }
@@ -349,6 +318,11 @@ public class ProjectManager {
 //            mLanguages.add(l);
 //            return true;
         } else {
+            // updated the date modified so we can keep track of updates from the server
+            SourceLanguage cachedLanguage = getSourceLanguage(l.getId());
+            if(l.getDateModified() > cachedLanguage.getDateModified()) {
+                cachedLanguage.setDateModified(l.getDateModified());
+            }
             return false;
         }
     }
@@ -720,14 +694,15 @@ public class ProjectManager {
         }
         // begin loading projects
         String projectsCatalog = mDataStore.fetchProjectCatalog(false);
-        loadProjectsCatalog(projectsCatalog);
+        loadProjectsCatalog(projectsCatalog, false);
     }
 
     /**
      * Loads the projects catalog
      * @param projectsCatalog
+     * @param checkServer indicates the latest languages should be downloaded from the server
      */
-    private List<Project> loadProjectsCatalog(String projectsCatalog) {
+    private List<Project> loadProjectsCatalog(String projectsCatalog, boolean checkServer) {
         List<Project> importedProjects = new ArrayList<Project>();
         // load projects
         JSONArray json;
@@ -787,12 +762,25 @@ public class ProjectManager {
                         addListableProject(rootSudoProject);
                     }
 
+                    // determine if the language catalog should be re-downloaded
+                    boolean downloadLanguages = false;
+                    if(checkServer) {
+                        Project cachedProject = getProject(p.getId());
+                        if(cachedProject == null) {
+                            downloadLanguages = true;
+                        } else if(p.getDateModified() > cachedProject.getDateModified()) {
+                            downloadLanguages = true;
+                        }
+                    }
+
                     // add project to the internal list and continue loading
                     if(addProject(p)) {
                         importedProjects.add(p);
                     }
-                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
-                    loadSourceLanguageCatalog(p, sourceLanguageCatalog);
+
+                    // load source languages
+                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), downloadLanguages);
+                    loadSourceLanguageCatalog(p, sourceLanguageCatalog, downloadLanguages);
                 } else {
 //                    Log.w(TAG, "missing required parameters in the project catalog");
                 }
@@ -808,8 +796,9 @@ public class ProjectManager {
      * Loads the source languages into the given project
      * @param p the project into which the source languages will be
      * @param sourceLanguageCatalog the catalog of source languages
+     * @param checkServer indicates that the latest resources should be downloaded from the server
      */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLanguageCatalog) {
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLanguageCatalog, boolean checkServer) {
         List<SourceLanguage> importedLanguages = new ArrayList<SourceLanguage>();
         if(sourceLanguageCatalog == null) {
             return importedLanguages;
@@ -837,9 +826,10 @@ public class ProjectManager {
 
                     // load the rest of the project info
                     // TRICKY: we need to specify a default title and description to use as a backup if asked for a translation that does not exist.
-                    // These methods will only accept a value once.
-                    p.setDefaultTitle(jsonProjInfo.getString("name"));
-                    p.setDefaultDescription(jsonProjInfo.getString("desc"));
+                    if(i == 0) {
+                        p.setDefaultTitle(jsonProjInfo.getString("name"));
+                        p.setDefaultDescription(jsonProjInfo.getString("desc"));
+                    }
 
                     // load title and description translations.
                     p.setTitle(jsonProjInfo.getString("name"), l);
@@ -865,12 +855,24 @@ public class ProjectManager {
                         Log.d(TAG, "missing project meta translations");
                     }
 
+                    // determine if resources should be re-downloaded
+                    boolean downloadResources = false;
+                    if(checkServer) {
+                        SourceLanguage cachedLanguage = getSourceLanguage(l.getId());
+                        if(cachedLanguage == null) {
+                            downloadResources = true;
+                        } else if(l.getDateModified() > cachedLanguage.getDateModified()) {
+                            downloadResources = true;
+                        }
+                    }
+
                     // load translation versions
-                    String resourcesCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), false);
-                    List<Resource> importedResources = loadResourcesCatalog(l, resourcesCatalog);
+                    String resourcesCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), downloadResources);
+                    List<Resource> importedResources = loadResourcesCatalog(p, l, resourcesCatalog, downloadResources);
 
                     // only resources with the minium checking level will get imported, so it's possible we'll need to skip a language
                     if(importedResources.size() > 0) {
+                        // TODO: we need to put all the new information (resources etc.) from the new language into the existing source language. (not sure if we actually need to do this)
                         // For the most part source and target languages can be used interchangably, however there are some cases were we need some extra information in source languages.
                         addSourceLanguage(l);
                         importedLanguages.add(l);
@@ -893,11 +895,13 @@ public class ProjectManager {
     }
 
     /**
-     * Loads the resources into the given source language
+     * Loads the resources into the given source language.
+     * The soruce terms and notes may be downloaded, but will not be loaded at this time.
      * @param l the source language
      * @param resourcesCatalog the json resources
+     * @param checkServer indicates the latest source terms and notes should be downloaded.
      */
-    private List<Resource> loadResourcesCatalog(SourceLanguage l, String resourcesCatalog) {
+    private List<Resource> loadResourcesCatalog(Project p, SourceLanguage l, String resourcesCatalog, boolean checkServer) {
         List<Resource> importedResources = new ArrayList<Resource>();
         if(resourcesCatalog == null) {
             return importedResources;
@@ -922,6 +926,38 @@ public class ProjectManager {
                         if (Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
                             // load resource
                             Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonResource.getInt("date_modified"));
+
+                            // determine if we need to download the source, notes, and terms
+                            boolean downloadResourceItems = false;
+                            if(checkServer) {
+                                // TRICKY: in order to correctly identify cached resources we must use the cached language
+                                SourceLanguage cachedLanguage = getSourceLanguage(l.getId());
+                                Resource cachedResource = cachedLanguage.getResource(r.getId());
+                                if(cachedResource == null) {
+                                    downloadResourceItems = true;
+                                } else if(r.getDateModified() > cachedResource.getDateModified()) {
+                                    downloadResourceItems = true;
+                                }
+                            }
+                            if(downloadResourceItems) {
+                                // we will attempt to use the provided urls before using the default download path
+                                if(jsonResource.has("notes")) {
+                                    mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), jsonResource.getString("notes"));
+                                } else {
+                                    mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), true);
+                                }
+                                if(jsonResource.has("terms")) {
+                                    mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), jsonResource.getString("terms"));
+                                } else {
+                                    mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), true);
+                                }
+                                if(jsonResource.has("source")) {
+                                    mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), jsonResource.getString("source"));
+                                } else {
+                                    mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), true);
+                                }
+                            }
+
                             l.addResource(r);
                             importedResources.add(r);
                         }
@@ -1071,7 +1107,7 @@ public class ProjectManager {
         // load source
         JSONArray jsonChapters;
         if(jsonString == null) {
-//            Log.w(TAG, "The source was not found");
+            Logger.w(this.getClass().getName(), "The project source was not found");
             return;
         }
         try {

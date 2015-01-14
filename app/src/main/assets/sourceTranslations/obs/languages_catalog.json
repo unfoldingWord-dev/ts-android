@@ -1,15 +1,16 @@
 [
   {
-    "project": {
-      "name": "Open Bible Stories",
-      "desc": "50 key stories of the Bible"
-    },
     "language": {
-      "slug": "en",
-      "name": "English",
-      "direction": "ltr",
-      "date_modified": "20141207"
-    },
+      "date_modified": "20141207", 
+      "direction": "ltr", 
+      "name": "English", 
+      "slug": "en"
+    }, 
+    "project": {
+      "desc": "an unrestricted visual mini-Bible in any language", 
+      "meta": [], 
+      "name": "Open Bible Stories"
+    }, 
     "res_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/en/resources.json"
   }
 ]

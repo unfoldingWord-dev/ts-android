@@ -127,9 +127,7 @@ public class Project implements Model {
      * @param title
      */
     public void setDefaultTitle(String title) {
-        if(mDefaultTitle == null) {
-            mDefaultTitle = title;
-        }
+        mDefaultTitle = title;
     }
 
     /**
@@ -137,9 +135,7 @@ public class Project implements Model {
      * @param description
      */
     public void setDefaultDescription(String description) {
-        if(mDefaultDescription == null) {
-            mDefaultDescription = description;
-        }
+        mDefaultDescription = description;
     }
 
     /**
@@ -148,7 +144,7 @@ public class Project implements Model {
      * @param l the language the title is in
      */
     public void setTitle(String title, SourceLanguage l) {
-        mTitleTranslations.add(l.getId(), new Translation(l, title));
+        mTitleTranslations.replace(l.getId(), new Translation(l, title));
     }
 
     /**
@@ -157,7 +153,7 @@ public class Project implements Model {
      * @param l the language the description is in
      */
     public void setDescription(String description, SourceLanguage l) {
-        mDescriptionTranslations.add(l.getId(), new Translation(l, description));
+        mDescriptionTranslations.replace(l.getId(), new Translation(l, description));
     }
 
     /**
@@ -1176,6 +1172,22 @@ public class Project implements Model {
             }
         }
         return languages.toArray(new Language[languages.size()]);
+    }
+
+    /**
+     * Returns the date the project was last modified
+     * @return
+     */
+    public int getDateModified() {
+        return mDateModified;
+    }
+
+    /**
+     * Set the date the project was last modified
+     * @param dateModified
+     */
+    public void setDateModified(int dateModified) {
+        mDateModified = dateModified;
     }
 
     public interface OnCommitComplete {

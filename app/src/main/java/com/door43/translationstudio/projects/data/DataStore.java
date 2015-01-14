@@ -33,7 +33,7 @@ public class DataStore {
     private void downloadToAssets(String path, String urlString) {
         try {
             URL url = new URL(urlString);
-            File file = new File(mContext.getCacheDir(), "asset/" + path);
+            File file = new File(mContext.getCacheDir(), "assets/" + path);
             ServerUtilities.downloadFile(url, file);
         } catch (MalformedURLException e) {
             Logger.e(this.getClass().getName(), "malformed url", e);

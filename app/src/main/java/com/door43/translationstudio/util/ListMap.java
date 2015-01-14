@@ -54,4 +54,25 @@ public class ListMap<E> {
             return false;
         }
     }
+
+    /**
+     * Adds or replaces an object ot the list by key value.
+     * @param key the key of the object
+     * @param object the object
+     * @return true if the object was added
+     */
+    public boolean replace(String key, E object) {
+        if(key != null && !key.isEmpty()) {
+            // remove old value
+            if(mObjectMap.containsKey(key)) {
+                mObjects.remove(mObjectMap.get(key));
+                mObjectMap.remove(key);
+            }
+            mObjectMap.put(key, object);
+            mObjects.add(object);
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

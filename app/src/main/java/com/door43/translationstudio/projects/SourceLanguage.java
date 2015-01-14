@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class SourceLanguage extends Language {
 //    private String mVariant;
-    private final int mDateModified;
+    private int mDateModified;
     private Map<String, Resource> mResourceMap = new HashMap<String, Resource>();
     private List<Resource> mResources = new ArrayList<Resource>();
     private String mSelectedResourceId = null;
@@ -33,8 +33,13 @@ public class SourceLanguage extends Language {
         if(!mResourceMap.containsKey(r.getId())) {
             mResourceMap.put(r.getId(), r);
             mResources.add(r);
+        } else {
+            // TODO: update the date modified on the resource
+            getResource(r.getId()).setDateModified(r.getDateModified());
         }
     }
+
+
 
     /**
      * Returns an array of all the resources in this language
@@ -153,5 +158,13 @@ public class SourceLanguage extends Language {
      */
     public static SourceLanguage fromLanguage(Language l) {
         return new SourceLanguage(l.getId(), l.getName(), l.getDirection(), 0);
+    }
+
+    /**
+     * Sets the date the language was last modified.
+     * @param dateModified
+     */
+    public void setDateModified(int dateModified) {
+        mDateModified = dateModified;
     }
 }
