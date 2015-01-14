@@ -17,6 +17,7 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 
 
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TTFAnalyzer;
 
@@ -146,7 +147,7 @@ public class SettingsActivity extends PreferenceActivity {
         try {
             fileList = am.list("fonts");
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to load font assets", e);
         }
         if (fileList != null)
         {
@@ -311,7 +312,7 @@ public class SettingsActivity extends PreferenceActivity {
             try {
                  fileList = am.list("fonts");
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to load font assets", e);
             }
             if (fileList != null)
             {

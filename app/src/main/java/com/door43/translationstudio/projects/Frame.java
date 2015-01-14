@@ -2,6 +2,7 @@ package com.door43.translationstudio.projects;
 
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
@@ -121,7 +122,7 @@ public class Frame implements Model {
                 mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), text);
                 mTranslation.isSaved(true);
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to load the translation from disk", e);
             }
         }
         return mTranslation;
@@ -229,7 +230,7 @@ public class Frame implements Model {
                         mChapter.cleanDir(mTranslation.getLanguage());
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "failed to write the translation to disk", e);
                 }
             }
         }

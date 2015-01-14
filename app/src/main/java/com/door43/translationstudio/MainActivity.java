@@ -20,6 +20,7 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.ThreadableUI;

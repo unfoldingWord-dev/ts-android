@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
@@ -44,8 +45,7 @@ public class UpdateManager {
                 try {
                     pInfo = MainContext.getContext().getPackageManager().getPackageInfo(MainContext.getContext().getPackageName(), 0);
                 } catch (PackageManager.NameNotFoundException e) {
-                    // failed identify package dir
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "failed to identify package directory", e);
                     return;
                 }
 //                String databasePath = pInfo.applicationInfo.dataDir;
@@ -58,7 +58,7 @@ public class UpdateManager {
                         }
                     });
                 } catch(Exception e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "migration failed", e);
                     UpdateManager.this.onProgress(100, "Migration may not have been successful.");
                 }
 

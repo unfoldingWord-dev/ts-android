@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.ServerUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
@@ -162,7 +163,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity {
                             String response = ServerUtilities.post("https://api.github.com/repos/Door43/translationStudio2/issues", headers, json.toString());
                             Log.d("Response", response);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Logger.w(this.getClass().getName(), "failed to upload traces", e);
                         }
                     }
                     // archive stack trace

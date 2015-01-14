@@ -65,7 +65,6 @@ public class Repo {
         try {
             init.call();
         } catch (GitAPIException e) {
-            e.printStackTrace();
             MainContext.getContext().showException(e, R.string.error_could_not_create_repository);
         }
     }

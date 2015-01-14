@@ -57,8 +57,6 @@ public class ProjectImportApprovalDialog extends DialogFragment {
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // TODO: this is throwing an exception.
-
                     MainContext.getEventBus().post(new ProjectImportApprovalEvent(adapter.getImportStatuses()));
                     close();
                 }

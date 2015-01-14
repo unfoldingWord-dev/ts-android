@@ -7,6 +7,7 @@ import android.util.Xml;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
 import org.w3c.dom.Document;
@@ -217,7 +218,7 @@ public class NoteSpan extends FancySpan {
         } catch (TransformerConfigurationException e) {
             return spanText;
         } catch (TransformerException e) {
-            e.printStackTrace();
+            Logger.e(NoteSpan.class.getName(), "failed to transform the the span text", e);
         }
 
         String tag = output.toString();

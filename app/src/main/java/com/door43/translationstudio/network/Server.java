@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import com.door43.translationstudio.util.Logger;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -126,13 +128,13 @@ public class Server extends Service {
                     ClientThread clientThread = new ClientThread(socket);
                     new Thread(clientThread).start();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "failed to accept socket", e);
                 }
             }
             try {
                 serverSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to shutdown the server socket", e);
             }
         }
     }

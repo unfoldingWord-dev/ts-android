@@ -1,5 +1,7 @@
 package com.door43.translationstudio.network;
 
+import com.door43.translationstudio.util.Logger;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -50,7 +52,7 @@ public class Connection {
             mWriter.newLine();
             mWriter.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to write the message to the socket", e);
             close();
         }
     }
@@ -64,7 +66,7 @@ public class Connection {
         try {
             return mReader.readLine();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to read the message from the socket", e);
             close();
             return null;
         }
@@ -93,17 +95,17 @@ public class Connection {
         try {
             mSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "socket close exception", e);
         }
         try {
             mReader.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "reader close exception", e);
         }
         try {
             mWriter.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "writer close exception", e);
         }
         if(mListener != null) {
             mListener.onClose();

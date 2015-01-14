@@ -26,6 +26,7 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.CustomExceptionHandler;
 import com.door43.translationstudio.util.DummyDialogListener;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
@@ -353,12 +354,12 @@ public class MainApplication extends Application {
 
     public void showException(Throwable t) {
         showToastMessage(t.getMessage());
-        t.printStackTrace();
+        Logger.e(this.getClass().getName(), "non-critical exception", t);
     }
 
     public void showException(Throwable t, int res) {
         showToastMessage(res);
-        t.printStackTrace();
+        Logger.e(this.getClass().getName(), "non-critical exception", t);
     }
 
     /**

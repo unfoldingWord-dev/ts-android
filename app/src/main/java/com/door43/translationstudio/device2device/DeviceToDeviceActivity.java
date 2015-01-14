@@ -30,6 +30,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.SudoProject;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
@@ -85,7 +86,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: it would be nice to place this in a log that could be submitted to github later on.
                             app().showException(e);
                             finish();
                         }
@@ -124,7 +124,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
-                            // TODO: it would be nice to place this in a log that could be submitted to github later on.
                             app().showException(e);
                             finish();
                         }
@@ -323,7 +322,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         }
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "failed to parse project list", e);
                 }
 
                 // locate available projects
@@ -393,7 +392,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             json.put("target_languages", languagesJson);
                             projectsJson.put(json);
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Logger.e(this.getClass().getName(), "malformed or corrupt project list", e);
                         }
                     }
                 }
@@ -404,7 +403,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 try {
                     json = new JSONObject(data[1]);
                 } catch (final JSONException e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "failed to parse project archive response", e);
                     server.writeTo(client, MSG_INVALID_REQUEST);
                     return;
                 }
@@ -481,10 +480,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             server.writeTo(client, MSG_INVALID_REQUEST);
                         }
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        Logger.e(this.getClass().getName(), "malformed or corrupt project archive response", e);
                         server.writeTo(client, MSG_INVALID_REQUEST);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Logger.e(this.getClass().getName(), "unable to read project archive response", e);
                         server.writeTo(client, MSG_SERVER_ERROR);
                     }
                 } else {
@@ -514,7 +513,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             try {
                 infoJson = new JSONObject(data[1]);
             } catch (JSONException e) {
-                e.printStackTrace();
                 app().showException(e);
                 return;
             }
@@ -528,7 +526,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     size = infoJson.getLong("size");
                     name = infoJson.getString("name");
                 } catch (JSONException e) {
-                    e.printStackTrace();
                     app().showException(e);
                     return;
                 }
@@ -732,7 +729,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 @Override
                 public void run() {
                     hideProgress();
-                    // TODO: we don't have the meta projects configured quite right. We need to finish that to show meta information in the list.
                     if(availableProjects.size() > 0) {
                         showProjectSelectionDialog(server, availableProjects.toArray(new Model[availableProjects.size()]));
                     } else {

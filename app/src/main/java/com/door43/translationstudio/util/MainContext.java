@@ -4,6 +4,10 @@ import com.door43.translationstudio.MainApplication;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+
 /**
  * This is sort of a hack to provide the main application context to all classes
  * without having to manually pass the context to them.

@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
@@ -125,7 +126,7 @@ public class Chapter implements Model {
                 mTitleTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
                 mTitleTranslation.isSaved(true);
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to load translation from disk", e);
             }
         }
         return mTitleTranslation;
@@ -170,7 +171,7 @@ public class Chapter implements Model {
                 mReferenceTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
                 mReferenceTranslation.isSaved(true);
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to load the translation from disk", e);
             }
         }
         return mReferenceTranslation;
@@ -305,7 +306,6 @@ public class Chapter implements Model {
      * @return
      */
     public String getImagePath() {
-        // TODO: the universal image loader does not support multiple callbacks on a single image so the first frame doesn't load it's image on startup.
         return "sourceTranslations/"+getProject().getId()+"/"+getProject().getSelectedSourceLanguage().getId()+"/"+getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getId()+"-00.jpg";
     }
 
@@ -350,7 +350,7 @@ public class Chapter implements Model {
                         ps.print(mReferenceTranslation.getText());
                         ps.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Logger.e(this.getClass().getName(), "failed to write the translation to disk", e);
                     }
                 }
             }
@@ -374,7 +374,7 @@ public class Chapter implements Model {
                         ps.print(mTitleTranslation.getText());
                         ps.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Logger.e(this.getClass().getName(), "failed to write the translation to disk", e);
                     }
                 }
             }

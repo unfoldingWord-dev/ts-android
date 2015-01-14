@@ -5,6 +5,8 @@ import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import com.door43.translationstudio.util.Logger;
+
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -138,7 +140,7 @@ public abstract class Service {
 
     /**
      * Opens a new temporary socket for transfering a file and lets the client know it should connect to it.
-     * @deprecated I don't think we should attempt to throw too much into the client and server classes.
+     * TODO: I don't think we should attempt to throw too much into the client and server classes.
      * They work well at establishing initial contact. We should place this elsewhere.
      */
     public ServerSocket createSenderSocket(final OnSocketEventListener listener) {
@@ -147,7 +149,7 @@ public abstract class Service {
             serverSocket = new ServerSocket(0);
             serverSocket.setSoTimeout(CONNECTION_TIMEOUT);
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to create a sender socket", e);
             return null;
         }
         // begin listening for the socket connection
@@ -159,13 +161,13 @@ public abstract class Service {
                     socket = serverSocket.accept();
                     listener.onOpen(new Connection(socket));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "failed to accept the receiver socket", e);
                     return;
                 }
                 try {
                     serverSocket.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "failed to close the sender socket", e);
                 }
             }
         });

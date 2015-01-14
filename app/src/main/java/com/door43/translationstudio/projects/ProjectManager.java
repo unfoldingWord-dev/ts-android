@@ -7,6 +7,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.Zip;
 
@@ -538,7 +539,7 @@ public class ProjectManager {
             try {
                 Zip.unzip(archive, extractedDirectory);
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to extract the DokuWiki translation", e);
                 FileUtilities.deleteRecursive(extractedDirectory);
                 return false;
             }
@@ -664,7 +665,7 @@ public class ProjectManager {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to import the DokuWiki file", e);
                 return false;
             }
             return true;
@@ -926,10 +927,10 @@ public class ProjectManager {
                         }
                     }
                 } else {
-                    // missing required parameters
+                    Logger.w(this.getClass().getName(), "missing required parameters in the resoruces catalog for the language " + l.getId());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to load the resources catalog", e);
                 continue;
             }
         }
@@ -948,7 +949,7 @@ public class ProjectManager {
         // load source
         JSONArray jsonNotes;
         if(jsonString == null) {
-//            Log.w(TAG, "The source was not found");
+            Logger.w(this.getClass().getName(), "The notes were not found for project "+p.getId());
             return;
         }
         try {

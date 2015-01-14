@@ -15,8 +15,6 @@ public class TermSpan extends FancySpan{
      * @return
      */
     public CharSequence toCharSequence() {
-        // TODO: we have to use a plain span (without any drawing) to preserve word wrapping.
-        // perhaps we could provide an option in the user prefs to use bubble spans instead.
         return generateSpan();
     }
 }

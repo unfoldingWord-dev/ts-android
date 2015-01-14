@@ -74,7 +74,7 @@ public class ServerUtilities {
             HttpResponse response = httpClient.execute(httpPost);
             return response.toString();
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(ServerUtilities.class.getName(), "failed to send post request", e);
             return "";
         }
     }

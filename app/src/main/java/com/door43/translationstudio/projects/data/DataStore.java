@@ -2,19 +2,14 @@ package com.door43.translationstudio.projects.data;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.util.FileUtilities;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.ServerUtilities;
 
-import org.apache.http.util.ByteArrayBuffer;
-
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 /**
  * The data store handles all of the text and media resources within the app.
@@ -60,7 +55,7 @@ public class DataStore {
             try {
                 url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+projectSlug+"-catalog.json");
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "malformed url", e);
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
@@ -108,7 +103,7 @@ public class DataStore {
             try {
                 url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/kt-"+languageId+".json");
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "malformed url", e);
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
@@ -125,7 +120,7 @@ public class DataStore {
             try {
                 url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/tN-"+languageId+".json");
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "malformed url", e);
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
@@ -148,7 +143,7 @@ public class DataStore {
             try {
                 url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/"+projectId+"-"+languageId+".json");
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "malformed url", e);
                 return null;
             }
             File file = new File(mContext.getCacheDir(), "assets/" + path);
@@ -165,26 +160,34 @@ public class DataStore {
     private String loadJSONAsset(String path) {
         File cacheAsset = new File(mContext.getCacheDir(), "assets/" + path);
         if(cacheAsset.exists()) {
-            // attempt to load from the cached assets first
+            // attempt to load from the cached assets first. These will be the most up to date
             try {
                 return FileUtilities.getStringFromFile(cacheAsset);
             } catch (IOException e) {
-                e.printStackTrace();
-                return null;
+                Logger.e(this.getClass().getName(), "failed to load cached assets", e);
+                return loadPackagedJSONAsset(path);
             }
         } else {
-            // load from the packaged assets as a backup
-            try {
-                InputStream is = mContext.getAssets().open(path);
-                int size = is.available();
-                byte[] buffer = new byte[size];
-                is.read(buffer);
-                is.close();
-                return new String(buffer, "UTF-8");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                return null;
-            }
+            return loadPackagedJSONAsset(path);
+        }
+    }
+
+    /**
+     * Loads json from the packaged assets (those distributed with the app)
+     * @param path
+     * @return
+     */
+    private String loadPackagedJSONAsset(String path) {
+        try {
+            InputStream is = mContext.getAssets().open(path);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            return new String(buffer, "UTF-8");
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to load the packaged assets", e);
+            return null;
         }
     }
 }

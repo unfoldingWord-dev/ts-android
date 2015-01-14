@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
 /**
@@ -40,7 +41,7 @@ public class InfoDialog extends DialogFragment {
             pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
             versionText.setText("version "+pInfo.versionName+" build "+pInfo.versionCode);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to get package name", e);
         }
         // display device id
         TextView deviceId = (TextView)v.findViewById(R.id.device_udid);

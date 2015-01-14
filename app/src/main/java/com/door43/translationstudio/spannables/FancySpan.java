@@ -116,7 +116,6 @@ public abstract class FancySpan {
      */
     protected SpannableStringBuilder generateBubbleSpan(int backgroundColorResourceId, int textColorResourceId) {
         SpannableStringBuilder spannable = generateSpan(mSpanText);
-        // TODO: there has to be a better way than using the global context class.
         spannable.setSpan(new RoundedBackgroundSpan(MainContext.getContext().getResources().getColor(backgroundColorResourceId), MainContext.getContext().getResources().getColor(textColorResourceId)), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return spannable;
     }

@@ -109,10 +109,10 @@ public class StorageUtils {
                 }
             }
 
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (FileNotFoundException e) {
+            Logger.e(StorageUtils.class.getName(), "failed to read the mount points", e);
+        } catch (IOException e) {
+            Logger.e(StorageUtils.class.getName(), "failed to read the mount points", e);
         } finally {
             if (buf_reader != null) {
                 try {

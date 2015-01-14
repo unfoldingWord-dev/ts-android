@@ -19,8 +19,7 @@ public class Security {
         try {
             encrypter = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("Exception while encrypting to md5");
-            e.printStackTrace();
+            Logger.e(Security.class.getName(), "failed to generate md5 sum", e);
         }
         encrypter.update(s.getBytes(), 0, s.length());
         String md5 = new BigInteger(1, encrypter.digest()).toString(16);

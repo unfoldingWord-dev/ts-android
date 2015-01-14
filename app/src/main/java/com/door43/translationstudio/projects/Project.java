@@ -13,6 +13,7 @@ import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.ListMap;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.Zip;
@@ -545,8 +546,6 @@ public class Project implements Model {
      * @return
      */
     public boolean isTranslatingGlobal() {
-        // TODO: we need to verify this actually works.
-        // TODO: we want to find all directories for this project regardless of language. Only chapters and frames are specific to language.
         File dir = new File(Project.getProjectsPath());
         String[] files = dir.list(new FilenameFilter() {
             @Override
@@ -796,10 +795,10 @@ public class Project implements Model {
             manifestJson.put("version", pInfo.versionCode);
             manifestJson.put("timestamp", System.currentTimeMillis());
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to add to json object", e);
             return archivePath;
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to get the package name", e);
             return archivePath;
         }
 
@@ -841,7 +840,7 @@ public class Project implements Model {
                 translationJson.put("git_commit", gitCommit);
                 translationJson.put("path", projectComplexName);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to add to json object", e);
                 return archivePath;
             }
             projectsJson.put(translationJson);
@@ -856,7 +855,7 @@ public class Project implements Model {
             manifestJson.put("projects", projectsJson);
             manifestJson.put("signature", signature);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to add to json object", e);
             return archivePath;
         }
         FileUtils.write(manifestFile, manifestJson.toString());
@@ -1075,9 +1074,9 @@ public class Project implements Model {
                 return null;
             }
         } catch (GitAPIException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "failed to fetch the git commit", e);
         } catch (StopTaskException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "the task was stopped", e);
         }
         return null;
     }
@@ -1198,7 +1197,6 @@ public class Project implements Model {
 
     /**
      * Performs the actual import of the project
-     * TODO: we already verified the project so just do it.
      * @param request
      * @return
      */
@@ -1224,7 +1222,7 @@ public class Project implements Model {
                             }
                             FileUtils.moveDirectory(f, destDir);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Logger.e(Project.class.getName(), "failed to import the chapter directory ", e);
                             return false;
                             // TODO: record list of files that cannot be coppied and display to the user
                         }
@@ -1234,7 +1232,7 @@ public class Project implements Model {
                     // TODO: perform a git diff to see if there are any changes
                     return true;
                 } else {
-                    // TODO: the directory does not exist
+                    Logger.w(Project.class.getName(), "the project import directory does not exist");
                     return false;
                 }
             } else {
@@ -1243,20 +1241,18 @@ public class Project implements Model {
                     FileUtils.moveDirectory(request.sourceDir, repoDir);
                     return true;
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger.e(Project.class.getName(), "failed to import the project directory", e);
                     return false;
                 }
             }
         } else {
-            // TODO: create a new project and add it to the project manager.
+            // TODO: create a new project and add it to the project manager. This will require the existance of the project source in the archive.
         }
         return false;
     }
 
     /**
      * Performs some checks on a project to make sure it can be imported.
-     * TODO: this should return information about the import. success, fails etc.
-     * TODO: we need a method to check the import before actually running the import. That way we can ask the user about overwriting stuff.
      * @param projectDir the project directory that will be imported
      * @return
      */
@@ -1270,7 +1266,6 @@ public class Project implements Model {
             if(repoDir.exists()) {
                 // the project already exists
                 request.addWarning("Project translation already exists");
-                // TODO: eventually it would be nice to see which files are in conflict and let the user choose what to import.
                 return request;
             } else {
                 // new project translation
@@ -1304,7 +1299,7 @@ public class Project implements Model {
                 Zip.unzip(archive, extractedDir);
             } catch (IOException e) {
                 FileUtilities.deleteRecursive(extractedDir);
-                e.printStackTrace();
+                Logger.e(Project.class.getName(), "failed to extract the project archive", e);
                 return importRequests;
             }
 
@@ -1326,9 +1321,9 @@ public class Project implements Model {
                         }
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.e(Project.class.getName(), "failed to parse the manifest", e);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Logger.e(Project.class.getName(), "failed to read the manifest file", e);
                 }
             }
         }
@@ -1367,7 +1362,7 @@ public class Project implements Model {
                 }
             } catch (IOException e) {
                 FileUtilities.deleteRecursive(extractedDirectory);
-                e.printStackTrace();
+                Logger.e(Project.class.getName(), "failed to extract the legacy project archive", e);
                 return false;
             }
 
