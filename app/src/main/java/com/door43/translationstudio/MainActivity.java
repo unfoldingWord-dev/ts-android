@@ -20,7 +20,6 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
-import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.ThreadableUI;
@@ -70,6 +69,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -99,7 +99,6 @@ public class MainActivity extends TranslatorBaseActivity {
     private GestureDetector mSourceGestureDetector;
     private GestureDetector mTranslationGestureDetector;
     private int mActionBarHeight;
-    private int mStatusBarHeight;
     private boolean mActivityIsInitializing;
     private ThreadableUI mHighlightTranslationThread;
     private ThreadableUI mHighlightSourceThread;
@@ -249,9 +248,13 @@ public class MainActivity extends TranslatorBaseActivity {
         resizeRootView(r);
     }
 
+    /**
+     * Redraws the ui.
+     * @param r
+     */
     private void resizeRootView(Rect r) {
         ViewGroup.LayoutParams params = mRootView.getLayoutParams();
-        int newHeight = r.bottom - mActionBarHeight - mStatusBarHeight;
+        int newHeight = r.bottom - mActionBarHeight - getStatusBarHeight();
         if(newHeight != params.height) {
             params.height = newHeight;
             mRootView.setLayoutParams(params);
@@ -320,13 +323,6 @@ public class MainActivity extends TranslatorBaseActivity {
         if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
         {
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
-        }
-
-        // get the statusbar height
-        mStatusBarHeight = 0;
-        final int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            mStatusBarHeight = getResources().getDimensionPixelSize(resourceId);
         }
 
         // watch for the soft keyboard open and close
@@ -647,6 +643,40 @@ public class MainActivity extends TranslatorBaseActivity {
                 mTranslationEditText.setEnabled(false);
             }
         });
+    }
+
+    public int getStatusBarHeight() {
+        Rect r = new Rect();
+        Window w = getWindow();
+        w.getDecorView().getWindowVisibleDisplayFrame(r);
+        return r.top;
+    }
+
+    /**
+     * Checks if the status bar is visible
+     * @return
+     */
+    private boolean isStatusBarOnTop() {
+        Rect rect = new Rect();
+
+        getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
+
+        return rect.top  > 0;
+//
+//        Rect outerRect = new Rect();
+//        Rect usableRect = new Rect();
+//        Window window = this.getWindow();
+//        window.getDecorView().getGlobalVisibleRect(outerRect);
+//        window.getDecorView().getWindowVisibleDisplayFrame(usableRect);
+//        int statusBarHeight = usableRect.top - outerRect.top;
+//
+//        // Sometimes, status bar is at bottom...
+//        int bottomGap = outerRect.bottom - usableRect.bottom;
+//        if(bottomGap > statusBarHeight) {
+//            statusBarHeight = bottomGap;
+//        }
+//
+//        return statusBarHeight;
     }
 
     /**
