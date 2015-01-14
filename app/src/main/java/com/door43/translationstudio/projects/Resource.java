@@ -9,6 +9,11 @@ public class Resource {
     private final String mName;
     private final int mDateModified;
 
+    // resources may have custom urls from which source, terms, and notes are retrieved
+    private String mSourceUrl;
+    private String mTermsUrl;
+    private String mNotesUrl;
+
     public Resource(String slug, String name, int dateModified) {
         mSlug = slug;
         mName = name;
@@ -37,6 +42,42 @@ public class Resource {
      */
     public int getDateModified() {
         return mDateModified;
+    }
+
+    /**
+     * Returns the url to the source or null
+     * @return
+     */
+    public String getSourceUrl() {
+        if(mSourceUrl != null && !mSourceUrl.isEmpty()) {
+            return mSourceUrl;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the url to the terms or null
+     * @return
+     */
+    public String getTermsUrl() {
+        if(mTermsUrl != null && !mTermsUrl.isEmpty()) {
+            return mTermsUrl;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the url to the terms or null
+     * @return
+     */
+    public String getNotesUrl() {
+        if(mNotesUrl != null && !mNotesUrl.isEmpty()) {
+            return mNotesUrl;
+        } else {
+            return null;
+        }
     }
 
     @Override

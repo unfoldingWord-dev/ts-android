@@ -131,6 +131,7 @@ public class Logger
         {
             // Gets the log file from the root of the primary storage. If it does
             // not exist, the file is created.
+            // TODO: this path should be some place global
             File logFile = new File(MainContext.getContext().getExternalCacheDir(), "log.txt");
             if (!logFile.exists()) {
                 logFile.createNewFile();
@@ -142,7 +143,7 @@ public class Logger
 
             // truncate the log if it gets too big. we cut it in half so we don't end up having to do this all the time
             // TODO: this should be a user setting.
-            long maxLogSize = 1024*1024*2; // 2MB
+            long maxLogSize = 1024*200; // 200KB
             if(logFile.length() > maxLogSize) {
                 FileChannel outChan = new FileOutputStream(logFile, true).getChannel();
                 outChan.truncate(maxLogSize/2);

@@ -118,17 +118,17 @@ public class ProjectManager {
                 String resourceCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), true);
                 List<Resource> resources = loadResourcesCatalog(l, resourceCatalog);
                 for(Resource r:resources) {
-                    if(hasNewVersion || mDataStore.fetchSourceText(p.getId(), l.getId(), r.getId(),  false) == null) {
-                        mDataStore.fetchSourceText(p.getId(), l.getId(), r.getId(), true);
+                    if(hasNewVersion || mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), false) == null) {
+                        mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), true);
                         neededUpdate = true;
                     }
 
-                    if(hasNewVersion || mDataStore.fetchTermsText(p.getId(), l.getId(), r.getId(), false) == null) {
-                        mDataStore.fetchTermsText(p.getId(), l.getId(), r.getId(), true);
+                    if(hasNewVersion || mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), false) == null) {
+                        mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), true);
                         neededUpdate = true;
                     }
-                    if(hasNewVersion || mDataStore.fetchTranslationNotes(p.getId(), l.getId(), r.getId(), false) == null) {
-                        mDataStore.fetchTranslationNotes(p.getId(), l.getId(), r.getId(), true);
+                    if(hasNewVersion || mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), false) == null) {
+                        mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), true);
                         neededUpdate = true;
                     }
                 }
@@ -167,20 +167,20 @@ public class ProjectManager {
         }
         if(p == null) return;
 
-        String source = mDataStore.fetchSourceText(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
+        String source = mDataStore.fetchSource(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
         }
         loadProject(source, p);
-        String terms = mDataStore.fetchTermsText(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
+        String terms = mDataStore.fetchTerms(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
         }
         loadTerms(terms, p);
-        String notes = mDataStore.fetchTranslationNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
+        String notes = mDataStore.fetchNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
@@ -949,7 +949,7 @@ public class ProjectManager {
         // load source
         JSONArray jsonNotes;
         if(jsonString == null) {
-            Logger.w(this.getClass().getName(), "The notes were not found for project "+p.getId());
+            Logger.w(this.getClass().getName(), "The notes were not found for project " + p.getId());
             return;
         }
         try {

@@ -4,5 +4,6 @@
     <string name="keys_dir" translatable="false">ssh</string>
     <string name="exported_projects_dir" translatable="false">exported</string>
     <string name="imported_projects_dir" translatable="false">imported</string>
+    <!-- TODO: this is not something that should be synced. We should place this in it's own file and ignore it from git. -->
     <string name="github_oauth2" translatable="false">9d19fbf358d4b0ca32c8b316a98d007571b8e2bd</string>
 </resources>

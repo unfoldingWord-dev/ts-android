@@ -19,70 +19,78 @@ import java.net.URL;
 public class DataStore {
     private static MainApplication mContext;
     private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";
+    private static final int API_VERSION = 2;
 
     public DataStore(MainApplication context) {
         mContext = context;
     }
 
     /**
-     * Returns a json array of valid source projects
+     * Downloads a file and places it in the cached assets directory
+     * @param path the relative path within the cached assets directory
+     * @param urlString the url from which the file will be downloaded
+     */
+    private void downloadToAssets(String path, String urlString) {
+        try {
+            URL url = new URL(urlString);
+            File file = new File(mContext.getCacheDir(), "asset/" + path);
+            ServerUtilities.downloadFile(url, file);
+        } catch (MalformedURLException e) {
+            Logger.e(this.getClass().getName(), "malformed url", e);
+        }
+    }
+
+    /**
+     * Returns the projects
+     * This should not be ran on the main thread when checking the server
+     * @param checkServer indicates an updated list of projects should be downloaded from the server
      * @return
      */
     public String fetchProjectCatalog(boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + "projects_catalog.json";
+
         if(checkServer) {
-            // TODO: check for updates on the server
-            // https://api.unfoldingword.org/ts/txt/1/ts-catalog.json
-            // TODO: store catalog
-            return "";
-        } else {
-            // TODO: check for stored catalogs
-            return loadJSONAsset(SOURCE_TRANSLATIONS_DIR + "projects_catalog.json");
+            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/catalog.json");
         }
+        return loadJSONAsset(path);
     }
 
     /**
-     * Returns a json array of source languages for a specific project
+     * Returns the source languages for a specific project
      * This should not be ran on the main thread when checking the server
-     * @param projectSlug the slug of the project for which languages will be returned
+     * @param projectId the slug of the project for which languages will be returned
+     * @param checkServer indicates an updated list of projects should be downloaded from the server
      * @return
      */
-    public String fetchSourceLanguageCatalog(String projectSlug, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/languages_catalog.json";
+    public String fetchSourceLanguageCatalog(String projectId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/languages_catalog.json";
 
         if(checkServer) {
-            // https://api.unfoldingword.org/obs/txt/1/obs-catalog.json
-            URL url;
-            try {
-                url = new URL("https://api.unfoldingword.org/"+projectSlug+"/txt/1/"+projectSlug+"-catalog.json");
-            } catch (MalformedURLException e) {
-                Logger.e(this.getClass().getName(), "malformed url", e);
-                return null;
-            }
-            File file = new File(mContext.getCacheDir(), "assets/" + path);
-            ServerUtilities.downloadFile(url, file);
-            // TODO: I'm not sure that we are actually reading from this file because we never change the path.
+            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/languages.json");
         }
         return loadJSONAsset(path);
     }
 
 
     /**
-     * Returns a json array of the resources for a specific language
-     * @param projectSlug
-     * @param languageSlug
-     * @param checkServer
+     * Returns the resources for a specific language
+     * This should not be ran on the main thread when checking the server
+     * @param projectId the id of the project that contains the language
+     * @param languageId the id of the language for which resources will be returned
+     * @param checkServer indicates an updated list of projects should be downloaded from the server
      * @return
      */
-    public String fetchResourceCatalog(String projectSlug, String languageSlug, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectSlug + "/" + languageSlug + "/resources_catalog.json";
+    public String fetchResourceCatalog(String projectId, String languageId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/resources_catalog.json";
+
         if(checkServer) {
-            // TODO: check the server
+            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/resources.json");
         }
         return loadJSONAsset(path);
     }
 
     /**
-     * Returns a json array of target languages
+     * Returns the target languages
      */
     public String fetchTargetLanguageCatalog() {
         // TODO: check for updates on the server
@@ -92,63 +100,107 @@ public class DataStore {
     }
 
     /**
-     * Returns a json array of key terms
-     * Terms are case sensitive
+     * Returns the key terms.
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param checkServer indicates an updated list of terms should be downloaded from the server
+     * @return
      */
-    public String fetchTermsText(String projectId, String languageId, String resourceId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR+projectId+"/"+languageId+"/"+resourceId+"/terms.json";
-        if(checkServer) {
-            // https://api.unfoldingword.org/obs/txt/1/en/kt-en.json
-            URL url;
-            try {
-                url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/kt-"+languageId+".json");
-            } catch (MalformedURLException e) {
-                Logger.e(this.getClass().getName(), "malformed url", e);
-                return null;
-            }
-            File file = new File(mContext.getCacheDir(), "assets/" + path);
-            ServerUtilities.downloadFile(url, file);
-        }
-        return loadJSONAsset(path);
-    }
+    public String fetchTerms(String projectId, String languageId, String resourceId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
 
-    public String fetchTranslationNotes(String projectId, String languageId, String resourceId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR+projectId+"/"+languageId+"/"+resourceId+"/notes.json";
         if(checkServer) {
-            // https://api.unfoldingword.org/obs/txt/1/en/tN-en.json
-            URL url;
-            try {
-                url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/tN-"+languageId+".json");
-            } catch (MalformedURLException e) {
-                Logger.e(this.getClass().getName(), "malformed url", e);
-                return null;
-            }
-            File file = new File(mContext.getCacheDir(), "assets/" + path);
-            ServerUtilities.downloadFile(url, file);
+            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/terms.json");
         }
         return loadJSONAsset(path);
     }
 
     /**
-     * Returns a json object of source text for a specific project and language
-     * @param projectId the slug of the project for which the source text will be returned
-     * @param languageId the language code for which the source text will be returned
+     * Downloads and returns the key terms.
+     * Rather than using the standard download url this method allows you to specify from which url
+     * to download the terms. This is especially helpful when cross referencing api's.
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param urlString the url from which the terms will be downloaded
      * @return
      */
-    public String fetchSourceText(String projectId, String languageId, String resourceId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
+    public String fetchTerms(String projectId, String languageId, String resourceId, String urlString) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
+
+        downloadToAssets(path, urlString);
+
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the notes
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param checkServer indicates an updated list of notes should be downloaded from the server
+     * @return
+     */
+    public String fetchNotes(String projectId, String languageId, String resourceId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
+
         if(checkServer) {
-            // api.unfoldingword.org/obs/txt/1/en/obs-en.json
-            URL url;
-            try {
-                url = new URL("https://api.unfoldingword.org/"+projectId+"/txt/1/"+languageId+"/"+projectId+"-"+languageId+".json");
-            } catch (MalformedURLException e) {
-                Logger.e(this.getClass().getName(), "malformed url", e);
-                return null;
-            }
-            File file = new File(mContext.getCacheDir(), "assets/" + path);
-            ServerUtilities.downloadFile(url, file);
+            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/notes.json");
         }
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Downloads and returns the notes.
+     * Rather than using the standard download url this method allows you to specify from which url
+     * to download the notes. This is especially helpful when cross referencing api's.
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param urlString the url from which the notes will be downloaded
+     * @return
+     */
+    public String fetchNotes(String projectId, String languageId, String resourceId, String urlString) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
+
+        downloadToAssets(path, urlString);
+
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the source text
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param checkServer indicates an updated version of the source should be downloaded from the server
+     * @return
+     */
+    public String fetchSource(String projectId, String languageId, String resourceId, boolean checkServer) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
+
+        if(checkServer) {
+            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/source.json");
+        }
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Downloads and returns the source.
+     * Rather than using the standard download url this method allows you to specify from which url
+     * to download the source. This is especially helpful when cross referencing api's.
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param urlString the url from which the source will be downloaded
+     * @return
+     */
+    public String fetchSource(String projectId, String languageId, String resourceId, String urlString) {
+        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
+
+        downloadToAssets(path, urlString);
+
         return loadJSONAsset(path);
     }
 

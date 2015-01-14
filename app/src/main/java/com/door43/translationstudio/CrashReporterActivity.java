@@ -15,9 +15,11 @@ import android.widget.EditText;
 
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.ServerUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.NameValuePair;
@@ -96,6 +98,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity {
             });
 
             File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
+            File logFile = new File(getExternalCacheDir(), "log.txt");
             String[] files = dir.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File file, String s) {
@@ -143,6 +146,13 @@ public class CrashReporterActivity extends TranslatorBaseActivity {
                             infoBuf.append("Stack trace\n======\n");
                             infoBuf.append(FileUtilities.getStringFromFile(traceFile));
 
+                            if(logFile.exists() && logFile.length() > 0) {
+                                infoBuf.append("Log history\n======\n");
+                                infoBuf.append(FileUtilities.getStringFromFile(logFile));
+                                // empty the log.
+                                FileUtils.write(logFile, "");
+                            }
+
                             // build payload
                             try {
                                 json.put("title", title);
@@ -164,10 +174,15 @@ public class CrashReporterActivity extends TranslatorBaseActivity {
                             Log.d("Response", response);
                         } catch (IOException e) {
                             Logger.w(this.getClass().getName(), "failed to upload traces", e);
+                            // archive stack trace for later use
+                            FileUtilities.moveOrCopy(traceFile, new File(archiveDir, files[i]));
                         }
+                    } else {
+                        // archive stack trace for later use
+                        FileUtilities.moveOrCopy(traceFile, new File(archiveDir, files[i]));
                     }
-                    // archive stack trace
-                    FileUtilities.moveOrCopy(traceFile, new File(archiveDir, files[i]));
+
+                    // clean up traces
                     if(traceFile.exists()) {
                         traceFile.delete();
                     }
