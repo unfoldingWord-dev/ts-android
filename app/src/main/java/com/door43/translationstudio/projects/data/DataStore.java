@@ -5,6 +5,8 @@ import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.ServerUtilities;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -210,7 +212,36 @@ public class DataStore {
      * @return the string contents of the json file
      */
     private String loadJSONAsset(String path) {
-        File cacheAsset = new File(mContext.getCacheDir(), "assets/" + path);
+        File cacheDir = new File(mContext.getCacheDir(), "assets");
+
+        // verify the cached assets match the expected server api level
+        File cacheVersionFile = new File(cacheDir, ".cache_api_version");
+        if(cacheVersionFile.exists() && cacheVersionFile.isFile()) {
+            try {
+                String version = FileUtils.readFileToString(cacheVersionFile);
+                if(Integer.parseInt(version) != API_VERSION) {
+                    cacheVersionFile.delete();
+                }
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to read the cached assets api version", e);
+                cacheVersionFile.delete();
+            }
+        }
+        if(!cacheVersionFile.exists() || !cacheVersionFile.isFile()) {
+            Logger.i(this.getClass().getName(), "clearing the asset cache to support api version "+API_VERSION);
+            FileUtilities.deleteRecursive(cacheDir);
+            // record cache version
+            cacheDir.mkdirs();
+            try {
+                cacheVersionFile.createNewFile();
+                FileUtils.write(cacheVersionFile, API_VERSION+"");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // retrieve the asset
+        File cacheAsset = new File(cacheDir + path);
         if(cacheAsset.exists()) {
             // attempt to load from the cached assets first. These will be the most up to date
             try {

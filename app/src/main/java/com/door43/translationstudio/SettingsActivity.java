@@ -63,12 +63,12 @@ public class SettingsActivity extends PreferenceActivity {
     /**
      * Removes references to self to avoid memory leaks
      */
-    private void clearReferences() {
-        Activity currActivity = MainContext.getContext().getCurrentActivity();
-        if(currActivity != null && currActivity.equals(this)) {
-            MainContext.getContext().setCurrentActivity(null);
-        }
-    }
+//    private void clearReferences() {
+//        Activity currActivity = MainContext.getContext().getCurrentActivity();
+//        if(currActivity != null && currActivity.equals(this)) {
+//            MainContext.getContext().setCurrentActivity(null);
+//        }
+//    }
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
@@ -93,22 +93,22 @@ public class SettingsActivity extends PreferenceActivity {
         return isValid;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // set the current activity so that core classes can access the ui when nessesary.
-        MainContext.getContext().setCurrentActivity(this);
-    }
-    @Override
-    protected void onPause() {
-        clearReferences();
-        super.onPause();
-    }
-    @Override
-    protected void onDestroy() {
-        clearReferences();
-        super.onDestroy();
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        // set the current activity so that core classes can access the ui when nessesary.
+//        MainContext.getContext().setCurrentActivity(this);
+//    }
+//    @Override
+//    protected void onPause() {
+//        clearReferences();
+//        super.onPause();
+//    }
+//    @Override
+//    protected void onDestroy() {
+//        clearReferences();
+//        super.onDestroy();
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -296,7 +296,6 @@ public class SettingsActivity extends PreferenceActivity {
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class GeneralPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -344,7 +343,6 @@ public class SettingsActivity extends PreferenceActivity {
      * This fragment shows save preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class SavePreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -368,7 +366,6 @@ public class SettingsActivity extends PreferenceActivity {
      * This fragment shows security preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class SharingPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -387,7 +384,6 @@ public class SettingsActivity extends PreferenceActivity {
      * This fragment shows security preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class AdvancedPreferenceFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
