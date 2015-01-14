@@ -465,7 +465,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     JSONObject infoJson = new JSONObject();
                                     infoJson.put("port", fileSocket.getLocalPort());
                                     infoJson.put("name", archive.getName());
-                                    infoJson.put("size", archive.getTotalSpace());
+                                    infoJson.put("size", archive.length());
                                     server.writeTo(client, MSG_PROJECT_ARCHIVE +":" + infoJson.toString());
                                 } else {
                                     // the archive could not be created

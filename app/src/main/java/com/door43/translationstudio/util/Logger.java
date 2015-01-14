@@ -9,8 +9,10 @@ import com.door43.translationstudio.BuildConfig;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -130,20 +132,27 @@ public class Logger
             // Gets the log file from the root of the primary storage. If it does
             // not exist, the file is created.
             File logFile = new File(MainContext.getContext().getExternalCacheDir(), "log.txt");
-            if (!logFile.exists())
+            if (!logFile.exists()) {
                 logFile.createNewFile();
+            }
             // Write the message to the log with a timestamp
             BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true));
             writer.write(String.format("%1s [%2s]:%3s\r\n", getDateTimeStamp(), logMessageTag, logMessage));
             writer.close();
+
+            // truncate the log if it gets too big. we cut it in half so we don't end up having to do this all the time
+            // TODO: this should be a user setting.
+            long maxLogSize = 1024*1024*2; // 2MB
+            if(logFile.length() > maxLogSize) {
+                FileChannel outChan = new FileOutputStream(logFile, true).getChannel();
+                outChan.truncate(maxLogSize/2);
+                outChan.close();
+            }
+
             // Refresh the data so it can seen when the device is plugged in a
             // computer. You may have to unplug and replug to see the latest
             // changes
-            MediaScannerConnection.scanFile(MainContext.getContext(),
-                    new String[]{logFile.toString()},
-                    null,
-                    null);
-
+            MediaScannerConnection.scanFile(MainContext.getContext(), new String[]{logFile.toString()}, null, null);
         }
         catch (IOException e)
         {
