@@ -440,6 +440,15 @@ public class MainApplication extends Application {
     }
 
     /**
+     * Returns the private key file
+     * @return
+     */
+    public File getPrivateKey() {
+        File keysDir = getKeysFolder();
+        return  new File(keysDir.getAbsolutePath()+"/id_rsa");
+    }
+
+    /**
      * Generates a new RSA key pair for use with ssh
      * TODO: this should not be done on the main thread
      */

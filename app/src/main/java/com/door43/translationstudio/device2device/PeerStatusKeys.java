@@ -7,4 +7,5 @@ public class PeerStatusKeys {
     public static final String WAITING = "waiting";
     public static final String PROGRESS = "progress";
     public static final String CONTROL_TEXT = "control_text";
+    public static final String PUBLIC_KEY = "public_key";
 }

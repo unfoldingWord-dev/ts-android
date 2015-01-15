@@ -32,6 +32,7 @@ import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
@@ -102,15 +103,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         @Override
                         public void run() {
                             updatePeerList();
-                            File pubKey = app().getPublicKey();
-                            if(pubKey.exists()) {
-                                try {
-                                    String key = FileUtils.readFileToString(pubKey);
-                                    mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
-                                } catch (IOException e) {
-                                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the client", e);
-                                }
-                            }
                         }
                     });
                 }
@@ -157,15 +149,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         @Override
                         public void run() {
                             updatePeerList();
-                            File pubKey = app().getPublicKey();
-                            if(pubKey.exists()) {
-                                try {
-                                    String key = FileUtils.readFileToString(pubKey);
-                                    mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
-                                } catch (IOException e) {
-                                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the server", e);
-                                }
-                            }
                         }
                     });
                 }
@@ -234,6 +217,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         c.connectToServer(mAdapter.getItem(i));
                     } else {
                         // request a list of projects from the server.
+                        // TODO: make sure we have the server's public key
                         // TODO: the response to this request should be cached until the server disconnects.
                         // TODO: later we may use a button instead of just clicking on the list item.
                         showProgress(getResources().getString(R.string.loading));
@@ -249,6 +233,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         }
                         // english as default
                         preferredLanguagesJson.put("en");
+                        // TODO: we need to encrypt the message, but the encryption is not working
+//                        String payload = Security.rsaEncrypt(server.keyStore.getString(PeerStatusKeys.PUBLIC_KEY), SocketMessages.MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
                         c.writeTo(server, SocketMessages.MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
                     }
                 }
@@ -515,13 +501,27 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
             } else if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
                 // receive the client's public key
-                client.keyStore.add("public_key", data[1]);
+                client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
                 handle.post(new Runnable() {
                     @Override
                     public void run() {
                         updatePeerList();
                     }
                 });
+
+                // send the client our public key
+                File pubKey = app().getPublicKey();
+                if(pubKey.exists()) {
+                    try {
+                        String key = FileUtils.readFileToString(pubKey);
+                        mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+                    } catch (IOException e) {
+                        Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the client", e);
+                    }
+                } else {
+                    // TODO: this is an error
+                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Missing public key");
+                }
             }
         } else {
             // the client is not authorized
@@ -666,15 +666,19 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             }
         } else if(data[0].equals(SocketMessages.MSG_OK)) {
             // we are authorized to access the server
-            server.keyStore.add(PeerStatusKeys.WAITING, false);
-            server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.import_project));
-            server.setIsConnected(true);
-            handle.post(new Runnable() {
-                @Override
-                public void run() {
-                    updatePeerList();
+            // send public key to server
+            File pubKey = app().getPublicKey();
+            if(pubKey.exists()) {
+                try {
+                    String key = FileUtils.readFileToString(pubKey);
+                    mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+                } catch (IOException e) {
+                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the server", e);
                 }
-            });
+            } else {
+                // TODO: display an error
+                Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Missing public key");
+            }
         } else if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
             String rawProjectList = data[1];
@@ -790,7 +794,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             });
         } else if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
             // receive the server's public key
-            server.keyStore.add("public_key", data[1]);
+            server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
+            server.keyStore.add(PeerStatusKeys.WAITING, false);
+            server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.import_project));
+            server.setIsConnected(true);
             handle.post(new Runnable() {
                 @Override
                 public void run() {
