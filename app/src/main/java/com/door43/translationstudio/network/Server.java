@@ -34,6 +34,7 @@ public class Server extends Service {
         mListener = listener;
     }
 
+    @Override
     /**
      * This will cause the server to begin listening on a port for connections and advertise it's services to the network
      */
@@ -45,6 +46,7 @@ public class Server extends Service {
         mServerThread.start();
     }
 
+    @Override
     /**
      * Stops the server from advertising it's services and listening for responses.
      */
@@ -60,6 +62,7 @@ public class Server extends Service {
         mClientConnections.clear();
     }
 
+    @Override
     /**
      * Sends a message to the peer
      * @param client the client to which the message will be sent
@@ -86,6 +89,8 @@ public class Server extends Service {
         }
 
         public void run() {
+            mListener.onBeforeStart();
+
             Socket socket;
             ServerSocket serverSocket;
 
@@ -190,6 +195,7 @@ public class Server extends Service {
     }
 
     public interface OnServerEventListener {
+        public void onBeforeStart();
         public void onError(Exception e);
         public void onFoundClient(Peer client);
         public void onLostClient(Peer client);

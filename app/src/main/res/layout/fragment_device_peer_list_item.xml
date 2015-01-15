@@ -1,35 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="fill_parent"
+    android:orientation="vertical" android:layout_width="fill_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/peerIcon"
-        android:layout_margin="4dp"
-        android:background="@drawable/ic_icon_phone" />
-
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="fill_parent"
+        <ImageView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/ipAddressText"
-            android:text="127.0.0.1"
-            android:textColor="@color/dark_gray"
-            android:textSize="@dimen/h4" />
+            android:id="@+id/peerIcon"
+            android:layout_margin="4dp"
+            android:background="@drawable/ic_icon_phone" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/ipAddressText"
+                android:text="127.0.0.1"
+                android:textColor="@color/dark_gray"
+                android:textSize="@dimen/h4" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/instructionsText"
+                android:text="@string/click_to_connect"
+                android:textColor="@color/gray"
+                android:textSize="@dimen/h5" />
+        </LinearLayout>
 
         <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/instructionsText"
-            android:text="@string/click_to_connect"
-            android:textColor="@color/gray"
-            android:textSize="@dimen/h5" />
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="@string/import_project"
+            android:id="@+id/controlTextView"
+            android:gravity="center"
+            android:padding="10dp"
+            android:background="@color/blue"
+            android:autoText="false"
+            android:textColor="@color/white" />
+
+        <!--<Button-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="@string/label_connect"-->
+            <!--android:id="@+id/button" />-->
     </LinearLayout>
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:longClickable="false"
+        android:max="100"
+        android:progress="100"
+        android:indeterminate="false" />
 
 </LinearLayout>

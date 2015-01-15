@@ -199,6 +199,8 @@ public abstract class Service {
         t.start();
     }
 
+    public abstract void writeTo(Peer peer, String message);
+
     /**
      *
      * @param serviceName the name of the service being advertised or listened for on the network

@@ -6,10 +6,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.network.Peer;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -53,26 +56,64 @@ public class DevicePeerAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        LinearLayout peerItemView;
+        LinearLayout v;
+        Peer p = getItem(i);
 
         if(view == null) {
             LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            peerItemView = (LinearLayout)inflater.inflate(R.layout.fragment_device_peer_list_item, null);
+            v = (LinearLayout)inflater.inflate(R.layout.fragment_device_peer_list_item, null);
         } else {
-            peerItemView = (LinearLayout)view;
+            v = (LinearLayout)view;
         }
 
         // ip address
-        TextView ipAddressView = (TextView)peerItemView.findViewById(R.id.ipAddressText);
-        ipAddressView.setText(getItem(i).getIpAddress());
+        TextView ipAddressView = (TextView)v.findViewById(R.id.ipAddressText);
+        ipAddressView.setText(p.getIpAddress());
 
-        TextView instructionsText = (TextView)peerItemView.findViewById(R.id.instructionsText);
-        if(getItem(i).isConnected()) {
+        // button
+//        Button button = (Button)v.findViewById(R.id.button);
+//        if(p.isConnected()) {
+//            button.setText(R.string.import_project);
+//            button.setBackgroundResource(R.color.blue);
+//        } else {
+//            button.setText(R.string.label_connect);
+//            button.setBackgroundResource(R.color.gray);
+//        }
+        // TODO: handle click events on the button
+
+        // instructions
+        TextView instructionsText = (TextView)v.findViewById(R.id.instructionsText);
+        if(p.isConnected()) {
             instructionsText.setText(R.string.connected);
         } else {
             instructionsText.setText(R.string.click_to_connect);
         }
 
-        return peerItemView;
+        TextView controlTextView = (TextView)v.findViewById(R.id.controlTextView);
+        controlTextView.setVisibility(View.GONE);
+
+        // progress bar
+        ProgressBar progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
+        boolean isWaiting = p.keyStore.getBool(PeerStatusKeys.WAITING);
+        int progress = p.keyStore.getInt(PeerStatusKeys.PROGRESS);
+        progressBar.setIndeterminate(isWaiting);
+        progressBar.setProgress(progress);
+        if(!isWaiting && progress == 0) {
+            progressBar.setVisibility(View.GONE);
+            String controlText = p.keyStore.getString(PeerStatusKeys.CONTROL_TEXT);
+            if(controlText != null && !controlText.isEmpty()) {
+                controlTextView.setVisibility(View.VISIBLE);
+                controlTextView.setText(controlText);
+            }
+        } else {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+        if(isWaiting) {
+            instructionsText.setText(R.string.waiting_for_device);
+        } else if(progress > 0) {
+            instructionsText.setText(R.string.downloading);
+        }
+
+        return v;
     }
 }

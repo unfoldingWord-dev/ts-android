@@ -121,6 +121,7 @@ public class Client extends Service {
         mServerConnections.clear();
     }
 
+    @Override
     /**
      * Sends a message to the peer
      * @param server the server to which the message will be sent
@@ -145,6 +146,8 @@ public class Client extends Service {
 
         @Override
         public void run() {
+            mListener.onBeforeStart();
+
             // set up sockets
             try {
                 InetAddress serverAddr = InetAddress.getByName(mServer.getIpAddress());
@@ -186,6 +189,7 @@ public class Client extends Service {
     }
 
     public interface OnClientEventListener {
+        public void onBeforeStart();
         public void onError(Exception e);
         public void onFoundServer(Peer server);
         public void onLostServer(Peer server);

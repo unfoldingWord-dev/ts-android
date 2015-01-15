@@ -32,9 +32,11 @@ import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,12 +55,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
-    private static final String MSG_PROJECT_ARCHIVE = "pa";
-    private static final String MSG_OK = "ok";
-    private static final String MSG_PROJECT_LIST = "pl";
-    private static final String MSG_AUTHORIZATION_ERROR = "ae";
-    private static final String MSG_INVALID_REQUEST = "ir";
-    private static final String MSG_SERVER_ERROR = "se";
     private boolean mStartAsServer = false;
     private Service mService;
     private DevicePeerAdapter mAdapter;
@@ -82,6 +78,14 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             mService = new Server(DeviceToDeviceActivity.this, clientUDPPort, new Server.OnServerEventListener() {
 
                 @Override
+                public void onBeforeStart() {
+                    // ensure we have ssh keys
+                    if(!app().hasKeys()) {
+                        app().generateKeys();
+                    }
+                }
+
+                @Override
                 public void onError(final Exception e) {
                     handler.post(new Runnable() {
                         @Override
@@ -93,11 +97,20 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
 
                 @Override
-                public void onFoundClient(Peer client) {
+                public void onFoundClient(final Peer client) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             updatePeerList();
+                            File pubKey = app().getPublicKey();
+                            if(pubKey.exists()) {
+                                try {
+                                    String key = FileUtils.readFileToString(pubKey);
+                                    mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+                                } catch (IOException e) {
+                                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the client", e);
+                                }
+                            }
                         }
                     });
                 }
@@ -120,6 +133,14 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         } else {
             mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
                 @Override
+                public void onBeforeStart() {
+                    // ensure we have ssh keys
+                    if(!app().hasKeys()) {
+                        app().generateKeys();
+                    }
+                }
+
+                @Override
                 public void onError(final Exception e) {
                     handler.post(new Runnable() {
                         @Override
@@ -136,6 +157,15 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         @Override
                         public void run() {
                             updatePeerList();
+                            File pubKey = app().getPublicKey();
+                            if(pubKey.exists()) {
+                                try {
+                                    String key = FileUtils.readFileToString(pubKey);
+                                    mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+                                } catch (IOException e) {
+                                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the server", e);
+                                }
+                            }
                         }
                     });
                 }
@@ -179,7 +209,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     if(!client.isConnected()) {
                         // let the client know it's connection has been authorized.
                         client.setIsConnected(true);
-                        updatePeerList();
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                updatePeerList();
+                            }
+                        });
                         s.writeTo(client, "ok");
                     } else {
                         // TODO: maybe display a popup to disconnect the client.
@@ -189,13 +224,19 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     Peer server = mAdapter.getItem(i);
                     if(!server.isConnected()) {
                         // connect to the server, implicitly requesting permission to access it
+                        server.keyStore.add(PeerStatusKeys.WAITING, true);
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                updatePeerList();
+                            }
+                        });
                         c.connectToServer(mAdapter.getItem(i));
                     } else {
                         // request a list of projects from the server.
                         // TODO: the response to this request should be cached until the server disconnects.
                         // TODO: later we may use a button instead of just clicking on the list item.
                         showProgress(getResources().getString(R.string.loading));
-
                         // Include the suggested language(s) in which the results should be returned (if possible)
                         // This just makes it easier for users to read the results
                         JSONArray preferredLanguagesJson = new JSONArray();
@@ -208,7 +249,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         }
                         // english as default
                         preferredLanguagesJson.put("en");
-                        c.writeTo(server, MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
+                        c.writeTo(server, SocketMessages.MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
                     }
                 }
             }
@@ -227,23 +268,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         super.onResume();
         // This will set up a service on the local network named "tS".
         mService.start("tS");
-    }
-
-    /**
-     * Splits a string by delimiter into two pieces
-     * @param string the string to split
-     * @param delimiter
-     * @return
-     */
-    private String[] chunk(String string, String delimiter) {
-        if(string == null || string.isEmpty()) {
-            return new String[]{"", ""};
-        }
-        String[] pieces = string.split(delimiter, 2);
-        if(pieces.length == 1) {
-            pieces = new String[] {string, ""};
-        }
-        return pieces;
     }
 
     /**
@@ -276,7 +300,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_device_to_device, menu);
+//        getMenuInflater().inflate(R.menu.menu_device_to_device, menu);
         return true;
     }
 
@@ -304,11 +328,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private void onServerReceivedMessage(final Handler handle, Peer client, String message) {
         Server server = (Server)mService;
 
-        String[] data = chunk(message, ":");
+        String[] data = StringUtilities.chunk(message, ":");
 
         // validate client
         if(client.isConnected()) {
-            if(data[0].equals(MSG_PROJECT_LIST)) {
+            if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
                 // send the project list to the client
 
                 // read preferred source language (for better readability on the client)
@@ -396,15 +420,15 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         }
                     }
                 }
-                server.writeTo(client, MSG_PROJECT_LIST + ":" + projectsJson.toString());
-            } else if(data[0].equals(MSG_PROJECT_ARCHIVE)) {
+                server.writeTo(client, SocketMessages.MSG_PROJECT_LIST + ":" + projectsJson.toString());
+            } else if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
                 // send the project archive to the client
                 JSONObject json;
                 try {
                     json = new JSONObject(data[1]);
                 } catch (final JSONException e) {
                     Logger.e(this.getClass().getName(), "failed to parse project archive response", e);
-                    server.writeTo(client, MSG_INVALID_REQUEST);
+                    server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                     return;
                 }
 
@@ -466,33 +490,42 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     infoJson.put("port", fileSocket.getLocalPort());
                                     infoJson.put("name", archive.getName());
                                     infoJson.put("size", archive.length());
-                                    server.writeTo(client, MSG_PROJECT_ARCHIVE +":" + infoJson.toString());
+                                    server.writeTo(client, SocketMessages.MSG_PROJECT_ARCHIVE +":" + infoJson.toString());
                                 } else {
                                     // the archive could not be created
-                                    server.writeTo(client, MSG_SERVER_ERROR);
+                                    server.writeTo(client, SocketMessages.MSG_SERVER_ERROR);
                                 }
                             } else {
                                 // the client should have known better
-                                server.writeTo(client, MSG_INVALID_REQUEST);
+                                server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                             }
                         } else {
                             // the client should have known better
-                            server.writeTo(client, MSG_INVALID_REQUEST);
+                            server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                         }
                     } catch (JSONException e) {
                         Logger.e(this.getClass().getName(), "malformed or corrupt project archive response", e);
-                        server.writeTo(client, MSG_INVALID_REQUEST);
+                        server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                     } catch (IOException e) {
                         Logger.e(this.getClass().getName(), "unable to read project archive response", e);
-                        server.writeTo(client, MSG_SERVER_ERROR);
+                        server.writeTo(client, SocketMessages.MSG_SERVER_ERROR);
                     }
                 } else {
-                    server.writeTo(client, MSG_INVALID_REQUEST);
+                    server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
+            } else if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
+                // receive the client's public key
+                client.keyStore.add("public_key", data[1]);
+                handle.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        updatePeerList();
+                    }
+                });
             }
         } else {
             // the client is not authorized
-            server.writeTo(client, MSG_AUTHORIZATION_ERROR);
+            server.writeTo(client, SocketMessages.MSG_AUTHORIZATION_ERROR);
         }
     }
 
@@ -505,8 +538,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private void onClientReceivedMessage(final Handler handle, final Peer server, String message) {
         Client client = (Client)mService;
 
-        String[] data = chunk(message, ":");
-        if(data[0].equals(MSG_PROJECT_ARCHIVE)) {
+        String[] data = StringUtilities.chunk(message, ":");
+        if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
 
             // load data
             JSONObject infoJson = null;
@@ -555,11 +588,26 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             file.createNewFile();
                             OutputStream out = new FileOutputStream(file.getAbsolutePath());
                             byte[] buffer = new byte[8 * 1024];
+                            int totalCount = 0;
                             int count;
-                            // TODO: display a progress bar. We will probably need to send the size of the file with the port #
                             while ((count = in.read(buffer)) > 0) {
+                                totalCount += count;
+                                server.keyStore.add(PeerStatusKeys.PROGRESS, totalCount/((int)size)*100);
+                                handle.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        updatePeerList();
+                                    }
+                                });
                                 out.write(buffer, 0, count);
                             }
+                            server.keyStore.add(PeerStatusKeys.PROGRESS, 0);
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updatePeerList();
+                                }
+                            });
                             out.close();
                             in.close();
 
@@ -616,8 +664,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 // the server did not give us the expected response.
                 app().showToastMessage("invalid response");
             }
-        } else if(data[0].equals(MSG_OK)) {
+        } else if(data[0].equals(SocketMessages.MSG_OK)) {
             // we are authorized to access the server
+            server.keyStore.add(PeerStatusKeys.WAITING, false);
+            server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.import_project));
             server.setIsConnected(true);
             handle.post(new Runnable() {
                 @Override
@@ -625,7 +675,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     updatePeerList();
                 }
             });
-        } else if(data[0].equals(MSG_PROJECT_LIST)) {
+        } else if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
             String rawProjectList = data[1];
             final ArrayList<Model> availableProjects = new ArrayList<Model>();
@@ -738,6 +788,15 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
                 }
             });
+        } else if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
+            // receive the server's public key
+            server.keyStore.add("public_key", data[1]);
+            handle.post(new Runnable() {
+                @Override
+                public void run() {
+                    updatePeerList();
+                }
+            });
         }
     }
 
@@ -787,7 +846,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 languagesJson.put(l.getId());
             }
             json.put("target_languages", languagesJson);
-            c.writeTo(server, MSG_PROJECT_ARCHIVE+":"+json.toString());
+            c.writeTo(server, SocketMessages.MSG_PROJECT_ARCHIVE+":"+json.toString());
         } catch (final JSONException e) {
             handle.post(new Runnable() {
                 @Override

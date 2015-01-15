@@ -1,0 +1,14 @@
+package com.door43.translationstudio.device2device;
+
+/**
+ * Created by joel on 1/14/2015.
+ */
+public class SocketMessages {
+    public static final String MSG_PROJECT_ARCHIVE = "pa";
+    public static final String MSG_OK = "ok";
+    public static final String MSG_PROJECT_LIST = "pl";
+    public static final String MSG_AUTHORIZATION_ERROR = "ae";
+    public static final String MSG_INVALID_REQUEST = "ir";
+    public static final String MSG_SERVER_ERROR = "se";
+    public static final String MSG_PUBLIC_KEY = "pk";
+}

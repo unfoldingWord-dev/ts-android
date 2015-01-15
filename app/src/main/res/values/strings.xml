@@ -221,4 +221,6 @@
     <string name="no_projects_available_on_server">No projects are available on this server</string>
     <string name="downloading">Downloading</string>
     <string name="confirm_import">Please confirm what you want to import.</string>
+    <string name="label_connect">Connect</string>
+    <string name="waiting_for_device">Waiting for device</string>
 </resources>

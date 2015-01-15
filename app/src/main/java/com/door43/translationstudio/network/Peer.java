@@ -1,5 +1,7 @@
 package com.door43.translationstudio.network;
 
+import com.door43.translationstudio.util.KeyValueStore;
+
 /**
  * A peer is any device that is connected to another device.
  * Clients can have peers in the form of servers and servers can have peers in the form of clients.
@@ -11,6 +13,7 @@ public class Peer {
     private int mVersion = 0;
     private long mLastSeenAt = 0;
     private boolean mIsConnected = false;
+    public final KeyValueStore keyStore = new KeyValueStore();
 
     /**
      * Specifies a new peer (likely a client)
