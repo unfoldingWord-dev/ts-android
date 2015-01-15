@@ -15,7 +15,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectDialog;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.events.ChoseProjectEvent;
-import com.door43.translationstudio.projects.SudoProject;
+import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
@@ -57,7 +57,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                     handleProjectSelection((Project)m);
                 } else {
                     // this is a meta project
-                    handleMetaSelection((SudoProject)m);
+                    handleMetaSelection((PseudoProject)m);
                 }
             }
         });
@@ -102,7 +102,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      * Handles the selection of a meta project
      * @param p
      */
-    private void handleMetaSelection(SudoProject p) {
+    private void handleMetaSelection(PseudoProject p) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {

@@ -9,10 +9,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.events.ChoseProjectToImportEvent;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.projects.SudoProject;
+import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
@@ -40,9 +39,9 @@ public class ChooseProjectToImportDialog extends DialogFragment {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Model m = mModelItemAdapter.getItem(i);
-                    if(m.getClass().equals(SudoProject.class)) {
+                    if(m.getClass().equals(PseudoProject.class)) {
                         // re-load list
-                        mModelItemAdapter.changeDataSet(((SudoProject)m).getChildren());
+                        mModelItemAdapter.changeDataSet(((PseudoProject)m).getChildren());
                     } else {
                         // return the selected project.
                         Project p = (Project)m;

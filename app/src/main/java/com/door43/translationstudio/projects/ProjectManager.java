@@ -39,7 +39,7 @@ public class ProjectManager {
     private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
 
     // meta projects
-    private static Map<String, SudoProject> mMetaProjectMap = new HashMap<String, SudoProject>();
+    private static Map<String, PseudoProject> mMetaProjectMap = new HashMap<String, PseudoProject>();
 
     private static List<Model> mListableProjects = new ArrayList<Model>();
     private static Map<String, Model> mListableProjectMap = new HashMap<String, Model>();
@@ -179,7 +179,7 @@ public class ProjectManager {
      * @param p
      * @return
      */
-    private boolean addMetaProject(SudoProject p) {
+    private boolean addMetaProject(PseudoProject p) {
         if(!mMetaProjectMap.containsKey(p.getId())) {
             mMetaProjectMap.put(p.getId(), p);
             return true;
@@ -205,7 +205,7 @@ public class ProjectManager {
      * select a real project at which point normal application flow will continue.
      * @param p
      */
-    public void addListableProject(SudoProject p) {
+    public void addListableProject(PseudoProject p) {
         if(!mListableProjectMap.containsKey("m-"+p.getId())) {
             mListableProjectMap.put("m-"+p.getId(), p);
             mListableProjects.add(p);
@@ -262,7 +262,7 @@ public class ProjectManager {
      * @param id
      * @return
      */
-    public SudoProject getMetaProject(String id) {
+    public PseudoProject getMetaProject(String id) {
         if(mMetaProjectMap.containsKey(id)) {
             return mMetaProjectMap.get(id);
         } else {
@@ -724,42 +724,42 @@ public class ProjectManager {
                     Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
 
                     // load meta
-                    SudoProject rootSudoProject = null;
+                    PseudoProject rootPseudoProject = null;
                     if(jsonProject.has("meta")) {
                         JSONArray jsonMeta = jsonProject.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
                             // get the root meta
                             String metaSlug = jsonMeta.get(0).toString();
-                            rootSudoProject = getMetaProject(metaSlug);
-                            if(rootSudoProject == null) {
-                                rootSudoProject = new SudoProject(metaSlug);
-                                addMetaProject(rootSudoProject);
+                            rootPseudoProject = getMetaProject(metaSlug);
+                            if(rootPseudoProject == null) {
+                                rootPseudoProject = new PseudoProject(metaSlug);
+                                addMetaProject(rootPseudoProject);
                             }
-                            p.addSudoProject(rootSudoProject);
+                            p.addSudoProject(rootPseudoProject);
                             // load children meta
-                            SudoProject currentSudoProject = rootSudoProject;
+                            PseudoProject currentPseudoProject = rootPseudoProject;
                             for (int j = 1; j < jsonMeta.length(); j++) {
-                                SudoProject sp = new SudoProject(jsonMeta.get(j).toString());
-                                if(currentSudoProject.getMetaChild(sp.getId()) != null) {
+                                PseudoProject sp = new PseudoProject(jsonMeta.get(j).toString());
+                                if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
                                     // load already created meta
-                                    currentSudoProject = currentSudoProject.getMetaChild(sp.getId());
+                                    currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
                                 } else {
                                     // create new meta
-                                    currentSudoProject.addChild(sp);
-                                    currentSudoProject = sp;
+                                    currentPseudoProject.addChild(sp);
+                                    currentPseudoProject = sp;
                                 }
                                 p.addSudoProject(sp);
                             }
                             // close with the project
-                            currentSudoProject.addChild(p);
+                            currentPseudoProject.addChild(p);
                         }
                     }
 
                     // add project or meta to the project list
-                    if(rootSudoProject == null) {
+                    if(rootPseudoProject == null) {
                         addListableProject(p);
                     } else {
-                        addListableProject(rootSudoProject);
+                        addListableProject(rootPseudoProject);
                     }
 
                     // determine if the language catalog should be re-downloaded
@@ -840,7 +840,7 @@ public class ProjectManager {
                         JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
                             for (int j = 0; j < jsonMeta.length(); j++) {
-                                SudoProject sp = p.getSudoProject(j);
+                                PseudoProject sp = p.getSudoProject(j);
                                 if(sp != null) {
                                     sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
                                 } else {

@@ -1,6 +1,5 @@
 package com.door43.translationstudio.projects;
 
-import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.MainContext;
 
 import java.util.ArrayList;
@@ -14,7 +13,7 @@ import java.util.Map;
  * real projects into categories. Meta projects are basically linked lists that may chain together
  * multiple meta projects before terminating at a real project.
  */
-public class SudoProject implements Model {
+public class PseudoProject implements Model {
     private final String mId;
 //    private MetaProject mMetaChild;
 //    private Project mProjectChild;
@@ -27,7 +26,7 @@ public class SudoProject implements Model {
      * Creates a new meta project that contains a sub meta project
      * @param slug
      */
-    public SudoProject(String slug) {
+    public PseudoProject(String slug) {
         mId = slug;
     }
 
@@ -182,7 +181,7 @@ public class SudoProject implements Model {
      * Adds a meta child to this meta project
      * @param meta
      */
-    public void addChild(SudoProject meta) {
+    public void addChild(PseudoProject meta) {
         if(!mChildrenMap.containsKey("m-"+meta.getId())) {
             mChildrenMap.put("m-" + meta.getId(), meta);
         }
@@ -211,9 +210,9 @@ public class SudoProject implements Model {
      * @param id
      * @return
      */
-    public SudoProject getMetaChild(String id) {
+    public PseudoProject getMetaChild(String id) {
         if(mChildrenMap.containsKey("m-"+id)) {
-            return (SudoProject) mChildrenMap.get("m-"+id);
+            return (PseudoProject) mChildrenMap.get("m-"+id);
         } else {
             return null;
         }

@@ -10,7 +10,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChoseProjectEvent;
-import com.door43.translationstudio.projects.SudoProject;
+import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.MainContext;
@@ -37,7 +37,7 @@ public class ChooseProjectDialog extends DialogFragment {
         } else {
             Bundle args = getArguments();
             String id = args.getString("metaId");
-            SudoProject p = MainContext.getContext().getSharedProjectManager().getMetaProject(id);
+            PseudoProject p = MainContext.getContext().getSharedProjectManager().getMetaProject(id);
             if(p != null) {
                 if (mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), p.getChildren());
             }
@@ -50,9 +50,9 @@ public class ChooseProjectDialog extends DialogFragment {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Model m = mModelItemAdapter.getItem(i);
-                    if(m.getClass().equals(SudoProject.class)) {
+                    if(m.getClass().equals(PseudoProject.class)) {
                         // re-load list
-                        mModelItemAdapter.changeDataSet(((SudoProject)m).getChildren());
+                        mModelItemAdapter.changeDataSet(((PseudoProject)m).getChildren());
                     } else {
                         // return the selected project.
                         Project p = (Project)m;

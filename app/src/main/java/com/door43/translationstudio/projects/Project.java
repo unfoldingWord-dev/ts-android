@@ -53,8 +53,8 @@ public class Project implements Model {
     private Map<String,Language> mTargetLanguageMap = new HashMap<String, Language>();
     private List<Term> mTerms = new ArrayList<Term>();
     private Map<String, Term> mTermMap = new HashMap<String, Term>();
-    private List<SudoProject> mSudoProjects = new ArrayList<SudoProject>();
-    private Map<String, SudoProject> mSudoProjectMap = new HashMap<String, SudoProject>();
+    private List<PseudoProject> mPseudoProjects = new ArrayList<PseudoProject>();
+    private Map<String, PseudoProject> mSudoProjectMap = new HashMap<String, PseudoProject>();
 //    private Map<String, Translation> mTitleTranslationMap = new HashMap<String, Translation>();
 //    private List<Translation> mTitleTranslations = new ArrayList<Translation>();
     private ListMap<Translation> mTitleTranslations = new ListMap<Translation>();
@@ -363,10 +363,10 @@ public class Project implements Model {
      * Adds a sudo project. These are used to help categorize projects
      * @param p
      */
-    public void addSudoProject(SudoProject p) {
+    public void addSudoProject(PseudoProject p) {
         if(!mSudoProjectMap.containsKey(p.getId())) {
             mSudoProjectMap.put(p.getId(), p);
-            mSudoProjects.add(p);
+            mPseudoProjects.add(p);
         }
     }
 
@@ -375,15 +375,15 @@ public class Project implements Model {
      * @return
      */
     public int numSudoProjects() {
-        return mSudoProjects.size();
+        return mPseudoProjects.size();
     }
 
     /**
      * Returns an array of meta categories for this project
      * @return
      */
-    public SudoProject[] getSudoProjects() {
-        return mSudoProjects.toArray(new SudoProject[mSudoProjects.size()]);
+    public PseudoProject[] getSudoProjects() {
+        return mPseudoProjects.toArray(new PseudoProject[mPseudoProjects.size()]);
     }
 
 
@@ -392,10 +392,10 @@ public class Project implements Model {
     * @param index
     * @return
     */
-    public SudoProject getSudoProject(int index) {
-        SudoProject[] sudoProjects = getSudoProjects();
-        if(index < sudoProjects.length && index >= 0) {
-            return sudoProjects[index];
+    public PseudoProject getSudoProject(int index) {
+        PseudoProject[] pseudoProjects = getSudoProjects();
+        if(index < pseudoProjects.length && index >= 0) {
+            return pseudoProjects[index];
         } else {
             return null;
         }

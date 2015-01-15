@@ -28,8 +28,8 @@ import com.door43.translationstudio.network.Server;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
-import com.door43.translationstudio.projects.SudoProject;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -356,9 +356,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             projectInfoJson.put("name", p.getTitle(shownLanguage));
                             projectInfoJson.put("description", p.getDescription(shownLanguage));
                             // TRICKY: since we are only providing the project details in a single source language we don't need to include the meta id's
-                            SudoProject[] sudoProjects = p.getSudoProjects();
+                            PseudoProject[] pseudoProjects = p.getSudoProjects();
                             JSONArray sudoProjectsJson = new JSONArray();
-                            for(SudoProject sp:sudoProjects) {
+                            for(PseudoProject sp: pseudoProjects) {
                                 sudoProjectsJson.put(sp.getTitle(shownLanguage));
                             }
                             projectInfoJson.put("meta", sudoProjectsJson);
@@ -674,17 +674,17 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         // TRICKY: we are actually getting the meta names instead of the id's since we only receive one translation of the project info
                         if (projectInfoJson.has("meta")) {
                             JSONArray metaJson = projectInfoJson.getJSONArray("meta");
-                            SudoProject currentSudoProject = null;
+                            PseudoProject currentPseudoProject = null;
                             for(int j=0; j<metaJson.length(); j++) {
                                 // create sudo project out of the meta name
-                                SudoProject sp  = new SudoProject(metaJson.getString(j));
+                                PseudoProject sp  = new PseudoProject(metaJson.getString(j));
                                 // link to parent sudo project
-                                if(currentSudoProject != null) {
-                                    currentSudoProject.addChild(sp);
+                                if(currentPseudoProject != null) {
+                                    currentPseudoProject.addChild(sp);
                                 }
                                 // add to project
                                 p.addSudoProject(sp);
-                                currentSudoProject = sp;
+                                currentPseudoProject = sp;
                             }
                         }
 
