@@ -13,11 +13,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.FileUtilities;
-import com.door43.translationstudio.util.MainContext;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * This dialog will display a string resource along with a single ok button at the bottom of the view.

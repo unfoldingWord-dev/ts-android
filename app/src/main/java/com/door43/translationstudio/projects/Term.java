@@ -1,7 +1,5 @@
 package com.door43.translationstudio.projects;
 
-import android.text.Html;
-
 import java.util.ArrayList;
 import java.util.List;
 

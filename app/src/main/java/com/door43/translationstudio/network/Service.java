@@ -3,7 +3,6 @@ package com.door43.translationstudio.network;
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
-import android.util.Log;
 
 import com.door43.translationstudio.util.Logger;
 

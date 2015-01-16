@@ -4,9 +4,7 @@ import android.os.Handler;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
-import android.widget.LinearLayout;
 
 /**
  * Created by joel on 12/2/2014.

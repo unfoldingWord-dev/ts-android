@@ -6,8 +6,6 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * http://stackoverflow.com/questions/601503/how-do-i-obtain-crash-data-from-my-android-application

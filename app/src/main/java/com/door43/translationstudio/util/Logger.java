@@ -1,11 +1,7 @@
 package com.door43.translationstudio.util;
 
-import android.content.Context;
 import android.media.MediaScannerConnection;
-import android.os.Environment;
 import android.util.Log;
-
-import com.door43.translationstudio.BuildConfig;
 
 import java.io.BufferedWriter;
 import java.io.File;

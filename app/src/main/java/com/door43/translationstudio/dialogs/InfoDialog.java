@@ -1,7 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 

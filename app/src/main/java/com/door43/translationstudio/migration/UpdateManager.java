@@ -2,7 +2,6 @@ package com.door43.translationstudio.migration;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.door43.translationstudio.util.FileUtilities;

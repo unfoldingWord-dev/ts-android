@@ -1,7 +1,5 @@
 package com.door43.translationstudio.git.tasks;
 
-import android.app.ProgressDialog;
-
 import com.door43.translationstudio.util.MainContext;
 
 /**

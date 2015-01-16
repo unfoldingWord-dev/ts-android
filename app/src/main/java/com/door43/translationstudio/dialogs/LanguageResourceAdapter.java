@@ -6,14 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Resource;
-
-import org.w3c.dom.Text;
 
 /**
  * Created by joel on 12/30/2014.

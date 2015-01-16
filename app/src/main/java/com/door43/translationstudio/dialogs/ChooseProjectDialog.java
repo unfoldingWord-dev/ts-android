@@ -10,9 +10,9 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChoseProjectEvent;
-import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.MainContext;
 
 /**

@@ -1,9 +1,5 @@
 package com.door43.translationstudio;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
@@ -19,6 +15,10 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
 
 /**
  * See https://github.com/mburman/Android-File-Explore

@@ -1,9 +1,9 @@
 package com.door43.translationstudio.git.tasks.repo;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.TransportCallback;
+import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.util.MainContext;
 
 import org.eclipse.jgit.api.Git;

@@ -23,7 +23,7 @@ public class Server extends Service {
     private final int mClientUDPPort; // the port on which the client listens for broadcast messages
     private final OnServerEventListener mListener;
     private boolean mIsRunning = false;
-    private int mBroadcastFrequency = 5000;
+    private int mBroadcastFrequency = 4000;
     private Thread mServerThread = null;
     private Thread mBroadcastThread = null;
     private Map<String, Connection> mClientConnections = new HashMap<String, Connection>();
@@ -69,6 +69,7 @@ public class Server extends Service {
      * @param message the message being sent to the client
      */
     public void writeTo(Peer client, String message) {
+        message = mListener.onWriteMessage(client, message);
         if(mClientConnections.containsKey(client.getIpAddress())) {
              mClientConnections.get(client.getIpAddress()).write(message);
         }
@@ -200,6 +201,14 @@ public class Server extends Service {
         public void onFoundClient(Peer client);
         public void onLostClient(Peer client);
         public void onMessageReceived(Peer client, String message);
+
+        /**
+         * Allows you to perform global operations on a message(such as encryption) based on the peer
+         * @param client
+         * @param message
+         * @return
+         */
+        public String onWriteMessage(Peer client, String message);
     }
 
 }

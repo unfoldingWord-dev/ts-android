@@ -23,9 +23,6 @@
 
 package com.slidinglayer;
 
-import java.lang.reflect.Method;
-import java.util.Random;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -49,6 +46,9 @@ import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.Scroller;
+
+import java.lang.reflect.Method;
+import java.util.Random;
 
 
 public class SlidingLayer extends FrameLayout {

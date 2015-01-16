@@ -128,6 +128,7 @@ public class Client extends Service {
      * @param message the message being sent to the server
      */
     public void writeTo(Peer server, String message) {
+        message = mListener.onWriteMessage(server, message);
         if(mServerConnections.containsKey(server.getIpAddress())) {
             mServerConnections.get(server.getIpAddress()).write(message);
         }
@@ -194,5 +195,13 @@ public class Client extends Service {
         public void onFoundServer(Peer server);
         public void onLostServer(Peer server);
         public void onMessageReceived(Peer server, String message);
+
+        /**
+         * Allows you to perform global operations on a message(such as encryption) based on the peer
+         * @param server
+         * @param message
+         * @return
+         */
+        public String onWriteMessage(Peer server, String message);
     }
 }

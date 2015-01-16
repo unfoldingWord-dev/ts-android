@@ -1,7 +1,6 @@
 package com.door43.translationstudio.events;
 
 import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.util.ModalDialog;
 
 /**
  * Created by joel on 10/7/2014.

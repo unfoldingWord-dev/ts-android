@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**

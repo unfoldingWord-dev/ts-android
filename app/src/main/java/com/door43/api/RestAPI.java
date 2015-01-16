@@ -1,7 +1,5 @@
 package com.door43.api;
 
-import android.content.Context;
-
 import java.util.Map;
 
 /**

@@ -1,7 +1,5 @@
 package com.door43.translationstudio.spannables;
 
-import com.door43.translationstudio.R;
-
 /**
  * Created by joel on 10/31/2014.
  */

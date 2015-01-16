@@ -3,8 +3,8 @@ package com.door43.translationstudio.git.tasks.repo;
 import android.widget.Toast;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.git.tasks.GitSyncAsyncTask;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.GitSyncAsyncTask;
 import com.door43.translationstudio.util.MainContext;
 
 import org.eclipse.jgit.lib.ProgressMonitor;

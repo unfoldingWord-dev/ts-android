@@ -1,13 +1,7 @@
 package com.door43.translationstudio.uploadwizard;
 
 import android.app.Activity;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 

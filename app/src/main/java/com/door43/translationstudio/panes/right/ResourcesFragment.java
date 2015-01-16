@@ -12,7 +12,6 @@ import android.widget.ScrollView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 

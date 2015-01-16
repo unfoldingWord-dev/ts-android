@@ -1,9 +1,5 @@
 package com.door43.translationstudio.migration;
 
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -18,8 +14,6 @@ import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * This class handles the db migration from 1.x to 2.x.

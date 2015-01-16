@@ -1,32 +1,5 @@
 package com.door43.translationstudio;
 
-import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
-import com.door43.translationstudio.dialogs.InfoDialog;
-import com.door43.translationstudio.dialogs.LanguageResourceDialog;
-import com.door43.translationstudio.dialogs.NoteDialog;
-import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
-import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
-import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
-import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
-import com.door43.translationstudio.spannables.FancySpan;
-import com.door43.translationstudio.spannables.NoteSpan;
-import com.door43.translationstudio.spannables.TermSpan;
-import com.door43.translationstudio.panes.left.LeftPaneFragment;
-import com.door43.translationstudio.panes.right.RightPaneFragment;
-import com.door43.translationstudio.projects.Chapter;
-import com.door43.translationstudio.projects.Frame;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.projects.Translation;
-import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
-import com.door43.translationstudio.util.AnimationUtilities;
-import com.door43.translationstudio.util.MainContext;
-import com.door43.translationstudio.util.PassageNoteEvent;
-import com.door43.translationstudio.util.ThreadableUI;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.squareup.otto.Subscribe;
-
-
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -79,6 +52,32 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
+import com.door43.translationstudio.dialogs.InfoDialog;
+import com.door43.translationstudio.dialogs.LanguageResourceDialog;
+import com.door43.translationstudio.dialogs.NoteDialog;
+import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
+import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
+import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
+import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
+import com.door43.translationstudio.panes.left.LeftPaneFragment;
+import com.door43.translationstudio.panes.right.RightPaneFragment;
+import com.door43.translationstudio.projects.Chapter;
+import com.door43.translationstudio.projects.Frame;
+import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Term;
+import com.door43.translationstudio.projects.Translation;
+import com.door43.translationstudio.spannables.FancySpan;
+import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.TermSpan;
+import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
+import com.door43.translationstudio.util.AnimationUtilities;
+import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.PassageNoteEvent;
+import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.squareup.otto.Subscribe;
 
 import java.util.List;
 import java.util.Timer;

@@ -1,9 +1,8 @@
 package com.door43.translationstudio.panes.right;
 
 
-
-import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
 import android.text.SpannableString;

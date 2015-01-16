@@ -12,8 +12,6 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.network.Peer;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 
 /**

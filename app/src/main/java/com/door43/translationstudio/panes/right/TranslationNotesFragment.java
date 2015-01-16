@@ -1,30 +1,19 @@
 package com.door43.translationstudio.panes.right;
 
 
-
-import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Bundle;
 import android.os.Handler;
 import android.text.Html;
-import android.text.SpannableString;
-import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
-import android.text.style.ClickableSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Chapter;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.TranslationNote;
-import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**

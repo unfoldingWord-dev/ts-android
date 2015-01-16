@@ -5,6 +5,7 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,8 +15,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
 import com.door43.translationstudio.dialogs.ChooseProjectLanguagesToImportDialog;
+import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
 import com.door43.translationstudio.dialogs.ProjectImportApprovalDialog;
 import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.events.ChoseProjectToImportEvent;
@@ -23,8 +24,8 @@ import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.network.Client;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.network.Server;
+import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
@@ -32,6 +33,7 @@ import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.RSAEncryption;
 import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -51,6 +53,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -62,7 +66,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private ProgressBar mLoadingBar;
     private TextView mLoadingText;
     private ProgressDialog mProgressDialog;
-
+    private static final File mPublicKeyFile = new File(MainContext.getContext().getKeysFolder(), "id_rsa_p2p.pub");
+    private static final File mPrivateKeyFile = new File(MainContext.getContext().getKeysFolder(), "id_rsa_p2p");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,9 +85,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
                 @Override
                 public void onBeforeStart() {
-                    // ensure we have ssh keys
-                    if(!app().hasKeys()) {
-                        app().generateKeys();
+                    // generate new session keys
+                    try {
+                        generateSessionKeys();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
+                        mService.stop();
                     }
                 }
 
@@ -118,17 +127,47 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
 
                 @Override
-                public void onMessageReceived(final Peer client, final String message) {
+                public void onMessageReceived(Peer client, String message) {
+                    // decrypt messages when the server is connected
+                    if(client.isConnected()) {
+                        message = decrypt(message);
+                        if(message == null) {
+                            Logger.e(this.getClass().getName(), "The message could not be decrypted");
+                            app().showToastMessage("Decryption exception");
+                            return;
+                        }
+                    }
                     onServerReceivedMessage(handler, client, message);
+                }
+
+                @Override
+                public String onWriteMessage(Peer client, String message) {
+                    if(client.isConnected()) {
+                        // encrypt message once the client has connected
+                        PublicKey key = getPublicKeyFromString(client.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
+                        if(key != null) {
+                            return encrypt(key, message);
+                        } else {
+                            // TODO: we are missing the client's public key
+                            Logger.w(this.getClass().getName(), "Missing the client's public key");
+                            return SocketMessages.MSG_EXCEPTION;
+                        }
+                    } else {
+                        return message;
+                    }
                 }
             });
         } else {
             mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
                 @Override
                 public void onBeforeStart() {
-                    // ensure we have ssh keys
-                    if(!app().hasKeys()) {
-                        app().generateKeys();
+                    // generate new session keys
+                    try {
+                        generateSessionKeys();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
+                        mService.stop();
                     }
                 }
 
@@ -165,8 +204,34 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
 
                 @Override
-                public void onMessageReceived(final Peer server, final String message) {
+                public void onMessageReceived(Peer server, String message) {
+                    // decrypt messages when the server is connected
+                    if(server.isConnected()) {
+                        message = decrypt(message);
+                        if(message == null) {
+                            Logger.e(this.getClass().getName(), "The message could not be decrypted");
+                            app().showToastMessage("Decryption exception");
+                            return;
+                        }
+                    }
                     onClientReceivedMessage(handler, server, message);
+                }
+
+                @Override
+                public String onWriteMessage(Peer server, String message) {
+                    if(server.isConnected()) {
+                        // encrypt message once the server has connected
+                        PublicKey key = getPublicKeyFromString(server.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
+                        if(key != null) {
+                            return encrypt(key, message);
+                        } else {
+                            // TODO: we are missing the server's public key
+                            Logger.w(this.getClass().getName(), "Missing the server's public key");
+                            return SocketMessages.MSG_EXCEPTION;
+                        }
+                    } else {
+                        return message;
+                    }
                 }
             });
         }
@@ -191,7 +256,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     Peer client = mAdapter.getItem(i);
                     if(!client.isConnected()) {
                         // let the client know it's connection has been authorized.
-                        client.setIsConnected(true);
+                        client.setIsAuthorized(true);
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -233,8 +298,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         }
                         // english as default
                         preferredLanguagesJson.put("en");
-                        // TODO: we need to encrypt the message, but the encryption is not working
-//                        String payload = Security.rsaEncrypt(server.keyStore.getString(PeerStatusKeys.PUBLIC_KEY), SocketMessages.MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
+
                         c.writeTo(server, SocketMessages.MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
                     }
                 }
@@ -254,6 +318,76 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         super.onResume();
         // This will set up a service on the local network named "tS".
         mService.start("tS");
+    }
+
+    /**
+     * Generates new encryption keys to be used durring this session
+     */
+    public void generateSessionKeys() throws Exception {
+        RSAEncryption.generateKeys(mPrivateKeyFile, mPublicKeyFile);
+    }
+
+    /**
+     * Returns the public key used for this session
+     * @return
+     * @throws IOException
+     */
+    public String getPublicKeyString() throws IOException {
+        return FileUtils.readFileToString(mPublicKeyFile);
+    }
+
+    /**
+     * Returns the public key parsed from the key string
+     * @param keyString
+     * @return
+     */
+    public PublicKey getPublicKeyFromString(String keyString) {
+        return RSAEncryption.readPublicKeyFromString(keyString);
+    }
+
+    /**
+     * Returns the private key used for this session
+     * @return
+     * @throws IOException
+     */
+    public PrivateKey getPrivateKey() throws IOException {
+        return RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile);
+    }
+
+    /**
+     * Encrypts a message with a public key
+     * @param message
+     * @return
+     */
+    public String encrypt(PublicKey key, String message)  {
+        // encrypt data
+        byte[] encryptedData = new byte[0];
+        try {
+            encryptedData = RSAEncryption.encryptData(message, key);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to encrypt the message", e);
+            return null;
+        }
+        // encode data
+        return new String(Base64.encode(encryptedData, Base64.NO_WRAP));
+    }
+
+    /**
+     * Decrypts a message using the private key
+     * @param message
+     * @return
+     * @throws IOException
+     */
+    public String decrypt(String message) {
+        // decode message
+        byte[] decoded = Base64.decode(message.getBytes(), Base64.NO_WRAP);
+        // decrypt message
+        try {
+            return RSAEncryption.decryptData(decoded, getPrivateKey());
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to decrypt the message", e);
+            return null;
+        }
     }
 
     /**
@@ -312,220 +446,230 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
      * @param message
      */
     private void onServerReceivedMessage(final Handler handle, Peer client, String message) {
-        Server server = (Server)mService;
-
         String[] data = StringUtilities.chunk(message, ":");
-
+        // TODO: we should probably place these into different methods for better organization
         // validate client
-        if(client.isConnected()) {
-            if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
-                // send the project list to the client
+        if(client.isAuthorized()) {
+            if(client.isConnected()) {
+                // *********************************
+                // authorized and connected
+                // *********************************
+                if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
+                    // send the project list to the client
 
-                // read preferred source language (for better readability on the client)
-                List<SourceLanguage> preferredSourceLanguages = new ArrayList<SourceLanguage>();
-                try {
-                    JSONArray preferredLanguagesJson = new JSONArray(data[1]);
-                    for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
-                        SourceLanguage lang = MainContext.getContext().getSharedProjectManager().getSourceLanguage(preferredLanguagesJson.getString(i));
-                        if(lang != null) {
-                            preferredSourceLanguages.add(lang);
-                        }
-                    }
-                } catch (JSONException e) {
-                    Logger.e(this.getClass().getName(), "failed to parse project list", e);
-                }
-
-                // locate available projects
-                JSONArray projectsJson = new JSONArray();
-                Project[] projects = app().getSharedProjectManager().getProjects();
-                // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
-                for(Project p:projects) {
-                    if(p.isTranslatingGlobal()) {
-                        JSONObject json = new JSONObject();
-                        try {
-                            json.put("id", p.getId());
-
-                            // for better readability we attempt to give the project details in the preferred language of the client
-                            SourceLanguage shownLanguage = null;
-                            if(preferredSourceLanguages.size() > 0) {
-                                for(SourceLanguage prefferedLang:preferredSourceLanguages) {
-                                    shownLanguage = p.getSourceLanguage(prefferedLang.getId());
-                                    if(shownLanguage != null) {
-
-                                        break;
-                                    }
-                                }
-                            }
-                            // use the default language
-                            if(shownLanguage == null) {
-                                shownLanguage = p.getSelectedSourceLanguage();
-                            }
-
-                            // project details
-                            JSONObject projectInfoJson = new JSONObject();
-                            projectInfoJson.put("name", p.getTitle(shownLanguage));
-                            projectInfoJson.put("description", p.getDescription(shownLanguage));
-                            // TRICKY: since we are only providing the project details in a single source language we don't need to include the meta id's
-                            PseudoProject[] pseudoProjects = p.getSudoProjects();
-                            JSONArray sudoProjectsJson = new JSONArray();
-                            for(PseudoProject sp: pseudoProjects) {
-                                sudoProjectsJson.put(sp.getTitle(shownLanguage));
-                            }
-                            projectInfoJson.put("meta", sudoProjectsJson);
-                            json.put("project", projectInfoJson);
-
-                            // project details language
-                            JSONObject projectLanguageJson = new JSONObject();
-                            projectLanguageJson.put("slug", shownLanguage.getId());
-                            projectLanguageJson.put("name", shownLanguage.getName());
-                            if(shownLanguage.getDirection() == Language.Direction.RightToLeft) {
-                                projectLanguageJson.put("direction", "rtl");
-                            } else {
-                                projectLanguageJson.put("direction", "ltr");
-                            }
-                            json.put("language", projectLanguageJson);
-
-                            // available target languages
-                            Language[] targetLanguages = p.getActiveTargetLanguages();
-                            JSONArray languagesJson = new JSONArray();
-                            for(Language l:targetLanguages) {
-                                JSONObject langJson = new JSONObject();
-                                langJson.put("slug", l.getId());
-                                langJson.put("name", l.getName());
-                                if(l.getDirection() == Language.Direction.RightToLeft) {
-                                    langJson.put("direction", "rtl");
-                                } else {
-                                    langJson.put("direction", "ltr");
-                                }
-                                languagesJson.put(langJson);
-                            }
-                            json.put("target_languages", languagesJson);
-                            projectsJson.put(json);
-                        } catch (JSONException e) {
-                            Logger.e(this.getClass().getName(), "malformed or corrupt project list", e);
-                        }
-                    }
-                }
-                server.writeTo(client, SocketMessages.MSG_PROJECT_LIST + ":" + projectsJson.toString());
-            } else if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
-                // send the project archive to the client
-                JSONObject json;
-                try {
-                    json = new JSONObject(data[1]);
-                } catch (final JSONException e) {
-                    Logger.e(this.getClass().getName(), "failed to parse project archive response", e);
-                    server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
-                    return;
-                }
-
-                // load data
-                if(json.has("id") && json.has("target_languages")) {
+                    // read preferred source language (for better readability on the client)
+                    List<SourceLanguage> preferredSourceLanguages = new ArrayList<SourceLanguage>();
                     try {
-                        String projectId = json.getString("id");
-                        final Project p = app().getSharedProjectManager().getProject(projectId);
-                        // validate project
-                        if(p != null) {
-                            // validate requested target languages
-                            Language[] activeLanguages = p.getActiveTargetLanguages();
-                            JSONArray languagesJson = json.getJSONArray("target_languages");
-                            final List<Language> requestedTranslations = new ArrayList<Language>();
-                            for (int i = 0; i < languagesJson.length(); i++) {
-                                String languageId = (String) languagesJson.get(i);
-                                for(Language l:activeLanguages) {
-                                    if(l.getId().equals(languageId)) {
-                                        requestedTranslations.add(l);
-                                        break;
+                        JSONArray preferredLanguagesJson = new JSONArray(data[1]);
+                        for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
+                            SourceLanguage lang = MainContext.getContext().getSharedProjectManager().getSourceLanguage(preferredLanguagesJson.getString(i));
+                            if(lang != null) {
+                                preferredSourceLanguages.add(lang);
+                            }
+                        }
+                    } catch (JSONException e) {
+                        Logger.e(this.getClass().getName(), "failed to parse project list", e);
+                    }
+
+                    // locate available projects
+                    JSONArray projectsJson = new JSONArray();
+                    Project[] projects = app().getSharedProjectManager().getProjects();
+                    // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
+                    for(Project p:projects) {
+                        if(p.isTranslatingGlobal()) {
+                            JSONObject json = new JSONObject();
+                            try {
+                                json.put("id", p.getId());
+
+                                // for better readability we attempt to give the project details in the preferred language of the client
+                                SourceLanguage shownLanguage = null;
+                                if(preferredSourceLanguages.size() > 0) {
+                                    for(SourceLanguage prefferedLang:preferredSourceLanguages) {
+                                        shownLanguage = p.getSourceLanguage(prefferedLang.getId());
+                                        if(shownLanguage != null) {
+
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            if(requestedTranslations.size() > 0) {
-                                String path = p.exportProject(requestedTranslations.toArray(new Language[requestedTranslations.size()]));
-                                final File archive = new File(path);
-                                if(archive.exists()) {
-                                    // open a socket to send the project
-                                    ServerSocket fileSocket = server.createSenderSocket(new Service.OnSocketEventListener() {
-                                        @Override
-                                        public void onOpen(Connection connection) {
-                                            // send an archive of the current project to the connection
-                                            try {
-                                                // send the file to the connection
-                                                // TODO: display a progress bar when the files are being transferred (on each client list item)
-                                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
-                                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
-                                                byte[] buffer = new byte[8 * 1024];
-                                                int count;
-                                                while ((count = in.read(buffer)) > 0)
-                                                {
-                                                    out.write(buffer, 0, count);
-                                                }
-                                                out.close();
-                                                in.close();
-                                            } catch (final IOException e) {
-                                                handle.post(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        app().showException(e);
-                                                    }
-                                                });
-                                                return;
-                                            }
-                                        }
-                                    });
-                                    // send details to the client so they can download
-                                    JSONObject infoJson = new JSONObject();
-                                    infoJson.put("port", fileSocket.getLocalPort());
-                                    infoJson.put("name", archive.getName());
-                                    infoJson.put("size", archive.length());
-                                    server.writeTo(client, SocketMessages.MSG_PROJECT_ARCHIVE +":" + infoJson.toString());
+                                // use the default language
+                                if(shownLanguage == null) {
+                                    shownLanguage = p.getSelectedSourceLanguage();
+                                }
+
+                                // project details
+                                JSONObject projectInfoJson = new JSONObject();
+                                projectInfoJson.put("name", p.getTitle(shownLanguage));
+                                projectInfoJson.put("description", p.getDescription(shownLanguage));
+                                // TRICKY: since we are only providing the project details in a single source language we don't need to include the meta id's
+                                PseudoProject[] pseudoProjects = p.getSudoProjects();
+                                JSONArray sudoProjectsJson = new JSONArray();
+                                for(PseudoProject sp: pseudoProjects) {
+                                    sudoProjectsJson.put(sp.getTitle(shownLanguage));
+                                }
+                                projectInfoJson.put("meta", sudoProjectsJson);
+                                json.put("project", projectInfoJson);
+
+                                // project details language
+                                JSONObject projectLanguageJson = new JSONObject();
+                                projectLanguageJson.put("slug", shownLanguage.getId());
+                                projectLanguageJson.put("name", shownLanguage.getName());
+                                if(shownLanguage.getDirection() == Language.Direction.RightToLeft) {
+                                    projectLanguageJson.put("direction", "rtl");
                                 } else {
-                                    // the archive could not be created
-                                    server.writeTo(client, SocketMessages.MSG_SERVER_ERROR);
+                                    projectLanguageJson.put("direction", "ltr");
+                                }
+                                json.put("language", projectLanguageJson);
+
+                                // available target languages
+                                Language[] targetLanguages = p.getActiveTargetLanguages();
+                                JSONArray languagesJson = new JSONArray();
+                                for(Language l:targetLanguages) {
+                                    JSONObject langJson = new JSONObject();
+                                    langJson.put("slug", l.getId());
+                                    langJson.put("name", l.getName());
+                                    if(l.getDirection() == Language.Direction.RightToLeft) {
+                                        langJson.put("direction", "rtl");
+                                    } else {
+                                        langJson.put("direction", "ltr");
+                                    }
+                                    languagesJson.put(langJson);
+                                }
+                                json.put("target_languages", languagesJson);
+                                projectsJson.put(json);
+                            } catch (JSONException e) {
+                                Logger.e(this.getClass().getName(), "malformed or corrupt project list", e);
+                            }
+                        }
+                    }
+                    mService.writeTo(client, SocketMessages.MSG_PROJECT_LIST + ":" + projectsJson.toString());
+                } else if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
+                    // send the project archive to the client
+                    JSONObject json;
+                    try {
+                        json = new JSONObject(data[1]);
+                    } catch (final JSONException e) {
+                        Logger.e(this.getClass().getName(), "failed to parse project archive response", e);
+                        mService.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
+                        return;
+                    }
+
+                    // load data
+                    if(json.has("id") && json.has("target_languages")) {
+                        try {
+                            String projectId = json.getString("id");
+                            final Project p = app().getSharedProjectManager().getProject(projectId);
+                            // validate project
+                            if(p != null) {
+                                // validate requested target languages
+                                Language[] activeLanguages = p.getActiveTargetLanguages();
+                                JSONArray languagesJson = json.getJSONArray("target_languages");
+                                final List<Language> requestedTranslations = new ArrayList<Language>();
+                                for (int i = 0; i < languagesJson.length(); i++) {
+                                    String languageId = (String) languagesJson.get(i);
+                                    for(Language l:activeLanguages) {
+                                        if(l.getId().equals(languageId)) {
+                                            requestedTranslations.add(l);
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(requestedTranslations.size() > 0) {
+                                    String path = p.exportProject(requestedTranslations.toArray(new Language[requestedTranslations.size()]));
+                                    final File archive = new File(path);
+                                    if(archive.exists()) {
+                                        // open a socket to send the project
+                                        ServerSocket fileSocket = mService.createSenderSocket(new Service.OnSocketEventListener() {
+                                            @Override
+                                            public void onOpen(Connection connection) {
+                                                // send an archive of the current project to the connection
+                                                try {
+                                                    // send the file to the connection
+                                                    // TODO: display a progress bar when the files are being transferred (on each client list item)
+                                                    DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
+                                                    DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
+                                                    byte[] buffer = new byte[8 * 1024];
+                                                    int count;
+                                                    while ((count = in.read(buffer)) > 0)
+                                                    {
+                                                        out.write(buffer, 0, count);
+                                                    }
+                                                    out.close();
+                                                    in.close();
+                                                } catch (final IOException e) {
+                                                    handle.post(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            app().showException(e);
+                                                        }
+                                                    });
+                                                    return;
+                                                }
+                                            }
+                                        });
+                                        // send details to the client so they can download
+                                        JSONObject infoJson = new JSONObject();
+                                        infoJson.put("port", fileSocket.getLocalPort());
+                                        infoJson.put("name", archive.getName());
+                                        infoJson.put("size", archive.length());
+                                        mService.writeTo(client, SocketMessages.MSG_PROJECT_ARCHIVE +":" + infoJson.toString());
+                                    } else {
+                                        // the archive could not be created
+                                        mService.writeTo(client, SocketMessages.MSG_SERVER_ERROR);
+                                    }
+                                } else {
+                                    // the client should have known better
+                                    mService.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                                 }
                             } else {
                                 // the client should have known better
-                                server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
+                                mService.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                             }
-                        } else {
-                            // the client should have known better
-                            server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
+                        } catch (JSONException e) {
+                            Logger.e(this.getClass().getName(), "malformed or corrupt project archive response", e);
+                            mService.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
+                        } catch (IOException e) {
+                            Logger.e(this.getClass().getName(), "unable to read project archive response", e);
+                            mService.writeTo(client, SocketMessages.MSG_SERVER_ERROR);
                         }
-                    } catch (JSONException e) {
-                        Logger.e(this.getClass().getName(), "malformed or corrupt project archive response", e);
-                        server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
-                    } catch (IOException e) {
-                        Logger.e(this.getClass().getName(), "unable to read project archive response", e);
-                        server.writeTo(client, SocketMessages.MSG_SERVER_ERROR);
+                    } else {
+                        mService.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                     }
-                } else {
-                    server.writeTo(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
-            } else if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
-                // receive the client's public key
-                client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
-                handle.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        updatePeerList();
-                    }
-                });
+            } else {
+                // *********************************
+                // authorized but not connected yet
+                // *********************************
 
-                // send the client our public key
-                File pubKey = app().getPublicKey();
-                if(pubKey.exists()) {
+                if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
+                    // receive the client's public key
+                    client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
+                    handle.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updatePeerList();
+                        }
+                    });
+
+                    // send the client our public key
+                    String key = null;
                     try {
-                        String key = FileUtils.readFileToString(pubKey);
-                        mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+                        key = getPublicKeyString();
                     } catch (IOException e) {
-                        Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the client", e);
+                        Logger.e(this.getClass().getName(), "Missing the public key", e);
+                        // TODO: missing the public key
+                        return;
                     }
-                } else {
-                    // TODO: this is an error
-                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Missing public key");
+                    mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+                    client.setIsConnected(true);
                 }
             }
         } else {
+            // *********************************
+            // not authorized
+            // *********************************
             // the client is not authorized
-            server.writeTo(client, SocketMessages.MSG_AUTHORIZATION_ERROR);
+            mService.writeTo(client, SocketMessages.MSG_AUTHORIZATION_ERROR);
         }
     }
 
@@ -536,7 +680,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
      * @param message
      */
     private void onClientReceivedMessage(final Handler handle, final Peer server, String message) {
-        Client client = (Client)mService;
 
         String[] data = StringUtilities.chunk(message, ":");
         if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
@@ -563,7 +706,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     return;
                 }
                 // the server is sending a project archive
-                client.createReceiverSocket(server, port, new Service.OnSocketEventListener() {
+                mService.createReceiverSocket(server, port, new Service.OnSocketEventListener() {
                     @Override
                     public void onOpen(Connection connection) {
                         connection.setOnCloseListener(new Connection.OnCloseListener() {
@@ -667,18 +810,15 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         } else if(data[0].equals(SocketMessages.MSG_OK)) {
             // we are authorized to access the server
             // send public key to server
-            File pubKey = app().getPublicKey();
-            if(pubKey.exists()) {
-                try {
-                    String key = FileUtils.readFileToString(pubKey);
-                    mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
-                } catch (IOException e) {
-                    Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Failed to send public key to the server", e);
-                }
-            } else {
-                // TODO: display an error
-                Logger.e(DeviceToDeviceActivity.this.getClass().getName(), "Missing public key");
+            String key;
+            try {
+                key = getPublicKeyString();
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Missing the public key", e);
+                // TODO: missing public key
+                return;
             }
+            mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
         } else if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
             String rawProjectList = data[1];

@@ -15,15 +15,11 @@ import android.widget.EditText;
 
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.ServerUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
 import org.apache.http.NameValuePair;
-import org.apache.http.ParseException;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;

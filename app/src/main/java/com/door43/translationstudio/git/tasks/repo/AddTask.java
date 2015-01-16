@@ -1,10 +1,7 @@
 package com.door43.translationstudio.git.tasks.repo;
 
-import android.content.DialogInterface;
-
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.StopTaskException;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;

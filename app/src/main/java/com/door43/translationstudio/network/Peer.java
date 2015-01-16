@@ -14,6 +14,7 @@ public class Peer {
     private long mLastSeenAt = 0;
     private boolean mIsConnected = false;
     public final KeyValueStore keyStore = new KeyValueStore();
+    private boolean mIsAuthorized = false;
 
     /**
      * Specifies a new peer (likely a client)
@@ -96,6 +97,22 @@ public class Peer {
      */
     public boolean isConnected() {
         return mIsConnected;
+    }
+
+    /**
+     * Checks if the peer has permission to connect
+     * @return
+     */
+    public boolean isAuthorized() {
+        return mIsAuthorized;
+    }
+
+    /**
+     * Sets the authorization status of the peer
+     * @param isAuthorized
+     */
+    public void setIsAuthorized(boolean isAuthorized) {
+        mIsAuthorized = isAuthorized;
     }
 
     /**

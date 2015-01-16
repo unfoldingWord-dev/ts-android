@@ -2,19 +2,19 @@ package com.door43.translationstudio.translations;
 
 import android.util.Log;
 
+import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
+import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TCPClient;
-import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.git.tasks.ProgressCallback;
-import com.door43.translationstudio.git.tasks.repo.PushTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;

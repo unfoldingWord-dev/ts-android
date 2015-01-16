@@ -3,7 +3,6 @@ package com.door43.translationstudio.util;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 /**
  * This class allows you to execute operations in a seperate thread and then finish up by running some code on the ui thread

@@ -11,4 +11,5 @@ public class SocketMessages {
     public static final String MSG_INVALID_REQUEST = "ir";
     public static final String MSG_SERVER_ERROR = "se";
     public static final String MSG_PUBLIC_KEY = "pk";
+    public static final String MSG_EXCEPTION = "ex";
 }
