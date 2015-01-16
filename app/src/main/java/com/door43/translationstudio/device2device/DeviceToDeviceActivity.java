@@ -34,12 +34,11 @@ import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.RSAEncryption;
-import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
+import com.tozny.crypto.android.AesCbcWithIntegrity;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,6 +57,12 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+
+import static com.tozny.crypto.android.AesCbcWithIntegrity.decryptString;
+import static com.tozny.crypto.android.AesCbcWithIntegrity.encrypt;
+import static com.tozny.crypto.android.AesCbcWithIntegrity.generateKey;
+import static com.tozny.crypto.android.AesCbcWithIntegrity.keyString;
+import static com.tozny.crypto.android.AesCbcWithIntegrity.keys;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private boolean mStartAsServer = false;
@@ -130,14 +135,14 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 public void onMessageReceived(Peer client, String message) {
                     // decrypt messages when the server is connected
                     if(client.isConnected()) {
-                        message = decrypt(message);
+                        message = decryptMessage(message);
                         if(message == null) {
                             Logger.e(this.getClass().getName(), "The message could not be decrypted");
                             app().showToastMessage("Decryption exception");
                             return;
                         }
                     }
-                    onServerReceivedMessage(handler, client, message);
+                    onServerReceivedMessage(client, message);
                 }
 
                 @Override
@@ -146,7 +151,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         // encrypt message once the client has connected
                         PublicKey key = getPublicKeyFromString(client.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
                         if(key != null) {
-                            return encrypt(key, message);
+                            return encryptMessage(key, message);
                         } else {
                             // TODO: we are missing the client's public key
                             Logger.w(this.getClass().getName(), "Missing the client's public key");
@@ -207,14 +212,14 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 public void onMessageReceived(Peer server, String message) {
                     // decrypt messages when the server is connected
                     if(server.isConnected()) {
-                        message = decrypt(message);
+                        message = decryptMessage(message);
                         if(message == null) {
                             Logger.e(this.getClass().getName(), "The message could not be decrypted");
                             app().showToastMessage("Decryption exception");
                             return;
                         }
                     }
-                    onClientReceivedMessage(handler, server, message);
+                    onClientReceivedMessage(server, message);
                 }
 
                 @Override
@@ -223,7 +228,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         // encrypt message once the server has connected
                         PublicKey key = getPublicKeyFromString(server.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
                         if(key != null) {
-                            return encrypt(key, message);
+                            return encryptMessage(key, message);
                         } else {
                             // TODO: we are missing the server's public key
                             Logger.w(this.getClass().getName(), "Missing the server's public key");
@@ -329,25 +334,25 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
     /**
      * Returns the public key used for this session
-     * @return
+     * @return the raw public key string
      * @throws IOException
      */
-    public String getPublicKeyString() throws IOException {
-        return FileUtils.readFileToString(mPublicKeyFile);
+    public String getPublicKeyString() throws Exception {
+        return RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile));
     }
 
     /**
      * Returns the public key parsed from the key string
-     * @param keyString
-     * @return
+     * @param keyString the raw key string
+     * @return the public key
      */
     public PublicKey getPublicKeyFromString(String keyString) {
-        return RSAEncryption.readPublicKeyFromString(keyString);
+        return RSAEncryption.getPublicKeyFromString(keyString);
     }
 
     /**
      * Returns the private key used for this session
-     * @return
+     * @return a private key object or null
      * @throws IOException
      */
     public PrivateKey getPrivateKey() throws IOException {
@@ -356,36 +361,60 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
     /**
      * Encrypts a message with a public key
-     * @param message
-     * @return
+     * @param publicKey the public key that will be used to encrypt the message
+     * @param message the message to be encrypted
+     * @return the encrypted message
      */
-    public String encrypt(PublicKey key, String message)  {
-        // encrypt data
-        byte[] encryptedData = new byte[0];
+    public String encryptMessage(PublicKey publicKey, String message)  {
+        // TRICKY: RSA is not good for encrypting large amounts of data.
+        // So we first encrypt the data then encrypt the encryption key using the public key.
+        // the encrypted key is then attached to the encrypted message.
+
         try {
-            encryptedData = RSAEncryption.encryptData(message, key);
-        } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to encrypt the message", e);
+            // encrypt message
+            AesCbcWithIntegrity.SecretKeys key = generateKey();
+            AesCbcWithIntegrity.CipherTextIvMac civ = encrypt(message, key);
+            String encryptedMessage = civ.toString();
+
+            // encrypt key
+            byte[] encryptedKeyBytes = RSAEncryption.encryptData(keyString(key), publicKey);
+            if(encryptedKeyBytes == null) {
+                Logger.e(this.getClass().getName(), "Failed to encrypt the message");
+                return null;
+            }
+            // encode key
+            String encryptedKey = new String(Base64.encode(encryptedKeyBytes, Base64.NO_WRAP));
+            return encryptedKey + "-key-" + encryptedMessage;
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
-        // encode data
-        return new String(Base64.encode(encryptedData, Base64.NO_WRAP));
     }
 
     /**
      * Decrypts a message using the private key
-     * @param message
-     * @return
-     * @throws IOException
+     * @param message the message to be decrypted
+     * @return the decrypted message
      */
-    public String decrypt(String message) {
-        // decode message
-        byte[] decoded = Base64.decode(message.getBytes(), Base64.NO_WRAP);
-        // decrypt message
+    public String decryptMessage(String message) {
+        // extract encryption key
         try {
-            return RSAEncryption.decryptData(decoded, getPrivateKey());
-        } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to decrypt the message", e);
+            String[] pieces = message.split("\\-key\\-");
+            if (pieces.length == 2) {
+                // decode key
+                byte[] data = Base64.decode(pieces[0].getBytes(), Base64.NO_WRAP);
+                // decrypt key
+                AesCbcWithIntegrity.SecretKeys key = keys(RSAEncryption.decryptData(data, getPrivateKey()));
+
+                // decrypt message
+                AesCbcWithIntegrity.CipherTextIvMac civ = new AesCbcWithIntegrity.CipherTextIvMac(pieces[1]); // encrypt("", key);
+                return decryptString(civ, key);
+            } else {
+                Logger.w(this.getClass().getName(), "Invalid message to decrypt");
+                return null;
+            }
+        } catch(Exception e) {
+            Logger.e(this.getClass().getName(), "Invalid message to decrypt", e);
             return null;
         }
     }
@@ -431,7 +460,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        // TODO: we could have additional menu items to adjust the sharing settings.
         if (id == R.id.action_share_to_all) {
             return true;
         }
@@ -441,11 +469,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
     /**
      * Handles messages received by the server
-     * @param handle
-     * @param client
-     * @param message
+     * @param client the client peer that sent the message
+     * @param message the message received from the client
      */
-    private void onServerReceivedMessage(final Handler handle, Peer client, String message) {
+    private void onServerReceivedMessage(Peer client, String message) {
+        final Handler handle = new Handler(getMainLooper());
         String[] data = StringUtilities.chunk(message, ":");
         // TODO: we should probably place these into different methods for better organization
         // validate client
@@ -603,7 +631,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                                             app().showException(e);
                                                         }
                                                     });
-                                                    return;
                                                 }
                                             }
                                         });
@@ -652,10 +679,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     });
 
                     // send the client our public key
-                    String key = null;
+                    String key;
                     try {
                         key = getPublicKeyString();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         Logger.e(this.getClass().getName(), "Missing the public key", e);
                         // TODO: missing the public key
                         return;
@@ -675,17 +702,17 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
     /**
      * Handles messages received by the client
-     * @param handle
-     * @param server
-     * @param message
+     * @param server the server peer that sent the message
+     * @param message the message sent by the server
      */
-    private void onClientReceivedMessage(final Handler handle, final Peer server, String message) {
+    private void onClientReceivedMessage(final Peer server, String message) {
+        final Handler handle = new Handler(getMainLooper());
 
         String[] data = StringUtilities.chunk(message, ":");
         if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
 
             // load data
-            JSONObject infoJson = null;
+            JSONObject infoJson;
             try {
                 infoJson = new JSONObject(data[1]);
             } catch (JSONException e) {
@@ -794,10 +821,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 });
                             }
                         } catch (final IOException e) {
+                            Logger.e(this.getClass().getName(), "Failed to download the file", e);
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     app().showException(e);
+                                    hideProgress();
                                 }
                             });
                         }
@@ -813,7 +842,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             String key;
             try {
                 key = getPublicKeyString();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Missing the public key", e);
                 // TODO: missing public key
                 return;
@@ -824,7 +853,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             String rawProjectList = data[1];
             final ArrayList<Model> availableProjects = new ArrayList<Model>();
 
-            JSONArray json = null;
+            JSONArray json;
             try {
                 json = new JSONArray(rawProjectList);
             } catch (final JSONException e) {
@@ -884,7 +913,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
                         // available translation languages
                         JSONArray languagesJson = projectJson.getJSONArray("target_languages");
-                        ArrayList<Language> languages = new ArrayList<Language>();
                         for(int j=0; j<languagesJson.length(); j++) {
                             JSONObject langJson = languagesJson.getJSONObject(j);
                             String languageId = langJson.getString("slug");
@@ -928,7 +956,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     } else {
                         // there are no available projects on the server
                         // TODO: eventually we'll want to display the user friendly name of the server.
-                        app().showMessageDialog(server.getIpAddress().toString(), getResources().getString(R.string.no_projects_available_on_server));
+                        app().showMessageDialog(server.getIpAddress(), getResources().getString(R.string.no_projects_available_on_server));
                     }
                 }
             });
@@ -962,7 +990,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
     /**
      * Triggered when the client chooses a project from the server's project list
-     * @param event
+     * @param event the event fired
      */
     @Subscribe
     public void onChoseProjectToImport(ChoseProjectToImportEvent event) {
@@ -973,7 +1001,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
     /**
      * Triggered when the client chooses the translations they wish to import with the project.
-     * @param event
+     * @param event the event fired
      */
     @Subscribe
     public void onChoseProjectTranslationsToImport(ChoseProjectLanguagesToImportEvent event) {

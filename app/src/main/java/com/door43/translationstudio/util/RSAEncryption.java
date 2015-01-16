@@ -1,5 +1,7 @@
 package com.door43.translationstudio.util;
 
+import android.util.Base64;
+
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -52,9 +54,8 @@ public class RSAEncryption {
         RSAPrivateKeySpec rsaPrivKeySpec = keyFactory.getKeySpec(privateKey, RSAPrivateKeySpec.class);
 
         // save keys
-        RSAEncryption rsaObj = new RSAEncryption();
-        rsaObj.saveKeys(publicKeyFile.getAbsolutePath(), rsaPubKeySpec.getModulus(), rsaPubKeySpec.getPublicExponent());
-        rsaObj.saveKeys(privateKeyFile.getAbsolutePath(), rsaPrivKeySpec.getModulus(), rsaPrivKeySpec.getPrivateExponent());
+        saveKeys(publicKeyFile.getAbsolutePath(), rsaPubKeySpec.getModulus(), rsaPubKeySpec.getPublicExponent());
+        saveKeys(privateKeyFile.getAbsolutePath(), rsaPrivKeySpec.getModulus(), rsaPrivKeySpec.getPrivateExponent());
     }
 
     /**
@@ -125,6 +126,46 @@ public class RSAEncryption {
     }
 
     /**
+     * Converts the public key to a string
+     * @param key
+     * @return
+     */
+    public static String getPublicKeyAsString(PublicKey key) throws Exception {
+        // pull out parameters which makes up Key
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        RSAPublicKeySpec rsaPubKeySpec = keyFactory.getKeySpec(key, RSAPublicKeySpec.class);
+
+        // save as string
+        String modulus = new String(Base64.encode(rsaPubKeySpec.getModulus().toByteArray(), Base64.NO_WRAP));
+        String exponent = new String(Base64.encode(rsaPubKeySpec.getPublicExponent().toByteArray(), Base64.NO_WRAP));
+
+        return modulus+"<split>"+exponent;
+    }
+
+    /**
+     * Creates a public key from a string
+     * @param keyString
+     * @return
+     */
+    public static PublicKey getPublicKeyFromString(String keyString) {
+        String[] pieces = keyString.split("<split>");
+        if(pieces.length == 2) {
+            BigInteger modulus = new BigInteger(Base64.decode(pieces[0].getBytes(), Base64.NO_WRAP));
+            BigInteger exponent = new BigInteger(Base64.decode(pieces[1].getBytes(), Base64.NO_WRAP));
+
+            RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(modulus, exponent);
+            try {
+                KeyFactory fact = KeyFactory.getInstance("RSA");
+                PublicKey publicKey = fact.generatePublic(rsaPublicKeySpec);
+                return publicKey;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
      * read Public Key From File
      * @param file
      * @return PublicKey
@@ -192,45 +233,6 @@ public class RSAEncryption {
                 ois.close();
                 if(fis != null){
                     fis.close();
-                }
-            }
-        }
-        return null;
-    }
-
-    public static PublicKey readPublicKeyFromString(String keyString) {
-        InputStream is = null;
-        ObjectInputStream ois = null;
-        try {
-            is = new ByteArrayInputStream(keyString.getBytes(StandardCharsets.UTF_8));
-            ois = new ObjectInputStream(is);
-
-            BigInteger modulus = (BigInteger) ois.readObject();
-            BigInteger exponent = (BigInteger) ois.readObject();
-
-            //Get Public Key
-            RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(modulus, exponent);
-            KeyFactory fact = KeyFactory.getInstance("RSA");
-            PublicKey publicKey = fact.generatePublic(rsaPublicKeySpec);
-
-            return publicKey;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally{
-            if(ois != null){
-                try {
-                    ois.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if(is != null){
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 }
             }
         }
