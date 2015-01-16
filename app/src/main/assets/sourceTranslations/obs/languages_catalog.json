@@ -1,16 +1,1 @@
-[
-  {
-    "language": {
-      "date_modified": "20141207", 
-      "direction": "ltr", 
-      "name": "English", 
-      "slug": "en"
-    }, 
-    "project": {
-      "desc": "an unrestricted visual mini-Bible in any language", 
-      "meta": [], 
-      "name": "Open Bible Stories"
-    }, 
-    "res_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/en/resources.json"
-  }
-]
+[{"language":{"date_modified":"20141207","direction":"ltr","name":"English","slug":"en"},"project":{"desc":"an unrestricted visual mini-Bible in any language","meta":[],"name":"OPEN BIBLE STORIES"},"res_catalog":"https://api.unfoldingword.org/ts/txt/2/obs/en/resources.json"}]
