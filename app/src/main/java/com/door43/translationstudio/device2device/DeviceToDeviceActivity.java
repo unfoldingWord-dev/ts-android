@@ -1,5 +1,6 @@
 package com.door43.translationstudio.device2device;
 
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -55,8 +56,10 @@ import java.net.ServerSocket;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static com.tozny.crypto.android.AesCbcWithIntegrity.decryptString;
 import static com.tozny.crypto.android.AesCbcWithIntegrity.encrypt;
@@ -73,6 +76,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private ProgressDialog mProgressDialog;
     private static final File mPublicKeyFile = new File(MainContext.getContext().getKeysFolder(), "id_rsa_p2p.pub");
     private static final File mPrivateKeyFile = new File(MainContext.getContext().getKeysFolder(), "id_rsa_p2p");
+    private Map<String, DialogFragment> mPeerDialogs = new HashMap<String, DialogFragment>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -199,13 +203,18 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
                 @Override
                 public void onLostServer(final Peer server) {
+                    // close any dialogs for this server
+                    if(mPeerDialogs.containsKey(server.getIpAddress())) {
+                        mPeerDialogs.get(server.getIpAddress()).dismiss();
+                        mPeerDialogs.remove(server.getIpAddress());
+                    }
+                    // reload the list
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             updatePeerList();
                         }
                     });
-                    // TODO: close any dialogs related to this server.
                 }
 
                 @Override
@@ -671,12 +680,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
                     // receive the client's public key
                     client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
-                    handle.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatePeerList();
-                        }
-                    });
 
                     // send the client our public key
                     String key;
@@ -689,6 +692,14 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
                     mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
                     client.setIsConnected(true);
+
+                    // reload the list
+                    handle.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updatePeerList();
+                        }
+                    });
                 }
             }
         } else {
@@ -800,6 +811,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     ft.addToBackStack(null);
                                     app().closeToastMessage();
                                     ProjectImportApprovalDialog newFragment = new ProjectImportApprovalDialog();
+                                    // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
                                     newFragment.setImportRequests(importStatuses);
                                     newFragment.show(ft, "dialog");
                                 } else {
@@ -984,6 +996,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         app().closeToastMessage();
         // Create and show the dialog.
         ChooseProjectToImportDialog newFragment = new ChooseProjectToImportDialog();
+        mPeerDialogs.put(server.getIpAddress(), newFragment);
         newFragment.setImportDetails(server, models);
         newFragment.show(ft, "dialog");
     }
@@ -1055,6 +1068,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         app().closeToastMessage();
         // Create and show the dialog.
         ChooseProjectLanguagesToImportDialog newFragment = new ChooseProjectLanguagesToImportDialog();
+        mPeerDialogs.put(peer.getIpAddress(), newFragment);
         newFragment.setImportDetails(peer, p);
         newFragment.show(ft, "dialog");
     }
