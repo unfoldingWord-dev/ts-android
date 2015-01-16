@@ -1,20 +1,8 @@
 package com.door43.translationstudio.util;
 
-import android.util.Base64;
-
-
-import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 
 /**
  * Created by joel on 1/9/2015.
