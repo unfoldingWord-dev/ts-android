@@ -2,10 +2,8 @@ package com.door43.translationstudio.network;
 
 import android.content.Context;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,9 +109,13 @@ public class Client extends Service {
     @Override
     public void stop() {
         mIsRunning = false;
-        mCleanupThread.interrupt();
+        if(mCleanupThread != null) {
+            mCleanupThread.interrupt();
+        }
         // TODO: we may need to manually close the broadcast listener socket
-        mBroadcastListenerThread.interrupt();
+        if(mBroadcastListenerThread != null) {
+            mBroadcastListenerThread.interrupt();
+        }
         Connection[] servers = mServerConnections.values().toArray(new Connection[mServerConnections.size()]);
         for(Connection c:servers) {
             c.close();
@@ -161,10 +163,7 @@ public class Client extends Service {
                 });
                 // we store a refference to all connections so we can access them later
                 mServerConnections.put(mConnection.getIpAddress(), mConnection);
-            } catch(UnknownHostException e) {
-                mListener.onError(e);
-                Thread.currentThread().interrupt();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 mListener.onError(e);
                 Thread.currentThread().interrupt();
             }

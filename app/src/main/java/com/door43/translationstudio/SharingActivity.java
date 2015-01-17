@@ -196,6 +196,10 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }
                 }, removeableMedia != null, R.string.missing_external_storage));
 
+                // p2p sharing requires an active network connection.
+                // TODO: Later we may need to adjust this since bluetooth and other services do not require an actual network.
+                boolean isNetworkAvailable = app().isNetworkAvailable();
+
                 mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
                     public void run() {
@@ -205,7 +209,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                         intent.putExtras(extras);
                         startActivity(intent);
                     }
-                }));
+                }, isNetworkAvailable, R.string.internet_not_available));
 
                 mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
                     @Override
@@ -216,7 +220,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                         intent.putExtras(extras);
                         startActivity(intent);
                     }
-                }));
+                }, isNetworkAvailable, R.string.internet_not_available));
 
                 mAdapter.notifyDataSetChanged();
                 MainContext.getContext().closeProgressDialog();

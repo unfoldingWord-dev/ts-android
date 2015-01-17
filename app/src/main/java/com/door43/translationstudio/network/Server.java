@@ -52,9 +52,13 @@ public class Server extends Service {
      */
     public void stop() {
         mIsRunning = false;
-        mBroadcastThread.interrupt();
+        if(mBroadcastThread != null) {
+            mBroadcastThread.interrupt();
+        }
         // TODO: we may need to manually close the server socket.
-        mServerThread.interrupt();
+        if(mServerThread != null) {
+            mServerThread.interrupt();
+        }
         Connection[] clients = mClientConnections.values().toArray(new Connection[mClientConnections.size()]);
         for(Connection c:clients) {
             c.close();
@@ -98,7 +102,7 @@ public class Server extends Service {
             // set up sockets
             try {
                 serverSocket = new ServerSocket(0);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 mListener.onError(e);
                 return;
             }
@@ -106,7 +110,7 @@ public class Server extends Service {
             InetAddress broadcastAddress;
             try {
                 broadcastAddress = getBroadcastAddress();
-            } catch (UnknownHostException e) {
+            } catch (Exception e) {
                 mListener.onError(e);
                 return;
             }
@@ -133,13 +137,13 @@ public class Server extends Service {
                     socket = serverSocket.accept();
                     ClientThread clientThread = new ClientThread(socket);
                     new Thread(clientThread).start();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "failed to accept socket", e);
                 }
             }
             try {
                 serverSocket.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "failed to shutdown the server socket", e);
             }
         }
@@ -169,7 +173,7 @@ public class Server extends Service {
                 });
                 // we store a reference to all connections so we can access them later
                 mClientConnections.put(mConnection.getIpAddress(), mConnection);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 mListener.onError(e);
                 Thread.currentThread().interrupt();
             }
