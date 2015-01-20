@@ -1218,8 +1218,8 @@ public class Project implements Model {
 
     /**
      * Performs the actual import of the project
-     * @param request
-     * @return
+     * @param request the project import request
+     * @return true if the import did not encounter any errors
      */
     public static boolean importProject(ProjectImport request) {
         // locate existing project
@@ -1254,7 +1254,6 @@ public class Project implements Model {
                         Language l = MainContext.getContext().getSharedProjectManager().getLanguage(ti.languageId);
                         l.touch();
                         // TODO: perform a git diff to see if there are any changes
-                        return true;
                     } else {
                         Logger.w(Project.class.getName(), "the project import directory does not exist");
                         return false;
@@ -1263,7 +1262,6 @@ public class Project implements Model {
                     // import as new project
                     try {
                         FileUtils.moveDirectory(ti.sourceDir, repoDir);
-                        return true;
                     } catch (IOException e) {
                         Logger.e(Project.class.getName(), "failed to import the project directory", e);
                         return false;
@@ -1273,7 +1271,7 @@ public class Project implements Model {
         } else {
             // TODO: create a new project and add it to the project manager. This will require the existance of the project source in the archive.
         }
-        return false;
+        return true;
     }
 
     /**
