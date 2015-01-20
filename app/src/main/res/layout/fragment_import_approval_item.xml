@@ -3,21 +3,57 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <LinearLayout
+        android:id="@+id/confirmAllLayout"
+        android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="New Text"
-        android:id="@+id/separator"
-        android:background="@color/blue"
-        android:textColor="@color/white"
-        android:textSize="@dimen/h4"
-        android:padding="10dp" />
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+        android:paddingRight="?android:attr/expandableListPreferredItemPaddingLeft">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:background="@color/blue"
+            android:gravity="center_horizontal"
+            android:layout_gravity="center_horizontal"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingRight="15dp"
+            android:paddingLeft="15dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_success_light" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:textAlignment="center"
+                android:paddingLeft="10dp"
+                android:text="@string/confirm_all"
+                android:textColor="@color/white"
+                android:textSize="@dimen/h5"
+                android:textStyle="bold"
+                android:singleLine="false"
+                android:gravity="center_vertical" />
+        </LinearLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:id="@+id/bodyLayout"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:paddingRight="10dp"
+        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft">
 
         <LinearLayout
             android:orientation="vertical"
@@ -29,7 +65,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="New Text"
-                android:id="@+id/languageTextView"
+                android:id="@+id/titleTextView"
                 android:textColor="@color/dark_gray"
                 android:textSize="@dimen/h5"
                 android:textStyle="bold" />
@@ -45,7 +81,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/importApprovedButton"
+            android:id="@+id/approvalStatusImage"
             android:background="@drawable/ic_error" />
 
     </LinearLayout>

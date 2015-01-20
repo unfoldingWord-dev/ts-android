@@ -166,6 +166,7 @@ public class Client extends Service {
             } catch (Exception e) {
                 mListener.onError(e);
                 Thread.currentThread().interrupt();
+                return;
             }
 
             // begin listening to server

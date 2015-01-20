@@ -20,6 +20,7 @@ import com.door43.translationstudio.dialogs.ProjectImportApprovalDialog;
 import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
@@ -73,7 +74,10 @@ public class SharingActivity extends TranslatorBaseActivity {
 
         final File internalDestDir = new File(getCacheDir(), "sharing/");
         final Project p = app().getSharedProjectManager().getSelectedProject();
-        if(p == null) finish();
+        if(p == null) {
+            finish();
+            return;
+        }
 
         MainContext.getContext().showProgressDialog(R.string.loading);
 
@@ -269,10 +273,10 @@ public class SharingActivity extends TranslatorBaseActivity {
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);
-                                List<Project.ImportRequest> importStatuses = Project.prepareProjectArchiveImport(file);
-                                if (importStatuses.size() > 0) {
+                                ProjectImport[] importStatuses = Project.prepareProjectArchiveImport(file);
+                                if (importStatuses.length > 0) {
                                     boolean importWarnings = false;
-                                    for(Project.ImportRequest s:importStatuses) {
+                                    for(ProjectImport s:importStatuses) {
                                         if(!s.isApproved()) {
                                             importWarnings = true;
                                         }
@@ -291,7 +295,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         newFragment.show(ft, "dialog");
                                     } else {
                                         // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
-                                        for(Project.ImportRequest r:importStatuses) {
+                                        for(ProjectImport r:importStatuses) {
                                             Project.importProject(r);
                                             Project.cleanImport(r);
                                         }
@@ -346,7 +350,7 @@ public class SharingActivity extends TranslatorBaseActivity {
     @Subscribe
     public void onProjectImportApproval(ProjectImportApprovalEvent event) {
         app().showProgressDialog(R.string.loading);
-        for(Project.ImportRequest r:event.getImportRequests()) {
+        for(ProjectImport r:event.getImportRequests()) {
             if(r.isApproved()) {
                 // TODO: update the status with the result of the import and show the user a report when the imports are finished.
                 Project.importProject(r);

@@ -32,6 +32,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.RSAEncryption;
@@ -74,14 +75,17 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private ProgressBar mLoadingBar;
     private TextView mLoadingText;
     private ProgressDialog mProgressDialog;
-    private static final File mPublicKeyFile = new File(MainContext.getContext().getKeysFolder(), "id_rsa_p2p.pub");
-    private static final File mPrivateKeyFile = new File(MainContext.getContext().getKeysFolder(), "id_rsa_p2p");
+    private File mPublicKeyFile;
+    private File mPrivateKeyFile;
     private Map<String, DialogFragment> mPeerDialogs = new HashMap<String, DialogFragment>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_to_device);
+        mPublicKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa.pub");
+        mPrivateKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa");
+        mPublicKeyFile.getParentFile().mkdirs();
         mProgressDialog = new ProgressDialog(this);
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
@@ -338,6 +342,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
      * Generates new encryption keys to be used durring this session
      */
     public void generateSessionKeys() throws Exception {
+        // TODO: this is not throwing exceptiosn like it should. When the directory of the keys does not exist it doesn't throw an exception
         RSAEncryption.generateKeys(mPrivateKeyFile, mPublicKeyFile);
     }
 
@@ -793,10 +798,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             in.close();
 
                             // import the project
-                            List<Project.ImportRequest> importStatuses = Project.prepareProjectArchiveImport(file);
-                            if (importStatuses.size() > 0) {
+                            ProjectImport[] importStatuses = Project.prepareProjectArchiveImport(file);
+                            if (importStatuses.length > 0) {
                                 boolean importWarnings = false;
-                                for(Project.ImportRequest s:importStatuses) {
+                                for(ProjectImport s:importStatuses) {
                                     if(!s.isApproved()) {
                                         importWarnings = true;
                                     }
@@ -816,7 +821,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     newFragment.show(ft, "dialog");
                                 } else {
                                     // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
-                                    for(Project.ImportRequest r:importStatuses) {
+                                    for(ProjectImport r:importStatuses) {
                                         Project.importProject(r);
                                         Project.cleanImport(r);
                                     }
@@ -1048,7 +1053,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     @Subscribe
     public void onProjectImportApproval(ProjectImportApprovalEvent event) {
         showProgress(getResources().getString(R.string.loading));
-        for(Project.ImportRequest r:event.getImportRequests()) {
+        for(ProjectImport r:event.getImportRequests()) {
             if(r.isApproved()) {
                 // TODO: update the status with the result of the import and show the user a report when the imports are finished.
                 Project.importProject(r);

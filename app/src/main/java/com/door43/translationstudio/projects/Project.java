@@ -10,6 +10,11 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
+import com.door43.translationstudio.projects.imports.ChapterImport;
+import com.door43.translationstudio.projects.imports.FrameImport;
+import com.door43.translationstudio.projects.imports.ImportRequestInterface;
+import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.ListMap;
@@ -1131,8 +1136,8 @@ public class Project implements Model {
      * Returns the chapters in this project
      * @return
      */
-    public Model[] getChapters() {
-        return mChapters.toArray(new Model[mChapters.size()]);
+    public Chapter[] getChapters() {
+        return mChapters.toArray(new Chapter[mChapters.size()]);
     }
 
     /**
@@ -1201,10 +1206,14 @@ public class Project implements Model {
      * because some files get extracted durring the process.
      * @param request the import status that will be cleaned
      */
-    public static void cleanImport(ImportRequest request) {
-        if(request.sourceDir.exists()) {
-            FileUtilities.deleteRecursive(request.sourceDir);
+    public static void cleanImport(ProjectImport request) {
+        ArrayList<ImportRequestInterface> translationRequests = request.getChildImportRequests().getAll();
+        for(TranslationImport ti:translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
+            if(ti.sourceDir.exists()) {
+                FileUtilities.deleteRecursive(ti.sourceDir);
+            }
         }
+
     }
 
     /**
@@ -1212,49 +1221,53 @@ public class Project implements Model {
      * @param request
      * @return
      */
-    public static boolean importProject(ImportRequest request) {
+    public static boolean importProject(ProjectImport request) {
         // locate existing project
         Project p = MainContext.getContext().getSharedProjectManager().getProject(request.projectId);
         if(p != null) {
-            File repoDir = new File(Project.getRepositoryPath(request.projectId, request.languageId));
-            if(repoDir.exists()) {
-                // merge into existing project
-                File[] files = request.sourceDir.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File file, String s) {
-                        return !s.equals(".git");
-                    }
-                });
-                if(files != null) {
-                    for (File f : files) {
-                        try {
-                            File destDir = new File(repoDir, f.getName());
-                            if (destDir.exists()) {
-                                FileUtilities.deleteRecursive(destDir);
-                            }
-                            FileUtils.moveDirectory(f, destDir);
-                        } catch (IOException e) {
-                            Logger.e(Project.class.getName(), "failed to import the chapter directory ", e);
-                            return false;
-                            // TODO: record list of files that cannot be coppied and display to the user
+            ArrayList<ImportRequestInterface> translationRequests = request.getChildImportRequests().getAll();
+            for(TranslationImport ti:translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
+                File repoDir = new File(Project.getRepositoryPath(request.projectId, ti.languageId));
+                if(repoDir.exists()) {
+                    // merge into existing project
+                    File[] files = ti.sourceDir.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File file, String s) {
+                            return !s.equals(".git");
                         }
+                    });
+                    if(files != null) {
+                        for (File f : files) {
+                            // TODO: validate chapters and frames.
+                            try {
+                                File destDir = new File(repoDir, f.getName());
+                                if (destDir.exists()) {
+                                    FileUtilities.deleteRecursive(destDir);
+                                }
+                                FileUtils.moveDirectory(f, destDir);
+                            } catch (IOException e) {
+                                Logger.e(Project.class.getName(), "failed to import the chapter directory ", e);
+                                return false;
+                                // TODO: record list of files that cannot be coppied and display to the user
+                            }
+                        }
+                        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(ti.languageId);
+                        l.touch();
+                        // TODO: perform a git diff to see if there are any changes
+                        return true;
+                    } else {
+                        Logger.w(Project.class.getName(), "the project import directory does not exist");
+                        return false;
                     }
-                    Language l = MainContext.getContext().getSharedProjectManager().getLanguage(request.languageId);
-                    l.touch();
-                    // TODO: perform a git diff to see if there are any changes
-                    return true;
                 } else {
-                    Logger.w(Project.class.getName(), "the project import directory does not exist");
-                    return false;
-                }
-            } else {
-                // import as new project
-                try {
-                    FileUtils.moveDirectory(request.sourceDir, repoDir);
-                    return true;
-                } catch (IOException e) {
-                    Logger.e(Project.class.getName(), "failed to import the project directory", e);
-                    return false;
+                    // import as new project
+                    try {
+                        FileUtils.moveDirectory(ti.sourceDir, repoDir);
+                        return true;
+                    } catch (IOException e) {
+                        Logger.e(Project.class.getName(), "failed to import the project directory", e);
+                        return false;
+                    }
                 }
             }
         } else {
@@ -1265,30 +1278,102 @@ public class Project implements Model {
 
     /**
      * Performs some checks on a project to make sure it can be imported.
-     * @param projectDir the project directory that will be imported
-     * @return
+     * @param projectImport the import request for the project
+     * @param languageId the the language id for the translatoin
+     * @param projectDir the directory of the project translation that will be imported
      */
-    private static ImportRequest prepareImport(String projectId, String languageId, File projectDir) {
-        ImportRequest request = new ImportRequest(projectId, languageId, projectDir);
+    private static boolean  prepareImport(final ProjectImport projectImport, final String languageId, File projectDir) {
+        final TranslationImport translationImport = new TranslationImport(languageId, projectDir);
+        projectImport.addTranslationImport(translationImport);
+        boolean hadTranslationWarnings = false;
 
         // locate existing project
-        Project p = MainContext.getContext().getSharedProjectManager().getProject(projectId);
+        final Project p = MainContext.getContext().getSharedProjectManager().getProject(projectImport.projectId);
         if(p != null) {
-            File repoDir = new File(Project.getRepositoryPath(projectId, languageId));
+            File repoDir = new File(Project.getRepositoryPath(projectImport.projectId, languageId));
             if(repoDir.exists()) {
+                hadTranslationWarnings = true;
                 // the project already exists
-                request.addWarning("Project translation already exists");
-                return request;
-            } else {
-                // new project translation
-                return request;
+
+                // TODO: we should reference the git commit on files to determine if there are differences.
+                // if files are identical the import should mark them as approved
+                boolean hadChapterWarnings = false;
+
+                // read chapters to import
+                String[] chapterIds = projectDir.list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File file, String s) {
+                        return !s.equals(".git") && file.isDirectory();
+                    }
+                });
+                for(String chapterId:chapterIds) {
+                    Chapter c = p.getChapter(chapterId);
+                    if(c != null) {
+                        ChapterImport chapterImport = new ChapterImport(c.getId(), c.getTitle());
+                        if(c.isTranslating()) {
+                            chapterImport.setWarning("Chapter already exists");
+                            hadChapterWarnings = true;
+                        }
+                        translationImport.addChapterImport(chapterImport);
+                        boolean hadFrameWarnings = false;
+
+                        // TODO: read chapter title and reference
+
+                        // read frames to import
+                        String[] frameFileNames = new File(projectDir, chapterId).list(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File file, String s) {
+                                return !s.equals("title.txt") && !s.equals("reference.txt");
+                            }
+                        });
+                        for(String frameFileName:frameFileNames) {
+                            String[] pieces = frameFileName.split(".");
+                            if(pieces.length != 2) {
+                                Logger.w(Project.class.getName(), "Unexpected file in frame import "+frameFileName);
+                                continue;
+                            }
+                            String frameId = pieces[0];
+                            Frame f = c.getFrame(frameId);
+                            if(f != null) {
+                                FrameImport frameImport = new FrameImport(f.getId(), f.getTitle());
+                                if(f.isTranslating()) {
+                                    frameImport.setWarning("Frame already exists");
+                                    hadFrameWarnings = true;
+                                }
+                                chapterImport.addFrameImport(frameImport);
+                            } else {
+                                // the import source does not match the source on this device.
+                                FrameImport frameImport = new FrameImport(frameId, frameId + " - unknown");
+                                frameImport.setError("Missing source");
+                                chapterImport.addFrameImport(frameImport);
+                                Logger.e(Project.class.getName(), "Missing source for frame "+frameId+" in chapter "+c.getId()+". Cannot import into project "+projectImport.projectId+" for language "+languageId);
+                                hadFrameWarnings = true;
+                            }
+                        }
+
+                        if(hadFrameWarnings) {
+                            chapterImport.setWarning("Some frames already exist");
+                        }
+                    } else {
+                        // the import source does not match the source on this device.
+                        ChapterImport chapterRequest = new ChapterImport(chapterId, chapterId + " - unknown");
+                        chapterRequest.setError("Missing source");
+                        translationImport.addChapterImport(chapterRequest);
+                        Logger.e(Project.class.getName(), "Missing source for chapter "+chapterId+". Cannot import into project "+projectImport.projectId+" for language "+languageId);
+                        hadChapterWarnings = true;
+                    }
+                }
+
+                if(hadChapterWarnings) {
+                    translationImport.setWarning("Some chapters already exists");
+                }
             }
         } else {
             // new project source and translation
             // TODO: eventually we should check if the import includes the source text as well. Then this should just be a warning. Letting the user know that the source will be imported as well.
-            request.addError("Missing project source");
+            translationImport.setError("Missing project source");
         }
-        return request;
+        return hadTranslationWarnings;
     }
 
     /**
@@ -1297,12 +1382,11 @@ public class Project implements Model {
      * @param archive the archive that will be imported
      * @return true if the import was successful
      */
-    public static List<ImportRequest> prepareProjectArchiveImport(File archive) {
-        List<ImportRequest> importRequests = new ArrayList<ImportRequest>();
+    public static ProjectImport[] prepareProjectArchiveImport(File archive) {
+        Map<String, ProjectImport> projectImports = new HashMap<String, ProjectImport>();
 
         // validate extension
         String[] name = archive.getName().split("\\.");
-        Boolean success = false;
         if(name[name.length - 1].equals(PROJECT_EXTENSION)) {
             long timestamp = System.currentTimeMillis();
             File extractedDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
@@ -1312,7 +1396,7 @@ public class Project implements Model {
             } catch (IOException e) {
                 FileUtilities.deleteRecursive(extractedDir);
                 Logger.e(Project.class.getName(), "failed to extract the project archive", e);
-                return importRequests;
+                return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
             }
 
             File manifest = new File(extractedDir, "manifest.json");
@@ -1325,10 +1409,18 @@ public class Project implements Model {
                         for(int i=0; i<projectsJson.length(); i++) {
                             JSONObject projJson = projectsJson.getJSONObject(i);
                             if(projJson.has("path") && projJson.has("project") && projJson.has("target_language")) {
-                                // import the project
-                                File projectDir = new File(extractedDir, projJson.getString("path"));
-                                ImportRequest request = prepareImport(projJson.getString("project"), projJson.getString("target_language"), projectDir);
-                                importRequests.add(request);
+                                // create new or load existing project import
+                                ProjectImport pi = new ProjectImport(projJson.getString("project"));
+                                if(projectImports.containsKey(pi.projectId)) {
+                                    pi = projectImports.get(pi.projectId);
+                                } else {
+                                    projectImports.put(pi.projectId, pi);
+                                }
+                                // prepare the translation import
+                                boolean hadTranslationWarnings = prepareImport(pi, projJson.getString("target_language"), new File(extractedDir, projJson.getString("path")));
+                                if(hadTranslationWarnings) {
+                                    pi.setWarning("Some translations already exist");
+                                }
                             }
                         }
                     }
@@ -1339,7 +1431,7 @@ public class Project implements Model {
                 }
             }
         }
-        return importRequests;
+        return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
     }
 
     /**
@@ -1381,10 +1473,11 @@ public class Project implements Model {
             // read project info
             TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(importDirectory.getName());
             if(translationInfo != null) {
-                ImportRequest request = prepareImport(translationInfo.projectId, translationInfo.languageId, importDirectory);
+                ProjectImport pi = new ProjectImport(translationInfo.projectId);
+                prepareImport(pi, translationInfo.languageId, importDirectory);
                 // TODO: for now we are just blindly importing legacy projects (dangerous). We'll need to update this method as well as the DokuWiki import method in order to properly handle these legacy projects
-                importProject(request);
-                cleanImport(request);
+                importProject(pi);
+                cleanImport(pi);
             }
             FileUtilities.deleteRecursive(extractedDirectory);
             return success;
@@ -1395,6 +1488,7 @@ public class Project implements Model {
 
     /**
      * Returns information about the translation archive
+     * @deprecated this is legacy code for old import methods
      * @param archiveName
      * @return
      */
@@ -1443,51 +1537,6 @@ public class Project implements Model {
 
         public Language getLanguage() {
             return MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
-        }
-    }
-
-    /**
-     * Represents the status of the project import. This is generated before the import actually begins
-     * so that we can get user feedback on warnings before actually performing the import.
-     */
-    public static class ImportRequest {
-        public final File sourceDir;
-        public final String projectId;
-        public final String languageId;
-        private String mError;
-        private String mWarning;
-        private boolean mApproved = true;
-
-        public ImportRequest(String projectId, String languageId, File sourceDir) {
-            this.projectId = projectId;
-            this.languageId = languageId;
-            this.sourceDir = sourceDir;
-        }
-
-        public void addWarning(String s) {
-            mWarning = s;
-            mApproved = false;
-        }
-
-        public void addError(String s) {
-            mError = s;
-            mApproved = false;
-        }
-
-        public String getWarning() {
-            return mWarning;
-        }
-
-        public String getError() {
-            return mError;
-        }
-
-        public boolean isApproved() {
-            return mApproved;
-        }
-
-        public void setIsApproved(boolean approved) {
-            mApproved = approved;
         }
     }
 }

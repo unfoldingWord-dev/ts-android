@@ -1,6 +1,8 @@
 package com.door43.translationstudio.util;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,5 +76,21 @@ public class ListMap<E> {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Returns all the objects
+     * @return
+     */
+    public ArrayList<E> getAll() {
+        return new ArrayList<E>(mObjectMap.values());
+    }
+
+    /**
+     * Returns the size of the list map
+     * @return
+     */
+    public int size() {
+        return mObjects.size();
     }
 }

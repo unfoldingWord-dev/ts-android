@@ -1,6 +1,7 @@
 package com.door43.translationstudio.events;
 
-import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.imports.ImportRequestInterface;
+import com.door43.translationstudio.projects.imports.ProjectImport;
 
 import java.util.List;
 
@@ -8,13 +9,13 @@ import java.util.List;
  * Created by joel on 1/12/2015.
  */
 public class ProjectImportApprovalEvent {
-    private final List<Project.ImportRequest> mRequests;
+    private final ProjectImport[] mRequests;
 
-    public ProjectImportApprovalEvent(List<Project.ImportRequest> requests) {
+    public ProjectImportApprovalEvent(ProjectImport[] requests) {
         mRequests = requests;
     }
 
-    public List<Project.ImportRequest> getImportRequests() {
+    public ProjectImport[] getImportRequests() {
         return mRequests;
     }
 }
