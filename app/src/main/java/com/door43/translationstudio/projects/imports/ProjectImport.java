@@ -10,9 +10,17 @@ import java.io.File;
  */
 public class ProjectImport extends ImportRequest {
     public final String projectId;
+    public final File importDirectory;
 
-    public ProjectImport(String projectId) {
+
+    /**
+     * Creates a new project import request
+     * @param projectId The id of the project that is being imported
+     * @param extractedDirectory the directory containing translations that will be imported. This may technically contain translations from other projects as well. This is just the archive extraction dir.
+     */
+    public ProjectImport(String projectId, File extractedDirectory) {
         this.projectId = projectId;
+        this.importDirectory = extractedDirectory;
     }
 
     /**

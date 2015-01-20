@@ -1,7 +1,6 @@
 package com.door43.translationstudio.projects.imports;
 
 import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
@@ -10,12 +9,12 @@ import java.io.File;
  * Created by joel on 1/19/2015.
  */
 public class TranslationImport extends ImportRequest {
-    public final File sourceDir;
+    public final File translationDirectory;
     public final String languageId;
 
-    public TranslationImport(String languageId, File sourceDir) {
+    public TranslationImport(String languageId, File translationDirectory) {
         this.languageId = languageId;
-        this.sourceDir = sourceDir;
+        this.translationDirectory = translationDirectory;
     }
 
     /**

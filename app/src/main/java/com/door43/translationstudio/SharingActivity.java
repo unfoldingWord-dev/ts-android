@@ -273,10 +273,10 @@ public class SharingActivity extends TranslatorBaseActivity {
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);
-                                ProjectImport[] importStatuses = Project.prepareProjectArchiveImport(file);
-                                if (importStatuses.length > 0) {
+                                ProjectImport[] importRequests = Project.prepareProjectArchiveImport(file);
+                                if (importRequests.length > 0) {
                                     boolean importWarnings = false;
-                                    for(ProjectImport s:importStatuses) {
+                                    for(ProjectImport s:importRequests) {
                                         if(!s.isApproved()) {
                                             importWarnings = true;
                                         }
@@ -291,17 +291,18 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         ft.addToBackStack(null);
                                         app().closeToastMessage();
                                         ProjectImportApprovalDialog newFragment = new ProjectImportApprovalDialog();
-                                        newFragment.setImportRequests(importStatuses);
+                                        newFragment.setImportRequests(importRequests);
                                         newFragment.show(ft, "dialog");
                                     } else {
                                         // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
-                                        for(ProjectImport r:importStatuses) {
+                                        for(ProjectImport r:importRequests) {
                                             Project.importProject(r);
-                                            Project.cleanImport(r);
                                         }
+                                        Project.cleanImport(importRequests);
                                         app().showToastMessage(R.string.success);
                                     }
                                 } else {
+                                    Project.cleanImport(importRequests);
                                     app().showToastMessage(R.string.translation_import_failed);
                                 }
 
@@ -355,8 +356,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                 // TODO: update the status with the result of the import and show the user a report when the imports are finished.
                 Project.importProject(r);
             }
-            Project.cleanImport(r);
         }
+        Project.cleanImport(event.getImportRequests());
         app().closeProgressDialog();
     }
 }

@@ -1203,17 +1203,25 @@ public class Project implements Model {
     /**
      * This performs house cleaning operations after a project has been imported.
      * You should still run this even if you just prepared the import but didn't actually import
-     * because some files get extracted durring the process.
-     * @param request the import status that will be cleaned
+     * because some files get extracted during the process.
+     * @param request the import request that will be cleaned
      */
     public static void cleanImport(ProjectImport request) {
-        ArrayList<ImportRequestInterface> translationRequests = request.getChildImportRequests().getAll();
-        for(TranslationImport ti:translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
-            if(ti.sourceDir.exists()) {
-                FileUtilities.deleteRecursive(ti.sourceDir);
-            }
+        if(request.importDirectory.exists()) {
+            FileUtilities.deleteRecursive(request.importDirectory);
         }
+    }
 
+    /**
+     * This performs house cleaning operations after a project has been imported.
+     * You should still run this even if you just prepared the import but didn't actually import
+     * because some files get extracted during the process.
+     * @param requests the import requests that will be cleaned
+     */
+    public static void cleanImport(ProjectImport[] requests) {
+        for(ProjectImport pi:requests) {
+            cleanImport(pi);
+        }
     }
 
     /**
@@ -1230,7 +1238,7 @@ public class Project implements Model {
                 File repoDir = new File(Project.getRepositoryPath(request.projectId, ti.languageId));
                 if(repoDir.exists()) {
                     // merge into existing project
-                    File[] files = ti.sourceDir.listFiles(new FilenameFilter() {
+                    File[] files = ti.translationDirectory.listFiles(new FilenameFilter() {
                         @Override
                         public boolean accept(File file, String s) {
                             return !s.equals(".git");
@@ -1261,7 +1269,7 @@ public class Project implements Model {
                 } else {
                     // import as new project
                     try {
-                        FileUtils.moveDirectory(ti.sourceDir, repoDir);
+                        FileUtils.moveDirectory(ti.translationDirectory, repoDir);
                     } catch (IOException e) {
                         Logger.e(Project.class.getName(), "failed to import the project directory", e);
                         return false;
@@ -1271,6 +1279,7 @@ public class Project implements Model {
         } else {
             // TODO: create a new project and add it to the project manager. This will require the existance of the project source in the archive.
         }
+        p.commit(null);
         return true;
     }
 
@@ -1408,7 +1417,7 @@ public class Project implements Model {
                             JSONObject projJson = projectsJson.getJSONObject(i);
                             if(projJson.has("path") && projJson.has("project") && projJson.has("target_language")) {
                                 // create new or load existing project import
-                                ProjectImport pi = new ProjectImport(projJson.getString("project"));
+                                ProjectImport pi = new ProjectImport(projJson.getString("project"), extractedDir);
                                 if(projectImports.containsKey(pi.projectId)) {
                                     pi = projectImports.get(pi.projectId);
                                 } else {
@@ -1471,7 +1480,7 @@ public class Project implements Model {
             // read project info
             TranslationArchiveInfo translationInfo = getTranslationArchiveInfo(importDirectory.getName());
             if(translationInfo != null) {
-                ProjectImport pi = new ProjectImport(translationInfo.projectId);
+                ProjectImport pi = new ProjectImport(translationInfo.projectId, extractedDirectory);
                 prepareImport(pi, translationInfo.languageId, importDirectory);
                 // TODO: for now we are just blindly importing legacy projects (dangerous). We'll need to update this method as well as the DokuWiki import method in order to properly handle these legacy projects
                 importProject(pi);
