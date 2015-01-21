@@ -7,10 +7,13 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
@@ -46,23 +49,51 @@ public class BugReporterActivity extends TranslatorBaseActivity {
         final UploadReportsTask task = new UploadReportsTask();
 
         mOkButton = (Button)findViewById(R.id.okButton);
+        mOkButton.setBackgroundResource(R.color.gray);
         mCancelButton = (Button)findViewById(R.id.cancelButton);
         mCrashReportText = (EditText)findViewById(R.id.crashDescriptioneditText);
+        TextView introTextView = (TextView)findViewById(R.id.introTextView);
+        TextView titleTextView = (TextView)findViewById(R.id.titleTextView);
+        titleTextView.setVisibility(View.GONE);
+        introTextView.setVisibility(View.GONE);
+        mCrashReportText.setHint(R.string.bug_report);
         mDialog = new ProgressDialog(BugReporterActivity.this);
+
+        mCrashReportText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if(mCrashReportText.getText().toString().isEmpty()) {
+                    mOkButton.setBackgroundResource(R.color.gray);
+                } else {
+                    mOkButton.setBackgroundResource(R.color.blue);
+                }
+            }
+        });
 
         mOkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showLoading();
-                task.execute(true);
+                if(!mCrashReportText.getText().toString().isEmpty()) {
+                    showLoading();
+                    task.execute(true);
+                }
             }
         });
 
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showLoading();
-                task.execute(false);
+                finish();
             }
         });
     }

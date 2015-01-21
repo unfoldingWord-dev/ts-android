@@ -226,4 +226,5 @@
     <string name="p2p_keys_dir">p2p_keys</string>
     <string name="confirm_all">Confirm all</string>
     <string name="label_back">Back</string>
+    <string name="bug_report">Describe the problem you are experiencing with this app.</string>
 </resources>

@@ -39,7 +39,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="New Text"
-                android:id="@+id/titleTextView"
+                android:id="@+id/introTextView"
                 android:textColor="@color/dark_gray"
                 android:textSize="@dimen/h5"
                 android:textStyle="bold" />
