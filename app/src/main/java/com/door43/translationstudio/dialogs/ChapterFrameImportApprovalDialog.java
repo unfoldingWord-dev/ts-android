@@ -28,6 +28,7 @@ public class ChapterFrameImportApprovalDialog extends DialogFragment {
         View v = inflater.inflate(R.layout.dialog_chapter_frame_import_approval, container, false);
 
         if(mRequest != null) {
+            getDialog().setTitle(mRequest.getTitle());
             // load the adapter
             final ProjectImportAprovalAdapter adapter = new ProjectImportAprovalAdapter(this.getActivity(), mRequest.getChildImportRequests().getAll().toArray(new ImportRequestInterface[mRequest.getChildImportRequests().size()]));
 

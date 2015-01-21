@@ -92,25 +92,30 @@ public abstract class ImportRequest implements ImportRequestInterface {
     }
 
     /**
-     * Marks this request as approved
+     * Marks this request as approved.
+     * Parents will always be updated when all the children are (dis)approved
      * @param approved
      * @param approveRecursively if set to false the children will not be updated recursively
      */
     public void setIsApproved(boolean approved, boolean approveRecursively) {
         if(mError == null) {
-            mApproved = approved;
-            // set children
-            if(approveRecursively) {
-                for (ImportRequestInterface i : mChildRequests.getAll()) {
-                    i.setIsApproved(approved, approveRecursively);
+            if(mApproved != approved) {
+                mApproved = approved;
+                // set children
+                if (approveRecursively) {
+                    for (ImportRequestInterface i : mChildRequests.getAll()) {
+                        i.setIsApproved(approved, approveRecursively);
+                    }
                 }
-            }
-            // update parent
-            if(mParent != null) {
-                // TRICKY: we should never automatically approve the parent only disapprove.
-                // Otherwise importing would be un-reliable because we wouldn't know if a whole group had been approved by the user
-                if(mParent.isApproved() && !mApproved) {
-                    mParent.setIsApproved(false, false);
+                // update parent
+                if (mParent != null && mParent.isApproved() != mApproved) {
+                    boolean allChildrenApproved = true;
+                    for (ImportRequestInterface r : mParent.getChildImportRequests().getAll()) {
+                        if (!r.isApproved()) {
+                            allChildrenApproved = false;
+                        }
+                    }
+                    mParent.setIsApproved(allChildrenApproved, false);
                 }
             }
         }
