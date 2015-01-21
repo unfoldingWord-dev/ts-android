@@ -16,7 +16,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
-import com.door43.translationstudio.dialogs.ProjectImportApprovalDialog;
+import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
@@ -33,7 +33,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
@@ -290,7 +289,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         }
                                         ft.addToBackStack(null);
                                         app().closeToastMessage();
-                                        ProjectImportApprovalDialog newFragment = new ProjectImportApprovalDialog();
+                                        ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
                                         newFragment.setImportRequests(importRequests);
                                         newFragment.show(ft, "dialog");
                                     } else {
@@ -352,10 +351,7 @@ public class SharingActivity extends TranslatorBaseActivity {
     public void onProjectImportApproval(ProjectImportApprovalEvent event) {
         app().showProgressDialog(R.string.loading);
         for(ProjectImport r:event.getImportRequests()) {
-            if(r.isApproved()) {
-                // TODO: update the status with the result of the import and show the user a report when the imports are finished.
-                Project.importProject(r);
-            }
+            Project.importProject(r);
         }
         Project.cleanImport(event.getImportRequests());
         app().closeProgressDialog();

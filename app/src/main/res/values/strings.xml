@@ -225,4 +225,5 @@
     <string name="waiting_for_device">Waiting for device</string>
     <string name="p2p_keys_dir">p2p_keys</string>
     <string name="confirm_all">Confirm all</string>
+    <string name="label_back">Back</string>
 </resources>

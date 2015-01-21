@@ -116,9 +116,8 @@ public class Frame implements Model {
                 save();
             }
             // load translation from disk
-            String path = Project.getRepositoryPath(mChapter.getProject().getId(), mChapter.getProject().getSelectedTargetLanguage().getId()) + getChapterId() + "/" + getId() + ".txt";
             try {
-                String text = FileUtilities.getStringFromFile(path);
+                String text = FileUtilities.getStringFromFile(getFramePath());
                 mTranslation = new Translation(mChapter.getProject().getSelectedTargetLanguage(), text);
                 mTranslation.isSaved(true);
             } catch (Exception e) {
@@ -203,8 +202,7 @@ public class Frame implements Model {
     public void save() {
         if(mTranslation != null && !mTranslation.isSaved()) {
             mTranslation.isSaved(true);
-            String path = Project.getRepositoryPath(mChapter.getProject().getId(), mTranslation.getLanguage().getId()) + getChapterId() + "/" + getId() + ".txt";
-            File file = new File(path);
+            File file = new File(getFramePath(mTranslation.getLanguage()));
             if(mTranslation.getText().isEmpty()) {
                 // delete empty file
                 if(file.exists()) {
@@ -234,6 +232,35 @@ public class Frame implements Model {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the path to the frame file
+     * @param projectId
+     * @param languageId
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public static String getFramePath(String projectId, String languageId, String chapterId, String frameId) {
+        return Project.getRepositoryPath(projectId, languageId) + chapterId + "/" + frameId + ".txt";
+    }
+
+    /**
+     * Returns the path to the frame file
+     * @param targetLanguage
+     * @return
+     */
+    private String getFramePath(Language targetLanguage) {
+        return Frame.getFramePath(mChapter.getProject().getId(), targetLanguage.getId(), mChapterId, getId());
+    }
+
+    /**
+     * Returns the path to the frame file for the currently selected target language
+     * @return
+     */
+    private String getFramePath() {
+        return Frame.getFramePath(mChapter.getProject().getId(), mChapter.getProject().getSelectedTargetLanguage().getId(), mChapterId, getId());
     }
 
     /**

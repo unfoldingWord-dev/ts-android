@@ -1,5 +1,7 @@
 package com.door43.translationstudio.projects.imports;
 
+import java.io.File;
+
 /**
  * Created by joel on 1/19/2015.
  */

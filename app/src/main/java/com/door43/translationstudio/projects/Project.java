@@ -1232,55 +1232,122 @@ public class Project implements Model {
     public static boolean importProject(ProjectImport request) {
         // locate existing project
         Project p = MainContext.getContext().getSharedProjectManager().getProject(request.projectId);
-        if(p != null) {
-            ArrayList<ImportRequestInterface> translationRequests = request.getChildImportRequests().getAll();
-            for(TranslationImport ti:translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
-                File repoDir = new File(Project.getRepositoryPath(request.projectId, ti.languageId));
-                if(repoDir.exists()) {
-                    // merge into existing project
-                    File[] files = ti.translationDirectory.listFiles(new FilenameFilter() {
-                        @Override
-                        public boolean accept(File file, String s) {
-                            return !s.equals(".git");
-                        }
-                    });
-                    if(files != null) {
-                        for (File f : files) {
-                            // TODO: validate chapters and frames.
-                            try {
-                                File destDir = new File(repoDir, f.getName());
-                                if (destDir.exists()) {
-                                    FileUtilities.deleteRecursive(destDir);
+        boolean hadErrors = false;
+        if(request.getError() == null) {
+            if (p != null) {
+//                Language originalTargetLanguage = p.getSelectedTargetLanguage();
+                ArrayList<ImportRequestInterface> translationRequests = request.getChildImportRequests().getAll();
+                // translations
+                for (TranslationImport ti : translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
+                    if(ti.getError() == null) {
+                        File repoDir = new File(Project.getRepositoryPath(request.projectId, ti.languageId));
+                        if(repoDir.exists()) {
+                            ArrayList<ImportRequestInterface> chapterRequests = ti.getChildImportRequests().getAll();
+                            // chapters
+                            for (ChapterImport ci : chapterRequests.toArray(new ChapterImport[chapterRequests.size()])) {
+                                if (ci.getError() == null) {
+                                    ArrayList<ImportRequestInterface> frameRequests = ci.getChildImportRequests().getAll();
+
+                                    // TODO: import chapter reference and title
+
+                                    // frames
+                                    for (FrameImport fi : frameRequests.toArray(new FrameImport[frameRequests.size()])) {
+                                        if (fi.isApproved()) {
+                                            // import frame
+                                            File destFile = new File(Frame.getFramePath(p.getId(), ti.languageId, ci.chapterId, fi.frameId));
+                                            File srcFile = new File(ti.translationDirectory, ci.chapterId + "/" + fi.frameId + ".txt");
+                                            if (destFile.exists()) {
+                                                destFile.delete();
+                                            }
+                                            destFile.getParentFile().mkdirs();
+                                            if(!FileUtilities.moveOrCopy(srcFile, destFile)) {
+                                                Logger.e(Project.class.getName(), "Failed to import frame");
+                                                hadErrors = true;
+                                            }
+//                                            try {
+//                                                FileUtils.copyFile(srcFile, destFile);
+//                                            } catch (Exception e) {
+//                                                Logger.e(Project.class.getName(), "Failed to import frame", e);
+//                                                hadErrors = true;
+//                                            }
+                                        }
+                                    }
                                 }
-                                FileUtils.moveDirectory(f, destDir);
+                            }
+                        } else {
+                            // import the new project
+                            try {
+                                FileUtils.moveDirectory(ti.translationDirectory, repoDir);
                             } catch (IOException e) {
-                                Logger.e(Project.class.getName(), "failed to import the chapter directory ", e);
-                                return false;
-                                // TODO: record list of files that cannot be coppied and display to the user
+                                Logger.e(Project.class.getName(), "failed to import the project directory", e);
+                                hadErrors = true;
+                                continue;
                             }
                         }
+                        // causes the ui to reload the fresh content from the disk
                         Language l = MainContext.getContext().getSharedProjectManager().getLanguage(ti.languageId);
                         l.touch();
-                        // TODO: perform a git diff to see if there are any changes
-                    } else {
-                        Logger.w(Project.class.getName(), "the project import directory does not exist");
-                        return false;
-                    }
-                } else {
-                    // import as new project
-                    try {
-                        FileUtils.moveDirectory(ti.translationDirectory, repoDir);
-                    } catch (IOException e) {
-                        Logger.e(Project.class.getName(), "failed to import the project directory", e);
-                        return false;
+//
+////                        File repoDir = new File(Project.getRepositoryPath(request.projectId, ti.languageId));
+//                        if (repoDir.exists()) {
+//                            // merge into existing project
+//                            File[] chapterDirectories = ti.translationDirectory.listFiles(new FilenameFilter() {
+//                                @Override
+//                                public boolean accept(File file, String s) {
+//                                    return !s.equals(".git");
+//                                }
+//                            });
+//                            if (chapterDirectories != null) {
+//                                for (File chapterDir : chapterDirectories) {
+//                                    Chapter c = p.getChapter(chapterDir.getName());
+//                                    File[] frameFiles = chapterDir.listFiles();
+//                                    if (frameFiles != null) {
+//
+//                                    } else {
+//                                        Logger.w(Project.class.getName(), "the chapter import directory does not exist");
+//                                        hadErrors = true;
+//                                        continue;
+//                                    }
+////                            try {
+////                                File destDir = new File(repoDir, chapterDir.getName());
+////                                if (destDir.exists()) {
+////                                    FileUtilities.deleteRecursive(destDir);
+////                                }
+////                                FileUtils.moveDirectory(chapterDir, destDir);
+////                            } catch (IOException e) {
+////                                Logger.e(Project.class.getName(), "failed to import the chapter directory ", e);
+////                                return false;
+////                                // TODO: record list of files that cannot be coppied and display to the user
+////                            }
+//                                }
+//                                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(ti.languageId);
+//                                l.touch();
+//                                // TODO: perform a git diff to see if there are any changes
+//                            } else {
+//                                Logger.w(Project.class.getName(), "the project import directory does not exist");
+//                                hadErrors = true;
+//                                continue;
+//                            }
+//                        } else {
+//                            // import as new project
+//                            try {
+//                                FileUtils.moveDirectory(ti.translationDirectory, repoDir);
+//                            } catch (IOException e) {
+//                                Logger.e(Project.class.getName(), "failed to import the project directory", e);
+//                                hadErrors = true;
+//                                continue;
+//                            }
+//                        }
                     }
                 }
+//                p.setSelectedTargetLanguage(originalTargetLanguage.getId());
+            } else {
+                Logger.i(Project.class.getName(), "Importing projects with missing source is not currently supported");
+                // TODO: create a new project and add it to the project manager. This will require the existance of the project source in the archive.
             }
-        } else {
-            // TODO: create a new project and add it to the project manager. This will require the existance of the project source in the archive.
+            p.commit(null);
         }
-        p.commit(null);
-        return true;
+        return !hadErrors;
     }
 
     /**
@@ -1334,7 +1401,7 @@ public class Project implements Model {
                             }
                         });
                         for(String frameFileName:frameFileNames) {
-                            String[] pieces = frameFileName.split(".");
+                            String[] pieces = frameFileName.split("\\.");
                             if(pieces.length != 2) {
                                 Logger.w(Project.class.getName(), "Unexpected file in frame import "+frameFileName);
                                 continue;

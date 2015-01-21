@@ -1,34 +1,32 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ExpandableListView;
-import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.util.MainContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by joel on 1/12/2015.
  */
-public class ProjectImportApprovalDialog extends DialogFragment {
+public class ProjectTranslationImportApprovalDialog extends DialogFragment {
     private ProjectImport[] mRequests = new ProjectImport[]{};
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.import_project);
-        View v = inflater.inflate(R.layout.dialog_import_approval, container, false);
+        View v = inflater.inflate(R.layout.dialog_project_translation_import_approval, container, false);
 
         if(mRequests.length > 0) {
             // load the adapter
@@ -42,27 +40,22 @@ public class ProjectImportApprovalDialog extends DialogFragment {
             list.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
                 @Override
                 public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long l) {
-                    if(childPosition == 0) {
-                        // handle confirm all click
-                        int numGroups = adapter.getGroupCount();
-                        for(int i=0; i<numGroups; i++) {
-                            ImportRequestInterface group = adapter.getGroup(i);
-                            group.setIsApproved(true);
+                    ImportRequestInterface item = adapter.getChild(groupPosition, childPosition);
+                    if(item.getError() == null && item.getChildImportRequests().size() > 0) {
+                        // display dialog to handle children
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                        if (prev != null) {
+                            ft.remove(prev);
                         }
-                        adapter.notifyDataSetChanged();
+                        ft.addToBackStack(null);
+                        ChapterFrameImportApprovalDialog newFragment = new ChapterFrameImportApprovalDialog();
+                        newFragment.setImportRequests((TranslationImport)item);
+                        newFragment.show(ft, "dialog");
                         return true;
                     } else {
-                        // handle item click
-                        ImportRequestInterface item = adapter.getChild(groupPosition, childPosition);
-                        if(item.getError() == null) {
-                            item.setIsApproved(!item.isApproved());
-                            adapter.notifyDataSetChanged();
-                            // TODO: open dialog to view details
-                            return true;
-                        } else {
-                            // imports with errors can never be approved
-                            return false;
-                        }
+                        // imports with errors can never be approved
+                        return false;
                     }
                 }
             });

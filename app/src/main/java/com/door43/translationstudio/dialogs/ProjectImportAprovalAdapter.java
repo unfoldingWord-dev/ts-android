@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -41,13 +42,7 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
 
     @Override
     public int getChildrenCount(int i) {
-        int size = mRequests[i].getChildImportRequests().size();
-        if(size > 0) {
-            // leave room for an approve all button
-            return size + 1;
-        } else {
-            return 0;
-        }
+        return mRequests[i].getChildImportRequests().size();
     }
 
     @Override
@@ -57,8 +52,7 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
 
     @Override
     public ImportRequestInterface getChild(int groupPosition, int childPosition) {
-        // TRICKY: we leave room for an approve all button so we substract one from the index
-        return mRequests[groupPosition].getChildImportRequests().get(childPosition-1);
+        return mRequests[groupPosition].getChildImportRequests().get(childPosition);
     }
 
     @Override
@@ -80,25 +74,49 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
     public View getGroupView(int i, boolean b, View convertView, ViewGroup viewGroup) {
         View v  = convertView;
         GroupHolder holder = new GroupHolder();
-        ImportRequestInterface request = getGroup(i);
+        final ImportRequestInterface request = getGroup(i);
 
         if(convertView == null) {
             LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.fragment_import_approval_group, null);
             TextView headerTextView = (TextView)v.findViewById(R.id.groupListHeader);
+            ImageView statusImage = (ImageView)v.findViewById(R.id.statusImage);
+            LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.groupApprovalStatusButton);
+            statusButton.setFocusable(false);
             holder.headerTextView = headerTextView;
+            holder.statusImage = statusImage;
+            holder.statusButton = statusButton;
             v.setTag(holder);
         } else {
             holder = (GroupHolder)v.getTag();
         }
 
         holder.headerTextView.setText(request.getTitle());
+        if(request.isApproved()) {
+            holder.statusImage.setBackgroundResource(R.drawable.ic_success);
+        } else {
+            if(request.getError() != null) {
+                holder.statusImage.setBackgroundResource(R.drawable.ic_error);
+            } else {
+                holder.statusImage.setBackgroundResource(R.drawable.ic_warning);
+            }
+        }
+        holder.statusButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // toggle all children approved
+                if(request.getError() == null) {
+                    request.setIsApproved(!request.isApproved());
+                    notifyDataSetChanged();
+                }
+            }
+        });
 
         return v;
     }
 
     @Override
-    public View getChildView(int groupPosition, int childPosition, boolean b, View convertView, ViewGroup viewGroup) {
+    public View getChildView(final int groupPosition, int childPosition, boolean b, View convertView, ViewGroup viewGroup) {
         View v = convertView;
         ChildHolder holder = new ChildHolder();
 
@@ -107,50 +125,62 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             v = inflater.inflate(R.layout.fragment_import_approval_item, null);
             TextView titleTextView = (TextView)v.findViewById(R.id.titleTextView);
             TextView descriptionTextView = (TextView)v.findViewById(R.id.approvalDescriptionText);
-            ImageView approvalStatusImage = (ImageView)v.findViewById(R.id.approvalStatusImage);
-            LinearLayout bodyLayout = (LinearLayout)v.findViewById(R.id.bodyLayout);
-            LinearLayout confirmAllLayout = (LinearLayout)v.findViewById(R.id.confirmAllLayout);
+            ImageView statusImage = (ImageView)v.findViewById(R.id.approvalStatusImage);
+            LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.approvalStatusButton);
+            RelativeLayout bodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayout);
+            ImageView sublistImageView = (ImageView)v.findViewById(R.id.sublistImageView);
+            statusButton.setFocusable(false);
             holder.titleTextView = titleTextView;
             holder.descriptionTextView = descriptionTextView;
-            holder.approvalStatusImage = approvalStatusImage;
+            holder.statusImage = statusImage;
+            holder.statusButton = statusButton;
             holder.bodyLayout = bodyLayout;
-            holder.confirmAllLayout = confirmAllLayout;
+            holder.sublistImageView = sublistImageView;
             v.setTag(holder);
         } else {
             holder = (ChildHolder)v.getTag();
         }
 
-        if(childPosition == 0) {
-            // render the approve all button
-            holder.confirmAllLayout.setVisibility(View.VISIBLE);
-            holder.bodyLayout.setVisibility(View.GONE);
-        } else {
-            // render child item
-            holder.bodyLayout.setVisibility(View.VISIBLE);
-            holder.confirmAllLayout.setVisibility(View.GONE);
-            ImportRequestInterface item = getChild(groupPosition, childPosition);
-            holder.bodyLayout.setBackgroundResource(Color.TRANSPARENT);
+        final ImportRequestInterface request = getChild(groupPosition, childPosition);
+        holder.bodyLayout.setBackgroundResource(Color.TRANSPARENT);
 
-            // toggle approved. Errors cannot be approved
-            if (item.isApproved()) {
-                holder.approvalStatusImage.setBackgroundResource(R.drawable.ic_success);
-                holder.descriptionTextView.setText(mContext.getResources().getText(R.string.label_ok));
+        // toggle approved. Errors cannot be approved
+        if (request.isApproved()) {
+            holder.statusImage.setBackgroundResource(R.drawable.ic_success);
+            holder.descriptionTextView.setText(mContext.getResources().getText(R.string.label_ok));
+        } else {
+            if (request.getError() == null) {
+                holder.statusImage.setBackgroundResource(R.drawable.ic_warning);
             } else {
-                if (item.getError() == null) {
-                    holder.approvalStatusImage.setBackgroundResource(R.drawable.ic_warning);
-                } else {
-                    holder.approvalStatusImage.setBackgroundResource(R.drawable.ic_error);
+                holder.statusImage.setBackgroundResource(R.drawable.ic_error);
+            }
+        }
+
+        if (request.getError() != null) {
+            holder.descriptionTextView.setText(request.getError());
+        } else if (request.getWarning() != null) {
+            holder.descriptionTextView.setText(request.getWarning());
+        }
+
+        holder.titleTextView.setText(request.getTitle());
+
+        holder.statusButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (request.getError() == null) {
+                    // toggle approved
+                    request.setIsApproved(!request.isApproved());
+                    notifyDataSetChanged();
                 }
             }
+        });
 
-            if (item.getError() != null) {
-                holder.descriptionTextView.setText(item.getError());
-            } else if (item.getWarning() != null) {
-                holder.descriptionTextView.setText(item.getWarning());
-            }
-
-            holder.titleTextView.setText(item.getTitle());
+        if(request.getError() == null && request.getChildImportRequests().size() > 0) {
+            holder.sublistImageView.setVisibility(View.VISIBLE);
+        } else {
+            holder.sublistImageView.setVisibility(View.INVISIBLE);
         }
+
         return v;
     }
 
@@ -161,13 +191,16 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
 
     private static class GroupHolder {
         public TextView headerTextView;
+        public ImageView statusImage;
+        public LinearLayout statusButton;
     }
 
     private static class ChildHolder {
         public TextView titleTextView;
         public TextView descriptionTextView;
-        public ImageView approvalStatusImage;
-        public LinearLayout bodyLayout;
-        public LinearLayout confirmAllLayout;
+        public ImageView statusImage;
+        public RelativeLayout bodyLayout;
+        public LinearLayout statusButton;
+        public ImageView sublistImageView;
     }
 }

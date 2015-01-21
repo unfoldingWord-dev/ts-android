@@ -14,6 +14,13 @@ public interface ImportRequestInterface {
     public ListMap<ImportRequestInterface> getChildImportRequests();
 
     /**
+     * Sets the parent request of this request.
+     * This allows us to do some automatic processing for things such as approvals.
+     * @param parent
+     */
+    public void setParentRequest(ImportRequestInterface parent);
+
+    /**
      * Sets the warning message on this request.
      * Requests with warnings may be manually selected for import, but will not be imported automatically
      * @param s The warning message
@@ -50,6 +57,13 @@ public interface ImportRequestInterface {
      * @param approved
      */
     public void setIsApproved(boolean approved);
+
+    /**
+     * Marks this request as approved
+     * @param approved
+     * @param approveRecursively if set to false the children will not be updated recursively
+     */
+    public void setIsApproved(boolean approved, boolean approveRecursively);
 
     /**
      * Returns the id of this import request

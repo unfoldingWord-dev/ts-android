@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectLanguagesToImportDialog;
 import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
-import com.door43.translationstudio.dialogs.ProjectImportApprovalDialog;
+import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.events.ChoseProjectToImportEvent;
 import com.door43.translationstudio.events.ProjectImportApprovalEvent;
@@ -815,7 +815,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     }
                                     ft.addToBackStack(null);
                                     app().closeToastMessage();
-                                    ProjectImportApprovalDialog newFragment = new ProjectImportApprovalDialog();
+                                    ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
                                     // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
                                     newFragment.setImportRequests(importStatuses);
                                     newFragment.show(ft, "dialog");
@@ -823,8 +823,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
                                     for(ProjectImport r:importStatuses) {
                                         Project.importProject(r);
-                                        Project.cleanImport(r);
                                     }
+                                    Project.cleanImport(importStatuses);
                                     app().showToastMessage(R.string.success);
                                 }
                                 hideProgress();
@@ -1054,12 +1054,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     public void onProjectImportApproval(ProjectImportApprovalEvent event) {
         showProgress(getResources().getString(R.string.loading));
         for(ProjectImport r:event.getImportRequests()) {
-            if(r.isApproved()) {
-                // TODO: update the status with the result of the import and show the user a report when the imports are finished.
-                Project.importProject(r);
-            }
-            Project.cleanImport(r);
+            Project.importProject(r);
         }
+        Project.cleanImport(event.getImportRequests());
         hideProgress();
         app().showToastMessage(R.string.success);
     }
