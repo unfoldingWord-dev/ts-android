@@ -34,7 +34,12 @@ public class ChapterFrameImportApprovalDialog extends DialogFragment {
             ExpandableListView list = (ExpandableListView)v.findViewById(R.id.importListView);
             Button backButton = (Button)v.findViewById(R.id.buttonBack);
             list.setAdapter(adapter);
-            list.expandGroup(0);
+            for(int i=0; i<adapter.getGroupCount(); i ++) {
+                ImportRequestInterface r = adapter.getGroup(i);
+                if(!r.isApproved()) {
+                    list.expandGroup(i);
+                }
+            }
 
             backButton.setOnClickListener(new View.OnClickListener() {
                 @Override

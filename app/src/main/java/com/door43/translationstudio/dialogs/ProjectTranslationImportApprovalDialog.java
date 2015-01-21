@@ -36,7 +36,12 @@ public class ProjectTranslationImportApprovalDialog extends DialogFragment {
             Button cancelButton = (Button)v.findViewById(R.id.buttonCancel);
             final Button okButton = (Button)v.findViewById(R.id.buttonOk);
             list.setAdapter(adapter);
-            list.expandGroup(0);
+            for(int i=0; i<adapter.getGroupCount(); i ++) {
+                ImportRequestInterface r = adapter.getGroup(i);
+                if(!r.isApproved()) {
+                    list.expandGroup(i);
+                }
+            }
             list.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
                 @Override
                 public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long l) {
