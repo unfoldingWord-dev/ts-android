@@ -120,7 +120,7 @@ public class Chapter implements Model {
                 save();
             }
             // load translation from disk
-            String path = Project.getRepositoryPath(mProject.getId(), mProject.getSelectedTargetLanguage().getId()) + getId() + "/" + TITLE_FILE;
+            String path = getTitlePath(mProject.getId(), mProject.getSelectedTargetLanguage().getId(), getId());
             try {
                 String text = FileUtilities.getStringFromFile(path);
                 mTitleTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
@@ -165,7 +165,7 @@ public class Chapter implements Model {
                 save();
             }
             // load translation from disk
-            String path = Project.getRepositoryPath(mProject.getId(), mProject.getSelectedTargetLanguage().getId()) + getId() + "/" + REFERENCE_FILE;
+            String path = getReferencePath(mProject.getId(), mProject.getSelectedTargetLanguage().getId(), getId());
             try {
                 String text = FileUtilities.getStringFromFile(path);
                 mReferenceTranslation = new Translation(mProject.getSelectedTargetLanguage(), text);
@@ -324,12 +324,34 @@ public class Chapter implements Model {
     }
 
     /**
+     * Returns the path to the reference file
+     * @param projectId
+     * @param languageId
+     * @param chapterId
+     * @return
+     */
+    public static String getTitlePath(String projectId, String languageId, String chapterId) {
+        return Project.getRepositoryPath(projectId, languageId) + chapterId + "/" + REFERENCE_FILE;
+    }
+
+    /**
+     * Returns the path to the title file
+     * @param projectId
+     * @param languageId
+     * @param chapterId
+     * @return
+     */
+    public static String getReferencePath(String projectId, String languageId, String chapterId) {
+        return Project.getRepositoryPath(projectId, languageId) + chapterId + "/" + TITLE_FILE;
+    }
+
+    /**
      * Saves the reference and title to the disk
      */
     public void save() {
         if(mReferenceTranslation != null && mTitleTranslation != null) {
-            String referencePath = Project.getRepositoryPath(mProject.getId(), mReferenceTranslation.getLanguage().getId()) + getId() + "/" + REFERENCE_FILE;
-            String titlePath = Project.getRepositoryPath(mProject.getId(), mTitleTranslation.getLanguage().getId()) + getId() + "/" + TITLE_FILE;
+            String referencePath = getReferencePath(mProject.getId(), mReferenceTranslation.getLanguage().getId(), getId());
+            String titlePath = getTitlePath(mProject.getId(), mTitleTranslation.getLanguage().getId(), getId());
 
             // save reference
             if(!mReferenceTranslation.isSaved()) {

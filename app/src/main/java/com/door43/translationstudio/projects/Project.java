@@ -11,6 +11,7 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
 import com.door43.translationstudio.projects.imports.ChapterImport;
+import com.door43.translationstudio.projects.imports.FileImport;
 import com.door43.translationstudio.projects.imports.FrameImport;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
@@ -1235,7 +1236,6 @@ public class Project implements Model {
         boolean hadErrors = false;
         if(request.getError() == null) {
             if (p != null) {
-//                Language originalTargetLanguage = p.getSelectedTargetLanguage();
                 ArrayList<ImportRequestInterface> translationRequests = request.getChildImportRequests().getAll();
                 // translations
                 for (TranslationImport ti : translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
@@ -1250,26 +1250,57 @@ public class Project implements Model {
 
                                     // TODO: import chapter reference and title
 
-                                    // frames
-                                    for (FrameImport fi : frameRequests.toArray(new FrameImport[frameRequests.size()])) {
-                                        if (fi.isApproved()) {
-                                            // import frame
-                                            File destFile = new File(Frame.getFramePath(p.getId(), ti.languageId, ci.chapterId, fi.frameId));
-                                            File srcFile = new File(ti.translationDirectory, ci.chapterId + "/" + fi.frameId + ".txt");
-                                            if (destFile.exists()) {
-                                                destFile.delete();
+                                    for (ImportRequestInterface r : frameRequests) {
+                                        if(r.getClass().getName().equals(FrameImport.class.getName())) {
+                                            // frames
+                                            if (r.isApproved()) {
+                                                FrameImport fi = (FrameImport)r;
+                                                // import frame
+                                                File destFile = new File(Frame.getFramePath(p.getId(), ti.languageId, ci.chapterId, fi.frameId));
+                                                File srcFile = new File(ti.translationDirectory, ci.chapterId + "/" + fi.frameId + ".txt");
+                                                if (destFile.exists()) {
+                                                    destFile.delete();
+                                                }
+                                                destFile.getParentFile().mkdirs();
+                                                if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
+                                                    Logger.e(Project.class.getName(), "Failed to import frame");
+                                                    hadErrors = true;
+                                                }
                                             }
-                                            destFile.getParentFile().mkdirs();
-                                            if(!FileUtilities.moveOrCopy(srcFile, destFile)) {
-                                                Logger.e(Project.class.getName(), "Failed to import frame");
-                                                hadErrors = true;
+                                        } else if(r.getClass().getName().equals(FileImport.class.getName())) {
+                                            // title and reference
+                                            if(r.isApproved()) {
+                                                FileImport fi = (FileImport)r;
+                                                if(fi.getId().equals("title")) {
+                                                    // import title
+                                                    File destFile = new File(Chapter.getTitlePath(p.getId(), ti.languageId, ci.chapterId));
+                                                    File srcFile = new File(ti.translationDirectory, ci.chapterId + "/title.txt");
+                                                    if (destFile.exists()) {
+                                                        destFile.delete();
+                                                    }
+                                                    destFile.getParentFile().mkdirs();
+                                                    if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
+                                                        Logger.e(Project.class.getName(), "Failed to import chapter title");
+                                                        hadErrors = true;
+                                                    }
+                                                } else if(fi.getId().equals("reference")) {
+                                                    // import reference
+                                                    File destFile = new File(Chapter.getReferencePath(p.getId(), ti.languageId, ci.chapterId));
+                                                    File srcFile = new File(ti.translationDirectory, ci.chapterId + "/reference.txt");
+                                                    if (destFile.exists()) {
+                                                        destFile.delete();
+                                                    }
+                                                    destFile.getParentFile().mkdirs();
+                                                    if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
+                                                        Logger.e(Project.class.getName(), "Failed to import chapter reference");
+                                                        hadErrors = true;
+                                                    }
+                                                } else {
+                                                    Logger.w(Project.class.getName(), "Unknown file import request. Expecting title or reference but found "+fi.getId());
+                                                }
                                             }
-//                                            try {
-//                                                FileUtils.copyFile(srcFile, destFile);
-//                                            } catch (Exception e) {
-//                                                Logger.e(Project.class.getName(), "Failed to import frame", e);
-//                                                hadErrors = true;
-//                                            }
+                                        } else {
+                                            Logger.w(Project.class.getName(), "Unknown import request. Expecting FrameImport or FileImport but found "+r.getClass().getName());
                                         }
                                     }
                                 }
@@ -1287,60 +1318,8 @@ public class Project implements Model {
                         // causes the ui to reload the fresh content from the disk
                         Language l = MainContext.getContext().getSharedProjectManager().getLanguage(ti.languageId);
                         l.touch();
-//
-////                        File repoDir = new File(Project.getRepositoryPath(request.projectId, ti.languageId));
-//                        if (repoDir.exists()) {
-//                            // merge into existing project
-//                            File[] chapterDirectories = ti.translationDirectory.listFiles(new FilenameFilter() {
-//                                @Override
-//                                public boolean accept(File file, String s) {
-//                                    return !s.equals(".git");
-//                                }
-//                            });
-//                            if (chapterDirectories != null) {
-//                                for (File chapterDir : chapterDirectories) {
-//                                    Chapter c = p.getChapter(chapterDir.getName());
-//                                    File[] frameFiles = chapterDir.listFiles();
-//                                    if (frameFiles != null) {
-//
-//                                    } else {
-//                                        Logger.w(Project.class.getName(), "the chapter import directory does not exist");
-//                                        hadErrors = true;
-//                                        continue;
-//                                    }
-////                            try {
-////                                File destDir = new File(repoDir, chapterDir.getName());
-////                                if (destDir.exists()) {
-////                                    FileUtilities.deleteRecursive(destDir);
-////                                }
-////                                FileUtils.moveDirectory(chapterDir, destDir);
-////                            } catch (IOException e) {
-////                                Logger.e(Project.class.getName(), "failed to import the chapter directory ", e);
-////                                return false;
-////                                // TODO: record list of files that cannot be coppied and display to the user
-////                            }
-//                                }
-//                                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(ti.languageId);
-//                                l.touch();
-//                                // TODO: perform a git diff to see if there are any changes
-//                            } else {
-//                                Logger.w(Project.class.getName(), "the project import directory does not exist");
-//                                hadErrors = true;
-//                                continue;
-//                            }
-//                        } else {
-//                            // import as new project
-//                            try {
-//                                FileUtils.moveDirectory(ti.translationDirectory, repoDir);
-//                            } catch (IOException e) {
-//                                Logger.e(Project.class.getName(), "failed to import the project directory", e);
-//                                hadErrors = true;
-//                                continue;
-//                            }
-//                        }
                     }
                 }
-//                p.setSelectedTargetLanguage(originalTargetLanguage.getId());
             } else {
                 Logger.i(Project.class.getName(), "Importing projects with missing source is not currently supported");
                 // TODO: create a new project and add it to the project manager. This will require the existance of the project source in the archive.
@@ -1363,9 +1342,14 @@ public class Project implements Model {
 
         // locate existing project
         final Project p = MainContext.getContext().getSharedProjectManager().getProject(projectImport.projectId);
-        if(p != null) {
-            File repoDir = new File(Project.getRepositoryPath(projectImport.projectId, languageId));
-            if(repoDir.exists()) {
+        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
+        if(p != null && l != null) {
+            // change the target language so we can easily reference the local translation
+            Language originalTargetLanguage = p.getSelectedTargetLanguage();
+            p.setSelectedTargetLanguage(languageId);
+
+            // look through items to import
+            if(p.isTranslating()) {
                 hadTranslationWarnings = true;
                 // the project already exists
 
@@ -1391,7 +1375,23 @@ public class Project implements Model {
                         translationImport.addChapterImport(chapterImport);
                         boolean hadFrameWarnings = false;
 
-                        // TODO: read chapter title and reference
+                        // read chapter title and reference
+                        File titleFile = new File(projectDir, chapterId + "/title.txt");
+                        if(titleFile.exists()) {
+                            FileImport fileImport = new FileImport("title", MainContext.getContext().getResources().getString(R.string.chapter_title_field));
+                            chapterImport.addFileImport(fileImport);
+                            if(!c.getTitleTranslation().getText().isEmpty()) {
+                                fileImport.setWarning("Title already exists");
+                            }
+                        }
+                        File referenceFile = new File(projectDir, chapterId + "/reference.txt");
+                        if(referenceFile.exists()) {
+                            FileImport fileImport = new FileImport("reference", MainContext.getContext().getResources().getString(R.string.chapter_reference_field));
+                            chapterImport.addFileImport(fileImport);
+                            if(!c.getReferenceTranslation().getText().isEmpty()) {
+                                fileImport.setWarning("Reference already exists");
+                            }
+                        }
 
                         // read frames to import
                         String[] frameFileNames = new File(projectDir, chapterId).list(new FilenameFilter() {
@@ -1442,6 +1442,8 @@ public class Project implements Model {
                     translationImport.setWarning("Some chapters already exists");
                 }
             }
+            // restore original target language
+            p.setSelectedTargetLanguage(originalTargetLanguage.getId());
         } else {
             // new project source and translation
             // TODO: eventually we should check if the import includes the source text as well. Then this should just be a warning. Letting the user know that the source will be imported as well.

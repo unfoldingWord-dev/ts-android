@@ -1,9 +1,7 @@
 package com.door43.translationstudio.projects.imports;
 
-import com.door43.translationstudio.util.ListMap;
-
 /**
- * Created by joel on 1/19/2015.
+ * This manages importing a chapter
  */
 public class ChapterImport extends ImportRequest {
     public final String chapterId;
@@ -19,6 +17,14 @@ public class ChapterImport extends ImportRequest {
      * @param request
      */
     public void addFrameImport(FrameImport request) {
+        super.addChildImportRequest(request);
+    }
+
+    /**
+     * Adds a file import request to this chapter
+     * @param request
+     */
+    public void addFileImport(FileImport request) {
         super.addChildImportRequest(request);
     }
 
