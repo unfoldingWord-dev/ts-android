@@ -6,13 +6,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 1/12/2015.
@@ -81,11 +84,18 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             v = inflater.inflate(R.layout.fragment_import_approval_group, null);
             TextView headerTextView = (TextView)v.findViewById(R.id.groupListHeader);
             ImageView statusImage = (ImageView)v.findViewById(R.id.statusImage);
-            LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.groupApprovalStatusButton);
-            statusButton.setFocusable(false);
+//            LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.groupApprovalStatusButton);
+//            Switch confirmationSwitch = (Switch)v.findViewById(R.id.confirmationSwitch);
+            RelativeLayout bodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayout);
+//            LinearLayout accentLayout = (LinearLayout)v.findViewById(R.id.accentLayout);
+//            confirmationSwitch.setFocusable(false);
+//            statusButton.setFocusable(false);
             holder.headerTextView = headerTextView;
             holder.statusImage = statusImage;
-            holder.statusButton = statusButton;
+//            holder.statusButton = statusButton;
+            holder.bodyLayout = bodyLayout;
+//            holder.accentLayout = accentLayout;
+//            holder.confirmationSwitch = confirmationSwitch;
             v.setTag(holder);
         } else {
             holder = (GroupHolder)v.getTag();
@@ -93,24 +103,34 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
 
         holder.headerTextView.setText(request.getTitle());
         if(request.isApproved()) {
-            holder.statusImage.setBackgroundResource(R.drawable.ic_success);
+            holder.statusImage.setBackgroundResource(R.drawable.ic_success_light);
         } else {
             if(request.getError() != null) {
                 holder.statusImage.setBackgroundResource(R.drawable.ic_error);
             } else {
-                holder.statusImage.setBackgroundResource(R.drawable.ic_warning);
+                holder.statusImage.setBackgroundResource(R.drawable.ic_warning_light);
             }
         }
-        holder.statusButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // toggle all children approved
-                if(request.getError() == null) {
-                    request.setIsApproved(!request.isApproved());
-                    notifyDataSetChanged();
-                }
-            }
-        });
+
+        // confirmation switch
+//        holder.confirmationSwitch.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // toggle all children approved
+//                if(request.getError() == null) {
+//                    request.setIsApproved(((Switch)view).isChecked());
+//                    notifyDataSetChanged();
+//                }
+//            }
+//        });
+
+//        if(b) {
+//            // opened
+//            holder.accentLayout.setVisibility(View.VISIBLE);
+//        } else {
+//            // closed
+//            holder.accentLayout.setVisibility(View.GONE);
+//        }
 
         return v;
     }
@@ -129,6 +149,11 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.approvalStatusButton);
             RelativeLayout bodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayout);
             ImageView sublistImageView = (ImageView)v.findViewById(R.id.sublistImageView);
+            Switch confirmationSwitch = (Switch)v.findViewById(R.id.confirmationSwitch);
+            Switch confirmAllSwitch = (Switch)v.findViewById(R.id.confirmAllSwitch);
+            LinearLayout confirmAllLayout = (LinearLayout)v.findViewById(R.id.confirmAllLayout);
+            confirmAllSwitch.setFocusable(false);
+            confirmationSwitch.setFocusable(false);
             statusButton.setFocusable(false);
             holder.titleTextView = titleTextView;
             holder.descriptionTextView = descriptionTextView;
@@ -136,49 +161,87 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             holder.statusButton = statusButton;
             holder.bodyLayout = bodyLayout;
             holder.sublistImageView = sublistImageView;
+            holder.confirmationSwitch = confirmationSwitch;
+            holder.confirmAllSwitch = confirmAllSwitch;
+            holder.confirmAllLayout = confirmAllLayout;
             v.setTag(holder);
         } else {
             holder = (ChildHolder)v.getTag();
         }
 
         final ImportRequestInterface request = getChild(groupPosition, childPosition);
-        holder.bodyLayout.setBackgroundResource(Color.TRANSPARENT);
+//        holder.bodyLayout.setBackgroundResource(Color.TRANSPARENT);
+
+        // indicate that this item is approved
+        holder.confirmationSwitch.setChecked(request.isApproved());
 
         // toggle approved. Errors cannot be approved
-        if (request.isApproved()) {
-            holder.statusImage.setBackgroundResource(R.drawable.ic_success);
-            holder.descriptionTextView.setText(mContext.getResources().getText(R.string.label_ok));
-        } else {
-            if (request.getError() == null) {
-                holder.statusImage.setBackgroundResource(R.drawable.ic_warning);
-            } else {
-                holder.statusImage.setBackgroundResource(R.drawable.ic_error);
-            }
-        }
+//        if (request.isApproved()) {
+//            holder.statusImage.setBackgroundResource(R.drawable.ic_success);
+//            holder.descriptionTextView.setText(mContext.getResources().getText(R.string.label_ok));
+//        } else {
+//            if (request.getError() == null) {
+//                holder.statusImage.setBackgroundResource(R.drawable.ic_warning);
+//            } else {
+//                holder.statusImage.setBackgroundResource(R.drawable.ic_error);
+//            }
+//        }
 
+        // set text
+        holder.titleTextView.setText(request.getTitle());
+        if(request.isApproved()) {
+            holder.descriptionTextView.setText(mContext.getResources().getText(R.string.label_ok));
+        }
         if (request.getError() != null) {
             holder.descriptionTextView.setText(request.getError());
         } else if (request.getWarning() != null) {
             holder.descriptionTextView.setText(request.getWarning());
         }
 
-        holder.titleTextView.setText(request.getTitle());
 
-        holder.statusButton.setOnClickListener(new View.OnClickListener() {
+
+        // handle child confirmation switch
+        holder.confirmationSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (request.getError() == null) {
-                    // toggle approved
-                    request.setIsApproved(!request.isApproved());
-                    notifyDataSetChanged();
-                }
+                request.setIsApproved(((Switch)view).isChecked());
+                notifyDataSetChanged();
             }
         });
 
+//        holder.statusButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                if (request.getError() == null) {
+//                    // toggle approved
+//                    request.setIsApproved(!request.isApproved());
+//                    notifyDataSetChanged();
+//                }
+//            }
+//        });
+
+        // indicate the user may view children of this item
         if(request.getError() == null && request.getChildImportRequests().size() > 0) {
             holder.sublistImageView.setVisibility(View.VISIBLE);
         } else {
             holder.sublistImageView.setVisibility(View.INVISIBLE);
+        }
+
+        // display group confirm all layout
+        if(childPosition == 0) {
+            final ImportRequestInterface group = getGroup(groupPosition);
+            holder.confirmAllLayout.setVisibility(View.VISIBLE);
+            holder.confirmAllSwitch.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    group.setIsApproved(((Switch)view).isChecked());
+                    notifyDataSetChanged();
+                }
+            });
+            // indicate group is approved
+            holder.confirmAllSwitch.setChecked(group.isApproved());
+        } else {
+            holder.confirmAllLayout.setVisibility(View.GONE);
         }
 
         return v;
@@ -192,7 +255,10 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
     private static class GroupHolder {
         public TextView headerTextView;
         public ImageView statusImage;
-        public LinearLayout statusButton;
+//        public LinearLayout statusButton;
+        public RelativeLayout bodyLayout;
+//        public LinearLayout accentLayout;
+//        public Switch confirmationSwitch;
     }
 
     private static class ChildHolder {
@@ -202,5 +268,8 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
         public RelativeLayout bodyLayout;
         public LinearLayout statusButton;
         public ImageView sublistImageView;
+        public Switch confirmationSwitch;
+        public Switch confirmAllSwitch;
+        public LinearLayout confirmAllLayout;
     }
 }

@@ -6,7 +6,8 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@color/light_gray">
+        android:background="@color/green"
+        android:id="@+id/bodyLayout">
 
         <LinearLayout
             android:orientation="vertical"
@@ -29,11 +30,12 @@
                 android:paddingRight="10dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
-                android:textColor="@color/dark_gray"
+                android:textColor="@color/white"
                 android:textSize="@dimen/h3"
                 android:text="Open Bible Stories"
                 android:layout_weight="0.84" />
         </LinearLayout>
+
 
         <LinearLayout
             android:orientation="horizontal"
@@ -49,16 +51,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/statusImage"
-                android:background="@drawable/ic_warning"
+                android:background="@drawable/ic_warning_light"
                 android:adjustViewBounds="false" />
         </LinearLayout>
     </RelativeLayout>
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:background="@color/gray"
-        android:paddingBottom="1dp"></LinearLayout>
-
 </LinearLayout>

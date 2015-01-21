@@ -87,7 +87,7 @@
                 android:singleLine="true"
                 android:padding="2dp"
                 android:textSize="@dimen/h5"
-                android:background="@color/light_gray" />
+                android:background="@color/lighter_gray" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -107,7 +107,7 @@
                 android:padding="2dp"
                 android:lines="3"
                 android:textSize="@dimen/h5"
-                android:background="@color/light_gray" />
+                android:background="@color/lighter_gray" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

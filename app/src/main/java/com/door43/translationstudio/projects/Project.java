@@ -1369,7 +1369,7 @@ public class Project implements Model {
                     if(c != null) {
                         ChapterImport chapterImport = new ChapterImport(c.getId(), c.getTitle());
                         if(c.isTranslating()) {
-                            chapterImport.setWarning("Chapter already exists");
+                            chapterImport.setWarning("Importing will override our existing translation");
                             hadChapterWarnings = true;
                         }
                         translationImport.addChapterImport(chapterImport);
@@ -1381,7 +1381,7 @@ public class Project implements Model {
                             FileImport fileImport = new FileImport("title", MainContext.getContext().getResources().getString(R.string.chapter_title_field));
                             chapterImport.addFileImport(fileImport);
                             if(!c.getTitleTranslation().getText().isEmpty()) {
-                                fileImport.setWarning("Title already exists");
+                                fileImport.setWarning("Importing will override our existing translation");
                             }
                         }
                         File referenceFile = new File(projectDir, chapterId + "/reference.txt");
@@ -1389,7 +1389,7 @@ public class Project implements Model {
                             FileImport fileImport = new FileImport("reference", MainContext.getContext().getResources().getString(R.string.chapter_reference_field));
                             chapterImport.addFileImport(fileImport);
                             if(!c.getReferenceTranslation().getText().isEmpty()) {
-                                fileImport.setWarning("Reference already exists");
+                                fileImport.setWarning("Importing will override our existing translation");
                             }
                         }
 
@@ -1411,7 +1411,7 @@ public class Project implements Model {
                             if(f != null) {
                                 FrameImport frameImport = new FrameImport(f.getId(), f.getTitle());
                                 if(f.isTranslating()) {
-                                    frameImport.setWarning("Frame already exists");
+                                    frameImport.setWarning("Importing will override our existing translation");
                                     hadFrameWarnings = true;
                                 }
                                 chapterImport.addFrameImport(frameImport);
@@ -1426,7 +1426,7 @@ public class Project implements Model {
                         }
 
                         if(hadFrameWarnings) {
-                            chapterImport.setWarning("Some frames already exist");
+                            chapterImport.setWarning("Importing will override our existing translation");
                         }
                     } else {
                         // the import source does not match the source on this device.
@@ -1439,7 +1439,7 @@ public class Project implements Model {
                 }
 
                 if(hadChapterWarnings) {
-                    translationImport.setWarning("Some chapters already exists");
+                    translationImport.setWarning("Importing will override our existing translation");
                 }
             }
             // restore original target language

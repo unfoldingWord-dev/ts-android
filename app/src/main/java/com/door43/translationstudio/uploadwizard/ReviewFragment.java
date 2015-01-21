@@ -102,7 +102,7 @@ public class ReviewFragment extends WizardFragment {
      */
     private void performValidation() {
         // TODO: display progressbar or spinning wheel durring validation.
-        mContinueBtn.setBackgroundColor(getResources().getColor(R.color.light_gray));
+        mContinueBtn.setBackgroundColor(getResources().getColor(R.color.lighter_gray));
         mContinueBtn.setEnabled(false);
         mValidator = new ValidateUploadTask(new OnValidateProgress() {
             @Override

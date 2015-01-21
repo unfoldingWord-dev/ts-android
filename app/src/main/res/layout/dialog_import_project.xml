@@ -14,7 +14,7 @@
             android:layout_width="@dimen/model_list_item_image_width"
             android:layout_height="@dimen/model_list_item_height"
             android:id="@+id/modelImage"
-            android:background="@color/light_gray" />
+            android:background="@color/lighter_gray" />
 
         <LinearLayout
             android:id="@+id/bodyLayout"
