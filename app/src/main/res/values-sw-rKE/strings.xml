@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">chanzo na lengo lugha ni sawa</string>
   <string name="error_chapter_title_missing">cheo sura ni kukosa</string>
   <string name="error_chapter_reference_missing">sura kumbukumbu ni kukosa</string>
-  <string name="label_validate_chapter">Sura:% 1 $ s</string>
+  <string name="label_chapter_title_detailed">Sura:% 1 $ s</string>
   <string name="dialog_validation_errors">Uthibitisho Makosa</string>
   <string name="validation_errors">Kuna makosa ufumbuzi katika tafsiri. Tafadhali kusahihisha haya kisha kujaribu tena.</string>
   <string name="error_frames_not_translated">% 1 $ s muafaka si kutafsiriwa.</string>

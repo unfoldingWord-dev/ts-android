@@ -45,7 +45,7 @@
   <string name="error_chapter_title_missing">അധ്യായത്തിന്‍റെ ശീര്‍ഷകം കാണുന്നില്ല
 </string>
   <string name="error_chapter_reference_missing">അധ്യായത്തിന്‍റെ പരാമര്‍ശം കാണുന്നില്ല</string>
-  <string name="label_validate_chapter">അധ്യായം: %1$</string>
+  <string name="label_chapter_title_detailed">അധ്യായം: %1$</string>
   <string name="dialog_validation_errors">നിര്‍ണ്ണയത്തിലെ പിശകുകള്‍</string>
   <string name="validation_errors">പരിഭാഷയില്‍ പരിഹരിക്കാനാകാത്ത പിശകുകള്‍ ഉണ്ട് ദയവായി ഇവ പരിഹരിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക</string>
   <string name="error_frames_not_translated">%1$ഫ്രെയിമുകള്‍ പരിഭാഷപ്പെടുത്തിയിട്ടില്ല</string>

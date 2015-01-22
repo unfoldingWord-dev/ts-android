@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">لسان های مبدأ و مقصد یکی هستند</string>
   <string name="error_chapter_title_missing">عنوان فصل گم شده است</string>
   <string name="error_chapter_reference_missing">مرجع فصل گم شده است</string>
-  <string name="label_validate_chapter">فصل: %1$s</string>
+  <string name="label_chapter_title_detailed">فصل: %1$s</string>
   <string name="dialog_validation_errors">خطاهای تصدیق</string>
   <string name="validation_errors">خطاهای رفع نشده در ترجمه است. آنها را تصحیح کرده و مجددا سعی کنید.</string>
   <string name="error_frames_not_translated">فریم های %1$s ترجمه نشده است.</string>

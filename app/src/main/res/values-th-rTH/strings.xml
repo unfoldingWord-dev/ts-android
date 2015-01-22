@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">ต้นฉบับและภาษาเป้าหมายจะเหมือนกัน</string>
   <string name="error_chapter_title_missing">ชื่อบทจะหายไป</string>
   <string name="error_chapter_reference_missing">อ้างอิงบทจะหายไป</string>
-  <string name="label_validate_chapter">บท: %1$s</string>
+  <string name="label_chapter_title_detailed">บท: %1$s</string>
   <string name="dialog_validation_errors">ตรวจสอบข้อผิดพลาด</string>
   <string name="validation_errors">ยังมียังไม่ได้แก้ไขข้อผิดพลาดในการแปล กรุณาแก้ไขเหล่านี้ แล้วลองอีกครั้ง</string>
   <string name="error_frames_not_translated">ไม่ได้แปล %1$s เฟรม</string>

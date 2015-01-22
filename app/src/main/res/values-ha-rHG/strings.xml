@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Ba bambanci a tsakanin harshen asali da harshen karba</string>
   <string name="error_chapter_title_missing">Taken babin ya bata</string>
   <string name="error_chapter_reference_missing">Bayanin babin ya bata</string>
-  <string name="label_validate_chapter">Babi %1$s</string>
+  <string name="label_chapter_title_detailed">Babi %1$s</string>
   <string name="dialog_validation_errors">Kuskure</string>
   <string name="validation_errors">Akwai kura-kuran da ba a gyara ba a cikin aikin fassarar Ka gyara kuskuren kafin ka sake jarrabawa</string>
   <string name="error_frames_not_translated">Ba a fassara wasu daga cikin  sassan %1$s ba</string>

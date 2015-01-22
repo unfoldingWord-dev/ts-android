@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Ang wika ng pinagmulan at target ay pareho</string>
   <string name="error_chapter_title_missing">Ang pamagat ng kabanata ay kulang</string>
   <string name="error_chapter_reference_missing">Ang sangunian ng kabanata ay kulang</string>
-  <string name="label_validate_chapter">Kabanata: %1$s</string>
+  <string name="label_chapter_title_detailed">Kabanata: %1$s</string>
   <string name="dialog_validation_errors">Mga kamalian sa pagpapatunay</string>
   <string name="validation_errors">May mga hindi nalutas na mga pagkakamali sa pagsasalin. Pakiwasto ang mga ito pagkatapos ay subukang muli.</string>
   <string name="error_frames_not_translated">%1$s frame ay hindi nai-translate.</string>

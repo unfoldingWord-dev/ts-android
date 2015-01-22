@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">لغات المصدر والهدف هي نفسها</string>
   <string name="error_chapter_title_missing">عنوان الفصل مفقود</string>
   <string name="error_chapter_reference_missing">المرجع الفصل مفقود</string>
-  <string name="label_validate_chapter">الفصل: %1$s</string>
+  <string name="label_chapter_title_detailed">الفصل: %1$s</string>
   <string name="dialog_validation_errors">أخطاء التحقق من صحة</string>
   <string name="validation_errors">هناك أخطاء لم تحل في الترجمة. يرجى تصحيح هذه ثم حاول مرة أخرى.</string>
   <string name="error_frames_not_translated">لم تترجم الأطر%1$s.</string>

@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">ソースとターゲット言語が同じ</string>
   <string name="error_chapter_title_missing">章のタイトルがありません</string>
   <string name="error_chapter_reference_missing">章参照が不足している</string>
-  <string name="label_validate_chapter">章: %1$s</string>
+  <string name="label_chapter_title_detailed">章: %1$s</string>
   <string name="dialog_validation_errors">検証エラー</string>
   <string name="validation_errors">翻訳で未解決のエラーがあります。これらを修正してください、もう一度やり直してください。</string>
   <string name="error_frames_not_translated">%1$ のフレームが変換されていません。</string>

@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Исходный и целевой языки одинаковы</string>
   <string name="error_chapter_title_missing">Название главы отсутствует</string>
   <string name="error_chapter_reference_missing">Справочная глава отсутствует</string>
-  <string name="label_validate_chapter">Глава: %1$s</string>
+  <string name="label_chapter_title_detailed">Глава: %1$s</string>
   <string name="dialog_validation_errors">Ошибки Проверки</string>
   <string name="validation_errors">Имеются нерешенные ошибки в переводе. Пожалуйста, исправьте эти повторите попытку.</string>
   <string name="error_frames_not_translated">%1$s кадры не были переведены.</string>

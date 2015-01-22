@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Sumber dan target bahasa yang sama</string>
   <string name="error_chapter_title_missing">Judul bab yang hilang</string>
   <string name="error_chapter_reference_missing">Referensi Bab hilang</string>
-  <string name="label_validate_chapter">Bab: %1$s</string>
+  <string name="label_chapter_title_detailed">Bab: %1$s</string>
   <string name="dialog_validation_errors">Kesalahan validasi</string>
   <string name="validation_errors">Ada belum terselesaikan kesalahan dalam terjemahan. Silahkan benar ini kemudian coba lagi.</string>
   <string name="error_frames_not_translated">%1$s frame belum diterjemahkan.</string>

@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">የምንጩ እና የተቀባዩ  ቋንቋዎች አንድ ናቸው</string>
   <string name="error_chapter_title_missing">የምዕራፉ ርዕስ ጎድሎአል።</string>
   <string name="error_chapter_reference_missing">የምዕራፉ ማስተያያ ጎድሎአል።</string>
-  <string name="label_validate_chapter">ምዕራፍ %1$s</string>
+  <string name="label_chapter_title_detailed">ምዕራፍ %1$s</string>
   <string name="dialog_validation_errors">ዕውቅና የመስጠት ስህተቶች</string>
   <string name="validation_errors">በትርጉም ሥራው ውስጥ ያልታረሙ ስህተቶች አሉ። እባክዎትን እነዚህን ያስተካክሉ እና እንደገና ይሞክሩ።</string>
   <string name="error_frames_not_translated">%1$s ማዕቀፎች አልተተረጎሙም።</string>

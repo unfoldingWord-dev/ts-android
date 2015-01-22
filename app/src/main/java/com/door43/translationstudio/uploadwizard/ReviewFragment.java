@@ -190,7 +190,7 @@ public class ReviewFragment extends WizardFragment {
                 // only display warnings for chapters that have at least some frames translated
                 if(numFramesNotTranslated != c.numFrames()) {
                     numChaptersTranslated ++;
-                    publishProgress(new UploadValidationItem(String.format(getResources().getString(R.string.label_validate_chapter), c.getTitle()), description, status));
+                    publishProgress(new UploadValidationItem(String.format(getResources().getString(R.string.label_chapter_title_detailed), c.getTitle()), description, status));
                 } else {
                     // ignore
                     chapterHasWarnings = false;

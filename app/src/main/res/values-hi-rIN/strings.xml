@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">स्रोत और लक्ष्य भाषाओं के एक ही कर रहे हैं</string>
   <string name="error_chapter_title_missing">अध्याय शीर्षक याद आ रही है</string>
   <string name="error_chapter_reference_missing">अध्याय संदर्भ याद आ रही है</string>
-  <string name="label_validate_chapter">अध्याय: %1$s</string>
+  <string name="label_chapter_title_detailed">अध्याय: %1$s</string>
   <string name="dialog_validation_errors">मान्यता त्रुटियाँ</string>
   <string name="validation_errors">अनुवाद में त्रुटियों के अनसुलझे हैं। कृपया इन को सही और फिर पुन: प्रयास करें।</string>
   <string name="error_frames_not_translated">%1$s तख्ते का अनुवाद नहीं किया गया है।</string>

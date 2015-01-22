@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">وسیلہ اور ہدف زبانیں ایک ہی ہیں</string>
   <string name="error_chapter_title_missing">باب کے عنوان غائب ہے</string>
   <string name="error_chapter_reference_missing">باب ریفرنس غائب ہے</string>
-  <string name="label_validate_chapter">باب: %1$s</string>
+  <string name="label_chapter_title_detailed">باب: %1$s</string>
   <string name="dialog_validation_errors">جواز دہی نقائص</string>
   <string name="validation_errors">ترجمہ میں غیر حل شدہ غلطیاں ہیں ۔ ان کی اصلاح کریں پھر دوبارہ کوشش کریں ۔</string>
   <string name="error_frames_not_translated">%1$s فریم کا ترجمہ نہیں کیا گیا ہے ۔</string>

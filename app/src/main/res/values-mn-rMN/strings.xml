@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Эх хэл болон орчуулагдах хэл ижил байна</string>
   <string name="error_chapter_title_missing">Бүлгийн гарчиг байхгүй байна</string>
   <string name="error_chapter_reference_missing">Бүлгийн лавлах байхгүй байна</string>
-  <string name="label_validate_chapter">Бүлэг: %1$с</string>
+  <string name="label_chapter_title_detailed">Бүлэг: %1$с</string>
   <string name="dialog_validation_errors">Баталгаажуулалтын алдаа</string>
   <string name="validation_errors">Орчуулгад шийдэгдээгүй алдаа байна. Эдгээрийг залруулсны дараа дахин оролдоод үз.</string>
   <string name="error_frames_not_translated">%1$S хүрээ орчуулагдаагүй байна.</string>

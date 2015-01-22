@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Nguồn và ngôn ngữ mục tiêu là như nhau</string>
   <string name="error_chapter_title_missing">Tiêu đề chương là mất tích</string>
   <string name="error_chapter_reference_missing">Các tài liệu tham khảo chương là mất tích</string>
-  <string name="label_validate_chapter">Chương: %1$s</string>
+  <string name="label_chapter_title_detailed">Chương: %1$s</string>
   <string name="dialog_validation_errors">Lỗi soát hợp thức</string>
   <string name="validation_errors">Có lỗi chưa được giải quyết trong bản dịch. Xin vui lòng sửa chữa này sau đó thử lại.</string>
   <string name="error_frames_not_translated">%1$s khung đã không được dịch.</string>

@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">स्रोत र लक्षित भाषा उस्तै छन्</string>
   <string name="error_chapter_title_missing">अध्याय शीर्षक छुटेको छ</string>
   <string name="error_chapter_reference_missing">अध्याय सन्दर्भ छुटेको छ</string>
-  <string name="label_validate_chapter">अध्याय: %1$s</string>
+  <string name="label_chapter_title_detailed">अध्याय: %1$s</string>
   <string name="dialog_validation_errors">मान्य त्रुटिहरू</string>
   <string name="validation_errors">अनुवादमा समाधान नहुने त्रुटिहरू छन्। कृपया यिनीहरु सुधार गरी  पुन:प्रयास गर्नुहोस्।</string>
   <string name="error_frames_not_translated">%1$s फ्रेमहरु  अनुवाद गरिएको छैन।</string>

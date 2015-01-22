@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Kaynak ve hedef dili aynıdır </string>
   <string name="error_chapter_title_missing">bölüm başlığı eksik</string>
   <string name="error_chapter_reference_missing">bölüm referansı eksik</string>
-  <string name="label_validate_chapter">Bölüm: %1$s</string>
+  <string name="label_chapter_title_detailed">Bölüm: %1$s</string>
   <string name="dialog_validation_errors">Doğrulama Hataları</string>
   <string name="validation_errors">Çeviri çözülmemiş hataları vardır. Daha sonra yeniden deneyin bu doğru lütfen.</string>
   <string name="error_frames_not_translated">%1$s kare değil, çevirisi yapılmış.</string>

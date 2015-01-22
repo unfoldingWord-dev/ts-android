@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">மூல மற்றும் இலக்கு மொழிகளில் அதே இருந்தால்</string>
   <string name="error_chapter_title_missing">அத்தியாயம் தலைப்பு காணவில்லை</string>
   <string name="error_chapter_reference_missing">அத்தியாயத்தில் குறிப்பு காணவில்லை</string>
-  <string name="label_validate_chapter">பாடம்:% 1 $ s</string>
+  <string name="label_chapter_title_detailed">பாடம்:% 1 $ s</string>
   <string name="dialog_validation_errors">மதிப்பீட்டு பிழைகள்</string>
   <string name="validation_errors">மொழிபெயர்ப்பு தீர்க்கப்படாத பிழைகள் உள்ளன. பின்னர் இந்த சரிசெய்ய மீண்டும் முயற்சிக்கவும்.</string>
   <string name="error_frames_not_translated">% 1 $ s பிரேம்கள் மொழிபெயர்க்க.</string>

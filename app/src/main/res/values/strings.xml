@@ -3,6 +3,7 @@
 
     <string name="app_name" translatable="false">translationStudio</string>
     <string name="projects">Projects</string>
+    <!-- TODO: this is a duplicate of label_chapters -->
     <string name="chapters">Chapters</string>
     <string name="frames">Frames</string>
     <string name="label_ok">OK</string>
@@ -55,7 +56,8 @@
     <string name="error_target_and_source_are_same">The source and target languages are the same</string>
     <string name="error_chapter_title_missing">The chapter title is missing</string>
     <string name="error_chapter_reference_missing">The chapter reference is missing</string>
-    <string name="label_validate_chapter">Chapter: <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">Chapter: <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
+    <string name="label_frame_title_detailed">Frame: <xliff:g id="frame" example="1">%1$s</xliff:g></string>
     <string name="dialog_validation_errors">Validation Errors</string>
     <string name="validation_errors">There are unresolved errors in the translation. Please correct these then try again.</string>
     <!-- Indicates that a number of frames have not been translated. e.g. 3 frames have not been translated -->

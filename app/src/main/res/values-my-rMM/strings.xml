@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">ရင္းျမစ္ႏွင့္ ရည္ရြယ္သည့္ဘာသာစကားက ထပ္တူညီသည္</string>
   <string name="error_chapter_title_missing">အခန္းေခါင္းစဥ္ ေပ်ာက္ေနသည္</string>
   <string name="error_chapter_reference_missing">အခန္း ကိုးကားခ်က္ ေပ်ာက္ေနသည္</string>
-  <string name="label_validate_chapter">အခဏ္း: %1$s</string>
+  <string name="label_chapter_title_detailed">အခဏ္း: %1$s</string>
   <string name="dialog_validation_errors">အေထာက္အထားျပျခင္း အမွားမ်ား</string>
   <string name="validation_errors">၄င္းတို႔မွာ ဘာသာျပန္တြင္ မျပင္ရေသးသည့္ အမွားမ်ားျဖစ္သည္။ ေက်းဇူးျပဳ၍ ၄င္းတို႔ကိုျပင္ျပီး ျပန္ၾကိဳဳးစားပါ။</string>
   <string name="error_frames_not_translated">%1$s စီမံဖန္တီးမူမ်ား အား ဘာသာမျပန္ဆိုထားပါ။</string>

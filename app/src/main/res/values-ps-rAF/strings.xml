@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">مورينو ڎبو ژبې دي او هم</string>
   <string name="error_chapter_title_missing">فصل خطاب د کمه ده.</string>
   <string name="error_chapter_reference_missing">فصل اخځ د کمه ده.</string>
-  <string name="label_validate_chapter">فصل: %1$s</string>
+  <string name="label_chapter_title_detailed">فصل: %1$s</string>
   <string name="dialog_validation_errors">د باوركړن غلطو</string>
   <string name="validation_errors">شته، چې په ناحلو مسئلو د ژباړې دي. صحي راضي يو ځل بيا د دې او هڅه کوي. </string>
   <string name="error_frames_not_translated">%1$s شاسو ژباړل شوي نه دي.</string>

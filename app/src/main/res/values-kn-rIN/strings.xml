@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">ಮೂಲ ಮತ್ತು ಗುರಿ ಭಾಷೆಗಳ ಒಂದೇ</string>
   <string name="error_chapter_title_missing">ಅಧ್ಯಾಯದ ಶೀರ್ಷಿಕೆ ಕಾಣೆಯಾಗಿದೆ</string>
   <string name="error_chapter_reference_missing">ಅಧ್ಯಾಯ ಉಲ್ಲೇಖ ಕಾಣೆಯಾಗಿದೆ</string>
-  <string name="label_validate_chapter">ಅಧ್ಯಾಯ:% 1 $ ರು</string>
+  <string name="label_chapter_title_detailed">ಅಧ್ಯಾಯ:% 1 $ ರು</string>
   <string name="dialog_validation_errors">ಕ್ರಮಬದ್ಧಗೊಳಿಸುವಿಕೆ ದೋಷಗಳು</string>
   <string name="validation_errors">ಅನುವಾದ ಪರಿಹರಿಸದೇ ದೋಷಗಳಿವೆ. ನಂತರ ಈ ಸರಿಪಡಿಸಲು ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</string>
   <string name="error_frames_not_translated">% 1 $ ರು ಚೌಕಟ್ಟುಗಳು ಅನುವಾದ ಮಾಡಿಲ್ಲ.</string>

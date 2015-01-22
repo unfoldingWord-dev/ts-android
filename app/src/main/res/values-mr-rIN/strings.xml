@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">स्त्रोत व लक्ष्य भाषा सारखीच आहे</string>
   <string name="error_chapter_title_missing">या चॅप्टरला शीर्षक दिले नाही</string>
   <string name="error_chapter_reference_missing">या चॅप्टरला संदर्भ दिला नाही</string>
-  <string name="label_validate_chapter">चॅप्टर: %1$s</string>
+  <string name="label_chapter_title_detailed">चॅप्टर: %1$s</string>
   <string name="dialog_validation_errors">वैधीकरण त्रुट्या</string>
   <string name="validation_errors">भाषांतरात दुरुस्त न केलेल्या त्रुट्या आहेत. कृपया त्या दुरुस्त करा व पुन्हा प्रयत्न करा.</string>
   <string name="error_frames_not_translated">%1$s फ्रेम्सचे भाषांतर केले गेलेले नाही.</string>

@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">منبع و زبان مقصد هستند</string>
   <string name="error_chapter_title_missing">عنوان فصل از دست رفته است</string>
   <string name="error_chapter_reference_missing">فصل مرجع از دست رفته است</string>
-  <string name="label_validate_chapter">فصل: %1$s</string>
+  <string name="label_chapter_title_detailed">فصل: %1$s</string>
   <string name="dialog_validation_errors">خطاهای تأیید اعتبار</string>
   <string name="validation_errors">خطای مشخص نشده در ترجمه وجود دارد. این درست کنید و دوباره امتحان کنید.</string>
   <string name="error_frames_not_translated">%1$s فریم ترجمه شده است.</string>

@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">ភាសាប្រភពដើម និងគោលដៅដូចគ្នា</string>
   <string name="error_chapter_title_missing">កំពុងបាត់ចំណងជើងជំពូក</string>
   <string name="error_chapter_reference_missing">កំពុងបាត់ចំណងជើងជំពូក</string>
-  <string name="label_validate_chapter">ជំពូក: %1$s</string>
+  <string name="label_chapter_title_detailed">ជំពូក: %1$s</string>
   <string name="dialog_validation_errors">ការចុះសុពលភាពមានកំហុស</string>
   <string name="validation_errors">មានកំហុសដែលមិនបានដោះស្រាយក្នុងការបកប្រែឯកសារ។ សូមតម្រូវកំហុសទាំងនេះ រួចហើយព្យាយាមម្ដងទៀត។</string>
   <string name="error_frames_not_translated">មិនទាន់មានការបកប្រែហ្វ្រេមរបស់ %1$s។</string>

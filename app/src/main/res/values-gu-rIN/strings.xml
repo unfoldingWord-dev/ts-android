@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">સ્ત્રોત અને લક્ષ્ય ભાષા જ છે</string>
   <string name="error_chapter_title_missing">આ પ્રકરણમાં શીર્ષક ગુમ થયેલ</string>
   <string name="error_chapter_reference_missing">આ પ્રકરણમાં સંદર્ભ ગુમ થયેલ</string>
-  <string name="label_validate_chapter">પ્રકરણ:% 1 $</string>
+  <string name="label_chapter_title_detailed">પ્રકરણ:% 1 $</string>
   <string name="dialog_validation_errors">માન્યતા ભૂલો</string>
   <string name="validation_errors">અનુવાદ વણઉકલ્યા ભૂલો છે. તો પછી આ સુધારવા કરીને ફરીથી પ્રયત્ન કરો.</string>
   <string name="error_frames_not_translated">% 1 $ ફ્રેમ અનુવાદિત કરવામાં આવ્યું નથી.</string>

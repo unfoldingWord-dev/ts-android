@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Les langues source et cible sont les mêmes</string>
   <string name="error_chapter_title_missing">Le titre du chapitre est manquant</string>
   <string name="error_chapter_reference_missing">La référence de chapitre est manquant</string>
-  <string name="label_validate_chapter">Chapitre: %1$s</string>
+  <string name="label_chapter_title_detailed">Chapitre: %1$s</string>
   <string name="dialog_validation_errors">Les Erreurs De Validation</string>
   <string name="validation_errors">Il y a en suspens des erreurs dans la traduction. Veuillez corriger ces essayez à nouveau.</string>
   <string name="error_frames_not_translated">%1$s images n\'ont pas été traduits.</string>

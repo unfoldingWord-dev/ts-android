@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">De bron-en doeltaal zijn hetzelfde</string>
   <string name="error_chapter_title_missing">Het hoofdstuk titel ontbreekt</string>
   <string name="error_chapter_reference_missing">De referentie hoofdstuk ontbreekt</string>
-  <string name="label_validate_chapter">Hoofdstuk: %1$s</string>
+  <string name="label_chapter_title_detailed">Hoofdstuk: %1$s</string>
   <string name="dialog_validation_errors">Validatie Fouten</string>
   <string name="validation_errors">Er zijn onopgeloste fouten in de vertaling. Corrigeer dit en probeer het opnieuw.</string>
   <string name="error_frames_not_translated">%1$s frames nog niet werden vertaald.</string>

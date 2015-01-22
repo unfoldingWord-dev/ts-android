@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">మూలం మరియు లక్ష్యం భాషలు ఒకటే</string>
   <string name="error_chapter_title_missing">అధ్యాయం టైటిల్ లేదు</string>
   <string name="error_chapter_reference_missing">అధ్యాయం సూచన లేదు</string>
-  <string name="label_validate_chapter">అధ్యాయం:% 1 $ s</string>
+  <string name="label_chapter_title_detailed">అధ్యాయం:% 1 $ s</string>
   <string name="dialog_validation_errors">ధ్రువీకరణ లోపాలు</string>
   <string name="validation_errors">అనువాదం అపరిష్కృతంగా లోపాలు ఉన్నాయి. ఈ సరి మళ్ళీ ప్రయత్నించండి.</string>
   <string name="error_frames_not_translated">% 1 $ ఫ్రేమ్లను అనువదించబడింది లేదు.</string>

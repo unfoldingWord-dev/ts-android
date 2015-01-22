@@ -42,7 +42,7 @@
   <string name="error_target_and_source_are_same">Los idiomas de origen y destino son el mismo</string>
   <string name="error_chapter_title_missing">El título del capítulo que falta</string>
   <string name="error_chapter_reference_missing">La referencia el capítulo que falta</string>
-  <string name="label_validate_chapter">Capítulo: %1$s</string>
+  <string name="label_chapter_title_detailed">Capítulo: %1$s</string>
   <string name="dialog_validation_errors">Los Errores De Validación</string>
   <string name="validation_errors">Hay sin resolver errores en la traducción. Por favor corregir estos, a continuación, inténtelo de nuevo.</string>
   <string name="error_frames_not_translated">%1$s marcos no han sido traducidos.</string>
