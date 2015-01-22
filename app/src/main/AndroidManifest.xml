@@ -118,6 +118,7 @@
         <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
+            android:screenOrientation="landscape"
             android:parentActivityName=".SharingActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

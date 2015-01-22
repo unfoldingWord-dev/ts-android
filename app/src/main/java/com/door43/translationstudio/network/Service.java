@@ -3,6 +3,7 @@ package com.door43.translationstudio.network;
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 
 import com.door43.translationstudio.util.Logger;
 
@@ -204,7 +205,7 @@ public abstract class Service {
      * Starts the service
      * @param serviceName the name of the service being advertised or listened for on the network
      */
-    public abstract void start(String serviceName);
+    public abstract void start(String serviceName, Handler handle);
 
     /**
      * Stops the service
@@ -216,6 +217,13 @@ public abstract class Service {
      * @return
      */
     public abstract boolean isRunning();
+
+    /**
+     * Sets the handler for the service. This is handy when keeping the service alive across different activities.
+     * @deprecated this doesn't help us with the fragment lifecycle at all.
+     * @param handler
+     */
+    public abstract void setHandler(Handler handler);
 
 
     public interface OnSocketEventListener {

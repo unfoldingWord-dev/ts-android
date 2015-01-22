@@ -29,6 +29,8 @@ public class ChooseProjectToImportDialog extends DialogFragment {
         getDialog().setTitle(R.string.projects);
         View v = inflater.inflate(R.layout.dialog_choose_project, container, false);
 
+        setRetainInstance(true);
+
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         if(mModelList != null) {
@@ -51,6 +53,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
                 }
             });
         } else {
+            listView.setAdapter(new ModelItemAdapter(MainContext.getContext(), new Model[]{},false));
             dismiss();
         }
 
@@ -64,5 +67,13 @@ public class ChooseProjectToImportDialog extends DialogFragment {
     public void setImportDetails(Peer server, Model[] models) {
         mPeer = server;
         mModelList = models;
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+        super.onDestroyView();
     }
 }

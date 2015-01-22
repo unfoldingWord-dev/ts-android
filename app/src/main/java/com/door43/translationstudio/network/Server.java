@@ -3,6 +3,7 @@ package com.door43.translationstudio.network;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 
 import com.door43.translationstudio.util.Logger;
 
@@ -27,6 +28,7 @@ public class Server extends Service {
     private Thread mServerThread = null;
     private Thread mBroadcastThread = null;
     private Map<String, Connection> mClientConnections = new HashMap<String, Connection>();
+    private Handler mHandler;
 
     public Server(Context context, int clientUDPPort, OnServerEventListener listener) {
         super(context);
@@ -38,10 +40,11 @@ public class Server extends Service {
     /**
      * This will cause the server to begin listening on a port for connections and advertise it's services to the network
      */
-    public void start(String serviceName) {
+    public void start(String serviceName, Handler handle) {
         if(mIsRunning) return;
         mIsRunning = true;
 
+        mHandler = handle;
         mServerThread = new Thread(new ServerThread(serviceName));
         mServerThread.start();
     }
@@ -72,13 +75,18 @@ public class Server extends Service {
     }
 
     @Override
+    public void setHandler(Handler handler) {
+        mHandler = handler;
+    }
+
+    @Override
     /**
      * Sends a message to the peer
      * @param client the client to which the message will be sent
      * @param message the message being sent to the client
      */
     public void writeTo(Peer client, String message) {
-        message = mListener.onWriteMessage(client, message);
+        message = mListener.onWriteMessage(mHandler, client, message);
         if(mClientConnections.containsKey(client.getIpAddress())) {
              mClientConnections.get(client.getIpAddress()).write(message);
         }
@@ -99,7 +107,7 @@ public class Server extends Service {
         }
 
         public void run() {
-            mListener.onBeforeStart();
+            mListener.onBeforeStart(mHandler);
 
             Socket socket;
             ServerSocket serverSocket;
@@ -108,7 +116,7 @@ public class Server extends Service {
             try {
                 serverSocket = new ServerSocket(0);
             } catch (Exception e) {
-                mListener.onError(e);
+                mListener.onError(mHandler, e);
                 return;
             }
             int serverTCPPort = serverSocket.getLocalPort();
@@ -116,14 +124,14 @@ public class Server extends Service {
             try {
                 broadcastAddress = getBroadcastAddress();
             } catch (Exception e) {
-                mListener.onError(e);
+                mListener.onError(mHandler, e);
                 return;
             }
             PackageInfo pInfo;
             try {
                 pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
             } catch (PackageManager.NameNotFoundException e) {
-                mListener.onError(e);
+                mListener.onError(mHandler, e);
                 return;
             }
 
@@ -165,7 +173,7 @@ public class Server extends Service {
             // create a new peer
             mClient = new Peer(clientSocket.getInetAddress().toString().replace("/", ""), clientSocket.getPort());
             if(addPeer(mClient)) {
-                mListener.onFoundClient(mClient);
+                mListener.onFoundClient(mHandler, mClient);
             }
             // set up socket
             try {
@@ -179,7 +187,7 @@ public class Server extends Service {
                 // we store a reference to all connections so we can access them later
                 mClientConnections.put(mConnection.getIpAddress(), mConnection);
             } catch (Exception e) {
-                mListener.onError(e);
+                mListener.onError(mHandler, e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -190,7 +198,7 @@ public class Server extends Service {
                 if (message == null ){
                     Thread.currentThread().interrupt();
                 } else {
-                    mListener.onMessageReceived(mClient, message);
+                    mListener.onMessageReceived(mHandler, mClient, message);
                 }
             }
             // close the connection
@@ -200,16 +208,16 @@ public class Server extends Service {
                 mClientConnections.remove(mConnection.getIpAddress());
             }
             removePeer(mClient);
-            mListener.onLostClient(mClient);
+            mListener.onLostClient(mHandler, mClient);
         }
     }
 
     public interface OnServerEventListener {
-        public void onBeforeStart();
-        public void onError(Exception e);
-        public void onFoundClient(Peer client);
-        public void onLostClient(Peer client);
-        public void onMessageReceived(Peer client, String message);
+        public void onBeforeStart(Handler handle);
+        public void onError(Handler handle, Exception e);
+        public void onFoundClient(Handler handle, Peer client);
+        public void onLostClient(Handler handle, Peer client);
+        public void onMessageReceived(Handler handle, Peer client, String message);
 
         /**
          * Allows you to perform global operations on a message(such as encryption) based on the peer
@@ -217,7 +225,7 @@ public class Server extends Service {
          * @param message
          * @return
          */
-        public String onWriteMessage(Peer client, String message);
+        public String onWriteMessage(Handler handle, Peer client, String message);
     }
 
 }

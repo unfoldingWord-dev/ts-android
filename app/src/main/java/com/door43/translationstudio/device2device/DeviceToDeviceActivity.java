@@ -96,7 +96,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
         final int clientUDPPort = 9939;
-        final Handler handler = new Handler(getMainLooper());
 
         // reset things on first load
         if(savedInstanceState == null) {
@@ -113,7 +112,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 mService = new Server(DeviceToDeviceActivity.this, clientUDPPort, new Server.OnServerEventListener() {
 
                     @Override
-                    public void onBeforeStart() {
+                    public void onBeforeStart(Handler handle) {
                         // generate new session keys
                         try {
                             generateSessionKeys();
@@ -125,8 +124,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onError(final Exception e) {
-                        handler.post(new Runnable() {
+                    public void onError(Handler handle, final Exception e) {
+                        handle.post(new Runnable() {
                             @Override
                             public void run() {
                                 app().showException(e);
@@ -136,8 +135,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onFoundClient(final Peer client) {
-                        handler.post(new Runnable() {
+                    public void onFoundClient(Handler handle, final Peer client) {
+                        handle.post(new Runnable() {
                             @Override
                             public void run() {
                                 updatePeerList();
@@ -146,8 +145,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onLostClient(Peer client) {
-                        handler.post(new Runnable() {
+                    public void onLostClient(Handler handle, Peer client) {
+                        handle.post(new Runnable() {
                             @Override
                             public void run() {
                                 updatePeerList();
@@ -156,7 +155,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onMessageReceived(Peer client, String message) {
+                    public void onMessageReceived(Handler handle, Peer client, String message) {
                         // decrypt messages when the server is connected
                         if(client.isConnected()) {
                             message = decryptMessage(message);
@@ -166,11 +165,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 return;
                             }
                         }
-                        onServerReceivedMessage(client, message);
+                        onServerReceivedMessage(handle, client, message);
                     }
 
                     @Override
-                    public String onWriteMessage(Peer client, String message) {
+                    public String onWriteMessage(Handler handle, Peer client, String message) {
                         if(client.isConnected()) {
                             // encrypt message once the client has connected
                             PublicKey key = getPublicKeyFromString(client.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
@@ -189,7 +188,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             } else {
                 mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
                     @Override
-                    public void onBeforeStart() {
+                    public void onBeforeStart(Handler handle) {
                         // generate new session keys
                         try {
                             generateSessionKeys();
@@ -201,8 +200,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onError(final Exception e) {
-                        handler.post(new Runnable() {
+                    public void onError(Handler handle, final Exception e) {
+                        handle.post(new Runnable() {
                             @Override
                             public void run() {
                                 app().showException(e);
@@ -212,8 +211,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onFoundServer(final Peer server) {
-                        handler.post(new Runnable() {
+                    public void onFoundServer(Handler handle, final Peer server) {
+                        handle.post(new Runnable() {
                             @Override
                             public void run() {
                                 updatePeerList();
@@ -222,7 +221,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onLostServer(final Peer server) {
+                    public void onLostServer(Handler handle, final Peer server) {
                         // close any dialogs for this server
                         if(mPeerDialogs.containsKey(server.getIpAddress())) {
                             DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
@@ -232,7 +231,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             mPeerDialogs.remove(server.getIpAddress());
                         }
                         // reload the list
-                        handler.post(new Runnable() {
+                        handle.post(new Runnable() {
                             @Override
                             public void run() {
                                 updatePeerList();
@@ -241,7 +240,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
 
                     @Override
-                    public void onMessageReceived(Peer server, String message) {
+                    public void onMessageReceived(Handler handle, Peer server, String message) {
                         // decrypt messages when the server is connected
                         if(server.isConnected()) {
                             message = decryptMessage(message);
@@ -251,11 +250,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 return;
                             }
                         }
-                        onClientReceivedMessage(server, message);
+                        onClientReceivedMessage(handle, server, message);
                     }
 
                     @Override
-                    public String onWriteMessage(Peer server, String message) {
+                    public String onWriteMessage(Handler handle, Peer server, String message) {
                         if(server.isConnected()) {
                             // encrypt message once the server has connected
                             PublicKey key = getPublicKeyFromString(server.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
@@ -276,6 +275,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
 
         // set up the ui
+        final Handler handler = new Handler(getMainLooper());
         mLoadingBar = (ProgressBar)findViewById(R.id.loadingBar);
         mLoadingText = (TextView)findViewById(R.id.loadingText);
         TextView titleText = (TextView)findViewById(R.id.titleText);
@@ -347,7 +347,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         // start the service if the activity is starting the first time.
         if(savedInstanceState == null) {
             // This will set up a service on the local network named "tS".
-            mService.start("tS");
+            mService.start("tS", new Handler(getMainLooper()));
         }
     }
 
@@ -370,6 +370,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             mService.stop();
         }
         super.onStop();
+    }
+
+    @Override
+    public void onPostResume() {
+        super.onPostResume();
+        // TODO: init things here
     }
 
     @Override
@@ -533,8 +539,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
      * @param client the client peer that sent the message
      * @param message the message received from the client
      */
-    private void onServerReceivedMessage(Peer client, String message) {
-        final Handler handle = new Handler(getMainLooper());
+    private void onServerReceivedMessage(final Handler handle, Peer client, String message) {
         String[] data = StringUtilities.chunk(message, ":");
         // TODO: we should probably place these into different methods for better organization
         // validate client
@@ -768,9 +773,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
      * @param server the server peer that sent the message
      * @param message the message sent by the server
      */
-    private void onClientReceivedMessage(final Peer server, String message) {
-        final Handler handle = new Handler(getMainLooper());
-
+    private void onClientReceivedMessage(final Handler handle, final Peer server, String message) {
         String[] data = StringUtilities.chunk(message, ":");
         if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
 
@@ -1044,13 +1047,15 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
      * @param models an array of projects and sudo projects to choose from
      */
     private void showProjectSelectionDialog(Peer server, Model[] models) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
         app().closeToastMessage();
-        // Create and show the dialog.
-        ChooseProjectToImportDialog newFragment = new ChooseProjectToImportDialog();
-        mPeerDialogs.put(server.getIpAddress(), newFragment);
-        newFragment.setImportDetails(server, models);
-        newFragment.show(ft, "dialog");
+        if(!isFinishing()) {
+            // Create and show the dialog.
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ChooseProjectToImportDialog newFragment = new ChooseProjectToImportDialog();
+            mPeerDialogs.put(server.getIpAddress(), newFragment);
+            newFragment.setImportDetails(server, models);
+            newFragment.show(ft, "dialog");
+        }
     }
 
     /**
@@ -1154,7 +1159,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        // TODO: save
         mShuttingDown = false;
         super.onSaveInstanceState(outState);
     }
@@ -1162,7 +1166,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        // TODO: restore
         mShuttingDown = true;
+        // update the handler so we are connected to the correct activity
+        // TODO: this is not nessesary
+//        if(mService != null) {
+//            mService.setHandler(new Handler(getMainLooper()));
+//        }
     }
 }
