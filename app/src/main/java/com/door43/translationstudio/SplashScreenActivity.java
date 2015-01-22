@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.io.File;
@@ -20,9 +21,9 @@ import java.io.FilenameFilter;
  * Created by joel on 9/29/2014.
  */
 public class SplashScreenActivity extends TranslatorBaseActivity {
-    private SplashScreenActivity me = this;
     private TextView mProgressTextView;
     private ProgressBar mProgressBar;
+    private static LoadAppTask mLoadingTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,32 +34,44 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         mProgressBar = (ProgressBar)findViewById(R.id.loadingBar);
         // we need a high precision bar because we are loading a ton of things
         mProgressBar.setMax(10000);
-        mProgressBar.setProgress(0);
+        if(savedInstanceState != null) {
+            mProgressBar.setProgress(savedInstanceState.getInt("progress"));
+            mProgressTextView.setText(savedInstanceState.getString("message"));
+        } else {
+            mProgressBar.setProgress(0);
 
-        // check if we crashed
-        File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
-        if(dir.exists()) {
-            String[] files = dir.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return !new File(file, s).isDirectory();
+            // check if we crashed
+            File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
+            if (dir.exists()) {
+                String[] files = dir.list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File file, String s) {
+                        return !new File(file, s).isDirectory();
+                    }
+                });
+                if (files.length > 0) {
+                    Intent intent = new Intent(this, CrashReporterActivity.class);
+                    startActivity(intent);
+                    finish();
+                    return;
                 }
-            });
-            if (files.length > 0) {
-                Intent intent = new Intent(this, CrashReporterActivity.class);
-                startActivity(intent);
-                finish();
-                return;
             }
         }
 
-        LoadAppTask task = new LoadAppTask();
-        task.execute();
+        // these checks allow the app to rotate without restarting the loading task
+        if(mLoadingTask == null && !app().getSharedProjectManager().isLoaded()) {
+            mLoadingTask = new LoadAppTask();
+            mLoadingTask.execute();
+        }
     }
 
+    /**
+     * Starts the main activity
+     */
     public void startMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        mLoadingTask = null;
         finish();
     }
 
@@ -69,7 +82,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         protected Void doInBackground(Void... voids) {
 
             // begin loading app resources
-            app().getSharedProjectManager().init(new ProjectManager.OnProgressCallback() {
+            MainContext.getContext().getSharedProjectManager().init(new ProjectManager.OnProgressCallback() {
                 @Override
                 public void onProgress(double progress, String message) {
                     mProgress = (int)(progress * 100); // project manager returns 100 based percent values not 10,000
@@ -79,8 +92,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 @Override
                 public void onSuccess() {
                     // Generate the ssh keys
-                    if(!app().hasKeys()) {
-                        app().generateKeys();
+                    if(!MainContext.getContext().hasKeys()) {
+                        MainContext.getContext().generateKeys();
                     }
 
                     // handle app version changes
@@ -154,5 +167,12 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 }
             }
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString("message", mProgressTextView.getText().toString());
+        outState.putInt("progress", mProgressBar.getProgress());
+        super.onSaveInstanceState(outState);
     }
 }

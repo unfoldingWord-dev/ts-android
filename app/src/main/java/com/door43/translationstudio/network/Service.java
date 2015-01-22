@@ -201,11 +201,21 @@ public abstract class Service {
     public abstract void writeTo(Peer peer, String message);
 
     /**
-     *
+     * Starts the service
      * @param serviceName the name of the service being advertised or listened for on the network
      */
     public abstract void start(String serviceName);
+
+    /**
+     * Stops the service
+     */
     public abstract void stop();
+
+    /**
+     * Checks if the service is currently running
+     * @return
+     */
+    public abstract boolean isRunning();
 
 
     public interface OnSocketEventListener {

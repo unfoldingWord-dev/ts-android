@@ -70,14 +70,15 @@ import static com.tozny.crypto.android.AesCbcWithIntegrity.keys;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private boolean mStartAsServer = false;
-    private Service mService;
+    private static Service mService;
     private DevicePeerAdapter mAdapter;
     private ProgressBar mLoadingBar;
     private TextView mLoadingText;
-    private ProgressDialog mProgressDialog;
+    private static ProgressDialog mProgressDialog;
     private File mPublicKeyFile;
     private File mPrivateKeyFile;
-    private Map<String, DialogFragment> mPeerDialogs = new HashMap<String, DialogFragment>();
+    private static Map<String, DialogFragment> mPeerDialogs;
+    private boolean mShuttingDown = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,176 +87,193 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         mPublicKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa.pub");
         mPrivateKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa");
         mPublicKeyFile.getParentFile().mkdirs();
-        mProgressDialog = new ProgressDialog(this);
+        if(mPeerDialogs == null) mPeerDialogs = new HashMap<String, DialogFragment>();
+        if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
+
+        // allow state loss on fragments
+//        FragmentTransaction ft = getFragmentManager().beginTransaction();
+//        ft.commitAllowingStateLoss();
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
         final int clientUDPPort = 9939;
         final Handler handler = new Handler(getMainLooper());
 
-        // set up the threads
-        if(mStartAsServer) {
-            mService = new Server(DeviceToDeviceActivity.this, clientUDPPort, new Server.OnServerEventListener() {
-
-                @Override
-                public void onBeforeStart() {
-                    // generate new session keys
-                    try {
-                        generateSessionKeys();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
-                        mService.stop();
-                    }
-                }
-
-                @Override
-                public void onError(final Exception e) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            app().showException(e);
-                            finish();
-                        }
-                    });
-                }
-
-                @Override
-                public void onFoundClient(final Peer client) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatePeerList();
-                        }
-                    });
-                }
-
-                @Override
-                public void onLostClient(Peer client) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatePeerList();
-                        }
-                    });
-                }
-
-                @Override
-                public void onMessageReceived(Peer client, String message) {
-                    // decrypt messages when the server is connected
-                    if(client.isConnected()) {
-                        message = decryptMessage(message);
-                        if(message == null) {
-                            Logger.e(this.getClass().getName(), "The message could not be decrypted");
-                            app().showToastMessage("Decryption exception");
-                            return;
-                        }
-                    }
-                    onServerReceivedMessage(client, message);
-                }
-
-                @Override
-                public String onWriteMessage(Peer client, String message) {
-                    if(client.isConnected()) {
-                        // encrypt message once the client has connected
-                        PublicKey key = getPublicKeyFromString(client.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
-                        if(key != null) {
-                            return encryptMessage(key, message);
-                        } else {
-                            // TODO: we are missing the client's public key
-                            Logger.w(this.getClass().getName(), "Missing the client's public key");
-                            return SocketMessages.MSG_EXCEPTION;
-                        }
-                    } else {
-                        return message;
-                    }
-                }
-            });
-        } else {
-            mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
-                @Override
-                public void onBeforeStart() {
-                    // generate new session keys
-                    try {
-                        generateSessionKeys();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
-                        mService.stop();
-                    }
-                }
-
-                @Override
-                public void onError(final Exception e) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            app().showException(e);
-                            finish();
-                        }
-                    });
-                }
-
-                @Override
-                public void onFoundServer(final Peer server) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatePeerList();
-                        }
-                    });
-                }
-
-                @Override
-                public void onLostServer(final Peer server) {
-                    // close any dialogs for this server
-                    if(mPeerDialogs.containsKey(server.getIpAddress())) {
-                        DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
-                        if(dialog.getActivity() != null) {
-                            dialog.dismiss();
-                        }
-                        mPeerDialogs.remove(server.getIpAddress());
-                    }
-                    // reload the list
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatePeerList();
-                        }
-                    });
-                }
-
-                @Override
-                public void onMessageReceived(Peer server, String message) {
-                    // decrypt messages when the server is connected
-                    if(server.isConnected()) {
-                        message = decryptMessage(message);
-                        if(message == null) {
-                            Logger.e(this.getClass().getName(), "The message could not be decrypted");
-                            app().showToastMessage("Decryption exception");
-                            return;
-                        }
-                    }
-                    onClientReceivedMessage(server, message);
-                }
-
-                @Override
-                public String onWriteMessage(Peer server, String message) {
-                    if(server.isConnected()) {
-                        // encrypt message once the server has connected
-                        PublicKey key = getPublicKeyFromString(server.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
-                        if(key != null) {
-                            return encryptMessage(key, message);
-                        } else {
-                            // TODO: we are missing the server's public key
-                            Logger.w(this.getClass().getName(), "Missing the server's public key");
-                            return SocketMessages.MSG_EXCEPTION;
-                        }
-                    } else {
-                        return message;
-                    }
-                }
-            });
+        // reset things on first load
+        if(savedInstanceState == null) {
+            mPeerDialogs.clear();
+            if(mService != null) {
+                mService.stop();
+                mService = null;
+            }
         }
+
+        if(mService == null || !mService.isRunning()) {
+            // set up the threads
+            if(mStartAsServer) {
+                mService = new Server(DeviceToDeviceActivity.this, clientUDPPort, new Server.OnServerEventListener() {
+
+                    @Override
+                    public void onBeforeStart() {
+                        // generate new session keys
+                        try {
+                            generateSessionKeys();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
+                            mService.stop();
+                        }
+                    }
+
+                    @Override
+                    public void onError(final Exception e) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                app().showException(e);
+                                finish();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFoundClient(final Peer client) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                updatePeerList();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onLostClient(Peer client) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                updatePeerList();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onMessageReceived(Peer client, String message) {
+                        // decrypt messages when the server is connected
+                        if(client.isConnected()) {
+                            message = decryptMessage(message);
+                            if(message == null) {
+                                Logger.e(this.getClass().getName(), "The message could not be decrypted");
+                                app().showToastMessage("Decryption exception");
+                                return;
+                            }
+                        }
+                        onServerReceivedMessage(client, message);
+                    }
+
+                    @Override
+                    public String onWriteMessage(Peer client, String message) {
+                        if(client.isConnected()) {
+                            // encrypt message once the client has connected
+                            PublicKey key = getPublicKeyFromString(client.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
+                            if(key != null) {
+                                return encryptMessage(key, message);
+                            } else {
+                                // TODO: we are missing the client's public key
+                                Logger.w(this.getClass().getName(), "Missing the client's public key");
+                                return SocketMessages.MSG_EXCEPTION;
+                            }
+                        } else {
+                            return message;
+                        }
+                    }
+                });
+            } else {
+                mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
+                    @Override
+                    public void onBeforeStart() {
+                        // generate new session keys
+                        try {
+                            generateSessionKeys();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
+                            mService.stop();
+                        }
+                    }
+
+                    @Override
+                    public void onError(final Exception e) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                app().showException(e);
+                                finish();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFoundServer(final Peer server) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                updatePeerList();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onLostServer(final Peer server) {
+                        // close any dialogs for this server
+                        if(mPeerDialogs.containsKey(server.getIpAddress())) {
+                            DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
+                            if(dialog.getActivity() != null) {
+                                dialog.dismiss();
+                            }
+                            mPeerDialogs.remove(server.getIpAddress());
+                        }
+                        // reload the list
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                updatePeerList();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onMessageReceived(Peer server, String message) {
+                        // decrypt messages when the server is connected
+                        if(server.isConnected()) {
+                            message = decryptMessage(message);
+                            if(message == null) {
+                                Logger.e(this.getClass().getName(), "The message could not be decrypted");
+                                app().showToastMessage("Decryption exception");
+                                return;
+                            }
+                        }
+                        onClientReceivedMessage(server, message);
+                    }
+
+                    @Override
+                    public String onWriteMessage(Peer server, String message) {
+                        if(server.isConnected()) {
+                            // encrypt message once the server has connected
+                            PublicKey key = getPublicKeyFromString(server.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
+                            if(key != null) {
+                                return encryptMessage(key, message);
+                            } else {
+                                // TODO: we are missing the server's public key
+                                Logger.w(this.getClass().getName(), "Missing the server's public key");
+                                return SocketMessages.MSG_EXCEPTION;
+                            }
+                        } else {
+                            return message;
+                        }
+                    }
+                });
+            }
+        }
+
 
         // set up the ui
         mLoadingBar = (ProgressBar)findViewById(R.id.loadingBar);
@@ -325,20 +343,44 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
             }
         });
+
+        // start the service if the activity is starting the first time.
+        if(savedInstanceState == null) {
+            // This will set up a service on the local network named "tS".
+            mService.start("tS");
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mService.stop();
 
+
+    }
+
+    @Override
+    public void onBackPressed() {
+       // mService.stop();
+        super.onBackPressed();
+    }
+
+    @Override
+    public void onStop() {
+        if(mShuttingDown) {
+            mService.stop();
+        }
+        super.onStop();
+    }
+
+    @Override
+    public boolean isFinishing() {
+        //mService.stop();
+        return super.isFinishing();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // This will set up a service on the local network named "tS".
-        mService.start("tS");
     }
 
     /**
@@ -346,7 +388,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
      */
     public void generateSessionKeys() throws Exception {
         // TODO: this is not throwing exceptiosn like it should. When the directory of the keys does not exist it doesn't throw an exception
-        RSAEncryption.generateKeys(mPrivateKeyFile, mPublicKeyFile);
+        if(!mPrivateKeyFile.exists() || !mPublicKeyFile.exists()) {
+            RSAEncryption.generateKeys(mPrivateKeyFile, mPublicKeyFile);
+        }
     }
 
     /**
@@ -1106,5 +1150,19 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 mProgressDialog.dismiss();
             }
         });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // TODO: save
+        mShuttingDown = false;
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        // TODO: restore
+        mShuttingDown = true;
     }
 }

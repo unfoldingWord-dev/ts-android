@@ -67,6 +67,11 @@ public class Server extends Service {
     }
 
     @Override
+    public boolean isRunning() {
+        return mIsRunning;
+    }
+
+    @Override
     /**
      * Sends a message to the peer
      * @param client the client to which the message will be sent

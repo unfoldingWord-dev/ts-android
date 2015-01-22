@@ -83,11 +83,20 @@ public class ProjectManager {
     }
 
     /**
+     * Checks if the project manager has been loaded
+     * @return
+     */
+    public boolean isLoaded() {
+        return mHasLoaded;
+    }
+
+    /**
      * loads the source projects
      */
     public void init(OnProgressCallback callback) {
         // make sure we only call this once.
         if(!mHasLoaded) {
+            mHasLoaded = true;
             mCallback = callback;
             // begin loading target languages
             String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();

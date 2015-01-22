@@ -124,6 +124,11 @@ public class Client extends Service {
     }
 
     @Override
+    public boolean isRunning() {
+        return mIsRunning;
+    }
+
+    @Override
     /**
      * Sends a message to the peer
      * @param server the server to which the message will be sent
