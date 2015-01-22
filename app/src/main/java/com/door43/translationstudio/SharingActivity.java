@@ -40,7 +40,7 @@ public class SharingActivity extends TranslatorBaseActivity {
     private ArrayList<SharingToolItem> mSharingTools = new ArrayList<SharingToolItem>();
     private SharingAdapter mAdapter;
     private static int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
-    private static int IMPORT_DOKUWIKI_FROM_SD_REQUEST = 1;
+//    private static int IMPORT_DOKUWIKI_FROM_SD_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,172 +70,194 @@ public class SharingActivity extends TranslatorBaseActivity {
     @Override
     public void onResume() {
         super.onResume();
-
-        final File internalDestDir = new File(getCacheDir(), "sharing/");
-        final Project p = app().getSharedProjectManager().getSelectedProject();
-        if(p == null) {
-            finish();
-            return;
-        }
-
         MainContext.getContext().showProgressDialog(R.string.loading);
 
-        // stage and commit changes to the project
-        p.commit(new Project.OnCommitComplete() {
-            @Override
-            public void success() {
-                // NOTE: we check again in the threads just in case they removed the card while this activity was open
-                StorageUtils.StorageInfo removeableMedia = StorageUtils.getRemoveableMediaDevice();
-                internalDestDir.mkdirs();
-
-                // load export format
-                String exportFormt = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_EXPORT_FORMAT, MainContext.getContext().getResources().getString(R.string.pref_default_export_format));
-                final boolean exportAsProject = exportFormt.equals("project");
-                final boolean exportAsDokuwiki = exportFormt.equals("dokuwiki");
-
-                int descriptionResource = 0;
-                if(exportAsProject) {
-                    descriptionResource = R.string.export_as_project;
-                } else if(exportAsDokuwiki) {
-                    descriptionResource = R.string.export_as_dokuwiki;
+        // stage and commit changes to the current project
+        Project p = app().getSharedProjectManager().getSelectedProject();
+        if(p != null) {
+            p.commit(new Project.OnCommitComplete() {
+                @Override
+                public void success() {
+                    init();
+                    MainContext.getContext().closeProgressDialog();
                 }
 
-                mSharingTools.clear();
+                @Override
+                public void error() {
+                    MainContext.getContext().closeProgressDialog();
+                    MainContext.getContext().showToastMessage(R.string.project_share_exception);
+                    finish();
+                }
+            });
+        } else {
+            init();
+            MainContext.getContext().closeProgressDialog();
+        }
+    }
 
-                // define sharing tools
-                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
-                    @Override
-                    public void run() {
-                        Thread thread = new Thread() {
-                            public void run() {
-                                app().showProgressDialog(R.string.exporting_project);
-                                try {
-                                    String  archivePath;
+    private void init() {
+        // TRICKY: this project may very well be null
+        final Project p = app().getSharedProjectManager().getSelectedProject();
+        final File internalDestDir = new File(getCacheDir(), "sharing/");
 
-                                    if(exportAsDokuwiki) {
-                                        archivePath = p.exportDW();
-                                    } else {
-                                        archivePath = p.exportProject();
-                                    }
-                                    File archiveFile = new File(archivePath);
-                                    File output = new File(internalDestDir, archiveFile.getName());
+        // NOTE: we check again in the threads just in case they removed the card while this activity was open
+        StorageUtils.StorageInfo removeableMedia = StorageUtils.getRemoveableMediaDevice();
+        internalDestDir.mkdirs();
 
-                                    // copy exported archive to the sharing directory
-                                    FileUtils.copyFile(archiveFile, output);
+        // load export format
+        String exportFormt = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_EXPORT_FORMAT, MainContext.getContext().getResources().getString(R.string.pref_default_export_format));
+        final boolean exportAsProject = exportFormt.equals("project");
+        final boolean exportAsDokuwiki = exportFormt.equals("dokuwiki");
 
-                                    // share
-                                    if(output.exists() && output.isFile()) {
-                                        Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", output);
-                                        Intent i = new Intent(Intent.ACTION_SEND);
-                                        i.setType("application/zip");
-                                        i.putExtra(Intent.EXTRA_STREAM, u);
-                                        startActivity(Intent.createChooser(i, "Email:"));
-                                    } else {
-                                        app().showToastMessage(R.string.project_archive_missing);
-                                    }
-                                } catch (IOException e) {
-                                    app().showException(e);
-                                }
-                                app().closeProgressDialog();
-                            }
-                        };
-                        thread.start();
-                    }
-                }));
+        int descriptionResource = 0;
+        if (exportAsProject) {
+            descriptionResource = R.string.export_as_project;
+        } else if (exportAsDokuwiki) {
+            descriptionResource = R.string.export_as_dokuwiki;
+        }
 
-                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
-                    @Override
-                    public void run() {
-                        Thread thread = new Thread() {
-                            public void run() {
-                                Looper.prepare();
-                                app().showProgressDialog(R.string.exporting_project);
-                                try {
-                                    File externalDestDir;
-                                    String archivePath;
+        mSharingTools.clear();
 
-                                    if(exportAsDokuwiki) {
-                                        archivePath = p.exportDW();
-                                    } else {
-                                        archivePath = p.exportProject();
-                                    }
-                                    File archiveFile = new File(archivePath);
-
-                                    // try to locate the removable sd card
-                                    StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-                                    if(removeableMediaInfo != null) {
-                                        // write files to the removeable sd card
-                                        externalDestDir = new File("/storage/" + removeableMediaInfo.getMountName() + "/TranslationStudio/");
-                                    } else {
-                                        app().showToastMessage(R.string.missing_external_storage);
-                                        return;
-                                    }
-                                    externalDestDir.mkdirs();
-                                    File output = new File(externalDestDir, archiveFile.getName());
-
-                                    // copy the exported archive to the sd card
-                                    FileUtils.copyFile(archiveFile, output);
-
-                                    if(output.exists() && output.isFile()) {
-                                        app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
-                                    } else {
-                                        app().showToastMessage(R.string.project_archive_missing);
-                                    }
-                                } catch(IOException e) {
-                                    app().showException(e);
-                                }
-                                app().closeProgressDialog();
-                            }
-                        };
-                        thread.start();
-                    }
-                }, removeableMedia != null , R.string.missing_external_storage));
-
-                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_sd), "", R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
-                    @Override
-                    public void run() {
-                        Intent intent = new Intent(me, FileExplorerActivity.class);
-                        startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
-                    }
-                }, removeableMedia != null, R.string.missing_external_storage));
-
-                // p2p sharing requires an active network connection.
-                // TODO: Later we may need to adjust this since bluetooth and other services do not require an actual network.
-                boolean isNetworkAvailable = app().isNetworkAvailable();
-
-                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
-                    @Override
-                    public void run() {
-                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
-                        Bundle extras = new Bundle();
-                        extras.putBoolean("startAsServer", true);
-                        intent.putExtras(extras);
-                        startActivity(intent);
-                    }
-                }, isNetworkAvailable, R.string.internet_not_available));
-
-                mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
-                    @Override
-                    public void run() {
-                        Intent intent = new Intent(me, DeviceToDeviceActivity.class);
-                        Bundle extras = new Bundle();
-                        extras.putBoolean("startAsServer", false);
-                        intent.putExtras(extras);
-                        startActivity(intent);
-                    }
-                }, isNetworkAvailable, R.string.internet_not_available));
-
-                mAdapter.notifyDataSetChanged();
-                MainContext.getContext().closeProgressDialog();
-            }
-
+        // define sharing tools
+        boolean exportToAppEnabled = true;
+        int exportToAppMessage = R.string.missing_external_storage;
+        if(p == null) {
+            // TODO: eventually this export tool needs to allow the user to choose which project(s) to export. Then we'll just need to check if there are any translations available in the current projects
+            exportToAppEnabled = false;
+            exportToAppMessage = R.string.choose_a_project;
+        }
+        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
             @Override
-            public void error() {
-                MainContext.getContext().closeProgressDialog();
-                MainContext.getContext().showToastMessage(R.string.project_share_exception);
-                finish();
+            public void run() {
+                Thread thread = new Thread() {
+                    public void run() {
+                        app().showProgressDialog(R.string.exporting_project);
+                        try {
+                            String archivePath;
+
+                            if (exportAsDokuwiki) {
+                                archivePath = p.exportDW();
+                            } else {
+                                archivePath = p.exportProject();
+                            }
+                            File archiveFile = new File(archivePath);
+                            File output = new File(internalDestDir, archiveFile.getName());
+
+                            // copy exported archive to the sharing directory
+                            FileUtils.copyFile(archiveFile, output);
+
+                            // share
+                            if (output.exists() && output.isFile()) {
+                                Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", output);
+                                Intent i = new Intent(Intent.ACTION_SEND);
+                                i.setType("application/zip");
+                                i.putExtra(Intent.EXTRA_STREAM, u);
+                                startActivity(Intent.createChooser(i, "Email:"));
+                            } else {
+                                app().showToastMessage(R.string.project_archive_missing);
+                            }
+                        } catch (IOException e) {
+                            app().showException(e);
+                        }
+                        app().closeProgressDialog();
+                    }
+                };
+                thread.start();
             }
-        });
+        }, exportToAppEnabled, exportToAppMessage));
+
+
+        boolean exportToSDEnabled = removeableMedia != null;
+        int exportToSDMessage = R.string.missing_external_storage;
+        if(p == null) {
+            // TODO: eventually this export tool needs to allow the user to choose which project(s) to export. Then we'll just need to check if there are any translations available in the current projects
+            exportToSDEnabled = false;
+            exportToSDMessage = R.string.choose_a_project;
+        }
+        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
+            @Override
+            public void run() {
+                Thread thread = new Thread() {
+                    public void run() {
+                        Looper.prepare();
+                        app().showProgressDialog(R.string.exporting_project);
+                        try {
+                            File externalDestDir;
+                            String archivePath;
+
+                            if (exportAsDokuwiki) {
+                                archivePath = p.exportDW();
+                            } else {
+                                archivePath = p.exportProject();
+                            }
+                            File archiveFile = new File(archivePath);
+
+                            // try to locate the removable sd card
+                            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+                            if (removeableMediaInfo != null) {
+                                // write files to the removeable sd card
+                                externalDestDir = new File("/storage/" + removeableMediaInfo.getMountName() + "/TranslationStudio/");
+                            } else {
+                                app().showToastMessage(R.string.missing_external_storage);
+                                return;
+                            }
+                            externalDestDir.mkdirs();
+                            File output = new File(externalDestDir, archiveFile.getName());
+
+                            // copy the exported archive to the sd card
+                            FileUtils.copyFile(archiveFile, output);
+
+                            if (output.exists() && output.isFile()) {
+                                app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
+                            } else {
+                                app().showToastMessage(R.string.project_archive_missing);
+                            }
+                        } catch (IOException e) {
+                            app().showException(e);
+                        }
+                        app().closeProgressDialog();
+                    }
+                };
+                thread.start();
+            }
+        }, exportToSDEnabled, exportToSDMessage));
+
+        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_sd), "", R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(me, FileExplorerActivity.class);
+                startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
+            }
+        }, removeableMedia != null, R.string.missing_external_storage));
+
+        // p2p sharing requires an active network connection.
+        // TODO: Later we may need to adjust this since bluetooth and other services do not require an actual network.
+        boolean isNetworkAvailable = app().isNetworkAvailable();
+
+        // TODO: we should check to see if the user has any sharable content first.
+        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                Bundle extras = new Bundle();
+                extras.putBoolean("startAsServer", true);
+                intent.putExtras(extras);
+                startActivity(intent);
+            }
+        }, isNetworkAvailable, R.string.internet_not_available));
+
+        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                Bundle extras = new Bundle();
+                extras.putBoolean("startAsServer", false);
+                intent.putExtras(extras);
+                startActivity(intent);
+            }
+        }, isNetworkAvailable, R.string.internet_not_available));
+
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override

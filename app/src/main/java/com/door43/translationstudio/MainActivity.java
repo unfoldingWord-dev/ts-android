@@ -1476,8 +1476,8 @@ public class MainActivity extends TranslatorBaseActivity {
         Boolean projectEnabled = app().getSharedProjectManager().getSelectedProject() != null;
         menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled);
         menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
-        menu.findItem(R.id.action_share).setVisible(projectEnabled);
         menu.findItem(R.id.action_sync).setVisible(projectEnabled);
+//        menu.findItem(R.id.action_share).setVisible(true);
         menu.findItem(R.id.action_resources).setVisible(projectEnabled);
         Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
         menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
@@ -1489,11 +1489,7 @@ public class MainActivity extends TranslatorBaseActivity {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.action_share:
-                if(app().getSharedProjectManager().getSelectedProject() != null) {
-                    openSharing();
-                } else {
-                    app().showToastMessage(R.string.choose_a_project);
-                }
+                openSharing();
                 return true;
             case R.id.action_sync:
                 if(app().getSharedProjectManager().getSelectedProject() != null) {
