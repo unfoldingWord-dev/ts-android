@@ -39,22 +39,22 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
             mProgressTextView.setText(savedInstanceState.getString("message"));
         } else {
             mProgressBar.setProgress(0);
+        }
 
-            // check if we crashed
-            File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
-            if (dir.exists()) {
-                String[] files = dir.list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File file, String s) {
-                        return !new File(file, s).isDirectory();
-                    }
-                });
-                if (files.length > 0) {
-                    Intent intent = new Intent(this, CrashReporterActivity.class);
-                    startActivity(intent);
-                    finish();
-                    return;
+        // check if we crashed
+        File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
+        if (dir.exists()) {
+            String[] files = dir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return !new File(file, s).isDirectory();
                 }
+            });
+            if (files.length > 0) {
+                Intent intent = new Intent(this, CrashReporterActivity.class);
+                startActivity(intent);
+                finish();
+                return;
             }
         }
 
