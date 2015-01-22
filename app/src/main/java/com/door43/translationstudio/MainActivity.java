@@ -128,6 +128,14 @@ public class MainActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // make sure the projects were correctly loaded
+        if(app().getSharedProjectManager().getProjects().length == 0) {
+            app().getSharedProjectManager().reset();
+            Intent intent = new Intent(this, SplashScreenActivity.class);
+            startActivity(intent);
+            finish();
+        }
+
         setContentView(R.layout.activity_main);
 
         mActivityIsInitializing = true;

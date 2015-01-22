@@ -31,7 +31,7 @@
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp"
                 android:textColor="@color/white"
-                android:textSize="@dimen/h3"
+                android:textSize="@dimen/h4"
                 android:text="Open Bible Stories"
                 android:layout_weight="0.84" />
         </LinearLayout>

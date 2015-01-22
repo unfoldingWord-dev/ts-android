@@ -209,7 +209,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 public void onLostServer(final Peer server) {
                     // close any dialogs for this server
                     if(mPeerDialogs.containsKey(server.getIpAddress())) {
-                        mPeerDialogs.get(server.getIpAddress()).dismiss();
+                        DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
+                        if(dialog.getActivity() != null) {
+                            dialog.dismiss();
+                        }
                         mPeerDialogs.remove(server.getIpAddress());
                     }
                     // reload the list

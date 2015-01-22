@@ -76,6 +76,13 @@ public class ProjectManager {
     }
 
     /**
+     * Allows the project manager to be initialized again
+     */
+    public void reset() {
+        mHasLoaded = false;
+    }
+
+    /**
      * loads the source projects
      */
     public void init(OnProgressCallback callback) {
