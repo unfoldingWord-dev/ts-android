@@ -13,6 +13,7 @@ import android.widget.ExpandableListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;
@@ -98,7 +99,7 @@ public class ProjectTranslationImportApprovalDialog extends DialogFragment {
     public void close() {
         // the import has been canceled so we need to clean up after ourselves
         for(ProjectImport r:mRequests) {
-            Project.cleanImport(r);
+            ProjectSharing.cleanImport(r);
         }
         dismiss();
     }

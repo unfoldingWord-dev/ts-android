@@ -76,6 +76,7 @@
             android:name=".SharingActivity"
             android:label="@string/title_activity_sharing"
             android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/TitledTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

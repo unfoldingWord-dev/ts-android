@@ -22,7 +22,9 @@ import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDial
 import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
@@ -138,9 +140,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                             String archivePath;
 
                             if (exportAsDokuwiki) {
-                                archivePath = p.exportDW();
+                                archivePath = ProjectSharing.exportDW(p);
                             } else {
-                                archivePath = p.exportProject();
+                                archivePath = ProjectSharing.export(p);
                             }
                             File archiveFile = new File(archivePath);
                             File output = new File(internalDestDir, archiveFile.getName());
@@ -192,45 +194,46 @@ public class SharingActivity extends TranslatorBaseActivity {
                             }
                         });
 
-                        try {
-                            File externalDestDir;
-                            String archivePath;
+                        // TODO: allow the user to choose which projects to export
+                        String library = ProjectSharing.generateLibrary(app().getSharedProjectManager().getProjects());
 
-                            if (exportAsDokuwiki) {
-                                archivePath = p.exportDW();
-                            } else {
-                                archivePath = p.exportProject();
-                            }
-                            File archiveFile = new File(archivePath);
-
-                            // try to locate the removable sd card
-                            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-                            if (removeableMediaInfo != null) {
-                                // write files to the removeable sd card
+                        // try to locate the removable sd card
+                        StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+                        if(removeableMediaInfo != null) {
+                            try {
                                 // TODO: this does not seem to work on all devices.
-                                externalDestDir = new File("/storage/" + removeableMediaInfo.getMountName() + "/TranslationStudio/");
-                            } else {
-                                dialog.hide();
-                                app().showToastMessage(R.string.missing_external_storage);
-                                return;
-                            }
-                            externalDestDir.mkdirs();
-                            File output = new File(externalDestDir, archiveFile.getName());
+                                File externalDestDir = new File("/storage/" + removeableMediaInfo.getMountName() + "/TranslationStudio/");
+                                String archivePath;
 
-                            // copy the exported archive to the sd card
-                            FileUtils.copyFile(archiveFile, output);
+                                // export the project
+                                // TODO: we need to allow the user to choose which project(s) to export
+                                if (exportAsDokuwiki) {
+                                    archivePath = ProjectSharing.exportDW(p);
+                                } else {
+                                    archivePath = ProjectSharing.export(p);
+                                }
+                                File archiveFile = new File(archivePath);
 
-                            if (output.exists() && output.isFile()) {
-                                dialog.hide();
-                                app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
-                            } else {
-                                dialog.hide();
-                                app().showToastMessage(R.string.project_archive_missing);
+
+                                externalDestDir.mkdirs();
+                                File output = new File(externalDestDir, archiveFile.getName());
+
+                                // copy the exported archive to the sd card
+                                FileUtilities.moveOrCopy(archiveFile, output);
+
+                                // verify
+                                if (output.exists() && output.isFile()) {
+                                    app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
+                                } else {
+                                    app().showToastMessage(R.string.project_archive_missing);
+                                }
+                            } catch (IOException e) {
+                                app().showException(e);
                             }
-                        } catch (IOException e) {
-                            dialog.hide();
-                            app().showException(e);
+                        } else {
+                            app().showToastMessage(R.string.missing_external_storage);
                         }
+
                         handle.post(new Runnable() {
                             @Override
                             public void run() {
@@ -315,7 +318,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);
-                                ProjectImport[] importRequests = Project.prepareProjectArchiveImport(file);
+                                ProjectImport[] importRequests = ProjectSharing.prepareArchiveImport(file);
                                 if (importRequests.length > 0) {
                                     boolean importWarnings = false;
                                     for(ProjectImport s:importRequests) {
@@ -338,13 +341,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     } else {
                                         // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
                                         for(ProjectImport r:importRequests) {
-                                            Project.importProject(r);
+                                            ProjectSharing.importProject(r);
                                         }
-                                        Project.cleanImport(importRequests);
+                                        ProjectSharing.cleanImport(importRequests);
                                         app().showToastMessage(R.string.success);
                                     }
                                 } else {
-                                    Project.cleanImport(importRequests);
+                                    ProjectSharing.cleanImport(importRequests);
                                     app().showToastMessage(R.string.translation_import_failed);
                                 }
 
@@ -394,9 +397,9 @@ public class SharingActivity extends TranslatorBaseActivity {
     public void onProjectImportApproval(ProjectImportApprovalEvent event) {
         app().showProgressDialog(R.string.loading);
         for(ProjectImport r:event.getImportRequests()) {
-            Project.importProject(r);
+            ProjectSharing.importProject(r);
         }
-        Project.cleanImport(event.getImportRequests());
+        ProjectSharing.cleanImport(event.getImportRequests());
         app().closeProgressDialog();
     }
 }

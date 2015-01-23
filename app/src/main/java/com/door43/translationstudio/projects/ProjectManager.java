@@ -551,7 +551,7 @@ public class ProjectManager {
                 File gitDir = new File(realPath, ".git");
                 if(gitDir.exists() && gitDir.isDirectory()) {
                     FileUtilities.deleteRecursive(extractedDirectory);
-                    return Project.prepareLegacyProjectArchiveImport(archive);
+                    return ProjectSharing.prepareLegacyArchiveImport(archive);
                 }
 
                 // begin import

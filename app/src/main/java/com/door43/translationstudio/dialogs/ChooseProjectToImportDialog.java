@@ -29,8 +29,6 @@ public class ChooseProjectToImportDialog extends DialogFragment {
         getDialog().setTitle(R.string.projects);
         View v = inflater.inflate(R.layout.dialog_choose_project, container, false);
 
-        setRetainInstance(true);
-
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         if(mModelList != null) {

@@ -30,6 +30,7 @@ import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
@@ -368,6 +369,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     public void onStop() {
         if(mShuttingDown) {
             mService.stop();
+            mProgressDialog = null;
+            mPeerDialogs.clear();
         }
         super.onStop();
     }
@@ -551,92 +554,25 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
                     // send the project list to the client
 
-                    // read preferred source language (for better readability on the client)
-                    List<SourceLanguage> preferredSourceLanguages = new ArrayList<SourceLanguage>();
+                    // read preferred source languages (for better readability on the client)
+                    List<SourceLanguage> preferredLanguages = new ArrayList<SourceLanguage>();
                     try {
                         JSONArray preferredLanguagesJson = new JSONArray(data[1]);
                         for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
                             SourceLanguage lang = MainContext.getContext().getSharedProjectManager().getSourceLanguage(preferredLanguagesJson.getString(i));
                             if(lang != null) {
-                                preferredSourceLanguages.add(lang);
+                                preferredLanguages.add(lang);
                             }
                         }
                     } catch (JSONException e) {
-                        Logger.e(this.getClass().getName(), "failed to parse project list", e);
+                        Logger.e(this.getClass().getName(), "failed to parse preferred language list", e);
                     }
 
-                    // locate available projects
-                    JSONArray projectsJson = new JSONArray();
-                    Project[] projects = app().getSharedProjectManager().getProjects();
+                    // generate project library
                     // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
-                    for(Project p:projects) {
-                        if(p.isTranslatingGlobal()) {
-                            JSONObject json = new JSONObject();
-                            try {
-                                json.put("id", p.getId());
+                    String library = ProjectSharing.generateLibrary(app().getSharedProjectManager().getProjects(), preferredLanguages);
 
-                                // for better readability we attempt to give the project details in the preferred language of the client
-                                SourceLanguage shownLanguage = null;
-                                if(preferredSourceLanguages.size() > 0) {
-                                    for(SourceLanguage prefferedLang:preferredSourceLanguages) {
-                                        shownLanguage = p.getSourceLanguage(prefferedLang.getId());
-                                        if(shownLanguage != null) {
-
-                                            break;
-                                        }
-                                    }
-                                }
-                                // use the default language
-                                if(shownLanguage == null) {
-                                    shownLanguage = p.getSelectedSourceLanguage();
-                                }
-
-                                // project details
-                                JSONObject projectInfoJson = new JSONObject();
-                                projectInfoJson.put("name", p.getTitle(shownLanguage));
-                                projectInfoJson.put("description", p.getDescription(shownLanguage));
-                                // TRICKY: since we are only providing the project details in a single source language we don't need to include the meta id's
-                                PseudoProject[] pseudoProjects = p.getSudoProjects();
-                                JSONArray sudoProjectsJson = new JSONArray();
-                                for(PseudoProject sp: pseudoProjects) {
-                                    sudoProjectsJson.put(sp.getTitle(shownLanguage));
-                                }
-                                projectInfoJson.put("meta", sudoProjectsJson);
-                                json.put("project", projectInfoJson);
-
-                                // project details language
-                                JSONObject projectLanguageJson = new JSONObject();
-                                projectLanguageJson.put("slug", shownLanguage.getId());
-                                projectLanguageJson.put("name", shownLanguage.getName());
-                                if(shownLanguage.getDirection() == Language.Direction.RightToLeft) {
-                                    projectLanguageJson.put("direction", "rtl");
-                                } else {
-                                    projectLanguageJson.put("direction", "ltr");
-                                }
-                                json.put("language", projectLanguageJson);
-
-                                // available target languages
-                                Language[] targetLanguages = p.getActiveTargetLanguages();
-                                JSONArray languagesJson = new JSONArray();
-                                for(Language l:targetLanguages) {
-                                    JSONObject langJson = new JSONObject();
-                                    langJson.put("slug", l.getId());
-                                    langJson.put("name", l.getName());
-                                    if(l.getDirection() == Language.Direction.RightToLeft) {
-                                        langJson.put("direction", "rtl");
-                                    } else {
-                                        langJson.put("direction", "ltr");
-                                    }
-                                    languagesJson.put(langJson);
-                                }
-                                json.put("target_languages", languagesJson);
-                                projectsJson.put(json);
-                            } catch (JSONException e) {
-                                Logger.e(this.getClass().getName(), "malformed or corrupt project list", e);
-                            }
-                        }
-                    }
-                    mService.writeTo(client, SocketMessages.MSG_PROJECT_LIST + ":" + projectsJson.toString());
+                    mService.writeTo(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 } else if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
                     // send the project archive to the client
                     JSONObject json;
@@ -669,7 +605,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     }
                                 }
                                 if(requestedTranslations.size() > 0) {
-                                    String path = p.exportProject(requestedTranslations.toArray(new Language[requestedTranslations.size()]));
+                                    String path = ProjectSharing.export(p, requestedTranslations.toArray(new Language[requestedTranslations.size()]));
                                     final File archive = new File(path);
                                     if(archive.exists()) {
                                         // open a socket to send the project
@@ -848,7 +784,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             in.close();
 
                             // import the project
-                            ProjectImport[] importStatuses = Project.prepareProjectArchiveImport(file);
+                            ProjectImport[] importStatuses = ProjectSharing.prepareArchiveImport(file);
                             if (importStatuses.length > 0) {
                                 boolean importWarnings = false;
                                 for(ProjectImport s:importStatuses) {
@@ -872,9 +808,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 } else {
                                     // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
                                     for(ProjectImport r:importStatuses) {
-                                        Project.importProject(r);
+                                        ProjectSharing.importProject(r);
                                     }
-                                    Project.cleanImport(importStatuses);
+                                    ProjectSharing.cleanImport(importStatuses);
                                     app().showToastMessage(R.string.success);
                                 }
                                 hideProgress();
@@ -917,12 +853,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
             mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
         } else if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
-            String rawProjectList = data[1];
+            String library = data[1];
             final ArrayList<Model> availableProjects = new ArrayList<Model>();
 
             JSONArray json;
             try {
-                json = new JSONArray(rawProjectList);
+                json = new JSONArray(library);
             } catch (final JSONException e) {
                 handle.post(new Runnable() {
                     @Override
@@ -1106,9 +1042,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     public void onProjectImportApproval(ProjectImportApprovalEvent event) {
         showProgress(getResources().getString(R.string.loading));
         for(ProjectImport r:event.getImportRequests()) {
-            Project.importProject(r);
+            ProjectSharing.importProject(r);
         }
-        Project.cleanImport(event.getImportRequests());
+        ProjectSharing.cleanImport(event.getImportRequests());
         hideProgress();
         app().showToastMessage(R.string.success);
     }
