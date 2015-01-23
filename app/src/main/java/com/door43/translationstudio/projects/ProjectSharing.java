@@ -435,8 +435,8 @@ public class ProjectSharing {
             for (TranslationImport ti : translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
                 if(ti.getError() == null) {
                     File repoDir = new File(Project.getRepositoryPath(request.projectId, ti.languageId));
-                    if(repoDir.exists()) {
-                        ArrayList<ImportRequestInterface> chapterRequests = ti.getChildImportRequests().getAll();
+                    ArrayList<ImportRequestInterface> chapterRequests = ti.getChildImportRequests().getAll();
+                    if(repoDir.exists() && chapterRequests.size() > 0) {
                         // chapters
                         for (ChapterImport ci : chapterRequests.toArray(new ChapterImport[chapterRequests.size()])) {
                             if (ci.getError() == null) {
@@ -498,12 +498,15 @@ public class ProjectSharing {
                         }
                     } else {
                         // import the new project
-                        try {
-                            FileUtils.moveDirectory(ti.translationDirectory, repoDir);
-                        } catch (IOException e) {
-                            Logger.e(Project.class.getName(), "failed to import the project directory", e);
-                            hadErrors = true;
-                            continue;
+                        if(ti.isApproved()) {
+                            FileUtilities.deleteRecursive(repoDir);
+                            try {
+                                FileUtils.moveDirectory(ti.translationDirectory, repoDir);
+                            } catch (IOException e) {
+                                Logger.e(Project.class.getName(), "failed to import the project directory", e);
+                                hadErrors = true;
+                                continue;
+                            }
                         }
                     }
                     // causes the ui to reload the fresh content from the disk
