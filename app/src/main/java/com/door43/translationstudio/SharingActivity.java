@@ -2,9 +2,11 @@ package com.door43.translationstudio;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.FileProvider;
 import android.view.Menu;
@@ -180,7 +182,16 @@ public class SharingActivity extends TranslatorBaseActivity {
                 Thread thread = new Thread() {
                     public void run() {
                         Looper.prepare();
-                        app().showProgressDialog(R.string.exporting_project);
+                        Handler handle = new Handler(getMainLooper());
+                        final ProgressDialog dialog = new ProgressDialog(SharingActivity.this);
+                        dialog.setMessage(getResources().getString(R.string.loading));
+                        handle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.show();
+                            }
+                        });
+
                         try {
                             File externalDestDir;
                             String archivePath;
@@ -196,8 +207,10 @@ public class SharingActivity extends TranslatorBaseActivity {
                             StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
                             if (removeableMediaInfo != null) {
                                 // write files to the removeable sd card
+                                // TODO: this does not seem to work on all devices.
                                 externalDestDir = new File("/storage/" + removeableMediaInfo.getMountName() + "/TranslationStudio/");
                             } else {
+                                dialog.hide();
                                 app().showToastMessage(R.string.missing_external_storage);
                                 return;
                             }
@@ -208,14 +221,22 @@ public class SharingActivity extends TranslatorBaseActivity {
                             FileUtils.copyFile(archiveFile, output);
 
                             if (output.exists() && output.isFile()) {
+                                dialog.hide();
                                 app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
                             } else {
+                                dialog.hide();
                                 app().showToastMessage(R.string.project_archive_missing);
                             }
                         } catch (IOException e) {
+                            dialog.hide();
                             app().showException(e);
                         }
-                        app().closeProgressDialog();
+                        handle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.hide();
+                            }
+                        });
                     }
                 };
                 thread.start();

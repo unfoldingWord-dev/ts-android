@@ -37,6 +37,14 @@
                 android:textSize="@dimen/h5"
                 android:gravity="center" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/terms_additional"
+                android:textColor="@color/dark_gray"
+                android:textSize="@dimen/h5"
+                android:gravity="center" />
+
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="fill_parent"
