@@ -15,7 +15,7 @@
             android:textColor="@color/dark_gray"
             android:textSize="@dimen/h5"
             android:paddingBottom="20dp"
-            android:id="@+id/confirmationSwitch" />
+            android:id="@+id/crashReportNoticeText" />
 
         <TextView
             android:layout_width="wrap_content"

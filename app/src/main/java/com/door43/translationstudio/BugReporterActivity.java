@@ -52,7 +52,7 @@ public class BugReporterActivity extends TranslatorBaseActivity {
         mOkButton.setBackgroundResource(R.color.gray);
         mCancelButton = (Button)findViewById(R.id.cancelButton);
         mCrashReportText = (EditText)findViewById(R.id.crashDescriptioneditText);
-        TextView introTextView = (TextView)findViewById(R.id.introTextView);
+        TextView introTextView = (TextView)findViewById(R.id.crashReportNoticeText);
         TextView titleTextView = (TextView)findViewById(R.id.titleTextView);
         titleTextView.setVisibility(View.GONE);
         introTextView.setVisibility(View.GONE);

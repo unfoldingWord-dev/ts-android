@@ -24,7 +24,6 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
-import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
@@ -219,7 +218,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                                 File output = new File(externalDestDir, archiveFile.getName());
 
                                 // copy the exported archive to the sd card
-                                FileUtilities.moveOrCopy(archiveFile, output);
+                                FileUtils.copyFile(archiveFile, output);
+                                archiveFile.delete();
 
                                 // verify
                                 if (output.exists() && output.isFile()) {
@@ -313,7 +313,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 if(file.exists() && file.isFile()) {
                     String[] name = file.getName().split("\\.");
                     Boolean success = false;
-                    if (name[name.length - 1].equals(Project.PROJECT_EXTENSION)) {
+                    if (name[name.length - 1].toLowerCase().equals(Project.PROJECT_EXTENSION)) {
                         // import translationStudio project
                         Runnable prepareImport = new Runnable() {
                             public void run() {
@@ -355,13 +355,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                             }
                         };
                         new Thread(prepareImport).start();
-                    } else if(name[name.length - 1].equals("zip")) {
+                    } else if(name[name.length - 1].toLowerCase().equals("zip")) {
                         // import DokuWiki files
                         final ProjectManager pm = app().getSharedProjectManager();
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);
-                                if(pm.importTranslationArchive(file)) {
+                                if(ProjectSharing.importDokuWikiArchive(file)) {
                                     app().showToastMessage(R.string.success);
                                 } else {
                                     app().showToastMessage(R.string.translation_import_failed);
@@ -370,13 +370,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                             }
                         };
                         new Thread(prepareImport).start();
-                    } else if(name[name.length - 1].equals("txt")) {
+                    } else if(name[name.length - 1].toLowerCase().equals("txt")) {
                         // import legacy 1.x DokuWiki files
                         final ProjectManager pm = app().getSharedProjectManager();
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);
-                                if(pm.importLegacyTranslation(file)) {
+                                if(ProjectSharing.importDokuWiki(file)) {
                                     app().showToastMessage(R.string.success);
                                 } else {
                                     app().showToastMessage(R.string.translation_import_failed);

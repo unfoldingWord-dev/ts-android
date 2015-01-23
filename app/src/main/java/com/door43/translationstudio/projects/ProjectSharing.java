@@ -27,7 +27,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -843,5 +845,142 @@ public class ProjectSharing {
         // cleanup
         FileUtilities.deleteRecursive(outputDir);
         return outputZipFile.getAbsolutePath();
+    }
+
+    /**
+     * Imports a DokuWiki file into a project.
+     * @param file the doku wiki file
+     * @return
+     */
+    public static boolean importDokuWiki(File file) {
+        if(file.exists() && file.isFile()) {
+            StringBuilder frameBuffer = new StringBuilder();
+            String line, chapterId = "", frameId = "", chapterTitle = "";
+            Pattern pattern = Pattern.compile("-(\\d\\d)-(\\d\\d)\\.jpg");
+            Language targetLanguage = null;
+            Project project = null;
+
+            try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    if(line.length() >= 4 && line.substring(0, 2).equals("//")) {
+                        line = line.substring(2, line.length() - 2).trim();
+                        if(targetLanguage == null) {
+                            // retrieve the translation language
+                            targetLanguage = MainContext.getContext().getSharedProjectManager().getLanguageByName(line);
+                            if(targetLanguage == null) return false;
+                        } else if(project == null) {
+                            // retrieve project
+                            project = MainContext.getContext().getSharedProjectManager().getProject(line);
+                            if(project == null) return false;
+                            // place this translation into the correct language
+                            project.setSelectedTargetLanguage(targetLanguage.getId());
+                        } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
+                            // retrieve chapter reference (end of chapter)
+                            Chapter c =  project.getChapter(chapterId);
+                            c.setReferenceTranslation(line);
+                            if(!chapterTitle.isEmpty()) {
+                                c.setTitleTranslation(chapterTitle);
+                            }
+                            c.save();
+
+                            // save the last frame of the chapter
+                            if(frameBuffer.length() > 0) {
+                                Frame f = c.getFrame(frameId);
+                                f.setTranslation(frameBuffer.toString().trim());
+                                f.save();
+                            }
+                            chapterId = "";
+                            frameId = "";
+                            frameBuffer.setLength(0);
+                        } else {
+                            // unexpected input
+                            return false;
+                        }
+                    } else if(line.length() >= 12 && line.substring(0, 6).equals("======")) {
+                        // start of a new chapter
+                        chapterTitle = line.substring(6, line.length() - 6).trim(); // this is saved at the end of the chapter
+                    } else if(line.length() >= 4 && line.substring(0, 2).equals("{{")) {
+                        // save the previous frame
+                        if(project != null && !chapterId.isEmpty() && !frameId.isEmpty() && frameBuffer.length() > 0) {
+                            Frame f = project.getChapter(chapterId).getFrame(frameId);
+                            f.setTranslation(frameBuffer.toString().trim());
+                            f.save();
+                        }
+
+                        // image tag. We use this to get the frame number for the following text.
+                        Matcher matcher = pattern.matcher(line);
+                        while(matcher.find()) {
+                            chapterId = matcher.group(1);
+                            frameId = matcher.group(2);
+                        }
+                        // clear the frame buffer
+                        frameBuffer.setLength(0);
+                    } else {
+                        // frame translation
+                        frameBuffer.append(line);
+                        frameBuffer.append('\n');
+                    }
+                }
+            } catch (IOException e) {
+                Logger.e(ProjectSharing.class.getName(), "failed to import the DokuWiki file", e);
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Imports a DokuWIki archive into a project
+     * @return
+     */
+    public static boolean importDokuWikiArchive(File archive) {
+        String[] name = archive.getName().split("\\.");
+        Boolean success = true;
+        if(archive.exists() && archive.isFile() && name[name.length - 1].equals("zip")) {
+            long timestamp = System.currentTimeMillis();
+            File extractedDirectory = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+            try {
+                Zip.unzip(archive, extractedDirectory);
+            } catch (IOException e) {
+                Logger.e(ProjectSharing.class.getName(), "failed to extract the DokuWiki translation", e);
+                FileUtilities.deleteRecursive(extractedDirectory);
+                return false;
+            }
+
+            File[] files = extractedDirectory.listFiles();
+            if(files.length > 0) {
+                // fix legacy DokuWiki export (contained root directory in archive)
+                File realPath = extractedDirectory;
+                if(files.length == 1 && files[0].isDirectory()) {
+                    realPath = files[0];
+                    files = files[0].listFiles();
+                    if(files.length == 0) {
+                        FileUtilities.deleteRecursive(extractedDirectory);
+                        return false;
+                    }
+                }
+
+                // ensure this is not a legacy project archive
+                File gitDir = new File(realPath, ".git");
+                if(gitDir.exists() && gitDir.isDirectory()) {
+                    FileUtilities.deleteRecursive(extractedDirectory);
+                    return ProjectSharing.prepareLegacyArchiveImport(archive);
+                }
+
+                // begin import
+                for(File f:files) {
+                    if(!importDokuWiki(f)) {
+                        success = false;
+                    }
+                }
+            }
+            FileUtilities.deleteRecursive(extractedDirectory);
+        }
+        return success;
     }
 }

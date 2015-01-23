@@ -143,7 +143,7 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
         if(convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.fragment_import_approval_item, null);
-            TextView titleTextView = (TextView)v.findViewById(R.id.introTextView);
+            TextView titleTextView = (TextView)v.findViewById(R.id.approvalItemTitleText);
             TextView descriptionTextView = (TextView)v.findViewById(R.id.approvalDescriptionText);
             ImageView statusImage = (ImageView)v.findViewById(R.id.approvalStatusImage);
             LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.approvalStatusButton);
