@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
 
 
@@ -30,10 +30,7 @@
             android:textColor="@color/dark_gray"
             android:textOn="@string/yes"
             android:textOff="@string/no"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
+            android:padding="7dp"
             android:visibility="visible" />
 
     </LinearLayout>
@@ -52,17 +49,16 @@
 
             <Switch
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="fill_parent"
                 android:text="Import?"
                 android:id="@+id/confirmationSwitch"
                 android:textSize="@dimen/h5"
                 android:textColor="@color/dark_gray"
                 android:textOn="@string/yes"
                 android:textOff="@string/no"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
+                android:minHeight="40dp"
                 android:visibility="visible" />
 
             <LinearLayout
@@ -114,7 +110,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="approvalDescriptionText"
+                android:text="approval Description Textapproval Description Textapproval Description Text"
                 android:id="@+id/approvalDescriptionText"
                 android:textColor="@color/gray" />
         </LinearLayout>
