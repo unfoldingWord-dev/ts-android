@@ -142,68 +142,72 @@ ADDED from AndroidManifest.xml:67:9
 		ADDED from AndroidManifest.xml:68:13
 activity#com.door43.translationstudio.SharingActivity
 ADDED from AndroidManifest.xml:75:9
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:79:13
 	android:label
 		ADDED from AndroidManifest.xml:77:13
 	android:parentActivityName
 		ADDED from AndroidManifest.xml:78:13
 	android:theme
-		ADDED from AndroidManifest.xml:79:13
+		ADDED from AndroidManifest.xml:80:13
 	android:name
 		ADDED from AndroidManifest.xml:76:13
 activity#com.door43.translationstudio.FileExplorerActivity
-ADDED from AndroidManifest.xml:84:9
+ADDED from AndroidManifest.xml:85:9
 	android:label
-		ADDED from AndroidManifest.xml:86:13
-	android:theme
 		ADDED from AndroidManifest.xml:87:13
+	android:theme
+		ADDED from AndroidManifest.xml:88:13
 	android:name
-		ADDED from AndroidManifest.xml:85:13
+		ADDED from AndroidManifest.xml:86:13
 activity#com.door43.translationstudio.uploadwizard.UploadWizardActivity
-ADDED from AndroidManifest.xml:92:9
+ADDED from AndroidManifest.xml:93:9
 	android:label
-		ADDED from AndroidManifest.xml:94:13
-	android:theme
 		ADDED from AndroidManifest.xml:95:13
+	android:theme
+		ADDED from AndroidManifest.xml:96:13
 	android:name
-		ADDED from AndroidManifest.xml:93:13
+		ADDED from AndroidManifest.xml:94:13
 activity#com.door43.translationstudio.ProjectSettingsActivity
-ADDED from AndroidManifest.xml:97:9
+ADDED from AndroidManifest.xml:98:9
 	android:label
-		ADDED from AndroidManifest.xml:99:13
-	android:parentActivityName
 		ADDED from AndroidManifest.xml:100:13
-	android:theme
-		ADDED from AndroidManifest.xml:101:13
-	android:name
-		ADDED from AndroidManifest.xml:98:13
-activity#com.door43.translationstudio.CrashReporterActivity
-ADDED from AndroidManifest.xml:106:9
-	android:label
-		ADDED from AndroidManifest.xml:108:13
-	android:windowSoftInputMode
-		ADDED from AndroidManifest.xml:110:13
-	android:theme
-		ADDED from AndroidManifest.xml:109:13
-	android:name
-		ADDED from AndroidManifest.xml:107:13
-activity#com.door43.translationstudio.BugReporterActivity
-ADDED from AndroidManifest.xml:112:9
-	android:label
-		ADDED from AndroidManifest.xml:114:13
-	android:windowSoftInputMode
-		ADDED from AndroidManifest.xml:116:13
-	android:theme
-		ADDED from AndroidManifest.xml:115:13
-	android:name
-		ADDED from AndroidManifest.xml:113:13
-activity#com.door43.translationstudio.device2device.DeviceToDeviceActivity
-ADDED from AndroidManifest.xml:118:9
-	android:label
-		ADDED from AndroidManifest.xml:120:13
 	android:parentActivityName
-		ADDED from AndroidManifest.xml:121:13
+		ADDED from AndroidManifest.xml:101:13
+	android:theme
+		ADDED from AndroidManifest.xml:102:13
 	android:name
-		ADDED from AndroidManifest.xml:119:13
+		ADDED from AndroidManifest.xml:99:13
+activity#com.door43.translationstudio.CrashReporterActivity
+ADDED from AndroidManifest.xml:107:9
+	android:label
+		ADDED from AndroidManifest.xml:109:13
+	android:windowSoftInputMode
+		ADDED from AndroidManifest.xml:111:13
+	android:theme
+		ADDED from AndroidManifest.xml:110:13
+	android:name
+		ADDED from AndroidManifest.xml:108:13
+activity#com.door43.translationstudio.BugReporterActivity
+ADDED from AndroidManifest.xml:113:9
+	android:label
+		ADDED from AndroidManifest.xml:115:13
+	android:windowSoftInputMode
+		ADDED from AndroidManifest.xml:117:13
+	android:theme
+		ADDED from AndroidManifest.xml:116:13
+	android:name
+		ADDED from AndroidManifest.xml:114:13
+activity#com.door43.translationstudio.device2device.DeviceToDeviceActivity
+ADDED from AndroidManifest.xml:119:9
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:122:13
+	android:label
+		ADDED from AndroidManifest.xml:121:13
+	android:parentActivityName
+		ADDED from AndroidManifest.xml:123:13
+	android:name
+		ADDED from AndroidManifest.xml:120:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from TranslationStudio.libraries:SlidingLayer:unspecified:22:5
