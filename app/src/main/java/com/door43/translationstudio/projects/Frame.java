@@ -22,23 +22,38 @@ public class Frame implements Model {
     private Translation mTranslation;
     private TranslationNote mNotes;
     private ArrayList<String> mImportantTerms;
+    public final Format format;
+
+    /**
+     * The format of the resource
+     */
+    public static enum Format {
+        DEFAULT,
+        USX
+    }
 
     /**
      * Creates a new frame.
      * @param chapterFrameId This is a combination of the chapter id and frame id. e.g. 01-02 for chapter 1 frame 2.
      * @param text a short description of the frame
      */
-    public Frame(String chapterFrameId, String image, String text) {
+    public Frame(String chapterFrameId, String image, String text, String format) {
         // parse id
         String[] pieces = chapterFrameId.split("-");
         if(pieces.length == 2) {
             mChapterId = pieces[0];
             mId = pieces[1];
         } else {
-//            Log.w("Frame", "The frame has an invalid id");
+            Logger.w(this.getClass().getName(), "Invalid frame id " + chapterFrameId);
         }
         mChapterFrameId = chapterFrameId;
         mText = text;
+        // identify text format
+        if(format.toLowerCase().equals("usx")) {
+            this.format = Format.USX;
+        } else {
+            this.format = Format.DEFAULT;
+        }
     }
 
     /**

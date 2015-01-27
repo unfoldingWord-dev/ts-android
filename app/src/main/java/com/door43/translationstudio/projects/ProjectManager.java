@@ -1009,7 +1009,11 @@ public class ProjectManager {
                     for(int j=0; j<jsonFrames.length(); j++) {
                         JSONObject jsonFrame = jsonFrames.getJSONObject(j);
                         if(jsonFrame.has("id") && jsonFrame.has("text")) {
-                            c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("img").toString(), jsonFrame.get("text").toString()));
+                            String format = "";
+                            if(jsonFrame.has("format")) {
+                                format = jsonFrame.getString("format");
+                            }
+                            c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("img").toString(), jsonFrame.get("text").toString(), format));
                         } else {
 //                            Log.w(TAG, "missing required parameters in the source frames");
                         }

@@ -1,1 +1,13 @@
-[{"date_modified":"20141208","lang_catalog":"https://api.unfoldingword.org/ts/txt/2/obs/languages.json","slug":"obs"}]
+[
+  {
+    "date_modified": "20141208",
+    "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/languages.json",
+    "slug": "obs"
+  },
+  {
+    "date_modified": "20141208",
+    "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/luk/languages.json",
+    "slug": "luk",
+    "meta": ["bible", "nt"]
+  }
+]
