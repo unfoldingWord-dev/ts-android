@@ -132,6 +132,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             ((MainActivity) me.getActivity()).reloadCenterPane();
             // open up the chapters tab
             ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);
+            // reload the frames tab so we don't see frames from the previous project
+            ((MainActivity)me.getActivity()).getLeftPane().reloadFramesTab();
             // let the adapter redraw itself so the selected project is corectly highlighted
             NotifyAdapterDataSetChanged();
         }

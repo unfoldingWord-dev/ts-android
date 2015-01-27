@@ -1,11 +1,16 @@
 package com.door43.translationstudio.rendering;
 
+import android.graphics.Typeface;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
-import android.text.SpannedString;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.LeadingMarginSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
+
+import com.door43.translationstudio.spannables.RelativeLineHeightSpan;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -37,7 +42,13 @@ public class USXRenderer extends RenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), Html.fromHtml("<sup><b>"+matcher.group(1)+"</b></sup>"));
+            Spannable sp = new SpannableString(Html.fromHtml(" <sup>" + matcher.group(1) + "</sup> "));
+            sp.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), 0, sp.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            sp.setSpan(new RelativeSizeSpan(0.8f), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            sp.setSpan(new RelativeLineHeightSpan(1f), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // lineheight span
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), sp); //Html.fromHtml("<sup><b>"+matcher.group(1)+"</b></sup>"));
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
@@ -53,7 +64,13 @@ public class USXRenderer extends RenderingEngine {
             if(isStopped()) return in;
             SpannableString span = new SpannableString(matcher.group(1));
             // TODO: are we supposed to style paragraphs in a particular way?
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span);
+            // leading margin span
+            // line break span
+            String lineBreak = "";
+            if(out.length() > 0) {
+                lineBreak = "\n";
+            }
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), lineBreak, "    ", span, "\n");
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));

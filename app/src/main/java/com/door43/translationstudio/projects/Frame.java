@@ -1,6 +1,11 @@
 package com.door43.translationstudio.projects;
 
+import android.text.TextUtils;
+
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
+import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.RenderingEngine;
+import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
@@ -198,9 +203,21 @@ public class Frame implements Model {
     }
 
     @Override
-    public String getDescription() {
+    public CharSequence getDescription() {
+        // TODO: this could potentially cause problems if the rendering takes too long. It could cause the frame list to lag when scrolling
         // a subset of the text is used for the description
-        return mText.substring(0, 50) + "...";
+        RenderingEngine renderer;
+        if(format == Format.USX) {
+            renderer = new USXRenderer();
+        } else {
+            renderer = new DefaultRenderer();
+        }
+        CharSequence out = renderer.render(mText);
+        if(out.length() > 93) {
+            return out.subSequence(0, 90).toString().trim() + "...";
+        } else {
+            return out;
+        }
     }
 
     /**

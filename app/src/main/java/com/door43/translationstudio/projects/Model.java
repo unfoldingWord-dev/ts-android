@@ -6,7 +6,7 @@ package com.door43.translationstudio.projects;
 public interface Model {
     public String getId();
     public String getTitle();
-    public String getDescription();
+    public CharSequence getDescription();
     public String getImagePath();
     public boolean isTranslating();
     public boolean isTranslatingGlobal();
