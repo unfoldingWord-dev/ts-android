@@ -2,44 +2,52 @@
 
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/action_library"
-        android:title="@string/menu_library"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_resources"
-        android:title="@string/menu_resources"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_chapter_settings"
-        android:title="@string/menu_chapter_settings"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_project_settings"
-        android:title="@string/menu_project_settings"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_share"
-        android:title="@string/menu_share"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_sync"
-        android:title="@string/menu_upload"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_info"
-        android:title="@string/menu_info"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_bug"
-        android:title="@string/menu_bug"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_update"
-        android:title="@string/menu_update"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_settings"
-        android:title="@string/menu_settings"
-        app:showAsAction="never" />
+    <group android:id="@+id/main_nav">
+        <item
+            android:id="@+id/action_library"
+            android:title="@string/menu_library"
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/action_resources"
+            android:title="@string/menu_resources"
+            app:showAsAction="always" />
+        <item
+            android:id="@+id/action_chapter_settings"
+            android:title="@string/menu_chapter_settings"
+            app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/action_project_settings"
+            android:title="@string/menu_project_settings"
+            app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/action_share"
+            android:title="@string/menu_share"
+            app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/action_sync"
+            android:title="@string/menu_upload"
+            app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/action_info"
+            android:title="@string/menu_info"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_bug"
+            android:title="@string/menu_bug"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_update"
+            android:title="@string/menu_update"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/action_settings"
+            android:title="@string/menu_settings"
+            app:showAsAction="never" />
+    </group>
+    <group android:id="@+id/translation_nav">
+        <item
+            android:id="@+id/action_verse_marker"
+            android:title="@string/menu_verse_marker"
+            app:showAsAction="always"></item>
+    </group>
 </menu>

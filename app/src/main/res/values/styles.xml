@@ -28,12 +28,13 @@
     <style name="TitledActionbar" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">@color/green</item>
         <item name="android:titleTextStyle">@style/TitleTextStyle</item>
+        <item name="android:icon">@android:color/transparent</item>
     </style>
 
     <style name="TranslationActionbar" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">@color/green</item>
         <item name="android:displayOptions">useLogo|showHome</item>
-        <!--<item name="android:icon">@android:color/transparent</item>-->
+        <item name="android:icon">@android:color/transparent</item>
         <item name="android:titleTextStyle">@style/TitleTextStyle</item>
     </style>
 

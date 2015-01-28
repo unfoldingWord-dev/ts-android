@@ -19,6 +19,7 @@ public abstract class TranslatorBaseActivity extends ActionBarActivity {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // make sure the projects were correctly loaded
         String className = this.getClass().getName();
         if(!className.equals(TermsActivity.class.getName()) &&

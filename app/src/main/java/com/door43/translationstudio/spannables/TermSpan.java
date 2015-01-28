@@ -9,7 +9,7 @@ public class TermSpan extends FancySpan{
     }
 
     /**
-     * Converts the footnote to a spannable char sequence
+     * Converts the term to a spannable char sequence
      * @return
      */
     public CharSequence toCharSequence() {

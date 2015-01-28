@@ -9,10 +9,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,12 +25,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -66,18 +70,14 @@ import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Resource;
-import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.KeyTermRenderer;
-import com.door43.translationstudio.rendering.RenderingEngine;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.SourceTextView;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
-import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.MainContext;
@@ -131,6 +131,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private BroadcastReceiver mMessageReceiver;
     private RenderingGroup mSourceRendering;
     private FancySpan.OnClickListener mKeyTermClickListener;
+    private boolean mTranslationFocused = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -637,6 +638,20 @@ public class MainActivity extends TranslatorBaseActivity {
                             }
                         }, saveDelay);
                     }
+                }
+            }
+        });
+
+        // detect when the translation text has focus
+        mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if(b) {
+                    mTranslationFocused = true;
+                    invalidateOptionsMenu();
+                } else {
+                    mTranslationFocused = false;
+                    invalidateOptionsMenu();
                 }
             }
         });
@@ -1391,13 +1406,31 @@ public class MainActivity extends TranslatorBaseActivity {
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         Boolean projectEnabled = app().getSharedProjectManager().getSelectedProject() != null;
-        menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled);
-        menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
-        menu.findItem(R.id.action_sync).setVisible(projectEnabled);
-//        menu.findItem(R.id.action_share).setVisible(true);
-        menu.findItem(R.id.action_resources).setVisible(projectEnabled);
-        Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
-        menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
+        if(!mTranslationFocused) {
+            menu.setGroupVisible(R.id.main_nav, true);
+            menu.setGroupVisible(R.id.translation_nav, false);
+            // normal menu
+            menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled);
+            menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
+            menu.findItem(R.id.action_sync).setVisible(projectEnabled);
+            menu.findItem(R.id.action_resources).setVisible(projectEnabled);
+            Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
+            menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
+            getActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.green)));
+            Spannable text = new SpannableString(getActionBar().getTitle());
+            text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.dark_green)), 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            getActionBar().setTitle(text);
+        } else {
+            // translation menu
+            getActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.blue)));
+
+            menu.setGroupVisible(R.id.main_nav, false);
+            menu.setGroupVisible(R.id.translation_nav, true);
+
+            Spannable text = new SpannableString(menu.findItem(R.id.action_verse_marker).getTitle());
+            text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.white)), 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            menu.findItem(R.id.action_verse_marker).setTitle(text);
+        }
         return true;
     }
 
