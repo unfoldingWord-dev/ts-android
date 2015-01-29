@@ -12,7 +12,7 @@
         android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:theme="@style/TitledTheme"
+        android:theme="@style/Theme.Titled"
         android:label="@string/app_name" >
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -27,7 +27,7 @@
         <activity
             android:name=".TermsActivity"
             android:label="@string/app_name"
-            android:theme="@style/TitledTheme" >
+            android:theme="@style/Theme.Main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,19 +37,19 @@
         <activity
             android:name=".SplashScreenActivity"
             android:label="@string/app_name"
-            android:theme="@style/SettingTheme" >
+            android:theme="@style/Theme.Main" >
         </activity>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme"
+            android:theme="@style/Theme.Main"
             android:windowSoftInputMode="adjustNothing" >
         </activity>
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/TitledTheme" >
+            android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
@@ -58,7 +58,7 @@
             android:name=".ChapterSettingActivity"
             android:label="@string/title_activity_chapter_setting"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/TitledTheme"
+            android:theme="@style/Theme.Titled"
             android:windowSoftInputMode="stateAlwaysHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -67,7 +67,7 @@
         <activity
             android:name=".LanguageSelectorActivity"
             android:label="@string/title_activity_language_selector"
-            android:theme="@style/TitledTheme" >
+            android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.ChapterSettingActivity" />
@@ -77,7 +77,7 @@
             android:label="@string/title_activity_sharing"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/TitledTheme" >
+            android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
@@ -85,7 +85,7 @@
         <activity
             android:name=".FileExplorerActivity"
             android:label="@string/title_activity_file_explorer"
-            android:theme="@style/TitledTheme" >
+            android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.SharingActivity" />
@@ -93,13 +93,13 @@
         <activity
             android:name=".uploadwizard.UploadWizardActivity"
             android:label="@string/title_activity_upload_wizard"
-            android:theme="@style/TitledTheme" >
+            android:theme="@style/Theme.Titled" >
         </activity>
         <activity
             android:name=".ProjectSettingsActivity"
             android:label="@string/label_project_settings"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/TitledTheme" >
+            android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.MainActivity" />
@@ -107,19 +107,20 @@
         <activity
             android:name=".CrashReporterActivity"
             android:label="@string/title_activity_crash_reporter"
-            android:theme="@style/TitledTheme"
+            android:theme="@style/Theme.Titled"
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
             android:name=".BugReporterActivity"
             android:label="@string/title_activity_bug_reporter"
-            android:theme="@style/TitledTheme"
+            android:theme="@style/Theme.Titled"
             android:windowSoftInputMode="adjustPan" >
         </activity>
         <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.Titled"
             android:parentActivityName=".SharingActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

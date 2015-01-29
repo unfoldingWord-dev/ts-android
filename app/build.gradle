@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 20
+    compileSdkVersion 21
     buildToolsVersion '21.1.1'
 
     defaultConfig {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
-        targetSdkVersion 20
+        targetSdkVersion 21
         versionCode 53
         versionName "2.0.3"
     }
@@ -26,14 +26,14 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':libraries:SlidingLayer')
     compile files('libs/json-simple-1.1.1.jar')
-    compile 'com.android.support:appcompat-v7:20.0.0'
-    compile 'com.android.support:support-v13:20.0.0'
+    compile 'com.android.support:appcompat-v7:21.0.0'
+    compile 'com.android.support:support-v13:21.0.0'
     compile 'com.loopj.android:android-async-http:1.4.5'
     compile 'com.google.code.gson:gson:2.3'
     compile 'org.eclipse.jgit:org.eclipse.jgit:3.5.0.201409071800-rc1'
     compile 'com.jcraft:jsch:0.1.51'
     compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.3'
     compile 'com.squareup:otto:1.3.5'
-    compile 'com.android.support:support-v4:20.0.0'
+    compile 'com.android.support:support-v4:21.0.0'
     compile 'org.kamranzafar:jtar:2.2'
 }

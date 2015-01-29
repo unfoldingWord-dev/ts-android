@@ -6,11 +6,15 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.LeadingMarginSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.RelativeLineHeightSpan;
+import com.door43.translationstudio.spannables.VerseSpan;
+import com.door43.translationstudio.util.MainContext;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,13 +46,12 @@ public class USXRenderer extends RenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            Spannable sp = new SpannableString(Html.fromHtml(" <sup>" + matcher.group(1) + "</sup> "));
-            sp.setSpan(new StyleSpan(Typeface.BOLD_ITALIC), 0, sp.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            sp.setSpan(new RelativeSizeSpan(0.8f), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            sp.setSpan(new RelativeLineHeightSpan(1f), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            VerseSpan verse = new VerseSpan(matcher.group(1));
 
-            // lineheight span
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), sp); //Html.fromHtml("<sup><b>"+matcher.group(1)+"</b></sup>"));
+//            Spannable sp = new SpannableString(" "+matcher.group(1)+" ");
+//            sp.setSpan(new RelativeSizeSpan(0.8f), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//            sp.setSpan(new ForegroundColorSpan(MainContext.getContext().getResources().getColor(R.color.gray)), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence()); //Html.fromHtml("<sup><b>"+matcher.group(1)+"</b></sup>"));
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));

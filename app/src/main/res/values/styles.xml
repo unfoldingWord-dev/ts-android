@@ -3,26 +3,35 @@
 
     <!-- Base application theme. -->
     <!--android:Theme.NoTitleBar.Fullscreen-->
-    <style name="AppTheme" parent="@style/Theme.AppCompat.Light">
-        <item name="android:layout_width">fill_parent</item>
-        <item name="android:layout_height">fill_parent</item>
+    <style name="Theme.Main" parent="Theme.AppCompat.Light.NoActionBar">
 
-        <!-- No backgrounds, titles or window float -->
-        <!--<item name="android:windowNoTitle">true</item>-->
-        <!--<item name="android:windowFullscreen">true</item>-->
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:actionBarStyle">@style/TranslationActionbar</item>
+        <!-- Set AppCompat’s color theming attrs -->
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorPrimaryDark">@color/dark_green</item>
+        <item name="windowActionModeOverlay">true</item>
+        <!-- colorAccent is used as the default value for colorControlActivated,
+         which is used to tint widgets -->
+        <!--<item name="colorAccent">@color/blue</item>-->
+
+        <!-- You can also set colorControlNormal, colorControlActivated
+         colorControlHighlight, and colorSwitchThumbNormal. -->
+
+        <!--<item name="android:windowActionBar">false</item>-->
     </style>
 
-    <style name="TitledTheme" parent="@style/Theme.AppCompat.Light">
-        <item name="android:layout_width">fill_parent</item>
-        <item name="android:layout_height">fill_parent</item>
+    <style name="Theme.Titled" parent="Theme.AppCompat.Light">
+        <!-- Set AppCompat’s color theming attrs -->
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorPrimaryDark">@color/dark_green</item>
 
-        <!-- No backgrounds, titles or window float -->
-        <!--<item name="android:windowNoTitle">true</item>-->
-        <!--<item name="android:windowFullscreen">true</item>-->
-        <item name="android:windowIsFloating">false</item>
-        <item name="android:actionBarStyle">@style/TitledActionbar</item>
+        <!-- colorAccent is used as the default value for colorControlActivated,
+         which is used to tint widgets -->
+        <item name="colorAccent">@color/blue</item>
+
+        <!-- You can also set colorControlNormal, colorControlActivated
+         colorControlHighlight, and colorSwitchThumbNormal. -->
+
+        <!--<item name="android:windowActionBar">false</item>-->
     </style>
 
     <style name="TitledActionbar" parent="@android:style/Widget.Holo.Light.ActionBar">
@@ -42,7 +51,7 @@
 
     </style>
 
-    <style name="SettingTheme" parent="@style/Theme.AppCompat.Light">
+    <style name="Theme.NoTitleBar" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:actionBarStyle">@style/TranslationNoActionbar</item>
     </style>
 

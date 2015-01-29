@@ -2,6 +2,7 @@ package com.door43.translationstudio.dialogs;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
+import com.door43.translationstudio.util.BetterSwitchCompat;
 import com.door43.translationstudio.util.MainContext;
 
 /**
@@ -149,8 +151,8 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.approvalStatusButton);
             RelativeLayout bodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayout);
             ImageView sublistImageView = (ImageView)v.findViewById(R.id.sublistImageView);
-            Switch confirmationSwitch = (Switch)v.findViewById(R.id.confirmationSwitch);
-            Switch confirmAllSwitch = (Switch)v.findViewById(R.id.confirmAllSwitch);
+            BetterSwitchCompat confirmationSwitch = (BetterSwitchCompat)v.findViewById(R.id.confirmationSwitch);
+            BetterSwitchCompat confirmAllSwitch = (BetterSwitchCompat)v.findViewById(R.id.confirmAllSwitch);
             LinearLayout confirmAllLayout = (LinearLayout)v.findViewById(R.id.confirmAllLayout);
             confirmAllSwitch.setFocusable(false);
             confirmationSwitch.setFocusable(false);
@@ -173,7 +175,7 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
 //        holder.bodyLayout.setBackgroundResource(Color.TRANSPARENT);
 
         // indicate that this item is approved
-        holder.confirmationSwitch.setChecked(request.isApproved());
+        holder.confirmationSwitch.silentlySetChecked(request.isApproved());
 
         // toggle approved. Errors cannot be approved
 //        if (request.isApproved()) {
@@ -201,10 +203,10 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
 
 
         // handle child confirmation switch
-        holder.confirmationSwitch.setOnClickListener(new View.OnClickListener() {
+        holder.confirmationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                request.setIsApproved(((Switch)view).isChecked());
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                request.setIsApproved(b);
                 notifyDataSetChanged();
             }
         });
@@ -231,15 +233,15 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
         if(childPosition == 0) {
             final ImportRequestInterface group = getGroup(groupPosition);
             holder.confirmAllLayout.setVisibility(View.VISIBLE);
-            holder.confirmAllSwitch.setOnClickListener(new View.OnClickListener() {
+            holder.confirmAllSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
-                public void onClick(View view) {
-                    group.setIsApproved(((Switch)view).isChecked());
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    group.setIsApproved(b);
                     notifyDataSetChanged();
                 }
             });
             // indicate group is approved
-            holder.confirmAllSwitch.setChecked(group.isApproved());
+            holder.confirmAllSwitch.silentlySetChecked(group.isApproved());
         } else {
             holder.confirmAllLayout.setVisibility(View.GONE);
         }
@@ -268,8 +270,8 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
         public RelativeLayout bodyLayout;
         public LinearLayout statusButton;
         public ImageView sublistImageView;
-        public Switch confirmationSwitch;
-        public Switch confirmAllSwitch;
+        public BetterSwitchCompat confirmationSwitch;
+        public BetterSwitchCompat confirmAllSwitch;
         public LinearLayout confirmAllLayout;
     }
 }

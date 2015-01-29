@@ -22,12 +22,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.SpannedString;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
@@ -39,6 +41,7 @@ import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -78,6 +81,7 @@ import com.door43.translationstudio.rendering.SourceTextView;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.MainContext;
@@ -104,7 +108,6 @@ public class MainActivity extends TranslatorBaseActivity {
 
     private GestureDetector mSourceGestureDetector;
     private GestureDetector mTranslationGestureDetector;
-    private int mActionBarHeight;
     private boolean mActivityIsInitializing;
     private ThreadableUI mHighlightTranslationThread;
     private ThreadableUI mHighlightSourceThread;
@@ -132,11 +135,24 @@ public class MainActivity extends TranslatorBaseActivity {
     private RenderingGroup mSourceRendering;
     private FancySpan.OnClickListener mKeyTermClickListener;
     private boolean mTranslationFocused = false;
+    private static Toolbar mMainToolbar;
+    private static Toolbar mTranslationToolbar;
+    private boolean mKeyboardIsOpen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // set up toolbars
+        mMainToolbar = (Toolbar)findViewById(R.id.toolbar_main);
+        mMainToolbar.setVisibility(View.VISIBLE);
+        mMainToolbar.setTitle("");
+        setSupportActionBar(mMainToolbar);
+        mTranslationToolbar = (Toolbar)findViewById(R.id.toolbar_translation);
+        mTranslationToolbar.setVisibility(View.GONE);
+        mTranslationToolbar.setTitle("");
+
 
         mActivityIsInitializing = true;
         app().setMainActivity(this);
@@ -239,7 +255,14 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param r the dimensions of the visible area
      */
     private void onKeyboardOpen(Rect r) {
+        mKeyboardIsOpen = true;
         resizeRootView(r);
+
+        // display the translation menu
+        setSupportActionBar(mTranslationToolbar);
+        mTranslationToolbar.setVisibility(View.VISIBLE);
+        mMainToolbar.setVisibility(View.GONE);
+        invalidateOptionsMenu();
     }
 
     /**
@@ -247,8 +270,15 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param r the dimensions of the visible area
      */
     private void onKeyboardClose(Rect r) {
+        mKeyboardIsOpen = false;
         mTranslationEditText.clearFocus();
         resizeRootView(r);
+
+        // display the main menu
+        setSupportActionBar(mMainToolbar);
+        mMainToolbar.setVisibility(View.VISIBLE);
+        mTranslationToolbar.setVisibility(View.GONE);
+        invalidateOptionsMenu();
     }
 
     /**
@@ -257,7 +287,7 @@ public class MainActivity extends TranslatorBaseActivity {
      */
     private void resizeRootView(Rect r) {
         ViewGroup.LayoutParams params = mRootView.getLayoutParams();
-        int newHeight = r.bottom - mActionBarHeight - getStatusBarHeight();
+        int newHeight = r.bottom - getStatusBarHeight();
         if(newHeight != params.height) {
             params.height = newHeight;
             mRootView.setLayoutParams(params);
@@ -326,14 +356,6 @@ public class MainActivity extends TranslatorBaseActivity {
         FancySpan.setGlobalTypefaceSize(typefaceSize);
         mTranslationEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
         mSourceText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
-
-        // get the actionbar height
-        TypedValue tv = new TypedValue();
-        mActionBarHeight = 0;
-        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
-        {
-            mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
-        }
 
         // watch for the soft keyboard open and close
         final View rootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);
@@ -415,7 +437,6 @@ public class MainActivity extends TranslatorBaseActivity {
 
             @Override
             public void onDestroyActionMode(ActionMode actionMode) {
-
             }
         });
 
@@ -674,33 +695,6 @@ public class MainActivity extends TranslatorBaseActivity {
         Window w = getWindow();
         w.getDecorView().getWindowVisibleDisplayFrame(r);
         return r.top;
-    }
-
-    /**
-     * Checks if the status bar is visible
-     * @return
-     */
-    private boolean isStatusBarOnTop() {
-        Rect rect = new Rect();
-
-        getWindow().getDecorView().getWindowVisibleDisplayFrame(rect);
-
-        return rect.top  > 0;
-//
-//        Rect outerRect = new Rect();
-//        Rect usableRect = new Rect();
-//        Window window = this.getWindow();
-//        window.getDecorView().getGlobalVisibleRect(outerRect);
-//        window.getDecorView().getWindowVisibleDisplayFrame(usableRect);
-//        int statusBarHeight = usableRect.top - outerRect.top;
-//
-//        // Sometimes, status bar is at bottom...
-//        int bottomGap = outerRect.bottom - usableRect.bottom;
-//        if(bottomGap > statusBarHeight) {
-//            statusBarHeight = bottomGap;
-//        }
-//
-//        return statusBarHeight;
     }
 
     /**
@@ -1220,9 +1214,29 @@ public class MainActivity extends TranslatorBaseActivity {
     public void save() {
         if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && app().getSharedProjectManager().getSelectedProject().hasChosenTargetLanguage()) {
             disableAutosave();
-            String inputTextValue = ((EditText) findViewById(R.id.inputText)).getText().toString();
+//            String inputTextValue = mTranslationEditText.getText().toString();
+
+            // compile the translation
+            Object[] spans = mTranslationEditText.getText().getSpans(0, mTranslationEditText.getText().length(), Object.class);
+            Editable translationText = mTranslationEditText.getText();
+            StringBuilder compiledString = new StringBuilder();
+            int lastIndex = 0;
+            for(Object s:spans) {
+                if(s.getClass().getName().equals(SpannedString.class.getName())) {
+                    int sStart = translationText.getSpanStart(s);
+                    int sEnd = translationText.getSpanEnd(s);
+                    // attach preceeding text
+                    compiledString.append(translationText.toString().substring(lastIndex, sStart));
+                    // explode span
+                    compiledString.append(s.toString());
+                    lastIndex = sEnd;
+                }
+            }
+            // grab the last bit of text
+            compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
+
             Frame f = app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
-            f.setTranslation(inputTextValue);
+            f.setTranslation(compiledString.toString().trim());
             f.save();
             enableAutosave();
         }
@@ -1399,37 +1413,28 @@ public class MainActivity extends TranslatorBaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu items for use in the action bar
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_activity_actions, menu);
+        if(mKeyboardIsOpen) {
+            inflater.inflate(R.menu.translation_actions, menu);
+        } else {
+            inflater.inflate(R.menu.main_activity_actions, menu);
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         Boolean projectEnabled = app().getSharedProjectManager().getSelectedProject() != null;
-        if(!mTranslationFocused) {
-            menu.setGroupVisible(R.id.main_nav, true);
-            menu.setGroupVisible(R.id.translation_nav, false);
-            // normal menu
+        if(mKeyboardIsOpen) {
+            // translation menu
+
+        } else {
+            // main menu
             menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled);
             menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
             menu.findItem(R.id.action_sync).setVisible(projectEnabled);
             menu.findItem(R.id.action_resources).setVisible(projectEnabled);
             Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
             menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
-            getActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.green)));
-            Spannable text = new SpannableString(getActionBar().getTitle());
-            text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.dark_green)), 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            getActionBar().setTitle(text);
-        } else {
-            // translation menu
-            getActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.blue)));
-
-            menu.setGroupVisible(R.id.main_nav, false);
-            menu.setGroupVisible(R.id.translation_nav, true);
-
-            Spannable text = new SpannableString(menu.findItem(R.id.action_verse_marker).getTitle());
-            text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.white)), 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            menu.findItem(R.id.action_verse_marker).setTitle(text);
         }
         return true;
     }
@@ -1530,6 +1535,12 @@ public class MainActivity extends TranslatorBaseActivity {
                     app().showToastMessage(R.string.choose_a_project);
                 }
                 return true;
+            case R.id.action_verse_marker:
+                // TODO: insert a verse marker at the current index.
+                int verseIndex = mTranslationEditText.getSelectionStart();
+                Editable translationText = mTranslationEditText.getText();
+                VerseSpan verse = new VerseSpan("1");
+                translationText.insert(verseIndex, verse.toCharSequence());
             default:
                 return super.onOptionsItemSelected(item);
         }

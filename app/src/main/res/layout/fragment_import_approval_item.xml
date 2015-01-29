@@ -21,7 +21,7 @@
             android:paddingTop="1dp"
             android:background="@color/dark_green"></LinearLayout>
 
-        <Switch
+        <com.door43.translationstudio.util.BetterSwitchCompat
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Import all?"
@@ -47,7 +47,7 @@
             android:id="@+id/linearLayout8"
             android:background="@color/lighter_gray">
 
-            <Switch
+            <com.door43.translationstudio.util.BetterSwitchCompat
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:text="Import?"

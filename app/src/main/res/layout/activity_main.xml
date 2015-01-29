@@ -1,199 +1,208 @@
-<android.support.v4.widget.DrawerLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer_layout"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!-- Center content pane -->
-    <LinearLayout
-        android:orientation="vertical"
+    <android.support.v4.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/centerPane">
+        android:layout_height="match_parent">
 
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
+        <!-- Center content pane -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/centerPane">
 
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent">
+            <include layout="@layout/toolbar_main" />
+            <include layout="@layout/toolbar_translation" />
 
-                <FrameLayout android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fitsSystemWindows="true"
-                    android:layout_weight="1"
-                    android:scrollbars="vertical"
-                    android:background="@drawable/gray_vertical_border">
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/hasPreviousFrameImageView"
-                        android:layout_gravity="center_vertical"
-                        android:background="@drawable/chevron_left"
-                        android:layout_marginLeft="10dp"
-                        android:alpha=".07" />
-
-                    <TextView
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/choose_frame_to_start"
-                        android:id="@+id/helpTextView"
-                        android:textSize="@dimen/h4"
-                        android:padding="10dp"
-                        android:textColor="@color/gray"
-                        android:textStyle="bold"
-                        android:layout_gravity="center_vertical"
-                        android:gravity="center"
-                        android:textIsSelectable="false" />
-
-                    <RelativeLayout
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:paddingTop="2dp">
-
-
-                        <TextView
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Language: Chapter"
-                            android:id="@+id/sourceTitleText"
-                            android:gravity="center"
-                            android:textColor="@color/gray"
-                            android:layout_centerHorizontal="true"
-                            android:background="@drawable/language_resources_selector"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp" />
-
-                        <com.door43.translationstudio.rendering.SourceTextView
-                            android:layout_width="match_parent"
-                            android:layout_height="fill_parent"
-                            android:id="@+id/sourceText"
-                            android:maxLines="9999"
-                            android:scrollbars="vertical"
-                            android:textColor="@color/dark_gray"
-                            android:paddingTop="5dp"
-                            android:paddingLeft="10dp"
-                            android:paddingBottom="5dp"
-                            android:paddingRight="10dp"
-                            android:layout_above="@+id/sourceFrameNumText"
-                            android:layout_below="@+id/sourceTitleText" />
-
-                        <TextView
-                            android:layout_width="fill_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Page 0 of 0"
-                            android:id="@+id/sourceFrameNumText"
-                            android:gravity="center"
-                            android:layout_alignParentBottom="true"
-                            android:textColor="@color/gray"
-                            android:paddingTop="5dp" />
-
-                    </RelativeLayout>
-
-                    <ProgressBar
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/sourceProgressBar"
-                        android:layout_gravity="center"
-                        android:visibility="invisible" />
-
-                </FrameLayout>
-
-                <FrameLayout
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@color/white">
+                    android:layout_height="match_parent">
 
-                    <ImageView
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:id="@+id/imageView"
-                        android:adjustViewBounds="false" />
+                    <FrameLayout android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fitsSystemWindows="true"
+                        android:layout_weight="1"
+                        android:scrollbars="vertical"
+                        android:background="@drawable/gray_vertical_border">
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/hasNextFrameImageView"
-                        android:layout_gravity="center_vertical|right"
-                        android:background="@drawable/chevron_right"
-                        android:layout_marginRight="10dp"
-                        android:alpha=".09"
-                        android:adjustViewBounds="false" />
-
-                    <ProgressBar
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/translationProgressBar"
-                        android:layout_gravity="center"
-                        android:visibility="invisible" />
-
-                    <RelativeLayout
-                        android:orientation="vertical"
-                        android:layout_width="fill_parent"
-                        android:layout_height="fill_parent"
-                        android:paddingTop="2dp">
-
-                        <TextView
+                        <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Language: Chapter"
-                            android:id="@+id/translationTitleText"
-                            android:gravity="center"
-                            android:textColor="@color/gray"
-                            android:layout_centerHorizontal="true"
-                            android:background="@drawable/language_resources_empty"
-                            android:layout_marginLeft="2dp"
-                            android:layout_marginRight="2dp" />
+                            android:id="@+id/hasPreviousFrameImageView"
+                            android:layout_gravity="center_vertical"
+                            android:background="@drawable/chevron_left"
+                            android:layout_marginLeft="10dp"
+                            android:alpha=".07" />
 
-                        <EditText
+                        <TextView
                             android:layout_width="match_parent"
-                            android:layout_height="fill_parent"
-                            android:id="@+id/inputText"
-                            android:enabled="true"
-                            android:scrollbars="vertical"
-                            android:gravity="top"
-                            android:textColor="@color/dark_gray"
-                            android:imeOptions="flagNoExtractUi"
-                            android:paddingTop="0dp"
-                            android:paddingLeft="10dp"
-                            android:paddingRight="10dp"
-                            android:paddingBottom="5dp"
-                            android:focusable="true"
-                            android:inputType="textNoSuggestions|text|textMultiLine"
-                            android:fontFamily="GentiumPlus"
-                            android:layout_below="@+id/translationTitleText" />
+                            android:layout_height="wrap_content"
+                            android:text="@string/choose_frame_to_start"
+                            android:id="@+id/helpTextView"
+                            android:textSize="@dimen/h4"
+                            android:padding="10dp"
+                            android:textColor="@color/gray"
+                            android:textStyle="bold"
+                            android:layout_gravity="center_vertical"
+                            android:gravity="center"
+                            android:textIsSelectable="false" />
 
-                    </RelativeLayout>
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:paddingTop="2dp">
 
-                </FrameLayout>
 
-            </LinearLayout>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Language: Chapter"
+                                android:id="@+id/sourceTitleText"
+                                android:gravity="center"
+                                android:textColor="@color/gray"
+                                android:layout_centerHorizontal="true"
+                                android:background="@drawable/language_resources_selector"
+                                android:layout_marginLeft="2dp"
+                                android:layout_marginRight="2dp" />
 
+                            <com.door43.translationstudio.rendering.SourceTextView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:id="@+id/sourceText"
+                                android:maxLines="9999"
+                                android:scrollbars="vertical"
+                                android:textColor="@color/dark_gray"
+                                android:paddingTop="5dp"
+                                android:paddingLeft="10dp"
+                                android:paddingBottom="5dp"
+                                android:paddingRight="10dp"
+                                android:layout_above="@+id/sourceFrameNumText"
+                                android:layout_below="@+id/sourceTitleText" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Page 0 of 0"
+                                android:id="@+id/sourceFrameNumText"
+                                android:gravity="center"
+                                android:layout_alignParentBottom="true"
+                                android:textColor="@color/gray"
+                                android:paddingTop="5dp" />
+
+                        </RelativeLayout>
+
+                        <ProgressBar
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/sourceProgressBar"
+                            android:layout_gravity="center"
+                            android:visibility="invisible" />
+
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@color/white">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:id="@+id/imageView"
+                            android:adjustViewBounds="false" />
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/hasNextFrameImageView"
+                            android:layout_gravity="center_vertical|right"
+                            android:background="@drawable/chevron_right"
+                            android:layout_marginRight="10dp"
+                            android:alpha=".09"
+                            android:adjustViewBounds="false" />
+
+                        <ProgressBar
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:id="@+id/translationProgressBar"
+                            android:layout_gravity="center"
+                            android:visibility="invisible" />
+
+                        <RelativeLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:paddingTop="2dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Language: Chapter"
+                                android:id="@+id/translationTitleText"
+                                android:gravity="center"
+                                android:textColor="@color/gray"
+                                android:layout_centerHorizontal="true"
+                                android:background="@drawable/language_resources_empty"
+                                android:layout_marginLeft="2dp"
+                                android:layout_marginRight="2dp" />
+
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:id="@+id/inputText"
+                                android:enabled="true"
+                                android:scrollbars="vertical"
+                                android:gravity="top"
+                                android:textColor="@color/dark_gray"
+                                android:imeOptions="flagNoExtractUi"
+                                android:paddingTop="0dp"
+                                android:paddingLeft="10dp"
+                                android:paddingRight="10dp"
+                                android:paddingBottom="5dp"
+                                android:focusable="true"
+                                android:inputType="textNoSuggestions|text|textMultiLine"
+                                android:fontFamily="GentiumPlus"
+                                android:layout_below="@+id/translationTitleText" />
+
+                        </RelativeLayout>
+
+                    </FrameLayout>
+
+                </LinearLayout>
+
+            </RelativeLayout>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingRight="@dimen/drawer_edge_width"
+            android:background="@color/blue"
+            android:layout_gravity="start"
+            android:id="@+id/leftPaneContent">
         </RelativeLayout>
-    </LinearLayout>
 
-    <RelativeLayout
-         android:layout_width="match_parent"
-         android:layout_height="match_parent"
-         android:paddingRight="@dimen/drawer_edge_width"
-         android:background="@color/blue"
-         android:layout_gravity="start"
-         android:id="@+id/leftPaneContent">
-         </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingLeft="@dimen/drawer_edge_width"
+            android:background="@color/purple"
+            android:layout_gravity="end"
+            android:id="@+id/rightPaneContent">
+        </RelativeLayout>
 
-    <RelativeLayout
-             android:layout_width="wrap_content"
-             android:layout_height="match_parent"
-             android:paddingLeft="@dimen/drawer_edge_width"
-             android:background="@color/purple"
-             android:layout_gravity="end"
-             android:id="@+id/rightPaneContent">
-         </RelativeLayout>
-
-</android.support.v4.widget.DrawerLayout>
+    </android.support.v4.widget.DrawerLayout>
+</LinearLayout>
