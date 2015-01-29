@@ -32,7 +32,7 @@ public class VerseSpan extends Span {
      * @param verse
      */
     public VerseSpan(int verse) {
-        super(" "+verse+" ", "<verse number=\""+verse+"\" style=\"v\" />");
+        super(verse+"", "<verse number=\""+verse+"\" style=\"v\" />");
         mVerseNumber = verse;
     }
 

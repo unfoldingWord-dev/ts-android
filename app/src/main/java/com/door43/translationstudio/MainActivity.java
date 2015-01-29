@@ -28,6 +28,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
 import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
@@ -79,8 +80,10 @@ import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
+import com.door43.translationstudio.util.SynchronizedRunnable;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
@@ -1206,18 +1209,40 @@ public class MainActivity extends TranslatorBaseActivity {
             SpannedString[] spans = mTranslationEditText.getText().getSpans(0, mTranslationEditText.getText().length(), SpannedString.class);
             Editable translationText = mTranslationEditText.getText();
             StringBuilder compiledString = new StringBuilder();
+            int next;
             int lastIndex = 0;
-            for(SpannedString s:spans) {
-                int sStart = translationText.getSpanStart(s);
-                int sEnd = translationText.getSpanEnd(s);
-                // attach preceeding text
-                compiledString.append(translationText.toString().substring(lastIndex, sStart));
-                // explode span
-                compiledString.append(s.toString());
-                lastIndex = sEnd;
+            for(int i = 0; i < translationText.length(); i = next) {
+                next = translationText.nextSpanTransition(i, translationText.length(), SpannedString.class);
+                SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
+                for(SpannedString s:verses) {
+                    int sStart = translationText.getSpanStart(s);
+                    int sEnd = translationText.getSpanEnd(s);
+                    // attach preceeding text
+                    if(lastIndex >= translationText.length() | sStart >= translationText.length()) {
+                        Logger.e(this.getClass().getName(), "out of bounds");
+                    }
+                    compiledString.append(translationText.toString().substring(lastIndex, sStart));
+                    // explode span
+                    compiledString.append(s.toString());
+                    lastIndex = sEnd;
+                }
             }
             // grab the last bit of text
             compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
+
+
+//            int lastIndex = 0;
+//            for(SpannedString s:spans) {
+//                int sStart = translationText.getSpanStart(s);
+//                int sEnd = translationText.getSpanEnd(s);
+//                // attach preceeding text
+//                compiledString.append(translationText.toString().substring(lastIndex, sStart));
+//                // explode span
+//                compiledString.append(s.toString());
+//                lastIndex = sEnd;
+//            }
+//            // grab the last bit of text
+//            compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
 
             Frame f = app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
             f.setTranslation(compiledString.toString().trim());
@@ -1522,35 +1547,122 @@ public class MainActivity extends TranslatorBaseActivity {
                 }
                 return true;
             case R.id.action_verse_marker:
-                // TODO: insert a verse marker at the current index.
-                int verseIndex = mTranslationEditText.getSelectionStart();
-                Editable translationText = mTranslationEditText.getText();
-                // find next available verse number
-                SpannedString[] spans = translationText.getSpans(0, verseIndex, SpannedString.class);
-                int nextVerse = 1;
-                if(spans.length > 0) {
-                    VerseSpan verse = VerseSpan.parseVerse(spans[spans.length - 1].toString());
-                    if(verse != null) {
-                        nextVerse = verse.getVerseNumber() + 1;
+                new ThreadableUI(this) {
+                    Handler mHandler = new Handler(getMainLooper());
+
+                    @Override
+                    public void onStop() {
+                        enableAutosave();
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mTranslationEditText.setKeyListener((KeyListener)mTranslationEditText.getTag());
+                                mTranslationProgressBar.setVisibility(View.INVISIBLE);
+                            }
+                        });
                     }
-                }
 
-                // create new verse
-                VerseSpan verse = new VerseSpan(nextVerse);
+                    @Override
+                    public void run() {
+                        disableAutosave();
 
-                // update all the following verses.
-                SpannedString[] subsequentSpans = translationText.getSpans(verseIndex, translationText.length(), SpannedString.class);
-                for(SpannedString s:subsequentSpans) {
-                    nextVerse ++;
-                    int oldStart = translationText.getSpanStart(s);
-                    int oldEnd = translationText.getSpanEnd(s);
-                    VerseSpan oldVerse = VerseSpan.parseVerse(s.toString());
-                    // TODO: this is not a safe way to do this...
-                    translationText.replace(oldStart-1, oldEnd+1, new VerseSpan(oldVerse.getVerseNumber()+1).toCharSequence());
-                }
+                        // disable the translation edit text first
+                        SynchronizedRunnable disableInput = new SynchronizedRunnable() {
+                            @Override
+                            public void run() {
+                                mTranslationEditText.setTag(mTranslationEditText.getKeyListener());
+                                mTranslationEditText.setKeyListener(null);
+                                mTranslationProgressBar.setVisibility(View.VISIBLE);
+                                setFinished();
+                            }
+                        };
+                        mHandler.post(disableInput);
+                        synchronized (disableInput) {
+                            if(!disableInput.isFinished()) {
+                                try {
+                                    disableInput.wait();
+                                } catch(InterruptedException e) {
 
-                // insert new verse marker
-                translationText.insert(verseIndex, verse.toCharSequence());
+                                }
+                            }
+                        }
+
+                        final int verseIndex = mTranslationEditText.getSelectionStart();
+                        final Editable translationText = mTranslationEditText.getText();
+                        // find next available verse number
+                        int nextVerseNumber = 1;
+                        int next = 0;
+                        SpannedString previousVerse = null;
+                        for(int i = 0; i < verseIndex; i = next) {
+                            if(isInterrupted()) return;
+                            next = translationText.nextSpanTransition(i, verseIndex, SpannedString.class);
+                            SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
+                            if(verses.length > 0) {
+                                previousVerse = verses[0];
+                            }
+                        }
+                        if(previousVerse != null) {
+                            VerseSpan verse = VerseSpan.parseVerse(previousVerse.toString());
+                            if(verse != null) {
+                                nextVerseNumber = verse.getVerseNumber() + 1;
+                            }
+                        }
+
+                        // create new verse
+                        final VerseSpan verse = new VerseSpan(nextVerseNumber);
+
+
+                        // update all the subsequent verses.
+                        for(int i = next; i < translationText.length(); i = next) {
+                            if(isInterrupted()) return;
+                            next = translationText.nextSpanTransition(i, translationText.length(), SpannedString.class);
+                            SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
+                            for(SpannedString s:verses) {
+                                if(isInterrupted()) return;
+                                nextVerseNumber ++;
+                                final int oldStart = translationText.getSpanStart(s);
+                                final int oldEnd = translationText.getSpanEnd(s);
+                                final VerseSpan updatedVerse = new VerseSpan(nextVerseNumber);
+                                SynchronizedRunnable updateVerse = new SynchronizedRunnable() {
+                                    @Override
+                                    public void run() {
+                                        int start = oldStart;
+                                        int end = oldEnd;
+                                        if(start > 0) start -=1;
+                                        if(end < translationText.length()-1) end += 1;
+                                        translationText.replace(start, end, updatedVerse.toCharSequence());
+                                        setFinished();
+                                    }
+                                };
+                                mHandler.post(updateVerse);
+                                synchronized (updateVerse) {
+                                    if(!updateVerse.isFinished()) {
+                                        try {
+                                            updateVerse.wait();
+                                        } catch (InterruptedException e) {
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        enableAutosave();
+                        // insert new verse marker
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                translationText.insert(verseIndex, verse.toCharSequence());
+                                mTranslationEditText.setKeyListener((KeyListener)mTranslationEditText.getTag());
+                                mTranslationProgressBar.setVisibility(View.INVISIBLE);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onPostExecute() {}
+                }.start();
+
             default:
                 return super.onOptionsItemSelected(item);
         }

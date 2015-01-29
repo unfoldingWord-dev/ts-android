@@ -5,5 +5,5 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="?attr/actionBarSize"
-    android:background="@color/light_blue"
+    android:background="@color/light_green"
     android:visibility="gone"/>
