@@ -9,12 +9,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,7 +24,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
@@ -34,14 +31,12 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -90,10 +85,8 @@ import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -138,6 +131,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private static Toolbar mMainToolbar;
     private static Toolbar mTranslationToolbar;
     private boolean mKeyboardIsOpen;
+    private RenderingGroup mTranslationRendering;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -425,7 +419,7 @@ public class MainActivity extends TranslatorBaseActivity {
                             taggedText += selectionAfter;
 
                             // parse all passage note tags
-                            highlightTranslationSpans(taggedText, true);
+                            renderTranslationText(taggedText, true);
                         } else {
                             app().showToastMessage(R.string.notes_cannot_overlap);
                         }
@@ -824,29 +818,26 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param text
      */
     private void highlightTranslationSpans(String text) {
-        highlightTranslationSpans(text, false);
+        renderTranslationText(text, false);
     }
 
     /**
      * Begins or restarts parsing the note tags
      * @param text
      */
-    private void highlightTranslationSpans(final String text, final Boolean isNewNote) {
+    private void renderTranslationText(final String text, final Boolean isNewNote) {
         // disable the view so we don't save it
         mProcessingTranslation = true;
         if(mHighlightTranslationThread != null) {
             mHighlightTranslationThread.stop();
         }
         mHighlightTranslationThread = new ThreadableUI(MainActivity.this) {
-            private ThreadableUI mTaskThread;
 
             @Override
             public void onStop() {
-                mHighlightTranslationThread = null;
                 // kill children if this thread is stopped
-                if(mTaskThread != null) {
-                    mTaskThread.stop();
-                }
+                mHighlightTranslationThread = null;
+                mTranslationRendering.stop();
             }
 
             @Override
@@ -859,150 +850,145 @@ public class MainActivity extends TranslatorBaseActivity {
                     public void onAnimationStart(Animation animation) {
                         mTranslationProgressBar.setVisibility(View.VISIBLE);
                     }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
+                    public void onAnimationEnd(Animation animation) {}
+                    public void onAnimationRepeat(Animation animation) {}
                 });
                 final Animation outProgress = new AlphaAnimation(1.0f, 0.0f);
                 outProgress.setDuration(TEXT_FADE_SPEED);
                 outProgress.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
+                    public void onAnimationStart(Animation animation) {}
                     @Override
                     public void onAnimationEnd(Animation animation) {
                         mTranslationProgressBar.setVisibility(View.INVISIBLE);
                     }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
+                    public void onAnimationRepeat(Animation animation) {}
                 });
 
-                // translation animations
+                // translation text animations
                 final Animation in = new AlphaAnimation(0.0f, 1.0f);
                 in.setDuration(TEXT_FADE_SPEED);
                 final Animation out = new AlphaAnimation(1.0f, 0.0f);
                 out.setDuration(TEXT_FADE_SPEED);
 
-                mTaskThread = new ThreadableUI(MainActivity.this) {
-                    private TextView mNotedResult;
-
+                // build rendering engines
+                mTranslationRendering = new RenderingGroup();
+                if(mSelectedFrame.format == Frame.Format.USX) {
+                    mTranslationRendering.addEngine(new USXRenderer());
+                } else {
+                    // TODO: we need to provide a note renderer
+                    mTranslationRendering.addEngine(new DefaultRenderer());
+                }
+                mTranslationRendering.init(text, new RenderingGroup.Callback() {
                     @Override
-                    public void onStop() {
-                        mTaskThread = null;
+                    public void onComplete(CharSequence output) {
+                        mTranslationEditText.setText(output);
                         mTranslationEditText.clearAnimation();
                         mTranslationEditText.startAnimation(in);
                         mTranslationProgressBar.clearAnimation();
                         mTranslationProgressBar.startAnimation(outProgress);
-                    }
-
-                    @Override
-                    public void run() {
-                        NoteSpan.reset();
-                        mNotedResult = new TextView(MainActivity.this);
-                        NoteSpan needsUpdate = null;
-                        Pattern p = Pattern.compile(NoteSpan.REGEX_NOTE, Pattern.DOTALL);
-                        Matcher matcher = p.matcher(text);
-                        int lastEnd = 0;
-                        while(matcher.find() && !isInterrupted()) {
-                            if(matcher.start() > lastEnd) {
-                                // add the last piece
-                                mNotedResult.append(text.substring(lastEnd, matcher.start()));
-                            }
-                            lastEnd = matcher.end();
-
-                            NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
-                            note.setOnClickListener(new FancySpan.OnClickListener() {
-                                @Override
-                                public void onClick(View view, FancySpan span) {
-                                    openPassageNoteDialog((NoteSpan)span);
-                                }
-                            });
-                            if(note.getNoteText().isEmpty()) {
-                                needsUpdate = note;
-                            }
-                            mNotedResult.append(note.toCharSequence());
-                        }
-                        if(isInterrupted())  return;
-                        if(lastEnd < text.length()) {
-                            // add the last bit of text to the view
-                            String remainingText = text.substring(lastEnd, text.length());
-                            mNotedResult.append(remainingText);
-                        } else if(text.length() > 0) {
-                            // TRICKY: adding a line break at the end makes is easier to type after the spannable
-                            mNotedResult.append("\n");
-                        }
-
-                        // display a dialog to populate the empty note.
-                        if(needsUpdate != null && isNewNote) {
-                            openPassageNoteDialog(needsUpdate);
-                        }
-                    }
-
-                    @Override
-                    public void onPostExecute() {
-                        if(!isInterrupted()) {
-                            if (mNotedResult.getText() != null) {
-                                disableAutosave();
-                                mTranslationEditText.setText(mNotedResult.getText());
-                                mTranslationEditText.setSelection(0);
-                                enableAutosave();
-                            }
-                        }
-                        onStop();
-                        // re-enable the view so we can save it
+                        // scroll to top
+                        mTranslationEditText.scrollTo(0, 0);
                         mProcessingTranslation = false;
                     }
-                };
+                });
+
+
+
+//                mTaskThread = new ThreadableUI(MainActivity.this) {
+//                    private TextView mNotedResult;
+//
+//                    @Override
+//                    public void onStop() {
+//                        mTaskThread = null;
+//                        mTranslationEditText.clearAnimation();
+//                        mTranslationEditText.startAnimation(in);
+//                        mTranslationProgressBar.clearAnimation();
+//                        mTranslationProgressBar.startAnimation(outProgress);
+//                    }
+//
+//                    @Override
+//                    public void run() {
+//                        NoteSpan.reset();
+//                        mNotedResult = new TextView(MainActivity.this);
+//                        NoteSpan needsUpdate = null;
+//                        Pattern p = Pattern.compile(NoteSpan.REGEX_NOTE, Pattern.DOTALL);
+//                        Matcher matcher = p.matcher(text);
+//                        int lastEnd = 0;
+//                        while(matcher.find() && !isInterrupted()) {
+//                            if(matcher.start() > lastEnd) {
+//                                // add the last piece
+//                                mNotedResult.append(text.substring(lastEnd, matcher.start()));
+//                            }
+//                            lastEnd = matcher.end();
+//
+//                            NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
+//                            note.setOnClickListener(new FancySpan.OnClickListener() {
+//                                @Override
+//                                public void onClick(View view, FancySpan span) {
+//                                    openPassageNoteDialog((NoteSpan)span);
+//                                }
+//                            });
+//                            if(note.getNoteText().isEmpty()) {
+//                                needsUpdate = note;
+//                            }
+//                            mNotedResult.append(note.toCharSequence());
+//                        }
+//                        if(isInterrupted())  return;
+//                        if(lastEnd < text.length()) {
+//                            // add the last bit of text to the view
+//                            String remainingText = text.substring(lastEnd, text.length());
+//                            mNotedResult.append(remainingText);
+//                        } else if(text.length() > 0) {
+//                            // TRICKY: adding a line break at the end makes is easier to type after the spannable
+//                            mNotedResult.append("\n");
+//                        }
+//
+//                        // display a dialog to populate the empty note.
+//                        if(needsUpdate != null && isNewNote) {
+//                            openPassageNoteDialog(needsUpdate);
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onPostExecute() {
+//                        if(!isInterrupted()) {
+//                            if (mNotedResult.getText() != null) {
+//                                disableAutosave();
+//                                mTranslationEditText.setText(mNotedResult.getText());
+//                                mTranslationEditText.setSelection(0);
+//                                enableAutosave();
+//                            }
+//                        }
+//                        onStop();
+//                        // re-enable the view so we can save it
+//                        mProcessingTranslation = false;
+//                    }
+//                };
 
                 in.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
                         mTranslationEditText.setVisibility(View.VISIBLE);
                     }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
+                    public void onAnimationEnd(Animation animation) {}
+                    public void onAnimationRepeat(Animation animation) {}
                 });
-                // execute stask after animation
+                // execute task after animation
                 out.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                    }
-
+                    public void onAnimationStart(Animation animation) {}
                     @Override
                     public void onAnimationEnd(Animation animation) {
                         if(!isInterrupted()) {
-                            mTranslationEditText.setText("");
+//                            mTranslationEditText.setText("");
                             mTranslationEditText.setVisibility(View.INVISIBLE);
-                            mTaskThread.start();
+                            mTranslationRendering.start();
                         } else {
                             mTranslationEditText.setAnimation(in);
                             mTranslationProgressBar.clearAnimation();
                             mTranslationProgressBar.setAnimation(outProgress);
                         }
                     }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-                    }
+                    public void onAnimationRepeat(Animation animation) {}
                 });
 
                 if(!isInterrupted()) {
@@ -1217,20 +1203,18 @@ public class MainActivity extends TranslatorBaseActivity {
 //            String inputTextValue = mTranslationEditText.getText().toString();
 
             // compile the translation
-            Object[] spans = mTranslationEditText.getText().getSpans(0, mTranslationEditText.getText().length(), Object.class);
+            SpannedString[] spans = mTranslationEditText.getText().getSpans(0, mTranslationEditText.getText().length(), SpannedString.class);
             Editable translationText = mTranslationEditText.getText();
             StringBuilder compiledString = new StringBuilder();
             int lastIndex = 0;
-            for(Object s:spans) {
-                if(s.getClass().getName().equals(SpannedString.class.getName())) {
-                    int sStart = translationText.getSpanStart(s);
-                    int sEnd = translationText.getSpanEnd(s);
-                    // attach preceeding text
-                    compiledString.append(translationText.toString().substring(lastIndex, sStart));
-                    // explode span
-                    compiledString.append(s.toString());
-                    lastIndex = sEnd;
-                }
+            for(SpannedString s:spans) {
+                int sStart = translationText.getSpanStart(s);
+                int sEnd = translationText.getSpanEnd(s);
+                // attach preceeding text
+                compiledString.append(translationText.toString().substring(lastIndex, sStart));
+                // explode span
+                compiledString.append(s.toString());
+                lastIndex = sEnd;
             }
             // grab the last bit of text
             compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
@@ -1426,7 +1410,9 @@ public class MainActivity extends TranslatorBaseActivity {
         Boolean projectEnabled = app().getSharedProjectManager().getSelectedProject() != null;
         if(mKeyboardIsOpen) {
             // translation menu
+            boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
 
+            menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
         } else {
             // main menu
             menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled);
@@ -1539,7 +1525,31 @@ public class MainActivity extends TranslatorBaseActivity {
                 // TODO: insert a verse marker at the current index.
                 int verseIndex = mTranslationEditText.getSelectionStart();
                 Editable translationText = mTranslationEditText.getText();
-                VerseSpan verse = new VerseSpan("1");
+                // find next available verse number
+                SpannedString[] spans = translationText.getSpans(0, verseIndex, SpannedString.class);
+                int nextVerse = 1;
+                if(spans.length > 0) {
+                    VerseSpan verse = VerseSpan.parseVerse(spans[spans.length - 1].toString());
+                    if(verse != null) {
+                        nextVerse = verse.getVerseNumber() + 1;
+                    }
+                }
+
+                // create new verse
+                VerseSpan verse = new VerseSpan(nextVerse);
+
+                // update all the following verses.
+                SpannedString[] subsequentSpans = translationText.getSpans(verseIndex, translationText.length(), SpannedString.class);
+                for(SpannedString s:subsequentSpans) {
+                    nextVerse ++;
+                    int oldStart = translationText.getSpanStart(s);
+                    int oldEnd = translationText.getSpanEnd(s);
+                    VerseSpan oldVerse = VerseSpan.parseVerse(s.toString());
+                    // TODO: this is not a safe way to do this...
+                    translationText.replace(oldStart-1, oldEnd+1, new VerseSpan(oldVerse.getVerseNumber()+1).toCharSequence());
+                }
+
+                // insert new verse marker
                 translationText.insert(verseIndex, verse.toCharSequence());
             default:
                 return super.onOptionsItemSelected(item);

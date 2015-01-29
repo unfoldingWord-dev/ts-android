@@ -41,7 +41,7 @@ public class USXRenderer extends RenderingEngine {
 
     private CharSequence renderVerse(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Pattern.compile("<verse\\s+number=\"(\\d+)\"\\s+style=\"v\"\\s*/>");
+        Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
