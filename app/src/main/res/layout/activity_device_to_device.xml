@@ -9,16 +9,16 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
 
-        <TextView
-            android:layout_width="match_parent"
+        <ProgressBar
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="@string/export_to_device"
-            android:textSize="@dimen/h5"
-            android:textColor="@color/white"
-            android:gravity="center"
-            android:background="@color/dark_gray"
-            android:autoText="false"
-            android:id="@+id/titleText" />
+            android:id="@+id/loadingBar"
+            android:max="100"
+            android:progress="100"
+            android:indeterminate="true"
+            android:layout_marginBottom="-8dp"
+            android:layout_marginTop="-4dp" />
 
         <ListView
             android:layout_width="fill_parent"
@@ -29,8 +29,9 @@
     <ProgressBar
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/loadingBar"
+        android:id="@+id/loadingBarOld"
         android:layout_alignWithParentIfMissing="false"
+        android:visibility="gone"
         android:layout_centerInParent="true" />
 
     <TextView
@@ -39,6 +40,5 @@
         android:text="@string/searching_for_devices"
         android:textColor="@color/gray"
         android:id="@+id/loadingText"
-        android:layout_centerInParent="true"
-        android:layout_below="@+id/loadingBar" />
+        android:layout_centerInParent="true" />
 </RelativeLayout>

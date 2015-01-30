@@ -94,6 +94,9 @@
             android:name=".uploadwizard.UploadWizardActivity"
             android:label="@string/title_activity_upload_wizard"
             android:theme="@style/Theme.Titled" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
             android:name=".ProjectSettingsActivity"

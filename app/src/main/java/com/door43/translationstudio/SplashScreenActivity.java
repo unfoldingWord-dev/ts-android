@@ -34,6 +34,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         mProgressBar = (ProgressBar)findViewById(R.id.loadingBar);
         // we need a high precision bar because we are loading a ton of things
         mProgressBar.setMax(10000);
+        mProgressBar.setIndeterminate(true);
         if(savedInstanceState != null) {
             mProgressBar.setProgress(savedInstanceState.getInt("progress"));
             mProgressTextView.setText(savedInstanceState.getString("message"));
@@ -62,6 +63,9 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         if(mLoadingTask == null && !app().getSharedProjectManager().isLoaded()) {
             mLoadingTask = new LoadAppTask();
             mLoadingTask.execute();
+        } else if(mLoadingTask == null && app().getSharedProjectManager().isLoaded()) {
+            // go ahead and start the main activity if the project manager has been loaded.
+            startMainActivity();
         }
     }
 
@@ -142,6 +146,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         }
 
         protected void onProgressUpdate(String... items) {
+            mProgressBar.setIndeterminate(false);
             mProgressBar.setProgress(mProgress);
             mProgressTextView.setText(items[0]);
         }

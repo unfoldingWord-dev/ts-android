@@ -9,6 +9,7 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.spannables.FancySpan;
+import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.util.Logger;
 
@@ -23,13 +24,13 @@ import java.util.regex.Pattern;
 public class KeyTermRenderer extends RenderingEngine {
     private final List<Term> mTerms;
     private final Frame mFrame;
-    private final FancySpan.OnClickListener mClickListener;
+    private final Span.OnClickListener mClickListener;
 
     /**
      * Creates a new key term renderer
      * @param frame the frame with key terms that will be rendered
      */
-    public KeyTermRenderer(Frame frame, FancySpan.OnClickListener clickListener) {
+    public KeyTermRenderer(Frame frame, Span.OnClickListener clickListener) {
         mClickListener = clickListener;
         mTerms = frame.getChapter().getProject().getTerms();
         mFrame = frame;
@@ -84,7 +85,8 @@ public class KeyTermRenderer extends RenderingEngine {
                 if(isStopped()) return in;
                 // get closing anchor
                 String[] linkChunks = pieces[i].split("</a>");
-                TermSpan term = new TermSpan(linkChunks[0], linkChunks[0], mClickListener);
+                TermSpan term = new TermSpan(linkChunks[0], linkChunks[0]);
+                term.setOnClickListener(mClickListener);
                 out = TextUtils.concat(out, term.toCharSequence());
                 try {
                     out = TextUtils.concat(out, linkChunks[1]);

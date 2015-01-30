@@ -39,7 +39,7 @@ public abstract class TranslatorBaseActivity extends ActionBarActivity {
         super.onResume();
 //        MainContext.getEventBus().register(this);
         // set the current activity so that core classes can access the ui when nessesary.
-//        app().setCurrentActivity(this);
+        app().setCurrentActivity(this);
     }
 
     public void onStart() {

@@ -28,6 +28,9 @@
          which is used to tint widgets -->
         <item name="colorAccent">@color/blue</item>
 
+        <item name="android:textColor">@color/dark_gray</item>
+        <item name="android:textColorLink">@color/blue</item>
+        <item name="android:textColorLinkInverse">@color/green</item>
         <!-- You can also set colorControlNormal, colorControlActivated
          colorControlHighlight, and colorSwitchThumbNormal. -->
 

@@ -19,7 +19,6 @@
             android:id="@+id/centerPane">
 
             <include layout="@layout/toolbar_main" />
-            <include layout="@layout/toolbar_translation" />
 
             <RelativeLayout
                 android:layout_width="match_parent"

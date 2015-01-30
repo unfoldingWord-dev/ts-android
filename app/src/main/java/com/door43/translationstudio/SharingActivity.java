@@ -49,6 +49,7 @@ public class SharingActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sharing);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // hook up list view
         ListView list = (ListView)findViewById(R.id.sharingListView);
@@ -282,27 +283,6 @@ public class SharingActivity extends TranslatorBaseActivity {
         }, isNetworkAvailable, R.string.internet_not_available));
 
         mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.sharing_activity_actions, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case R.id.action_settings:
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     @Override

@@ -51,6 +51,7 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -80,6 +81,7 @@ import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
@@ -132,10 +134,8 @@ public class MainActivity extends TranslatorBaseActivity {
     private Frame mSelectedFrame;
     private BroadcastReceiver mMessageReceiver;
     private RenderingGroup mSourceRendering;
-    private FancySpan.OnClickListener mKeyTermClickListener;
-    private boolean mTranslationFocused = false;
+    private Span.OnClickListener mKeyTermClickListener;
     private static Toolbar mMainToolbar;
-    private static Toolbar mTranslationToolbar;
     private boolean mKeyboardIsOpen;
     private RenderingGroup mTranslationRendering;
     private VerseSpan.OnClickListener mVerseClickListener;
@@ -150,9 +150,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mMainToolbar.setVisibility(View.VISIBLE);
         mMainToolbar.setTitle("");
         setSupportActionBar(mMainToolbar);
-        mTranslationToolbar = (Toolbar)findViewById(R.id.toolbar_translation);
-        mTranslationToolbar.setVisibility(View.GONE);
-        mTranslationToolbar.setTitle("");
+        getSupportActionBar().setHomeButtonEnabled(true);
 
         /**
          * Creates listener for verse clicks
@@ -269,9 +267,8 @@ public class MainActivity extends TranslatorBaseActivity {
         resizeRootView(r);
 
         // display the translation menu
-        setSupportActionBar(mTranslationToolbar);
-        mTranslationToolbar.setVisibility(View.VISIBLE);
-        mMainToolbar.setVisibility(View.GONE);
+        mMainToolbar.setBackgroundColor(getResources().getColor(R.color.light_blue));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         invalidateOptionsMenu();
     }
 
@@ -285,9 +282,8 @@ public class MainActivity extends TranslatorBaseActivity {
         resizeRootView(r);
 
         // display the main menu
-        setSupportActionBar(mMainToolbar);
-        mMainToolbar.setVisibility(View.VISIBLE);
-        mTranslationToolbar.setVisibility(View.GONE);
+        mMainToolbar.setBackgroundColor(getResources().getColor(R.color.green));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         invalidateOptionsMenu();
     }
 
@@ -320,10 +316,10 @@ public class MainActivity extends TranslatorBaseActivity {
         mSourceProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.sourceProgressBar);
 
         // listens for for key term clicks and opens term drawer
-        mKeyTermClickListener = new FancySpan.OnClickListener() {
+        mKeyTermClickListener = new Span.OnClickListener() {
             @Override
-            public void onClick(View view, FancySpan span) {
-                showTermDetails(span.getSpanId());
+            public void onClick(View view, Span span, int start, int end) {
+                showTermDetails(((TermSpan)span).getTermId());
             }
         };
 
@@ -357,13 +353,11 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // set up custom fonts
         Typeface translationTypeface = app().getTranslationTypeface();
-        FancySpan.setGlobalTypeface(translationTypeface);
         mTranslationEditText.setTypeface(translationTypeface);
         mSourceText.setTypeface(translationTypeface);
 
         // set custom font size (sp)
         int typefaceSize = Integer.parseInt(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_TYPEFACE_SIZE, MainContext.getContext().getResources().getString(R.string.pref_default_typeface_size)));
-        FancySpan.setGlobalTypefaceSize(typefaceSize);
         mTranslationEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
         mSourceText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
@@ -678,10 +672,8 @@ public class MainActivity extends TranslatorBaseActivity {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(b) {
-                    mTranslationFocused = true;
                     invalidateOptionsMenu();
                 } else {
-                    mTranslationFocused = false;
                     invalidateOptionsMenu();
                 }
             }
@@ -1032,7 +1024,12 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     public void closeTranslationKeyboard() {
-        this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        if(getCurrentFocus() != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        } else {
+            this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        }
     }
 
     /**
@@ -1467,6 +1464,9 @@ public class MainActivity extends TranslatorBaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
+            case android.R.id.home:
+                closeTranslationKeyboard();
+                return true;
             case R.id.action_share:
                 openSharing();
                 return true;

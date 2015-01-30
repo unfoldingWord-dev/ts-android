@@ -28,6 +28,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_language_selector);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Boolean showSourceLanguages = false;
 

@@ -22,6 +22,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_settings);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
@@ -73,26 +74,35 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.project_settings, menu);
-        return super.onCreateOptionsMenu(menu);
+    public void onDestroy() {
+        // ensure we always have a target language
+        if(!mProject.hasChosenTargetLanguage()) {
+            mProject.setSelectedTargetLanguage(mProject.getSelectedTargetLanguage().getId());
+        }
+        super.onDestroy();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
-            case R.id.action_dismiss_project_settings:
-                if(!mProject.hasChosenTargetLanguage()) {
-                    mProject.setSelectedTargetLanguage(mProject.getSelectedTargetLanguage().getId());
-                }
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.project_settings, menu);
+//        return super.onCreateOptionsMenu(menu);
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        // Handle action bar item clicks here. The action bar will
+//        // automatically handle clicks on the Home/Up button, so long
+//        // as you specify a parent activity in AndroidManifest.xml.
+//        switch (item.getItemId()) {
+//            case R.id.action_dismiss_project_settings:
+//                if(!mProject.hasChosenTargetLanguage()) {
+//                    mProject.setSelectedTargetLanguage(mProject.getSelectedTargetLanguage().getId());
+//                }
+//                finish();
+//                return true;
+//            default:
+//                return super.onOptionsItemSelected(item);
+//        }
+//    }
 }

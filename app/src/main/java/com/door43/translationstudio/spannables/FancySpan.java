@@ -18,9 +18,9 @@ import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 10/31/2014.
+ * @deprecated we should migrate use of this to the Span class
  */
 public abstract class FancySpan {
-    private final FancySpan me = this;
     private final String mSpanText;
     private OnClickListener mClickListener;
     private final String mSpanId;
@@ -94,7 +94,7 @@ public abstract class FancySpan {
                 @Override
                 public void onClick(View view) {
                     if(mClickListener != null) {
-                        mClickListener.onClick(view, me);
+                        mClickListener.onClick(view, FancySpan.this);
                     }
                 }
             };
@@ -139,7 +139,7 @@ public abstract class FancySpan {
                 @Override
                 public void onClick(View view) {
                     if(mClickListener != null) {
-                        mClickListener.onClick(view, me);
+                        mClickListener.onClick(view, FancySpan.this);
                     }
                 }
             };

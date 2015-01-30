@@ -27,6 +27,7 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chapter_settings);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
@@ -85,9 +86,6 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
                     mProject.getSelectedChapter().setReferenceTranslation(targetLanguageChapterReferenceEditText.getText().toString());
                     mProject.getSelectedChapter().save();
                 }
-                finish();
-                return true;
-            case R.id.action_cancel_chapter_settings:
                 finish();
                 return true;
             default:

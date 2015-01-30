@@ -85,6 +85,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_to_device);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         mPublicKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa.pub");
         mPrivateKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa");
         mPublicKeyFile.getParentFile().mkdirs();
@@ -96,6 +97,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 //        ft.commitAllowingStateLoss();
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
+
+        if(mStartAsServer) {
+            setTitle(R.string.export_to_device);
+        } else {
+            setTitle(R.string.import_from_device);
+        }
+
         final int clientUDPPort = 9939;
 
         // reset things on first load
@@ -279,12 +287,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         final Handler handler = new Handler(getMainLooper());
         mLoadingBar = (ProgressBar)findViewById(R.id.loadingBar);
         mLoadingText = (TextView)findViewById(R.id.loadingText);
-        TextView titleText = (TextView)findViewById(R.id.titleText);
-        if(mStartAsServer) {
-            titleText.setText(R.string.export_to_device);
-        } else {
-            titleText.setText(R.string.import_from_device);
-        }
+//        TextView titleText = (TextView)findViewById(R.id.titleText);
+//        if(mStartAsServer) {
+//            titleText.setText(R.string.export_to_device);
+//        } else {
+//            titleText.setText(R.string.import_from_device);
+//        }
         ListView peerListView = (ListView)findViewById(R.id.peerListView);
         mAdapter = new DevicePeerAdapter(mService.getPeers(), mStartAsServer, this);
         peerListView.setAdapter(mAdapter);

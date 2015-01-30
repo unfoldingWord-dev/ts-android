@@ -17,6 +17,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload_wizard);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         
         mFragments.add(new IntroFragment());
         mFragments.add(new ReviewFragment());

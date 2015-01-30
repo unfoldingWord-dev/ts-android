@@ -173,6 +173,7 @@ public class Project implements Model {
             try {
                 file.createNewFile();
             } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Failed to create translation ready file", e);
                 return;
             }
         } else {
@@ -194,8 +195,8 @@ public class Project implements Model {
      * Dumps all the frames and chapters from the project
      */
     public void flush() {
-        mChapters = new ArrayList<Chapter>();
-        mChapterMap = new HashMap<String, Chapter>();
+        mChapters = new ArrayList<>();
+        mChapterMap = new HashMap<>();
         mSelectedChapterId = null;
     }
 
