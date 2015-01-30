@@ -231,4 +231,5 @@
     <string name="bug_report">Describe the problem you are experiencing with this app.</string>
     <string name="terms_additional">And you must agree to the statement of faith and translation guidelines.</string>
     <string name="project_library">Project Library</string>
+    <string name="verse_marker">Verse Marker</string>
 </resources>

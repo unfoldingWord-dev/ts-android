@@ -7,6 +7,7 @@ import android.text.Spanned;
 import android.text.SpannedString;
 import android.text.style.ClickableSpan;
 import android.view.View;
+import android.widget.TextView;
 
 /**
  * Created by joel on 1/28/2015.
@@ -31,19 +32,23 @@ public abstract class Span {
     }
 
     /**
-     * Generates the span and hooks up the click listener
+     * Generates the span and hooks up the click listener.
      * @return
      */
     public SpannableStringBuilder generateSpan() {
         SpannableStringBuilder spannable = new SpannableStringBuilder(mHumanReadable);
-        if(spannable.length() > 0) {
+        if (spannable.length() > 0) {
             spannable.setSpan(new SpannedString(mMachineReadable), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            if(mListener != null) {
+            if (mListener != null) {
                 ClickableSpan clickSpan = new ClickableSpan() {
                     @Override
                     public void onClick(View view) {
                         if (mListener != null) {
-                            mListener.onClick(view, Span.this);
+                            TextView tv = (TextView)view;
+                            Spanned s = (Spanned)tv.getText();
+                            int start = s.getSpanStart(this);
+                            int end = s.getSpanEnd(this);
+                            mListener.onClick(view, Span.this, start, end);
                         }
                     }
                 };
@@ -73,6 +78,6 @@ public abstract class Span {
      * Custom click listener when span is clicked
      */
     public static interface OnClickListener {
-        public void onClick(View view, Span span);
+        public void onClick(View view, Span span, int start, int end);
     }
 }

@@ -27,6 +27,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.KeyListener;
 import android.text.method.ScrollingMovementMethod;
@@ -60,6 +61,7 @@ import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
+import com.door43.translationstudio.dialogs.VerseMarkerDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
@@ -77,6 +79,7 @@ import com.door43.translationstudio.rendering.SourceTextView;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
@@ -135,6 +138,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private static Toolbar mTranslationToolbar;
     private boolean mKeyboardIsOpen;
     private RenderingGroup mTranslationRendering;
+    private VerseSpan.OnClickListener mVerseClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +154,15 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationToolbar.setVisibility(View.GONE);
         mTranslationToolbar.setTitle("");
 
+        /**
+         * Creates listener for verse clicks
+         */
+        mVerseClickListener = new Span.OnClickListener() {
+            @Override
+            public void onClick(View view, Span span, int start, int end) {
+                updateVerseMarker((VerseSpan)span, start, end);
+            }
+        };
 
         mActivityIsInitializing = true;
         app().setMainActivity(this);
@@ -876,7 +889,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 // build rendering engines
                 mTranslationRendering = new RenderingGroup();
                 if(mSelectedFrame.format == Frame.Format.USX) {
-                    mTranslationRendering.addEngine(new USXRenderer());
+                    mTranslationRendering.addEngine(new USXRenderer(mVerseClickListener));
                 } else {
                     // TODO: we need to provide a note renderer
                     mTranslationRendering.addEngine(new DefaultRenderer());
@@ -1547,125 +1560,288 @@ public class MainActivity extends TranslatorBaseActivity {
                 }
                 return true;
             case R.id.action_verse_marker:
-                new ThreadableUI(this) {
-                    Handler mHandler = new Handler(getMainLooper());
-
-                    @Override
-                    public void onStop() {
-                        enableAutosave();
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mTranslationEditText.setKeyListener((KeyListener)mTranslationEditText.getTag());
-                                mTranslationProgressBar.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void run() {
-                        disableAutosave();
-
-                        // disable the translation edit text first
-                        SynchronizedRunnable disableInput = new SynchronizedRunnable() {
-                            @Override
-                            public void run() {
-                                mTranslationEditText.setTag(mTranslationEditText.getKeyListener());
-                                mTranslationEditText.setKeyListener(null);
-                                mTranslationProgressBar.setVisibility(View.VISIBLE);
-                                setFinished();
-                            }
-                        };
-                        mHandler.post(disableInput);
-                        synchronized (disableInput) {
-                            if(!disableInput.isFinished()) {
-                                try {
-                                    disableInput.wait();
-                                } catch(InterruptedException e) {
-
-                                }
-                            }
-                        }
-
-                        final int verseIndex = mTranslationEditText.getSelectionStart();
-                        final Editable translationText = mTranslationEditText.getText();
-                        // find next available verse number
-                        int nextVerseNumber = 1;
-                        int next = 0;
-                        SpannedString previousVerse = null;
-                        for(int i = 0; i < verseIndex; i = next) {
-                            if(isInterrupted()) return;
-                            next = translationText.nextSpanTransition(i, verseIndex, SpannedString.class);
-                            SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
-                            if(verses.length > 0) {
-                                previousVerse = verses[0];
-                            }
-                        }
-                        if(previousVerse != null) {
-                            VerseSpan verse = VerseSpan.parseVerse(previousVerse.toString());
-                            if(verse != null) {
-                                nextVerseNumber = verse.getVerseNumber() + 1;
-                            }
-                        }
-
-                        // create new verse
-                        final VerseSpan verse = new VerseSpan(nextVerseNumber);
-
-
-                        // update all the subsequent verses.
-                        for(int i = next; i < translationText.length(); i = next) {
-                            if(isInterrupted()) return;
-                            next = translationText.nextSpanTransition(i, translationText.length(), SpannedString.class);
-                            SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
-                            for(SpannedString s:verses) {
-                                if(isInterrupted()) return;
-                                nextVerseNumber ++;
-                                final int oldStart = translationText.getSpanStart(s);
-                                final int oldEnd = translationText.getSpanEnd(s);
-                                final VerseSpan updatedVerse = new VerseSpan(nextVerseNumber);
-                                SynchronizedRunnable updateVerse = new SynchronizedRunnable() {
-                                    @Override
-                                    public void run() {
-                                        int start = oldStart;
-                                        int end = oldEnd;
-                                        if(start > 0) start -=1;
-                                        if(end < translationText.length()-1) end += 1;
-                                        translationText.replace(start, end, updatedVerse.toCharSequence());
-                                        setFinished();
-                                    }
-                                };
-                                mHandler.post(updateVerse);
-                                synchronized (updateVerse) {
-                                    if(!updateVerse.isFinished()) {
-                                        try {
-                                            updateVerse.wait();
-                                        } catch (InterruptedException e) {
-
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        enableAutosave();
-                        // insert new verse marker
-                        mHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                translationText.insert(verseIndex, verse.toCharSequence());
-                                mTranslationEditText.setKeyListener((KeyListener)mTranslationEditText.getTag());
-                                mTranslationProgressBar.setVisibility(View.INVISIBLE);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onPostExecute() {}
-                }.start();
+               insertVerseMarker( mTranslationEditText.getSelectionStart());
 
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * Inserts a verse marker at the given position in the translation text
+     * @param position the position within the translation text where the verse will be inserted
+     */
+    private void insertVerseMarker(final int position) {
+        new ThreadableUI(this) {
+            private int mSuggestedVerse = 1;
+
+            @Override
+            public void onStop() {}
+
+            @Override
+            public void run() {
+                // find next available verse number for suggestion
+                int next = 0;
+                SpannedString previousVerse = null;
+                for(int i = 0; i < position; i = next) {
+                    if(isInterrupted()) return;
+                    next = mTranslationEditText.getText().nextSpanTransition(i, position, SpannedString.class);
+                    SpannedString[] verses = mTranslationEditText.getText().getSpans(i, next, SpannedString.class);
+                    if(verses.length > 0) {
+                        previousVerse = verses[0];
+                    }
+                }
+                if(previousVerse != null) {
+                    VerseSpan verse = VerseSpan.parseVerse(previousVerse.toString());
+                    if(verse != null) {
+                        mSuggestedVerse = verse.getVerseNumber() + 1;
+                    }
+                }
+
+            }
+
+            @Override
+            public void onPostExecute() {
+                // get verse number from the user
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+
+                // Create and show the dialog
+                VerseMarkerDialog newFragment = new VerseMarkerDialog();
+                Bundle args = new Bundle();
+                args.putInt("verse", mSuggestedVerse);
+                newFragment.setArguments(args);
+                newFragment.setOkListener(new VerseMarkerDialog.OnClickListener() {
+                    @Override
+                    public void onClick(int verse) {
+                        // TODO: insert the verse
+                        final VerseSpan verseSpan = new VerseSpan(verse);
+                        verseSpan.setOnClickListener(new Span.OnClickListener() {
+                            @Override
+                            public void onClick(View view, Span span, int start, int end) {
+                                updateVerseMarker((VerseSpan)span, start, end);
+                            }
+                        });
+                        new Handler(getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mTranslationEditText.getText().insert(position, verseSpan.toCharSequence());
+                            }
+                        });
+                    }
+                });
+                newFragment.show(ft, "dialog");
+            }
+        }.start();
+    }
+
+    /**
+     * Displays a dialog where users can edit the verse number
+     * @param verse
+     */
+    private void updateVerseMarker(final VerseSpan verse, final int spanStart, final int spanEnd) {
+        // Create and show the dialog
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        VerseMarkerDialog newFragment = new VerseMarkerDialog();
+        Bundle args = new Bundle();
+        args.putInt("verse", verse.getVerseNumber());
+        newFragment.setArguments(args);
+        newFragment.setOkListener(new VerseMarkerDialog.OnClickListener() {
+            @Override
+            public void onClick(int verseNumber) {
+                if(verseNumber > 0) {
+                    // update the verse
+                    final VerseSpan verseSpan = new VerseSpan(verseNumber);
+                    verseSpan.setOnClickListener(new Span.OnClickListener() {
+                        @Override
+                        public void onClick(View view, Span span, int start, int end) {
+                            updateVerseMarker((VerseSpan) span, start, end);
+                        }
+                    });
+                    new Handler(getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // replace the verse marker
+                            int start = spanStart;
+                            int end = spanEnd;
+                            if (start == -1 || end == -1) {
+                                Logger.e(this.getClass().getName(), "failed to update the verse marker. The original span position could not be determined.");
+                            } else {
+                                CharSequence text = "";
+                                // grab first part of text
+                                if (start > 0) {
+                                    text = mTranslationEditText.getText().subSequence(0, start);
+                                }
+                                // insert updated verse
+                                text = TextUtils.concat(text, verseSpan.toCharSequence());
+                                // concat last part of text
+                                if (end < mTranslationEditText.getText().length()) {
+                                    text = TextUtils.concat(text, mTranslationEditText.getText().subSequence(end, mTranslationEditText.getText().length()));
+                                }
+                                mTranslationEditText.setText(text);
+                            }
+                        }
+                    });
+                } else {
+                    // delete the verse
+                    new Handler(getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // replace the verse marker
+                            int start = spanStart;
+                            int end = spanEnd;
+                            if (start == -1 || end == -1) {
+                                Logger.e(this.getClass().getName(), "failed to update the verse marker. The original span position could not be determined.");
+                            } else {
+                                CharSequence text = "";
+                                // grab first part of text
+                                if (start > 0) {
+                                    text = mTranslationEditText.getText().subSequence(0, start);
+                                }
+                                // concat last part of text
+                                if (end < mTranslationEditText.getText().length()) {
+                                    text = TextUtils.concat(text, mTranslationEditText.getText().subSequence(end, mTranslationEditText.getText().length()));
+                                }
+                                mTranslationEditText.setText(text);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        newFragment.show(ft, "dialog");
+    }
+
+    /**
+     * This method automatically inerts a verse into the given position and updates all the verses around it
+     * @deprecated frames will begin and end at different verses so we are letting users define the verse numbers manually. this may be handy elsewhere though so we'll hang on to it for awhile
+     */
+    private void autoInsertVerse() {
+        new ThreadableUI(this) {
+            Handler mHandler = new Handler(getMainLooper());
+
+            @Override
+            public void onStop() {
+                enableAutosave();
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTranslationEditText.setKeyListener((KeyListener)mTranslationEditText.getTag());
+                        mTranslationProgressBar.setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+
+            @Override
+            public void run() {
+                disableAutosave();
+
+                // disable the translation edit text first
+                SynchronizedRunnable disableInput = new SynchronizedRunnable() {
+                    @Override
+                    public void run() {
+                        mTranslationEditText.setTag(mTranslationEditText.getKeyListener());
+                        mTranslationEditText.setKeyListener(null);
+                        mTranslationProgressBar.setVisibility(View.VISIBLE);
+                        setFinished();
+                    }
+                };
+                mHandler.post(disableInput);
+                synchronized (disableInput) {
+                    if(!disableInput.isFinished()) {
+                        try {
+                            disableInput.wait();
+                        } catch(InterruptedException e) {
+
+                        }
+                    }
+                }
+
+                final int verseIndex = mTranslationEditText.getSelectionStart();
+                final Editable translationText = mTranslationEditText.getText();
+                // find next available verse number
+                int nextVerseNumber = 1;
+                int next = 0;
+                SpannedString previousVerse = null;
+                for(int i = 0; i < verseIndex; i = next) {
+                    if(isInterrupted()) return;
+                    next = translationText.nextSpanTransition(i, verseIndex, SpannedString.class);
+                    SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
+                    if(verses.length > 0) {
+                        previousVerse = verses[0];
+                    }
+                }
+                if(previousVerse != null) {
+                    VerseSpan verse = VerseSpan.parseVerse(previousVerse.toString());
+                    if(verse != null) {
+                        nextVerseNumber = verse.getVerseNumber() + 1;
+                    }
+                }
+
+                // create new verse
+                final VerseSpan verse = new VerseSpan(nextVerseNumber);
+
+
+                // update all the subsequent verses.
+                for(int i = next; i < translationText.length(); i = next) {
+                    if(isInterrupted()) return;
+                    next = translationText.nextSpanTransition(i, translationText.length(), SpannedString.class);
+                    SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
+                    for(SpannedString s:verses) {
+                        if(isInterrupted()) return;
+                        nextVerseNumber ++;
+                        final int oldStart = translationText.getSpanStart(s);
+                        final int oldEnd = translationText.getSpanEnd(s);
+                        final VerseSpan updatedVerse = new VerseSpan(nextVerseNumber);
+                        SynchronizedRunnable updateVerse = new SynchronizedRunnable() {
+                            @Override
+                            public void run() {
+                                int start = oldStart;
+                                int end = oldEnd;
+                                if(start > 0) start -=1;
+                                if(end < translationText.length()-1) end += 1;
+                                translationText.replace(start, end, updatedVerse.toCharSequence());
+                                setFinished();
+                            }
+                        };
+                        mHandler.post(updateVerse);
+                        synchronized (updateVerse) {
+                            if(!updateVerse.isFinished()) {
+                                try {
+                                    updateVerse.wait();
+                                } catch (InterruptedException e) {
+
+                                }
+                            }
+                        }
+                    }
+                }
+
+                enableAutosave();
+                // insert new verse marker
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        translationText.insert(verseIndex, verse.toCharSequence());
+                        mTranslationEditText.setKeyListener((KeyListener)mTranslationEditText.getTag());
+                        mTranslationProgressBar.setVisibility(View.INVISIBLE);
+                    }
+                });
+            }
+
+            @Override
+            public void onPostExecute() {}
+        }.start();
     }
 
     /**

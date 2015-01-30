@@ -10,9 +10,11 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.LeadingMarginSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
+import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.RelativeLineHeightSpan;
+import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.util.MainContext;
 
@@ -23,6 +25,23 @@ import java.util.regex.Pattern;
  * Created by joel on 1/26/2015.
  */
 public class USXRenderer extends RenderingEngine {
+
+    private Span.OnClickListener mVerseListener;
+
+    /**
+     * Creates a new usx rendering engine without any listeners
+     */
+    public USXRenderer() {
+
+    }
+
+    /**
+     * Creates a new usx rendering engine with some custom click listeners
+     * @param verseListener
+     */
+    public USXRenderer(VerseSpan.OnClickListener verseListener) {
+        mVerseListener = verseListener;
+    }
 
     /**
      * Renders the usx input into a readable form
@@ -47,11 +66,9 @@ public class USXRenderer extends RenderingEngine {
         while(matcher.find()) {
             if(isStopped()) return in;
             VerseSpan verse = new VerseSpan(matcher.group(1));
+            verse.setOnClickListener(mVerseListener);
 
-//            Spannable sp = new SpannableString(" "+matcher.group(1)+" ");
-//            sp.setSpan(new RelativeSizeSpan(0.8f), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-//            sp.setSpan(new ForegroundColorSpan(MainContext.getContext().getResources().getColor(R.color.gray)), 0, sp.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence()); //Html.fromHtml("<sup><b>"+matcher.group(1)+"</b></sup>"));
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));

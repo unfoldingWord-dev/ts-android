@@ -3,6 +3,7 @@ package com.door43.translationstudio.spannables;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.LeadingMarginSpan;
 import android.text.style.RelativeSizeSpan;
 
 import com.door43.translationstudio.R;
@@ -17,13 +18,14 @@ import java.util.regex.Pattern;
 public class VerseSpan extends Span {
     public static final String PATTERN = "<verse\\s+number=\"(\\d+)\"\\s+style=\"v\"\\s*/>";
     private int mVerseNumber;
+    private SpannableStringBuilder mSpannable;
 
     /**
      * Creates a new verse span
      * @param verse
      */
     public VerseSpan(String verse) {
-        super(" "+Integer.parseInt(verse)+" ", "<verse number=\""+Integer.parseInt(verse)+"\" style=\"v\" />");
+        super(Integer.parseInt(verse)+"", "<verse number=\""+Integer.parseInt(verse)+"\" style=\"v\" />");
         mVerseNumber = Integer.parseInt(verse);
     }
 
@@ -44,13 +46,20 @@ public class VerseSpan extends Span {
         return mVerseNumber;
     }
 
+    /**
+     * Generates the spannable.
+     * This provides caching so we can look up the span in the text later
+     * @return
+     */
     @Override
     public SpannableStringBuilder generateSpan() {
-        SpannableStringBuilder span = super.generateSpan();
-        // apply custom styles
-        span.setSpan(new RelativeSizeSpan(0.8f), 0, span.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        span.setSpan(new ForegroundColorSpan(MainContext.getContext().getResources().getColor(R.color.gray)), 0, span.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        return span;
+        if(mSpannable == null) {
+            mSpannable = super.generateSpan();
+            // apply custom styles
+            mSpannable.setSpan(new RelativeSizeSpan(0.8f), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mSpannable.setSpan(new ForegroundColorSpan(MainContext.getContext().getResources().getColor(R.color.gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        return mSpannable;
     }
 
     /**
