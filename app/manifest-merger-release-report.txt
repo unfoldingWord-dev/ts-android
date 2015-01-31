@@ -36,12 +36,12 @@ ADDED from AndroidManifest.xml:9:5
 application
 ADDED from AndroidManifest.xml:11:5
 MERGED from TranslationStudio.libraries:SlidingLayer:unspecified:26:5
-MERGED from com.android.support:support-v4:20.0.0:17:5
-MERGED from com.android.support:appcompat-v7:20.0.0:17:5
-MERGED from com.android.support:support-v4:20.0.0:17:5
-MERGED from com.android.support:support-v13:20.0.0:17:5
-MERGED from com.android.support:support-v4:20.0.0:17:5
-MERGED from com.android.support:support-v4:20.0.0:17:5
+MERGED from com.android.support:support-v4:21.0.0:16:5
+MERGED from com.android.support:appcompat-v7:21.0.0:16:5
+MERGED from com.android.support:support-v4:21.0.0:16:5
+MERGED from com.android.support:support-v13:21.0.0:16:5
+MERGED from com.android.support:support-v4:21.0.0:16:5
+MERGED from com.android.support:support-v4:21.0.0:16:5
 	android:label
 		ADDED from AndroidManifest.xml:16:9
 	android:allowBackup
@@ -169,54 +169,56 @@ ADDED from AndroidManifest.xml:93:9
 	android:name
 		ADDED from AndroidManifest.xml:94:13
 activity#com.door43.translationstudio.ProjectSettingsActivity
-ADDED from AndroidManifest.xml:98:9
+ADDED from AndroidManifest.xml:101:9
 	android:label
-		ADDED from AndroidManifest.xml:100:13
+		ADDED from AndroidManifest.xml:103:13
 	android:parentActivityName
-		ADDED from AndroidManifest.xml:101:13
+		ADDED from AndroidManifest.xml:104:13
 	android:theme
+		ADDED from AndroidManifest.xml:105:13
+	android:name
 		ADDED from AndroidManifest.xml:102:13
-	android:name
-		ADDED from AndroidManifest.xml:99:13
 activity#com.door43.translationstudio.CrashReporterActivity
-ADDED from AndroidManifest.xml:107:9
+ADDED from AndroidManifest.xml:110:9
 	android:label
-		ADDED from AndroidManifest.xml:109:13
+		ADDED from AndroidManifest.xml:112:13
 	android:windowSoftInputMode
-		ADDED from AndroidManifest.xml:111:13
-	android:theme
-		ADDED from AndroidManifest.xml:110:13
-	android:name
-		ADDED from AndroidManifest.xml:108:13
-activity#com.door43.translationstudio.BugReporterActivity
-ADDED from AndroidManifest.xml:113:9
-	android:label
-		ADDED from AndroidManifest.xml:115:13
-	android:windowSoftInputMode
-		ADDED from AndroidManifest.xml:117:13
-	android:theme
-		ADDED from AndroidManifest.xml:116:13
-	android:name
 		ADDED from AndroidManifest.xml:114:13
-activity#com.door43.translationstudio.device2device.DeviceToDeviceActivity
-ADDED from AndroidManifest.xml:119:9
-	android:screenOrientation
-		ADDED from AndroidManifest.xml:122:13
-	android:label
-		ADDED from AndroidManifest.xml:121:13
-	android:parentActivityName
-		ADDED from AndroidManifest.xml:123:13
+	android:theme
+		ADDED from AndroidManifest.xml:113:13
 	android:name
+		ADDED from AndroidManifest.xml:111:13
+activity#com.door43.translationstudio.BugReporterActivity
+ADDED from AndroidManifest.xml:116:9
+	android:label
+		ADDED from AndroidManifest.xml:118:13
+	android:windowSoftInputMode
 		ADDED from AndroidManifest.xml:120:13
+	android:theme
+		ADDED from AndroidManifest.xml:119:13
+	android:name
+		ADDED from AndroidManifest.xml:117:13
+activity#com.door43.translationstudio.device2device.DeviceToDeviceActivity
+ADDED from AndroidManifest.xml:122:9
+	android:screenOrientation
+		ADDED from AndroidManifest.xml:125:13
+	android:label
+		ADDED from AndroidManifest.xml:124:13
+	android:parentActivityName
+		ADDED from AndroidManifest.xml:127:13
+	android:theme
+		ADDED from AndroidManifest.xml:126:13
+	android:name
+		ADDED from AndroidManifest.xml:123:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from TranslationStudio.libraries:SlidingLayer:unspecified:22:5
-MERGED from com.android.support:support-v4:20.0.0:16:5
-MERGED from com.android.support:appcompat-v7:20.0.0:16:5
-MERGED from com.android.support:support-v4:20.0.0:16:5
-MERGED from com.android.support:support-v13:20.0.0:16:5
-MERGED from com.android.support:support-v4:20.0.0:16:5
-MERGED from com.android.support:support-v4:20.0.0:16:5
+MERGED from com.android.support:support-v4:21.0.0:15:5
+MERGED from com.android.support:appcompat-v7:21.0.0:15:5
+MERGED from com.android.support:support-v4:21.0.0:15:5
+MERGED from com.android.support:support-v13:21.0.0:15:5
+MERGED from com.android.support:support-v4:21.0.0:15:5
+MERGED from com.android.support:support-v4:21.0.0:15:5
 	android:targetSdkVersion
 		INJECTED from AndroidManifest.xml:0:0
 		INJECTED from AndroidManifest.xml:0:0

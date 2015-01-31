@@ -1563,6 +1563,12 @@ public class MainActivity extends TranslatorBaseActivity {
                 Logger.i(this.getClass().getName(), "Overlapping note spans is not allowed");
                 return;
             }
+            VerseSpan verse = VerseSpan.parseVerse(s.toString());
+            if(verse != null) {
+                app().showToastMessage("Notes accross multiple verses is not supported");
+                Logger.i(this.getClass().getName(), "Notes accross multiple verses is not supported");
+                return;
+            }
         }
 
         // get notes from user
@@ -1614,22 +1620,22 @@ public class MainActivity extends TranslatorBaseActivity {
             public void run() {
                 // find next available verse number for suggestion
                 int next = 0;
-                SpannedString previousVerse = null;
+                VerseSpan previousVerse = null;
                 for(int i = 0; i < position; i = next) {
                     if(isInterrupted()) return;
                     next = mTranslationEditText.getText().nextSpanTransition(i, position, SpannedString.class);
                     SpannedString[] verses = mTranslationEditText.getText().getSpans(i, next, SpannedString.class);
                     if(verses.length > 0) {
-                        previousVerse = verses[0];
+                        // TRICKY: not all spanned strings are verses so we need to check
+                        VerseSpan potentialVerse = VerseSpan.parseVerse(verses[0].toString());
+                        if(potentialVerse != null) {
+                            previousVerse = potentialVerse;
+                        }
                     }
                 }
                 if(previousVerse != null) {
-                    VerseSpan verse = VerseSpan.parseVerse(previousVerse.toString());
-                    if(verse != null) {
-                        mSuggestedVerse = verse.getVerseNumber() + 1;
-                    }
+                    mSuggestedVerse = previousVerse.getVerseNumber() + 1;
                 }
-
             }
 
             @Override
