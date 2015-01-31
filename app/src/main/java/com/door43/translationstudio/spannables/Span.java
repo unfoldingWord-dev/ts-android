@@ -1,7 +1,6 @@
 package com.door43.translationstudio.spannables;
 
 import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
@@ -35,12 +34,12 @@ public abstract class Span {
      * Generates the span and hooks up the click listener.
      * @return
      */
-    public SpannableStringBuilder generateSpan() {
+    public SpannableStringBuilder render() {
         SpannableStringBuilder spannable = new SpannableStringBuilder(mHumanReadable);
         if (spannable.length() > 0) {
             spannable.setSpan(new SpannedString(mMachineReadable), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             if (mListener != null) {
-                ClickableSpan clickSpan = new ClickableSpan() {
+                ClickableSpanNoUnderline clickSpan = new ClickableSpanNoUnderline() {
                     @Override
                     public void onClick(View view) {
                         if (mListener != null) {
@@ -71,7 +70,7 @@ public abstract class Span {
      * @return
      */
     public CharSequence toCharSequence() {
-        return generateSpan();
+        return render();
     }
 
     /**

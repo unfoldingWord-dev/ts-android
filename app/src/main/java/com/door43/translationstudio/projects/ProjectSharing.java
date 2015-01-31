@@ -701,7 +701,7 @@ public class ProjectSharing {
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
         Boolean commitSucceeded = true;
 
-        Pattern pattern = Pattern.compile(NoteSpan.REGEX_OPEN_TAG + "((?!" + NoteSpan.REGEX_CLOSE_TAG + ").)*" + NoteSpan.REGEX_CLOSE_TAG);
+        Pattern pattern = Pattern.compile(NoteSpan.PATTERN);
         Pattern defPattern = Pattern.compile("def=\"(((?!\").)*)\"");
         exportDir.mkdirs();
 
@@ -813,13 +813,13 @@ public class ProjectSharing {
                             lastEnd = matcher.end();
 
                             // extract note
-                            NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
+                            NoteSpan note = NoteSpan.parseNote(matcher.group());
                             if(note.getNoteType() == NoteSpan.NoteType.Footnote) {
-                                // iclude footnotes
+                                // include footnotes
                                 convertedText += note.generateDokuWikiTag();
                             } else if(note.getNoteType() == NoteSpan.NoteType.UserNote) {
                                 // skip user notes
-                                convertedText += note.getSpanText();
+                                convertedText += note.getPassage();
                             }
                         }
                         if(lastEnd < text.length()) {

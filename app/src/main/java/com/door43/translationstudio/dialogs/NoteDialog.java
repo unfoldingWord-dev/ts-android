@@ -15,10 +15,9 @@ import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
 
 /**
- * Created by joel on 11/3/2014.
+ * @deprecated this is replaced by NoteMarkerDialog
  */
 public class NoteDialog extends DialogFragment {
-    private NoteDialog me = this;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -64,14 +63,14 @@ public class NoteDialog extends DialogFragment {
             @Override
             public void onClick(View view) {
                 NoteSpan.NoteType noteType = footnoteSwitch.isChecked() ? NoteSpan.NoteType.Footnote : NoteSpan.NoteType.UserNote;
-                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.CANCEL, passageText.getText().toString(), passageNoteText.getText().toString(), id, noteType));
+                MainContext.getEventBus().post(new PassageNoteEvent(NoteDialog.this, PassageNoteEvent.Status.CANCEL, passageText.getText().toString(), passageNoteText.getText().toString(), id, noteType));
             }
         });
         deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 NoteSpan.NoteType noteType = footnoteSwitch.isChecked() ? NoteSpan.NoteType.Footnote : NoteSpan.NoteType.UserNote;
-                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.DELETE, passageText.getText().toString(), passageNoteText.getText().toString(), id, noteType));
+                MainContext.getEventBus().post(new PassageNoteEvent(NoteDialog.this, PassageNoteEvent.Status.DELETE, passageText.getText().toString(), passageNoteText.getText().toString(), id, noteType));
             }
         });
         okBtn.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +79,7 @@ public class NoteDialog extends DialogFragment {
                 // strip out invalid characters
                 String safeNote = passageNoteText.getText().toString().replace('<', ' ').replace('>', ' ').replace('"', '\'').replace('(', ' ').replace(')', ' ');
                 NoteSpan.NoteType noteType = footnoteSwitch.isChecked() ? NoteSpan.NoteType.Footnote : NoteSpan.NoteType.UserNote;
-                MainContext.getEventBus().post(new PassageNoteEvent(me, PassageNoteEvent.Status.OK, passageText.getText().toString(), safeNote, id, noteType));
+                MainContext.getEventBus().post(new PassageNoteEvent(NoteDialog.this, PassageNoteEvent.Status.OK, passageText.getText().toString(), safeNote, id, noteType));
             }
         });
         return v;

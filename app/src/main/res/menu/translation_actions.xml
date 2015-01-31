@@ -4,5 +4,5 @@
     <item
         android:id="@+id/action_verse_marker"
         android:title="@string/menu_verse_marker"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 </menu>

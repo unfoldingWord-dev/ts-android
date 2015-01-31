@@ -13,6 +13,7 @@ import android.text.style.StyleSpan;
 import android.view.View;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.RelativeLineHeightSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VerseSpan;
@@ -22,10 +23,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by joel on 1/26/2015.
+ * This is the USX rendering engine. This handles all of the rendering for USX formatted source and translation
  */
 public class USXRenderer extends RenderingEngine {
 
+    private Span.OnClickListener mNoteListener;
     private Span.OnClickListener mVerseListener;
 
     /**
@@ -39,8 +41,9 @@ public class USXRenderer extends RenderingEngine {
      * Creates a new usx rendering engine with some custom click listeners
      * @param verseListener
      */
-    public USXRenderer(VerseSpan.OnClickListener verseListener) {
+    public USXRenderer(Span.OnClickListener verseListener, Span.OnClickListener noteListener) {
         mVerseListener = verseListener;
+        mNoteListener = noteListener;
     }
 
     /**
@@ -54,11 +57,39 @@ public class USXRenderer extends RenderingEngine {
 
         out = renderParagraph(out);
         out = renderVerse(out);
+        out = renderNote(out);
 
         return out;
     }
 
-    private CharSequence renderVerse(CharSequence in) {
+    /**
+     * Renders all note tags
+     * @param in
+     * @return
+     */
+    public CharSequence renderNote(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = Pattern.compile(NoteSpan.PATTERN);
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            NoteSpan verse = NoteSpan.parseNote(matcher.group());
+            verse.setOnClickListener(mNoteListener);
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Renders all verse tags
+     * @param in
+     * @return
+     */
+    public CharSequence renderVerse(CharSequence in) {
         CharSequence out = "";
         Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(in);
@@ -75,7 +106,12 @@ public class USXRenderer extends RenderingEngine {
         return out;
     }
 
-    private CharSequence renderParagraph(CharSequence in) {
+    /**
+     * Renders all paragraph tgs
+     * @param in
+     * @return
+     */
+    public CharSequence renderParagraph(CharSequence in) {
         CharSequence out = "";
         Pattern pattern = Pattern.compile("<para\\s+style=\"p\"\\s*>(((?!</para>).)*)</para>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(in);

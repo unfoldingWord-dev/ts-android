@@ -62,6 +62,7 @@ import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
 import com.door43.translationstudio.dialogs.NoteDialog;
+import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
@@ -78,7 +79,6 @@ import com.door43.translationstudio.rendering.KeyTermRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.SourceTextView;
 import com.door43.translationstudio.rendering.USXRenderer;
-import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
@@ -138,7 +138,8 @@ public class MainActivity extends TranslatorBaseActivity {
     private static Toolbar mMainToolbar;
     private boolean mKeyboardIsOpen;
     private RenderingGroup mTranslationRendering;
-    private VerseSpan.OnClickListener mVerseClickListener;
+    private Span.OnClickListener mVerseClickListener;
+    private Span.OnClickListener mNoteClickListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,13 +153,17 @@ public class MainActivity extends TranslatorBaseActivity {
         setSupportActionBar(mMainToolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        /**
-         * Creates listener for verse clicks
-         */
+        // listeners for the rendering engines
         mVerseClickListener = new Span.OnClickListener() {
             @Override
             public void onClick(View view, Span span, int start, int end) {
                 updateVerseMarker((VerseSpan)span, start, end);
+            }
+        };
+        mNoteClickListener = new Span.OnClickListener() {
+            @Override
+            public void onClick(View view, Span span, int start, int end) {
+                updateNoteMarker((NoteSpan)span, start, end);
             }
         };
 
@@ -306,7 +311,6 @@ public class MainActivity extends TranslatorBaseActivity {
     private void initPanes() {
         mSourceText = (SourceTextView)mCenterPane.findViewById(R.id.sourceText);
         mSourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
-//        mChangeResourceBtnIcon = (ImageView)mCenterPane.findViewById(R.id.changeResourceBtn);
         mSourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
         mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);
         mNextFrameView = (ImageView)mCenterPane.findViewById(R.id.hasNextFrameImageView);
@@ -323,6 +327,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         };
 
+        // set up resource switching
         mSourceTitleText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -414,26 +419,10 @@ public class MainActivity extends TranslatorBaseActivity {
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 switch(menuItem.getItemId()) {
                     case R.id.action_notes:
-                        // load selection
-                        String translationText = mTranslationEditText.getText().toString();
-                        String selectionBefore = translationText.substring(0, mTranslationEditText.getSelectionStart());
-                        String selectionAfter = translationText.substring(mTranslationEditText.getSelectionEnd(), mTranslationEditText.length());
-                        final String selection = translationText.substring(mTranslationEditText.getSelectionStart(), mTranslationEditText.getSelectionEnd());
-
-                        // do not allow passage notes to collide
-                        if(selection.split(NoteSpan.REGEX_OPEN_TAG).length <= 1 && selection.split(NoteSpan.REGEX_CLOSE_TAG).length <= 1) {
-                            // convert to user note tag
-                            String taggedText = "";
-                            taggedText += selectionBefore;
-                            taggedText += NoteSpan.generateTag(selection, "", NoteSpan.NoteType.UserNote);
-                            taggedText += selectionAfter;
-
-                            // parse all passage note tags
-                            renderTranslationText(taggedText, true);
-                        } else {
-                            app().showToastMessage(R.string.notes_cannot_overlap);
-                        }
-                        return false;
+                        int start = mTranslationEditText.getSelectionStart();
+                        int end = mTranslationEditText.getSelectionEnd();
+                        insertNoteMarker(start, end);
+                        return true;
                     default:
                         return false;
                 }
@@ -822,18 +811,10 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     /**
-     * Begins or restarts parsing the note tags.
-     * @param text
-     */
-    private void highlightTranslationSpans(String text) {
-        renderTranslationText(text, false);
-    }
-
-    /**
      * Begins or restarts parsing the note tags
      * @param text
      */
-    private void renderTranslationText(final String text, final Boolean isNewNote) {
+    private void renderTranslationText(final String text) {
         // disable the view so we don't save it
         mProcessingTranslation = true;
         if(mHighlightTranslationThread != null) {
@@ -881,10 +862,9 @@ public class MainActivity extends TranslatorBaseActivity {
                 // build rendering engines
                 mTranslationRendering = new RenderingGroup();
                 if(mSelectedFrame.format == Frame.Format.USX) {
-                    mTranslationRendering.addEngine(new USXRenderer(mVerseClickListener));
+                    mTranslationRendering.addEngine(new USXRenderer(mVerseClickListener, mNoteClickListener));
                 } else {
-                    // TODO: we need to provide a note renderer
-                    mTranslationRendering.addEngine(new DefaultRenderer());
+                    mTranslationRendering.addEngine(new DefaultRenderer(mNoteClickListener));
                 }
                 mTranslationRendering.init(text, new RenderingGroup.Callback() {
                     @Override
@@ -1098,7 +1078,7 @@ public class MainActivity extends TranslatorBaseActivity {
             // target translation
             final Translation translation = mSelectedFrame.getTranslation();
 
-            highlightTranslationSpans(translation.getText());
+            renderTranslationText(translation.getText());
 
             if(chapter.getTitleTranslation().getText().isEmpty()) {
                 // display non-translated title
@@ -1208,12 +1188,11 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     /**
-     * Saves the translated content found in inputText
+     * Saves the translation
      */
     public void save() {
         if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && app().getSharedProjectManager().getSelectedProject().hasChosenTargetLanguage()) {
             disableAutosave();
-//            String inputTextValue = mTranslationEditText.getText().toString();
 
             // compile the translation
             SpannedString[] spans = mTranslationEditText.getText().getSpans(0, mTranslationEditText.getText().length(), SpannedString.class);
@@ -1446,7 +1425,6 @@ public class MainActivity extends TranslatorBaseActivity {
         if(mKeyboardIsOpen) {
             // translation menu
             boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
-
             menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
         } else {
             // main menu
@@ -1560,11 +1538,65 @@ public class MainActivity extends TranslatorBaseActivity {
                 }
                 return true;
             case R.id.action_verse_marker:
-               insertVerseMarker( mTranslationEditText.getSelectionStart());
-
+                insertVerseMarker( mTranslationEditText.getSelectionStart());
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    /**
+     * Inserts a verse marker on the given range in the translation text.
+     * If a note already exists within the range no note will be added
+     * @param start the start of the range
+     * @param end the end of the range
+     */
+    private void insertNoteMarker(final int start, final int end) {
+        CharSequence selection = mTranslationEditText.getText().subSequence(start, end);
+
+        // do not allow notes to collide
+        SpannedString[] conflictingSpans = mTranslationEditText.getText().getSpans(start, end, SpannedString.class);
+        for(SpannedString s:conflictingSpans) {
+            NoteSpan note = NoteSpan.parseNote(s.toString());
+            if(note != null) {
+                app().showToastMessage(R.string.notes_cannot_overlap);
+                Logger.i(this.getClass().getName(), "Overlapping note spans is not allowed");
+                return;
+            }
+        }
+
+        // get notes from user
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        // Create and show the dialog
+        NoteMarkerDialog newFragment = new NoteMarkerDialog();
+        Bundle args = new Bundle();
+        args.putString("passage", selection.toString());
+        newFragment.setArguments(args);
+        newFragment.setOkListener(new NoteMarkerDialog.OnClickListener() {
+            @Override
+            public void onClick(String passage, String notes) {
+                final NoteSpan note = new NoteSpan(passage, notes, NoteSpan.NoteType.UserNote);
+                note.setOnClickListener(new Span.OnClickListener() {
+                    @Override
+                    public void onClick(View view, Span span, int start, int end) {
+                        updateNoteMarker((NoteSpan) span, start, end);
+                    }
+                });
+                new Handler(getMainLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mTranslationEditText.getText().replace(start, end, note.toCharSequence());
+                    }
+                });
+            }
+        });
+        newFragment.show(ft, "dialog");
     }
 
     /**
@@ -1618,7 +1650,6 @@ public class MainActivity extends TranslatorBaseActivity {
                 newFragment.setOkListener(new VerseMarkerDialog.OnClickListener() {
                     @Override
                     public void onClick(int verse) {
-                        // TODO: insert the verse
                         final VerseSpan verseSpan = new VerseSpan(verse);
                         verseSpan.setOnClickListener(new Span.OnClickListener() {
                             @Override
@@ -1637,6 +1668,94 @@ public class MainActivity extends TranslatorBaseActivity {
                 newFragment.show(ft, "dialog");
             }
         }.start();
+    }
+
+    /**
+     * Displays a dialog where users can edit the note text
+     * @param note
+     * @param spanStart
+     * @param spanEnd
+     */
+    private void updateNoteMarker(NoteSpan note, final int spanStart, final int spanEnd) {
+        // Create and show the dialog
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        NoteMarkerDialog newFragment = new NoteMarkerDialog();
+        Bundle args = new Bundle();
+        args.putString("passage", note.getPassage());
+        args.putString("notes", note.getNotes());
+        newFragment.setArguments(args);
+        newFragment.setOkListener(new NoteMarkerDialog.OnClickListener() {
+            @Override
+            public void onClick(final String passage, String notes) {
+                if(!notes.isEmpty()) {
+                    // update the verse
+                    final NoteSpan noteSpan = new NoteSpan(passage, notes, NoteSpan.NoteType.UserNote);
+                    noteSpan.setOnClickListener(new Span.OnClickListener() {
+                        @Override
+                        public void onClick(View view, Span span, int start, int end) {
+                            updateNoteMarker((NoteSpan) span, start, end);
+                        }
+                    });
+                    new Handler(getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // replace the verse marker
+                            int start = spanStart;
+                            int end = spanEnd;
+                            if (start == -1 || end == -1) {
+                                Logger.e(this.getClass().getName(), "failed to update the note marker. The original span position could not be determined.");
+                            } else {
+                                CharSequence text = "";
+                                // grab first part of text
+                                if (start > 0) {
+                                    text = mTranslationEditText.getText().subSequence(0, start);
+                                }
+                                // insert updated verse
+                                text = TextUtils.concat(text, noteSpan.toCharSequence());
+                                // concat last part of text
+                                if (end < mTranslationEditText.getText().length()) {
+                                    text = TextUtils.concat(text, mTranslationEditText.getText().subSequence(end, mTranslationEditText.getText().length()));
+                                }
+                                mTranslationEditText.setText(text);
+                            }
+                        }
+                    });
+                } else {
+                    // delete the note
+                    new Handler(getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // replace the note marker
+                            int start = spanStart;
+                            int end = spanEnd;
+                            if (start == -1 || end == -1) {
+                                Logger.e(this.getClass().getName(), "failed to update the note marker. The original span position could not be determined.");
+                            } else {
+                                CharSequence text = "";
+                                // grab first part of text
+                                if (start > 0) {
+                                    text = mTranslationEditText.getText().subSequence(0, start);
+                                }
+                                // add the passage
+                                text = TextUtils.concat(text, passage);
+                                // concat last part of text
+                                if (end < mTranslationEditText.getText().length()) {
+                                    text = TextUtils.concat(text, mTranslationEditText.getText().subSequence(end, mTranslationEditText.getText().length()));
+                                }
+                                mTranslationEditText.setText(text);
+                            }
+                        }
+                    });
+                }
+            }
+        });
+        newFragment.show(ft, "dialog");
     }
 
     /**
@@ -1844,113 +1963,113 @@ public class MainActivity extends TranslatorBaseActivity {
         }.start();
     }
 
-    /**
-     * A task update passages notes
-     */
-    private class PassageNotesUpdaterTask extends AsyncTask<String, String, Void> {
-        private Boolean mUpdate = false;
-        private NoteSpan.NoteType mNoteType = NoteSpan.NoteType.UserNote;
+//    /**
+//     * A task update passages notes
+//     */
+//    private class PassageNotesUpdaterTask extends AsyncTask<String, String, Void> {
+//        private Boolean mUpdate = false;
+//        private NoteSpan.NoteType mNoteType = NoteSpan.NoteType.UserNote;
+//
+//        /**
+//         * Specifies if the passage note should be updated or removed
+//         * @param update
+//         */
+//        public PassageNotesUpdaterTask(Boolean update, NoteSpan.NoteType noteType) {
+//            mUpdate = update;
+//            mNoteType = noteType;
+//        }
+//
+//        @Override
+//        protected Void doInBackground(String... params) {
+//            String text = params[0];
+//            String spanId = params[1];
+//            String spanPassage = params[2];
+//            String spanPassageDefinition = params[3];
+//
+//            TextView updatedResult = new TextView(me);
+//
+//            Pattern p = Pattern.compile(NoteSpan.regexNoteById(spanId), Pattern.DOTALL);
+//            Matcher matcher = p.matcher(text);
+//            if(matcher.find()) {
+//                updatedResult.append(text.substring(0, matcher.start()));
+//                if(mUpdate) {
+//                    // update the note
+//                    updatedResult.append(NoteSpan.generateTag(spanPassage, spanPassageDefinition, mNoteType));
+//                } else {
+//                    // remove the note
+//                    NoteSpan note = NoteSpan.parseNote(matcher.group());
+//                    updatedResult.append(note.getSpanText());
+//                }
+//                if(matcher.end() < text.length()) {
+//                    updatedResult.append(text.substring(matcher.end(), text.length()));
+//                }
+//                renderTranslationText(updatedResult.getText().toString());
+//            }
+//            return null;
+//        }
+//    }
 
-        /**
-         * Specifies if the passage note should be updated or removed
-         * @param update
-         */
-        public PassageNotesUpdaterTask(Boolean update, NoteSpan.NoteType noteType) {
-            mUpdate = update;
-            mNoteType = noteType;
-        }
+//    /**
+//     * Displays a dialog for editing a passage note
+//     * @param note
+//     */
+//    public void openPassageNoteDialog(NoteSpan note) {
+//
+//        FragmentTransaction ft = getFragmentManager().beginTransaction();
+//        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+//        if (prev != null) {
+//            ft.remove(prev);
+//        }
+//        ft.addToBackStack(null);
+//
+//        app().closeToastMessage();
+//
+//        // Create and show the dialog
+//        NoteDialog newFragment = new NoteDialog();
+//        Bundle args = new Bundle();
+//        args.putString("passage", note.getSpanText());
+//        args.putString("note", note.getNotes());
+//        args.putInt("noteType", note.getNoteType().ordinal());
+//        args.putString("id", note.getSpanId());
+//        newFragment.setArguments(args);
+//        newFragment.show(ft, "dialog");
+//    }
 
-        @Override
-        protected Void doInBackground(String... params) {
-            String text = params[0];
-            String spanId = params[1];
-            String spanPassage = params[2];
-            String spanPassageDefinition = params[3];
-
-            TextView updatedResult = new TextView(me);
-
-            Pattern p = Pattern.compile(NoteSpan.regexNoteById(spanId), Pattern.DOTALL);
-            Matcher matcher = p.matcher(text);
-            if(matcher.find()) {
-                updatedResult.append(text.substring(0, matcher.start()));
-                if(mUpdate) {
-                    // update the note
-                    updatedResult.append(NoteSpan.generateTag(spanPassage, spanPassageDefinition, mNoteType));
-                } else {
-                    // remove the note
-                    NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
-                    updatedResult.append(note.getSpanText());
-                }
-                if(matcher.end() < text.length()) {
-                    updatedResult.append(text.substring(matcher.end(), text.length()));
-                }
-                highlightTranslationSpans(updatedResult.getText().toString());
-            }
-            return null;
-        }
-    }
-
-    /**
-     * Displays a dialog for editing a passage note
-     * @param note
-     */
-    public void openPassageNoteDialog(NoteSpan note) {
-
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        app().closeToastMessage();
-
-        // Create and show the dialog
-        NoteDialog newFragment = new NoteDialog();
-        Bundle args = new Bundle();
-        args.putString("passage", note.getSpanText());
-        args.putString("note", note.getNoteText());
-        args.putInt("noteType", note.getNoteType().ordinal());
-        args.putString("id", note.getSpanId());
-        newFragment.setArguments(args);
-        newFragment.show(ft, "dialog");
-    }
-
-    /**
-     * This is called when the passage note dialog is closed.
-     * @param event
-     */
-    @Subscribe
-    public void passageNote(PassageNoteEvent event) {
-        // close the dialog.
-        event.getDialog().dismiss();
-        PassageNotesUpdaterTask task;
-        switch(event.getStatus()) {
-            case OK:
-                // update the passage note
-                if(!event.getNote().isEmpty()) {
-                    task = new PassageNotesUpdaterTask(true, event.getNoteType());
-
-                } else {
-                    // delete empty notes
-                    task = new PassageNotesUpdaterTask(false, event.getNoteType());
-                }
-                task.execute(mTranslationEditText.getText().toString(),
-                        event.getSpanId(),
-                        event.getPassage(),
-                        event.getNote());
-                break;
-            case DELETE:
-                // remove the passage note
-                task = new PassageNotesUpdaterTask(false, event.getNoteType());
-                task.execute(mTranslationEditText.getText().toString(),
-                        event.getSpanId(),
-                        event.getPassage(),
-                        event.getNote());
-                break;
-            case CANCEL:
-            default:
-                // do nothing
-        }
-    }
+//    /**
+//     * This is called when the passage note dialog is closed.
+//     * @param event
+//     */
+//    @Subscribe
+//    public void passageNote(PassageNoteEvent event) {
+//        // close the dialog.
+//        event.getDialog().dismiss();
+//        PassageNotesUpdaterTask task;
+//        switch(event.getStatus()) {
+//            case OK:
+//                // update the passage note
+//                if(!event.getNote().isEmpty()) {
+//                    task = new PassageNotesUpdaterTask(true, event.getNoteType());
+//
+//                } else {
+//                    // delete empty notes
+//                    task = new PassageNotesUpdaterTask(false, event.getNoteType());
+//                }
+//                task.execute(mTranslationEditText.getText().toString(),
+//                        event.getSpanId(),
+//                        event.getPassage(),
+//                        event.getNote());
+//                break;
+//            case DELETE:
+//                // remove the passage note
+//                task = new PassageNotesUpdaterTask(false, event.getNoteType());
+//                task.execute(mTranslationEditText.getText().toString(),
+//                        event.getSpanId(),
+//                        event.getPassage(),
+//                        event.getNote());
+//                break;
+//            case CANCEL:
+//            default:
+//                // do nothing
+//        }
+//    }
 }

@@ -1,57 +1,66 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.R;
 
+
 /**
- * Created by joel on 1/29/2015.
+ * Created by joel on 1/30/2015.
  */
-public class VerseMarkerDialog extends DialogFragment {
+public class NoteMarkerDialog extends DialogFragment {
     private OnClickListener mListener;
-    private String mVerse;
+    private String mPassage;
+    private String mNotes;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle(R.string.verse_marker);
-        View v = inflater.inflate(R.layout.dialog_verse_marker, container, false);
-        EditText verseText = (EditText)v.findViewById(R.id.verseNumberText);
+        getDialog().setTitle(R.string.note_marker);
+        View v = inflater.inflate(R.layout.dialog_note_marker, container, false);
+        EditText passageText = (EditText)v.findViewById(R.id.passageText);
+        EditText noteText = (EditText)v.findViewById(R.id.noteText);
         Button okButton = (Button)v.findViewById(R.id.okButton);
+        Button deleteButton = (Button)v.findViewById(R.id.deleteButton);
         Button cancelButton = (Button)v.findViewById(R.id.cancelButton);
 
         // load parameters
         Bundle args = getArguments();
         if(args != null) {
-            mVerse = args.getInt("verse") + "";
-            verseText.setText(mVerse);
+            mPassage = args.getString("passage");
+            mNotes = args.getString("notes");
         }
 
         // restore state
         if(savedInstanceState != null) {
-            mVerse = savedInstanceState.getString("verse");
-            verseText.setText(mVerse+"");
+            mPassage = savedInstanceState.getString("passage");
+            mNotes = savedInstanceState.getString("notes");
         }
 
-        verseText.requestFocus();
-        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        passageText.setText(mPassage);
+        noteText.setText(mNotes);
 
         // watch text change
-        verseText.addTextChangedListener(new TextWatcher() {
+        passageText.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {}
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {}
             @Override
             public void afterTextChanged(Editable editable) {
-                mVerse = editable.toString();
+                mPassage = editable.toString();
+            }
+        });
+        noteText.addTextChangedListener(new TextWatcher() {
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {}
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {}
+            @Override
+            public void afterTextChanged(Editable editable) {
+                mNotes = editable.toString();
             }
         });
 
@@ -61,16 +70,20 @@ public class VerseMarkerDialog extends DialogFragment {
                 dismiss();
             }
         });
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mListener != null) {
+                    mListener.onClick(mPassage, "");
+                }
+                dismiss();
+            }
+        });
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(mListener != null) {
-                    try {
-                        mListener.onClick(Integer.parseInt(mVerse));
-                    } catch (Exception e) {
-                        // Delete the verse
-                        mListener.onClick(-1);
-                    }
+                    mListener.onClick(mPassage, mNotes);
                 }
                 dismiss();
             }
@@ -81,12 +94,14 @@ public class VerseMarkerDialog extends DialogFragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString("verse", mVerse);
+        outState.putString("passage", mPassage);
+        outState.putString("notes", mNotes);
         super.onSaveInstanceState(outState);
     }
 
+
     /**
-     * Sets up the listener to be triggered when the user clicks the ok button
+     * Sets the listener that will be triggered when the dialog is submitted.
      * @param listener
      */
     public void setOkListener(OnClickListener listener) {
@@ -94,6 +109,6 @@ public class VerseMarkerDialog extends DialogFragment {
     }
 
     public static interface OnClickListener {
-        public void onClick(int verse);
+        public void onClick(String passage, String notes);
     }
 }

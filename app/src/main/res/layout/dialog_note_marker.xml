@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:padding="10dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_above="@+id/linearLayout">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_note_phrase"
+            android:id="@+id/textView"
+            android:textSize="@dimen/h4"
+            android:textStyle="bold" />
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/passageText"
+            android:layout_below="@+id/passageIsFootnoteSwitch"
+            android:background="@color/lighter_gray" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_passage_note"
+            android:id="@+id/textView2"
+            android:textSize="@dimen/h4"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp" />
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:inputType="textMultiLine"
+            android:ems="10"
+            android:id="@+id/noteText"
+            android:layout_above="@+id/linearLayout"
+            android:layout_below="@+id/passageEditText"
+            android:gravity="top"
+            android:background="@color/lighter_gray" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout"
+        android:weightSum="3">
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_cancel"
+            android:id="@+id/cancelButton"
+            android:layout_weight="1"
+            android:background="@drawable/bordered_button"
+            android:layout_margin="10dp" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_delete"
+            android:id="@+id/deleteButton"
+            android:background="@drawable/bordered_button"
+            android:layout_weight="1"
+            android:layout_gravity="top"
+            android:layout_margin="10dp" />
+
+        <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_ok"
+            android:id="@+id/okButton"
+            android:layout_weight="1"
+            android:background="@color/blue"
+            android:textColor="@color/white"
+            android:layout_margin="10dp" />
+    </LinearLayout>
+
+</RelativeLayout>

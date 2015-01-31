@@ -1,10 +1,8 @@
 package com.door43.translationstudio.spannables;
 
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.LeadingMarginSpan;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.MainContext;
@@ -21,9 +19,9 @@ public class TermSpan extends Span {
         mTermId = id;
     }
 
-    public SpannableStringBuilder generateSpan() {
+    public SpannableStringBuilder render() {
         if(mSpannable == null) {
-            mSpannable = super.generateSpan();
+            mSpannable = super.render();
             // apply custom styles
             mSpannable.setSpan(new ForegroundColorSpan(MainContext.getContext().getResources().getColor(R.color.blue)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 //            mSpannable.setSpan(new LeadingMarginSpan.Standard(10), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
