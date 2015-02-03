@@ -158,6 +158,14 @@
                                 android:layout_marginLeft="2dp"
                                 android:layout_marginRight="2dp" />
 
+                            <LinearLayout
+                                android:orientation="vertical"
+                                android:id="@+id/focusFix"
+                                android:layout_width="0px"
+                                android:layout_height="0px"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"/>
+
                             <EditText
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
@@ -172,6 +180,9 @@
                                 android:paddingRight="10dp"
                                 android:paddingBottom="5dp"
                                 android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:nextFocusUp="@id/inputText"
+                                android:nextFocusLeft="@id/inputText"
                                 android:inputType="textNoSuggestions|text|textMultiLine"
                                 android:fontFamily="GentiumPlus"
                                 android:layout_below="@+id/translationTitleText" />

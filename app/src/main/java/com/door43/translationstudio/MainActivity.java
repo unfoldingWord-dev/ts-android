@@ -13,7 +13,6 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -61,7 +60,6 @@ import android.widget.TextView;
 import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
 import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
-import com.door43.translationstudio.dialogs.NoteDialog;
 import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
@@ -87,7 +85,6 @@ import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
-import com.door43.translationstudio.util.PassageNoteEvent;
 import com.door43.translationstudio.util.SynchronizedRunnable;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -95,8 +92,6 @@ import com.squareup.otto.Subscribe;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MainActivity extends TranslatorBaseActivity {
     private final MainActivity me = this;
@@ -140,6 +135,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private RenderingGroup mTranslationRendering;
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
+    private View mFocusFix;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,7 +192,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
             reloadCenterPane();
         }
-        closeTranslationKeyboard();
+        closeKeyboard();
     }
 
     /**
@@ -318,6 +314,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
         mTranslationProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.translationProgressBar);
         mSourceProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.sourceProgressBar);
+        mFocusFix = findViewById(R.id.focusFix);
 
         // listens for for key term clicks and opens term drawer
         mKeyTermClickListener = new Span.OnClickListener() {
@@ -558,12 +555,16 @@ public class MainActivity extends TranslatorBaseActivity {
                         mTranslationTextMotionDownX = x;
                         mTranslationTextMotionDownY = y;
                     } else if (action == MotionEvent.ACTION_UP) {
-                        // don't click spans when dragging. we give a little wiggle room just in case
+                        // check if this is a swipe
                         int maxSpanClickWiggle = 5;
                         if(Math.abs(mTranslationTextMotionDownX - x) > maxSpanClickWiggle || Math.abs(mTranslationTextMotionDownY - y) > maxSpanClickWiggle) {
                             return mTranslationGestureDetector.onTouchEvent(motionEvent);
                         }
 
+                        // This is a click
+                        mFocusFix.setVisibility(View.GONE); // a hack to get the translation text focus working right
+
+                        // pass click to spans
                         x -= widget.getTotalPaddingLeft();
                         y -= widget.getTotalPaddingTop();
 
@@ -638,7 +639,7 @@ public class MainActivity extends TranslatorBaseActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
-                if(mAutosaveTimer != null) {
+                if (mAutosaveTimer != null) {
                     mAutosaveTimer.cancel();
                 }
                 if (saveDelay != -1) {
@@ -661,10 +662,9 @@ public class MainActivity extends TranslatorBaseActivity {
             @Override
             public void onFocusChange(View view, boolean b) {
                 if(b) {
-                    invalidateOptionsMenu();
-                } else {
-                    invalidateOptionsMenu();
+                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
                 }
+                invalidateOptionsMenu();
             }
         });
 
@@ -876,82 +876,11 @@ public class MainActivity extends TranslatorBaseActivity {
                         mTranslationProgressBar.startAnimation(outProgress);
                         // scroll to top
                         mTranslationEditText.scrollTo(0, 0);
+                        mTranslationEditText.clearFocus();
+//                        mFocusFix.setVisibility(View.GONE);
                         mProcessingTranslation = false;
                     }
                 });
-
-
-
-//                mTaskThread = new ThreadableUI(MainActivity.this) {
-//                    private TextView mNotedResult;
-//
-//                    @Override
-//                    public void onStop() {
-//                        mTaskThread = null;
-//                        mTranslationEditText.clearAnimation();
-//                        mTranslationEditText.startAnimation(in);
-//                        mTranslationProgressBar.clearAnimation();
-//                        mTranslationProgressBar.startAnimation(outProgress);
-//                    }
-//
-//                    @Override
-//                    public void run() {
-//                        NoteSpan.reset();
-//                        mNotedResult = new TextView(MainActivity.this);
-//                        NoteSpan needsUpdate = null;
-//                        Pattern p = Pattern.compile(NoteSpan.REGEX_NOTE, Pattern.DOTALL);
-//                        Matcher matcher = p.matcher(text);
-//                        int lastEnd = 0;
-//                        while(matcher.find() && !isInterrupted()) {
-//                            if(matcher.start() > lastEnd) {
-//                                // add the last piece
-//                                mNotedResult.append(text.substring(lastEnd, matcher.start()));
-//                            }
-//                            lastEnd = matcher.end();
-//
-//                            NoteSpan note = NoteSpan.getInstanceFromXML(matcher.group());
-//                            note.setOnClickListener(new FancySpan.OnClickListener() {
-//                                @Override
-//                                public void onClick(View view, FancySpan span) {
-//                                    openPassageNoteDialog((NoteSpan)span);
-//                                }
-//                            });
-//                            if(note.getNoteText().isEmpty()) {
-//                                needsUpdate = note;
-//                            }
-//                            mNotedResult.append(note.toCharSequence());
-//                        }
-//                        if(isInterrupted())  return;
-//                        if(lastEnd < text.length()) {
-//                            // add the last bit of text to the view
-//                            String remainingText = text.substring(lastEnd, text.length());
-//                            mNotedResult.append(remainingText);
-//                        } else if(text.length() > 0) {
-//                            // TRICKY: adding a line break at the end makes is easier to type after the spannable
-//                            mNotedResult.append("\n");
-//                        }
-//
-//                        // display a dialog to populate the empty note.
-//                        if(needsUpdate != null && isNewNote) {
-//                            openPassageNoteDialog(needsUpdate);
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onPostExecute() {
-//                        if(!isInterrupted()) {
-//                            if (mNotedResult.getText() != null) {
-//                                disableAutosave();
-//                                mTranslationEditText.setText(mNotedResult.getText());
-//                                mTranslationEditText.setSelection(0);
-//                                enableAutosave();
-//                            }
-//                        }
-//                        onStop();
-//                        // re-enable the view so we can save it
-//                        mProcessingTranslation = false;
-//                    }
-//                };
 
                 in.setAnimationListener(new Animation.AnimationListener() {
                     @Override
@@ -1003,13 +932,30 @@ public class MainActivity extends TranslatorBaseActivity {
         mHighlightTranslationThread.start();
     }
 
-    public void closeTranslationKeyboard() {
+    /**
+     * closes the keyboard
+     */
+    public void closeKeyboard() {
         if(getCurrentFocus() != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         } else {
             this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
+    }
+
+    /**
+     * opens the keyboard
+     */
+    public void openKeyboard() {
+        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+//        if(getCurrentFocus() != null) {
+//            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+//        } else {
+//            MainActivity.this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+//        }
     }
 
     /**
@@ -1218,20 +1164,6 @@ public class MainActivity extends TranslatorBaseActivity {
             }
             // grab the last bit of text
             compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
-
-
-//            int lastIndex = 0;
-//            for(SpannedString s:spans) {
-//                int sStart = translationText.getSpanStart(s);
-//                int sEnd = translationText.getSpanEnd(s);
-//                // attach preceeding text
-//                compiledString.append(translationText.toString().substring(lastIndex, sStart));
-//                // explode span
-//                compiledString.append(s.toString());
-//                lastIndex = sEnd;
-//            }
-//            // grab the last bit of text
-//            compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
 
             Frame f = app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
             f.setTranslation(compiledString.toString().trim());
@@ -1443,7 +1375,7 @@ public class MainActivity extends TranslatorBaseActivity {
         // Handle presses on the action bar items
         switch (item.getItemId()) {
             case android.R.id.home:
-                closeTranslationKeyboard();
+                closeKeyboard();
                 return true;
             case R.id.action_share:
                 openSharing();
@@ -1663,10 +1595,15 @@ public class MainActivity extends TranslatorBaseActivity {
                                 updateVerseMarker((VerseSpan)span, start, end);
                             }
                         });
+                        // insert the verse
                         new Handler(getMainLooper()).post(new Runnable() {
                             @Override
                             public void run() {
                                 mTranslationEditText.getText().insert(position, verseSpan.toCharSequence());
+                                // set selection to after verse marker
+                                mTranslationEditText.setSelection(position + verseSpan.toCharSequence().length());
+                                mTranslationEditText.requestFocus();
+//                                openKeyboard();
                             }
                         });
                     }
@@ -1814,6 +1751,10 @@ public class MainActivity extends TranslatorBaseActivity {
                                     text = TextUtils.concat(text, mTranslationEditText.getText().subSequence(end, mTranslationEditText.getText().length()));
                                 }
                                 mTranslationEditText.setText(text);
+                                // set selection to after verse marker
+                                mTranslationEditText.setSelection(start + verseSpan.toCharSequence().length());
+                                mTranslationEditText.requestFocus();
+//                                openKeyboard();
                             }
                         }
                     });
@@ -1838,6 +1779,10 @@ public class MainActivity extends TranslatorBaseActivity {
                                     text = TextUtils.concat(text, mTranslationEditText.getText().subSequence(end, mTranslationEditText.getText().length()));
                                 }
                                 mTranslationEditText.setText(text);
+                                // set selection to where the verse was
+                                mTranslationEditText.setSelection(start);
+                                mTranslationEditText.requestFocus();
+//                                openKeyboard();
                             }
                         }
                     });
@@ -1968,114 +1913,4 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onPostExecute() {}
         }.start();
     }
-
-//    /**
-//     * A task update passages notes
-//     */
-//    private class PassageNotesUpdaterTask extends AsyncTask<String, String, Void> {
-//        private Boolean mUpdate = false;
-//        private NoteSpan.NoteType mNoteType = NoteSpan.NoteType.UserNote;
-//
-//        /**
-//         * Specifies if the passage note should be updated or removed
-//         * @param update
-//         */
-//        public PassageNotesUpdaterTask(Boolean update, NoteSpan.NoteType noteType) {
-//            mUpdate = update;
-//            mNoteType = noteType;
-//        }
-//
-//        @Override
-//        protected Void doInBackground(String... params) {
-//            String text = params[0];
-//            String spanId = params[1];
-//            String spanPassage = params[2];
-//            String spanPassageDefinition = params[3];
-//
-//            TextView updatedResult = new TextView(me);
-//
-//            Pattern p = Pattern.compile(NoteSpan.regexNoteById(spanId), Pattern.DOTALL);
-//            Matcher matcher = p.matcher(text);
-//            if(matcher.find()) {
-//                updatedResult.append(text.substring(0, matcher.start()));
-//                if(mUpdate) {
-//                    // update the note
-//                    updatedResult.append(NoteSpan.generateTag(spanPassage, spanPassageDefinition, mNoteType));
-//                } else {
-//                    // remove the note
-//                    NoteSpan note = NoteSpan.parseNote(matcher.group());
-//                    updatedResult.append(note.getSpanText());
-//                }
-//                if(matcher.end() < text.length()) {
-//                    updatedResult.append(text.substring(matcher.end(), text.length()));
-//                }
-//                renderTranslationText(updatedResult.getText().toString());
-//            }
-//            return null;
-//        }
-//    }
-
-//    /**
-//     * Displays a dialog for editing a passage note
-//     * @param note
-//     */
-//    public void openPassageNoteDialog(NoteSpan note) {
-//
-//        FragmentTransaction ft = getFragmentManager().beginTransaction();
-//        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-//        if (prev != null) {
-//            ft.remove(prev);
-//        }
-//        ft.addToBackStack(null);
-//
-//        app().closeToastMessage();
-//
-//        // Create and show the dialog
-//        NoteDialog newFragment = new NoteDialog();
-//        Bundle args = new Bundle();
-//        args.putString("passage", note.getSpanText());
-//        args.putString("note", note.getNotes());
-//        args.putInt("noteType", note.getNoteType().ordinal());
-//        args.putString("id", note.getSpanId());
-//        newFragment.setArguments(args);
-//        newFragment.show(ft, "dialog");
-//    }
-
-//    /**
-//     * This is called when the passage note dialog is closed.
-//     * @param event
-//     */
-//    @Subscribe
-//    public void passageNote(PassageNoteEvent event) {
-//        // close the dialog.
-//        event.getDialog().dismiss();
-//        PassageNotesUpdaterTask task;
-//        switch(event.getStatus()) {
-//            case OK:
-//                // update the passage note
-//                if(!event.getNote().isEmpty()) {
-//                    task = new PassageNotesUpdaterTask(true, event.getNoteType());
-//
-//                } else {
-//                    // delete empty notes
-//                    task = new PassageNotesUpdaterTask(false, event.getNoteType());
-//                }
-//                task.execute(mTranslationEditText.getText().toString(),
-//                        event.getSpanId(),
-//                        event.getPassage(),
-//                        event.getNote());
-//                break;
-//            case DELETE:
-//                // remove the passage note
-//                task = new PassageNotesUpdaterTask(false, event.getNoteType());
-//                task.execute(mTranslationEditText.getText().toString(),
-//                        event.getSpanId(),
-//                        event.getPassage(),
-//                        event.getNote());
-//                break;
-//            case CANCEL:
-//            default:
-//                // do nothing
-//        }
-//    }
 }
