@@ -3,6 +3,7 @@ package com.door43.translationstudio.dialogs;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -86,18 +87,10 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             v = inflater.inflate(R.layout.fragment_import_approval_group, null);
             TextView headerTextView = (TextView)v.findViewById(R.id.groupListHeader);
             ImageView statusImage = (ImageView)v.findViewById(R.id.statusImage);
-//            LinearLayout statusButton = (LinearLayout)v.findViewById(R.id.groupApprovalStatusButton);
-//            Switch confirmationSwitch = (Switch)v.findViewById(R.id.confirmationSwitch);
             RelativeLayout bodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayout);
-//            LinearLayout accentLayout = (LinearLayout)v.findViewById(R.id.accentLayout);
-//            confirmationSwitch.setFocusable(false);
-//            statusButton.setFocusable(false);
             holder.headerTextView = headerTextView;
             holder.statusImage = statusImage;
-//            holder.statusButton = statusButton;
             holder.bodyLayout = bodyLayout;
-//            holder.accentLayout = accentLayout;
-//            holder.confirmationSwitch = confirmationSwitch;
             v.setTag(holder);
         } else {
             holder = (GroupHolder)v.getTag();
@@ -117,26 +110,6 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
                 holder.statusImage.setBackgroundResource(R.drawable.ic_warning_light);
             }
         }
-
-        // confirmation switch
-//        holder.confirmationSwitch.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                // toggle all children approved
-//                if(request.getError() == null) {
-//                    request.setIsApproved(((Switch)view).isChecked());
-//                    notifyDataSetChanged();
-//                }
-//            }
-//        });
-
-//        if(b) {
-//            // opened
-//            holder.accentLayout.setVisibility(View.VISIBLE);
-//        } else {
-//            // closed
-//            holder.accentLayout.setVisibility(View.GONE);
-//        }
 
         return v;
     }
@@ -176,22 +149,9 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
         }
 
         final ImportRequestInterface request = getChild(groupPosition, childPosition);
-//        holder.bodyLayout.setBackgroundResource(Color.TRANSPARENT);
 
         // indicate that this item is approved
         holder.confirmationSwitch.silentlySetChecked(request.isApproved());
-
-        // toggle approved. Errors cannot be approved
-//        if (request.isApproved()) {
-//            holder.statusImage.setBackgroundResource(R.drawable.ic_success);
-//            holder.descriptionTextView.setText(mContext.getResources().getText(R.string.label_ok));
-//        } else {
-//            if (request.getError() == null) {
-//                holder.statusImage.setBackgroundResource(R.drawable.ic_warning);
-//            } else {
-//                holder.statusImage.setBackgroundResource(R.drawable.ic_error);
-//            }
-//        }
 
         // set text
         holder.titleTextView.setText(request.getTitle());
@@ -204,8 +164,6 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             holder.descriptionTextView.setText(request.getWarning());
         }
 
-
-
         // handle child confirmation switch
         holder.confirmationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -214,17 +172,6 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
                 notifyDataSetChanged();
             }
         });
-
-//        holder.statusButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (request.getError() == null) {
-//                    // toggle approved
-//                    request.setIsApproved(!request.isApproved());
-//                    notifyDataSetChanged();
-//                }
-//            }
-//        });
 
         // indicate the user may view children of this item
         if(request.getError() == null && request.getChildImportRequests().size() > 0) {
@@ -248,6 +195,7 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
             holder.confirmAllSwitch.silentlySetChecked(group.isApproved());
         } else {
             holder.confirmAllLayout.setVisibility(View.GONE);
+            holder.confirmAllSwitch.setOnCheckedChangeListener(null);
         }
 
         return v;
@@ -261,10 +209,7 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
     private static class GroupHolder {
         public TextView headerTextView;
         public ImageView statusImage;
-//        public LinearLayout statusButton;
         public RelativeLayout bodyLayout;
-//        public LinearLayout accentLayout;
-//        public Switch confirmationSwitch;
     }
 
     private static class ChildHolder {

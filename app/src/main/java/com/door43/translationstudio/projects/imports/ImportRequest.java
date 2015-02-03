@@ -98,6 +98,7 @@ public abstract class ImportRequest implements ImportRequestInterface {
      * @param approveRecursively if set to false the children will not be updated recursively
      */
     public void setIsApproved(boolean approved, boolean approveRecursively) {
+        // imports with errors cannot be approved
         if(mError == null) {
             if(mApproved != approved) {
                 mApproved = approved;
@@ -115,7 +116,10 @@ public abstract class ImportRequest implements ImportRequestInterface {
                             allChildrenApproved = false;
                         }
                     }
-                    mParent.setIsApproved(allChildrenApproved, false);
+                    // only update the parent if it matches the action performed on this request
+                    if(allChildrenApproved == approved) {
+                        mParent.setIsApproved(allChildrenApproved, false);
+                    }
                 }
             }
         }
