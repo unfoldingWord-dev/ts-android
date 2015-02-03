@@ -172,6 +172,10 @@ public class Frame implements Model {
         return "sourceTranslations/"+getChapter().getProject().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapterFrameId()+".jpg";
     }
 
+    public String getDefaultImagePath() {
+        return "sourceTranslations/"+getChapter().getProject().getId()+"/en/"+getChapter().getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapterFrameId()+".jpg";
+    }
+
     /**
      * Returns the frame text
      * @return

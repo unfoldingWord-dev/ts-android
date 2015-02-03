@@ -132,6 +132,11 @@ public class PseudoProject implements Model {
     }
 
     @Override
+    public String getDefaultImagePath() {
+        return "";
+    }
+
+    @Override
     public boolean isTranslating() {
         for(Model m:mChildrenMap.values()) {
             if(!m.isTranslating()) {

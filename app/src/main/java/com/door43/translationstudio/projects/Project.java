@@ -711,6 +711,10 @@ public class Project implements Model {
         return "sourceTranslations/" + getId() + "/icon.jpg";
     }
 
+    public String getDefaultImagePath() {
+        return getImagePath();
+    }
+
     /**
      * Finds a language by the language code
      * @param id the language code

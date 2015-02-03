@@ -15,7 +15,10 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.util.AnimationUtilities;
+import com.door43.translationstudio.util.MainContext;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+
+import java.io.File;
 
 /**
  * Created by joel on 8/29/2014.
@@ -72,7 +75,13 @@ public class ModelItemAdapter extends BaseAdapter {
         View v = convertView;
         ViewHolder holder = new ViewHolder();
         Model m = getItem(position);
-        String imageUri = "assets://"+ m.getImagePath();
+        String imageUri;
+        File img = MainContext.getContext().getAssetAsFile(m.getImagePath());
+        if(img != null && img.exists()) {
+            imageUri = "assets://"+ m.getImagePath();
+        } else {
+            imageUri = "assets://"+ m.getDefaultImagePath();
+        }
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

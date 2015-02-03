@@ -309,6 +309,10 @@ public class Chapter implements Model {
         return "sourceTranslations/"+getProject().getId()+"/"+getProject().getSelectedSourceLanguage().getId()+"/"+getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getId()+"-00.jpg";
     }
 
+    public String getDefaultImagePath() {
+        return "sourceTranslations/"+getProject().getId()+"/en/"+getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getId()+"-00.jpg";
+    }
+
     /**
      * Returns the next ordered frame
      * @return

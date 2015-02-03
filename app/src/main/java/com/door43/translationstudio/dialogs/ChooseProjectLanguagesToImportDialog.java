@@ -37,8 +37,12 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
 
         if(mProject != null) {
             final LanguageAdapter adapter = new LanguageAdapter(Arrays.asList(mProject.getTargetLanguages()), this.getActivity(), false);
-
-            String imageUri = "assets://"+ mProject.getImagePath();
+            String imageUri;
+            if(MainContext.getContext().getAssetAsFile(mProject.getImagePath()).exists()) {
+                imageUri = "assets://"+ mProject.getImagePath();
+            } else {
+                imageUri = "assets://"+ mProject.getDefaultImagePath();
+            }
             final float imageWidth = getResources().getDimension(R.dimen.model_list_item_image_width);
 
             final ImageView icon = (ImageView)v.findViewById(R.id.modelImage);

@@ -22,6 +22,8 @@ public class DataStore {
     private static MainApplication mContext;
     private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";
     private static final int API_VERSION = 2;
+    // this is used so we can force a cache reset between versions of the app if we make changes to api implimentation
+    private static final int API_VERSION_INTERNAL = 1;
 
     public DataStore(MainApplication context) {
         mContext = context;
@@ -218,30 +220,31 @@ public class DataStore {
         File cacheVersionFile = new File(cacheDir, ".cache_api_version");
         if(cacheVersionFile.exists() && cacheVersionFile.isFile()) {
             try {
-                String version = FileUtils.readFileToString(cacheVersionFile);
-                if(Integer.parseInt(version) != API_VERSION) {
+                // version is composed of API_VERSION.API_VERSION_INTERNAL e.g. "2.1"
+                String[] version = FileUtils.readFileToString(cacheVersionFile).split("\\.");
+                if(Integer.parseInt(version[0]) != API_VERSION || Integer.parseInt(version[1]) != API_VERSION_INTERNAL) {
                     cacheVersionFile.delete();
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "failed to read the cached assets api version", e);
                 cacheVersionFile.delete();
             }
         }
         if(!cacheVersionFile.exists() || !cacheVersionFile.isFile()) {
-            Logger.i(this.getClass().getName(), "clearing the asset cache to support api version "+API_VERSION);
+            Logger.i(this.getClass().getName(), "clearing the asset cache to support api version "+API_VERSION+"."+API_VERSION_INTERNAL);
             FileUtilities.deleteRecursive(cacheDir);
             // record cache version
             cacheDir.mkdirs();
             try {
                 cacheVersionFile.createNewFile();
-                FileUtils.write(cacheVersionFile, API_VERSION+"");
+                FileUtils.write(cacheVersionFile, API_VERSION+"."+API_VERSION_INTERNAL);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
         // retrieve the asset
-        File cacheAsset = new File(cacheDir + path);
+        File cacheAsset = new File(cacheDir, path);
         if(cacheAsset.exists()) {
             // attempt to load from the cached assets first. These will be the most up to date
             try {

@@ -102,7 +102,9 @@ public class ProjectManager {
             String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
             loadTargetLanguagesCatalog(targetLanguageCatalog);
         }
-        mCallback.onSuccess();
+        if(mCallback != null) {
+            mCallback.onSuccess();
+        }
     }
 
     /**
@@ -155,19 +157,25 @@ public class ProjectManager {
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
+            if(mCallback != null) {
+                mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
+            }
         }
         loadProject(source, p);
         String terms = mDataStore.fetchTerms(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
+            if(mCallback != null) {
+                mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
+            }
         }
         loadTerms(terms, p);
         String notes = mDataStore.fetchNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
+            if(mCallback != null) {
+                mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
+            }
         }
         loadNotes(notes, p);
         if(displayNotice) {
@@ -547,7 +555,9 @@ public class ProjectManager {
                     mProgress += PERCENT_TARGET_LANGUAGES / numLanguages;
                     // publish updates every 100 languages to ease up on the ui
                     if(i % 100 == 0) {
-                        mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
+                        if(mCallback != null) {
+                            mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
+                        }
                     }
                     // TODO: it would be best to include the language direction in the target language list
                     Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
@@ -588,7 +598,9 @@ public class ProjectManager {
                 JSONObject jsonProject = json.getJSONObject(i);
                 if(jsonProject.has("slug") && jsonProject.has("date_modified")) {
                     mProgress += PERCENT_PROJECTS / numProjects;
-                    mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
+                    if(mCallback != null) {
+                        mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
+                    }
                     Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
 
                     // load meta
@@ -693,7 +705,7 @@ public class ProjectManager {
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
 
                     // load the rest of the project info
-                    // TRICKY: we need to specify a default title and description to use as a backup if asked for a translation that does not exist.
+                    // TRICKY: we need to specify a default title and description for the project
                     if(i == 0) {
                         p.setDefaultTitle(jsonProjInfo.getString("name"));
                         p.setDefaultDescription(jsonProjInfo.getString("desc"));
@@ -800,10 +812,14 @@ public class ProjectManager {
                             if(checkServer) {
                                 // TRICKY: in order to correctly identify cached resources we must use the cached language
                                 SourceLanguage cachedLanguage = getSourceLanguage(l.getId());
-                                Resource cachedResource = cachedLanguage.getResource(r.getId());
-                                if(cachedResource == null) {
-                                    downloadResourceItems = true;
-                                } else if(r.getDateModified() > cachedResource.getDateModified()) {
+                                if(cachedLanguage != null) {
+                                    Resource cachedResource = cachedLanguage.getResource(r.getId());
+                                    if (cachedResource == null) {
+                                        downloadResourceItems = true;
+                                    } else if (r.getDateModified() > cachedResource.getDateModified()) {
+                                        downloadResourceItems = true;
+                                    }
+                                } else {
                                     downloadResourceItems = true;
                                 }
                             }
