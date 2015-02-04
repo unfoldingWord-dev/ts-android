@@ -2,11 +2,13 @@ package com.door43.translationstudio.panes.left.tabs;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -103,6 +105,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      * @param p
      */
     private void handleMetaSelection(PseudoProject p) {
+        ((MainActivity) me.getActivity()).fixTranslationFocus();
+
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
@@ -116,6 +120,12 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         Bundle args = new Bundle();
         args.putString("metaId", p.getId());
         newFragment.setArguments(args);
+        newFragment.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                ProjectsTabFragment.this.getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+            }
+        });
         newFragment.show(ft, "dialog");
     }
 
@@ -143,5 +153,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public void onSelectedProjectFromMeta(ChoseProjectEvent event) {
         handleProjectSelection(event.getProject());
         event.getDialog().dismiss();
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 }

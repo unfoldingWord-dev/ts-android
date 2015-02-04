@@ -157,10 +157,10 @@ public class ModelItemAdapter extends BaseAdapter {
         }
 
         // prepare image
-        holder.image.setVisibility(View.GONE);
-        ViewGroup.LayoutParams params = holder.bodyLayout.getLayoutParams();
-        params.width = parent.getWidth();
-        holder.bodyLayout.setLayoutParams(params);
+        holder.image.setVisibility(View.INVISIBLE);
+//        ViewGroup.LayoutParams params = holder.bodyLayout.getLayoutParams();
+//        params.width = parent.getWidth();
+//        holder.bodyLayout.setLayoutParams(params);
 
         final ViewHolder staticHolder = holder;
         final Model staticModel = m;
@@ -177,8 +177,9 @@ public class ModelItemAdapter extends BaseAdapter {
                     staticHolder.image.setVisibility(View.VISIBLE);
 
                     // animate views
-                    AnimationUtilities.slideInLeft(staticHolder.image);
-                    AnimationUtilities.resizeWidth(staticHolder.bodyLayout, parent.getWidth(), parent.getWidth() - mImageWidth);
+                    AnimationUtilities.fadeIn(staticHolder.image, 100);
+//                    AnimationUtilities.slideInLeft(staticHolder.image);
+//                    AnimationUtilities.resizeWidth(staticHolder.bodyLayout, parent.getWidth(), parent.getWidth() - mImageWidth);
                 }
             });
         }

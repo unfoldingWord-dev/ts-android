@@ -102,7 +102,7 @@
 
     <LinearLayout
         android:orientation="vertical"
-        android:visibility="invisible"
+        android:visibility="visible"
         android:id="@+id/iconGroupLayout"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"

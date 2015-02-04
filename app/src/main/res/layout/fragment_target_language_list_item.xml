@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/translationStatusIcon"
-        android:background="@drawable/ic_pencil_dark"
+        android:background="@drawable/ic_project_status_translating_light"
         android:layout_gravity="center_vertical"
         android:baselineAlignBottom="false"
         android:paddingLeft="10dp" />

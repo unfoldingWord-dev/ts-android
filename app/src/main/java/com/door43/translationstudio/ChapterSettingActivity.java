@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
@@ -31,10 +32,13 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
             if(mProject != null && mProject.getSelectedChapter() == null) {
-                // there are not chapters in the selected source language
+                // there are no chapters in the selected source language
                 Intent languageIntent = new Intent(this, LanguageSelectorActivity.class);
                 languageIntent.putExtra("sourceLanguages", true);
                 startActivity(languageIntent);
+                finish();
+            } else if(mProject == null) {
+                Logger.w(this.getClass().getName(), "Cannot display the chapter settings without a project");
                 finish();
             }
         }

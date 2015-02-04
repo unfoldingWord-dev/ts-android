@@ -1,6 +1,7 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ import com.door43.translationstudio.util.MainContext;
 public class ChooseProjectDialog extends DialogFragment {
     private ModelItemAdapter mModelItemAdapter;
     private Model[] mModelList = null;
+    private DialogInterface.OnDismissListener mDismissListener;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.projects);
@@ -76,4 +78,17 @@ public class ChooseProjectDialog extends DialogFragment {
     public void setModels(Model[] models) {
         mModelList = models;
     }
+
+    public void onDismiss(DialogInterface dialog) {
+        if(mDismissListener != null) {
+            mDismissListener.onDismiss(dialog);
+        }
+        super.onDismiss(dialog);
+    }
+
+    public void setOnDismissListener(DialogInterface.OnDismissListener listener) {
+        mDismissListener = listener;
+    }
+
+
 }

@@ -228,6 +228,7 @@ public class MainActivity extends TranslatorBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        fixTranslationFocus();
         if(!mActivityIsInitializing) {
             reloadCenterPane();
             mLeftPane.reloadFramesTab();
@@ -1011,7 +1012,7 @@ public class MainActivity extends TranslatorBaseActivity {
         final Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
-            mTranslationEditText.setFocusable(true);
+//            mTranslationEditText.setFocusable(true);
             mTranslationEditText.setEnabled(true);
             final int frameIndex = p.getSelectedChapter().getFrameIndex(mSelectedFrame);
             final Chapter chapter = p.getSelectedChapter();
@@ -1096,7 +1097,7 @@ public class MainActivity extends TranslatorBaseActivity {
             mSelectedFrame = null;
             mTranslationEditText.setText("");
             mTranslationEditText.setEnabled(false);
-            mTranslationEditText.setFocusable(false);
+//            mTranslationEditText.setFocusable(false);
             mTranslationTitleText.setText("");
             mSourceTitleText.setText("");
             mSourceText.setText("");
@@ -1919,5 +1920,15 @@ public class MainActivity extends TranslatorBaseActivity {
             @Override
             public void onPostExecute() {}
         }.start();
+    }
+
+    /**
+     * This method enables a dummy view that grabs focus first instead of the translation text view
+     * This prevents the translation text view from gaining focus and opening the keyboard prematurely
+     */
+    public void fixTranslationFocus() {
+        if(mFocusFix != null) {
+            mFocusFix.setVisibility(View.VISIBLE);
+        }
     }
 }
