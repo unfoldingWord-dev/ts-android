@@ -131,6 +131,7 @@ public class Logger
             // TODO: this path should be some place global
             File logFile = new File(MainContext.getContext().getExternalCacheDir(), "log.txt");
             if (!logFile.exists()) {
+                logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
             }
             // Write the message to the log with a timestamp

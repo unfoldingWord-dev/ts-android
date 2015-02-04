@@ -542,7 +542,7 @@ public class ProjectManager {
         try {
             json = new JSONArray(targetLanguages);
         } catch (JSONException e) {
-            Log.w(TAG, e.getMessage());
+            Logger.e(this.getClass().getName(), "malformed project source", e);
             return;
         }
 
@@ -563,10 +563,10 @@ public class ProjectManager {
                     Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), Language.Direction.RightToLeft);
                     addLanguage(l);
                 } else {
-//                    Log.w(TAG, "missing required parameters in the target language catalog");
+                    Logger.w(this.getClass().getName(),"missing required parameters in the target language catalog. "+jsonLanguage.toString());
                 }
             } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
+                Logger.e(this.getClass().getName(), "failed to load target language catalog", e);
                 continue;
             }
         }
@@ -587,8 +587,8 @@ public class ProjectManager {
         try {
             json = new JSONArray(projectsCatalog);
         } catch (JSONException e) {
-            Log.w(TAG, e.getMessage());
-            return new ArrayList<Project>();
+            Logger.e(this.getClass().getName(), "malformed projects catalog", e);
+            return new ArrayList<>();
         }
 
         // load the data
@@ -662,10 +662,10 @@ public class ProjectManager {
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), downloadLanguages);
                     loadSourceLanguageCatalog(p, sourceLanguageCatalog, downloadLanguages);
                 } else {
-//                    Log.w(TAG, "missing required parameters in the project catalog");
+                    Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
                 }
             } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
+                Logger.e(this.getClass().getName(), "failed to load projects catalog", e);
                 continue;
             }
         }
@@ -688,8 +688,8 @@ public class ProjectManager {
         try {
             json = new JSONArray(sourceLanguageCatalog);
         } catch (Exception e) {
-            Log.w(TAG, e.getMessage());
-            return new ArrayList<SourceLanguage>();
+            Logger.e(this.getClass().getName(), "malformed source language catalog", e);
+            return new ArrayList<>();
         }
 
         // load the data
@@ -724,15 +724,15 @@ public class ProjectManager {
                                 if(sp != null) {
                                     sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
                                 } else {
-                                    Log.d(TAG, "missing meta category in project");
+                                    Logger.w(this.getClass().getName(), "missing meta category in project "+p.getId());
                                     break;
                                 }
                             }
                         } else {
-                            Log.d(TAG, "missing project meta translations");
+                            Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
                         }
                     } else if(p.numSudoProjects() > 0) {
-                        Log.d(TAG, "missing project meta translations");
+                        Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
                     }
 
                     // determine if resources should be re-downloaded
@@ -760,14 +760,14 @@ public class ProjectManager {
                         if (p != null) {
                             p.addSourceLanguage(l);
                         } else {
-//                          Log.w(TAG, "project not found");
+                            Logger.w(this.getClass().getName(), "could not find project while loading source languages");
                         }
                     }
                 } else {
-//                    Log.w(TAG, "missing required parameters in the source language catalog");
+                    Logger.w(this.getClass().getName(), "missing required parameters in the source language catalog");
                 }
             } catch (JSONException e) {
-//                Log.w(TAG, e.getMessage());
+                Logger.w(this.getClass().getName(), "failed to load source language", e);
                 continue;
             }
         }
@@ -791,7 +791,7 @@ public class ProjectManager {
         try {
             json = new JSONArray(resourcesCatalog);
         } catch (Exception e) {
-            Log.w(TAG, e.getMessage());
+            Logger.e(this.getClass().getName(), "malformed resource catalog", e);
             return new ArrayList<Resource>();
         }
 
@@ -875,7 +875,7 @@ public class ProjectManager {
         try {
             jsonNotes = new JSONArray(jsonString);
         } catch (JSONException e) {
-            Log.w(TAG, e.getMessage());
+            Logger.e(this.getClass().getName(), "malformed notes", e);
             return;
         }
 
@@ -883,6 +883,7 @@ public class ProjectManager {
         for(int i=0; i<jsonNotes.length(); i++) {
             try {
                 JSONObject jsonNote = jsonNotes.getJSONObject(i);
+                if(jsonNote.has("date_modified")) continue; // skip the timestamp
                 if(jsonNote.has("id") && jsonNote.has("tn")) {
 
                     // load id
@@ -902,13 +903,13 @@ public class ProjectManager {
                     if(p.getChapter(chapterId) != null && p.getChapter(chapterId).getFrame(frameId) != null) {
                         p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(notes));
                     } else {
-                        // no chapter or frame exists for that note
+                        Logger.w(this.getClass().getName(), "no chapter or frame exists for that note "+p.getId()+":"+chapterId+":"+frameId);
                     }
                 } else {
-//                    Log.w(TAG, "missing required parameters in the source notes");
+                    Logger.w(this.getClass().getName(), "missing required parameters in the notes");
                 }
             } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
+                Logger.e(this.getClass().getName(), "failed to load notes", e);
                 continue;
             }
         }
@@ -925,13 +926,12 @@ public class ProjectManager {
         // load source
         JSONArray jsonTerms;
         if(jsonString == null) {
-//            Log.w(TAG, "The source was not found");
             return;
         }
         try {
             jsonTerms = new JSONArray(jsonString);
         } catch (JSONException e) {
-//            Log.w(TAG, e.getMessage());
+            Logger.e(this.getClass().getName(), "malformed terms", e);
             return;
         }
 
@@ -939,6 +939,7 @@ public class ProjectManager {
         for(int i=0; i<jsonTerms.length(); i++) {
             try {
                 JSONObject jsonTerm = jsonTerms.getJSONObject(i);
+                if(jsonTerm.has("date_modified")) continue; // skip the timestamp
                 if(jsonTerm.has("def") && jsonTerm.has("def_title") && jsonTerm.has("term")) {
 
                     // load related terms
@@ -960,7 +961,7 @@ public class ProjectManager {
                             if (ref.length == 2) {
                                 examples.add(new Term.Example(ref[0], ref[1], jsonExample.getString("text").toString()));
                             } else {
-//                                Log.w(TAG, "invalid term example reference");
+                                Logger.w(this.getClass().getName(), "invalid key term reference "+jsonExample.getString("ref").toString());
                             }
                         }
                     }
@@ -971,10 +972,10 @@ public class ProjectManager {
                     // add term to the project
                     p.addTerm(t);
                 } else {
-//                    Log.w(TAG, "missing required parameters in the source terms");
+                    Logger.w(this.getClass().getName(), "missing required parameters in the terms");
                 }
             } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
+                Logger.e(this.getClass().getName(), "failed to load terms", e);
                 continue;
             }
         }
@@ -998,7 +999,7 @@ public class ProjectManager {
             JSONObject json = new JSONObject(jsonString);
             jsonChapters = json.getJSONArray("chapters");
         } catch (JSONException e) {
-            Log.w(TAG, e.getMessage());
+            Logger.e(this.getClass().getName(), "malformed project source", e);
             return;
         }
 
@@ -1041,14 +1042,14 @@ public class ProjectManager {
                             }
                             c.addFrame(new Frame(jsonFrame.get("id").toString(), img, jsonFrame.get("text").toString(), format));
                         } else {
-                            Logger.w(this.getClass().getName(), "missing required parameters in source frame: "+jsonFrame.toString());
+                            Logger.w(this.getClass().getName(), "missing required parameters in source frame at index "+i+":"+j);
                         }
                     }
                 } else {
-                    Logger.w(this.getClass().getName(), "missing required parameters in source chapter");
+                    Logger.w(this.getClass().getName(), "missing required parameters in source chapter at index " + i);
                 }
             } catch (JSONException e) {
-                Log.w(TAG, e.getMessage());
+                Logger.e(this.getClass().getName(), "Failed to load project source", e);
                 continue;
             }
         }

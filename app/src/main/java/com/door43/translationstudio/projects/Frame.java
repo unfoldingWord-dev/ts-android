@@ -2,10 +2,12 @@ package com.door43.translationstudio.projects;
 
 import android.text.TextUtils;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingEngine;
 import com.door43.translationstudio.rendering.USXRenderer;
+import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
@@ -14,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Frames encapsulates a specific piece of translated work
@@ -28,6 +32,8 @@ public class Frame implements Model {
     private TranslationNote mNotes;
     private ArrayList<String> mImportantTerms;
     public final Format format;
+    private String mCachedDescription;
+    private String mCachedTitle;
 
     /**
      * The format of the resource
@@ -203,25 +209,57 @@ public class Frame implements Model {
 
     @Override
     public String getTitle() {
-        return mChapterFrameId;
+        if(mCachedTitle == null) {
+            if(format == Format.USX) {
+                // locate verse range
+                Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
+                Matcher matcher = pattern.matcher(mText);
+                int numVerses = 0;
+                int startVerse = 0;
+                int endVerse = 0;
+                VerseSpan verse = null;
+                while(matcher.find()) {
+                    verse = new VerseSpan(matcher.group(1));
+                    if(numVerses == 0) {
+                        // first verse
+                        startVerse = verse.getVerseNumber();
+                    }
+                    numVerses ++;
+                }
+                if(verse != null) {
+                    endVerse = verse.getVerseNumber();
+                }
+                if(startVerse == 0 || endVerse == 0) {
+                    mCachedTitle = mId;
+                } else if(startVerse == endVerse) {
+                    mCachedTitle = startVerse + "";
+                } else {
+                    mCachedTitle = startVerse + "-" + endVerse;
+                }
+            } else {
+                mCachedTitle = mId;
+            }
+        }
+        return mCachedTitle;
     }
 
     @Override
     public CharSequence getDescription() {
-        // TODO: this could potentially cause problems if the rendering takes too long. It could cause the frame list to lag when scrolling
-        // a subset of the text is used for the description
-        RenderingEngine renderer;
-        if(format == Format.USX) {
-            renderer = new USXRenderer();
-        } else {
-            renderer = new DefaultRenderer();
+        if(mCachedDescription == null) {
+            RenderingEngine renderer;
+            if (format == Format.USX) {
+                renderer = new USXRenderer();
+            } else {
+                renderer = new DefaultRenderer();
+            }
+            CharSequence out = renderer.render(mText);
+            if (out.length() > 93) {
+                mCachedDescription = out.subSequence(0, 90).toString().trim() + "...";
+            } else {
+                mCachedDescription = out.toString();
+            }
         }
-        CharSequence out = renderer.render(mText);
-        if(out.length() > 93) {
-            return out.subSequence(0, 90).toString().trim() + "...";
-        } else {
-            return out;
-        }
+        return mCachedDescription;
     }
 
     /**
