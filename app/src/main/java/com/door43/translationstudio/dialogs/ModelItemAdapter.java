@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
@@ -16,6 +17,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.ThreadableUI;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.io.File;
@@ -77,82 +79,145 @@ public class ModelItemAdapter extends BaseAdapter {
         Model m = getItem(position);
         String imageUri;
         File img = MainContext.getContext().getAssetAsFile(m.getImagePath());
-        if(img != null && img.exists()) {
+        File defaultImg = MainContext.getContext().getAssetAsFile(m.getDefaultImagePath());
+        if(img != null && img.exists() && img.isFile()) {
             imageUri = "assets://"+ m.getImagePath();
-        } else {
+        } else if(defaultImg != null && defaultImg.exists() && defaultImg.isFile()){
             imageUri = "assets://"+ m.getDefaultImagePath();
+        } else {
+            imageUri = null;
         }
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.fragment_model_list_item, null);
-            holder.icon = (ImageView)v.findViewById(R.id.modelImage);
-            holder.bodyLayout = (LinearLayout)v.findViewById(R.id.bodyLayout);
+            // layout
+            holder.bodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayout);
+            holder.image = (ImageView)v.findViewById(R.id.modelImage);
             holder.title = (TextView)v.findViewById(R.id.modelTitle);
             holder.description = (TextView)v.findViewById(R.id.modelDescription);
-            holder.translationIcon = (ImageView)v.findViewById(R.id.translationStatusIcon);
+
+            // alternate layout
+            holder.altBodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayoutAlt);
+            holder.altTitle = (TextView)v.findViewById(R.id.modelTitleAlt);
+            holder.altDescription = (TextView)v.findViewById(R.id.modelDescriptionAlt);
+
+            // icons
+            holder.audioIcon = (ImageView)v.findViewById(R.id.audioIcon);
+            holder.languagesIcon = (ImageView)v.findViewById(R.id.languagesIcon);
+            holder.translationIcon = (ImageView)v.findViewById(R.id.translationIcon);
+            holder.iconGroup = (LinearLayout)v.findViewById(R.id.iconGroupLayout);
             v.setTag(holder);
         } else {
             holder = (ViewHolder)v.getTag();
         }
 
-        holder.icon.clearAnimation();
+        holder.image.clearAnimation();
         holder.bodyLayout.clearAnimation();
 
         holder.title.setText(m.getTitle());
+        holder.altTitle.setText(m.getTitle());
         holder.description.setText(m.getDescription());
+        holder.altDescription.setText(m.getDescription());
 
-        // translation in progress
-        boolean isTranslating = m.isTranslating();
-        boolean isTranslatingGlobal = m.isTranslatingGlobal();
-        if(isTranslating || isTranslatingGlobal) {
-            holder.translationIcon.setVisibility(View.VISIBLE);
+        // display the correct layout
+        if(imageUri != null) {
+            // default layout
+            holder.bodyLayout.setVisibility(View.VISIBLE);
+            holder.altBodyLayout.setVisibility(View.GONE);
         } else {
-            holder.translationIcon.setVisibility(View.GONE);
+            // alternate layout
+            holder.bodyLayout.setVisibility(View.GONE);
+            holder.altBodyLayout.setVisibility(View.VISIBLE);
         }
 
-        // highlight selected project
+        // icons
+        holder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+        holder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+        holder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+        holder.iconGroup.setVisibility(View.GONE);
+
+        // highlight selected item
+        boolean isSelected = false;
         if(getItem(position).isSelected() && mIndicateSelected) {
+            isSelected = true;
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
-            holder.description.setTextColor(Color.WHITE);
             holder.title.setTextColor(Color.WHITE);
-            if(isTranslating) {
-                holder.translationIcon.setBackgroundResource(R.drawable.ic_pencil);
-            } else {
-                holder.translationIcon.setBackgroundResource(R.drawable.ic_translation_small);
-            }
+            holder.altTitle.setTextColor(Color.WHITE);
+            holder.description.setTextColor(Color.WHITE);
+            holder.altDescription.setTextColor(Color.WHITE);
+            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.medium_blue));
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
+            holder.title.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
+            holder.altTitle.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
             holder.description.setTextColor(mContext.getResources().getColor(R.color.gray));
-            holder.title.setTextColor(mContext.getResources().getColor(R.color.black));
-            if(isTranslating) {
-                holder.translationIcon.setBackgroundResource(R.drawable.ic_pencil_dark);
-            } else {
-                holder.translationIcon.setBackgroundResource(R.drawable.ic_translation_small_dark);
-            }
+            holder.altDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
+            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.lighter_gray));
         }
 
-        // image
-        holder.icon.setVisibility(View.GONE);
+        // prepare image
+        holder.image.setVisibility(View.GONE);
         ViewGroup.LayoutParams params = holder.bodyLayout.getLayoutParams();
         params.width = parent.getWidth();
         holder.bodyLayout.setLayoutParams(params);
 
         final ViewHolder staticHolder = holder;
+        final Model staticModel = m;
+        final boolean staticIsSelected = isSelected;
+
 
         // load image
-        mContext.getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
-            @Override
-            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                // load values
-                staticHolder.icon.setImageBitmap(loadedImage);
-                staticHolder.icon.setVisibility(View.VISIBLE);
+        if(imageUri != null) {
+            mContext.getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    // load values
+                    staticHolder.image.setImageBitmap(loadedImage);
+                    staticHolder.image.setVisibility(View.VISIBLE);
 
-                // animate views
-                AnimationUtilities.slideInLeft(staticHolder.icon);
-                AnimationUtilities.resizeWidth(staticHolder.bodyLayout, parent.getWidth(), parent.getWidth() - mImageWidth);
+                    // animate views
+                    AnimationUtilities.slideInLeft(staticHolder.image);
+                    AnimationUtilities.resizeWidth(staticHolder.bodyLayout, parent.getWidth(), parent.getWidth() - mImageWidth);
+                }
+            });
+        }
+
+        // enable icons
+        new ThreadableUI(mContext) {
+            private boolean isTranslating;
+            private boolean isTranslatingGlobal;
+            private boolean hasAudio;
+
+            @Override
+            public void onStop() {
+
             }
-        });
+
+            @Override
+            public void run() {
+                isTranslating = staticModel.isTranslating();
+                isTranslatingGlobal = staticModel.isTranslatingGlobal();
+                hasAudio = false;
+            }
+
+            @Override
+            public void onPostExecute() {
+                if(staticIsSelected) {
+                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_translating);
+                    if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global);
+                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio);
+                } else {
+                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_translating_light);
+                    if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global_light);
+                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio_light);
+                }
+                if(isTranslating || isTranslatingGlobal || hasAudio) {
+                    staticHolder.iconGroup.setVisibility(View.VISIBLE);
+                    AnimationUtilities.fadeIn(staticHolder.iconGroup, 100);
+                }
+            }
+        }.start();
 
         return v;
     }
@@ -170,11 +235,18 @@ public class ModelItemAdapter extends BaseAdapter {
      * Improves performance
      */
     private static class ViewHolder {
-        public ImageView icon;
-        public LinearLayout bodyLayout;
+        public ImageView image;
+        public RelativeLayout bodyLayout;
         public TextView title;
         public TextView description;
+
+        public RelativeLayout altBodyLayout;
+        public TextView altTitle;
+        public TextView altDescription;
+
         public ImageView translationIcon;
-        public ImageView translationGlobalIcon;
+        public ImageView languagesIcon;
+        public ImageView audioIcon;
+        public LinearLayout iconGroup;
     }
 }

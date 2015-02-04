@@ -1012,10 +1012,16 @@ public class ProjectManager {
         for(int i=0; i<jsonChapters.length(); i++) {
             try {
                 JSONObject jsonChapter = jsonChapters.getJSONObject(i);
-                if(jsonChapter.has("ref") && jsonChapter.has("frames") && jsonChapter.has("title") && jsonChapter.has("number")) {
+                if(jsonChapter.has("frames")) {
                     // load chapter
                     String chapterNumber = jsonChapter.get("number").toString();
-                    Chapter c = new Chapter(chapterNumber, jsonChapter.get("title").toString(), jsonChapter.get("ref").toString());
+                    String title = "";
+                    String reference = "";
+                    if(jsonChapter.has("title") && jsonChapter.has("ref")) {
+                        title = jsonChapter.get("title").toString();
+                        reference = jsonChapter.get("ref").toString();
+                    }
+                    Chapter c = new Chapter(chapterNumber, title, reference);
 
                     // add chapter to the project
                     p.addChapter(c);
@@ -1029,13 +1035,17 @@ public class ProjectManager {
                             if(jsonFrame.has("format")) {
                                 format = jsonFrame.getString("format");
                             }
-                            c.addFrame(new Frame(jsonFrame.get("id").toString(), jsonFrame.get("img").toString(), jsonFrame.get("text").toString(), format));
+                            String img = "";
+                            if(jsonFrame.has("img")) {
+                                img = jsonFrame.get("img").toString();
+                            }
+                            c.addFrame(new Frame(jsonFrame.get("id").toString(), img, jsonFrame.get("text").toString(), format));
                         } else {
-//                            Log.w(TAG, "missing required parameters in the source frames");
+                            Logger.w(this.getClass().getName(), "missing required parameters in source frame: "+jsonFrame.toString());
                         }
                     }
                 } else {
-//                    Log.w(TAG, "missing required parameters in the source chapters");
+                    Logger.w(this.getClass().getName(), "missing required parameters in source chapter");
                 }
             } catch (JSONException e) {
                 Log.w(TAG, e.getMessage());

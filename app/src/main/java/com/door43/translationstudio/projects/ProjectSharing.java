@@ -69,7 +69,7 @@ public class ProjectSharing {
         JSONArray libraryJson = new JSONArray();
 
         for(Project p:projects) {
-            if(p.isTranslatingGlobal()) {
+            if(p.isTranslatingGlobal() || p.isTranslating()) {
                 JSONObject json = new JSONObject();
                 try {
                     json.put("id", p.getId());

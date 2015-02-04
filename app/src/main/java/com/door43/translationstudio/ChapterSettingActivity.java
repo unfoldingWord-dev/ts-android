@@ -14,7 +14,6 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 
 public class ChapterSettingActivity extends TranslatorBaseActivity {
-    private ChapterSettingActivity me = this;
     private TextView sourceLanguageChapterTitleText;
     private TextView sourceLanguageChapterReferenceText;
     private EditText targetLanguageChapterTitleEditText;
@@ -33,7 +32,7 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         if(mProject == null || mProject.getSelectedChapter() == null) {
             if(mProject != null && mProject.getSelectedChapter() == null) {
                 // there are not chapters in the selected source language
-                Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
+                Intent languageIntent = new Intent(this, LanguageSelectorActivity.class);
                 languageIntent.putExtra("sourceLanguages", true);
                 startActivity(languageIntent);
                 finish();

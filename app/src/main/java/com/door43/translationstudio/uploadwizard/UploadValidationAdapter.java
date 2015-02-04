@@ -63,7 +63,7 @@ public class UploadValidationAdapter extends BaseAdapter {
             descriptionText.setText("");
         }
 
-        // icon
+        // image
         ImageView imageView = (ImageView)itemView.findViewById(R.id.validationSuccessImage);
         if(getItem(i).getStatus() == UploadValidationItem.Status.ERROR) {
             imageView.setBackgroundResource(R.drawable.ic_error);

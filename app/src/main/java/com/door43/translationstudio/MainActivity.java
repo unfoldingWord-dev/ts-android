@@ -1360,13 +1360,20 @@ public class MainActivity extends TranslatorBaseActivity {
             menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
         } else {
             // main menu
-            menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled);
+            boolean hasChapterSettings = false;
+            if(projectEnabled) {
+                Chapter c = app().getSharedProjectManager().getSelectedProject().getSelectedChapter();
+                hasChapterSettings = c != null && c.hasChapterSettings();
+            }
+
+            menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
             menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
             menu.findItem(R.id.action_sync).setVisible(projectEnabled);
             menu.findItem(R.id.action_resources).setVisible(projectEnabled);
             Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
             menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
         }
+
         return true;
     }
 

@@ -555,7 +555,7 @@ public class Project implements Model {
     }
 
     /**
-     * Checks to see if this project is currently being translated in any language
+     * Checks to see if this project is currently being translated in any language other than the currently selected one
      * @return
      */
     public boolean isTranslatingGlobal() {
@@ -573,7 +573,7 @@ public class Project implements Model {
                         }
                     });
                     if(contents != null && contents.length > 0) {
-                        return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId());
+                        return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId()) && !pieces[2].equals(mSelectedTargetLanguageId);
                     } else {
                         return false;
                     }

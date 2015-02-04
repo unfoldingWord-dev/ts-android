@@ -8,7 +8,7 @@
     },
     "project": {
       "desc": "A book of the bible",
-      "meta": ["Bible", "New Testament"],
+      "meta": ["Bible: New Testament"],
       "name": "Luke"
     },
     "res_catalog": "https://api.unfoldingword.org/ts/txt/2/luk/en/resources.json"

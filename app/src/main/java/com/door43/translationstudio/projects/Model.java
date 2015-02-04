@@ -19,8 +19,28 @@ public interface Model {
      * @return
      */
     public String getDefaultImagePath();
+
+    /**
+     * Checks if there is a translation in the currently selected language for this model
+     * @return
+     */
     public boolean isTranslating();
+
+    /**
+     * Check if there are any translations in progress for this model except for the currently selected language
+     * @return
+     */
     public boolean isTranslatingGlobal();
+
+    /**
+     * Returns the type of model this is
+     * @return
+     */
     public String getType();
+
+    /**
+     * Checks if this model is currently selected
+     * @return
+     */
     public boolean isSelected();
 }

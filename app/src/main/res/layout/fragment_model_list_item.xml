@@ -1,18 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="@dimen/model_list_item_height">
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:weightSum="3">
-
-    <ImageView
-        android:layout_width="@dimen/model_list_item_image_width"
-        android:layout_height="@dimen/model_list_item_height"
-        android:id="@+id/modelImage"
-        android:background="@color/lighter_gray" />
-
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/bodyLayout"
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_weight="3"
+        android:layout_height="@dimen/model_list_item_height"
+        android:layout_toRightOf="@+id/modelImage"
+        android:layout_toEndOf="@+id/modelImage"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
+
+        <ImageView
+            android:layout_width="@dimen/model_list_item_image_width"
+            android:layout_height="@dimen/model_list_item_height"
+            android:id="@+id/modelImage"
+            android:background="@color/lighter_gray" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_toRightOf="@+id/modelImage"
+            android:layout_toEndOf="@+id/modelImage"
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:paddingLeft="5dp">
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Model Title"
+                android:id="@+id/modelTitle"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:textSize="@dimen/h5"
+                android:textColor="@color/dark_gray"
+                android:singleLine="true"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Model Description\ntest"
+                android:id="@+id/modelDescription"
+                android:ellipsize="end"
+                android:maxLines="2" />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:visibility="gone"
+        android:id="@+id/bodyLayoutAlt"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_weight="3"
@@ -27,35 +71,62 @@
         android:layout_alignParentEnd="true">
 
         <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:text="Model Title"
-            android:id="@+id/modelTitle"
+            android:id="@+id/modelTitleAlt"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
-            android:textSize="@dimen/h5"
-            android:textColor="@color/black"
+            android:textSize="@dimen/h4"
+            android:gravity="center"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:textColor="@color/dark_gray"
             android:singleLine="true"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_above="@+id/modelDescriptionAlt" />
 
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Model Description\ntest"
-            android:id="@+id/modelDescription"
+            android:id="@+id/modelDescriptionAlt"
             android:ellipsize="end"
-            android:maxLines="2" />
+            android:maxLines="2"
+            android:layout_alignParentBottom="true"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:gravity="center"
+            android:text="Model Description" />
 
+    </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:visibility="invisible"
+        android:id="@+id/iconGroupLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:padding="2dp"
+        android:background="@color/lighter_gray"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_project_status_audio_light"
+            android:id="@+id/audioIcon" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/languagesIcon"
+            android:background="@drawable/ic_project_status_global_light" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/translationIcon"
+            android:background="@drawable/ic_project_status_translating_light" />
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/translationStatusIcon"
-        android:background="@drawable/ic_pencil_dark"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:paddingBottom="1dp"
-        android:layout_alignBottom="@+id/bodyLayout" />
-
-</RelativeLayout>
+</LinearLayout>

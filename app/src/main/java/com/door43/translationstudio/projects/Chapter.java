@@ -2,6 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
@@ -72,11 +73,23 @@ public class Chapter implements Model {
     }
 
     /**
+     * Checks if this chapter has settings (ref and title) that need to be translated as well
+     * @return
+     */
+    public boolean hasChapterSettings() {
+        return mTitle != null && !mTitle.isEmpty() && mReference != null && !mReference.isEmpty();
+    }
+
+    /**
      * Returns the chapter title
      * @return
      */
     public String getTitle() {
-        return mTitle;
+        if(mTitle != null && !mTitle.isEmpty()) {
+            return mTitle;
+        } else {
+            return String.format(MainContext.getContext().getResources().getString(R.string.label_chapter_title_detailed), getId());
+        }
     }
 
     /**
@@ -84,7 +97,12 @@ public class Chapter implements Model {
      * @return
      */
     public String getReference() {
-        return mReference;
+        if(mReference != null && !mReference.isEmpty()) {
+            return mReference;
+        } else {
+            // TODO: return the range of verses that are included in this chapter
+            return "";
+        }
     }
 
     /**

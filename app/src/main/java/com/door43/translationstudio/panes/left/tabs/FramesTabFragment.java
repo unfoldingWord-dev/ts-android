@@ -10,6 +10,7 @@ import android.widget.ListView;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
+import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
@@ -51,8 +52,10 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
 
                 // Display chapter translation dialog if translating a new chapter
                 if(!app().getSharedProjectManager().getSelectedProject().getSelectedChapter().translationInProgress()) {
-                    // reload the content so we don't overwrite stuff
-                    ((MainActivity)me.getActivity()).showChapterSettingsMenu();
+                    // only display the chapter settings if the title and reference are not null
+                    if(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().hasChapterSettings()) {
+                        ((MainActivity) me.getActivity()).showChapterSettingsMenu();
+                    }
                 }
             }
         });

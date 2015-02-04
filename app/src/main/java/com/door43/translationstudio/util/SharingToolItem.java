@@ -23,7 +23,7 @@ public class SharingToolItem {
     /**
      *
      * @param nameResource The visible name of the tool
-     * @param icon the tool icon
+     * @param icon the tool image
      * @param action the action to be performed
      * @param enabled sets the tool as enabled or disabled. when disabled a notice will be displayed
      */
@@ -61,7 +61,7 @@ public class SharingToolItem {
     }
 
     /**
-     * Returns the icon resource id
+     * Returns the image resource id
      * @return
      */
     public int getIcon() {
