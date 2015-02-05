@@ -4,6 +4,7 @@ import com.door43.translationstudio.projects.Resource;
 
 /**
  * This is fired when a language resource is chosen from the LanguageResourceDialog.
+ * @deprecated
  */
 public class LanguageResourceSelectedEvent {
     private final Resource mResource;

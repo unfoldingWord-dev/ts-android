@@ -19,6 +19,7 @@ import com.door43.translationstudio.util.MainContext;
   */
  public class LanguageResourceDialog extends DialogFragment {
     private LanguageResourceAdapter mLanguageResourceAdapter;
+    private OnChooseListener mListener;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.language_resources);
@@ -35,7 +36,10 @@ import com.door43.translationstudio.util.MainContext;
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Resource r = mLanguageResourceAdapter.getItem(i);
-                    MainContext.getEventBus().post(new LanguageResourceSelectedEvent(r));
+                    if(mListener != null) {
+                        mListener.onChoose(r);
+                    }
+//                    MainContext.getEventBus().post(new LanguageResourceSelectedEvent(r));
                     dismiss();
                 }
             });
@@ -43,5 +47,17 @@ import com.door43.translationstudio.util.MainContext;
             dismiss();
         }
         return v;
+    }
+
+    /**
+     * Set the listener to call when a selection is made
+     * @param listener
+     */
+    public void setOnChooseListener(OnChooseListener listener) {
+        mListener = listener;
+    }
+
+    public static interface OnChooseListener {
+        public void onChoose(Resource resource);
     }
  }

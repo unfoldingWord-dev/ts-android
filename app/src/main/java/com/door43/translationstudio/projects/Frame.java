@@ -34,6 +34,7 @@ public class Frame implements Model {
     public final Format format;
     private String mCachedDescription;
     private String mCachedTitle;
+    private int mStartingVerseNumber = 0;
 
     /**
      * The format of the resource
@@ -207,10 +208,24 @@ public class Frame implements Model {
         return mId;
     }
 
+    /**
+     * Returns the verse number that begins this frame.
+     * This is only applicable to source that has verses in it (usx)
+     * @return
+     */
+    public int getStartingVerseNumber() {
+        // generate the starting verse number as we generate the frame title
+        getTitle();
+        if(mStartingVerseNumber == 0) {
+            mStartingVerseNumber = 1;
+        }
+        return mStartingVerseNumber;
+    }
+
     @Override
     public String getTitle() {
         if(mCachedTitle == null) {
-            if(format == Format.USX) {
+            if(format == Format.USX && mText != null) {
                 // locate verse range
                 Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
                 Matcher matcher = pattern.matcher(mText);
@@ -235,6 +250,10 @@ public class Frame implements Model {
                     mCachedTitle = startVerse + "";
                 } else {
                     mCachedTitle = startVerse + "-" + endVerse;
+                }
+                // save the start verse for later use
+                if(startVerse > 0) {
+                    mStartingVerseNumber = startVerse;
                 }
             } else {
                 mCachedTitle = mId;

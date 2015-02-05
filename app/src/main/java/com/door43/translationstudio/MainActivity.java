@@ -71,6 +71,7 @@ import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.KeyTermRenderer;
@@ -329,7 +330,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mSourceTitleText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Project p = app().getSharedProjectManager().getSelectedProject();
+                final Project p = app().getSharedProjectManager().getSelectedProject();
                 if(p != null && p.getSelectedSourceLanguage().getResources().length > 1) {
                     // Create and show the dialog.
                     FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -347,6 +348,34 @@ public class MainActivity extends TranslatorBaseActivity {
                     Bundle args = new Bundle();
                     args.putString("projectId", p.getId());
                     newFragment.setArguments(args);
+                    newFragment.setOnChooseListener(new LanguageResourceDialog.OnChooseListener() {
+                        @Override
+                        public void onChoose(Resource resource) {
+                            if(p == null) return;
+                            p.getSelectedSourceLanguage().setSelectedResource(resource.getId());
+                            new ThreadableUI(MainActivity.this) {
+
+                                @Override
+                                public void onStop() {
+
+                                }
+
+                                @Override
+                                public void run() {
+                                    // reload the source so we get the correct language resource
+                                    app().getSharedProjectManager().fetchProjectSource(p);
+                                }
+
+                                @Override
+                                public void onPostExecute() {
+                                    // refresh the ui
+                                    reloadCenterPane();
+                                    mLeftPane.reloadFramesTab();
+                                    mLeftPane.reloadChaptersTab();
+                                }
+                            }.start();
+                        }
+                    });
                     newFragment.show(ft, "dialog");
                 }
             }
@@ -1310,36 +1339,6 @@ public class MainActivity extends TranslatorBaseActivity {
         mLeftPane.reloadProjectsTab();
     }
 
-    /**
-     * Triggered any time a language resource is selected e.g. udb or ulb.
-     * @param event
-     */
-    @Subscribe
-    public void languageResourceSelectionChanged(LanguageResourceSelectedEvent event) {
-        final Project p = app().getSharedProjectManager().getSelectedProject();
-        if(p == null) return;
-        p.getSelectedSourceLanguage().setSelectedResource(event.getResource().getId());
-        new ThreadableUI(this) {
-
-            @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                // reload the source so we get the correct language resource
-                app().getSharedProjectManager().fetchProjectSource(p);
-            }
-
-            @Override
-            public void onPostExecute() {
-                // refresh the ui
-                reloadCenterPane();
-            }
-        }.start();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu items for use in the action bar
@@ -1550,8 +1549,16 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param position the position within the translation text where the verse will be inserted
      */
     private void insertVerseMarker(final int position) {
+        Project p = app().getSharedProjectManager().getSelectedProject();
+        int defaultVerseNumber = 1;
+        if(p != null) {
+            if(p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
+                defaultVerseNumber = p.getSelectedChapter().getSelectedFrame().getStartingVerseNumber();
+            }
+        }
+        final int startingVerseNumber = defaultVerseNumber;
         new ThreadableUI(this) {
-            private int mSuggestedVerse = 1;
+            private int mSuggestedVerse = startingVerseNumber;
 
             @Override
             public void onStop() {}
