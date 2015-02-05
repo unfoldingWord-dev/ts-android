@@ -6,7 +6,7 @@
           "format": "usx", 
           "id": "01-01", 
           "img": "", 
-          "text": "<para style=\"p\">\n\n  <verse number=\"1\" style=\"v\" />It happened in the days when the judges ruled, that there was a famine in the land. And a certain man of Bethlehem of Judah went to the country of Moab with his wife and his two sons.\n\n  <verse number=\"2\" style=\"v\" />And the name of the man was Elimelech, and the name of his wife Naomi, and the name of his two sons Mahlon and Chilion, Ephrathites of Bethlehem of Judah. And they came into the country of Moab and lived there.</para>\n\n\n"
+          "text": "<para style=\"p\">\n\n  <verse number=\"1\" style=\"v\" />It happened in the days when the judges ruled that there was a famine in the land. And a certain man of Bethlehem of Judah went to the country of Moab with his wife and his two sons.\n\n  <verse number=\"2\" style=\"v\" />And the name of the man was Elimelech, and the name of his wife Naomi, and the name of his two sons Mahlon and Chilion, Ephrathites of Bethlehem of Judah. And they came into the country of Moab and lived there.</para>\n\n\n"
         }, 
         {
           "format": "usx", 
@@ -42,7 +42,7 @@
           "format": "usx", 
           "id": "01-07", 
           "img": "", 
-          "text": "<verse number=\"16\" style=\"v\" />And Ruth said, \"Don't make me leave and go away from you, for where you go, I will go; and where you stay, I will stay; your people will be my people, and your God will be my God;\n\n<verse number=\"17\" style=\"v\" />where you die, I will die, and there I will be buried. May Yahweh punish me, and even more, if anything but death ever parts us.\"\n\n<verse number=\"18\" style=\"v\" />And when Naomi saw that Ruth was determined to go with her, she stopped arguing with her.\n\n\n"
+          "text": "<verse number=\"16\" style=\"v\" />And Ruth said, \"Don't make me leave and go away from you, for where you go, I will go; and where you stay, I will stay; your people shall be my people, and your God shall be my God;\n\n<verse number=\"17\" style=\"v\" />where you die, I will die, and there I will be buried. May Yahweh punish me, and even more, if anything but death ever parts us.\"\n\n<verse number=\"18\" style=\"v\" />And when Naomi saw that Ruth was determined to go with her, she stopped arguing with her.\n\n\n"
         }, 
         {
           "format": "usx", 
@@ -255,7 +255,7 @@
       "number": "04", 
       "ref": "", 
       "title": ""
-    },
-  ],
-  "date_modified": "20150203"
+    }
+  ], 
+  "date_modified": "20150204"
 }

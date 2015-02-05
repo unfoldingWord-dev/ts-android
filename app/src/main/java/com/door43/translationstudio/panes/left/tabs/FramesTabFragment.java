@@ -12,6 +12,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Model;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -29,7 +30,8 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
 
         // create adapter
         if(mModelItemAdapter == null) {
-            if(app().getSharedProjectManager().getSelectedProject() == null) {
+            Project p = app().getSharedProjectManager().getSelectedProject();
+            if(p == null || p.getSelectedChapter() == null ) {
                 mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{});
             } else {
                 mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getFrames());
