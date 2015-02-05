@@ -49,7 +49,7 @@
             android:layout_marginTop="20dp"
             android:gravity="right">
 
-            <Switch
+            <android.support.v7.widget.SwitchCompat
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/translation_complete"

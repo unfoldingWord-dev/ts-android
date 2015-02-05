@@ -233,4 +233,9 @@
     <string name="project_library">Project Library</string>
     <string name="verse_marker">Verse</string>
     <string name="note_marker">Note</string>
+    <string name="dialog_contact_form">Contact Form</string>
+    <string name="label_name">Name</string>
+    <string name="label_email">Email</string>
+    <string name="label_phone">Phone</string>
+    <string name="contact_form_description">Please provide your contact information. This information will be securely transfered to the server when you publish a translation.</string>
 </resources>

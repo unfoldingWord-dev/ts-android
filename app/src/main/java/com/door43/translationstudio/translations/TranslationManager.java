@@ -67,7 +67,7 @@ public class TranslationManager implements TCPClient.TcpListener {
             public void success() {
                 PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.push_msg_init));
                 push.executeTask();
-                // TODO: we need to check the errors from the push task. If auth fails then we need to re-register.
+                // TODO: we need to check the errors from the push task. If auth fails then we need to re-register the ssh keys.
             }
 
             @Override

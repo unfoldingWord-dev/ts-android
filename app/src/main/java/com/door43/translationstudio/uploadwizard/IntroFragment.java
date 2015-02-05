@@ -1,13 +1,13 @@
 package com.door43.translationstudio.uploadwizard;
 
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -34,7 +34,7 @@ public class IntroFragment extends WizardFragment {
         continueBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(p.getTranslationIsReady()) {
+                if(p.translationIsReady()) {
                     // continue to validation
                     onContinue();
                 } else {
@@ -43,11 +43,11 @@ public class IntroFragment extends WizardFragment {
                 }
             }
         });
-        final Switch completeSwitch = (Switch)rootView.findViewById(R.id.translationIsCompleteSwitch);
+        final SwitchCompat completeSwitch = (SwitchCompat)rootView.findViewById(R.id.translationIsCompleteSwitch);
         final TextView translationChecksNotice = (TextView)rootView.findViewById(R.id.translationChecksNoticeTextView);
         translationChecksNotice.setVisibility(View.INVISIBLE);
 
-        if(p.getTranslationIsReady()) {
+        if(p.translationIsReady()) {
             completeSwitch.setChecked(true);
             Animation in = new AlphaAnimation(0.0f, 1.0f);
             in.setDuration(100);

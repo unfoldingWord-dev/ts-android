@@ -17,6 +17,7 @@ import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.Logger;
@@ -80,6 +81,7 @@ public class Project implements Model {
     private static final String TAG = "project";
     public static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
     private static final String TRANSLATION_READY_TAG = "READY";
+    private String PROFILE_DIR = ".profile";
 
     /**
      * Creates a new project
@@ -183,12 +185,43 @@ public class Project implements Model {
     }
 
     /**
-     * Checks if the translation in the currently selected target is ready for submission
+     * Checks if the translation in the currently selected target language is ready for submission
      * @return
      */
-    public boolean getTranslationIsReady() {
+    public boolean translationIsReady() {
         File file = new File(getRepositoryPath(), TRANSLATION_READY_TAG);
         return file.exists();
+    }
+
+    /**
+     * Specifies the user profile details to be written in the repository
+     * @param profile
+     */
+    public void setProfile(Profile profile) {
+        File profileDir = new File(getRepositoryPath(), PROFILE_DIR);
+        if(profileDir.exists()) {
+            FileUtilities.deleteRecursive(profileDir);
+        }
+        profileDir.mkdirs();
+
+        File contactFile = new File(profileDir, "contact.json");
+        File avatarFile = new File(profileDir, "avatar.png");
+
+        // write contact details
+        JSONObject contactJson = new JSONObject();
+        try {
+            contactJson.put("name", profile.getName());
+            contactJson.put("email", profile.getEmail());
+            contactJson.put("phone", profile.getPhone());
+
+            FileUtils.write(contactFile, contactJson.toString());
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "failed to write the profile contact details", e);
+        }
+
+        // TODO: write avatar
+
+        // TODO: write signature, certificate
     }
 
     /**
