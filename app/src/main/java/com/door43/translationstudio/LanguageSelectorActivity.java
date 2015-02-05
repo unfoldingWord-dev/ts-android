@@ -22,7 +22,6 @@ import java.util.List;
 
 
 public class LanguageSelectorActivity extends TranslatorBaseActivity {
-    LanguageSelectorActivity me = this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

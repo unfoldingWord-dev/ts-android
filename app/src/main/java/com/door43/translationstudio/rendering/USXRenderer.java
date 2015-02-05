@@ -1,23 +1,11 @@
 package com.door43.translationstudio.rendering;
 
-import android.graphics.Typeface;
-import android.text.Html;
-import android.text.Spannable;
 import android.text.SpannableString;
-import android.text.Spanned;
 import android.text.TextUtils;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.LeadingMarginSpan;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
-import android.view.View;
 
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.spannables.NoteSpan;
-import com.door43.translationstudio.spannables.RelativeLineHeightSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VerseSpan;
-import com.door43.translationstudio.util.MainContext;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,12 +41,47 @@ public class USXRenderer extends RenderingEngine {
      */
     @Override
     public CharSequence render(CharSequence in) {
-        CharSequence out = in;
+        CharSequence out = in.toString().trim();
 
+        out = renderLineBreaks(out);
+        out = renderWhiteSpace(out);
         out = renderParagraph(out);
         out = renderVerse(out);
         out = renderNote(out);
 
+        return out;
+    }
+
+    public CharSequence renderWhiteSpace(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = Pattern.compile("(\\s+)");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), " ");
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+    
+    /**
+     * Strips out new lines and replaces them with a single space
+     * @param in
+     * @return
+     */
+    public CharSequence renderLineBreaks(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = Pattern.compile("(\\s*\\n+\\s*)");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), " ");
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
 
@@ -113,17 +136,14 @@ public class USXRenderer extends RenderingEngine {
      */
     public CharSequence renderParagraph(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Pattern.compile("<para\\s+style=\"p\"\\s*>(((?!</para>).)*)</para>", Pattern.DOTALL);
+        Pattern pattern = Pattern.compile("<para\\s+style=\"p\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
             SpannableString span = new SpannableString(matcher.group(1));
-            // TODO: are we supposed to style paragraphs in a particular way?
-            // leading margin span
-            // line break span
             String lineBreak = "";
-            if(out.length() > 0) {
+            if(matcher.start() > 0) {
                 lineBreak = "\n";
             }
             out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), lineBreak, "    ", span, "\n");

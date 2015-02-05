@@ -135,7 +135,7 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
         holder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
         holder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
-        holder.iconGroup.setVisibility(View.GONE);
+        holder.iconGroup.setVisibility(View.INVISIBLE);
 
         // highlight selected item
         boolean isSelected = false;

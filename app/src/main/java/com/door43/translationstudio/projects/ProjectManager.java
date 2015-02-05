@@ -151,7 +151,7 @@ public class ProjectManager {
         if(displayNotice) {
             mContext.showProgressDialog(R.string.loading_project_chapters);
         }
-        if(p == null) return;
+        if(p == null || p.getSelectedSourceLanguage() == null) return;
 
         String source = mDataStore.fetchSource(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
         p.flush();
@@ -660,7 +660,8 @@ public class ProjectManager {
 
                     // load source languages
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), downloadLanguages);
-                    loadSourceLanguageCatalog(p, sourceLanguageCatalog, downloadLanguages);
+                    // TRICKY: pull the project from the cache so we have a history of cached languages and resources when checking if a download is needed
+                    loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages);
                 } else {
                     Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
                 }
@@ -679,7 +680,7 @@ public class ProjectManager {
      * @param checkServer indicates that the latest resources should be downloaded from the server
      */
     private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLanguageCatalog, boolean checkServer) {
-        List<SourceLanguage> importedLanguages = new ArrayList<SourceLanguage>();
+        List<SourceLanguage> importedLanguages = new ArrayList<>();
         if(sourceLanguageCatalog == null) {
             return importedLanguages;
         }
@@ -738,7 +739,7 @@ public class ProjectManager {
                     // determine if resources should be re-downloaded
                     boolean downloadResources = false;
                     if(checkServer) {
-                        SourceLanguage cachedLanguage = getSourceLanguage(l.getId());
+                        SourceLanguage cachedLanguage = p.getSourceLanguage(l.getId());
                         if(cachedLanguage == null) {
                             downloadResources = true;
                         } else if(l.getDateModified() > cachedLanguage.getDateModified()) {
