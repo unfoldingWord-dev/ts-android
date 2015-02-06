@@ -1,7 +1,10 @@
 package com.door43.translationstudio.rendering;
 
+import android.graphics.Typeface;
+import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.StyleSpan;
 
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
@@ -46,6 +49,7 @@ public class USXRenderer extends RenderingEngine {
         out = renderLineBreaks(out);
         out = renderWhiteSpace(out);
         out = renderParagraph(out);
+        out = renderPoeticLine(out);
         out = renderVerse(out);
         out = renderNote(out);
 
@@ -147,6 +151,55 @@ public class USXRenderer extends RenderingEngine {
                 lineBreak = "\n";
             }
             out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), lineBreak, "    ", span, "\n");
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tgs
+     * @param in
+     * @return
+     */
+    public CharSequence renderPoeticLine(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = Pattern.compile("<para\\s+style=\"q(\\d+)\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            int level = Integer.parseInt(matcher.group(1));
+            SpannableString span = new SpannableString(matcher.group(2));
+            span.setSpan(new StyleSpan(Typeface.ITALIC), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            String padding = "";
+            for(int i = 0; i < level; i ++) {
+                padding += "    ";
+            }
+
+            // don't stack new lines
+            String leadingLineBreak = "";
+            String trailingLineBreak = "";
+
+            // leading
+            if(in.subSequence(0, matcher.start()) != null) {
+                String previous = in.subSequence(0, matcher.start()).toString().replace(" ", "");
+                int lastLineBreak = previous.lastIndexOf("\n");
+                if (lastLineBreak < previous.length()) {
+                    leadingLineBreak = "\n";
+                }
+            }
+
+            // trailing
+            if(in.subSequence(matcher.end(), in.length()) != null) {
+                String next = in.subSequence(matcher.end(), in.length()).toString().replace(" ", "");
+                int nextLineBreak = next.indexOf("\n");
+                if (nextLineBreak > 0) {
+                    trailingLineBreak = "\n";
+                }
+            }
+
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), leadingLineBreak, padding, span, trailingLineBreak);
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));

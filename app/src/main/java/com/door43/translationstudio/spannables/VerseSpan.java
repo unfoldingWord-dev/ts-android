@@ -13,19 +13,30 @@ import java.util.regex.Pattern;
 
 /**
  * Created by joel on 1/27/2015.
+ * TODO: we need to provide support for rendering with a range of verses as well as provide accessor methods to the rangeed verse numbers
  */
 public class VerseSpan extends Span {
-    public static final String PATTERN = "<verse\\s+number=\"(\\d+)\"\\s+style=\"v\"\\s*/>";
-    private int mVerseNumber;
+    public static final String PATTERN = "<verse\\s+number=\"(\\d+(-\\d+)?)\"\\s+style=\"v\"\\s*/>";
+    private int mStartVerseNumber;
+    private int mEndVerseNumber;
+    private int mVerseNumber = -1;
     private SpannableStringBuilder mSpannable;
 
     /**
-     * Creates a new verse span
+     * Creates a new verse span of either a single verse or range of verses
      * @param verse
      */
     public VerseSpan(String verse) {
-        super(Integer.parseInt(verse)+"", "<verse number=\""+Integer.parseInt(verse)+"\" style=\"v\" />");
-        mVerseNumber = Integer.parseInt(verse);
+        super(verse, "<verse number=\""+verse+"\" style=\"v\" />");
+        String[] verses = verse.split("-");
+        if(verses.length == 2) {
+            // range of verses
+            mStartVerseNumber = Integer.parseInt(verses[0]);
+            mEndVerseNumber = Integer.parseInt(verses[1]);
+        } else {
+            // single verse
+            mVerseNumber = Integer.parseInt(verse);
+        }
     }
 
     /**
@@ -35,6 +46,17 @@ public class VerseSpan extends Span {
     public VerseSpan(int verse) {
         super(verse+"", "<verse number=\""+verse+"\" style=\"v\" />");
         mVerseNumber = verse;
+    }
+
+    /**
+     * Creates a verse span over a range of verses
+     * @param startVerse
+     * @param endVerse
+     */
+    public VerseSpan(int startVerse, int endVerse) {
+        super(startVerse+"-"+endVerse, "<verse number=\""+startVerse+"-"+endVerse+"\" style=\"v\" />");
+        mStartVerseNumber = startVerse;
+        mEndVerseNumber = endVerse;
     }
 
     /**
