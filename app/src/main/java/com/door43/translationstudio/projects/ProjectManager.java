@@ -194,7 +194,7 @@ public class ProjectManager {
     }
 
     /**
-     * Removes a project from the panager
+     * Removes a project from the manager
      * @param p the project to be removed
      */
     private void deleteProject(Project p) {
@@ -222,7 +222,7 @@ public class ProjectManager {
      * Adds a project to the list of projects visible in the projects list.
      * @param p
      */
-    public void addListableProject(Project p) {
+    private void addListableProject(Project p) {
         if(!mListableProjectMap.containsKey(p.getId())) {
             mListableProjectMap.put(p.getId(), p);
             mListableProjects.add(p);
@@ -235,7 +235,7 @@ public class ProjectManager {
      * select a real project at which point normal application flow will continue.
      * @param p
      */
-    public void addListableProject(PseudoProject p) {
+    private void addListableProject(PseudoProject p) {
         if(!mListableProjectMap.containsKey("m-"+p.getId())) {
             mListableProjectMap.put("m-"+p.getId(), p);
             mListableProjects.add(p);
@@ -246,7 +246,7 @@ public class ProjectManager {
      * Removes a project from the list of projects visible in the projects list
      * @param p
      */
-    public void deleteListableProject(Project p) {
+    private void deleteListableProject(Project p) {
         if(mListableProjectMap.containsKey(p.getId())) {
             mListableProjectMap.remove(p.getId());
             mListableProjects.remove(p);
@@ -257,7 +257,7 @@ public class ProjectManager {
      * Removes a pseudo project from the list of projects visible in the projects list
      * @param p
      */
-    public void deleteListableProject(PseudoProject p) {
+    private void deleteListableProject(PseudoProject p) {
         if(mListableProjectMap.containsKey("m-"+p.getId())) {
             mListableProjectMap.remove("m-"+p.getId());
             mListableProjects.remove(p);
@@ -694,6 +694,7 @@ public class ProjectManager {
                     if(languages.size() == 0) {
                         Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
                         importedProjects.remove(p);
+                        deleteProject(p);
                         if(rootPseudoProject == null) {
                             deleteListableProject(p);
                         } else {

@@ -22,11 +22,12 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 public class FramesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private FramesTabFragment me = this;
     private ModelItemAdapter mModelItemAdapter;
+    private ListView mListView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pane_left_frames, container, false);
-        ListView listView = (ListView)view.findViewById(R.id.frames_list_view);
+        mListView = (ListView)view.findViewById(R.id.frames_list_view);
 
         // create adapter
         if(mModelItemAdapter == null) {
@@ -38,24 +39,24 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
             }
         }
 
-        listView.setAdapter(mModelItemAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mListView.setAdapter(mModelItemAdapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // save changes to the current frame first
-                ((MainActivity)me.getActivity()).save();
+                ((MainActivity) me.getActivity()).save();
                 // select the new frame
                 app().getSharedProjectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
-                ((MainActivity)me.getActivity()).reloadCenterPane();
+                ((MainActivity) me.getActivity()).reloadCenterPane();
                 // we're ready to begin translating. close the left pane
-                ((MainActivity)me.getActivity()).closeDrawers();
+                ((MainActivity) me.getActivity()).closeDrawers();
                 // let the adapter redraw itself so the selected frame is corectly highlighted
                 NotifyAdapterDataSetChanged();
 
                 // Display chapter translation dialog if translating a new chapter
-                if(!app().getSharedProjectManager().getSelectedProject().getSelectedChapter().translationInProgress()) {
+                if (!app().getSharedProjectManager().getSelectedProject().getSelectedChapter().translationInProgress()) {
                     // only display the chapter settings if the title and reference are not null
-                    if(app().getSharedProjectManager().getSelectedProject().getSelectedChapter().hasChapterSettings()) {
+                    if (app().getSharedProjectManager().getSelectedProject().getSelectedChapter().hasChapterSettings()) {
                         ((MainActivity) me.getActivity()).showChapterSettingsMenu();
                     }
                 }
@@ -70,6 +71,9 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(mModelItemAdapter != null && p != null && p.getSelectedChapter() != null) {
             mModelItemAdapter.changeDataSet(p.getSelectedChapter().getFrames());
+        }
+        if(mListView != null) {
+            mListView.setSelectionAfterHeaderView();
         }
     }
 }
