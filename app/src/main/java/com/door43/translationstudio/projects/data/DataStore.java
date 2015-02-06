@@ -269,15 +269,8 @@ public class DataStore {
             if(asset != null) {
                 return FileUtilities.getStringFromFile(mContext.getAssetAsFile(path));
             } else {
-                Logger.e(this.getClass().getName(), "the packaged asset does not exist at "+path);
                 return null;
             }
-//            InputStream is = mContext.getAssets().open(path);
-//            int size = is.available();
-//            byte[] buffer = new byte[size];
-//            is.read(buffer);
-//            is.close();
-//            return new String(buffer, "UTF-8");
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "failed to load the packaged asset "+path, e);
             return null;

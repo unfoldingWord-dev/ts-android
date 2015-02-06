@@ -13,6 +13,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
  */
 public class LeftPaneFragment extends TranslatorBaseFragment {
     private LeftPaneSlidingTabsFragment mTabsPager = new LeftPaneSlidingTabsFragment();
+    private int mLayoutWidth = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -22,6 +23,10 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
         // set up tabs
         getFragmentManager().beginTransaction().replace(R.id.left_pane_tabs, mTabsPager).addToBackStack(null).commit();
         mTabsPager.selectTab(0);
+
+        if(mLayoutWidth != 0) {
+            rootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.FILL_PARENT));
+        }
 
         return rootView;
     }
@@ -61,5 +66,13 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
      */
     public void reloadFramesTab() {
         mTabsPager.reloadFramesTab();
+    }
+
+    /**
+     * Specifies the width of the layout
+     * @param width
+     */
+    public void setLayoutWidth(int width) {
+        mLayoutWidth = width;
     }
 }

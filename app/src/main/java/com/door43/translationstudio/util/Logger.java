@@ -3,6 +3,8 @@ package com.door43.translationstudio.util;
 import android.media.MediaScannerConnection;
 import android.util.Log;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,6 +25,12 @@ import java.util.Locale;
  */
 public class Logger
 {
+    private enum LogType {
+        Error,
+        Warning,
+        Info
+    }
+
     /**
      * Sends an error message to LogCat and to a log file.
      * @param logMessageTag A tag identifying a group of log messages. Should be a constant in the
@@ -33,7 +41,7 @@ public class Logger
     {
         try {
             int logResult = Log.e(logMessageTag, logMessage);
-            if (logResult > 0) logToFile(logMessageTag, logMessage);
+            if (logResult > 0) logToFile(LogType.Error, logMessageTag, logMessage);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -49,7 +57,7 @@ public class Logger
     {
         try {
             int logResult = Log.w(logMessageTag, logMessage);
-            if (logResult > 0) logToFile(logMessageTag, logMessage);
+            if (logResult > 0) logToFile(LogType.Warning, logMessageTag, logMessage);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -65,7 +73,7 @@ public class Logger
     {
         try {
             int logResult = Log.i(logMessageTag, logMessage);
-            if (logResult > 0) logToFile(logMessageTag, logMessage);
+            if (logResult > 0) logToFile(LogType.Info, logMessageTag, logMessage);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -83,7 +91,7 @@ public class Logger
         try {
             int logResult = Log.e(logMessageTag, logMessage, throwableException);
             if (logResult > 0)
-                logToFile(logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
+                logToFile(LogType.Error, logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -101,7 +109,7 @@ public class Logger
         try {
             int logResult = Log.w(logMessageTag, logMessage, throwableException);
             if (logResult > 0)
-                logToFile(logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
+                logToFile(LogType.Warning, logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -122,7 +130,7 @@ public class Logger
      * @param logMessageTag A tag identifying a group of log messages.
      * @param logMessage The message to add to the log.
      */
-    private static void logToFile(String logMessageTag, String logMessage)
+    private static void logToFile(LogType type, String logMessageTag, String logMessage)
     {
         try
         {
@@ -135,10 +143,24 @@ public class Logger
                 logFile.createNewFile();
             }
             // Write the message to the log with a timestamp
-            RandomAccessFile writer = new RandomAccessFile(logFile, "rw");
-            writer.seek(0);
-            writer.write(String.format("%1s [%2s]:%3s\r\n", getDateTimeStamp(), logMessageTag, logMessage).getBytes());
-            writer.close();
+            String flag = "";
+            switch(type) {
+                case Error:
+                    flag = "E";
+                    break;
+                case Warning:
+                    flag = "W";
+                    break;
+                case Info:
+                default:
+                    flag = "I";
+            }
+
+            // append log message
+            String log = FileUtils.readFileToString(logFile);
+            log = String.format("%1s %2s/%3s: %4s\r\n%5s", getDateTimeStamp(), flag, logMessageTag, logMessage, log);
+            logFile.delete();
+            FileUtils.writeStringToFile(logFile, log);
 
             // truncate the log if it gets too big. we cut it in half so we don't end up having to do this all the time
             // TODO: this should be a user setting.

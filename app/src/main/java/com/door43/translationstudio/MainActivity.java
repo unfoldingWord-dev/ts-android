@@ -467,8 +467,9 @@ public class MainActivity extends TranslatorBaseActivity {
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
-            // make the right pane fill half the screen when in landscape mode.
+            // make both panes fill half the screen when in landscape mode.
             mRightPane.setLayoutWidth(size.x / 2);
+            mLeftPane.setLayoutWidth(size.x / 2);
         }
         getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
         getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
@@ -1353,7 +1354,8 @@ public class MainActivity extends TranslatorBaseActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        Boolean projectEnabled = app().getSharedProjectManager().getSelectedProject() != null;
+        Project p = app().getSharedProjectManager().getSelectedProject();
+        Boolean projectEnabled = p != null;
         if(mKeyboardIsOpen) {
             // translation menu
             boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
@@ -1361,17 +1363,25 @@ public class MainActivity extends TranslatorBaseActivity {
         } else {
             // main menu
             boolean hasChapterSettings = false;
+            boolean hasResources = false;
             if(projectEnabled) {
-                Chapter c = app().getSharedProjectManager().getSelectedProject().getSelectedChapter();
+                Chapter c = p.getSelectedChapter();
                 hasChapterSettings = c != null && c.hasChapterSettings();
+                hasResources = p.hasTerms() || p.hasNotes();
             }
 
             menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
             menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
             menu.findItem(R.id.action_sync).setVisible(projectEnabled);
-            menu.findItem(R.id.action_resources).setVisible(projectEnabled);
+            menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
             Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
             menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
+
+            if(!hasResources) {
+                mRootView.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
+            } else {
+                mRootView.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.END);
+            }
         }
 
         return true;

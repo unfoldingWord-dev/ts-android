@@ -68,6 +68,7 @@ public class MainApplication extends Application {
     private Term mSelectedKeyTerm;
     private boolean mShowImportantTerms;
     public static final String STACKTRACE_DIR = "stacktrace";
+    private boolean mClosingProgressDialog = false;
 
     public void onCreate() {
 
@@ -368,7 +369,7 @@ public class MainApplication extends Application {
         getCurrentActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(mMainActivity != null) {
+                if(mMainActivity != null && !mClosingProgressDialog) {
                     if (mProgressDialog == null || mCurrentDialogActivity != mMainActivity) { // was using: getCurrentActivity()
                         closeProgressDialog();
                         mProgressDialog = new ProgressDialog(mMainActivity); // was using: getCurrentActivity()
@@ -377,7 +378,10 @@ public class MainApplication extends Application {
                     if (!mProgressDialog.isShowing()) {
                         mProgressDialog.show();
                     }
+                } else if(mProgressDialog != null) {
+                    mProgressDialog.dismiss();
                 }
+                mClosingProgressDialog = false;
             }
         });
     }
@@ -391,16 +395,33 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Closes the current progress dialog
+     * Closes the current progress dialog.
+     * You probably want to make sure not to call this twice unnessesarily
      */
     public void closeProgressDialog() {
-        if (mProgressDialog != null) {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
             try {
                 mProgressDialog.dismiss();
             } catch (Exception e) {
                 showToastMessage(e.getMessage());
-//                Log.d("error", e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Closes the progress dialog
+     * @param agressive if set to true the progress dialog will be closed the next time it opens if it is not currently shown
+     */
+    public void closeProgressDialog(boolean agressive) {
+        if (mProgressDialog != null && mProgressDialog.isShowing()) {
+            mClosingProgressDialog = false;
+            try {
+                mProgressDialog.dismiss();
+            } catch (Exception e) {
+                showToastMessage(e.getMessage());
+            }
+        } else if(mProgressDialog != null) {
+            mClosingProgressDialog = true;
         }
     }
 

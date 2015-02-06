@@ -1,30 +1,23 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
-import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
-import com.door43.translationstudio.util.Zip;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import javax.xml.transform.Source;
 
 /**
  * The project manager handles all of the projects within the app.
@@ -111,6 +104,7 @@ public class ProjectManager {
      * Downloads any new projects from the server
      */
     public void downloadNewProjects() {
+        Logger.i(this.getClass().getName(), "downloading new projects");
         String catalog = mDataStore.fetchProjectCatalog(true);
         loadProjectsCatalog(catalog, true);
     }
@@ -120,6 +114,7 @@ public class ProjectManager {
      * @param p
      */
     public void downloadProjectUpdates(Project p) {
+        Logger.i(this.getClass().getName(), "downloading updates for project "+p.getId());
         // download the source language catalog
         String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
         List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog, true);
@@ -179,7 +174,7 @@ public class ProjectManager {
         }
         loadNotes(notes, p);
         if(displayNotice) {
-            mContext.closeProgressDialog();
+            mContext.closeProgressDialog(true);
         }
     }
 
@@ -195,6 +190,17 @@ public class ProjectManager {
         } else {
             getProject(p.getId()).setDateModified(p.getDateModified());
             return false;
+        }
+    }
+
+    /**
+     * Removes a project from the panager
+     * @param p the project to be removed
+     */
+    private void deleteProject(Project p) {
+        if(mProjectMap.containsKey(p.getId())) {
+            mProjectMap.remove(p.getId());
+            mProjects.remove(p);
         }
     }
 
@@ -224,7 +230,7 @@ public class ProjectManager {
     }
 
     /**
-     * Adds a meta project to the list of projects visible in the projects list.
+     * Adds a pseudo project to the list of projects visible in the projects list.
      * When clicked on users will navigate through the meta projects until they
      * select a real project at which point normal application flow will continue.
      * @param p
@@ -233,6 +239,28 @@ public class ProjectManager {
         if(!mListableProjectMap.containsKey("m-"+p.getId())) {
             mListableProjectMap.put("m-"+p.getId(), p);
             mListableProjects.add(p);
+        }
+    }
+
+    /**
+     * Removes a project from the list of projects visible in the projects list
+     * @param p
+     */
+    public void deleteListableProject(Project p) {
+        if(mListableProjectMap.containsKey(p.getId())) {
+            mListableProjectMap.remove(p.getId());
+            mListableProjects.remove(p);
+        }
+    }
+
+    /**
+     * Removes a pseudo project from the list of projects visible in the projects list
+     * @param p
+     */
+    public void deleteListableProject(PseudoProject p) {
+        if(mListableProjectMap.containsKey("m-"+p.getId())) {
+            mListableProjectMap.remove("m-"+p.getId());
+            mListableProjects.remove(p);
         }
     }
 
@@ -661,7 +689,17 @@ public class ProjectManager {
                     // load source languages
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), downloadLanguages);
                     // TRICKY: pull the project from the cache so we have a history of cached languages and resources when checking if a download is needed
-                    loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages);
+                    List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages);
+                    // validate project has languages
+                    if(languages.size() == 0) {
+                        Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
+                        importedProjects.remove(p);
+                        if(rootPseudoProject == null) {
+                            deleteListableProject(p);
+                        } else {
+                            deleteListableProject(rootPseudoProject);
+                        }
+                    }
                 } else {
                     Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
                 }
@@ -866,11 +904,11 @@ public class ProjectManager {
     private void loadNotes(String jsonString, Project p) {
         // TODO: cache the notes by frame and add accessors to the frame object to retreive the notes. Then we can just load one set of notes at a time instead of loading everything into memory
         if(p == null) return;
+        int numNotes = 0;
 
         // load source
         JSONArray jsonNotes;
         if(jsonString == null) {
-            Logger.w(this.getClass().getName(), "The notes were not found for project " + p.getId());
             return;
         }
         try {
@@ -903,6 +941,7 @@ public class ProjectManager {
                     // add translation notes to the frame
                     if(p.getChapter(chapterId) != null && p.getChapter(chapterId).getFrame(frameId) != null) {
                         p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(notes));
+                        numNotes ++;
                     } else {
                         Logger.w(this.getClass().getName(), "no chapter or frame exists for that note "+p.getId()+":"+chapterId+":"+frameId);
                     }
@@ -913,6 +952,11 @@ public class ProjectManager {
                 Logger.e(this.getClass().getName(), "failed to load notes", e);
                 continue;
             }
+        }
+
+        // set a flag that the project has notes
+        if(numNotes > 0) {
+            p.setHasNotes(true);
         }
     }
 
@@ -993,7 +1037,7 @@ public class ProjectManager {
         // load source
         JSONArray jsonChapters;
         if(jsonString == null) {
-            Logger.w(this.getClass().getName(), "The project source was not found");
+            Logger.e(this.getClass().getName(), "The project source was not found");
             return;
         }
         try {

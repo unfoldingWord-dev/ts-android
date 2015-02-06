@@ -1,49 +1,30 @@
 package com.door43.translationstudio.projects;
 
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.AddTask;
-import com.door43.translationstudio.projects.imports.ChapterImport;
-import com.door43.translationstudio.projects.imports.FileImport;
-import com.door43.translationstudio.projects.imports.FrameImport;
-import com.door43.translationstudio.projects.imports.ImportRequestInterface;
-import com.door43.translationstudio.projects.imports.ProjectImport;
-import com.door43.translationstudio.projects.imports.TranslationImport;
-import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
-import com.door43.translationstudio.util.Security;
-import com.door43.translationstudio.util.Zip;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.AddCommand;
-import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Projects encapsulate the source text for a specific translation effort regardless of language.
@@ -82,6 +63,7 @@ public class Project implements Model {
     public static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
     private static final String TRANSLATION_READY_TAG = "READY";
     private String PROFILE_DIR = ".profile";
+    private boolean mHasNotes = false;
 
     /**
      * Creates a new project
@@ -947,6 +929,30 @@ public class Project implements Model {
      */
     public void setDateModified(int dateModified) {
         mDateModified = dateModified;
+    }
+
+    /**
+     * Specifies whether or not the project has translation notes available for at least some of the frames
+     * @param hasNotes
+     */
+    public void setHasNotes(boolean hasNotes) {
+        mHasNotes = hasNotes;
+    }
+
+    /**
+     * Checks if this project contains translation notes for at least some of it's frames
+     * @return
+     */
+    public boolean hasNotes() {
+        return mHasNotes;
+    }
+
+    /**
+     * Checks if this project contains any key terms
+     * @return
+     */
+    public boolean hasTerms() {
+        return numTerms() > 0;
     }
 
     public interface OnCommitComplete {
