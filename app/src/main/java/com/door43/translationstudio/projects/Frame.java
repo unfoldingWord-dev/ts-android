@@ -1,8 +1,5 @@
 package com.door43.translationstudio.projects;
 
-import android.text.TextUtils;
-
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingEngine;
@@ -235,16 +232,22 @@ public class Frame implements Model {
                 VerseSpan verse = null;
                 while(matcher.find()) {
                     verse = new VerseSpan(matcher.group(1));
+
                     if(numVerses == 0) {
                         // first verse
-                        startVerse = verse.getVerseNumber();
+                        startVerse = verse.getStartVerseNumber();
+                        endVerse = verse.getEndVerseNumber();
                     }
                     numVerses ++;
                 }
                 if(verse != null) {
-                    endVerse = verse.getVerseNumber();
+                    if(verse.getEndVerseNumber() > 0) {
+                        endVerse = verse.getEndVerseNumber();
+                    } else {
+                        endVerse = verse.getStartVerseNumber();
+                    }
                 }
-                if(startVerse == 0 || endVerse == 0) {
+                if(startVerse <= 0 || endVerse <= 0) {
                     mCachedTitle = mId;
                 } else if(startVerse == endVerse) {
                     mCachedTitle = startVerse + "";

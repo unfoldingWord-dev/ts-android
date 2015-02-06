@@ -17,9 +17,9 @@ import java.util.regex.Pattern;
  */
 public class VerseSpan extends Span {
     public static final String PATTERN = "<verse\\s+number=\"(\\d+(-\\d+)?)\"\\s+style=\"v\"\\s*/>";
-    private int mStartVerseNumber;
-    private int mEndVerseNumber;
-    private int mVerseNumber = -1;
+    private int mStartVerseNumber = 0;
+    private int mEndVerseNumber = 0;
+//    private int mVerseNumber = -1;
     private SpannableStringBuilder mSpannable;
 
     /**
@@ -35,7 +35,7 @@ public class VerseSpan extends Span {
             mEndVerseNumber = Integer.parseInt(verses[1]);
         } else {
             // single verse
-            mVerseNumber = Integer.parseInt(verse);
+            mStartVerseNumber = Integer.parseInt(verse);
         }
     }
 
@@ -45,7 +45,7 @@ public class VerseSpan extends Span {
      */
     public VerseSpan(int verse) {
         super(verse+"", "<verse number=\""+verse+"\" style=\"v\" />");
-        mVerseNumber = verse;
+        mStartVerseNumber = verse;
     }
 
     /**
@@ -60,11 +60,19 @@ public class VerseSpan extends Span {
     }
 
     /**
-     * Returns the verse number
+     * Returns the start verse number
      * @return
      */
-    public int getVerseNumber() {
-        return mVerseNumber;
+    public int getStartVerseNumber() {
+        return mStartVerseNumber;
+    }
+
+    /**
+     * Returns the end verse number
+     * @return
+     */
+    public int getEndVerseNumber() {
+        return mEndVerseNumber;
     }
 
     /**

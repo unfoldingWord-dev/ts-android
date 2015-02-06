@@ -64,7 +64,6 @@ import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
-import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
@@ -1591,7 +1590,7 @@ public class MainActivity extends TranslatorBaseActivity {
                     }
                 }
                 if(previousVerse != null) {
-                    mSuggestedVerse = previousVerse.getVerseNumber() + 1;
+                    mSuggestedVerse = previousVerse.getStartVerseNumber() + 1;
                 }
             }
 
@@ -1741,7 +1740,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
         VerseMarkerDialog newFragment = new VerseMarkerDialog();
         Bundle args = new Bundle();
-        args.putInt("verse", verse.getVerseNumber());
+        args.putInt("verse", verse.getStartVerseNumber());
         newFragment.setArguments(args);
         newFragment.setOkListener(new VerseMarkerDialog.OnClickListener() {
             @Override
@@ -1879,7 +1878,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 if(previousVerse != null) {
                     VerseSpan verse = VerseSpan.parseVerse(previousVerse.toString());
                     if(verse != null) {
-                        nextVerseNumber = verse.getVerseNumber() + 1;
+                        nextVerseNumber = verse.getStartVerseNumber() + 1;
                     }
                 }
 
