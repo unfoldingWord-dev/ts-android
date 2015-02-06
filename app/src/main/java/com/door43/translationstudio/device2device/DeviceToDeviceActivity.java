@@ -763,7 +763,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         showProgress(getResources().getString(R.string.downloading));
                         try {
                             DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
-                            File file = new File(getExternalCacheDir() + "transferred/" + name);
+                            File file = new File(getExternalCacheDir() + "/transferred/" + name);
                             file.getParentFile().mkdirs();
                             file.createNewFile();
                             OutputStream out = new FileOutputStream(file.getAbsolutePath());
@@ -821,6 +821,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     ProjectSharing.cleanImport(importStatuses);
                                     app().showToastMessage(R.string.success);
                                 }
+                                // TODO: we need to delete the download once we are done with it.
                                 hideProgress();
                             } else {
                                 // failed to import translation

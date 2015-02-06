@@ -11,6 +11,7 @@ import java.io.File;
 public class ProjectImport extends ImportRequest {
     public final String projectId;
     public final File importDirectory;
+    private boolean mMissingSource = false;
 
 
     /**
@@ -38,11 +39,28 @@ public class ProjectImport extends ImportRequest {
 
     @Override
     public String getTitle() {
+        // TODO: this will throw a null pointer exception if we don't have the source
         Project p = MainContext.getContext().getSharedProjectManager().getProject(projectId);
         if(p != null) {
             return p.getTitle();
         } else {
             return p.getId();
         }
+    }
+
+    /**
+     * Sets whether or not the project source is missing
+     * @param missingSource
+     */
+    public void setMissingSource(boolean missingSource) {
+        mMissingSource = missingSource;
+    }
+
+    /**
+     * Checks if the source is missing
+     * @return
+     */
+    public boolean isSourceMissing() {
+        return mMissingSource;
     }
 }

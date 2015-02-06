@@ -153,7 +153,7 @@ public class ProjectSharing {
                 Zip.unzip(archive, extractedDir);
             } catch (IOException e) {
                 FileUtilities.deleteRecursive(extractedDir);
-                Logger.e(Project.class.getName(), "failed to extract the project archive", e);
+                Logger.e(ProjectSharing.class.getName(), "failed to extract the project archive", e);
                 return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
             }
 
@@ -183,9 +183,9 @@ public class ProjectSharing {
                         }
                     }
                 } catch (JSONException e) {
-                    Logger.e(Project.class.getName(), "failed to parse the manifest", e);
+                    Logger.e(ProjectSharing.class.getName(), "failed to parse the manifest", e);
                 } catch (IOException e) {
-                    Logger.e(Project.class.getName(), "failed to read the manifest file", e);
+                    Logger.e(ProjectSharing.class.getName(), "failed to read the manifest file", e);
                 }
             }
         }
@@ -224,7 +224,7 @@ public class ProjectSharing {
                 }
             } catch (IOException e) {
                 FileUtilities.deleteRecursive(extractedDirectory);
-                Logger.e(Project.class.getName(), "failed to extract the legacy project archive", e);
+                Logger.e(ProjectSharing.class.getName(), "failed to extract the legacy project archive", e);
                 return false;
             }
 
@@ -312,14 +312,10 @@ public class ProjectSharing {
 
         // locate existing project
         final Project p = MainContext.getContext().getSharedProjectManager().getProject(projectImport.projectId);
-//        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
         if(p == null) {
-            // TODO: eventually we'd like to support importing the project source as well
-            Logger.i(Project.class.getName(), "Missing project source");
+            projectImport.setMissingSource(true);
+            Logger.i(ProjectSharing.class.getName(), "Missing project source for import");
         }
-        // change the target language so we can easily reference the local translation
-//            Language originalTargetLanguage = p.getSelectedTargetLanguage();
-//            p.setSelectedTargetLanguage(languageId);
 
         // look through items to import
         if(Project.isTranslating(projectImport.projectId, languageId)) {
@@ -337,8 +333,6 @@ public class ProjectSharing {
                 }
             });
             for(String chapterId:chapterIds) {
-//                    Chapter c = p.getChapter(chapterId);
-//                    if(c != null) {
                 ChapterImport chapterImport = new ChapterImport(chapterId, String.format(MainContext.getContext().getResources().getString(R.string.label_chapter_title_detailed), chapterId));
                 if(Chapter.isTranslating(projectImport.projectId, languageId, chapterId)) {
                     chapterImport.setWarning("Importing will override our existing translation");
@@ -379,7 +373,7 @@ public class ProjectSharing {
                 for(String frameFileName:frameFileNames) {
                     String[] pieces = frameFileName.split("\\.");
                     if(pieces.length != 2) {
-                        Logger.w(Project.class.getName(), "Unexpected file in frame import "+frameFileName);
+                        Logger.w(ProjectSharing.class.getName(), "Unexpected file in frame import "+frameFileName);
                         continue;
                     }
                     String frameId = pieces[0];
@@ -397,27 +391,12 @@ public class ProjectSharing {
                 if(hadFrameWarnings) {
                     chapterImport.setWarning("Importing will override our existing translation");
                 }
-//                    } else {
-//                        // the import source does not match the source on this device.
-//                        ChapterImport chapterRequest = new ChapterImport(chapterId, chapterId + " - unknown");
-//                        chapterRequest.setError("Missing source");
-//                        translationImport.addChapterImport(chapterRequest);
-//                        Logger.e(Project.class.getName(), "Missing source for chapter "+chapterId+". Cannot import into project "+projectImport.projectId+" for language "+languageId);
-//                        hadChapterWarnings = true;
-//                    }
             }
 
             if(hadChapterWarnings) {
                 translationImport.setWarning("Importing will override our existing translation");
             }
         }
-        // restore original target language
-//            p.setSelectedTargetLanguage(originalTargetLanguage.getId());
-//        } else {
-//            // new project source
-//            // TODO: eventually we should check if the import includes the source text as well. Then this should just be a warning. Letting the user know that the source will be imported as well.
-//            translationImport.setError("Missing project source");
-//        }
         return hadTranslationWarnings;
     }
 
@@ -429,7 +408,6 @@ public class ProjectSharing {
     public static boolean importProject(ProjectImport request) {
         boolean hadErrors = false;
         if(request.getError() == null) {
-//            if (p != null) {
             ArrayList<ImportRequestInterface> translationRequests = request.getChildImportRequests().getAll();
             // translations
             for (TranslationImport ti : translationRequests.toArray(new TranslationImport[translationRequests.size()])) {
@@ -454,7 +432,7 @@ public class ProjectSharing {
                                             }
                                             destFile.getParentFile().mkdirs();
                                             if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
-                                                Logger.e(Project.class.getName(), "Failed to import frame");
+                                                Logger.e(ProjectSharing.class.getName(), "Failed to import frame");
                                                 hadErrors = true;
                                             }
                                         }
@@ -471,7 +449,7 @@ public class ProjectSharing {
                                                 }
                                                 destFile.getParentFile().mkdirs();
                                                 if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
-                                                    Logger.e(Project.class.getName(), "Failed to import chapter title");
+                                                    Logger.e(ProjectSharing.class.getName(), "Failed to import chapter title");
                                                     hadErrors = true;
                                                 }
                                             } else if(fi.getId().equals("reference")) {
@@ -483,15 +461,15 @@ public class ProjectSharing {
                                                 }
                                                 destFile.getParentFile().mkdirs();
                                                 if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
-                                                    Logger.e(Project.class.getName(), "Failed to import chapter reference");
+                                                    Logger.e(ProjectSharing.class.getName(), "Failed to import chapter reference");
                                                     hadErrors = true;
                                                 }
                                             } else {
-                                                Logger.w(Project.class.getName(), "Unknown file import request. Expecting title or reference but found "+fi.getId());
+                                                Logger.w(ProjectSharing.class.getName(), "Unknown file import request. Expecting title or reference but found "+fi.getId());
                                             }
                                         }
                                     } else {
-                                        Logger.w(Project.class.getName(), "Unknown import request. Expecting FrameImport or FileImport but found "+r.getClass().getName());
+                                        Logger.w(ProjectSharing.class.getName(), "Unknown import request. Expecting FrameImport or FileImport but found "+r.getClass().getName());
                                     }
                                 }
                             }
@@ -503,7 +481,7 @@ public class ProjectSharing {
                             try {
                                 FileUtils.moveDirectory(ti.translationDirectory, repoDir);
                             } catch (IOException e) {
-                                Logger.e(Project.class.getName(), "failed to import the project directory", e);
+                                Logger.e(ProjectSharing.class.getName(), "failed to import the project directory", e);
                                 hadErrors = true;
                                 continue;
                             }
@@ -514,10 +492,6 @@ public class ProjectSharing {
                     l.touch();
                 }
             }
-//            } else {
-//                Logger.i(Project.class.getName(), "Importing projects with missing source is not currently supported");
-//                // TODO: create a new project and add it to the project manager. This will require the existance of the project source in the archive.
-//            }
 
             // commit changes if this was an existing project
             Project p = MainContext.getContext().getSharedProjectManager().getProject(request.projectId);
