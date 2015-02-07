@@ -34,6 +34,7 @@ import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.RSAEncryption;
@@ -863,7 +864,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         } else if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
             String library = data[1];
-            final ArrayList<Model> availableProjects = new ArrayList<Model>();
+            final ListMap<Model> listableProjects = new ListMap<>();
 
             JSONArray json;
             try {
@@ -877,6 +878,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 });
                 return;
             }
+
+            ListMap<PseudoProject> pseudoProjects = new ListMap<>();
 
             // load the data
             for(int i=0; i<json.length(); i++) {
@@ -905,21 +908,35 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             p.setDefaultDescription(projectInfoJson.getString("description"));
                         }
 
-                        // meta (sudo projects)
+                        // load meta
                         // TRICKY: we are actually getting the meta names instead of the id's since we only receive one translation of the project info
+                        PseudoProject rootPseudoProject = null;
                         if (projectInfoJson.has("meta")) {
-                            JSONArray metaJson = projectInfoJson.getJSONArray("meta");
-                            PseudoProject currentPseudoProject = null;
-                            for(int j=0; j<metaJson.length(); j++) {
-                                // create sudo project out of the meta name
-                                PseudoProject sp  = new PseudoProject(metaJson.getString(j));
-                                // link to parent sudo project
-                                if(currentPseudoProject != null) {
-                                    currentPseudoProject.addChild(sp);
+                            JSONArray jsonMeta = projectInfoJson.getJSONArray("meta");
+                            if(jsonMeta.length() > 0) {
+                                // get the root meta
+                                String metaSlug = jsonMeta.getString(0); // this is actually the meta name in this case
+                                rootPseudoProject = pseudoProjects.get(metaSlug);
+                                if(rootPseudoProject == null) {
+                                    rootPseudoProject = new PseudoProject(metaSlug);
+                                    pseudoProjects.add(rootPseudoProject.getId(), rootPseudoProject);
                                 }
-                                // add to project
-                                p.addSudoProject(sp);
-                                currentPseudoProject = sp;
+                                // load children meta
+                                PseudoProject currentPseudoProject = rootPseudoProject;
+                                for (int j = 1; j < jsonMeta.length(); j++) {
+                                    PseudoProject sp = new PseudoProject(jsonMeta.getString(j));
+                                    if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
+                                        // load already created meta
+                                        currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
+                                    } else {
+                                        // create new meta
+                                        currentPseudoProject.addChild(sp);
+                                        currentPseudoProject = sp;
+                                    }
+                                    // add to project
+                                    p.addSudoProject(sp);
+                                }
+                                currentPseudoProject.addChild(p);
                             }
                         }
 
@@ -939,12 +956,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             Language l = new Language(languageId, languageName, langDir);
                             p.addTargetLanguage(l);
                         }
-                        // finish linking the sudo projects together with the project so the menu can be rendered correctly
-                        if(p.numSudoProjects() > 0) {
-                            p.getSudoProject(p.numSudoProjects() - 1).addChild(p);
-                            availableProjects.add(p.getSudoProject(0));
+                        // add project or meta to the project list
+                        if(rootPseudoProject == null) {
+                            listableProjects.add(p.getId(), p);
                         } else {
-                            availableProjects.add(p);
+                            listableProjects.add(rootPseudoProject.getId(), rootPseudoProject);
                         }
                     } else {
                         app().showToastMessage("An invalid response was received from the server");
@@ -963,8 +979,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 @Override
                 public void run() {
                     hideProgress();
-                    if(availableProjects.size() > 0) {
-                        showProjectSelectionDialog(server, availableProjects.toArray(new Model[availableProjects.size()]));
+                    if(listableProjects.size() > 0) {
+                        showProjectSelectionDialog(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
                     } else {
                         // there are no available projects on the server
                         // TODO: eventually we'll want to display the user friendly name of the server.
@@ -1021,6 +1037,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     @Subscribe
     public void onChoseProjectTranslationsToImport(ChoseProjectLanguagesToImportEvent event) {
         Handler handle = new Handler(getMainLooper());
+
+        // TODO: we may want to clear the fragment stack so the other dialogs are dismissed.
 
         showProgress(getResources().getString(R.string.loading));
 

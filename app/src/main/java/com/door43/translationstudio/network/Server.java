@@ -24,7 +24,7 @@ public class Server extends Service {
     private final int mClientUDPPort; // the port on which the client listens for broadcast messages
     private final OnServerEventListener mListener;
     private boolean mIsRunning = false;
-    private int mBroadcastFrequency = 4000;
+    private int mBroadcastFrequency = 2000;
     private Thread mServerThread = null;
     private Thread mBroadcastThread = null;
     private Map<String, Connection> mClientConnections = new HashMap<String, Connection>();
