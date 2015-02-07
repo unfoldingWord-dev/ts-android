@@ -1117,6 +1117,14 @@ public class ProjectManager {
         return mSourceLanguages;
     }
 
+    /**
+     * Returns the data store. This should not be used unless you know what you are doing.
+     * @return
+     */
+    public DataStore getDataStore() {
+        return mDataStore;
+    }
+
     public interface OnProgressCallback {
         void onProgress(double progress, String message);
         void onSuccess();

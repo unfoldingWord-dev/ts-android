@@ -597,15 +597,29 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     if(json.has("id") && json.has("target_languages")) {
                         try {
                             String projectId = json.getString("id");
+
                             final Project p = app().getSharedProjectManager().getProject(projectId);
                             // validate project
                             if(p != null) {
+                                // validate requested source languages
+                                List<SourceLanguage> requestedSourceLanguages = new ArrayList<>();
+                                if(json.has("source_languages")) {
+                                    JSONArray sourceLanguagesJson = json.getJSONArray("source_languages");
+                                    for(int i = 0; i < sourceLanguagesJson.length(); i ++) {
+                                        String languageId = sourceLanguagesJson.getString(i);
+                                        SourceLanguage s = p.getSourceLanguage(languageId);
+                                        if(s != null) {
+                                            requestedSourceLanguages.add(s);
+                                        }
+                                    }
+                                }
+
                                 // validate requested target languages
                                 Language[] activeLanguages = p.getActiveTargetLanguages();
-                                JSONArray languagesJson = json.getJSONArray("target_languages");
-                                final List<Language> requestedTranslations = new ArrayList<Language>();
-                                for (int i = 0; i < languagesJson.length(); i++) {
-                                    String languageId = (String) languagesJson.get(i);
+                                JSONArray targetLanguagesJson = json.getJSONArray("target_languages");
+                                List<Language> requestedTranslations = new ArrayList<>();
+                                for (int i = 0; i < targetLanguagesJson.length(); i++) {
+                                    String languageId = (String) targetLanguagesJson.get(i);
                                     for(Language l:activeLanguages) {
                                         if(l.getId().equals(languageId)) {
                                             requestedTranslations.add(l);
@@ -614,7 +628,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     }
                                 }
                                 if(requestedTranslations.size() > 0) {
-                                    String path = ProjectSharing.export(p, requestedTranslations.toArray(new Language[requestedTranslations.size()]));
+                                    String path = ProjectSharing.export(p, requestedSourceLanguages.toArray(new SourceLanguage[requestedSourceLanguages.size()]), requestedTranslations.toArray(new Language[requestedTranslations.size()]));
                                     final File archive = new File(path);
                                     if(archive.exists()) {
                                         // open a socket to send the project
@@ -1038,8 +1052,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     public void onChoseProjectTranslationsToImport(ChoseProjectLanguagesToImportEvent event) {
         Handler handle = new Handler(getMainLooper());
 
-        // TODO: we may want to clear the fragment stack so the other dialogs are dismissed.
-
         showProgress(getResources().getString(R.string.loading));
 
         // send the request to the server
@@ -1049,6 +1061,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         JSONObject json = new JSONObject();
         try {
             json.put("id", event.getProject().getId());
+            // check if we have the source for this project
+            Project existingProject = app().getSharedProjectManager().getProject(event.getProject().getId());
+            if(existingProject == null || existingProject.getSelectedSourceLanguage() == null) {
+                JSONArray sourceLanguagesJson = new JSONArray();
+                sourceLanguagesJson.put(event.getProject().getSelectedSourceLanguage().getId());
+                json.put("source_languages", sourceLanguagesJson);
+            }
             JSONArray languagesJson = new JSONArray();
             for(Language l:event.getLanguages()) {
                 languagesJson.put(l.getId());

@@ -37,6 +37,18 @@ public class Language {
     }
 
     /**
+     * Returns the human readable text direction
+     * @return
+     */
+    public String getDirectionName() {
+        if(mDirection == Direction.RightToLeft) {
+            return "rtl";
+        } else {
+            return "ltr";
+        }
+    }
+
+    /**
      * Returns the language code
      * @return
      */

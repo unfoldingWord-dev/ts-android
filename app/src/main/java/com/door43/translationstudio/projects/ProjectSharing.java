@@ -1,12 +1,13 @@
 package com.door43.translationstudio.projects;
 
-import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.imports.ChapterImport;
 import com.door43.translationstudio.projects.imports.FileImport;
 import com.door43.translationstudio.projects.imports.FrameImport;
@@ -91,7 +92,7 @@ public class ProjectSharing {
                     projectInfoJson.put("name", p.getTitle(libraryLanguage));
                     projectInfoJson.put("description", p.getDescription(libraryLanguage));
                     // NOTE: since we are only providing the project details in a single source language we don't need to include the meta id's
-                    PseudoProject[] pseudoProjects = p.getSudoProjects();
+                    PseudoProject[] pseudoProjects = p.getPseudoProjects();
                     JSONArray sudoProjectsJson = new JSONArray();
                     for(PseudoProject sp: pseudoProjects) {
                         sudoProjectsJson.put(sp.getTitle(libraryLanguage));
@@ -534,27 +535,30 @@ public class ProjectSharing {
      * @throws IOException
      */
     public static String export(Project p) throws IOException {
-        return export(p, new Language[]{p.getSelectedTargetLanguage()});
+        return export(p, new SourceLanguage[0], new Language[]{p.getSelectedTargetLanguage()});
     }
+
 
     /**
      * Exports the project in multiple languages as a translationStudio project.
      * This is process heavy and should not be ran on the main thread.
      * @param p the project to export
-     * @param languages an array of target languages that will be exported
+     * @param sourceLanguages an array of source languages that will be exported
+     * @param targetLanguages an array of target languages that will be exported
      * @return the path to the export archive
      */
-    public static String export(Project p, Language[] languages) throws IOException {
-        Context context = MainContext.getContext();
+    public static String export(Project p, SourceLanguage[] sourceLanguages, Language[] targetLanguages) throws IOException {
+        MainApplication context = MainContext.getContext();
         File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
         File stagingDir = new File(exportDir, System.currentTimeMillis() + "");
-        ArrayList<File> zipList = new ArrayList<File>();
+        ArrayList<File> zipList = new ArrayList<>();
         File manifestFile = new File(stagingDir, "manifest.json");
+        File sourceCatalogDir = new File(stagingDir, "source_catalog");
         JSONObject manifestJson = new JSONObject();
         JSONArray projectsJson = new JSONArray();
         stagingDir.mkdirs();
         Boolean stagingSucceeded = true;
-        String gitCommit = "";
+        String signature = "";
         String archivePath = "";
 
         // prepare manifest
@@ -571,8 +575,107 @@ public class ProjectSharing {
             return archivePath;
         }
 
+        // compile source languages to include
+        // TODO: we could probably place this in a different method.
+        if(sourceLanguages.length > 0) {
+            try {
+                DataStore ds = context.getSharedProjectManager().getDataStore();
+
+                // build project catalog
+                File projectCatalogFile = new File(sourceCatalogDir, "projects_catalog.json");
+                JSONArray projectsCatalogJson = new JSONArray();
+                JSONArray projectMetaJson = new JSONArray();
+                JSONObject projectCatalogItemJson = new JSONObject();
+                projectCatalogItemJson.put("date_modified", p.getDateModified());
+                projectCatalogItemJson.put("slug", p.getId());
+                for(PseudoProject sp:p.getPseudoProjects()) {
+                    projectMetaJson.put(sp.getId());
+                }
+                projectCatalogItemJson.put("meta", projectMetaJson);
+                projectCatalogItemJson.put("lang_catalog", ds.generateSourceLanguageCatalogUrl(p.getId()));
+                projectsCatalogJson.put(projectCatalogItemJson);
+                FileUtils.writeStringToFile(projectCatalogFile, projectsCatalogJson.toString());
+
+                File projectSourceDir = new File(sourceCatalogDir, p.getId());
+                projectSourceDir.mkdirs();
+                File srcLangCatFile = new File(projectSourceDir, "languages_catalog.json");
+                JSONArray srcLangCatJson = new JSONArray();
+
+                // build language catalogs
+                for (SourceLanguage s : sourceLanguages) {
+                    SourceLanguage l = p.getSourceLanguage(s.getId());
+                    if(l == null) continue;
+
+                    JSONObject srcLangCatItemJson = new JSONObject();
+                    JSONArray srcLangCatProjMetaJson = new JSONArray();
+                    JSONObject srcLangCatProj = new JSONObject();
+                    srcLangCatProj.put("desc", p.getDescription(l));
+                    for(PseudoProject sp:p.getPseudoProjects()) {
+                        srcLangCatProjMetaJson.put(sp.getTitle(l));
+                    }
+                    srcLangCatProj.put("meta",srcLangCatProjMetaJson);
+                    srcLangCatProj.put("name", p.getTitle(l));
+
+                    JSONObject srcLangCatLang = new JSONObject();
+                    srcLangCatLang.put("date_modified", l.getDateModified());
+                    srcLangCatLang.put("direction", l.getDirectionName());
+                    srcLangCatLang.put("name", l.getName());
+                    srcLangCatLang.put("slug", l.getId());
+
+                    srcLangCatItemJson.put("language", srcLangCatLang);
+                    srcLangCatItemJson.put("project", srcLangCatProj);
+                    srcLangCatItemJson.put("res_catalog", ds.generateResourceCatalogUrl(p.getId(), l.getId()));
+
+                    srcLangCatJson.put(srcLangCatItemJson);
+
+                    // resources cat
+                    File languageSourceDir = new File(projectSourceDir, l.getId());
+                    languageSourceDir.mkdirs();
+                    File resCatFile = new File(languageSourceDir, "resources_catalog.json");
+                    String resources = ds.fetchResourceCatalog(p.getId(), l.getId(), false);
+                    FileUtils.writeStringToFile(resCatFile, resources);
+
+                    for(Resource r:l.getResources()) {
+                        File resourceDir = new File(languageSourceDir, r.getId());
+                        resourceDir.mkdirs();
+
+                        // TODO: these resources files are not being copied
+                        // terms
+                        File termsFile = new File(resourceDir, "terms.json");
+                        String terms = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false);
+                        FileUtils.writeStringToFile(termsFile, terms);
+
+                        // source
+                        File sourceFile = new File(resourceDir, "source.json");
+                        String source = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false);
+                        FileUtils.writeStringToFile(sourceFile, source);
+
+                        // notes
+                        File notesFile = new File(resourceDir, "notes.json");
+                        String notes = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false);
+                        FileUtils.writeStringToFile(notesFile, notes);
+
+                        // images
+                        // TODO: copy images over as well
+                    }
+                }
+                FileUtils.writeStringToFile(srcLangCatFile, srcLangCatJson.toString());
+
+                // project icon
+                File projectIcon = context.getAssetAsFile(p.getImagePath());
+                File copiedIcon = new File(projectSourceDir, "icon.jpg");
+                if(projectIcon != null && projectIcon.exists()) {
+                    FileUtils.copyFile(projectIcon, copiedIcon);
+                }
+
+                zipList.add(sourceCatalogDir);
+            } catch (JSONException e) {
+                Logger.e(ProjectSharing.class.getName(), "Failed to generate source catalogs", e);
+            }
+        }
+
         // stage all the translations
-        for(Language l:languages) {
+        for(Language l:targetLanguages) {
             String projectComplexName = Project.GLOBAL_PROJECT_SLUG + "-" + p.getId() + "-" + l.getId();
             String repoPath = p.getRepositoryPath(p.getId(), l.getId());
             // commit changes to repo
@@ -596,7 +699,8 @@ public class ProjectSharing {
             }
 
             // TRICKY: this has to be read after we commit changes to the repo
-            gitCommit += p.getLocalTranslationVersion(l);
+            String gitCommit = p.getLocalTranslationVersion(l);
+            signature += gitCommit;
 
             // update manifest
             JSONObject translationJson = new JSONObject();
@@ -616,12 +720,15 @@ public class ProjectSharing {
 
             zipList.add(new File(repoPath));
         }
-        String signature = Security.md5(gitCommit);
+        signature = Security.md5(signature);
         String tag = signature.substring(0, 10);
 
         // close manifest
         try {
             manifestJson.put("projects", projectsJson);
+            if(sourceCatalogDir.exists()) {
+                manifestJson.put("source_path", sourceCatalogDir.getName());
+            }
             manifestJson.put("signature", signature);
         } catch (JSONException e) {
             Logger.e(ProjectSharing.class.getName(), "failed to add to json object", e);

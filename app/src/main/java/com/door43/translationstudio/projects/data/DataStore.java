@@ -9,7 +9,6 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -70,11 +69,19 @@ public class DataStore {
         String path = SOURCE_TRANSLATIONS_DIR + projectId + "/languages_catalog.json";
 
         if(checkServer) {
-            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/languages.json");
+            downloadToAssets(path, generateSourceLanguageCatalogUrl(projectId));
         }
         return loadJSONAsset(path);
     }
 
+    /**
+     * generates the source language catalog url
+     * @param projectId
+     * @return
+     */
+    public String generateSourceLanguageCatalogUrl(String projectId) {
+        return "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/languages.json";
+    }
 
     /**
      * Returns the resources for a specific language
@@ -88,9 +95,19 @@ public class DataStore {
         String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/resources_catalog.json";
 
         if(checkServer) {
-            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/resources.json");
+            downloadToAssets(path, generateResourceCatalogUrl(projectId, languageId));
         }
         return loadJSONAsset(path);
+    }
+
+    /**
+     * generates the resource catalog url
+     * @param projectId
+     * @param languageId
+     * @return
+     */
+    public String generateResourceCatalogUrl(String projectId, String languageId) {
+        return "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/resources.json";
     }
 
     /**

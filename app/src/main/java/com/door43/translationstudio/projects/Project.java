@@ -404,7 +404,7 @@ public class Project implements Model {
      * Returns an array of meta categories for this project
      * @return
      */
-    public PseudoProject[] getSudoProjects() {
+    public PseudoProject[] getPseudoProjects() {
         return mPseudoProjects.toArray(new PseudoProject[mPseudoProjects.size()]);
     }
 
@@ -415,7 +415,7 @@ public class Project implements Model {
     * @return
     */
     public PseudoProject getSudoProject(int index) {
-        PseudoProject[] pseudoProjects = getSudoProjects();
+        PseudoProject[] pseudoProjects = getPseudoProjects();
         if(index < pseudoProjects.length && index >= 0) {
             return pseudoProjects[index];
         } else {
