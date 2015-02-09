@@ -318,15 +318,18 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     Client c = (Client)mService;
                     Peer server = mAdapter.getItem(i);
                     if(!server.isConnected()) {
-                        // connect to the server, implicitly requesting permission to access it
-                        server.keyStore.add(PeerStatusKeys.WAITING, true);
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                updatePeerList();
-                            }
-                        });
-                        c.connectToServer(mAdapter.getItem(i));
+                        // TRICKY: we don't let the client connect again otherwise it may get an encryption exception due to miss-matched keys
+                        if(!server.keyStore.getBool(PeerStatusKeys.WAITING)) {
+                            // connect to the server, implicitly requesting permission to access it
+                            server.keyStore.add(PeerStatusKeys.WAITING, true);
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    updatePeerList();
+                                }
+                            });
+                            c.connectToServer(mAdapter.getItem(i));
+                        }
                     } else {
                         // request a list of projects from the server.
                         // TODO: the response to this request should be cached until the server disconnects.
