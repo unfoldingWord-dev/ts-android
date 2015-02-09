@@ -186,7 +186,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             if(key != null) {
                                 return encryptMessage(key, message);
                             } else {
-                                // TODO: we are missing the client's public key
                                 Logger.w(this.getClass().getName(), "Missing the client's public key");
                                 return SocketMessages.MSG_EXCEPTION;
                             }
@@ -271,7 +270,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             if(key != null) {
                                 return encryptMessage(key, message);
                             } else {
-                                // TODO: we are missing the server's public key
                                 Logger.w(this.getClass().getName(), "Missing the server's public key");
                                 return SocketMessages.MSG_EXCEPTION;
                             }
@@ -331,9 +329,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         c.connectToServer(mAdapter.getItem(i));
                     } else {
                         // request a list of projects from the server.
-                        // TODO: make sure we have the server's public key
                         // TODO: the response to this request should be cached until the server disconnects.
-                        // TODO: later we may use a button instead of just clicking on the list item.
                         showProgress(getResources().getString(R.string.loading));
                         // Include the suggested language(s) in which the results should be returned (if possible)
                         // This just makes it easier for users to read the results
@@ -702,8 +698,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     try {
                         key = getPublicKeyString();
                     } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Missing the public key", e);
-                        // TODO: missing the public key
+                        Logger.e(this.getClass().getName(), "Missing the client public key", e);
                         return;
                     }
                     mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
@@ -775,10 +770,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         });
 
                         showProgress(getResources().getString(R.string.downloading));
+                        final File file = new File(getExternalCacheDir() + "/transferred/" + name);
                         try {
                             // download archive
                             DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
-                            File file = new File(getExternalCacheDir() + "/transferred/" + name);
                             file.getParentFile().mkdirs();
                             file.createNewFile();
                             OutputStream out = new FileOutputStream(file.getAbsolutePath());
@@ -825,20 +820,41 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     ft.addToBackStack(null);
                                     app().closeToastMessage();
                                     ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
+                                    newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+                                        @Override
+                                        public void onOk(ProjectImport[] requests) {
+                                            showProgress(getResources().getString(R.string.loading));
+                                            for(ProjectImport r:requests) {
+                                                ProjectSharing.importProject(r);
+                                            }
+                                            ProjectSharing.cleanImport(requests);
+                                            file.delete();
+                                            hideProgress();
+                                            app().showToastMessage(R.string.success);
+                                        }
+
+                                        @Override
+                                        public void onCancel(ProjectImport[] requests) {
+                                            // import was aborted
+                                            ProjectSharing.cleanImport(requests);
+                                            file.delete();
+                                        }
+                                    });
                                     // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
                                     newFragment.setImportRequests(importStatuses);
                                     newFragment.show(ft, "dialog");
                                 } else {
-                                    // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
                                     for(ProjectImport r:importStatuses) {
                                         ProjectSharing.importProject(r);
                                     }
                                     ProjectSharing.cleanImport(importStatuses);
+                                    file.delete();
                                     app().showToastMessage(R.string.success);
                                 }
-                                // TODO: we need to delete the download once we are done with it.
                                 hideProgress();
                             } else {
+                                file.delete();
+                                Logger.w(this.getClass().getName(), "failed to import the project archive");
                                 // failed to import translation
                                 handle.post(new Runnable() {
                                     @Override
@@ -849,6 +865,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             }
                         } catch (final IOException e) {
                             Logger.e(this.getClass().getName(), "Failed to download the file", e);
+                            file.delete();
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -857,7 +874,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 }
                             });
                         }
-                        // TODO: clean up files
                     }
                 });
             } else {
@@ -1083,17 +1099,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                 }
             });
         }
-    }
-
-    @Subscribe
-    public void onProjectImportApproval(ProjectImportApprovalEvent event) {
-        showProgress(getResources().getString(R.string.loading));
-        for(ProjectImport r:event.getImportRequests()) {
-            ProjectSharing.importProject(r);
-        }
-        ProjectSharing.cleanImport(event.getImportRequests());
-        hideProgress();
-        app().showToastMessage(R.string.success);
     }
 
     /**

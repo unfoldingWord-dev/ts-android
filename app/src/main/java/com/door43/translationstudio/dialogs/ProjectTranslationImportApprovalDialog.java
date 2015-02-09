@@ -11,19 +11,17 @@ import android.widget.Button;
 import android.widget.ExpandableListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ProjectImportApprovalEvent;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;
-import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 1/12/2015.
  */
 public class ProjectTranslationImportApprovalDialog extends DialogFragment {
     private ProjectImport[] mRequests = new ProjectImport[]{};
+    private OnClickListener mListener;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.import_project);
@@ -69,7 +67,10 @@ public class ProjectTranslationImportApprovalDialog extends DialogFragment {
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    close();
+                    if(mListener != null) {
+                        mListener.onCancel(mRequests);
+                    }
+                    dismiss();
                 }
             });
 
@@ -77,12 +78,17 @@ public class ProjectTranslationImportApprovalDialog extends DialogFragment {
             okButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MainContext.getEventBus().post(new ProjectImportApprovalEvent((ProjectImport[])adapter.getFinalImportRequests()));
-                    close();
+                    if(mListener != null) {
+                        mListener.onOk(mRequests);
+                    }
+                    dismiss();
                 }
             });
         } else {
-            close();
+            if(mListener != null) {
+                mListener.onCancel(mRequests);
+            }
+            dismiss();
         }
 
         return v;
@@ -95,12 +101,16 @@ public class ProjectTranslationImportApprovalDialog extends DialogFragment {
     public void setImportRequests(ProjectImport[] requests) {
         mRequests = requests;
     }
+    /**
+     * Sets the listener to be trigered when the form is submitted
+     * @param listener
+     */
+    public void setOnClickListener(OnClickListener listener) {
+        mListener = listener;
+    }
 
-    public void close() {
-        // the import has been canceled so we need to clean up after ourselves
-        for(ProjectImport r:mRequests) {
-            ProjectSharing.cleanImport(r);
-        }
-        dismiss();
+    public static interface OnClickListener {
+        public void onOk(ProjectImport[] requests);
+        public void onCancel(ProjectImport[] requests);
     }
 }

@@ -33,14 +33,6 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
         mRequests = requests;
     }
 
-    /**
-     * Returns the import requests with their updated information.
-     * @return
-     */
-    public ImportRequestInterface[] getFinalImportRequests() {
-        return mRequests;
-    }
-
     @Override
     public int getGroupCount() {
         return mRequests.length;
