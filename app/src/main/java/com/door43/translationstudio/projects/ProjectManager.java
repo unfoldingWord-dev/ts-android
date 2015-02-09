@@ -646,6 +646,13 @@ public class ProjectManager {
                     if(jsonProject.has("meta")) {
                         JSONArray jsonMeta = jsonProject.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
+                            // TRICKY: if the meta has changed it will display twice in the project list so we always remove old meta
+                            Project originalProject = getProject(p.getId());
+                            if(originalProject != null && originalProject.getPseudoProjects().length > 0) {
+                                PseudoProject originalRoot = originalProject.getPseudoProjects()[0];
+                                deleteListableProject(originalRoot);
+                            }
+
                             // get the root meta
                             String metaSlug = jsonMeta.get(0).toString();
                             rootPseudoProject = getMetaProject(metaSlug);
