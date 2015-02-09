@@ -774,9 +774,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             }
                         });
 
-                        // download archive
                         showProgress(getResources().getString(R.string.downloading));
                         try {
+                            // download archive
                             DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
                             File file = new File(getExternalCacheDir() + "/transferred/" + name);
                             file.getParentFile().mkdirs();
@@ -857,6 +857,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                 }
                             });
                         }
+                        // TODO: clean up files
                     }
                 });
             } else {

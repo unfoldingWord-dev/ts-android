@@ -6,6 +6,8 @@ import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.ServerUtilities;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +28,117 @@ public class DataStore {
 
     public DataStore(MainApplication context) {
         mContext = context;
+    }
+
+    /**
+     * Adds a project entry into the project catalog
+     * @param json
+     */
+    public void importProject(String json) {
+        File file = new File(mContext.getCacheDir(), "assets/" + projectCatalogPath());
+        String catJson = fetchProjectCatalog(false);
+        try {
+            JSONArray cat = new JSONArray();
+            if(catJson != null) {
+                cat = new JSONArray(catJson);
+            }
+            JSONObject proj = new JSONObject(json);
+            cat.put(proj);
+            FileUtils.writeStringToFile(file, cat.toString());
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "failed to add the project to the catalog", e);
+        }
+    }
+
+    /**
+     * Adds a source language entry into the languages catalog
+     * @param projectId
+     * @param json
+     */
+    public void importSourceLanguage(String projectId, String json) {
+        File file = new File(mContext.getCacheDir(), "assets/" + sourceLanguageCatalogPath(projectId));
+        String catJson = fetchSourceLanguageCatalog(projectId, false);
+        try {
+            JSONArray cat = new JSONArray();
+            if(catJson != null) {
+                cat = new JSONArray(catJson);
+            }
+            JSONObject lang = new JSONObject(json);
+            cat.put(lang);
+            FileUtils.writeStringToFile(file, cat.toString());
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "failed to add the source language to the catalog", e);
+        }
+    }
+
+    /**
+     * Adds a resource entry to the resource catalog
+     * @param projectId
+     * @param languageId
+     * @param json
+     */
+    public void importResource(String projectId, String languageId, String json) {
+        File file = new File(mContext.getCacheDir(), "assets/" + resourceCatalogPath(projectId, languageId));
+        String catJson = fetchResourceCatalog(projectId, languageId, false);
+        try {
+            JSONArray cat = new JSONArray();
+            if(catJson != null) {
+                cat = new JSONArray(catJson);
+            }
+            JSONObject res = new JSONObject(json);
+            cat.put(res);
+            FileUtils.writeStringToFile(file, cat.toString());
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "failed to add the resource to the catalog", e);
+        }
+    }
+
+    /**
+     * Adds notes to the resources
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param data
+     */
+    public void importNotes(String projectId, String languageId, String resourceId, String data) {
+        File file = new File(mContext.getCacheDir(), "assets/" + notesPath(projectId, languageId, resourceId));
+        try {
+            FileUtils.writeStringToFile(file, data);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to add the notes to the resource", e);
+        }
+    }
+
+    /**
+     * Adds source to the resources
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param data
+     */
+    public void importSource(String projectId, String languageId, String resourceId, String data) {
+        File file = new File(mContext.getCacheDir(), "assets/" + sourcePath(projectId, languageId, resourceId));
+        try {
+            FileUtils.writeStringToFile(file, data);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to add the source to the resource", e);
+        }
+    }
+
+    /**
+     * Adds terms to the resources
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param data
+     */
+    public void importTerms(String projectId, String languageId, String resourceId, String data) {
+        File file = new File(mContext.getCacheDir(), "assets/" + termsPath(projectId, languageId, resourceId));
+        try {
+            FileUtils.writeStringToFile(file, data);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to add the terms to the resource", e);
+        }
     }
 
     /**
@@ -50,12 +163,20 @@ public class DataStore {
      * @return
      */
     public String fetchProjectCatalog(boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + "projects_catalog.json";
+        String path = projectCatalogPath();
 
         if(checkServer) {
             downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/catalog.json");
         }
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the relative path to the project catalog
+     * @return
+     */
+    public static String projectCatalogPath() {
+        return SOURCE_TRANSLATIONS_DIR + "projects_catalog.json";
     }
 
     /**
@@ -66,12 +187,21 @@ public class DataStore {
      * @return
      */
     public String fetchSourceLanguageCatalog(String projectId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/languages_catalog.json";
+        String path = sourceLanguageCatalogPath(projectId);
 
         if(checkServer) {
-            downloadToAssets(path, generateSourceLanguageCatalogUrl(projectId));
+            downloadToAssets(path, sourceLanguageCatalogUrl(projectId));
         }
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the relative path to the source language catalog
+     * @param projectId
+     * @return
+     */
+    public static String sourceLanguageCatalogPath(String projectId) {
+        return SOURCE_TRANSLATIONS_DIR + projectId + "/languages_catalog.json";
     }
 
     /**
@@ -79,7 +209,7 @@ public class DataStore {
      * @param projectId
      * @return
      */
-    public String generateSourceLanguageCatalogUrl(String projectId) {
+    public String sourceLanguageCatalogUrl(String projectId) {
         return "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/languages.json";
     }
 
@@ -92,12 +222,22 @@ public class DataStore {
      * @return
      */
     public String fetchResourceCatalog(String projectId, String languageId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/resources_catalog.json";
+        String path = resourceCatalogPath(projectId, languageId);
 
         if(checkServer) {
-            downloadToAssets(path, generateResourceCatalogUrl(projectId, languageId));
+            downloadToAssets(path, resourceCatalogUrl(projectId, languageId));
         }
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the relative path to the resource catalog
+     * @param projectId
+     * @param languageId
+     * @return
+     */
+    public static String resourceCatalogPath(String projectId, String languageId) {
+        return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/resources_catalog.json";
     }
 
     /**
@@ -106,7 +246,7 @@ public class DataStore {
      * @param languageId
      * @return
      */
-    public String generateResourceCatalogUrl(String projectId, String languageId) {
+    public String resourceCatalogUrl(String projectId, String languageId) {
         return "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/resources.json";
     }
 
@@ -129,7 +269,7 @@ public class DataStore {
      * @return
      */
     public String fetchTerms(String projectId, String languageId, String resourceId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
+        String path = termsPath(projectId, languageId, resourceId);
 
         if(checkServer) {
             downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/terms.json");
@@ -148,11 +288,22 @@ public class DataStore {
      * @return
      */
     public String fetchTerms(String projectId, String languageId, String resourceId, String urlString) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
+        String path = termsPath(projectId, languageId, resourceId);
 
         downloadToAssets(path, urlString);
 
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the path to the terms file
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public String termsPath(String projectId, String languageId, String resourceId) {
+        return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
     }
 
     /**
@@ -164,7 +315,7 @@ public class DataStore {
      * @return
      */
     public String fetchNotes(String projectId, String languageId, String resourceId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
+        String path = notesPath(projectId, languageId, resourceId);
 
         if(checkServer) {
             downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/notes.json");
@@ -183,11 +334,22 @@ public class DataStore {
      * @return
      */
     public String fetchNotes(String projectId, String languageId, String resourceId, String urlString) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
+        String path = notesPath(projectId, languageId, resourceId);
 
         downloadToAssets(path, urlString);
 
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the path to the resource file
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public String notesPath(String projectId, String languageId, String resourceId) {
+        return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
     }
 
     /**
@@ -199,7 +361,7 @@ public class DataStore {
      * @return
      */
     public String fetchSource(String projectId, String languageId, String resourceId, boolean checkServer) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
+        String path = sourcePath(projectId, languageId, resourceId);
 
         if(checkServer) {
             downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/source.json");
@@ -218,11 +380,22 @@ public class DataStore {
      * @return
      */
     public String fetchSource(String projectId, String languageId, String resourceId, String urlString) {
-        String path = SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
+        String path = sourcePath(projectId, languageId, resourceId);
 
         downloadToAssets(path, urlString);
 
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the path to the source file
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public String sourcePath(String projectId, String languageId, String resourceId) {
+        return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
     }
 
     /**

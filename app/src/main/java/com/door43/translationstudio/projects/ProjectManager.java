@@ -8,10 +8,13 @@ import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,10 +97,20 @@ public class ProjectManager {
             // begin loading target languages
             String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
             loadTargetLanguagesCatalog(targetLanguageCatalog);
+            // begin loading projects
+            initProjects();
         }
         if(mCallback != null) {
             mCallback.onSuccess();
         }
+    }
+
+    /**
+     * Loads the projects
+     */
+    private void initProjects() {
+        String projectsCatalog = mDataStore.fetchProjectCatalog(false);
+        loadProjectsCatalog(projectsCatalog, false);
     }
 
     /**
@@ -598,9 +611,6 @@ public class ProjectManager {
                 continue;
             }
         }
-        // begin loading projects
-        String projectsCatalog = mDataStore.fetchProjectCatalog(false);
-        loadProjectsCatalog(projectsCatalog, false);
     }
 
     /**
@@ -1097,6 +1107,110 @@ public class ProjectManager {
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "Failed to load project source", e);
                 continue;
+            }
+        }
+    }
+
+    /**
+     * Imports the source from the given directory
+     * @param dir
+     */
+    public void importSource(File dir) {
+        Logger.i(this.getClass().getName(), "importing source files from "+ dir.getName());
+        if(dir.exists() && dir.isDirectory()) {
+            File projectsCatalogFile = new File(dir, "projects_catalog.json");
+            if(projectsCatalogFile.exists()) {
+                try {
+                    // load projects
+                    String projCat = FileUtils.readFileToString(projectsCatalogFile);
+                    JSONArray projCatJson = new JSONArray(projCat);
+                    for(int i = 0; i < projCatJson.length(); i ++) {
+                        try {
+                            JSONObject projJson = projCatJson.getJSONObject(i);
+                            String projSlug = projJson.getString("slug");
+                            Project existingProject = getProject(projSlug);
+                            int projDateModified = projJson.getInt("date_modified");
+                            if (existingProject == null || existingProject.getDateModified() < projDateModified) {
+                                // import/replace the project
+                                mDataStore.importProject(projJson.toString());
+                                // load languages
+                                File projDir = new File(dir, projSlug);
+                                if(projDir.exists()) {
+                                    File langCatFile = new File(projDir, "languages_catalog.json");
+                                    if(langCatFile.exists()) {
+                                        String langCat = FileUtils.readFileToString(langCatFile);
+                                        JSONArray langCatJson = new JSONArray(langCat);
+                                        for(int j = 0; j < langCatJson.length(); j ++) {
+                                            try {
+                                                JSONObject langJson = langCatJson.getJSONObject(j);
+                                                JSONObject langInfoJson = langJson.getJSONObject("language");
+                                                String langSlug = langInfoJson.getString("slug");
+                                                int langDateModified = langInfoJson.getInt("date_modified");
+                                                SourceLanguage existingLanguage = null;
+                                                if(existingProject != null) {
+                                                    existingLanguage = existingProject.getSourceLanguage(langSlug);
+                                                }
+                                                if(existingLanguage == null || existingLanguage.getDateModified() < langDateModified) {
+                                                    // import/replace the source language
+                                                    mDataStore.importSourceLanguage(projSlug, langJson.toString());
+                                                    // load resources
+                                                    File langDir = new File(projDir, langSlug);
+                                                    if(langDir.exists()) {
+                                                        File resCatFile = new File(langDir, "resources_catalog.json");
+                                                        if(resCatFile.exists()) {
+                                                            String resCat = FileUtils.readFileToString(resCatFile);
+                                                            JSONArray resCatJson = new JSONArray(resCat);
+                                                            for(int k = 0; k < resCatJson.length(); k ++) {
+                                                                try {
+                                                                    JSONObject resJson = resCatJson.getJSONObject(k);
+                                                                    String resSlug = resJson.getString("slug");
+                                                                    int resDateModified = resJson.getInt("date_modified");
+                                                                    Resource existingResource = null;
+                                                                    if(existingLanguage != null) {
+                                                                        existingResource = existingLanguage.getResource(resSlug);
+                                                                    }
+                                                                    if(existingResource == null || existingResource.getDateModified() < resDateModified) {
+                                                                        // import/replace the resource catalog
+                                                                        mDataStore.importResource(projSlug, langSlug, resJson.toString());
+                                                                        // load the individual resource files
+                                                                        File resDir = new File(langDir, resSlug);
+                                                                        if(resDir.exists()) {
+                                                                            File notesFile = new File(resDir, "notes.json");
+                                                                            File sourceFile = new File(resDir, "source.json");
+                                                                            File termsFile = new File(resDir, "terms.json");
+
+                                                                            String notes = FileUtils.readFileToString(notesFile);
+                                                                            String source = FileUtils.readFileToString(sourceFile);
+                                                                            String terms = FileUtils.readFileToString(termsFile);
+
+                                                                            mDataStore.importNotes(projSlug, langSlug, resSlug, notes);
+                                                                            mDataStore.importSource(projSlug, langSlug, resSlug, source);
+                                                                            mDataStore.importTerms(projSlug, langSlug, resSlug, terms);
+                                                                        }
+                                                                    }
+                                                                } catch (Exception e) {
+                                                                    Logger.e(this.getClass().getName(), "failed to import the resource", e);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            } catch (Exception e) {
+                                                Logger.e(this.getClass().getName(), "failed to import the source language", e);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            Logger.e(this.getClass().getName(), "failed to import the source project", e);
+                        }
+                    }
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "failed to import the source files", e);
+                }
+                // reload the projects
+                initProjects();
             }
         }
     }

@@ -150,19 +150,31 @@ public class ProjectSharing {
             long timestamp = System.currentTimeMillis();
             File extractedDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
 
-            try {
-                Zip.unzip(archive, extractedDir);
-            } catch (IOException e) {
-                FileUtilities.deleteRecursive(extractedDir);
-                Logger.e(ProjectSharing.class.getName(), "failed to extract the project archive", e);
-                return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
+            // extract the archive
+            if(!extractedDir.exists()) {
+                try {
+                    Zip.unzip(archive, extractedDir);
+                } catch (IOException e) {
+                    FileUtilities.deleteRecursive(extractedDir);
+                    Logger.e(ProjectSharing.class.getName(), "failed to extract the project archive", e);
+                    return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
+                }
             }
 
             File manifest = new File(extractedDir, "manifest.json");
             if(manifest.exists() && manifest.isFile()) {
                 try {
                     JSONObject manifestJson = new JSONObject(FileUtils.readFileToString(manifest));
-                    // NOTE: the manifest contains extra information that we are not using right now
+
+                    // load the source files
+                    if(manifestJson.has("source")) {
+                        File sourceDir = new File(extractedDir, manifestJson.getString("source"));
+                        if(sourceDir.exists()) {
+                            MainContext.getContext().getSharedProjectManager().importSource(sourceDir);
+                        }
+                    }
+
+                    // load the list of projects to import
                     if(manifestJson.has("projects")) {
                         JSONArray projectsJson = manifestJson.getJSONArray("projects");
                         for(int i=0; i<projectsJson.length(); i++) {
@@ -592,7 +604,7 @@ public class ProjectSharing {
                     projectMetaJson.put(sp.getId());
                 }
                 projectCatalogItemJson.put("meta", projectMetaJson);
-                projectCatalogItemJson.put("lang_catalog", ds.generateSourceLanguageCatalogUrl(p.getId()));
+                projectCatalogItemJson.put("lang_catalog", ds.sourceLanguageCatalogUrl(p.getId()));
                 projectsCatalogJson.put(projectCatalogItemJson);
                 FileUtils.writeStringToFile(projectCatalogFile, projectsCatalogJson.toString());
 
@@ -624,7 +636,7 @@ public class ProjectSharing {
 
                     srcLangCatItemJson.put("language", srcLangCatLang);
                     srcLangCatItemJson.put("project", srcLangCatProj);
-                    srcLangCatItemJson.put("res_catalog", ds.generateResourceCatalogUrl(p.getId(), l.getId()));
+                    srcLangCatItemJson.put("res_catalog", ds.resourceCatalogUrl(p.getId(), l.getId()));
 
                     srcLangCatJson.put(srcLangCatItemJson);
 
@@ -639,7 +651,6 @@ public class ProjectSharing {
                         File resourceDir = new File(languageSourceDir, r.getId());
                         resourceDir.mkdirs();
 
-                        // TODO: these resources files are not being copied
                         // terms
                         File termsFile = new File(resourceDir, "terms.json");
                         String terms = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false);
@@ -647,16 +658,16 @@ public class ProjectSharing {
 
                         // source
                         File sourceFile = new File(resourceDir, "source.json");
-                        String source = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false);
+                        String source = ds.fetchSource(p.getId(), l.getId(), r.getId(), false);
                         FileUtils.writeStringToFile(sourceFile, source);
 
                         // notes
                         File notesFile = new File(resourceDir, "notes.json");
-                        String notes = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false);
+                        String notes = ds.fetchNotes(p.getId(), l.getId(), r.getId(), false);
                         FileUtils.writeStringToFile(notesFile, notes);
 
                         // images
-                        // TODO: copy images over as well
+                        // TODO: copy images over as well. we don't want to do this until the zipper supports specifying the location in the archive so we don't have to copy all the images.
                     }
                 }
                 FileUtils.writeStringToFile(srcLangCatFile, srcLangCatJson.toString());
@@ -727,7 +738,7 @@ public class ProjectSharing {
         try {
             manifestJson.put("projects", projectsJson);
             if(sourceCatalogDir.exists()) {
-                manifestJson.put("source_path", sourceCatalogDir.getName());
+                manifestJson.put("source", sourceCatalogDir.getName());
             }
             manifestJson.put("signature", signature);
         } catch (JSONException e) {
