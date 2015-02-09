@@ -275,10 +275,12 @@ public class Frame implements Model {
                 renderer = new DefaultRenderer();
             }
             CharSequence out = renderer.render(mText);
-            if (out.length() > 93) {
-                mCachedDescription = out.subSequence(0, 90).toString().trim() + "...";
+            int maxLen = 130;
+            // account for ellipses
+            if (out.length() > maxLen - 3) {
+                mCachedDescription = out.subSequence(0, maxLen).toString().trim().replaceFirst("^\\d+", "") + "...";
             } else {
-                mCachedDescription = out.toString();
+                mCachedDescription = out.toString().trim().replaceFirst("^\\d+", "");
             }
         }
         return mCachedDescription;

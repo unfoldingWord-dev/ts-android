@@ -4,4 +4,5 @@
     <string name="keys_dir" translatable="false">ssh</string>
     <string name="exported_projects_dir" translatable="false">exported</string>
     <string name="imported_projects_dir" translatable="false">imported</string>
+    <string name="p2p_keys_dir" translatable="false">p2p_keys</string>
 </resources>

@@ -88,7 +88,7 @@ public class Chapter implements Model {
         if(mTitle != null && !mTitle.isEmpty()) {
             return mTitle;
         } else {
-            return String.format(MainContext.getContext().getResources().getString(R.string.label_chapter_title_detailed), getId());
+            return String.format(MainContext.getContext().getResources().getString(R.string.label_chapter_title_detailed), Integer.parseInt(getId()));
         }
     }
 

@@ -56,7 +56,7 @@
     <string name="error_target_and_source_are_same">The source and target languages are the same</string>
     <string name="error_chapter_title_missing">The chapter title is missing</string>
     <string name="error_chapter_reference_missing">The chapter reference is missing</string>
-    <string name="label_chapter_title_detailed">Chapter: <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
+    <string name="label_chapter_title_detailed">Chapter <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
     <string name="label_frame_title_detailed">Frame: <xliff:g id="frame" example="1">%1$s</xliff:g></string>
     <string name="dialog_validation_errors">Validation Errors</string>
     <string name="validation_errors">There are unresolved errors in the translation. Please correct these then try again.</string>
@@ -225,7 +225,6 @@
     <string name="confirm_import">Please confirm what you want to import.</string>
     <string name="label_connect">Connect</string>
     <string name="waiting_for_device">Waiting for device</string>
-    <string name="p2p_keys_dir">p2p_keys</string>
     <string name="confirm_all">Confirm all</string>
     <string name="label_back">Back</string>
     <string name="bug_report">Describe the problem you are experiencing with this app.</string>
