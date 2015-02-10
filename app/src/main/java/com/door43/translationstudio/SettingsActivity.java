@@ -12,6 +12,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
@@ -109,6 +111,20 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_preferences_legacy);
+
+        Toolbar actionbar = (Toolbar) findViewById(R.id.actionbar);
+        actionbar.setTitle("Settings");
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        actionbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_ab_back_holo_light_am));
+        actionbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SettingsActivity.this.finish();
+            }
+        });
     }
 
     @Override
