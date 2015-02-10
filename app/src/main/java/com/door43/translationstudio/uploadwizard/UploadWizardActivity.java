@@ -10,9 +10,11 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ContactFormDialog;
 import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.user.Profile;
+import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
@@ -58,7 +60,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
      */
     public void startUpload() {
         // get user info if publishing translation
-        if(app().getSharedProjectManager().getSelectedProject().translationIsReady()) {
+        if(app().getSharedProjectManager().getSelectedProject().translationIsReady() && ProfileManager.getProfile() == null) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
             if (prev != null) {
@@ -68,14 +70,10 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
 
             // Create and show the dialog
             ContactFormDialog newFragment = new ContactFormDialog();
-//            Bundle args = new Bundle();
-//            args.putString("name", name);
-//            args.putString("email", email);
-//            newFragment.setArguments(args);
             newFragment.setOkListener(new ContactFormDialog.OnOkListener() {
                 @Override
                 public void onOk(Profile profile) {
-                    app().getSharedProjectManager().getSelectedProject().setProfile(profile);
+                    ProfileManager.setProfile(profile);
                     upload();
                 }
             });
@@ -89,6 +87,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
      * Initiates the actual upload
      */
     private void upload() {
+        // TODO: we need to upload the profile as well
         // prepare upload
         app().showProgressDialog(R.string.preparing_upload);
         app().getSharedProjectManager().getSelectedProject().commit(new Project.OnCommitComplete() {

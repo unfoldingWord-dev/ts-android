@@ -145,18 +145,22 @@ public class SharingActivity extends TranslatorBaseActivity {
                                 archivePath = ProjectSharing.export(p);
                             }
                             File archiveFile = new File(archivePath);
-                            File output = new File(internalDestDir, archiveFile.getName());
+                            if(archiveFile.exists()) {
+                                File output = new File(internalDestDir, archiveFile.getName());
 
-                            // copy exported archive to the sharing directory
-                            FileUtils.copyFile(archiveFile, output);
+                                // copy exported archive to the sharing directory
+                                FileUtils.copyFile(archiveFile, output);
 
-                            // share
-                            if (output.exists() && output.isFile()) {
-                                Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", output);
-                                Intent i = new Intent(Intent.ACTION_SEND);
-                                i.setType("application/zip");
-                                i.putExtra(Intent.EXTRA_STREAM, u);
-                                startActivity(Intent.createChooser(i, "Email:"));
+                                // share
+                                if (output.exists() && output.isFile()) {
+                                    Uri u = FileProvider.getUriForFile(SharingActivity.this, "com.door43.translationstudio.fileprovider", output);
+                                    Intent i = new Intent(Intent.ACTION_SEND);
+                                    i.setType("application/zip");
+                                    i.putExtra(Intent.EXTRA_STREAM, u);
+                                    startActivity(Intent.createChooser(i, "Email:"));
+                                } else {
+                                    app().showToastMessage(R.string.project_archive_missing);
+                                }
                             } else {
                                 app().showToastMessage(R.string.project_archive_missing);
                             }

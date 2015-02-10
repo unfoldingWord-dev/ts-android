@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
+import com.door43.translationstudio.user.Profile;
+import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 

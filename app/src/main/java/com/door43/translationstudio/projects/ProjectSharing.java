@@ -24,6 +24,7 @@ import com.door43.translationstudio.util.Zip;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.RmCommand;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -689,22 +690,26 @@ public class ProjectSharing {
         for(Language l:targetLanguages) {
             String projectComplexName = Project.GLOBAL_PROJECT_SLUG + "-" + p.getId() + "-" + l.getId();
             String repoPath = p.getRepositoryPath(p.getId(), l.getId());
-            // commit changes to repo
             Repo repo = new Repo(repoPath);
+
+            // prepare the repo
             try {
-                // only commit if the repo is dirty
+                // commit changes if the repo is dirty
                 if(!repo.getGit().status().call().isClean()) {
                     // add
                     AddCommand add = repo.getGit().add();
                     add.addFilepattern(".").call();
 
-                    // commit
-                    CommitCommand commit = repo.getGit().commit();
-                    commit.setAll(true);
-                    commit.setMessage("auto save");
-                    commit.call();
+
                 }
+
+                // commit changes
+                CommitCommand commit = repo.getGit().commit();
+                commit.setAll(true);
+                commit.setMessage("auto save before export");
+                commit.call();
             } catch (Exception e) {
+                Logger.e(ProjectSharing.class.getName(), "failed to stage the repo", e);
                 stagingSucceeded = false;
                 continue;
             }
