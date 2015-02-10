@@ -1,1 +1,30 @@
-[{"language":{"date_modified":"20141207","direction":"ltr","name":"English","slug":"en"},"project":{"desc":"an unrestricted visual mini-Bible in any language","meta":[],"name":"OPEN BIBLE STORIES"},"res_catalog":"https://api.unfoldingword.org/ts/txt/2/obs/en/resources.json"}]
+[
+  {
+    "language": {
+      "date_modified": "20141207", 
+      "direction": "ltr", 
+      "name": "English", 
+      "slug": "en"
+    }, 
+    "project": {
+      "desc": "an unrestricted visual mini-Bible in any language", 
+      "meta": [], 
+      "name": "OPEN BIBLE STORIES"
+    }, 
+    "res_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/en/resources.json"
+  },
+  {
+    "language": {
+      "date_modified": "20150129", 
+      "direction": "ltr", 
+      "name": "Portugu\u00eas", 
+      "slug": "pt-br"
+    }, 
+    "project": {
+      "desc": "unfoldingWord | HIST\u00d3RIAS B\u00cdBLICA LIVRES", 
+      "meta": [], 
+      "name": "HIST\u00d3RIAS B\u00cdBLICA LIVRES"
+    }, 
+    "res_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/pt-br/resources.json"
+  }
+]

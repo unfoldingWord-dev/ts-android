@@ -1,7 +1,32 @@
 [
   {
-    "date_modified": "20141208",
-    "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/languages.json",
+    "date_modified": "20150129", 
+    "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/obs/languages.json", 
+    "meta": [], 
     "slug": "obs"
+  }, 
+  {
+    "date_modified": "20150206", 
+    "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/rut/languages.json", 
+    "meta": [
+      "bible-ot"
+    ], 
+    "slug": "rut"
+  }, 
+  {
+    "date_modified": "20150206", 
+    "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/luk/languages.json", 
+    "meta": [
+      "bible-nt"
+    ], 
+    "slug": "luk"
+  }, 
+  {
+    "date_modified": "20150206", 
+    "lang_catalog": "https://api.unfoldingword.org/ts/txt/2/tit/languages.json", 
+    "meta": [
+      "bible-nt"
+    ], 
+    "slug": "tit"
   }
 ]
