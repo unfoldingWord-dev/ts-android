@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 1/29/2015.
@@ -21,18 +22,24 @@ import com.door43.translationstudio.R;
 public class VerseMarkerDialog extends DialogFragment {
     private OnClickListener mListener;
     private String mVerse;
+    private int mMaxVerse;
+    private int mSuggestedVerse;
+    private int mMinVerse;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.verse_marker);
         View v = inflater.inflate(R.layout.dialog_verse_marker, container, false);
-        EditText verseText = (EditText)v.findViewById(R.id.verseNumberText);
+        final EditText verseText = (EditText)v.findViewById(R.id.verseNumberText);
         Button okButton = (Button)v.findViewById(R.id.okButton);
         Button cancelButton = (Button)v.findViewById(R.id.cancelButton);
 
         // load parameters
         Bundle args = getArguments();
         if(args != null) {
-            mVerse = args.getInt("verse") + "";
+            mSuggestedVerse = args.getInt("startVerse");
+            mVerse = mSuggestedVerse + "";
+            mMinVerse = args.getInt("minVerse");
+            mMaxVerse = args.getInt("maxVerse");
             verseText.setText(mVerse);
         }
 
@@ -64,15 +71,19 @@ public class VerseMarkerDialog extends DialogFragment {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mListener != null) {
-                    try {
-                        mListener.onClick(Integer.parseInt(mVerse));
-                    } catch (Exception e) {
-                        // Delete the verse
-                        mListener.onClick(-1);
-                    }
+                // if the verse is empty it will be deleted
+                int verse = -1;
+                if(!mVerse.isEmpty()) {
+                    verse = Integer.parseInt(mVerse);
                 }
-                dismiss();
+                if(verse != -1 && (verse > mMaxVerse || verse < mMinVerse)) {
+                    MainContext.getContext().showToastMessage(String.format(MainContext.getContext().getResources().getString(R.string.verse_out_of_bounds), mMinVerse, mMaxVerse));
+                } else {
+                    if (mListener != null) {
+                        mListener.onClick(verse);
+                    }
+                    dismiss();
+                }
             }
         });
 

@@ -1565,9 +1565,10 @@ public class MainActivity extends TranslatorBaseActivity {
                 defaultVerseNumber = p.getSelectedChapter().getSelectedFrame().getStartingVerseNumber();
             }
         }
-        final int startingVerseNumber = defaultVerseNumber;
+        final int minVerseNumber = defaultVerseNumber;
+        final int maxVerseNumber = p.getSelectedChapter().getSelectedFrame().getEndingVerseNumber();
         new ThreadableUI(this) {
-            private int mSuggestedVerse = startingVerseNumber;
+            private int mSuggestedVerse = minVerseNumber;
 
             @Override
             public void onStop() {}
@@ -1607,7 +1608,9 @@ public class MainActivity extends TranslatorBaseActivity {
                 // Create and show the dialog
                 VerseMarkerDialog newFragment = new VerseMarkerDialog();
                 Bundle args = new Bundle();
-                args.putInt("verse", mSuggestedVerse);
+                args.putInt("startVerse", mSuggestedVerse);
+                args.putInt("maxVerse", maxVerseNumber);
+                args.putInt("minVerse", minVerseNumber);
                 newFragment.setArguments(args);
                 newFragment.setOkListener(new VerseMarkerDialog.OnClickListener() {
                     @Override
@@ -1740,7 +1743,10 @@ public class MainActivity extends TranslatorBaseActivity {
 
         VerseMarkerDialog newFragment = new VerseMarkerDialog();
         Bundle args = new Bundle();
-        args.putInt("verse", verse.getStartVerseNumber());
+        Frame f =  app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+        args.putInt("startVerse", verse.getStartVerseNumber());
+        args.putInt("maxVerse",f.getEndingVerseNumber());
+        args.putInt("minVerse", f.getStartingVerseNumber());
         newFragment.setArguments(args);
         newFragment.setOkListener(new VerseMarkerDialog.OnClickListener() {
             @Override

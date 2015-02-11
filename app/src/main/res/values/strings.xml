@@ -237,4 +237,5 @@
     <string name="label_email">Email</string>
     <string name="label_phone">Phone</string>
     <string name="contact_form_description">Please provide your contact information. This information will be securely transfered to the server when you publish a translation.</string>
+    <string name="verse_out_of_bounds">Choose a verse between <xliff:g id="number" example="1">%1$s</xliff:g> and <xliff:g id="number" example="100">%2$s</xliff:g></string>
 </resources>

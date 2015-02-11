@@ -46,6 +46,7 @@ public class USXRenderer extends RenderingEngine {
     public CharSequence render(CharSequence in) {
         CharSequence out = in.toString().trim();
 
+        out = renderSectionHeading(out);
         out = renderLineBreaks(out);
         out = renderWhiteSpace(out);
         out = renderParagraph(out);
@@ -56,6 +57,32 @@ public class USXRenderer extends RenderingEngine {
         return out;
     }
 
+    /**
+     * Renders section headings.
+     * For now these are just ignored (hidden)
+     * @param in
+     * @return
+     */
+    public CharSequence renderSectionHeading(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = paraPattern("s");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            // strip out section heading
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Strips out extra whitespace from the text
+     * @param in
+     * @return
+     */
     public CharSequence renderWhiteSpace(CharSequence in) {
         CharSequence out = "";
         Pattern pattern = Pattern.compile("(\\s+)");
@@ -140,7 +167,7 @@ public class USXRenderer extends RenderingEngine {
      */
     public CharSequence renderParagraph(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Pattern.compile("<para\\s+style=\"p\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
+        Pattern pattern = paraPattern("p");//Pattern.compile("<para\\s+style=\"p\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
@@ -164,7 +191,7 @@ public class USXRenderer extends RenderingEngine {
      */
     public CharSequence renderPoeticLine(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = Pattern.compile("<para\\s+style=\"q(\\d+)\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
+        Pattern pattern = paraPattern("q(\\d+)");// Pattern.compile("<para\\s+style=\"q(\\d+)\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
@@ -204,5 +231,14 @@ public class USXRenderer extends RenderingEngine {
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
+    }
+
+    /**
+     * Returns a pattern that matches a para tag
+     * @param style a string or regular expression to identify the style
+     * @return
+     */
+    private static Pattern paraPattern(String style) {
+        return Pattern.compile("<para\\s+style=\""+style+"\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
     }
 }

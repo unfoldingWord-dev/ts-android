@@ -32,6 +32,7 @@ public class Frame implements Model {
     private String mCachedDescription;
     private String mCachedTitle;
     private int mStartingVerseNumber = 0;
+    private int mEndingVerseNumber = 0;
 
     /**
      * The format of the resource
@@ -219,6 +220,20 @@ public class Frame implements Model {
         return mStartingVerseNumber;
     }
 
+    /**
+     * Returns the verse number that ends this frame.
+     * This is only applicable to source that has verses in it (usx)
+     * @return
+     */
+    public int getEndingVerseNumber() {
+        // generate the ending verse number as we generate the frame title
+        getTitle();
+        if(mEndingVerseNumber == 0) {
+            mEndingVerseNumber = 500;
+        }
+        return mEndingVerseNumber;
+    }
+
     @Override
     public String getTitle() {
         if(mCachedTitle == null) {
@@ -258,6 +273,9 @@ public class Frame implements Model {
                 if(startVerse > 0) {
                     mStartingVerseNumber = startVerse;
                 }
+                if(endVerse > 0) {
+                    mEndingVerseNumber = endVerse;
+                }
             } else {
                 mCachedTitle = mId;
             }
@@ -278,9 +296,9 @@ public class Frame implements Model {
             int maxLen = 130;
             // account for ellipses
             if (out.length() > maxLen - 3) {
-                mCachedDescription = out.subSequence(0, maxLen).toString().trim().replaceFirst("^\\d+", "") + "...";
+                mCachedDescription = out.subSequence(0, maxLen).toString().trim().replaceFirst("^\\d+(\\-\\d+)?", "") + "...";
             } else {
-                mCachedDescription = out.toString().trim().replaceFirst("^\\d+", "");
+                mCachedDescription = out.toString().trim().replaceFirst("^\\d+(\\-\\d+)?", "");
             }
         }
         return mCachedDescription;
