@@ -371,12 +371,15 @@ public class Chapter implements Model {
      * Saves the reference and title to the disk
      */
     public void save() {
+        Boolean didSave = false;
+
         if(mReferenceTranslation != null && mTitleTranslation != null) {
             String referencePath = getReferencePath(mProject.getId(), mReferenceTranslation.getLanguage().getId(), getId());
             String titlePath = getTitlePath(mProject.getId(), mTitleTranslation.getLanguage().getId(), getId());
 
             // save reference
             if(!mReferenceTranslation.isSaved()) {
+                didSave = true;
                 mReferenceTranslation.isSaved(true);
                 File refFile = new File(referencePath);
                 if(mReferenceTranslation.getText().isEmpty()) {
@@ -401,6 +404,7 @@ public class Chapter implements Model {
 
             // save title
             if(!mTitleTranslation.isSaved()) {
+                didSave = true;
                 mTitleTranslation.isSaved(true);
                 File titleFile = new File(titlePath);
                 if(mTitleTranslation.getText().isEmpty()) {
@@ -421,6 +425,10 @@ public class Chapter implements Model {
                         Logger.e(this.getClass().getName(), "failed to write the translation to disk", e);
                     }
                 }
+            }
+            // let the project know it has been saved
+            if(didSave) {
+                mProject.onChapterSaved(this);
             }
         }
     }
@@ -499,5 +507,14 @@ public class Chapter implements Model {
      */
     public Model[] getFrames() {
         return mFrames.toArray(new Model[mFrameMap.size()]);
+    }
+
+    /**
+     * Called when a frame in this chapter has been saved
+     * @param frame
+     */
+    public void onFrameSaved(Frame frame) {
+        // let the project know the translation has been saved
+        mProject.onChapterSaved(this);
     }
 }

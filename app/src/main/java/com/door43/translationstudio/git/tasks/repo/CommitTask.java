@@ -8,12 +8,12 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
-public class AddTask extends RepoOpTask {
+public class CommitTask extends RepoOpTask {
 
     private String mFilePattern;
     private OnAddComplete mCallback;
 
-    public AddTask(Repo repo, String filepattern, OnAddComplete callback) {
+    public CommitTask(Repo repo, String filepattern, OnAddComplete callback) {
         super(repo);
         mFilePattern = filepattern;
         mCallback = callback;

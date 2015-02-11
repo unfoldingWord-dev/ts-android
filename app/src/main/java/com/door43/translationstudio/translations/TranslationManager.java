@@ -8,7 +8,7 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.ProgressCallback;
-import com.door43.translationstudio.git.tasks.repo.AddTask;
+import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
@@ -62,7 +62,7 @@ public class TranslationManager implements TCPClient.TcpListener {
         final String remotePath = getRemotePath(p, p.getSelectedTargetLanguage());
         final Repo repo = new Repo(p.getRepositoryPath());
 
-        AddTask add = new AddTask(repo, ".", new AddTask.OnAddComplete() {
+        CommitTask add = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
             @Override
             public void success() {
                 PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.push_msg_init));

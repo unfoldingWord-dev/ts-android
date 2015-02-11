@@ -6,9 +6,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
-import com.door43.translationstudio.git.tasks.repo.AddTask;
-import com.door43.translationstudio.user.Profile;
-import com.door43.translationstudio.util.FileUtilities;
+import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
@@ -16,6 +14,7 @@ import com.door43.translationstudio.util.MainContext;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -800,7 +799,7 @@ public class Project implements Model {
     public void commit(final OnCommitComplete callback) {
         final Repo repo = new Repo(getRepositoryPath());
 
-        AddTask add = new AddTask(repo, ".", new AddTask.OnAddComplete() {
+        CommitTask commit = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
             @Override
             public void success() {
                 if(callback != null) {
@@ -815,7 +814,7 @@ public class Project implements Model {
                 }
             }
         });
-        add.executeTask();
+        commit.executeTask();
     }
 
     /**
@@ -921,6 +920,33 @@ public class Project implements Model {
      */
     public boolean hasTerms() {
         return numTerms() > 0;
+    }
+
+    /**
+     * Called when one of the chapters in this project has been saved.
+     * @param chapter
+     */
+    public void onChapterSaved(Chapter chapter) {
+        // record the source language
+        File sourceLanguageFile = new File(getRepositoryPath(), "manifest.json");
+        JSONObject manifestJson = new JSONObject();
+        JSONObject sourceJson = new JSONObject();
+        JSONObject resourceJson = new JSONObject();
+        try {
+            resourceJson.put("slug", getSelectedSourceLanguage().getSelectedResource().getId());
+            resourceJson.put("date_modified", getSelectedSourceLanguage().getSelectedResource().getDateModified());
+
+            sourceJson.put("slug", getSelectedSourceLanguage().getId());
+            sourceJson.put("date_modified", getSelectedSourceLanguage().getDateModified());
+            sourceJson.put("resource", resourceJson);
+
+            manifestJson.put("source_language", sourceJson);
+
+            FileUtils.writeStringToFile(sourceLanguageFile, manifestJson.toString());
+            commit(null);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "failed to write the project manifest", e);
+        }
     }
 
     public interface OnCommitComplete {

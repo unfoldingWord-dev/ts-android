@@ -312,7 +312,8 @@ public class Frame implements Model {
                 // write translation
                 if(!file.exists()) {
                     file.getParentFile().mkdirs();
-                }  try {
+                }
+                try {
                     Boolean notifyTranslationChanged = false;
                     if(!file.exists()) {
                         notifyTranslationChanged = true;
@@ -329,6 +330,8 @@ public class Frame implements Model {
                     Logger.e(this.getClass().getName(), "failed to write the translation to disk", e);
                 }
             }
+            // let the chapter know the frame has been saved
+            mChapter.onFrameSaved(this);
         }
     }
 
