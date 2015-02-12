@@ -32,7 +32,7 @@ public class CommitTask extends RepoOpTask {
         if(isSuccess) {
             mCallback.success();
         } else {
-            mCallback.error();
+            mCallback.error(mException);
         }
     }
 
@@ -79,6 +79,6 @@ public class CommitTask extends RepoOpTask {
 
     public interface OnAddComplete {
         public void success();
-        public void error();
+        public void error(Throwable e);
     }
 }

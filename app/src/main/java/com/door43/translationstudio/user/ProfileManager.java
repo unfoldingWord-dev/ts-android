@@ -1,6 +1,13 @@
 package com.door43.translationstudio.user;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.GitSyncAsyncTask;
+import com.door43.translationstudio.git.tasks.ProgressCallback;
+import com.door43.translationstudio.git.tasks.repo.CommitTask;
+import com.door43.translationstudio.git.tasks.repo.PushTask;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
@@ -76,7 +83,54 @@ public class ProfileManager {
         mProfile = profile;
     }
 
+    /**
+     * Returns the local path to the repository
+     * @return
+     */
     private static String getRepositoryPath() {
         return MainContext.getContext().getFilesDir() + "/" + MainContext.getContext().getResources().getString(R.string.git_repository_dir) + "/profile/";
+    }
+
+    /**
+     * Returns the remote repository url
+     * @return
+     */
+    private static String getRemotePath() {
+        String server = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, MainContext.getContext().getResources().getString(R.string.pref_default_git_server));
+        return server + ":tS/" + MainContext.getContext().getUDID() + "/profile";
+    }
+
+    /**
+     * Pushes the profile to the server
+     */
+    public static void push() {
+        final String remotePath = getRemotePath();
+        final Repo repo = new Repo(getRepositoryPath());
+
+        CommitTask add = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
+            @Override
+            public void success() {
+                PushTask push = new PushTask(repo, remotePath, true, true, new GitSyncAsyncTask.AsyncTaskCallback() {
+                    public boolean doInBackground(Void... params) {
+                        return false;
+                    }
+                    public void onPreExecute() {}
+                    public void onProgressUpdate(String... progress) {}
+                    @Override
+                    public void onPostExecute(Boolean isSuccess) {
+                        if(!isSuccess) {
+                            Logger.e(ProfileManager.class.getName(), "failed to push the profile to the server");
+                        }
+                    }
+                });
+                push.executeTask();
+            }
+
+            @Override
+            public void error(Throwable e) {
+                Logger.e(ProfileManager.class.getName(), "failed to commit chnages to the profile repo", e);
+            }
+        });
+        add.executeTask();
     }
 }

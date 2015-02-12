@@ -808,9 +808,10 @@ public class Project implements Model {
             }
 
             @Override
-            public void error() {
+            public void error(Throwable e) {
+                Logger.e(this.getClass().getName(), "failed to commit the project changes", e);
                 if(callback != null) {
-                    callback.error();
+                    callback.error(e);
                 }
             }
         });
@@ -951,6 +952,6 @@ public class Project implements Model {
 
     public interface OnCommitComplete {
         public void success();
-        public void error();
+        public void error(Throwable e);
     }
 }

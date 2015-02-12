@@ -98,7 +98,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
             }
 
             @Override
-            public void error() {
+            public void error(Throwable e) {
                 // We don't care. Worst case is the server won't know that the translation is ready.
                 app().getSharedTranslationManager().syncSelectedProject();
                 finish();

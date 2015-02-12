@@ -12,6 +12,7 @@ import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TCPClient;
@@ -71,11 +72,14 @@ public class TranslationManager implements TCPClient.TcpListener {
             }
 
             @Override
-            public void error() {
-                mContext.showToastMessage(R.string.error_git_stage);
+            public void error(Throwable e) {
+                mContext.showException(e, R.string.error_git_stage);
             }
         });
         add.executeTask();
+
+        // send the latest profile info to the server as well
+        ProfileManager.push();
     }
 
     /**

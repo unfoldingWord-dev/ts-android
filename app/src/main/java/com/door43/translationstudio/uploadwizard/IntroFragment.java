@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -54,10 +55,9 @@ public class IntroFragment extends WizardFragment {
             in.setFillAfter(true);
             translationChecksNotice.startAnimation(in);
         }
-
-        completeSwitch.setOnClickListener(new View.OnClickListener() {
+        completeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 p.setTranslationIsReady(completeSwitch.isChecked());
                 if(completeSwitch.isChecked()) {
                     Animation in = new AlphaAnimation(0.0f, 1.0f);

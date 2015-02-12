@@ -24,6 +24,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
@@ -87,7 +88,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 }
 
                 @Override
-                public void error() {
+                public void error(Throwable e) {
                     MainContext.getContext().closeProgressDialog();
                     MainContext.getContext().showToastMessage(R.string.project_share_exception);
                     finish();
