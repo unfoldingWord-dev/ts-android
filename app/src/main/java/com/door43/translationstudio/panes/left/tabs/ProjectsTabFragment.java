@@ -105,8 +105,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      * @param p
      */
     private void handleMetaSelection(PseudoProject p) {
-        ((MainActivity) me.getActivity()).fixTranslationFocus();
-
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {

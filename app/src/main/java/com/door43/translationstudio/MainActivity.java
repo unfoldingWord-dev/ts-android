@@ -135,7 +135,6 @@ public class MainActivity extends TranslatorBaseActivity {
     private RenderingGroup mTranslationRendering;
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
-    private View mFocusFix;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -228,7 +227,6 @@ public class MainActivity extends TranslatorBaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        fixTranslationFocus();
         if(!mActivityIsInitializing) {
             reloadCenterPane();
             mLeftPane.reloadFramesTab();
@@ -315,7 +313,6 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
         mTranslationProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.translationProgressBar);
         mSourceProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.sourceProgressBar);
-        mFocusFix = findViewById(R.id.focusFix);
 
         // listens for for key term clicks and opens term drawer
         mKeyTermClickListener = new Span.OnClickListener() {
@@ -592,7 +589,6 @@ public class MainActivity extends TranslatorBaseActivity {
                         }
 
                         // This is a click
-                        mFocusFix.setVisibility(View.GONE); // a hack to get the translation text focus working right
 
                         // pass click to spans
                         x -= widget.getTotalPaddingLeft();
@@ -691,9 +687,9 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if(b) {
-                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-                }
+//                if(b) {
+//                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+//                }
                 invalidateOptionsMenu();
             }
         });
@@ -907,7 +903,6 @@ public class MainActivity extends TranslatorBaseActivity {
                         // scroll to top
                         mTranslationEditText.scrollTo(0, 0);
                         mTranslationEditText.clearFocus();
-//                        mFocusFix.setVisibility(View.GONE);
                         mProcessingTranslation = false;
                     }
                 });
@@ -1944,13 +1939,4 @@ public class MainActivity extends TranslatorBaseActivity {
         }.start();
     }
 
-    /**
-     * This method enables a dummy view that grabs focus first instead of the translation text view
-     * This prevents the translation text view from gaining focus and opening the keyboard prematurely
-     */
-    public void fixTranslationFocus() {
-        if(mFocusFix != null) {
-            mFocusFix.setVisibility(View.VISIBLE);
-        }
-    }
 }

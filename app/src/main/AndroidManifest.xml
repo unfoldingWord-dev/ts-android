@@ -43,7 +43,7 @@
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.Main"
-            android:windowSoftInputMode="adjustNothing" >
+            android:windowSoftInputMode="adjustNothing|stateAlwaysHidden" >
         </activity>
         <activity
             android:name=".SettingsActivity"
