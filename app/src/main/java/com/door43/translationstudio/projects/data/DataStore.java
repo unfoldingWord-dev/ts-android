@@ -3,9 +3,11 @@ package com.door43.translationstudio.projects.data;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
+import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.ServerUtilities;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -336,6 +338,12 @@ public class DataStore {
     public String fetchNotes(String projectId, String languageId, String resourceId, String urlString) {
         String path = notesPath(projectId, languageId, resourceId);
 
+        // urls that include extra parameters (date_modified) provide better download caching and optimization.
+//        if(urlString.split("\\?").length > 0) {
+//            String key = Security.md5(urlString);
+//            path = new File(new File(path).getParentFile(), "notes.cache").getAbsolutePath();
+//        }
+
         downloadToAssets(path, urlString);
 
         return loadJSONAsset(path);
@@ -398,6 +406,7 @@ public class DataStore {
         return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
     }
 
+
     /**
      * Load json from the local assets
      * @param path path to the json file within the assets directory
@@ -435,17 +444,38 @@ public class DataStore {
 
         // retrieve the asset
         File cacheAsset = new File(cacheDir, path);
-        if(cacheAsset.exists()) {
+        String name = cacheAsset.getName();
+        File linkedAsset = new File(cacheAsset.getParentFile(), FilenameUtils.removeExtension(name) + ".link");
+
+        if(cacheAsset.exists() && cacheAsset.isFile()) {
             // attempt to load from the cached assets first. These will be the most up to date
             try {
                 return FileUtilities.getStringFromFile(cacheAsset);
             } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to load cached assets", e);
-                return loadPackagedJSONAsset(path);
+                Logger.e(this.getClass().getName(), "failed to load cached asset", e);
             }
-        } else {
-            return loadPackagedJSONAsset(path);
+        } else if(linkedAsset.exists() && linkedAsset.isFile()){
+            // attempt to load a linked asset (references some global asset that is shared among projects)
+            try {
+                String link = FileUtilities.getStringFromFile(linkedAsset);
+                return loadLinkedJSONAsset(link);
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to load linked asset", e);
+            }
         }
+        // load the packaged asset by default
+        return loadPackagedJSONAsset(path);
+    }
+
+    /**
+     * Loads the json from a linked asset (those shared between multiple projects)
+     * NOTE: this is technically the new way assets are loaded, but we need to provide backwards compatability.
+     * @param link
+     * @return
+     */
+    private String loadLinkedJSONAsset(String link) {
+        // TODO: do something here.
+        return null;
     }
 
     /**

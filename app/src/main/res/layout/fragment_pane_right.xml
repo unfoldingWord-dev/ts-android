@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/right_pane_content"
+    android:id="@+id/right_pane_tabs"
     android:background="@color/white">
 
 </LinearLayout>

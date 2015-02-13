@@ -1017,6 +1017,8 @@ public class MainActivity extends TranslatorBaseActivity {
             if(f != null) {
                 p.getSelectedChapter().setSelectedFrame(f.getId());
                 mLeftPane.selectTab(mLeftPane.getSelectedTabIndex());
+                mRightPane.reloadNotesTab();
+                mRightPane.reloadTermsTab();
             }
             reloadCenterPane();
             return true;
@@ -1361,7 +1363,10 @@ public class MainActivity extends TranslatorBaseActivity {
             if(projectEnabled) {
                 Chapter c = p.getSelectedChapter();
                 hasChapterSettings = c != null && c.hasChapterSettings();
-                hasResources = p.hasTerms() || p.hasNotes();
+                if(c != null) {
+                    Frame f = c.getSelectedFrame();
+                    hasResources = f.getImportantTerms().size() > 0 || f.getTranslationNotes() != null;
+                }
             }
 
             menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);

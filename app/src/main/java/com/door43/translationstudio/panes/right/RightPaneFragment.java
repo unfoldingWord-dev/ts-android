@@ -13,7 +13,8 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
  * Created by joel on 8/26/2014.
  */
 public class RightPaneFragment extends TranslatorBaseFragment {
-    private ResourcesFragment mResourcesFragment = new ResourcesFragment();
+//    private ResourcesFragment mResourcesFragment = new ResourcesFragment();
+    private RightPaneSlidingTabsFragment mTabsPager = new RightPaneSlidingTabsFragment();
     private int mLayoutWidth = 0;
 
     @Override
@@ -22,7 +23,11 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         View rootView = inflater.inflate(R.layout.fragment_pane_right, container, false);
 
         // insert resources layout
-        getFragmentManager().beginTransaction().replace(R.id.right_pane_content, mResourcesFragment).addToBackStack(null).commit();
+//        getFragmentManager().beginTransaction().replace(R.id.right_pane_content, mResourcesFragment).addToBackStack(null).commit();
+
+        // set up tabs
+        getFragmentManager().beginTransaction().replace(R.id.right_pane_tabs, mTabsPager).addToBackStack(null).commit();
+        mTabsPager.selectTab(0);
 
         if(mLayoutWidth != 0) {
             rootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.FILL_PARENT));
@@ -30,21 +35,23 @@ public class RightPaneFragment extends TranslatorBaseFragment {
 
         return rootView;
     }
-    /**
-     * Triggered whenever the pane is opened
-     */
-    public void onOpen() {
-
-    }
 
     public void reloadTerm() {
-        mResourcesFragment.showTerm();
+//        mResourcesFragment.showTerm();
     }
     public void showTerm(Term term) {
-        mResourcesFragment.showTerm(term);
+//        mResourcesFragment.showTerm(term);
     }
-    public void showNotes() {
-        mResourcesFragment.showNotes();
+
+    /**
+     * Reloads the notes tab
+     */
+    public void reloadNotesTab() {
+        mTabsPager.reloadNotesTab();
+    }
+
+    public void reloadTermsTab() {
+        // TODO: reload the terms
     }
 
     /**

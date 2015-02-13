@@ -31,10 +31,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     private ProjectsTabFragment me = this;
     private ModelItemAdapter mModelItemAdapter;
 
-//    public ProjectsTabFragment() {
-//        MainContext.getEventBus().register(this);
-//    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pane_left_projects, container, false);
