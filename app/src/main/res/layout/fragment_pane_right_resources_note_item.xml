@@ -12,12 +12,15 @@
         android:text="New Text"
         android:id="@+id/translationNoteReferenceText"
         android:paddingRight="10dp"
-        android:textSize="@dimen/h5"
-        android:textStyle="bold" />
+        android:textColor="@color/dark_gray"
+        android:textSize="@dimen/h4"
+        android:textStyle="bold|italic" />
 
     <TextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/dark_gray"
+        android:textSize="@dimen/h5"
         android:text="New Text\nasdffsd\nsdfsdsd\nsdgfsdf"
         android:id="@+id/translationNoteText" />
 </LinearLayout>

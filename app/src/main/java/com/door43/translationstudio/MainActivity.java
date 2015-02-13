@@ -783,7 +783,7 @@ public class MainActivity extends TranslatorBaseActivity {
                         mSourceProgressBar.startAnimation(outProgress);
                         // scroll to top
                         mSourceText.scrollTo(0, 0);
-                        mRightPane.reloadTerm();
+                        mRightPane.reloadTermsTab();
                     }
                 });
 
@@ -1017,8 +1017,6 @@ public class MainActivity extends TranslatorBaseActivity {
             if(f != null) {
                 p.getSelectedChapter().setSelectedFrame(f.getId());
                 mLeftPane.selectTab(mLeftPane.getSelectedTabIndex());
-                mRightPane.reloadNotesTab();
-                mRightPane.reloadTermsTab();
             }
             reloadCenterPane();
             return true;
@@ -1037,6 +1035,8 @@ public class MainActivity extends TranslatorBaseActivity {
         // load the text
         final Project p = app().getSharedProjectManager().getSelectedProject();
         if(frameIsSelected()) {
+            mRightPane.reloadNotesTab();
+
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
 //            mTranslationEditText.setFocusable(true);
             mTranslationEditText.setEnabled(true);
