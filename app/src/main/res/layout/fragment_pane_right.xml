@@ -1,27 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tabbed_pager"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
-    >
-
-    <!--<com.door43.slidingtabs.SlidingTabLayout-->
-    <!--android:id="@+id/sliding_tabs"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--/>-->
+    android:background="@color/white">
     <com.astuetz.PagerSlidingTabStrip
-        android:id="@+id/sliding_tabs"
+        android:id="@+id/right_sliding_tabs"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize" />
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/viewpager"
+        android:id="@+id/rightViewPager"
         android:layout_width="match_parent"
         android:layout_height="0px"
-        android:layout_weight="1"
-        />
+        android:layout_weight="1" />
 </LinearLayout>

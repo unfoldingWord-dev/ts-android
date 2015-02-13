@@ -3,6 +3,7 @@ package com.door43.translationstudio.panes.left;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,22 +49,22 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
         }
 
 //        ViewPager
-//        mViewPager = (ViewPager) mRootView.findViewById(R.id.viewpager);
-//        tabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), tabs);
-//        mViewPager.setAdapter(tabbedViewPagerAdapter);
-//
-//        // Sliding tab layout
-//        mSlidingTabLayout = (PagerSlidingTabStrip) mRootView.findViewById(R.id.sliding_tabs);
-//        mSlidingTabLayout.setViewPager(mViewPager);
-//        if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.blue);
-//        mSlidingTabLayout.setIndicatorColor(mSelectedTabColor);
-//        mSlidingTabLayout.setDividerColor(Color.TRANSPARENT);
-//
-//        selectTab(mDefaultPage);
-//
-//        if(mLayoutWidth != 0) {
-//            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.FILL_PARENT));
-//        }
+        mViewPager = (ViewPager) mRootView.findViewById(R.id.leftViewPager);
+        tabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), tabs);
+        mViewPager.setAdapter(tabbedViewPagerAdapter);
+
+        // Sliding tab layout
+        mSlidingTabLayout = (PagerSlidingTabStrip) mRootView.findViewById(R.id.left_sliding_tabs);
+        mSlidingTabLayout.setViewPager(mViewPager);
+        if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.blue);
+        mSlidingTabLayout.setIndicatorColor(mSelectedTabColor);
+        mSlidingTabLayout.setDividerColor(Color.TRANSPARENT);
+
+        selectTab(mDefaultPage);
+
+        if(mLayoutWidth != 0) {
+            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.FILL_PARENT));
+        }
 
         return mRootView;
     }

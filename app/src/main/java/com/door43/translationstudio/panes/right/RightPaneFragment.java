@@ -46,12 +46,12 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         }
 
         // ViewPager
-        mViewPager = (ViewPager) mRootView.findViewById(R.id.viewpager);
+        mViewPager = (ViewPager) mRootView.findViewById(R.id.rightViewPager);
         tabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), tabs);
         mViewPager.setAdapter(tabbedViewPagerAdapter);
 
         // Sliding tab layout
-        mSlidingTabLayout = (PagerSlidingTabStrip) mRootView.findViewById(R.id.sliding_tabs);
+        mSlidingTabLayout = (PagerSlidingTabStrip) mRootView.findViewById(R.id.right_sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
         if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.purple);
         mSlidingTabLayout.setIndicatorColor(mSelectedTabColor);
