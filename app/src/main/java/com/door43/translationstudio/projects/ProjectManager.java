@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.xml.transform.Source;
@@ -830,6 +831,15 @@ public class ProjectManager {
                 continue;
             }
         }
+
+        // attempt to select a more accurate default language for the project title and description
+        String deviceLocale = Locale.getDefault().getLanguage();
+        if(p.getSourceLanguage(deviceLocale) != null) {
+            p.setSelectedSourceLanguage(deviceLocale);
+        } else if(p.getSourceLanguage("en") != null) {
+            p.setSelectedSourceLanguage("en");
+        }
+
         return importedLanguages;
     }
 
