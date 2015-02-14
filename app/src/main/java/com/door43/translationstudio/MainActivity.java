@@ -762,16 +762,15 @@ public class MainActivity extends TranslatorBaseActivity {
                 final Animation out = new AlphaAnimation(1.0f, 0.0f);
                 out.setDuration(TEXT_FADE_SPEED);
 
-
                 // build rendering engines
                 mSourceRendering = new RenderingGroup();
-                if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
-                    mSourceRendering.addEngine(new KeyTermRenderer(mSelectedFrame, mKeyTermClickListener));
-                }
                 if(mSelectedFrame.format == Frame.Format.USX) {
                     mSourceRendering.addEngine(new USXRenderer());
                 } else {
                     mSourceRendering.addEngine(new DefaultRenderer());
+                }
+                if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
+                    mSourceRendering.addEngine(new KeyTermRenderer(mSelectedFrame, mKeyTermClickListener));
                 }
                 mSourceRendering.init(mSelectedFrame.getText(), new RenderingGroup.Callback() {
                     @Override

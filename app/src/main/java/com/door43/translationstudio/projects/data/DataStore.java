@@ -1,5 +1,8 @@
 package com.door43.translationstudio.projects.data;
 
+import android.content.SharedPreferences;
+import android.net.Uri;
+
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
@@ -17,19 +20,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * The data store handles all of the text and media resources within the app.
- * This class will look for data locally as well as on the server.
- * The api can be found at https://door43.org/en/dev/api/unfoldingword
+ * This class manages json assets within the app.
+ * Caching is accomlished using an advanced lazy-linking system which allows redundant data
+ * to be reused efficiently.
+ *
+ * API specs can be found at https://door43.org/en/dev/api/translationstudio
  */
 public class DataStore {
     private static MainApplication mContext;
     private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";
+    private static final String PREFERENCES_TAG = "com.door43.translationstudio.assets";
+    private SharedPreferences mSettings;
     private static final int API_VERSION = 2;
     // this is used so we can force a cache reset between versions of the app if we make changes to api implimentation
-    private static final int API_VERSION_INTERNAL = 2;
+    private static final int API_VERSION_INTERNAL = 3;
 
     public DataStore(MainApplication context) {
         mContext = context;
+        mSettings = mContext.getSharedPreferences(PREFERENCES_TAG, mContext.MODE_PRIVATE);
     }
 
     /**
@@ -37,7 +45,7 @@ public class DataStore {
      * @param json
      */
     public void importProject(String json) {
-        File file = new File(mContext.getCacheDir(), "assets/" + projectCatalogPath());
+        File file = new File(cachedAssetsDir(),projectCatalogPath());
         String catJson = fetchProjectCatalog(false);
         try {
             JSONArray cat = new JSONArray();
@@ -58,7 +66,7 @@ public class DataStore {
      * @param json
      */
     public void importSourceLanguage(String projectId, String json) {
-        File file = new File(mContext.getCacheDir(), "assets/" + sourceLanguageCatalogPath(projectId));
+        File file = new File(cachedAssetsDir(), sourceLanguageCatalogPath(projectId));
         String catJson = fetchSourceLanguageCatalog(projectId, false);
         try {
             JSONArray cat = new JSONArray();
@@ -80,7 +88,7 @@ public class DataStore {
      * @param json
      */
     public void importResource(String projectId, String languageId, String json) {
-        File file = new File(mContext.getCacheDir(), "assets/" + resourceCatalogPath(projectId, languageId));
+        File file = new File(cachedAssetsDir(), resourceCatalogPath(projectId, languageId));
         String catJson = fetchResourceCatalog(projectId, languageId, false);
         try {
             JSONArray cat = new JSONArray();
@@ -103,7 +111,7 @@ public class DataStore {
      * @param data
      */
     public void importNotes(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(mContext.getCacheDir(), "assets/" + notesPath(projectId, languageId, resourceId));
+        File file = new File(cachedAssetsDir(), notesPath(projectId, languageId, resourceId));
         try {
             FileUtils.writeStringToFile(file, data);
         } catch (IOException e) {
@@ -119,7 +127,7 @@ public class DataStore {
      * @param data
      */
     public void importSource(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(mContext.getCacheDir(), "assets/" + sourcePath(projectId, languageId, resourceId));
+        File file = new File(cachedAssetsDir(), sourcePath(projectId, languageId, resourceId));
         try {
             FileUtils.writeStringToFile(file, data);
         } catch (IOException e) {
@@ -135,7 +143,7 @@ public class DataStore {
      * @param data
      */
     public void importTerms(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(mContext.getCacheDir(), "assets/" + termsPath(projectId, languageId, resourceId));
+        File file = new File(cachedAssetsDir(), termsPath(projectId, languageId, resourceId));
         try {
             FileUtils.writeStringToFile(file, data);
         } catch (IOException e) {
@@ -144,18 +152,187 @@ public class DataStore {
     }
 
     /**
-     * Downloads a file and places it in the cached assets directory
-     * @param path the relative path within the cached assets directory
-     * @param urlString the url from which the file will be downloaded
+     * Decrements the asset link count
+     * when the count reaches 0 the asset is removed
+     * @param key
      */
-    private void downloadToAssets(String path, String urlString) {
+    private void decrementAssetLink(String key) {
+        int numLinks = mSettings.getInt(key, 0) - 1;
+        SharedPreferences.Editor editor = mSettings.edit();
+        if(numLinks <=0 ) {
+            // asset is orphaned
+            editor.remove(key);
+            editor.remove(key+"_modified");
+            editor.remove(key + "_alias");
+            File file = getLinkedAsset(key);
+            file.delete();
+        } else {
+            // decrement link count
+            editor.putInt(key, numLinks);
+        }
+        editor.apply();
+    }
+
+    /**
+     * Increments the asset link count
+     * @param key
+     */
+    private void incrementAssetLink(String key) {
+        int numLinks = mSettings.getInt(key, 0) + 1;
+        SharedPreferences.Editor editor = mSettings.edit();
+        editor.putInt(key, numLinks);
+        editor.apply();
+    }
+
+    /**
+     * Creates an alias for a deprecated asset.
+     * This allows outdated links to be updated lazily
+     * @param newKey key to new asset
+     * @param oldKey key to old (deleted) asset
+     */
+    private void aliasAsset(String newKey, String oldKey) {
+        SharedPreferences.Editor editor = mSettings.edit();
+        editor.putString(oldKey+"_alias", newKey);
+        editor.apply();
+    }
+
+    /**
+     * Resolves the key to the linked asset.
+     * This will automatically update outdated links
+     * @param link
+     * @return the key to the linked asset
+     */
+    private String resolveLink(File link) {
+        if(link != null) {
+            try {
+                // resolve key aliases
+                String key;
+                String alias = FileUtils.readFileToString(link);
+                String originalKey = alias;
+                do {
+                    key = alias;
+                    alias = mSettings.getString(alias+"_alias", null);
+                } while(alias != null);
+
+                // update link if nessesary
+                if(!key.equals(originalKey)) {
+                    linkAsset(key, link);
+                }
+
+                return key;
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to read the key from the asset link " + link.getAbsolutePath(), e);
+            }
+        } else {
+            Logger.e(this.getClass().getName(), "received a null asset link");
+        }
+        return null;
+    }
+
+    /**
+     * Links an asset to a particular file path
+     * @param key the asset key
+     * @param path relative path to the link file
+     */
+    private void linkAsset(String key, String path) {
+        File link = new File(cachedAssetsDir(), path);
+        linkAsset(key, link);
+    }
+
+    /**
+     * Links an asset to a particular file path
+     * @param key the aset key
+     * @param link the link file
+     */
+    private void linkAsset(String key, File link) {
+        if(!FilenameUtils.getExtension(link.getName()).equals("link")) {
+            // convert path to a link
+            link = new File(link.getParentFile(), FilenameUtils.removeExtension(link.getName()) + ".link");
+        }
+
+        // resolve old link
+        if(link.exists()) {
+            try {
+                String oldKey = FileUtils.readFileToString(link);
+                if(oldKey != null && !oldKey.isEmpty()) {
+                    // process old key
+                    if(oldKey.equals(key)) {
+                        // the link already exists
+                        return;
+                    } else {
+                        // unlink from old asset
+                        decrementAssetLink(oldKey);
+                        // add alias for lazy updates to outdated links
+                        aliasAsset(key, oldKey);
+                    }
+                }
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to read link file "+link.getAbsolutePath(), e);
+            }
+        }
+
+        // create new link
+        try {
+            FileUtils.writeStringToFile(link, key);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to link the asset "+key+ " to "+link.getAbsolutePath(), e);
+        }
+    }
+
+    /**
+     * String returns the file to an asset
+     * @param key
+     */
+    private File getLinkedAsset(String key) {
+        return new File(cachedAssetsDir(), "data/" + key);
+    }
+
+    /**
+     * Downloads a file and places it in the cached assets directory
+     * @param urlString the url from which the file will be downloaded
+     * @return the asset key
+     */
+    private String downloadAsset(String urlString) {
+        SharedPreferences.Editor editor = mSettings.edit();
+        Uri uri = Uri.parse(urlString);
+        String key = Security.md5(uri.getHost()+uri.getPath());
+        File file = new File(cachedAssetsDir(), "data/" + key);
+        String dateModifiedRaw = uri.getQueryParameter("date_modified");
+
+        // identify existing data
+        if(file.exists() && dateModifiedRaw != null) {
+            int dateModified = Integer.parseInt(dateModifiedRaw);
+            try {
+                int oldDateModified = mSettings.getInt(key + "_modified", 0);
+                if (dateModified <= oldDateModified) {
+                    // current data is up to date
+                    return key;
+                }
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "invalid datetime value " +dateModifiedRaw, e);
+            }
+        }
+
+        // perform download
         try {
             URL url = new URL(urlString);
-            File file = new File(mContext.getCacheDir(), "assets/" + path);
             ServerUtilities.downloadFile(url, file);
+            // record date modified if provided
+            if(dateModifiedRaw != null) {
+                try {
+                    editor.putInt(key + "_modified", Integer.parseInt(dateModifiedRaw));
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "invalid datetime value " +dateModifiedRaw, e);
+                }
+            } else {
+                editor.remove(key+"_modified");
+            }
+            editor.apply();
+            return key;
         } catch (MalformedURLException e) {
             Logger.e(this.getClass().getName(), "malformed url", e);
         }
+        return null;
     }
 
     /**
@@ -168,7 +345,8 @@ public class DataStore {
         String path = projectCatalogPath();
 
         if(checkServer) {
-            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/catalog.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json");
+            linkAsset(key, path);
         }
         return loadJSONAsset(path);
     }
@@ -192,7 +370,8 @@ public class DataStore {
         String path = sourceLanguageCatalogPath(projectId);
 
         if(checkServer) {
-            downloadToAssets(path, sourceLanguageCatalogUrl(projectId));
+            String key = downloadAsset(sourceLanguageCatalogUrl(projectId));
+            linkAsset(key, path);
         }
         return loadJSONAsset(path);
     }
@@ -227,7 +406,8 @@ public class DataStore {
         String path = resourceCatalogPath(projectId, languageId);
 
         if(checkServer) {
-            downloadToAssets(path, resourceCatalogUrl(projectId, languageId));
+            String key = downloadAsset(resourceCatalogUrl(projectId, languageId));
+            linkAsset(key, path);
         }
         return loadJSONAsset(path);
     }
@@ -274,7 +454,8 @@ public class DataStore {
         String path = termsPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/terms.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json");
+            linkAsset(key, path);
         }
         return loadJSONAsset(path);
     }
@@ -292,7 +473,8 @@ public class DataStore {
     public String fetchTerms(String projectId, String languageId, String resourceId, String urlString) {
         String path = termsPath(projectId, languageId, resourceId);
 
-        downloadToAssets(path, urlString);
+        String key = downloadAsset(urlString);
+        linkAsset(key, path);
 
         return loadJSONAsset(path);
     }
@@ -320,7 +502,8 @@ public class DataStore {
         String path = notesPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/notes.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json");
+            linkAsset(key, path);
         }
         return loadJSONAsset(path);
     }
@@ -338,13 +521,8 @@ public class DataStore {
     public String fetchNotes(String projectId, String languageId, String resourceId, String urlString) {
         String path = notesPath(projectId, languageId, resourceId);
 
-        // urls that include extra parameters (date_modified) provide better download caching and optimization.
-//        if(urlString.split("\\?").length > 0) {
-//            String key = Security.md5(urlString);
-//            path = new File(new File(path).getParentFile(), "notes.cache").getAbsolutePath();
-//        }
-
-        downloadToAssets(path, urlString);
+        String key = downloadAsset(urlString);
+        linkAsset(key, path);
 
         return loadJSONAsset(path);
     }
@@ -372,7 +550,8 @@ public class DataStore {
         String path = sourcePath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            downloadToAssets(path, "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/"+resourceId+"/source.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json");
+            linkAsset(key, path);
         }
         return loadJSONAsset(path);
     }
@@ -390,7 +569,8 @@ public class DataStore {
     public String fetchSource(String projectId, String languageId, String resourceId, String urlString) {
         String path = sourcePath(projectId, languageId, resourceId);
 
-        downloadToAssets(path, urlString);
+        String key = downloadAsset(urlString);
+        linkAsset(key, path);
 
         return loadJSONAsset(path);
     }
@@ -406,15 +586,19 @@ public class DataStore {
         return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
     }
 
+    /**
+     * Returns the file for the cached assets directory
+     * @return
+     */
+    public static File cachedAssetsDir() {
+        return new File(mContext.getCacheDir(), "assets");
+    }
 
     /**
-     * Load json from the local assets
-     * @param path path to the json file within the assets directory
-     * @return the string contents of the json file
+     * Validates the asset cache version
      */
-    private String loadJSONAsset(String path) {
-        File cacheDir = new File(mContext.getCacheDir(), "assets");
-
+    private void validateAssetCache() {
+        File cacheDir = cachedAssetsDir();
         // verify the cached assets match the expected server api level
         File cacheVersionFile = new File(cacheDir, ".cache_api_version");
         if(cacheVersionFile.exists() && cacheVersionFile.isFile()) {
@@ -438,44 +622,43 @@ public class DataStore {
                 cacheVersionFile.createNewFile();
                 FileUtils.write(cacheVersionFile, API_VERSION+"."+API_VERSION_INTERNAL);
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "failed to create the asset version file", e);
             }
         }
-
-        // retrieve the asset
-        File cacheAsset = new File(cacheDir, path);
-        String name = cacheAsset.getName();
-        File linkedAsset = new File(cacheAsset.getParentFile(), FilenameUtils.removeExtension(name) + ".link");
-
-        if(cacheAsset.exists() && cacheAsset.isFile()) {
-            // attempt to load from the cached assets first. These will be the most up to date
-            try {
-                return FileUtilities.getStringFromFile(cacheAsset);
-            } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to load cached asset", e);
-            }
-        } else if(linkedAsset.exists() && linkedAsset.isFile()){
-            // attempt to load a linked asset (references some global asset that is shared among projects)
-            try {
-                String link = FileUtilities.getStringFromFile(linkedAsset);
-                return loadLinkedJSONAsset(link);
-            } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to load linked asset", e);
-            }
-        }
-        // load the packaged asset by default
-        return loadPackagedJSONAsset(path);
     }
 
     /**
-     * Loads the json from a linked asset (those shared between multiple projects)
-     * NOTE: this is technically the new way assets are loaded, but we need to provide backwards compatability.
-     * @param link
-     * @return
+     * Load json from the local assets
+     * @param path path to the json file within the assets directory
+     * @return the string contents of the json file
      */
-    private String loadLinkedJSONAsset(String link) {
-        // TODO: do something here.
-        return null;
+    private String loadJSONAsset(String path) {
+        File cacheDir = cachedAssetsDir();
+
+        validateAssetCache();
+
+        File cachedAsset = new File(cacheDir, path);
+        File link = new File(cachedAsset.getParentFile(), FilenameUtils.removeExtension(cachedAsset.getName()) + ".link");
+
+        // resolve links
+        if(link.exists()) {
+            String key = resolveLink(link);
+            if(key != null) {
+                cachedAsset = getLinkedAsset(key);
+            }
+        }
+
+        // load the asset
+        if(cachedAsset.exists() && cachedAsset.isFile()) {
+            try {
+                return FileUtilities.getStringFromFile(cachedAsset);
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to load cached asset", e);
+            }
+        }
+
+        // load the packaged asset by default
+        return loadPackagedJSONAsset(path);
     }
 
     /**
