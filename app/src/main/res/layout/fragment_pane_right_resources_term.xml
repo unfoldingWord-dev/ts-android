@@ -5,6 +5,7 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:visibility="visible"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="@string/no_key_terms"
@@ -22,19 +23,10 @@
         android:layout_height="fill_parent"
         android:id="@+id/keyTermsLayout">
 
-        <ScrollView
+        <ListView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:id="@+id/importantTermsLayout">
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:text="New Text"
-                android:id="@+id/importantTermsText"
-                android:padding="10dp"
-                android:textSize="@dimen/h2"
-                android:textColor="@color/dark_gray" />
-        </ScrollView>
+            android:id="@+id/importantTermsList"/>
 
         <LinearLayout
             android:visibility="gone"

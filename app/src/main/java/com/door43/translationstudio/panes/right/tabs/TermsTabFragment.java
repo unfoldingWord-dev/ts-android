@@ -2,16 +2,17 @@ package com.door43.translationstudio.panes.right.tabs;
 
 import android.os.Bundle;
 import android.text.Html;
-import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
-import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -28,6 +29,9 @@ import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
   * Created by joel on 2/12/2015.
   */
@@ -38,14 +42,14 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
     private TextView mRelatedTermsTitle;
     private TextView mExamplePassagesTitle;
     private LinearLayout mExamplePassagesView;
-    private TextView mImportantTerms;
     private View mTermLayout;
-    private ScrollView mImportantTermsLayout;
+    private ListView mImportantTermsList;
     private Button mImportantTermsButton;
     private boolean mIsLoaded = false;
     private ScrollView mTermInfoScroll;
     private TextView mTermsMessageText;
     private View mTermsLayout;
+    private ImportantTermsAdapter mTermsAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,11 +66,23 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
         mTermsMessageText = (TextView)view.findViewById(R.id.termsMessageText);
         mTermsLayout = view.findViewById(R.id.keyTermsLayout);
 
-        // these are for the default page
-        mImportantTerms = (TextView)view.findViewById(R.id.importantTermsText);
-
         mTermLayout = view.findViewById(R.id.termLayout);
-        mImportantTermsLayout = (ScrollView)view.findViewById(R.id.importantTermsLayout);
+        mImportantTermsList = (ListView)view.findViewById(R.id.importantTermsList);
+
+        // hook up adapter for key terms
+        mTermsAdapter = new ImportantTermsAdapter(this.getActivity(), new ArrayList(){});
+        mImportantTermsList.setAdapter(mTermsAdapter);
+
+        mImportantTermsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Project p = app().getSharedProjectManager().getSelectedProject();
+                if(p != null) {
+                    Term t = p.getTerm(mTermsAdapter.getItem(i));
+                    showTerm(t);
+                }
+            }
+        });
 
         // return to the important terms view
         mImportantTermsButton.setOnClickListener(new View.OnClickListener() {
@@ -76,14 +92,6 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
                 showTerms();
             }
         });
-
-        // make important term links clickable
-        MovementMethod movementMethodImportantTerms = mImportantTerms.getMovementMethod();
-        if ((movementMethodImportantTerms == null) || !(movementMethodImportantTerms instanceof LinkMovementMethod)) {
-            if (mImportantTerms.getLinksClickable()) {
-                mImportantTerms.setMovementMethod(LinkMovementMethod.getInstance());
-            }
-        }
 
         // make related links clickable
         MovementMethod movementMethodRelatedTerms = mRelatedTerms.getMovementMethod();
@@ -115,43 +123,18 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 
                     // load the terms
                     mTermLayout.setVisibility(View.GONE);
-                    mImportantTermsLayout.setVisibility(View.VISIBLE);
-                    mImportantTermsLayout.scrollTo(0, 0);
+                    mImportantTermsList.setVisibility(View.VISIBLE);
+                    mImportantTermsList.scrollTo(0, 0);
 
-                    mImportantTerms.setText("");
-                    int numImportantTerms = 0;
+                    mTermsAdapter.setTermsList(f.getImportantTerms());
 
-                    // show the related terms for this frame
-                    for (String term : f.getImportantTerms()) {
-                        final Term importantTerm = p.getTerm(term);
-                        if (importantTerm != null) {
-                            final String termName = term;
-                            TermSpan span = new TermSpan(importantTerm.getName(), importantTerm.getName());
-                            span.setOnClickListener(new Span.OnClickListener() {
-                                @Override
-                                public void onClick(View view, Span span, int start, int end) {
-                                    showTerm(importantTerm);
-                                }
-                            });
-                            mImportantTerms.append(span.toCharSequence());
-                        } else {
-                            mImportantTerms.append(term);
-                        }
-                        numImportantTerms++;
-                        if (numImportantTerms < f.getImportantTerms().size()) {
-                            mImportantTerms.append(", ");
-                        }
-                    }
-
-                    if(numImportantTerms > 0) {
+                    if(f.getImportantTerms().size() > 0) {
                         mTermsLayout.setVisibility(View.VISIBLE);
                         mTermsMessageText.setVisibility(View.GONE);
                     } else {
                         mTermsLayout.setVisibility(View.GONE);
                         mTermsMessageText.setVisibility(View.VISIBLE);
-                        // TODO: add message
                     }
-
                     return;
                 }
             }
@@ -179,7 +162,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
             mTermsMessageText.setVisibility(View.GONE);
 
             mTermLayout.setVisibility(View.VISIBLE);
-            mImportantTermsLayout.setVisibility(View.GONE);
+            mImportantTermsList.setVisibility(View.GONE);
             mTermInfoScroll.scrollTo(0, 0);
 
             mRelatedTerms.setText("");
