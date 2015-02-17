@@ -764,13 +764,13 @@ public class MainActivity extends TranslatorBaseActivity {
 
                 // build rendering engines
                 mSourceRendering = new RenderingGroup();
+                if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
+                    mSourceRendering.addEngine(new KeyTermRenderer(mSelectedFrame, mKeyTermClickListener));
+                }
                 if(mSelectedFrame.format == Frame.Format.USX) {
                     mSourceRendering.addEngine(new USXRenderer());
                 } else {
                     mSourceRendering.addEngine(new DefaultRenderer());
-                }
-                if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
-                    mSourceRendering.addEngine(new KeyTermRenderer(mSelectedFrame, mKeyTermClickListener));
                 }
                 mSourceRendering.init(mSelectedFrame.getText(), new RenderingGroup.Callback() {
                     @Override

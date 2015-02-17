@@ -57,7 +57,7 @@ public class KeyTermRenderer extends RenderingEngine {
                     // build important terms list.
                     mFrame.addImportantTerm(matcherSourceText.group());
                     // build the term
-                    String key = "<a>" + matcherSourceText.group() + "</a>";
+                    String key = "<keyterm>" + matcherSourceText.group() + "</keyterm>";
                     // lock indicies to prevent key term collisions
                     for(int i = matcherSourceText.start(); i <= matcherSourceText.end(); i ++) {
                         if(isStopped()) return in;
@@ -77,23 +77,20 @@ public class KeyTermRenderer extends RenderingEngine {
 
         // convert links into spans
         CharSequence out = "";
+        int lastIndex = 0;
         if(keyedText != null) {
             // TODO: will converting the keyed text to string cause any problems with already generated spans?
-            String[] pieces = keyedText.toString().split("<a>");
-            out = pieces[0];
-            for (int i = 1; i < pieces.length; i++) {
+            Pattern p = Pattern.compile("<keyterm>(((?!</keyterm>).)*)</keyterm>", Pattern.DOTALL);
+            Matcher matcherKeys = p.matcher(keyedText);
+            while(matcherKeys.find()) {
                 if(isStopped()) return in;
-                // get closing anchor
-                String[] linkChunks = pieces[i].split("</a>");
-                TermSpan term = new TermSpan(linkChunks[0], linkChunks[0]);
+                TermSpan term = new TermSpan(matcherKeys.group(1), matcherKeys.group(1));
                 term.setOnClickListener(mClickListener);
-                out = TextUtils.concat(out, term.toCharSequence());
-                try {
-                    out = TextUtils.concat(out, linkChunks[1]);
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "failed to concat string", e);
-                }
+
+                out = TextUtils.concat(out, keyedText.subSequence(lastIndex, matcherKeys.start()), term.toCharSequence());
+                lastIndex = matcherKeys.end();
             }
+            out = TextUtils.concat(out, keyedText.subSequence(lastIndex, keyedText.length()));
         }
         return out;
     }

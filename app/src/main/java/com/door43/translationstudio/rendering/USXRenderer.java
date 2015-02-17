@@ -45,8 +45,9 @@ public class USXRenderer extends RenderingEngine {
     @Override
     public CharSequence render(CharSequence in) {
         // TODO: we shouldn't turn this to a string because we could lose other work renderers have done.
-        CharSequence out = in.toString().trim();
+        CharSequence out = in;
 
+        out = trimWhitespace(out);
         out = renderSectionHeading(out);
         out = renderLineBreaks(out);
         out = renderWhiteSpace(out);
@@ -55,6 +56,25 @@ public class USXRenderer extends RenderingEngine {
         out = renderVerse(out);
         out = renderNote(out);
 
+        return out;
+    }
+
+    /**
+     * Strips out new lines and replaces them with a single space
+     * @param in
+     * @return
+     */
+    public CharSequence trimWhitespace(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = Pattern.compile("(^\\s*|\\s*$)");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), "");
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
 

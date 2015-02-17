@@ -34,22 +34,22 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         setContentView(R.layout.activity_splash);
 
         // -- cert testing
-        Crypto crypto = new Crypto();
-
-        File pubKey = MainContext.getContext().getAssetAsFile("certs/uW-test-openssl-vk.pem");
-        File sig = MainContext.getContext().getAssetAsFile("certs/obs-en.384.sig");
-        File data = MainContext.getContext().getAssetAsFile("certs/obs-en.json");
-        Crypto.Status s = crypto.verifyECDSASignature(pubKey, sig, data);
-        switch(s) {
-            case VERIFIED:
-                Log.d("CRYPTO", "the data is ok!");
-                break;
-            case FAILED:
-                Log.d("CRYPTO", "the data has been tampered with!");
-                break;
-            default:
-                Log.d("CRYPTO", "the signature could not be verified.");
-        }
+//        Crypto crypto = new Crypto();
+//
+//        File pubKey = MainContext.getContext().getAssetAsFile("certs/uW-test-openssl-vk.pem");
+//        File sig = MainContext.getContext().getAssetAsFile("certs/obs-en.384.sig");
+//        File data = MainContext.getContext().getAssetAsFile("certs/obs-en.json");
+//        Crypto.Status s = crypto.verifyECDSASignature(pubKey, sig, data);
+//        switch(s) {
+//            case VERIFIED:
+//                Log.d("CRYPTO", "the data is ok!");
+//                break;
+//            case FAILED:
+//                Log.d("CRYPTO", "the data has been tampered with!");
+//                break;
+//            default:
+//                Log.d("CRYPTO", "the signature could not be verified.");
+//        }
         // -- end cert testing
 
         mProgressTextView = (TextView)findViewById(R.id.loadingText);
