@@ -6,11 +6,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.security.Crypto;
 import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
@@ -29,6 +32,25 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+        // -- cert testing
+        Crypto crypto = new Crypto();
+
+        File pubKey = MainContext.getContext().getAssetAsFile("certs/uW-test-openssl-vk.pem");
+        File sig = MainContext.getContext().getAssetAsFile("certs/obs-en.384.sig");
+        File data = MainContext.getContext().getAssetAsFile("certs/obs-en.json");
+        Crypto.Status s = crypto.verifyECDSASignature(pubKey, sig, data);
+        switch(s) {
+            case VERIFIED:
+                Log.d("CRYPTO", "the data is ok!");
+                break;
+            case FAILED:
+                Log.d("CRYPTO", "the data has been tampered with!");
+                break;
+            default:
+                Log.d("CRYPTO", "the signature could not be verified.");
+        }
+        // -- end cert testing
 
         mProgressTextView = (TextView)findViewById(R.id.loadingText);
         mProgressBar = (ProgressBar)findViewById(R.id.loadingBar);

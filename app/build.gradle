@@ -44,4 +44,6 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.0'
     compile 'org.kamranzafar:jtar:2.2'
     compile 'com.jpardogo.materialtabstrip:library:1.0.8'
+    compile files('libs/core-1.51.0.0.jar')
+    compile files('libs/prov-1.51.0.0.jar')
 }
