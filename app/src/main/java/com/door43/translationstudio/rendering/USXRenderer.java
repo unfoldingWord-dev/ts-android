@@ -188,17 +188,16 @@ public class USXRenderer extends RenderingEngine {
      */
     public CharSequence renderParagraph(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = paraPattern("p");//Pattern.compile("<para\\s+style=\"p\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
+        Pattern pattern = paraPattern("p");
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            SpannableString span = new SpannableString(matcher.group(1));
             String lineBreak = "";
             if(matcher.start() > 0) {
                 lineBreak = "\n";
             }
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), lineBreak, "    ", span, "\n");
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), lineBreak, "    ", in.subSequence(matcher.start(1), matcher.end(1)), "\n");
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
@@ -212,13 +211,13 @@ public class USXRenderer extends RenderingEngine {
      */
     public CharSequence renderPoeticLine(CharSequence in) {
         CharSequence out = "";
-        Pattern pattern = paraPattern("q(\\d+)");// Pattern.compile("<para\\s+style=\"q(\\d+)\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
+        Pattern pattern = paraPattern("q(\\d+)");
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
             int level = Integer.parseInt(matcher.group(1));
-            SpannableString span = new SpannableString(matcher.group(2));
+            SpannableString span = new SpannableString(in.subSequence(matcher.start(2), matcher.end(2)));
             span.setSpan(new StyleSpan(Typeface.ITALIC), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             String padding = "";
             for(int i = 0; i < level; i ++) {

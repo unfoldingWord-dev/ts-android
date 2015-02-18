@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -30,7 +29,6 @@ import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
   * Created by joel on 2/12/2015.
@@ -42,8 +40,8 @@ import java.util.List;
     private TextView mRelatedTermsTitle;
     private TextView mExamplePassagesTitle;
     private LinearLayout mExamplePassagesView;
-    private View mTermLayout;
-    private ListView mImportantTermsList;
+    private View mTermInfoLayout;
+    private ListView mTermsListLayout;
     private Button mImportantTermsButton;
     private boolean mIsLoaded = false;
     private ScrollView mTermInfoScroll;
@@ -64,20 +62,20 @@ import java.util.List;
         mImportantTermsButton = (Button)view.findViewById(R.id.importantTermsButton);
         mTermInfoScroll = (ScrollView)view.findViewById(R.id.termInfoScroll);
         mTermsMessageText = (TextView)view.findViewById(R.id.termsMessageText);
-        mTermsLayout = view.findViewById(R.id.keyTermsLayout);
+        mTermsLayout = view.findViewById(R.id.termsLayout);
 
-        mTermLayout = view.findViewById(R.id.termLayout);
-        mImportantTermsList = (ListView)view.findViewById(R.id.importantTermsList);
+        mTermInfoLayout = view.findViewById(R.id.termInfoLayout);
+        mTermsListLayout = (ListView)view.findViewById(R.id.termsListLayout);
 
         // hook up adapter for key terms
         mTermsAdapter = new ImportantTermsAdapter(this.getActivity(), new ArrayList(){});
-        mImportantTermsList.setAdapter(mTermsAdapter);
+        mTermsListLayout.setAdapter(mTermsAdapter);
 
-        mImportantTermsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mTermsListLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Project p = app().getSharedProjectManager().getSelectedProject();
-                if(p != null) {
+                if (p != null) {
                     Term t = p.getTerm(mTermsAdapter.getItem(i));
                     showTerm(t);
                 }
@@ -122,28 +120,19 @@ import java.util.List;
                     if(!mIsLoaded) return;
 
                     // load the terms
-                    mTermLayout.setVisibility(View.GONE);
-                    mImportantTermsList.setVisibility(View.VISIBLE);
-                    mImportantTermsList.scrollTo(0, 0);
-
+                    toggleTermsList(true);
                     mTermsAdapter.setTermsList(f.getImportantTerms());
 
                     if(f.getImportantTerms().size() > 0) {
-                        mTermsLayout.setVisibility(View.VISIBLE);
-                        mTermsMessageText.setVisibility(View.GONE);
-                    } else {
-                        mTermsLayout.setVisibility(View.GONE);
-                        mTermsMessageText.setVisibility(View.VISIBLE);
+                        return;
                     }
-                    return;
                 }
             }
         }
 
         // no terms are available
         if(mIsLoaded) {
-            mTermsLayout.setVisibility(View.GONE);
-            mTermsMessageText.setVisibility(View.VISIBLE);
+            toggleMissingNotice(true);
         }
     }
 
@@ -157,21 +146,13 @@ import java.util.List;
         if(term != null && mIsLoaded && p != null) {
             MainContext.getContext().setShowImportantTerms(false);
 
-            // hide the no term message
-            mTermsLayout.setVisibility(View.VISIBLE);
-            mTermsMessageText.setVisibility(View.GONE);
-
-            mTermLayout.setVisibility(View.VISIBLE);
-            mImportantTermsList.setVisibility(View.GONE);
-            mTermInfoScroll.scrollTo(0, 0);
+            toggleTermDetails(true);
 
             mRelatedTerms.setText("");
+            mExamplePassagesView.removeAllViews();
             mTermName.setText(term.getName());
-            mTermDescriptionWebView.setVisibility(View.GONE);
             mTermDescriptionWebView.loadData(term.getDefinition(), "text/html", null);
             mTermDescriptionWebView.reload();
-            mTermDescriptionWebView.setVisibility(View.VISIBLE);
-            mExamplePassagesView.removeAllViews();
 
             // related terms
             int numRelatedTerms = 0;
@@ -248,6 +229,49 @@ import java.util.List;
             }
         } else if(mIsLoaded) {
             showTerms();
+        }
+    }
+
+    /**
+     * Displays the terms list
+     * @param show
+     */
+    private void toggleTermsList(boolean show) {
+        if(show) {
+            toggleMissingNotice(false);
+            toggleTermDetails(false);
+            mTermsListLayout.setVisibility(View.VISIBLE);
+            mTermsListLayout.scrollTo(0, 0);
+        } else {
+            mTermsListLayout.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Displays the term details page
+     * @param show
+     */
+    private void toggleTermDetails(boolean show) {
+        if(show) {
+            toggleMissingNotice(false);
+            toggleTermsList(false);
+            mTermInfoLayout.setVisibility(View.VISIBLE);
+            mTermInfoScroll.scrollTo(0, 0);
+        } else {
+            mTermInfoLayout.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Displays a notice that there are no terms
+     */
+    private void toggleMissingNotice(boolean show) {
+        if(show) {
+            mTermsMessageText.setVisibility(View.VISIBLE);
+            mTermsLayout.setVisibility(View.GONE);
+        } else {
+            mTermsMessageText.setVisibility(View.GONE);
+            mTermsLayout.setVisibility(View.VISIBLE);
         }
     }
 

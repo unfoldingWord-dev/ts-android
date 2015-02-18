@@ -1292,8 +1292,8 @@ public class MainActivity extends TranslatorBaseActivity {
      */
     public void showTermDetails(String term) {
         if(app().getSharedProjectManager().getSelectedProject() != null) {
-            openRightDrawer();
             mRightPane.showTerm(app().getSharedProjectManager().getSelectedProject().getTerm(term));
+            openRightDrawer();
         }
     }
 

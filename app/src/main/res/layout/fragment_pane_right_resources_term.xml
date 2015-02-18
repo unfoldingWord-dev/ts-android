@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:visibility="visible"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="@string/no_key_terms"
@@ -17,23 +17,24 @@
         android:background="@color/gray"/>
 
     <LinearLayout
-        android:visibility="gone"
+        android:visibility="visible"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/keyTermsLayout">
+        android:id="@+id/termsLayout">
 
         <ListView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/importantTermsList"/>
-
-        <LinearLayout
             android:visibility="gone"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:id="@+id/termsListLayout"/>
+
+        <LinearLayout
+            android:visibility="visible"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:orientation="vertical"
-            android:id="@+id/termLayout">
+            android:id="@+id/termInfoLayout">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -62,8 +63,7 @@
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/termInfoScroll"
-                >
+                android:id="@+id/termInfoScroll">
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="match_parent"
