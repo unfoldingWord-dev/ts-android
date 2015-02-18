@@ -1452,6 +1452,8 @@ public class MainActivity extends TranslatorBaseActivity {
                     public void run() {
                         app().showProgressDialog(R.string.downloading_updates);
 
+                        Logger.i(this.getName().getClass().getName(), "downloading updates");
+
                         // check for updates to current projects
                         int numProjects = app().getSharedProjectManager().numProjects();
                         for (int i = 0; i < numProjects; i ++) {

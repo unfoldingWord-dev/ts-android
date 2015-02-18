@@ -328,6 +328,7 @@ public class DataStore {
                 editor.remove(key+"_modified");
             }
             editor.apply();
+            Logger.i(this.getClass().getName(), "downloaded new/updated asset from "+urlString);
             return key;
         } catch (MalformedURLException e) {
             Logger.e(this.getClass().getName(), "malformed url", e);

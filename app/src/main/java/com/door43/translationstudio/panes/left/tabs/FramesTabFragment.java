@@ -71,6 +71,8 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         Project p = app().getSharedProjectManager().getSelectedProject();
         if(mModelItemAdapter != null && p != null && p.getSelectedChapter() != null) {
             mModelItemAdapter.changeDataSet(p.getSelectedChapter().getFrames());
+        } else if(mModelItemAdapter != null) {
+            mModelItemAdapter.changeDataSet(new Model[]{});
         }
         if(mListView != null) {
             mListView.setSelectionAfterHeaderView();

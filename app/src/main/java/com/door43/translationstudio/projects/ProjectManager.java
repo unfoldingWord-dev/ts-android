@@ -1,6 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -130,7 +131,6 @@ public class ProjectManager {
      * @param p
      */
     public void downloadProjectUpdates(Project p) {
-        Logger.i(this.getClass().getName(), "downloading updates for project "+p.getId());
         // download the source language catalog
         String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true);
         List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog, true);
@@ -813,12 +813,17 @@ public class ProjectManager {
                     // determine if resources should be re-downloaded
                     boolean downloadResources = false;
                     if(checkServer) {
-                        SourceLanguage cachedLanguage = p.getSourceLanguage(l.getId());
+                        Project cachedProject = getProject(p.getId());
+                        SourceLanguage cachedLanguage = cachedProject.getSourceLanguage(l.getId());
                         if(cachedLanguage == null) {
                             downloadResources = true;
                         } else if(l.getDateModified() > cachedLanguage.getDateModified()) {
                             downloadResources = true;
                         }
+                    }
+
+                    if(p.getId().equals("luk") && l.getId().equals("ar")) {
+                        Log.i("test", "test");
                     }
 
                     // load translation versions
@@ -866,7 +871,7 @@ public class ProjectManager {
      * @param checkServer indicates the latest source terms and notes should be downloaded.
      */
     private List<Resource> loadResourcesCatalog(Project p, SourceLanguage l, String resourcesCatalog, boolean checkServer) {
-        List<Resource> importedResources = new ArrayList<Resource>();
+        List<Resource> importedResources = new ArrayList<>();
         if(resourcesCatalog == null) {
             return importedResources;
         }
@@ -876,7 +881,7 @@ public class ProjectManager {
             json = new JSONArray(resourcesCatalog);
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "malformed resource catalog", e);
-            return new ArrayList<Resource>();
+            return new ArrayList<>();
         }
 
         // load the data
@@ -891,23 +896,27 @@ public class ProjectManager {
                             // load resource
                             Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonResource.getInt("date_modified"));
 
+                            // @deprecated see the note below.
                             // determine if we need to download the source, notes, and terms
-                            boolean downloadResourceItems = false;
+//                            boolean downloadResourceItems = false;
+//                            if(checkServer) {
+//                                // TRICKY: in order to correctly identify cached resources we must use the cached language
+//                                Project cachedProject = getProject(p.getId());
+//                                SourceLanguage cachedLanguage = cachedProject.getSourceLanguage(l.getId());
+//                                if(cachedLanguage != null) {
+//                                    Resource cachedResource = cachedLanguage.getResource(r.getId());
+//                                    if (cachedResource == null) {
+//                                        downloadResourceItems = true;
+//                                    } else if (r.getDateModified() > cachedResource.getDateModified()) {
+//                                        downloadResourceItems = true;
+//                                    }
+//                                } else {
+//                                    downloadResourceItems = true;
+//                                }
+//                            }
+
+                            // NOTE: the data store will automatically determine if a download is nessesary if the url includes a date_modified parameter.
                             if(checkServer) {
-                                // TRICKY: in order to correctly identify cached resources we must use the cached language
-                                SourceLanguage cachedLanguage = getSourceLanguage(l.getId());
-                                if(cachedLanguage != null) {
-                                    Resource cachedResource = cachedLanguage.getResource(r.getId());
-                                    if (cachedResource == null) {
-                                        downloadResourceItems = true;
-                                    } else if (r.getDateModified() > cachedResource.getDateModified()) {
-                                        downloadResourceItems = true;
-                                    }
-                                } else {
-                                    downloadResourceItems = true;
-                                }
-                            }
-                            if(downloadResourceItems) {
                                 // we will attempt to use the provided urls before using the default download path
                                 if(jsonResource.has("notes")) {
                                     mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), jsonResource.getString("notes"));
@@ -1082,7 +1091,7 @@ public class ProjectManager {
         // load source
         JSONArray jsonChapters;
         if(jsonString == null) {
-            Logger.e(this.getClass().getName(), "The project source was not found");
+            Logger.e(this.getClass().getName(), "The project source was not found for "+p.getId());
             return;
         }
         try {

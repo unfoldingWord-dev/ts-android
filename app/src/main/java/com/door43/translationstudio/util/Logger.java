@@ -5,12 +5,9 @@ import android.util.Log;
 
 import org.apache.commons.io.FileUtils;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -25,10 +22,33 @@ import java.util.Locale;
  */
 public class Logger
 {
-    private enum LogType {
-        Error,
-        Warning,
-        Info
+    private static Level mLoggingLevel = Level.Info;
+    public static enum Level {
+        Info(0),
+        Warning(1),
+        Error(2);
+
+        Level(int i) {
+            this.level = i;
+        }
+
+        private int level;
+
+        public int getLevel() {
+            return level;
+        }
+    }
+
+    /**
+     * Specifies the minimum level included in the logs
+     * @param level
+     */
+    public static void setLoggingLevel(Level level) {
+        if(level == null) {
+            mLoggingLevel = Level.Info;
+        } else {
+            mLoggingLevel = level;
+        }
     }
 
     /**
@@ -41,7 +61,7 @@ public class Logger
     {
         try {
             int logResult = Log.e(logMessageTag, logMessage);
-            if (logResult > 0) logToFile(LogType.Error, logMessageTag, logMessage);
+            if (logResult > 0) logToFile(Level.Error, logMessageTag, logMessage);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -57,7 +77,7 @@ public class Logger
     {
         try {
             int logResult = Log.w(logMessageTag, logMessage);
-            if (logResult > 0) logToFile(LogType.Warning, logMessageTag, logMessage);
+            if (logResult > 0) logToFile(Level.Warning, logMessageTag, logMessage);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -73,7 +93,7 @@ public class Logger
     {
         try {
             int logResult = Log.i(logMessageTag, logMessage);
-            if (logResult > 0) logToFile(LogType.Info, logMessageTag, logMessage);
+            if (logResult > 0) logToFile(Level.Info, logMessageTag, logMessage);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -91,7 +111,7 @@ public class Logger
         try {
             int logResult = Log.e(logMessageTag, logMessage, throwableException);
             if (logResult > 0)
-                logToFile(LogType.Error, logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
+                logToFile(Level.Error, logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -109,7 +129,7 @@ public class Logger
         try {
             int logResult = Log.w(logMessageTag, logMessage, throwableException);
             if (logResult > 0)
-                logToFile(LogType.Warning, logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
+                logToFile(Level.Warning, logMessageTag, logMessage + "\r\n" + Log.getStackTraceString(throwableException));
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -130,8 +150,11 @@ public class Logger
      * @param logMessageTag A tag identifying a group of log messages.
      * @param logMessage The message to add to the log.
      */
-    private static void logToFile(LogType type, String logMessageTag, String logMessage)
+    private static void logToFile(Level level, String logMessageTag, String logMessage)
     {
+        // filter out logging levels
+        if(level.getLevel() < mLoggingLevel.getLevel()) return;
+
         try
         {
             // Gets the log file from the root of the primary storage. If it does
@@ -144,7 +167,7 @@ public class Logger
             }
             // Write the message to the log with a timestamp
             String flag = "";
-            switch(type) {
+            switch(level) {
                 case Error:
                     flag = "E";
                     break;

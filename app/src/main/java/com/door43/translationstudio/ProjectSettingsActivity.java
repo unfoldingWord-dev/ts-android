@@ -13,7 +13,6 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 
 public class ProjectSettingsActivity extends TranslatorBaseActivity {
-    private ProjectSettingsActivity me = this;
     private Button targetLanguageBtn;
     private Button sourceLanguageBtn;
     private Project mProject;
@@ -28,7 +27,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         if(mProject == null || mProject.getSelectedChapter() == null) {
             if(mProject != null && mProject.getSelectedChapter() == null) {
                 app().showToastMessage(R.string.missing_chapter); // the language does not contain any chapters
-                Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
+                Intent languageIntent = new Intent(ProjectSettingsActivity.this, LanguageSelectorActivity.class);
                 languageIntent.putExtra("sourceLanguages", true);
                 startActivity(languageIntent);
             } else {
@@ -43,7 +42,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         targetLanguageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
+                Intent languageIntent = new Intent(ProjectSettingsActivity.this, LanguageSelectorActivity.class);
                 languageIntent.putExtra("sourceLanguages", false);
                 startActivity(languageIntent);
             }
@@ -51,7 +50,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         sourceLanguageBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
+                Intent languageIntent = new Intent(ProjectSettingsActivity.this, LanguageSelectorActivity.class);
                 languageIntent.putExtra("sourceLanguages", true);
                 startActivity(languageIntent);
             }
