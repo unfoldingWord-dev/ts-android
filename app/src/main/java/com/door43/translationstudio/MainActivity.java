@@ -69,6 +69,7 @@ import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.Translation;
@@ -1061,7 +1062,6 @@ public class MainActivity extends TranslatorBaseActivity {
             mRightPane.reloadNotesTab();
 
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
-//            mTranslationEditText.setFocusable(true);
             mTranslationEditText.setEnabled(true);
             final int frameIndex = p.getSelectedChapter().getFrameIndex(mSelectedFrame);
             final Chapter chapter = p.getSelectedChapter();
@@ -1124,6 +1124,26 @@ public class MainActivity extends TranslatorBaseActivity {
             // render the source text
             renderSourceText();
 
+            // set correct text direction
+            Language.Direction sourceDirection = p.getSelectedSourceLanguage().getDirection();
+            if(sourceDirection == Language.Direction.RightToLeft) {
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    mSourceText.setTextDirection(View.TEXT_DIRECTION_RTL);
+                    mTranslationEditText.setTextDirection(View.TEXT_DIRECTION_RTL);
+                } else {
+                    mSourceText.setGravity(Gravity.RIGHT);
+                    mTranslationEditText.setGravity(Gravity.RIGHT);
+                }
+            } else {
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    mSourceText.setTextDirection(View.TEXT_DIRECTION_LTR);
+                    mTranslationEditText.setTextDirection(View.TEXT_DIRECTION_LTR);
+                } else {
+                    mSourceText.setGravity(Gravity.LEFT);
+                    mTranslationEditText.setGravity(Gravity.LEFT);
+                }
+            }
+
             // navigation indicators
             if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
                 mNextFrameView.setVisibility(View.VISIBLE);
@@ -1146,7 +1166,6 @@ public class MainActivity extends TranslatorBaseActivity {
             mSelectedFrame = null;
             mTranslationEditText.setText("");
             mTranslationEditText.setEnabled(false);
-//            mTranslationEditText.setFocusable(false);
             mTranslationTitleText.setText("");
             mSourceTitleText.setText("");
             mSourceText.setText("");

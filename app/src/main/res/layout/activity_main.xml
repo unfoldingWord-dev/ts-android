@@ -165,6 +165,7 @@
                                 android:scrollbars="vertical"
                                 android:gravity="top"
                                 android:textColor="@color/dark_gray"
+                                android:textDirection="rtl"
                                 android:imeOptions="flagNoExtractUi"
                                 android:paddingTop="0dp"
                                 android:paddingLeft="10dp"
