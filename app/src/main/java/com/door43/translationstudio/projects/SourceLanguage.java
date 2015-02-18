@@ -134,10 +134,16 @@ public class SourceLanguage extends Language {
 
         Resource selectedResource = getResource(mSelectedResourceId);
         if(selectedResource == null) {
-            // auto select the first resource if no other resource has been selected.
-            int defaultResourceIndex = 0;
-            setSelectedResource(defaultResourceIndex);
-            return getResource(defaultResourceIndex);
+            // try to use ulb resources as default
+            if(getResource("ulb") != null) {
+                setSelectedResource("ulb");
+                return getResource("ulb");
+            } else {
+                // auto select the first resource if no other resource has been selected.
+                int defaultResourceIndex = 0;
+                setSelectedResource(defaultResourceIndex);
+                return getResource(defaultResourceIndex);
+            }
         } else {
             return selectedResource;
         }
