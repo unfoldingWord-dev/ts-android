@@ -100,7 +100,6 @@
     <orderEntry type="library" exported="" name="android-async-http-1.4.5" level="project" />
     <orderEntry type="library" exported="" name="org.eclipse.jgit-3.5.0.201409071800-rc1" level="project" />
     <orderEntry type="library" exported="" name="appcompat-v7-21.0.0" level="project" />
-    <orderEntry type="module" module-name="SlidingLayer" exported="" />
   </component>
 </module>
 

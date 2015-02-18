@@ -31,7 +31,6 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':libraries:SlidingLayer')
     compile files('libs/json-simple-1.1.1.jar')
     compile 'com.android.support:appcompat-v7:21.0.0'
     compile 'com.android.support:support-v13:21.0.0'
