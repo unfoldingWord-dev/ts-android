@@ -100,7 +100,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
     private LinearLayout mCenterPane;
-    private DrawerLayout mRootView;
+    private DrawerLayout mDrawerLayout;
 
     private GestureDetector mSourceGestureDetector;
     private GestureDetector mTranslationGestureDetector;
@@ -135,6 +135,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private RenderingGroup mTranslationRendering;
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
+    private boolean mTranslationEditTextIsFocused;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,8 +167,31 @@ public class MainActivity extends TranslatorBaseActivity {
         app().setMainActivity(this);
 
         mCenterPane = (LinearLayout)findViewById(R.id.centerPane);
-        mRootView = (DrawerLayout)findViewById(R.id.drawer_layout);
-        mRootView.setScrimColor(getResources().getColor(R.color.scrim));
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        mDrawerLayout.setScrimColor(getResources().getColor(R.color.scrim));
+
+        // listen for drawer open and close
+//        mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+//            @Override
+//            public void onDrawerSlide(View drawerView, float slideOffset) {
+//
+//            }
+//
+//            @Override
+//            public void onDrawerOpened(View drawerView) {
+//                closeKeyboard();
+//            }
+//
+//            @Override
+//            public void onDrawerClosed(View drawerView) {
+//
+//            }
+//
+//            @Override
+//            public void onDrawerStateChanged(int newState) {
+//
+//            }
+//        });
 
         initPanes();
 
@@ -292,11 +316,11 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param r
      */
     private void resizeRootView(Rect r) {
-        ViewGroup.LayoutParams params = mRootView.getLayoutParams();
+        ViewGroup.LayoutParams params = mDrawerLayout.getLayoutParams();
         int newHeight = r.bottom - getStatusBarHeight();
         if(newHeight != params.height) {
             params.height = newHeight;
-            mRootView.setLayoutParams(params);
+            mDrawerLayout.setLayoutParams(params);
         }
     }
 
@@ -687,22 +711,22 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-//                if(b) {
-//                    getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-//                }
                 invalidateOptionsMenu();
             }
         });
 
         // get notified when drawers open
-        mRootView.setDrawerListener(new ActionBarDrawerToggle(this, mRootView, R.drawable.ic_ab_back_holo_light_am, R.string.close, R.string.close) {
+        mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, R.drawable.ic_ab_back_holo_light_am, R.string.close, R.string.close) {
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 mTranslationEditText.setEnabled(true);
+                // TODO: perhaps we could save the keyboard state and reopen it here.
             }
+
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 mTranslationEditText.setEnabled(false);
+                closeKeyboard();
             }
         });
     }
@@ -1146,17 +1170,17 @@ public class MainActivity extends TranslatorBaseActivity {
      * Closes all the navigation drawers
      */
     public void closeDrawers() {
-        mRootView.closeDrawers();
+        mDrawerLayout.closeDrawers();
     }
 
     public void openLeftDrawer() {
-        mRootView.closeDrawer(Gravity.RIGHT);
-        mRootView.openDrawer(Gravity.LEFT);
+        mDrawerLayout.closeDrawer(Gravity.RIGHT);
+        mDrawerLayout.openDrawer(Gravity.LEFT);
     }
 
     public void openRightDrawer() {
-        mRootView.closeDrawer(Gravity.LEFT);
-        mRootView.openDrawer(Gravity.RIGHT);
+        mDrawerLayout.closeDrawer(Gravity.LEFT);
+        mDrawerLayout.openDrawer(Gravity.RIGHT);
     }
 
     /**
@@ -1376,9 +1400,9 @@ public class MainActivity extends TranslatorBaseActivity {
             menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
 
             if(!hasResources) {
-                mRootView.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
+                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
             } else {
-                mRootView.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.END);
+                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.END);
             }
         }
 
