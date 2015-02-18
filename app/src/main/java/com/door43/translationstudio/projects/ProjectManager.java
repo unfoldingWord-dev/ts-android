@@ -235,6 +235,14 @@ public class ProjectManager {
     }
 
     /**
+     * Sorts the listable projects
+     */
+    public void sortListableProjects() {
+        // TODO: this method needs to sort the listable projects.
+        // we only need to sort mListableProjects
+    }
+
+    /**
      * Adds a project to the list of projects visible in the projects list.
      * @param p
      */
@@ -643,6 +651,9 @@ public class ProjectManager {
                         mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
                     }
                     Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
+                    if(jsonProject.has("sort")) {
+                        p.setSortKey(jsonProject.getString("sort"));
+                    }
 
                     // load meta
                     PseudoProject rootPseudoProject = null;
@@ -729,6 +740,10 @@ public class ProjectManager {
                 continue;
             }
         }
+
+        // sort the listable projects
+        sortListableProjects();
+
         return importedProjects;
     }
 

@@ -21,6 +21,7 @@ public class PseudoProject implements Model {
     private Map<String, Translation> mTranslationMap = new HashMap<String, Translation>();
     private List<Translation> mTranslations = new ArrayList<Translation>();
     private String mSelectedTranslationId;
+    private String mSortKey;
 
     /**
      * Creates a new meta project that contains a sub meta project
@@ -124,6 +125,20 @@ public class PseudoProject implements Model {
     @Override
     public String getDescription() {
         return "";
+    }
+
+    /**
+     * This just returns the first available sort key from it's children. This will be enough for sorting
+     * @return
+     */
+    @Override
+    public String getSortKey() {
+        for(Model m:mChildrenMap.values()) {
+            if(m.getSortKey() != null) {
+                return m.getSortKey();
+            }
+        }
+        return null;
     }
 
     @Override

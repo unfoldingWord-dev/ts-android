@@ -9,6 +9,12 @@ public interface Model {
     public CharSequence getDescription();
 
     /**
+     * Returns the key used for sorting
+     * @return
+     */
+    public String getSortKey();
+
+    /**
      * The path to the image for this resource
      * @return
      */

@@ -62,6 +62,7 @@ public class Project implements Model {
     public static final String PREFERENCES_TAG = "com.door43.translationstudio.projects";
     private static final String TRANSLATION_READY_TAG = "READY";
     private boolean mHasNotes = false;
+    private String mSortKey;
 
     /**
      * Creates a new project
@@ -243,6 +244,23 @@ public class Project implements Model {
         } else {
             return mDefaultDescription;
         }
+    }
+
+    @Override
+    public String getSortKey() {
+        if(mSortKey != null) {
+            return mSortKey;
+        } else {
+            return "00";
+        }
+    }
+
+    /**
+     * Sets the key by which the project is sorted
+     * @param key
+     */
+    public void setSortKey(String key) {
+        mSortKey = key;
     }
 
     /**

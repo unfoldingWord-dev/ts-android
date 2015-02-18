@@ -304,6 +304,11 @@ public class Frame implements Model {
         return mCachedDescription;
     }
 
+    @Override
+    public String getSortKey() {
+        return null;
+    }
+
     /**
      * Returns the chapter id
      * @return

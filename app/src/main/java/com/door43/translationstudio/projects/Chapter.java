@@ -203,6 +203,11 @@ public class Chapter implements Model {
         return mReference;
     }
 
+    @Override
+    public String getSortKey() {
+        return null;
+    }
+
     /**
      * Returns the number of frames in this chapter
      * @return
