@@ -133,6 +133,8 @@ public class MainApplication extends Application {
      * @return
      */
     public File getAssetAsFile(String path) {
+        // TODO: we probably don't want to do this for everything.
+        // think about changing this up a bit.
         // TODO: we need to figure out when the clear out these cached files. Probably just on version bumps.
         File cacheFile = new File(getCacheDir(), "assets/" + path);
         if(!cacheFile.exists()) {
