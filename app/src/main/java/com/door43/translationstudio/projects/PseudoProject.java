@@ -1,8 +1,11 @@
 package com.door43.translationstudio.projects;
 
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -18,10 +21,11 @@ public class PseudoProject implements Model {
 //    private MetaProject mMetaChild;
 //    private Project mProjectChild;
     private Map<String, Model> mChildrenMap = new HashMap<String, Model>();
+    private List<Model> mChildren = new ArrayList<>();
     private Map<String, Translation> mTranslationMap = new HashMap<String, Translation>();
     private List<Translation> mTranslations = new ArrayList<Translation>();
     private String mSelectedTranslationId;
-    private String mSortKey;
+    private boolean mIsSorted;
 
     /**
      * Creates a new meta project that contains a sub meta project
@@ -204,6 +208,8 @@ public class PseudoProject implements Model {
     public void addChild(PseudoProject meta) {
         if(!mChildrenMap.containsKey("m-"+meta.getId())) {
             mChildrenMap.put("m-" + meta.getId(), meta);
+            mChildren.add(meta);
+            mIsSorted = false;
         }
     }
 
@@ -214,6 +220,8 @@ public class PseudoProject implements Model {
     public void addChild(Project child) {
         if(!mChildrenMap.containsKey(child.getId())) {
             mChildrenMap.put(child.getId(), child);
+            mChildren.add(child);
+            mIsSorted = false;
         }
     }
 
@@ -222,7 +230,7 @@ public class PseudoProject implements Model {
      * @return
      */
     public Model[] getChildren() {
-        return mChildrenMap.values().toArray(new Model[mChildrenMap.size()]);
+        return mChildren.toArray(new Model[mChildren.size()]);
     }
 
     /**
@@ -272,6 +280,36 @@ public class PseudoProject implements Model {
             return mTranslations.get(index);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Sorts the children of this Pseudo project
+     */
+    public void sortChildren() {
+        // only sort if needed
+        if(!mIsSorted) {
+            Collections.sort(mChildren, new Comparator<Model>() {
+                @Override
+                public int compare(Model model, Model model2) {
+                    try {
+                        // sort children
+                        if (model.getClass().getName().equals(PseudoProject.class.getName())) {
+                            ((PseudoProject) model).sortChildren();
+                        }
+                        if (model2.getClass().getName().equals(PseudoProject.class.getName())) {
+                            ((PseudoProject) model2).sortChildren();
+                        }
+                        // sort models
+                        int i = Integer.parseInt(model.getSortKey());
+                        int i2 = Integer.parseInt(model2.getSortKey());
+                        return i - i2;
+                    } catch (Exception e) {
+                        Logger.e(this.getClass().getName(), "unable to sort models", e);
+                        return 0;
+                    }
+                }
+            });
         }
     }
 }

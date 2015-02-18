@@ -6,8 +6,6 @@ import android.util.Log;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
-import com.door43.translationstudio.user.Profile;
-import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.MainContext;
 
@@ -17,14 +15,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.xml.transform.Source;
 
 /**
  * The project manager handles all of the projects within the app.
@@ -238,8 +235,27 @@ public class ProjectManager {
      * Sorts the listable projects
      */
     public void sortListableProjects() {
-        // TODO: this method needs to sort the listable projects.
-        // we only need to sort mListableProjects
+        Collections.sort(mListableProjects, new Comparator<Model>() {
+            @Override
+            public int compare(Model model, Model model2) {
+                try {
+                    // sort children
+                    if(model.getClass().getName().equals(PseudoProject.class.getName())) {
+                        ((PseudoProject)model).sortChildren();
+                    }
+                    if(model2.getClass().getName().equals(PseudoProject.class.getName())) {
+                        ((PseudoProject)model2).sortChildren();
+                    }
+                    // sort models
+                    int i = Integer.parseInt(model.getSortKey());
+                    int i2 = Integer.parseInt(model2.getSortKey());
+                    return i - i2;
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "unable to sort models", e);
+                    return 0;
+                }
+            }
+        });
     }
 
     /**
@@ -283,7 +299,7 @@ public class ProjectManager {
      */
     private void deleteListableProject(PseudoProject p) {
         if(mListableProjectMap.containsKey("m-"+p.getId())) {
-            mListableProjectMap.remove("m-"+p.getId());
+            mListableProjectMap.remove("m-" + p.getId());
             mListableProjects.remove(p);
         }
     }
