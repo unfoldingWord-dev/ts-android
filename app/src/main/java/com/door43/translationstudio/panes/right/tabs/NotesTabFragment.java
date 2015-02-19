@@ -87,7 +87,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
                                     PassageLinkSpan link = (PassageLinkSpan)span;
                                     Frame f = getLinkEndpoint(link);
                                     if(f != null) {
-
+                                        AppContext.navigator().open(f);
                                     }
                                 }
                             });

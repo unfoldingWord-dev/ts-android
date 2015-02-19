@@ -94,14 +94,14 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
         AppContext.projectManager().getSelectedProject().commit(new Project.OnCommitComplete() {
             @Override
             public void success() {
-                app().getSharedTranslationManager().syncSelectedProject();
+                AppContext.translationManager().syncSelectedProject();
                 finish();
             }
 
             @Override
             public void error(Throwable e) {
                 // We don't care. Worst case is the server won't know that the translation is ready.
-                app().getSharedTranslationManager().syncSelectedProject();
+                AppContext.translationManager().syncSelectedProject();
                 finish();
             }
         });

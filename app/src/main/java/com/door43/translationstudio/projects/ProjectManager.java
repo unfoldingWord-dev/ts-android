@@ -564,7 +564,7 @@ public class ProjectManager {
      * @param id
      */
     private void storeSelectedProject(String id) {
-        SharedPreferences settings = AppContext.context().getSharedPreferences(AppContext.context().PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
+        SharedPreferences settings = mContext.getSharedPreferences(mContext.PREFERENCES_TAG, mContext.MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_project", id);
         editor.apply();
@@ -575,8 +575,9 @@ public class ProjectManager {
      * @return
      */
     public Project getSelectedProject() {
-        if(AppContext.context().rememberLastPosition()) {
-            SharedPreferences settings = AppContext.context().getSharedPreferences(AppContext.context().PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
+        // This part should be moved into the Navigator class
+        if(mContext.rememberLastPosition()) {
+            SharedPreferences settings = mContext.getSharedPreferences(mContext.PREFERENCES_TAG, mContext.MODE_PRIVATE);
             mSelectedProjectId = settings.getString("selected_project", null);
         }
 

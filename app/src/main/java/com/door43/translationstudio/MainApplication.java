@@ -50,13 +50,13 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes
+ * TODO: we are slowly stripping everything out of this class and placing it into the AppContext class
  */
 public class MainApplication extends Application {
     private Activity mCurrentActivity = null;
     private Toast mToast = null;
 //    private ProjectManager mProjectManager;
     private ProgressDialog mProgressDialog;
-    private TranslationManager mTranslationManager;
     public static final String PREFERENCES_TAG = "com.door43.translationstudio";
     private ImageLoader mImageLoader;
     private Activity mCurrentDialogActivity;
@@ -90,9 +90,6 @@ public class MainApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.pref_save_and_sync, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_sharing, false);
         PreferenceManager.setDefaultValues(this, R.xml.pref_advanced, false);
-
-//        mProjectManager = new ProjectManager(this);
-        mTranslationManager = new TranslationManager(this);
     }
 
     /**
@@ -202,14 +199,6 @@ public class MainApplication extends Application {
         } else {
             mNotifyMgr.notify(notificationId, mBuilder.getNotification());
         }
-    }
-
-    /**
-     * Returns the shared instance of the translation manager
-     * @return
-     */
-    public TranslationManager getSharedTranslationManager() {
-        return mTranslationManager;
     }
 
     /**

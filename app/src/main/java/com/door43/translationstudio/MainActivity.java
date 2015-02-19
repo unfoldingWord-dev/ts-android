@@ -1353,7 +1353,7 @@ public class MainActivity extends TranslatorBaseActivity {
     @Subscribe
     public void securityKeysSubmitted(SecurityKeysSubmittedEvent event) {
         if(app().isNetworkAvailable()) {
-            app().getSharedTranslationManager().syncSelectedProject();
+            AppContext.translationManager().syncSelectedProject();
         } else {
             app().showToastMessage(R.string.internet_not_available);
         }
