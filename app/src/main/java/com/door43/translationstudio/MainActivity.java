@@ -1438,7 +1438,9 @@ public class MainActivity extends TranslatorBaseActivity {
                 hasChapterSettings = c != null && c.hasChapterSettings();
                 if(c != null) {
                     Frame f = c.getSelectedFrame();
-                    hasResources = f.getImportantTerms().size() > 0 || f.getTranslationNotes() != null;
+                    if(f != null) {
+                        hasResources = f.getImportantTerms().size() > 0 || f.getTranslationNotes() != null;
+                    }
                 }
             }
 
