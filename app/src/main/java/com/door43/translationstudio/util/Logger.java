@@ -3,6 +3,9 @@ package com.door43.translationstudio.util;
 import android.media.MediaScannerConnection;
 import android.util.Log;
 
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -22,7 +25,7 @@ import java.util.Locale;
  */
 public class Logger
 {
-    private static Level mLoggingLevel = Level.Info;
+//    private static Level mLoggingLevel = Level.Info;
     public static enum Level {
         Info(0),
         Warning(1),
@@ -43,13 +46,13 @@ public class Logger
      * Specifies the minimum level included in the logs
      * @param level
      */
-    public static void setLoggingLevel(Level level) {
-        if(level == null) {
-            mLoggingLevel = Level.Info;
-        } else {
-            mLoggingLevel = level;
-        }
-    }
+//    public static void setLoggingLevel(Level level) {
+//        if(level == null) {
+//            mLoggingLevel = Level.Info;
+//        } else {
+//            mLoggingLevel = level;
+//        }
+//    }
 
     /**
      * Sends an error message to LogCat and to a log file.
@@ -153,7 +156,8 @@ public class Logger
     private static void logToFile(Level level, String logMessageTag, String logMessage)
     {
         // filter out logging levels
-        if(level.getLevel() < mLoggingLevel.getLevel()) return;
+        int minLevel = AppContext.context().getUserPreferences().getInt(SettingsActivity.KEY_PREF_LOGGING_LEVEL, AppContext.context().getResources().getInteger(R.integer.pref_default_logging_level));
+        if(level.getLevel() < minLevel) return;
 
         try
         {

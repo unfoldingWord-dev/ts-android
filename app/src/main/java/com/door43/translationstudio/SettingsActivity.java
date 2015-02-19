@@ -57,16 +57,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_TYPEFACE_SIZE = "typeface_size";
     public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
     public static final String KEY_PREF_ADVANCED_SETTINGS = "advanced_settings";
-
-    /**
-     * Removes references to self to avoid memory leaks
-     */
-//    private void clearReferences() {
-//        Activity currActivity = MainContext.getContext().getCurrentActivity();
-//        if(currActivity != null && currActivity.equals(this)) {
-//            MainContext.getContext().setCurrentActivity(null);
-//        }
-//    }
+    public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
@@ -91,23 +82,6 @@ public class SettingsActivity extends PreferenceActivity {
         return isValid;
     }
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//        // set the current activity so that core classes can access the ui when nessesary.
-//        MainContext.getContext().setCurrentActivity(this);
-//    }
-//    @Override
-//    protected void onPause() {
-//        clearReferences();
-//        super.onPause();
-//    }
-//    @Override
-//    protected void onDestroy() {
-//        clearReferences();
-//        super.onDestroy();
-//    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,7 +90,6 @@ public class SettingsActivity extends PreferenceActivity {
 
         Toolbar actionbar = (Toolbar) findViewById(R.id.actionbar);
         actionbar.setTitle("Settings");
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         actionbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_ab_back_holo_light_am));
         actionbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -202,6 +175,7 @@ public class SettingsActivity extends PreferenceActivity {
         preferenceHeader.setTitle(R.string.pref_header_advanced);
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.pref_advanced);
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -401,6 +375,7 @@ public class SettingsActivity extends PreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_advanced);
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         }
     }
 }

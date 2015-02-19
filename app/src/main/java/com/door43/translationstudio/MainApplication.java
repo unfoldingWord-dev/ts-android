@@ -75,10 +75,6 @@ public class MainApplication extends Application {
         // initialize basic functions with link to main application
         new AppContext(this);
 
-        // specify the logging level to store.
-        // TODO: we should provide user settings so users can control which levels to log.
-        Logger.setLoggingLevel(Logger.Level.Warning);
-
         if(!(Thread.getDefaultUncaughtExceptionHandler() instanceof CustomExceptionHandler)) {
             File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
             Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(dir));

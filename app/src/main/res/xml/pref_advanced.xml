@@ -5,4 +5,12 @@
         android:title="@string/pref_title_advanced_settings"
         android:summary="@string/pref_description_advanced_settings"
         android:defaultValue="@string/pref_default_advanced_settings" />
+    <ListPreference
+        android:key="logging_level"
+        android:title="@string/pref_title_logging_level"
+        android:entries="@array/pref_logging_level_titles"
+        android:entryValues="@array/pref_logging_level_values"
+        android:defaultValue="@integer/pref_default_logging_level"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
 </PreferenceScreen>

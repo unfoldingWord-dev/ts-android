@@ -46,7 +46,7 @@ public class Navigator {
             Project currProj = mProjectManager.getSelectedProject();
             if(currProj == null || !currProj.getId().equals(p.getId())) {
                 mProjectManager.setSelectedProject(p.getId());
-                // TODO: record project change
+                // TODO: record project change for history
                 new ThreadableUI(mContext) {
                     @Override
                     public void onStop() {
@@ -81,7 +81,7 @@ public class Navigator {
                 Project p = c.getProject();
                 if(p.getId().equals(currProj.getId())) {
                     currProj.setSelectedChapter(c.getId());
-                    // TODO: record chapter change
+                    // TODO: record chapter change for history
                     mEventBus.post(new OpenedChapterEvent());
                 }
             }
@@ -102,7 +102,7 @@ public class Navigator {
                     Project p = c.getProject();
                     if(c.getId().equals(currChapt.getId()) && p.getId().equals(currProj.getId())) {
                         currChapt.setSelectedFrame(f.getId());
-                        // TODO: record frame change
+                        // TODO: record frame change for history
                         mEventBus.post(new OpenedFrameEvent());
                     }
                 }
