@@ -14,7 +14,7 @@ import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 /**
  * This is basically the same as the ChooseProjectDialog but with some alterations for importing projects.
@@ -32,7 +32,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         if(mModelList != null) {
-            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), mModelList, false);
+            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), mModelList, false);
             // connect adapter
             listView.setAdapter(mModelItemAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -45,13 +45,13 @@ public class ChooseProjectToImportDialog extends DialogFragment {
                     } else {
                         // return the selected project.
                         Project p = (Project)m;
-                        MainContext.getEventBus().post(new ChoseProjectToImportEvent(mPeer, p, ChooseProjectToImportDialog.this));
+                        AppContext.getEventBus().post(new ChoseProjectToImportEvent(mPeer, p, ChooseProjectToImportDialog.this));
                         // NOTE: the caller should close this dialog
                     }
                 }
             });
         } else {
-            listView.setAdapter(new ModelItemAdapter(MainContext.getContext(), new Model[]{},false));
+            listView.setAdapter(new ModelItemAdapter(AppContext.context(), new Model[]{},false));
             dismiss();
         }
 

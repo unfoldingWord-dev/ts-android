@@ -11,7 +11,7 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.io.File;
 
@@ -21,7 +21,7 @@ import java.io.File;
 public class SettingsSQLiteHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "Database";
-    private static final ProjectManager mProjectManager = MainContext.getContext().getSharedProjectManager();
+    private static final ProjectManager mProjectManager = AppContext.projectManager();
     // these percents are just guestimates for how much work will be required to migrate. They don't have to be exact.
     private final double PERCENT_FRAMES = 80.0;
     private final double PERCENT_CHAPTERS = 20.0;

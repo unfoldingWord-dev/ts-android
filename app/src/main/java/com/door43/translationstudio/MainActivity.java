@@ -85,7 +85,7 @@ import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.SynchronizedRunnable;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -196,7 +196,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
         initPanes();
 
-        if(app().getSharedProjectManager().getSelectedProject() != null && app().getSharedProjectManager().getSelectedProject().getSelectedChapter() == null) {
+        if(AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
             // the project contains no chapters for the current language
             Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
             languageIntent.putExtra("sourceLanguages", true);
@@ -210,7 +210,7 @@ public class MainActivity extends TranslatorBaseActivity {
         } else {
             // open the drawer if the remembered chapter does not exist
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-                if(app().getSharedProjectManager().getSelectedProject() == null || app().getSharedProjectManager().getSelectedProject().getSelectedChapter() == null) {
+                if(AppContext.projectManager().getSelectedProject() == null || AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
                     openLeftDrawer();
                 }
             }
@@ -351,7 +351,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mSourceTitleText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final Project p = app().getSharedProjectManager().getSelectedProject();
+                final Project p = AppContext.projectManager().getSelectedProject();
                 if(p != null && p.getSelectedSourceLanguage().getResources().length > 1) {
                     // Create and show the dialog.
                     FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -384,7 +384,7 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void run() {
                                     // reload the source so we get the correct language resource
-                                    app().getSharedProjectManager().fetchProjectSource(p);
+                                    AppContext.projectManager().fetchProjectSource(p);
                                 }
 
                                 @Override
@@ -410,7 +410,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mSourceText.setTypeface(translationTypeface);
 
         // set custom font size (sp)
-        int typefaceSize = Integer.parseInt(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_TYPEFACE_SIZE, MainContext.getContext().getResources().getString(R.string.pref_default_typeface_size)));
+        int typefaceSize = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TYPEFACE_SIZE, AppContext.context().getResources().getString(R.string.pref_default_typeface_size)));
         mTranslationEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
         mSourceText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
@@ -1028,7 +1028,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
         double flingAngle = Math.toDegrees(Math.asin(Math.abs(distanceY/distanceX)));
 
-        Project p = app().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(flingAngle <= maxFlingAngle && Math.abs(distanceX) >= minFlingDistance && Math.abs(velocityX) >= minFlingVelocity && p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
             // automatically save changes if the auto save did not have time to save
             save();
@@ -1057,7 +1057,7 @@ public class MainActivity extends TranslatorBaseActivity {
         disableAutosave();
         invalidateOptionsMenu();
         // load the text
-        final Project p = app().getSharedProjectManager().getSelectedProject();
+        final Project p = AppContext.projectManager().getSelectedProject();
         if(frameIsSelected()) {
             mRightPane.reloadNotesTab();
 
@@ -1181,7 +1181,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
     // Checks if a frame has been selected in the app
     public boolean frameIsSelected() {
-        Project selectedProject = app().getSharedProjectManager().getSelectedProject();
+        Project selectedProject = AppContext.projectManager().getSelectedProject();
         return selectedProject != null && selectedProject.getSelectedChapter() != null && selectedProject.getSelectedChapter().getSelectedFrame() != null;
     }
 
@@ -1206,7 +1206,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * Saves the translation
      */
     public void save() {
-        if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && app().getSharedProjectManager().getSelectedProject().hasChosenTargetLanguage()) {
+        if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
             disableAutosave();
 
             // compile the translation
@@ -1234,7 +1234,7 @@ public class MainActivity extends TranslatorBaseActivity {
             // grab the last bit of text
             compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
 
-            Frame f = app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+            Frame f = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
             f.setTranslation(compiledString.toString().trim());
             f.save();
             enableAutosave();
@@ -1334,8 +1334,8 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param term
      */
     public void showTermDetails(String term) {
-        if(app().getSharedProjectManager().getSelectedProject() != null) {
-            mRightPane.showTerm(app().getSharedProjectManager().getSelectedProject().getTerm(term));
+        if(AppContext.projectManager().getSelectedProject() != null) {
+            mRightPane.showTerm(AppContext.projectManager().getSelectedProject().getTerm(term));
             openRightDrawer();
         }
     }
@@ -1392,7 +1392,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        Project p = app().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         Boolean projectEnabled = p != null;
         if(mKeyboardIsOpen) {
             // translation menu
@@ -1439,7 +1439,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 openSharing();
                 return true;
             case R.id.action_sync:
-                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                if(AppContext.projectManager().getSelectedProject() != null) {
                     openSyncing();
                 } else {
                     app().showToastMessage(R.string.choose_a_project);
@@ -1458,7 +1458,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 openLeftDrawer();
                 return true;
             case R.id.action_resources:
-                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                if(AppContext.projectManager().getSelectedProject() != null) {
                     openRightDrawer();
                 } else {
                     app().showToastMessage(R.string.choose_a_project);
@@ -1474,13 +1474,13 @@ public class MainActivity extends TranslatorBaseActivity {
                         Logger.i(this.getName().getClass().getName(), "downloading updates");
 
                         // check for updates to current projects
-                        int numProjects = app().getSharedProjectManager().numProjects();
+                        int numProjects = AppContext.projectManager().numProjects();
                         for (int i = 0; i < numProjects; i ++) {
-                            app().getSharedProjectManager().downloadProjectUpdates(app().getSharedProjectManager().getProject(i));
+                            AppContext.projectManager().downloadProjectUpdates(AppContext.projectManager().getProject(i));
                         }
 
                         // check for new projects to download
-                        app().getSharedProjectManager().downloadNewProjects();
+                        AppContext.projectManager().downloadNewProjects();
 
                         app().closeProgressDialog();
                         app().showToastMessage(R.string.project_updates_downloaded);
@@ -1514,16 +1514,16 @@ public class MainActivity extends TranslatorBaseActivity {
                         .show();
                 return true;
             case R.id.action_chapter_settings:
-                if(app().getSharedProjectManager().getSelectedProject() != null && app().getSharedProjectManager().getSelectedProject().getSelectedChapter() != null) {
+                if(AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().getSelectedChapter() != null) {
                     showChapterSettingsMenu();
-                } else if(app().getSharedProjectManager().getSelectedProject() == null) {
+                } else if(AppContext.projectManager().getSelectedProject() == null) {
                     app().showToastMessage(R.string.choose_a_project);
                 } else {
                     app().showToastMessage(R.string.choose_a_chapter);
                 }
                 return true;
             case R.id.action_project_settings:
-                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                if(AppContext.projectManager().getSelectedProject() != null) {
                     showProjectSettingsMenu();
                 } else {
                     app().showToastMessage(R.string.choose_a_project);
@@ -1602,7 +1602,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param position the position within the translation text where the verse will be inserted
      */
     private void insertVerseMarker(final int position) {
-        Project p = app().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         int defaultVerseNumber = 1;
         if(p != null) {
             if(p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
@@ -1787,7 +1787,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
         VerseMarkerDialog newFragment = new VerseMarkerDialog();
         Bundle args = new Bundle();
-        Frame f =  app().getSharedProjectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+        Frame f =  AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
         args.putInt("startVerse", verse.getStartVerseNumber());
         args.putInt("maxVerse",f.getEndingVerseNumber());
         args.putInt("minVerse", f.getStartingVerseNumber());

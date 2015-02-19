@@ -26,9 +26,9 @@ public abstract class TranslatorBaseActivity extends ActionBarActivity {
             !className.equals(SplashScreenActivity.class.getName()) &&
             !className.equals(CrashReporterActivity.class.getName()) &&
             !className.equals(BugReporterActivity.class.getName()) &&
-            app().getSharedProjectManager().getProjects().length == 0) {
+            AppContext.projectManager().getProjects().length == 0) {
 
-            app().getSharedProjectManager().reset();
+            AppContext.projectManager().reset();
             Intent intent = new Intent(this, SplashScreenActivity.class);
             startActivity(intent);
             finish();
@@ -44,7 +44,7 @@ public abstract class TranslatorBaseActivity extends ActionBarActivity {
 
     public void onStart() {
         super.onStart();
-        MainContext.getEventBus().register(this);
+        AppContext.getEventBus().register(this);
         app().setCurrentActivity(this);
     }
 
@@ -76,7 +76,7 @@ public abstract class TranslatorBaseActivity extends ActionBarActivity {
      * Removes references to self to avoid memory leaks
      */
     private void clearReferences() {
-        MainContext.getEventBus().unregister(this);
+        AppContext.getEventBus().unregister(this);
         Activity currActivity = app().getCurrentActivity();
         if(currActivity != null && currActivity.equals(this)) {
             app().setCurrentActivity(null);

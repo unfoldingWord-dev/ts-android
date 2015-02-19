@@ -9,12 +9,8 @@ import android.widget.Button;
 import android.widget.ExpandableListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ProjectImportApprovalEvent;
-import com.door43.translationstudio.projects.imports.ChapterImport;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
-import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;
-import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 1/20/2015.

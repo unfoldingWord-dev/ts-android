@@ -7,14 +7,13 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -89,7 +88,7 @@ public class Project implements Model {
      */
     private void init() {
         // load the selected language
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
         mSelectedTargetLanguageId = settings.getString("selected_target_language_"+mSlug, null);
     }
@@ -106,7 +105,7 @@ public class Project implements Model {
         mSlug = slug;
         mDefaultDescription = description;
         // load the selected language
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
         mSelectedTargetLanguageId = settings.getString("selected_target_language_"+mSlug, null);
     }
@@ -338,7 +337,7 @@ public class Project implements Model {
      * @param id
      */
     private void storeSelectedChapter(String id) {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_chapter_"+mSlug, id);
         editor.remove("selected_frame_"+mSlug); // the frame needs to reset each time so it doesn't propogate between chapters
@@ -350,8 +349,8 @@ public class Project implements Model {
      * @return
      */
     public Chapter getSelectedChapter() {
-        if(MainContext.getContext().rememberLastPosition()) {
-            SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        if(AppContext.context().rememberLastPosition()) {
+            SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
             mSelectedChapterId = settings.getString("selected_chapter_" + mSlug, null);
         }
 
@@ -549,7 +548,7 @@ public class Project implements Model {
      */
     @Override
     public boolean isSelected() {
-        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p == null) return false;
         return p.getId().equals(getId());
     }
@@ -607,7 +606,7 @@ public class Project implements Model {
      * @return
      */
     public boolean setSelectedTargetLanguage(String id) {
-        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(id);
+        Language l = AppContext.projectManager().getLanguage(id);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
             storeSelectedTargetLanguage(mSelectedTargetLanguageId);
@@ -621,7 +620,7 @@ public class Project implements Model {
      * @return true if the language exists
      */
     public boolean setSelectedTargetLanguage(int index) {
-        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(index);
+        Language l = AppContext.projectManager().getLanguage(index);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
             storeSelectedTargetLanguage(mSelectedTargetLanguageId);
@@ -634,7 +633,7 @@ public class Project implements Model {
      * @param slug
      */
     private void storeSelectedTargetLanguage(String slug) {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_target_language_"+mSlug, slug);
         editor.apply();
@@ -646,11 +645,11 @@ public class Project implements Model {
      * @return
      */
     public Language getSelectedTargetLanguage() {
-        Language selectedLanguage = MainContext.getContext().getSharedProjectManager().getLanguage(mSelectedTargetLanguageId);
+        Language selectedLanguage = AppContext.projectManager().getLanguage(mSelectedTargetLanguageId);
         if(selectedLanguage == null) {
             // auto select the first language
             int defaultLanguageIndex = 0;
-            return MainContext.getContext().getSharedProjectManager().getLanguage(defaultLanguageIndex);
+            return AppContext.projectManager().getLanguage(defaultLanguageIndex);
         } else {
             return selectedLanguage;
         }
@@ -697,7 +696,7 @@ public class Project implements Model {
      * @param slug
      */
     private void storeSelectedSourceLanguage(String slug) {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_source_language_"+mSlug, slug);
         editor.apply();
@@ -748,7 +747,7 @@ public class Project implements Model {
      * @return
      */
     public static String getRepositoryPath(String projectId, String languageId) {
-        return MainContext.getContext().getFilesDir() + "/" + MainContext.getContext().getResources().getString(R.string.git_repository_dir) + "/" + GLOBAL_PROJECT_SLUG + "-" + projectId + "-" + languageId + "/";
+        return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/" + GLOBAL_PROJECT_SLUG + "-" + projectId + "-" + languageId + "/";
     }
 
     /**
@@ -756,7 +755,7 @@ public class Project implements Model {
      * @return
      */
     public static String getProjectsPath() {
-        return MainContext.getContext().getFilesDir() + "/" + MainContext.getContext().getResources().getString(R.string.git_repository_dir);
+        return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir);
     }
 
     /**
@@ -842,8 +841,8 @@ public class Project implements Model {
      * @return
      */
     public String getRemotePath(Language lang) {
-        String server = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, MainContext.getContext().getResources().getString(R.string.pref_default_git_server));
-        return server + ":tS/" + MainContext.getContext().getUDID() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
+        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+        return server + ":tS/" + AppContext.context().getUDID() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
     }
 
     /**
@@ -892,7 +891,7 @@ public class Project implements Model {
         for(File f:files) {
             String[] pieces = f.getName().split("-");
             if(pieces.length == 3) {
-                Language l = MainContext.getContext().getSharedProjectManager().getLanguage(pieces[2]);
+                Language l = AppContext.projectManager().getLanguage(pieces[2]);
                 if(l != null) {
                     languages.add(l);
                 }

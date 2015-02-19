@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 
@@ -29,7 +29,7 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         setContentView(R.layout.activity_chapter_settings);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        mProject = AppContext.projectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
             if(mProject != null && mProject.getSelectedChapter() == null) {
                 // there are no chapters in the selected source language

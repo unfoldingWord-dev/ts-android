@@ -15,16 +15,15 @@ import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
 import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.RmCommand;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -149,7 +148,7 @@ public class ProjectSharing {
         String[] name = archive.getName().split("\\.");
         if(name[name.length - 1].equals(Project.PROJECT_EXTENSION)) {
             long timestamp = System.currentTimeMillis();
-            File extractedDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+            File extractedDir = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
 
             // extract the archive
             if(!extractedDir.exists()) {
@@ -171,7 +170,7 @@ public class ProjectSharing {
                     if(manifestJson.has("source")) {
                         File sourceDir = new File(extractedDir, manifestJson.getString("source"));
                         if(sourceDir.exists()) {
-                            MainContext.getContext().getSharedProjectManager().importSource(sourceDir);
+                            AppContext.projectManager().importSource(sourceDir);
                         }
                     }
 
@@ -217,7 +216,7 @@ public class ProjectSharing {
         if(name[name.length - 1].equals("zip")) {
             // extract archive
             long timestamp = System.currentTimeMillis();
-            File extractedDirectory = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+            File extractedDirectory = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
             File importDirectory;
             Boolean success = false;
             try {
@@ -305,11 +304,11 @@ public class ProjectSharing {
         }
 
         public Project getProject() {
-            return MainContext.getContext().getSharedProjectManager().getProject(projectId);
+            return AppContext.projectManager().getProject(projectId);
         }
 
         public Language getLanguage() {
-            return MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
+            return AppContext.projectManager().getLanguage(languageId);
         }
     }
 
@@ -325,7 +324,7 @@ public class ProjectSharing {
         boolean hadTranslationWarnings = false;
 
         // locate existing project
-        final Project p = MainContext.getContext().getSharedProjectManager().getProject(projectImport.projectId);
+        final Project p = AppContext.projectManager().getProject(projectImport.projectId);
         if(p == null) {
             projectImport.setMissingSource(true);
             Logger.i(ProjectSharing.class.getName(), "Missing project source for import");
@@ -347,7 +346,7 @@ public class ProjectSharing {
                 }
             });
             for(String chapterId:chapterIds) {
-                ChapterImport chapterImport = new ChapterImport(chapterId, String.format(MainContext.getContext().getResources().getString(R.string.label_chapter_title_detailed), chapterId));
+                ChapterImport chapterImport = new ChapterImport(chapterId, String.format(AppContext.context().getResources().getString(R.string.label_chapter_title_detailed), chapterId));
                 if(Chapter.isTranslating(projectImport.projectId, languageId, chapterId)) {
                     chapterImport.setWarning("Importing will override our existing translation");
                     hadChapterWarnings = true;
@@ -358,7 +357,7 @@ public class ProjectSharing {
                 // read chapter title and reference
                 File titleFile = new File(projectDir, chapterId + "/title.txt");
                 if(titleFile.exists()) {
-                    FileImport fileImport = new FileImport("title", MainContext.getContext().getResources().getString(R.string.chapter_title_field));
+                    FileImport fileImport = new FileImport("title", AppContext.context().getResources().getString(R.string.chapter_title_field));
                     chapterImport.addFileImport(fileImport);
                     // check if chapter title translation exists
                     File currentTitleFile = new File(Chapter.getTitlePath(projectImport.projectId, languageId, chapterId));
@@ -368,7 +367,7 @@ public class ProjectSharing {
                 }
                 File referenceFile = new File(projectDir, chapterId + "/reference.txt");
                 if(referenceFile.exists()) {
-                    FileImport fileImport = new FileImport("reference", MainContext.getContext().getResources().getString(R.string.chapter_reference_field));
+                    FileImport fileImport = new FileImport("reference", AppContext.context().getResources().getString(R.string.chapter_reference_field));
                     chapterImport.addFileImport(fileImport);
                     // check if chapter reference translation exists
                     File currentReferenceFile = new File(Chapter.getReferencePath(projectImport.projectId, languageId, chapterId));
@@ -391,7 +390,7 @@ public class ProjectSharing {
                         continue;
                     }
                     String frameId = pieces[0];
-                    FrameImport frameImport = new FrameImport(frameId, String.format(MainContext.getContext().getResources().getString(R.string.label_frame_title_detailed), frameId));
+                    FrameImport frameImport = new FrameImport(frameId, String.format(AppContext.context().getResources().getString(R.string.label_frame_title_detailed), frameId));
                     chapterImport.addFrameImport(frameImport);
 
                     // check if frame translation exists
@@ -502,13 +501,13 @@ public class ProjectSharing {
                         }
                     }
                     // causes the ui to reload the fresh content from the disk
-                    Language l = MainContext.getContext().getSharedProjectManager().getLanguage(ti.languageId);
+                    Language l = AppContext.projectManager().getLanguage(ti.languageId);
                     l.touch();
                 }
             }
 
             // commit changes if this was an existing project
-            Project p = MainContext.getContext().getSharedProjectManager().getProject(request.projectId);
+            Project p = AppContext.projectManager().getProject(request.projectId);
             if(p != null) {
                 p.commit(null);
             }
@@ -561,8 +560,8 @@ public class ProjectSharing {
      * @return the path to the export archive
      */
     public static String export(Project p, SourceLanguage[] sourceLanguages, Language[] targetLanguages) throws IOException {
-        MainApplication context = MainContext.getContext();
-        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
+        MainApplication context = AppContext.context();
+        File exportDir = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.exported_projects_dir));
         File stagingDir = new File(exportDir, System.currentTimeMillis() + "");
         ArrayList<File> zipList = new ArrayList<>();
         File manifestFile = new File(stagingDir, "manifest.json");
@@ -592,7 +591,7 @@ public class ProjectSharing {
         // TODO: we could probably place this in a different method.
         if(sourceLanguages.length > 0) {
             try {
-                DataStore ds = context.getSharedProjectManager().getDataStore();
+                DataStore ds = AppContext.projectManager().getDataStore();
 
                 // build project catalog
                 File projectCatalogFile = new File(sourceCatalogDir, "projects_catalog.json");
@@ -795,7 +794,7 @@ public class ProjectSharing {
      */
     public static String exportDW(Project p) throws IOException {
         String projectComplexName = Project.GLOBAL_PROJECT_SLUG + "-" + p.getId() + "-" + p.getSelectedTargetLanguage().getId();
-        File exportDir = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.exported_projects_dir));
+        File exportDir = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.exported_projects_dir));
         Boolean commitSucceeded = true;
 
         Pattern pattern = Pattern.compile(NoteSpan.PATTERN);
@@ -893,7 +892,7 @@ public class ProjectSharing {
                         String apiVersion = "1";
                         // TODO: for now all images use the english versions
                         String languageCode = "en"; // eventually we should use: getSelectedTargetLanguage().getId()
-                        ps.print(MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, MainContext.getContext().getResources().getString(R.string.pref_default_media_server))+"/"+p.getId()+"/jpg/"+apiVersion+"/"+languageCode+"/360px/"+p.getId()+"-"+languageCode+"-"+c.getId()+"-"+f.getId()+".jpg");
+                        ps.print(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, AppContext.context().getResources().getString(R.string.pref_default_media_server))+"/"+p.getId()+"/jpg/"+apiVersion+"/"+languageCode+"/360px/"+p.getId()+"-"+languageCode+"-"+c.getId()+"-"+f.getId()+".jpg");
                         ps.println("}}");
                         ps.println();
 
@@ -941,7 +940,7 @@ public class ProjectSharing {
         }
 
         // zip
-        MainContext.getContext().zip(outputDir.getAbsolutePath(), outputZipFile.getAbsolutePath());
+        AppContext.context().zip(outputDir.getAbsolutePath(), outputZipFile.getAbsolutePath());
         // cleanup
         FileUtilities.deleteRecursive(outputDir);
         return outputZipFile.getAbsolutePath();
@@ -969,11 +968,11 @@ public class ProjectSharing {
                         line = line.substring(2, line.length() - 2).trim();
                         if(targetLanguage == null) {
                             // retrieve the translation language
-                            targetLanguage = MainContext.getContext().getSharedProjectManager().getLanguageByName(line);
+                            targetLanguage = AppContext.projectManager().getLanguageByName(line);
                             if(targetLanguage == null) return false;
                         } else if(project == null) {
                             // retrieve project
-                            project = MainContext.getContext().getSharedProjectManager().getProject(line);
+                            project = AppContext.projectManager().getProject(line);
                             if(project == null) return false;
                             // place this translation into the correct language
                             project.setSelectedTargetLanguage(targetLanguage.getId());
@@ -1043,7 +1042,7 @@ public class ProjectSharing {
         Boolean success = true;
         if(archive.exists() && archive.isFile() && name[name.length - 1].equals("zip")) {
             long timestamp = System.currentTimeMillis();
-            File extractedDirectory = new File(MainContext.getContext().getCacheDir() + "/" + MainContext.getContext().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+            File extractedDirectory = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
             try {
                 Zip.unzip(archive, extractedDirectory);
             } catch (IOException e) {

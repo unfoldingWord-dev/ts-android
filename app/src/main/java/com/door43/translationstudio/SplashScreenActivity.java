@@ -6,15 +6,12 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.security.Crypto;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.io.File;
@@ -82,10 +79,10 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         }
 
         // these checks allow the app to rotate without restarting the loading task
-        if(mLoadingTask == null && !app().getSharedProjectManager().isLoaded()) {
+        if(mLoadingTask == null && !AppContext.projectManager().isLoaded()) {
             mLoadingTask = new LoadAppTask();
             mLoadingTask.execute();
-        } else if(mLoadingTask == null && app().getSharedProjectManager().isLoaded()) {
+        } else if(mLoadingTask == null && AppContext.projectManager().isLoaded()) {
             // go ahead and start the main activity if the project manager has been loaded.
             startMainActivity();
         }
@@ -108,7 +105,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         protected Void doInBackground(Void... voids) {
 
             // begin loading app resources
-            MainContext.getContext().getSharedProjectManager().init(new ProjectManager.OnProgressCallback() {
+            AppContext.projectManager().init(new ProjectManager.OnProgressCallback() {
                 @Override
                 public void onProgress(double progress, String message) {
                     mProgress = (int)(progress * 100); // project manager returns 100 based percent values not 10,000
@@ -118,8 +115,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 @Override
                 public void onSuccess() {
                     // Generate the ssh keys
-                    if(!MainContext.getContext().hasKeys()) {
-                        MainContext.getContext().generateKeys();
+                    if(!AppContext.context().hasKeys()) {
+                        AppContext.context().generateKeys();
                     }
 
                     // handle app version changes
@@ -183,14 +180,14 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
             publishProgress(getResources().getString(R.string.loading_preferences));
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
 
-                if(app().getSharedProjectManager().getSelectedProject() != null) {
+                if(AppContext.projectManager().getSelectedProject() != null) {
                     // load the saved project without displaying a notice to the user
-                    app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject(), false);
                 }
             } else {
                 // load the default project without display a notice to the user
-                if(app().getSharedProjectManager().getSelectedProject() != null) {
-                    app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject(), false);
+                if(AppContext.projectManager().getSelectedProject() != null) {
+                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject(), false);
                 }
             }
         }

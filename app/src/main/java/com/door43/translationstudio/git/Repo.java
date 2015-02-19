@@ -5,7 +5,7 @@ import android.util.SparseArray;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.RepoOpTask;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.InitCommand;
@@ -65,7 +65,7 @@ public class Repo {
         try {
             init.call();
         } catch (GitAPIException e) {
-            MainContext.getContext().showException(e, R.string.error_could_not_create_repository);
+            AppContext.context().showException(e, R.string.error_could_not_create_repository);
         }
     }
 
@@ -93,10 +93,10 @@ public class Repo {
             mGit = Git.open(repoFile);
             return mGit;
         } catch (RepositoryNotFoundException e) {
-            MainContext.getContext().showException(e, R.string.error_repository_not_found);
+            AppContext.context().showException(e, R.string.error_repository_not_found);
             throw new StopTaskException();
         } catch (IOException e) {
-            MainContext.getContext().showException(e);
+            AppContext.context().showException(e);
             throw new StopTaskException();
         }
     }
@@ -123,7 +123,7 @@ public class Repo {
         try {
             return getGit().getRepository().getFullBranch();
         } catch (IOException e) {
-            MainContext.getContext().showException(e);
+            AppContext.context().showException(e);
         } catch (StopTaskException e) {
         }
         return "";

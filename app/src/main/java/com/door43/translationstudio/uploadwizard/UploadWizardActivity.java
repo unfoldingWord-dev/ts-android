@@ -15,6 +15,7 @@ import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
@@ -60,7 +61,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
      */
     public void startUpload() {
         // get user info if publishing translation
-        if(app().getSharedProjectManager().getSelectedProject().translationIsReady() && ProfileManager.getProfile() == null) {
+        if(AppContext.projectManager().getSelectedProject().translationIsReady() && ProfileManager.getProfile() == null) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
             if (prev != null) {
@@ -90,7 +91,7 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
         // TODO: we need to upload the profile as well
         // prepare upload
         app().showProgressDialog(R.string.preparing_upload);
-        app().getSharedProjectManager().getSelectedProject().commit(new Project.OnCommitComplete() {
+        AppContext.projectManager().getSelectedProject().commit(new Project.OnCommitComplete() {
             @Override
             public void success() {
                 app().getSharedTranslationManager().syncSelectedProject();

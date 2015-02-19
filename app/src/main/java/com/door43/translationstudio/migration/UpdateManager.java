@@ -6,7 +6,7 @@ import android.util.Log;
 
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.io.File;
 
@@ -42,13 +42,13 @@ public class UpdateManager {
                 // perform migration
                 PackageInfo pInfo;
                 try {
-                    pInfo = MainContext.getContext().getPackageManager().getPackageInfo(MainContext.getContext().getPackageName(), 0);
+                    pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
                 } catch (PackageManager.NameNotFoundException e) {
                     Logger.e(this.getClass().getName(), "failed to identify package directory", e);
                     return;
                 }
 //                String databasePath = pInfo.applicationInfo.dataDir;
-                SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(MainContext.getContext(), pInfo.applicationInfo.dataDir);
+                SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(AppContext.context(), pInfo.applicationInfo.dataDir);
                 try {
                     migrationHelper.migrateDatabase(new SQLiteMigrationHelper.OnProgressCallback() {
                         @Override
@@ -62,11 +62,11 @@ public class UpdateManager {
                 }
 
                 // backup database
-                File backup = new File(MainContext.getContext().getFilesDir(), "1.x_backup.sqlite3");
+                File backup = new File(AppContext.context().getFilesDir(), "1.x_backup.sqlite3");
                 FileUtilities.moveOrCopy(db, backup);
 
                 // clean up old 1.x files
-                FileUtilities.deleteRecursive(new File(MainContext.getContext().getFilesDir(), "Documents"));
+                FileUtilities.deleteRecursive(new File(AppContext.context().getFilesDir(), "Documents"));
                 FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_database"));
                 FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_webview")); // this technically deletes 2.x stuff too, but it will be rebuilt automatically
             } else {

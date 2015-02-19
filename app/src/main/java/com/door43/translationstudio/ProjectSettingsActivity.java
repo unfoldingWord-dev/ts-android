@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 
@@ -23,7 +23,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         setContentView(R.layout.activity_project_settings);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mProject = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        mProject = AppContext.projectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
             if(mProject != null && mProject.getSelectedChapter() == null) {
                 app().showToastMessage(R.string.missing_chapter); // the language does not contain any chapters

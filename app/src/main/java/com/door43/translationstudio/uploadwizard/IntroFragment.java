@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.util.AppContext;
 
 public class IntroFragment extends WizardFragment {
 
@@ -22,7 +23,7 @@ public class IntroFragment extends WizardFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_upload_intro, container, false);
 
-        final Project p = app().getSharedProjectManager().getSelectedProject();
+        final Project p = AppContext.projectManager().getSelectedProject();
 
         Button cancelBtn = (Button)rootView.findViewById(R.id.upload_wizard_cancel_btn);
         cancelBtn.setOnClickListener(new View.OnClickListener() {

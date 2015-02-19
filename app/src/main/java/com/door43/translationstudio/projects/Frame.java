@@ -7,7 +7,7 @@ import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -328,7 +328,7 @@ public class Frame implements Model {
                 // delete empty file
                 if(file.exists()) {
                     file.delete();
-                    MainContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
+                    AppContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
                     mChapter.cleanDir(mTranslation.getLanguage());
                 }
             } else {
@@ -346,7 +346,7 @@ public class Frame implements Model {
                     ps.print(mTranslation.getText());
                     ps.close();
                     if(notifyTranslationChanged) {
-                        MainContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
+                        AppContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
                         mChapter.cleanDir(mTranslation.getLanguage());
                     }
                 } catch (IOException e) {
@@ -411,7 +411,7 @@ public class Frame implements Model {
      */
     @Override
     public boolean isSelected() {
-        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p == null) return false;
         Chapter c = p.getSelectedChapter();
         if(c == null) return false;

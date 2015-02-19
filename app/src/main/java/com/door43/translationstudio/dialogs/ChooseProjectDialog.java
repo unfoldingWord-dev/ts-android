@@ -14,7 +14,7 @@ import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 /**
  * This dialog displays a list view that allows the user to dig down through projects and meta projects.
@@ -35,13 +35,13 @@ public class ChooseProjectDialog extends DialogFragment {
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         if(mModelList != null) {
-            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), mModelList);
+            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), mModelList);
         } else {
             Bundle args = getArguments();
             String id = args.getString("metaId");
-            PseudoProject p = MainContext.getContext().getSharedProjectManager().getMetaProject(id);
+            PseudoProject p = AppContext.projectManager().getMetaProject(id);
             if(p != null) {
-                if (mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), p.getChildren());
+                if (mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), p.getChildren());
             }
         }
 
@@ -58,7 +58,7 @@ public class ChooseProjectDialog extends DialogFragment {
                     } else {
                         // return the selected project.
                         Project p = (Project)m;
-                        MainContext.getEventBus().post(new ChoseProjectEvent(p, ChooseProjectDialog.this));
+                        AppContext.getEventBus().post(new ChoseProjectEvent(p, ChooseProjectDialog.this));
                         // NOTE: the caller should close this dialog
                     }
                 }

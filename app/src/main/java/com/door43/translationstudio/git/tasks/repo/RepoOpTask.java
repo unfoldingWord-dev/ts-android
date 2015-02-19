@@ -5,7 +5,7 @@ import android.widget.Toast;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.GitSyncAsyncTask;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 
@@ -30,7 +30,7 @@ public abstract class RepoOpTask extends GitSyncAsyncTask<Void, String, Boolean>
             return;
         }
         if (isSuccess && mSuccessMsg != 0) {
-            MainContext.getContext().showToastMessage(mSuccessMsg, Toast.LENGTH_SHORT);
+            AppContext.context().showToastMessage(mSuccessMsg, Toast.LENGTH_SHORT);
         }
     }
 
@@ -43,7 +43,7 @@ public abstract class RepoOpTask extends GitSyncAsyncTask<Void, String, Boolean>
             execute();
             return;
         }
-        MainContext.getContext().showToastMessage(R.string.error_task_running);
+        AppContext.context().showToastMessage(R.string.error_task_running);
     }
 
 //    protected void handleAuthError(OnPasswordEntered onPassEntered) {

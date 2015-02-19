@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 /**
  * This is the contextual menu dialog fragment
@@ -43,7 +43,7 @@ public class InfoDialog extends DialogFragment {
         }
         // display device id
         TextView deviceId = (TextView)v.findViewById(R.id.device_udid);
-        deviceId.setText("udid: "+ MainContext.getContext().getUDID());
+        deviceId.setText("udid: "+ AppContext.context().getUDID());
 
         // hook up settings button
         Button advancedSettingsBtn = (Button)v.findViewById(R.id.advanced_settings_btn);

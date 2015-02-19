@@ -18,7 +18,7 @@ import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.io.File;
@@ -39,7 +39,7 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
         if(mProject != null) {
             final LanguageAdapter adapter = new LanguageAdapter(Arrays.asList(mProject.getTargetLanguages()), this.getActivity(), false);
             String imageUri;
-            File img = MainContext.getContext().getAssetAsFile(mProject.getImagePath());
+            File img = AppContext.context().getAssetAsFile(mProject.getImagePath());
             if(img != null && img.exists()) {
                 imageUri = "assets://"+ mProject.getImagePath();
             } else {
@@ -68,7 +68,7 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
                 public void onClick(View view) {
                     Language[] selectedItems = adapter.getSelectedItems();
                     if(selectedItems.length > 0) {
-                        MainContext.getEventBus().post(new ChoseProjectLanguagesToImportEvent(mPeer, mProject, selectedItems));
+                        AppContext.getEventBus().post(new ChoseProjectLanguagesToImportEvent(mPeer, mProject, selectedItems));
                         dismiss();
                     }
                 }
@@ -79,7 +79,7 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
             description.setText(mProject.getDescription());
 
             // load image
-            MainContext.getContext().getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
+            AppContext.context().getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                     icon.setImageBitmap(loadedImage);

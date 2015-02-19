@@ -1,7 +1,7 @@
 package com.door43.translationstudio.projects.imports;
 
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.io.File;
 
@@ -40,7 +40,7 @@ public class ProjectImport extends ImportRequest {
     @Override
     public String getTitle() {
         // TODO: this will throw a null pointer exception if we don't have the source
-        Project p = MainContext.getContext().getSharedProjectManager().getProject(projectId);
+        Project p = AppContext.projectManager().getProject(projectId);
         if(p != null) {
             return p.getTitle();
         } else {

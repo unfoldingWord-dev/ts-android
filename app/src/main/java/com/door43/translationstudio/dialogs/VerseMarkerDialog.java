@@ -1,7 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
-import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -9,12 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 /**
  * Created by joel on 1/29/2015.
@@ -77,7 +75,7 @@ public class VerseMarkerDialog extends DialogFragment {
                     verse = Integer.parseInt(mVerse);
                 }
                 if(verse != -1 && (verse > mMaxVerse || verse < mMinVerse)) {
-                    MainContext.getContext().showToastMessage(String.format(MainContext.getContext().getResources().getString(R.string.verse_out_of_bounds), mMinVerse, mMaxVerse));
+                    AppContext.context().showToastMessage(String.format(AppContext.context().getResources().getString(R.string.verse_out_of_bounds), mMinVerse, mMaxVerse));
                 } else {
                     if (mListener != null) {
                         mListener.onClick(verse);

@@ -16,7 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TTFAnalyzer;
 
 import java.io.File;
@@ -165,7 +165,7 @@ public class SettingsActivity extends PreferenceActivity {
         {
             for (int i = 0; i<fileList.length; i++)
             {
-                File typeface = MainContext.getContext().getAssetAsFile("fonts/" + fileList[i]);
+                File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
                 if (typeface != null) {
                     TTFAnalyzer analyzer = new TTFAnalyzer();
                     String fontname = "";
@@ -329,7 +329,7 @@ public class SettingsActivity extends PreferenceActivity {
             {
                 for (int i = 0; i<fileList.length; i++)
                 {
-                    File typeface = MainContext.getContext().getAssetAsFile("fonts/" + fileList[i]);
+                    File typeface = AppContext.context().getAssetAsFile("fonts/" + fileList[i]);
                     if (typeface != null) {
                         TTFAnalyzer analyzer = new TTFAnalyzer();
                         String fontname = "";

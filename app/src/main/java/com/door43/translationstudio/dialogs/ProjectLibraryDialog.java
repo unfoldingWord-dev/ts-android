@@ -1,36 +1,25 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ExpandableListView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ChoseProjectToImportEvent;
-import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
-import com.door43.translationstudio.projects.imports.ImportRequestInterface;
-import com.door43.translationstudio.projects.imports.ProjectImport;
-import com.door43.translationstudio.projects.imports.TranslationImport;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.logging.Handler;
 
 /**
  * This dialog allows a user to browse a project dialog and make selections.
@@ -83,7 +72,7 @@ public class ProjectLibraryDialog extends DialogFragment {
             handle.post(new Runnable() {
                 @Override
                 public void run() {
-                    MainContext.getContext().showException(e);
+                    AppContext.context().showException(e);
                 }
             });
             return new Model[0];
@@ -164,7 +153,7 @@ public class ProjectLibraryDialog extends DialogFragment {
                 handle.post(new Runnable() {
                     @Override
                     public void run() {
-                        MainContext.getContext().showException(e);
+                        AppContext.context().showException(e);
                     }
                 });
             }

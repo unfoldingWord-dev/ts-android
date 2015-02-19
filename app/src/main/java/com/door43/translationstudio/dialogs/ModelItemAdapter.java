@@ -16,7 +16,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.util.AnimationUtilities;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
@@ -78,8 +78,8 @@ public class ModelItemAdapter extends BaseAdapter {
         ViewHolder holder = new ViewHolder();
         Model m = getItem(position);
         String imageUri;
-        File img = MainContext.getContext().getAssetAsFile(m.getImagePath());
-        File defaultImg = MainContext.getContext().getAssetAsFile(m.getDefaultImagePath());
+        File img = AppContext.context().getAssetAsFile(m.getImagePath());
+        File defaultImg = AppContext.context().getAssetAsFile(m.getDefaultImagePath());
         if(img != null && img.exists() && img.isFile()) {
             imageUri = "assets://"+ m.getImagePath();
         } else if(defaultImg != null && defaultImg.exists() && defaultImg.isFile()){

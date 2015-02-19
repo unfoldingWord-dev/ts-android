@@ -4,9 +4,9 @@ import android.content.SharedPreferences;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,7 +88,7 @@ public class Chapter implements Model {
         if(mTitle != null && !mTitle.isEmpty()) {
             return mTitle;
         } else {
-            return String.format(MainContext.getContext().getResources().getString(R.string.label_chapter_title_detailed), Integer.parseInt(getId()));
+            return String.format(AppContext.context().getResources().getString(R.string.label_chapter_title_detailed), Integer.parseInt(getId()));
         }
     }
 
@@ -284,7 +284,7 @@ public class Chapter implements Model {
      * @param id
      */
     private void storeSelectedFrame(String id) {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(Project.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_frame_"+getProject().getId(), id);
         editor.apply();
@@ -295,8 +295,8 @@ public class Chapter implements Model {
      * @return
      */
     public Frame getSelectedFrame() {
-        if(MainContext.getContext().rememberLastPosition()) {
-            SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        if(AppContext.context().rememberLastPosition()) {
+            SharedPreferences settings = AppContext.context().getSharedPreferences(Project.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
             mSelectedFrameId = settings.getString("selected_frame_" + getProject().getId(), null);
         }
 
@@ -447,10 +447,10 @@ public class Chapter implements Model {
         String[] files = dir.list();
         if(files != null && files.length == 0) {
             FileUtilities.deleteRecursive(dir);
-            MainContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
+            AppContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
         } else if(dir.exists()) {
             // the chapter has translations.
-            MainContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
+            AppContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
         }
     }
 
@@ -499,7 +499,7 @@ public class Chapter implements Model {
      */
     @Override
     public boolean isSelected() {
-        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p == null) return false;
         Chapter c = p.getSelectedChapter();
         if(c == null) return false;

@@ -160,7 +160,7 @@ public class Logger
             // Gets the log file from the root of the primary storage. If it does
             // not exist, the file is created.
             // TODO: this path should be some place global
-            File logFile = new File(MainContext.getContext().getExternalCacheDir(), "log.txt");
+            File logFile = new File(AppContext.context().getExternalCacheDir(), "log.txt");
             if (!logFile.exists()) {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
@@ -197,7 +197,7 @@ public class Logger
             // Refresh the data so it can seen when the device is plugged in a
             // computer. You may have to unplug and replug to see the latest
             // changes
-            MediaScannerConnection.scanFile(MainContext.getContext(), new String[]{logFile.toString()}, null, null);
+            MediaScannerConnection.scanFile(AppContext.context(), new String[]{logFile.toString()}, null, null);
         }
         catch (IOException e)
         {

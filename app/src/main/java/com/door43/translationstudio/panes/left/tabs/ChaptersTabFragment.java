@@ -11,6 +11,7 @@ import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.projects.Model;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -29,10 +30,10 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
 
         // create adapter
         if(mModelItemAdapter == null) {
-            if(app().getSharedProjectManager().getSelectedProject() == null) {
+            if(AppContext.projectManager().getSelectedProject() == null) {
                 mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{});
             } else {
-                mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getSelectedProject().getChapters());
+                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getChapters());
             }
         }
         // connectAsync adapter
@@ -44,7 +45,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
                 // save changes to the current frame first
                 ((MainActivity)me.getActivity()).save();
                 // select the chapter
-                app().getSharedProjectManager().getSelectedProject().setSelectedChapter(i);
+                AppContext.projectManager().getSelectedProject().setSelectedChapter(i);
                 // reload the center pane so we don't accidently overwrite a frame
                 ((MainActivity)me.getActivity()).reloadCenterPane();
                 // open up the frames tab
@@ -59,8 +60,8 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        if(mModelItemAdapter != null && app().getSharedProjectManager().getSelectedProject() != null) {
-            mModelItemAdapter.changeDataSet(app().getSharedProjectManager().getSelectedProject().getChapters());
+        if(mModelItemAdapter != null && AppContext.projectManager().getSelectedProject() != null) {
+            mModelItemAdapter.changeDataSet(AppContext.projectManager().getSelectedProject().getChapters());
         } else {
             mModelItemAdapter.changeDataSet(new Model[]{});
         }

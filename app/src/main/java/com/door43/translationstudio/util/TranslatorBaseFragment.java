@@ -15,7 +15,7 @@ public class TranslatorBaseFragment extends Fragment {
      * @return
      */
     protected MainApplication app() {
-        return MainContext.getContext();
+        return AppContext.context();
     }
 
     public void onResume() {
@@ -31,11 +31,11 @@ public class TranslatorBaseFragment extends Fragment {
 
     public void onStart() {
         super.onStart();
-        MainContext.getEventBus().register(this);
+        AppContext.getEventBus().register(this);
     }
 
     public void onStop() {
-        MainContext.getEventBus().unregister(this);
+        AppContext.getEventBus().unregister(this);
         super.onStop();
     }
 

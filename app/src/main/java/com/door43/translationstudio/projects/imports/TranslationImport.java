@@ -1,7 +1,7 @@
 package com.door43.translationstudio.projects.imports;
 
 import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.io.File;
 
@@ -32,7 +32,7 @@ public class TranslationImport extends ImportRequest {
 
     @Override
     public String getTitle() {
-        Language l = MainContext.getContext().getSharedProjectManager().getLanguage(languageId);
+        Language l = AppContext.projectManager().getLanguage(languageId);
         if(l != null) {
             return l.getName();
         } else {

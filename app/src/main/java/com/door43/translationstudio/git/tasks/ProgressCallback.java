@@ -1,6 +1,6 @@
 package com.door43.translationstudio.git.tasks;
 
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 /**
  * Displays a progress dialog to the user
@@ -15,7 +15,7 @@ public class ProgressCallback implements GitSyncAsyncTask.AsyncTaskCallback {
 
     @Override
     public void onPreExecute() {
-        MainContext.getContext().showProgressDialog(mInitMsg);
+        AppContext.context().showProgressDialog(mInitMsg);
     }
 
     @Override
@@ -25,7 +25,7 @@ public class ProgressCallback implements GitSyncAsyncTask.AsyncTaskCallback {
 
     @Override
     public void onPostExecute(Boolean isSuccess) {
-        MainContext.getContext().closeProgressDialog();
+        AppContext.context().closeProgressDialog();
     }
 
     @Override

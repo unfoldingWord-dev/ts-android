@@ -17,7 +17,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
 
@@ -145,7 +145,7 @@ public class ReviewFragment extends WizardFragment {
         @Override
         protected Void doInBackground(Void[] voids) {
             // make sure the project is configured correctly
-            Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+            Project p = AppContext.projectManager().getSelectedProject();
             if(p.getSelectedSourceLanguage().equals(p.getSelectedTargetLanguage())) {
                 // source and target language should not be the same
                 publishProgress(new UploadValidationItem(getResources().getString(R.string.label_project_settings), getResources().getString(R.string.error_target_and_source_are_same), UploadValidationItem.Status.ERROR));

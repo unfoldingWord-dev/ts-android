@@ -24,7 +24,7 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -74,7 +74,7 @@ import java.util.ArrayList;
         mTermsListLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Project p = app().getSharedProjectManager().getSelectedProject();
+                Project p = AppContext.projectManager().getSelectedProject();
                 if (p != null) {
                     Term t = p.getTerm(mTermsAdapter.getItem(i));
                     showTerm(t);
@@ -86,7 +86,7 @@ import java.util.ArrayList;
         mImportantTermsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainContext.getContext().setSelectedKeyTerm(null); // needed for device rotations.
+                AppContext.context().setSelectedKeyTerm(null); // needed for device rotations.
                 showTerms();
             }
         });
@@ -111,7 +111,7 @@ import java.util.ArrayList;
      * Will show the related terms of the current term if one has already been selected.
      */
     public void showTerms() {
-        Project p = app().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p != null) {
             Chapter c = p.getSelectedChapter();
             if(c != null) {
@@ -142,9 +142,9 @@ import java.util.ArrayList;
      */
     public void showTerm(Term term) {
         // TODO: this should load asynchronously with a loading indicator
-        final Project p = app().getSharedProjectManager().getSelectedProject();
+        final Project p = AppContext.projectManager().getSelectedProject();
         if(term != null && mIsLoaded && p != null) {
-            MainContext.getContext().setShowImportantTerms(false);
+            AppContext.context().setShowImportantTerms(false);
 
             toggleTermDetails(true);
 

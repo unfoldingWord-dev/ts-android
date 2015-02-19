@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.dialogs.LanguageAdapter;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.List;
@@ -31,7 +31,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
 
         Boolean showSourceLanguages = false;
 
-        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p == null) {
             finish();
         }
@@ -50,7 +50,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
         if(willShowSourceLanguages) {
             adapter = new LanguageAdapter((List<Language>)(List<?>)p.getSourceLanguages(), this, showSourceLanguages);
         } else {
-            adapter = new LanguageAdapter(MainContext.getContext().getSharedProjectManager().getLanguages(), this, showSourceLanguages);
+            adapter = new LanguageAdapter(AppContext.projectManager().getLanguages(), this, showSourceLanguages);
         }
 
         list.setAdapter(adapter);
@@ -58,12 +58,12 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(willShowSourceLanguages) {
-                    MainContext.getContext().getSharedProjectManager().getSelectedProject().setSelectedSourceLanguage(adapter.getItem(i).getId());
+                    AppContext.projectManager().getSelectedProject().setSelectedSourceLanguage(adapter.getItem(i).getId());
                     // TODO: this can be slow. We should probably wait for this until after the user returns to the main screen.
-                    MainContext.getContext().getSharedProjectManager().fetchProjectSource(MainContext.getContext().getSharedProjectManager().getSelectedProject());
+                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
                     finish();
                 } else {
-                    MainContext.getContext().getSharedProjectManager().getSelectedProject().setSelectedTargetLanguage(adapter.getItem(i).getId());
+                    AppContext.projectManager().getSelectedProject().setSelectedTargetLanguage(adapter.getItem(i).getId());
                     finish();
                 }
             }

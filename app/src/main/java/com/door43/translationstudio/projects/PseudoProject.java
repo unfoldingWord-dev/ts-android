@@ -1,7 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,7 +103,7 @@ public class PseudoProject implements Model {
         }
 
         // use the currently selected source language
-        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p != null) {
             t = getTranslation(p.getSelectedSourceLanguage().getId());
             if (t != null) {

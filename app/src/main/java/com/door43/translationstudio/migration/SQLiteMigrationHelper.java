@@ -11,7 +11,7 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.io.File;
 
@@ -19,7 +19,7 @@ import java.io.File;
  * This class handles the db migration from 1.x to 2.x.
  */
 public class SQLiteMigrationHelper extends SQLiteOpenHelper {
-    private static final ProjectManager mProjectManager = MainContext.getContext().getSharedProjectManager();
+    private static final ProjectManager mProjectManager = AppContext.projectManager();
     // these percents are just guestimates for how much work will be required to migrate. They don't have to be exact.
     private final double PERCENT_FRAMES = 80.0;
     private final double PERCENT_CHAPTERS = 20.0;

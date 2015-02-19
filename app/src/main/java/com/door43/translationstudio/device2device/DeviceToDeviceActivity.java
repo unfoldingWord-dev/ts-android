@@ -21,7 +21,6 @@ import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
 import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.events.ChoseProjectToImportEvent;
-import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.network.Client;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
@@ -36,7 +35,7 @@ import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.ListMap;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.RSAEncryption;
 import com.door43.translationstudio.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -340,7 +339,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         // device language
                         preferredLanguagesJson.put(Locale.getDefault().getLanguage());
                         // current project language
-                        Project p = MainContext.getContext().getSharedProjectManager().getSelectedProject();
+                        Project p = AppContext.projectManager().getSelectedProject();
                         if(p != null) {
                             preferredLanguagesJson.put(p.getSelectedSourceLanguage());
                         }
@@ -567,7 +566,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     try {
                         JSONArray preferredLanguagesJson = new JSONArray(data[1]);
                         for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
-                            SourceLanguage lang = MainContext.getContext().getSharedProjectManager().getSourceLanguage(preferredLanguagesJson.getString(i));
+                            SourceLanguage lang = AppContext.projectManager().getSourceLanguage(preferredLanguagesJson.getString(i));
                             if(lang != null) {
                                 preferredLanguages.add(lang);
                             }
@@ -578,7 +577,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
                     // generate project library
                     // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
-                    String library = ProjectSharing.generateLibrary(app().getSharedProjectManager().getProjects(), preferredLanguages);
+                    String library = ProjectSharing.generateLibrary(AppContext.projectManager().getProjects(), preferredLanguages);
 
                     mService.writeTo(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 } else if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
@@ -597,7 +596,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                         try {
                             String projectId = json.getString("id");
 
-                            final Project p = app().getSharedProjectManager().getProject(projectId);
+                            final Project p = AppContext.projectManager().getProject(projectId);
                             // validate project
                             if(p != null) {
                                 // validate requested source languages
@@ -1082,7 +1081,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         try {
             json.put("id", event.getProject().getId());
             // check if we have the source for this project
-            Project existingProject = app().getSharedProjectManager().getProject(event.getProject().getId());
+            Project existingProject = AppContext.projectManager().getProject(event.getProject().getId());
             if(existingProject == null || existingProject.getSelectedSourceLanguage() == null) {
                 JSONArray sourceLanguagesJson = new JSONArray();
                 sourceLanguagesJson.put(event.getProject().getSelectedSourceLanguage().getId());

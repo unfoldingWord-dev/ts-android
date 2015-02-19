@@ -20,7 +20,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/dark_gray"
-        android:textSize="@dimen/h5"
+        android:textSize="@dimen/h4"
         android:text="New Text\nasdffsd\nsdfsdsd\nsdgfsdf"
         android:id="@+id/translationNoteText" />
 </LinearLayout>

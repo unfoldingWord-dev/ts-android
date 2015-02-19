@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ModalDialog;
 
 /**
@@ -32,7 +32,7 @@ public class AdvancedSettingsDialog extends ModalDialog {
         keysBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MainContext.getContext().generateKeys();
+                AppContext.context().generateKeys();
                 me.dismiss();
             }
         });

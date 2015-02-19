@@ -1,9 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.support.v7.widget.SwitchCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +9,11 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.util.BetterSwitchCompat;
-import com.door43.translationstudio.util.MainContext;
 
 /**
  * Created by joel on 1/12/2015.

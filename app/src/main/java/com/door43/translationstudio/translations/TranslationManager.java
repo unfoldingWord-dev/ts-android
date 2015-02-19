@@ -14,7 +14,7 @@ import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.FileUtilities;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TCPClient;
 
 import org.json.JSONException;
@@ -58,7 +58,7 @@ public class TranslationManager implements TCPClient.TcpListener {
      * Pushes the currently selected project+language repo to the server
      */
     private void pushSelectedProjectRepo() {
-        Project p = mContext.getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
 
         final String remotePath = getRemotePath(p, p.getSelectedTargetLanguage());
         final Repo repo = new Repo(p.getRepositoryPath());
@@ -133,7 +133,7 @@ public class TranslationManager implements TCPClient.TcpListener {
             JSONObject json = new JSONObject(message);
             if(json.has("ok")) {
                 mContext.setHasRegisteredKeys(true);
-                MainContext.getEventBus().post(new SecurityKeysSubmittedEvent());
+                AppContext.getEventBus().post(new SecurityKeysSubmittedEvent());
             } else {
                 mContext.showException(new Throwable(json.getString("error")));
             }

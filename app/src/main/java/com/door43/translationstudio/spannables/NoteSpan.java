@@ -5,14 +5,12 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.BackgroundColorSpan;
-import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.URLSpan;
 import android.util.Xml;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -88,7 +86,7 @@ public class NoteSpan extends Span {
             mSpannable = super.render();
             // apply custom styles
             mSpannable.setSpan(new BackgroundColorSpan(Color.YELLOW), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            mSpannable.setSpan(new ForegroundColorSpan(MainContext.getContext().getResources().getColor(R.color.dark_gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.dark_gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return mSpannable;
     }

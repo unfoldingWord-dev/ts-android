@@ -86,7 +86,7 @@ public class FileUtilities {
                 FileUtils.copyDirectory(sourceFile, destFile);
                 return true;
             } catch (IOException e) {
-                MainContext.getContext().showException(e);
+                AppContext.context().showException(e);
             }
         } else {
             return true;

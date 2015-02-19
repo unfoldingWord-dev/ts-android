@@ -9,9 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.FileProvider;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -24,8 +21,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
-import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.SharingAdapter;
 import com.door43.translationstudio.util.SharingToolItem;
 import com.door43.translationstudio.util.StorageUtils;
@@ -75,34 +71,34 @@ public class SharingActivity extends TranslatorBaseActivity {
     @Override
     public void onResume() {
         super.onResume();
-        MainContext.getContext().showProgressDialog(R.string.loading);
+        AppContext.context().showProgressDialog(R.string.loading);
 
         // stage and commit changes to the current project
-        Project p = app().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p != null) {
             p.commit(new Project.OnCommitComplete() {
                 @Override
                 public void success() {
                     init();
-                    MainContext.getContext().closeProgressDialog();
+                    AppContext.context().closeProgressDialog();
                 }
 
                 @Override
                 public void error(Throwable e) {
-                    MainContext.getContext().closeProgressDialog();
-                    MainContext.getContext().showToastMessage(R.string.project_share_exception);
+                    AppContext.context().closeProgressDialog();
+                    AppContext.context().showToastMessage(R.string.project_share_exception);
                     finish();
                 }
             });
         } else {
             init();
-            MainContext.getContext().closeProgressDialog();
+            AppContext.context().closeProgressDialog();
         }
     }
 
     private void init() {
         // TRICKY: this project may very well be null
-        final Project p = app().getSharedProjectManager().getSelectedProject();
+        final Project p = AppContext.projectManager().getSelectedProject();
         final File internalDestDir = new File(getCacheDir(), "sharing/");
 
         // NOTE: we check again in the threads just in case they removed the card while this activity was open
@@ -110,7 +106,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         internalDestDir.mkdirs();
 
         // load export format
-        String exportFormt = MainContext.getContext().getUserPreferences().getString(SettingsActivity.KEY_PREF_EXPORT_FORMAT, MainContext.getContext().getResources().getString(R.string.pref_default_export_format));
+        String exportFormt = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_EXPORT_FORMAT, AppContext.context().getResources().getString(R.string.pref_default_export_format));
         final boolean exportAsProject = exportFormt.equals("project");
         final boolean exportAsDokuwiki = exportFormt.equals("dokuwiki");
 
@@ -200,7 +196,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                         });
 
                         // TODO: allow the user to choose which projects to export
-                        String library = ProjectSharing.generateLibrary(app().getSharedProjectManager().getProjects());
+                        String library = ProjectSharing.generateLibrary(AppContext.projectManager().getProjects());
 
                         // try to locate the removable sd card
                         StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
@@ -342,7 +338,6 @@ public class SharingActivity extends TranslatorBaseActivity {
                         new Thread(prepareImport).start();
                     } else if(name[name.length - 1].toLowerCase().equals("zip")) {
                         // import DokuWiki files
-                        final ProjectManager pm = app().getSharedProjectManager();
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);
@@ -357,7 +352,6 @@ public class SharingActivity extends TranslatorBaseActivity {
                         new Thread(prepareImport).start();
                     } else if(name[name.length - 1].toLowerCase().equals("txt")) {
                         // import legacy 1.x DokuWiki files
-                        final ProjectManager pm = app().getSharedProjectManager();
                         Runnable prepareImport = new Runnable() {
                             public void run() {
                                 app().showProgressDialog(R.string.importing_project);

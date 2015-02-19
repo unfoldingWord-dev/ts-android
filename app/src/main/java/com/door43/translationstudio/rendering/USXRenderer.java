@@ -46,7 +46,6 @@ public class USXRenderer extends RenderingEngine {
      */
     @Override
     public CharSequence render(CharSequence in) {
-        // TODO: we shouldn't turn this to a string because we could lose other work renderers have done.
         CharSequence out = in;
 
         out = trimWhitespace(out);

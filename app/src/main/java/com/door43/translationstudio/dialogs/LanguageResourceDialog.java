@@ -9,10 +9,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.LanguageResourceSelectedEvent;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 /**
   * Created by joel on 12/29/2014.
@@ -27,10 +26,10 @@ import com.door43.translationstudio.util.MainContext;
 
         Bundle args = getArguments();
         String id = args.getString("projectId");
-        Project p = MainContext.getContext().getSharedProjectManager().getProject(id);
+        Project p = AppContext.projectManager().getProject(id);
         if(p != null) {
             ListView listView = (ListView)v.findViewById(R.id.listView);
-            if(mLanguageResourceAdapter == null) mLanguageResourceAdapter = new LanguageResourceAdapter(MainContext.getContext(),  p.getSelectedSourceLanguage().getResources(), p.getSelectedSourceLanguage().getSelectedResource());
+            if(mLanguageResourceAdapter == null) mLanguageResourceAdapter = new LanguageResourceAdapter(AppContext.context(),  p.getSelectedSourceLanguage().getResources(), p.getSelectedSourceLanguage().getSelectedResource());
             listView.setAdapter(mLanguageResourceAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override

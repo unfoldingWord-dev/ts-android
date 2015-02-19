@@ -14,7 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 /**
  * Created by joel on 10/31/2014.
@@ -111,7 +111,7 @@ public abstract class FancySpan {
      */
     protected SpannableStringBuilder generateBubbleSpan(int backgroundColorResourceId, int textColorResourceId) {
         SpannableStringBuilder spannable = generateSpan(mSpanText);
-        spannable.setSpan(new RoundedBackgroundSpan(MainContext.getContext().getResources().getColor(backgroundColorResourceId), MainContext.getContext().getResources().getColor(textColorResourceId)), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannable.setSpan(new RoundedBackgroundSpan(AppContext.context().getResources().getColor(backgroundColorResourceId), AppContext.context().getResources().getColor(textColorResourceId)), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return spannable;
     }
 
@@ -168,10 +168,10 @@ public abstract class FancySpan {
      * @return
      */
     private static TextView createFancyTextView(String text, int backgroundResource, int textColorResource, int fontSizeResource) {
-        TextView tv = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_plain, null);
+        TextView tv = (TextView) AppContext.context().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_plain, null);
         tv.setText(text);
-        tv.setTextSize(MainContext.getContext().getResources().getDimension(fontSizeResource));
-        tv.setTextColor(MainContext.getContext().getResources().getColor(textColorResource));
+        tv.setTextSize(AppContext.context().getResources().getDimension(fontSizeResource));
+        tv.setTextColor(AppContext.context().getResources().getColor(textColorResource));
         tv.setBackgroundResource(backgroundResource);
         if(mTypeface != null) {
             tv.setTypeface(mTypeface);

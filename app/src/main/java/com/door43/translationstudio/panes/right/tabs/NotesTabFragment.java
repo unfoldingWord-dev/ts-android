@@ -2,6 +2,8 @@ package com.door43.translationstudio.panes.right.tabs;
 
 import android.os.Bundle;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,12 +11,15 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.TranslationNote;
+import com.door43.translationstudio.rendering.LinkRenderer;
+import com.door43.translationstudio.spannables.PassageLinkSpan;
+import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -45,7 +50,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
     }
 
     public void showNotes() {
-        Project p = app().getSharedProjectManager().getSelectedProject();
+        Project p = AppContext.projectManager().getSelectedProject();
         if(p != null) {
             Chapter c = p.getSelectedChapter();
             if(c != null) {
@@ -71,7 +76,31 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 
                             // passage
                             TextView passageText = (TextView)noteItemView.findViewById(R.id.translationNoteText);
-                            passageText.setText(Html.fromHtml(noteItem.getText()));
+                            LinkRenderer renderingEngine = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
+                                @Override
+                                public boolean onPreprocess(PassageLinkSpan span) {
+                                    return getLinkEndpoint(span) != null;
+                                }
+                            }, new Span.OnClickListener() {
+                                @Override
+                                public void onClick(View view, Span span, int start, int end) {
+                                    PassageLinkSpan link = (PassageLinkSpan)span;
+                                    Frame f = getLinkEndpoint(link);
+                                    if(f != null) {
+
+                                    }
+                                }
+                            });
+                            CharSequence text = renderingEngine.render(Html.fromHtml(noteItem.getText()));
+                            passageText.setText(text);
+
+                            // make passage links clickable
+                            MovementMethod mmNotes = passageText.getMovementMethod();
+                            if ((mmNotes == null) || !(mmNotes instanceof LinkMovementMethod)) {
+                                if (passageText.getLinksClickable()) {
+                                    passageText.setMovementMethod(LinkMovementMethod.getInstance());
+                                }
+                            }
 
                             mNotesView.addView(noteItemView);
                         }
@@ -89,5 +118,21 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
             mNotesMessageText.setVisibility(View.VISIBLE);
             mNotesInfoScroll.setVisibility(View.GONE);
         }
+    }
+
+    /**
+     * Returns the link endpoint
+     * @param link
+     * @return
+     */
+    private Frame getLinkEndpoint(PassageLinkSpan link) {
+        Project p = AppContext.projectManager().getProject(link.getProjectId());
+        if(p != null) {
+            Chapter c = p.getChapter(link.getChapterId());
+            if(c != null) {
+                return c.getFrame(link.getFrameId());
+            }
+        }
+        return null;
     }
 }

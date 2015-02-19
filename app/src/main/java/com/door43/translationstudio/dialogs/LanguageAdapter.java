@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
@@ -57,7 +58,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
                     int translatedIndex = 0;
                     while(li.hasNext()) {
                         Language l = li.next();
-                        if(l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
+                        if(l.isTranslating(AppContext.projectManager().getSelectedProject())) {
                             tempList.add(translatedIndex, l);
                             translatedIndex ++;
                         } else {
@@ -109,7 +110,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
 
         holder.languageNameView.setText(l.getName());
         holder.languageIdView.setText(l.getId());
-        if(!mIsSourceLanguages && l.isTranslating(((TranslatorBaseActivity)mContext).app().getSharedProjectManager().getSelectedProject())) {
+        if(!mIsSourceLanguages && l.isTranslating(AppContext.projectManager().getSelectedProject())) {
             holder.translationStatusIcon.setVisibility(View.VISIBLE);
         } else {
             holder.translationStatusIcon.setVisibility(View.GONE);

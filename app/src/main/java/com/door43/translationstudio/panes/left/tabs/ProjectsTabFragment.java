@@ -20,6 +20,7 @@ import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.squareup.otto.Subscribe;
@@ -37,7 +38,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         ListView listView = (ListView)view.findViewById(R.id.projects_list_view);
 
         // create adapter
-        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), app().getSharedProjectManager().getListableProjects());
+        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects());
 
         // connectAsync adapter
         listView.setAdapter(mModelItemAdapter);
@@ -65,9 +66,9 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        if(mModelItemAdapter != null && app() != null && app().getSharedProjectManager() != null) {
+        if(mModelItemAdapter != null && app() != null && AppContext.projectManager() != null) {
             mModelItemAdapter.notifyDataSetChanged();
-            mModelItemAdapter.changeDataSet(app().getSharedProjectManager().getListableProjects());
+            mModelItemAdapter.changeDataSet(AppContext.projectManager().getListableProjects());
         }
     }
 
@@ -77,16 +78,16 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      */
     private void handleProjectSelection(Project p) {
         // this is a normal project
-        if (app().getSharedProjectManager().getSelectedProject() == null || !app().getSharedProjectManager().getSelectedProject().getId().equals(p.getId())) {
+        if (AppContext.projectManager().getSelectedProject() == null || !AppContext.projectManager().getSelectedProject().getId().equals(p.getId())) {
             // reload the center pane so we don't accidently overwrite a frame
             ((MainActivity) me.getActivity()).reloadCenterPane();
 
-            app().getSharedProjectManager().setSelectedProject(p.getId());
+            AppContext.projectManager().setSelectedProject(p.getId());
             // load the project source
             new LoadProjectTask().execute();
         } else {
             // select the project
-            app().getSharedProjectManager().setSelectedProject(p.getId());
+            AppContext.projectManager().setSelectedProject(p.getId());
             // reload the center pane so we don't accidently overwrite a frame
             ((MainActivity) me.getActivity()).reloadCenterPane();
             // open up the chapters tab
@@ -127,7 +128,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
         @Override
         protected Void doInBackground(Void... voids) {
-            app().getSharedProjectManager().fetchProjectSource(app().getSharedProjectManager().getSelectedProject());
+            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
             return null;
         }
 

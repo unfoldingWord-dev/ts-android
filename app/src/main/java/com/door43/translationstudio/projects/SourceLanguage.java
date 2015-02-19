@@ -2,7 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,7 +116,7 @@ public class SourceLanguage extends Language {
      * @param id
      */
     private void storeSelectedResource(String id) {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(Project.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_language_resource_"+mProject.getId(), id);
         editor.apply();
@@ -127,8 +127,8 @@ public class SourceLanguage extends Language {
      * @return
      */
     public Resource getSelectedResource() {
-        if(MainContext.getContext().rememberLastPosition()) {
-            SharedPreferences settings = MainContext.getContext().getSharedPreferences(Project.PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        if(AppContext.context().rememberLastPosition()) {
+            SharedPreferences settings = AppContext.context().getSharedPreferences(Project.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
             mSelectedResourceId = settings.getString("selected_language_resource_" + mProject.getId(), null);
         }
 

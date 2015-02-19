@@ -7,7 +7,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.MainContext;
+import com.door43.translationstudio.util.AppContext;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -564,7 +564,7 @@ public class ProjectManager {
      * @param id
      */
     private void storeSelectedProject(String id) {
-        SharedPreferences settings = MainContext.getContext().getSharedPreferences(MainContext.getContext().PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        SharedPreferences settings = AppContext.context().getSharedPreferences(AppContext.context().PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("selected_project", id);
         editor.apply();
@@ -575,8 +575,8 @@ public class ProjectManager {
      * @return
      */
     public Project getSelectedProject() {
-        if(MainContext.getContext().rememberLastPosition()) {
-            SharedPreferences settings = MainContext.getContext().getSharedPreferences(MainContext.getContext().PREFERENCES_TAG, MainContext.getContext().MODE_PRIVATE);
+        if(AppContext.context().rememberLastPosition()) {
+            SharedPreferences settings = AppContext.context().getSharedPreferences(AppContext.context().PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
             mSelectedProjectId = settings.getString("selected_project", null);
         }
 
