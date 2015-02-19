@@ -64,6 +64,9 @@ import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
+import com.door43.translationstudio.events.OpenedChapterEvent;
+import com.door43.translationstudio.events.OpenedFrameEvent;
+import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
@@ -1376,6 +1379,34 @@ public class MainActivity extends TranslatorBaseActivity {
     public void chapterTranslationStatusChanged(ChapterTranslationStatusChangedEvent event) {
         mLeftPane.reloadChaptersTab();
         mLeftPane.reloadProjectsTab();
+    }
+
+    /**
+     * Trigged by the navigator when a project is opened
+     * @param event
+     */
+    @Subscribe
+    public void onOpenedProject(OpenedProjectEvent event) {
+        mLeftPane.reloadProjectsTab();
+    }
+
+    /**
+     * Trigged by the navigator when a chapter is opened
+     * @param event
+     */
+    @Subscribe
+    public void onOpenedChapter(OpenedChapterEvent event) {
+        mLeftPane.reloadChaptersTab();
+    }
+
+    /**
+     * Trigged by the navigator when a frame is opened
+     * @param event
+     */
+    @Subscribe
+    public void onOpenedFrame(OpenedFrameEvent event) {
+        mLeftPane.reloadFramesTab();
+        reloadCenterPane();
     }
 
     @Override

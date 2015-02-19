@@ -1,6 +1,11 @@
 package com.door43.translationstudio.util;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+
 import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
@@ -71,5 +76,17 @@ public class AppContext {
      */
     public static Navigator navigator() {
         return mNavigator;
+    }
+
+    /**
+     * Displays a generic progress dialog in the given activity
+     * @param activity
+     * @return
+     */
+    public static ProgressDialog showLoading(final Activity activity) {
+        ProgressDialog dialog = new ProgressDialog(activity);
+        dialog.setMax(R.string.loading);
+        dialog.show();
+        return dialog;
     }
 }

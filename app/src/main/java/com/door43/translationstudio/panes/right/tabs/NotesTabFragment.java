@@ -1,5 +1,6 @@
 package com.door43.translationstudio.panes.right.tabs;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
@@ -11,9 +12,11 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
+import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.rendering.LinkRenderer;
@@ -85,9 +88,23 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
                                 @Override
                                 public void onClick(View view, Span span, int start, int end) {
                                     PassageLinkSpan link = (PassageLinkSpan)span;
-                                    Frame f = getLinkEndpoint(link);
+                                    final Frame f = getLinkEndpoint(link);
                                     if(f != null) {
-                                        AppContext.navigator().open(f);
+                                        final ProgressDialog dialog = AppContext.showLoading(getActivity());
+                                        AppContext.navigator().open(f.getChapter().getProject(), new Navigator.OnSuccessListener() {
+                                            @Override
+                                            public void onSuccess() {
+                                                AppContext.navigator().open(f.getChapter());
+                                                AppContext.navigator().open(f);
+                                                dialog.dismiss();
+                                            }
+
+                                            @Override
+                                            public void onFailed() {
+                                                dialog.dismiss();
+                                            }
+                                        });
+                                        ((MainActivity)getActivity()).closeDrawers();
                                     }
                                 }
                             });

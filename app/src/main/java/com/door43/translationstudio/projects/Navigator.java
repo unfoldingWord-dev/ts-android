@@ -5,6 +5,8 @@ import android.content.Context;
 import com.door43.translationstudio.events.OpenedChapterEvent;
 import com.door43.translationstudio.events.OpenedFrameEvent;
 import com.door43.translationstudio.events.OpenedProjectEvent;
+import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.ThreadableUI;
 import com.squareup.otto.Bus;
 
 /**
@@ -36,63 +38,76 @@ public class Navigator {
 
     /**
      * Opens the project
-     * The default chapter and frame will also be loaded
      * @param p
+     * @param listener
      */
-    public boolean open(Project p) {
+    public void open(Project p, final OnSuccessListener listener) {
         if(p != null) {
-            Project prev = mProjectManager.getSelectedProject();
-            if(prev == null || !prev.getId().equals(p.getId())) {
+            Project currProj = mProjectManager.getSelectedProject();
+            if(currProj == null || !currProj.getId().equals(p.getId())) {
                 mProjectManager.setSelectedProject(p.getId());
                 // TODO: record project change
-                mEventBus.post(new OpenedProjectEvent());
+                new ThreadableUI(mContext) {
+                    @Override
+                    public void onStop() {
+                        listener.onFailed();
+                    }
+                    @Override
+                    public void run() {
+                        AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+                    }
+                    @Override
+                    public void onPostExecute() {
+                        mEventBus.post(new OpenedProjectEvent());
+                        listener.onSuccess();
+                    }
+                }.start();
+            } else {
+                listener.onSuccess();
             }
-            return true;
+        } else {
+            listener.onFailed();
         }
-        return false;
     }
 
     /**
      * Opens the chapter if it exists within the current project.
      * @param c
      */
-    public boolean open(Chapter c) {
+    public void open(Chapter c) {
         if(c != null) {
-            Project p = c.getProject();
-            if(open(p)) {
-                Chapter prev = p.getSelectedChapter();
-                if (prev == null || !prev.getId().equals(c.getId())) {
-                    p.setSelectedChapter(c.getId());
-                    // TODO: record chapter open
+            Project currProj = mProjectManager.getSelectedProject();
+            if(currProj != null) {
+                Project p = c.getProject();
+                if(p.getId().equals(currProj.getId())) {
+                    currProj.setSelectedChapter(c.getId());
+                    // TODO: record chapter change
                     mEventBus.post(new OpenedChapterEvent());
                 }
-                return true;
             }
         }
-        return false;
     }
 
     /**
      * Opens the frame if it exists within the current chapter
      * @param f
      */
-    public boolean open(Frame f) {
+    public void open(final Frame f) {
         if(f != null) {
-            Project p = f.getChapter().getProject();
-            if(open(p)) {
-                Chapter c = p.getSelectedChapter();
-                if(open(c)) {
-                    Frame prev = c.getSelectedFrame();
-                    if(prev == null || !prev.getId().equals(f.getId())) {
-                        c.setSelectedFrame(f.getId());
-                        // TODO: record frame open
+            Project currProj = mProjectManager.getSelectedProject();
+            if(currProj != null) {
+                Chapter currChapt = currProj.getSelectedChapter();
+                if(currChapt != null) {
+                    Chapter c = f.getChapter();
+                    Project p = c.getProject();
+                    if(c.getId().equals(currChapt.getId()) && p.getId().equals(currProj.getId())) {
+                        currChapt.setSelectedFrame(f.getId());
+                        // TODO: record frame change
                         mEventBus.post(new OpenedFrameEvent());
                     }
-                    return true;
                 }
             }
         }
-        return false;
     }
 
     /**
@@ -116,6 +131,11 @@ public class Navigator {
             // TODO: load source language
         }
         return false;
+    }
+
+    public static interface OnSuccessListener {
+        public void onSuccess();
+        public void onFailed();
     }
 }
 
