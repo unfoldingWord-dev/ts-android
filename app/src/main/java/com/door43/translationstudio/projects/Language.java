@@ -99,7 +99,7 @@ public class Language {
         String[] files = dir.list(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                return !s.equals(".git");
+                return !s.equals(".git") && new File(file, s).isDirectory();
             }
         });
         return files != null && files.length > 0;

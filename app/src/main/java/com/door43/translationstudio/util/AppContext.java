@@ -12,6 +12,8 @@ import com.door43.translationstudio.translations.TranslationManager;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
+import java.io.IOException;
+
 /**
  * This class provides global access to the application context as well as other important tools
  */
@@ -32,6 +34,20 @@ public class AppContext {
             mTranslationManager = new TranslationManager(context);
             mProjectManager = new ProjectManager(context);
             mNavigator = new Navigator(context, mProjectManager, getEventBus());
+        }
+    }
+
+    /**
+     * Checks if the package asset exists
+     * @param path
+     * @return
+     */
+    public static boolean assetExists(String path) {
+        try {
+            mContext.getAssets().open(path);
+            return true;
+        } catch (IOException e) {
+            return false;
         }
     }
 

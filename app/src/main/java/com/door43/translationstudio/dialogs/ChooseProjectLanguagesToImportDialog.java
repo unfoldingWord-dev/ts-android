@@ -22,6 +22,7 @@ import com.door43.translationstudio.util.AppContext;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -39,8 +40,7 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
         if(mProject != null) {
             final LanguageAdapter adapter = new LanguageAdapter(Arrays.asList(mProject.getTargetLanguages()), this.getActivity(), false);
             String imageUri;
-            File img = AppContext.context().getAssetAsFile(mProject.getImagePath());
-            if(img != null && img.exists()) {
+            if(AppContext.assetExists(mProject.getImagePath())) {
                 imageUri = "assets://"+ mProject.getImagePath();
             } else {
                 imageUri = "assets://"+ mProject.getDefaultImagePath();

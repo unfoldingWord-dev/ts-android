@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.Security;
@@ -16,6 +17,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -669,9 +671,16 @@ public class DataStore {
      */
     private String loadPackagedJSONAsset(String path) {
         try {
-            File asset = mContext.getAssetAsFile(path);
-            if(asset != null) {
-                return FileUtilities.getStringFromFile(mContext.getAssetAsFile(path));
+            // TRICKY: this method will actually move packaged assets into the cached assets dir.
+//            File asset = mContext.getAssetAsFile(path);
+//            if(asset != null) {
+//                return FileUtilities.getStringFromFile(mContext.getAssetAsFile(path));
+//            } else {
+//                return null;
+//            }
+            if(AppContext.assetExists(path)) {
+                InputStream is = mContext.getAssets().open(path);
+                return FileUtilities.convertStreamToString(is);
             } else {
                 return null;
             }

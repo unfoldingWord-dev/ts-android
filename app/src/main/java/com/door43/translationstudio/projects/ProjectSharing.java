@@ -342,67 +342,71 @@ public class ProjectSharing {
             String[] chapterIds = projectDir.list(new FilenameFilter() {
                 @Override
                 public boolean accept(File file, String s) {
-                    return !s.equals(".git") && file.isDirectory();
+                    return !s.equals(".git") && new File(file, s).isDirectory();
                 }
             });
-            for(String chapterId:chapterIds) {
-                ChapterImport chapterImport = new ChapterImport(chapterId, String.format(AppContext.context().getResources().getString(R.string.label_chapter_title_detailed), chapterId));
-                if(Chapter.isTranslating(projectImport.projectId, languageId, chapterId)) {
-                    chapterImport.setWarning("Importing will override our existing translation");
-                    hadChapterWarnings = true;
-                }
-                translationImport.addChapterImport(chapterImport);
-                boolean hadFrameWarnings = false;
+            if(chapterIds != null) {
+                for (String chapterId : chapterIds) {
+                    ChapterImport chapterImport = new ChapterImport(chapterId, String.format(AppContext.context().getResources().getString(R.string.label_chapter_title_detailed), chapterId));
+                    if (Chapter.isTranslating(projectImport.projectId, languageId, chapterId)) {
+                        chapterImport.setWarning("Importing will override our existing translation");
+                        hadChapterWarnings = true;
+                    }
+                    translationImport.addChapterImport(chapterImport);
+                    boolean hadFrameWarnings = false;
 
-                // read chapter title and reference
-                File titleFile = new File(projectDir, chapterId + "/title.txt");
-                if(titleFile.exists()) {
-                    FileImport fileImport = new FileImport("title", AppContext.context().getResources().getString(R.string.chapter_title_field));
-                    chapterImport.addFileImport(fileImport);
-                    // check if chapter title translation exists
-                    File currentTitleFile = new File(Chapter.getTitlePath(projectImport.projectId, languageId, chapterId));
-                    if(currentTitleFile.exists()) {
-                        fileImport.setWarning("Importing will override our existing translation");
+                    // read chapter title and reference
+                    File titleFile = new File(projectDir, chapterId + "/title.txt");
+                    if (titleFile.exists()) {
+                        FileImport fileImport = new FileImport("title", AppContext.context().getResources().getString(R.string.chapter_title_field));
+                        chapterImport.addFileImport(fileImport);
+                        // check if chapter title translation exists
+                        File currentTitleFile = new File(Chapter.getTitlePath(projectImport.projectId, languageId, chapterId));
+                        if (currentTitleFile.exists()) {
+                            fileImport.setWarning("Importing will override our existing translation");
+                        }
                     }
-                }
-                File referenceFile = new File(projectDir, chapterId + "/reference.txt");
-                if(referenceFile.exists()) {
-                    FileImport fileImport = new FileImport("reference", AppContext.context().getResources().getString(R.string.chapter_reference_field));
-                    chapterImport.addFileImport(fileImport);
-                    // check if chapter reference translation exists
-                    File currentReferenceFile = new File(Chapter.getReferencePath(projectImport.projectId, languageId, chapterId));
-                    if(currentReferenceFile.exists()) {
-                        fileImport.setWarning("Importing will override our existing translation");
+                    File referenceFile = new File(projectDir, chapterId + "/reference.txt");
+                    if (referenceFile.exists()) {
+                        FileImport fileImport = new FileImport("reference", AppContext.context().getResources().getString(R.string.chapter_reference_field));
+                        chapterImport.addFileImport(fileImport);
+                        // check if chapter reference translation exists
+                        File currentReferenceFile = new File(Chapter.getReferencePath(projectImport.projectId, languageId, chapterId));
+                        if (currentReferenceFile.exists()) {
+                            fileImport.setWarning("Importing will override our existing translation");
+                        }
                     }
-                }
 
-                // read frames to import
-                String[] frameFileNames = new File(projectDir, chapterId).list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File file, String s) {
-                        return !s.equals("title.txt") && !s.equals("reference.txt");
-                    }
-                });
-                for(String frameFileName:frameFileNames) {
-                    String[] pieces = frameFileName.split("\\.");
-                    if(pieces.length != 2) {
-                        Logger.w(ProjectSharing.class.getName(), "Unexpected file in frame import "+frameFileName);
-                        continue;
-                    }
-                    String frameId = pieces[0];
-                    FrameImport frameImport = new FrameImport(frameId, String.format(AppContext.context().getResources().getString(R.string.label_frame_title_detailed), frameId));
-                    chapterImport.addFrameImport(frameImport);
+                    // read frames to import
+                    String[] frameFileNames = new File(projectDir, chapterId).list(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File file, String s) {
+                            return !s.equals("title.txt") && !s.equals("reference.txt");
+                        }
+                    });
+                    if(frameFileNames != null) {
+                        for (String frameFileName : frameFileNames) {
+                            String[] pieces = frameFileName.split("\\.");
+                            if (pieces.length != 2) {
+                                Logger.w(ProjectSharing.class.getName(), "Unexpected file in frame import " + frameFileName);
+                                continue;
+                            }
+                            String frameId = pieces[0];
+                            FrameImport frameImport = new FrameImport(frameId, String.format(AppContext.context().getResources().getString(R.string.label_frame_title_detailed), frameId));
+                            chapterImport.addFrameImport(frameImport);
 
-                    // check if frame translation exists
-                    File currentFrameFile = new File(Frame.getFramePath(projectImport.projectId, languageId, chapterId, frameId));
-                    if(currentFrameFile.exists()) {
-                        frameImport.setWarning("Importing will override our existing translation");
-                        hadFrameWarnings = true;
+                            // check if frame translation exists
+                            File currentFrameFile = new File(Frame.getFramePath(projectImport.projectId, languageId, chapterId, frameId));
+                            if (currentFrameFile.exists()) {
+                                frameImport.setWarning("Importing will override our existing translation");
+                                hadFrameWarnings = true;
+                            }
+                        }
                     }
-                }
 
-                if(hadFrameWarnings) {
-                    chapterImport.setWarning("Importing will override our existing translation");
+                    if (hadFrameWarnings) {
+                        chapterImport.setWarning("Importing will override our existing translation");
+                    }
                 }
             }
 
@@ -673,6 +677,7 @@ public class ProjectSharing {
                 FileUtils.writeStringToFile(srcLangCatFile, srcLangCatJson.toString());
 
                 // project icon
+                // TODO: rather than copy the project icon into the assets dir we could just copy it directly
                 File projectIcon = context.getAssetAsFile(p.getImagePath());
                 File copiedIcon = new File(projectSourceDir, "icon.jpg");
                 if(projectIcon != null && projectIcon.exists()) {

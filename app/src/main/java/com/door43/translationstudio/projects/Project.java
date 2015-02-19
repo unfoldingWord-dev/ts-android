@@ -523,7 +523,7 @@ public class Project implements Model {
         String[] files = dir.list(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                return !s.equals(".git");
+                return !s.equals(".git") && new File(file, s).isDirectory();
             }
         });
         return files != null && files.length > 0;
@@ -568,7 +568,7 @@ public class Project implements Model {
                     String[] contents = new File(file, name).list(new FilenameFilter() {
                         @Override
                         public boolean accept(File file, String s) {
-                            return !s.equals(".git");
+                            return !s.equals(".git") && new File(file, s).isDirectory();
                         }
                     });
                     if(contents != null && contents.length > 0) {

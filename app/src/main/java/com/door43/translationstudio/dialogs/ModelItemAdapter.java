@@ -21,6 +21,7 @@ import com.door43.translationstudio.util.ThreadableUI;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by joel on 8/29/2014.
@@ -78,11 +79,10 @@ public class ModelItemAdapter extends BaseAdapter {
         ViewHolder holder = new ViewHolder();
         Model m = getItem(position);
         String imageUri;
-        File img = AppContext.context().getAssetAsFile(m.getImagePath());
-        File defaultImg = AppContext.context().getAssetAsFile(m.getDefaultImagePath());
-        if(img != null && img.exists() && img.isFile()) {
+
+        if(AppContext.assetExists(m.getImagePath())) {
             imageUri = "assets://"+ m.getImagePath();
-        } else if(defaultImg != null && defaultImg.exists() && defaultImg.isFile()){
+        } else if(AppContext.assetExists(m.getDefaultImagePath())){
             imageUri = "assets://"+ m.getDefaultImagePath();
         } else {
             imageUri = null;
