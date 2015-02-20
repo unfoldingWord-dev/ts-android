@@ -199,7 +199,7 @@ public class DataStore {
     }
 
     /**
-     * Resolves the key to the linked asset.
+     * Resolves the key to the linked cached asset.
      * This will automatically update outdated links
      * @param link
      * @return the key to the linked asset
@@ -210,11 +210,13 @@ public class DataStore {
                 // resolve key aliases
                 String key;
                 String alias = FileUtils.readFileToString(link);
+                if(alias != null) alias = alias.trim();
                 String originalKey = alias;
                 do {
                     key = alias;
                     alias = mSettings.getString(alias+"_alias", null);
                 } while(alias != null);
+                if(key != null) key = key.trim();
 
                 // update link if nessesary
                 if(!key.equals(originalKey)) {
@@ -224,6 +226,30 @@ public class DataStore {
                 return key;
             } catch (IOException e) {
                 Logger.e(this.getClass().getName(), "failed to read the key from the asset link " + link.getAbsolutePath(), e);
+            }
+        } else {
+            Logger.e(this.getClass().getName(), "received a null asset link");
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the key to the linked packaged asset.
+     * Packaged assets are read only so nothing is updated.
+     * They are also always direct links so no alias lookup is nessesary.
+     * @param link
+     * @return the key to the linked asset
+     */
+    private String resolvePackagedLink(String link) {
+        if(link != null) {
+            try {
+                // resolve key
+                InputStream is = mContext.getAssets().open(link);
+                String key = FileUtilities.convertStreamToString(is);
+                if(key != null) key = key.trim();
+                return key;
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to read the key from the asset link " + link, e);
             }
         } else {
             Logger.e(this.getClass().getName(), "received a null asset link");
@@ -636,16 +662,16 @@ public class DataStore {
      * @return the string contents of the json file
      */
     private String loadJSONAsset(String path) {
-        File cacheDir = cachedAssetsDir();
+        String linkPath = FilenameUtils.removeExtension(path) + ".link";
 
         validateAssetCache();
 
-        File cachedAsset = new File(cacheDir, path);
-        File link = new File(cachedAsset.getParentFile(), FilenameUtils.removeExtension(cachedAsset.getName()) + ".link");
+        File cachedAsset = new File(cachedAssetsDir(), path);
+        File linkedAsset = new File(cachedAsset.getParentFile(), linkPath);
 
         // resolve links
-        if(link.exists()) {
-            String key = resolveLink(link);
+        if(linkedAsset.exists()) {
+            String key = resolveLink(linkedAsset);
             if(key != null) {
                 cachedAsset = getLinkedAsset(key);
             }
@@ -670,23 +696,28 @@ public class DataStore {
      * @return
      */
     private String loadPackagedJSONAsset(String path) {
-        try {
-            // TRICKY: this method will actually move packaged assets into the cached assets dir.
-//            File asset = mContext.getAssetAsFile(path);
-//            if(asset != null) {
-//                return FileUtilities.getStringFromFile(mContext.getAssetAsFile(path));
-//            } else {
-//                return null;
-//            }
-            if(AppContext.assetExists(path)) {
-                InputStream is = mContext.getAssets().open(path);
+        String linkPath = FilenameUtils.removeExtension(path) + ".link";
+
+        // resolve links in the packaged assets
+        String key = resolvePackagedLink(linkPath);
+        if(key != null) {
+            // load the link
+            try {
+                InputStream is = mContext.getAssets().open("data/" + key);
                 return FileUtilities.convertStreamToString(is);
-            } else {
-                return null;
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to load the linked packaged asset "+path, e);
             }
-        } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "failed to load the packaged asset "+path, e);
-            return null;
         }
+
+        // load the asset as usual
+        try {
+            InputStream is = mContext.getAssets().open(path);
+            return FileUtilities.convertStreamToString(is);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to load the packaged asset "+path, e);
+        }
+
+        return null;
     }
 }
