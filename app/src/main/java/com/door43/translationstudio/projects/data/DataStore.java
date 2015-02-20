@@ -249,10 +249,10 @@ public class DataStore {
                 if(key != null) key = key.trim();
                 return key;
             } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to read the key from the asset link " + link, e);
+                // This is common. The file was not found
             }
         } else {
-            Logger.e(this.getClass().getName(), "received a null asset link");
+            Logger.e(this.getClass().getName(), "received a null packaged asset link");
         }
         return null;
     }
