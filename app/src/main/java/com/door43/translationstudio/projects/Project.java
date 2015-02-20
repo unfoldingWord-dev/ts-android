@@ -467,6 +467,14 @@ public class Project implements Model {
         if(!mTermMap.containsKey(term.getName())) {
             mTermMap.put(term.getName(), term);
             mTerms.add(term);
+
+            // also add the aliases
+            List<String> aliases = term.getAliases();
+            for(String alias:aliases) {
+                if(!mTermMap.containsKey(alias)) {
+                    mTermMap.put(alias, term);
+                }
+            }
         }
     }
 

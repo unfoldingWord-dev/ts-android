@@ -7,6 +7,7 @@ import java.util.List;
  * Created by joel on 10/27/2014.
  */
 public class Term {
+    private final List<String> mAliases;
     private String mName;
     private String mSubName;
     private String mDefinition;
@@ -14,13 +15,14 @@ public class Term {
     private List<String> mRelated = new ArrayList<String>();
     private List<Example> mExamples = new ArrayList<Example>();
 
-    public Term(String name, String sub_name, String definition, String definition_title, List<String> related, List<Example> examples) {
+    public Term(String name, String sub_name, String definition, String definition_title, List<String> related, List<Example> examples, List<String> aliases) {
         mName = name;
         mSubName = sub_name;
         mDefinition = definition; // NOTE: if the input html has been encoded to html entities we'll need to parse this. Html.fromHtml()
         mDefinitionTitle = definition_title;
         mRelated = related;
         mExamples = examples;
+        mAliases = aliases;
     }
 
     /**
@@ -83,8 +85,16 @@ public class Term {
      * Returns the title used for the definition
      * @return
      */
-    public String getmDefinitionTitle() {
+    public String getDefinitionTitle() {
         return mDefinitionTitle;
+    }
+
+    /**
+     * Returns the list of aliases for this term
+     * @return
+     */
+    public List<String> getAliases() {
+        return mAliases;
     }
 
     public static class Example {

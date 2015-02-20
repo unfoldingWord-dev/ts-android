@@ -1082,8 +1082,19 @@ public class ProjectManager {
                         }
                     }
 
+                    // load aliases
+                    List<String> aliases = new ArrayList<>();
+                    if(jsonTerm.has("aliases")) {
+                        JSONArray jsonAliases = jsonTerm.getJSONArray("aliases");
+                        for(int j = 0; j < jsonAliases.length(); j ++) {
+                            String alias = jsonAliases.getString(j);
+                            aliases.add(alias);
+                        }
+                    }
+
                     // load term
-                    Term t = new Term(jsonTerm.get("term").toString(), jsonTerm.get("sub").toString(), jsonTerm.get("def").toString(), jsonTerm.get("def_title").toString(), relatedTerms, examples);
+                    // TODO: the Bible terms sometimes contain multiple terms in the term field delimited by a comma. there should only be one that is supplimented with aliases. This should get fixed on the api some time.
+                    Term t = new Term(jsonTerm.get("term").toString(), jsonTerm.get("sub").toString(), jsonTerm.get("def").toString(), jsonTerm.get("def_title").toString(), relatedTerms, examples, aliases);
 
                     // add term to the project
                     p.addTerm(t);
