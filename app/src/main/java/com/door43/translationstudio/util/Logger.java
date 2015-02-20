@@ -156,7 +156,7 @@ public class Logger
     private static void logToFile(Level level, String logMessageTag, String logMessage)
     {
         // filter out logging levels
-        int minLevel = AppContext.context().getUserPreferences().getInt(SettingsActivity.KEY_PREF_LOGGING_LEVEL, AppContext.context().getResources().getInteger(R.integer.pref_default_logging_level));
+        int minLevel = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, AppContext.context().getResources().getString(R.string.pref_default_logging_level)));
         if(level.getLevel() < minLevel) return;
 
         try

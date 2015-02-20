@@ -43,10 +43,10 @@
 
     <!-- advanced -->
     <string name="pref_default_advanced_settings" translatable="false">false</string>
-    <integer name="pref_default_logging_level" translatable="false">0</integer>
-    <integer-array name="pref_logging_level_values" translatable="false">
+    <string name="pref_default_logging_level" translatable="false">0</string>
+    <string-array name="pref_logging_level_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
-    </integer-array>
+    </string-array>
 </resources>
