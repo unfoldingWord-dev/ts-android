@@ -35,7 +35,7 @@ public class DataStore {
     private SharedPreferences mSettings;
     private static final int API_VERSION = 2;
     // this is used so we can force a cache reset between versions of the app if we make changes to api implimentation
-    private static final int API_VERSION_INTERNAL = 4;
+    private static final int API_VERSION_INTERNAL = 5;
 
     public DataStore(MainApplication context) {
         mContext = context;
