@@ -52,9 +52,13 @@
 
     <!-- Advanced settings -->
 
+    <!-- this is deprecated in favor of developer tools -->
     <string name="pref_header_advanced">Advanced</string>
-    <string name="pref_title_advanced_settings">Enable advanced settings</string>
-    <string name="pref_description_advanced_settings">Display the advanced settings button in the navigation bar</string>
+    <!--<string name="pref_title_advanced_settings">Enable advanced settings</string>-->
+    <!--<string name="pref_description_advanced_settings">Display the advanced settings button in the navigation bar</string>-->
+
+    <string name="pref_title_developer_tools">Developer Tools</string>
+    <string name="pref_description_developer_tools">Opens the developer tools</string>
 
     <string name="pref_title_logging_level">Logging Level</string>
     <string-array name="pref_logging_level_titles">

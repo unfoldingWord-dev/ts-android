@@ -850,7 +850,7 @@ public class Project implements Model {
      */
     public String getRemotePath(Language lang) {
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
-        return server + ":tS/" + AppContext.context().getUDID() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
+        return server + ":tS/" + AppContext.udid() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
     }
 
     /**

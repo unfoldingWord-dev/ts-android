@@ -57,8 +57,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.door43.translationstudio.dialogs.AdvancedSettingsDialog;
-import com.door43.translationstudio.dialogs.InfoDialog;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
 import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
@@ -1273,47 +1271,11 @@ public class MainActivity extends TranslatorBaseActivity {
     }
 
     /**
-     * opens the advanced settings dialog
-     */
-    public void openAdvancedSettings() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        app().closeToastMessage();
-        // Create and show the dialog.
-        AdvancedSettingsDialog newFragment = new AdvancedSettingsDialog();
-
-        newFragment.show(ft, "dialog");
-    }
-
-    /**
      * Opens the bug reporter
      */
     public void openBugReporter() {
         Intent intent = new Intent(this, BugReporterActivity.class);
         startActivity(intent);
-    }
-
-    /**
-     * opens the app info dialog
-     */
-    public void openInfo() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        app().closeToastMessage();
-        // Create and show the dialog.
-        InfoDialog newFragment = new InfoDialog();
-
-        newFragment.show(ft, "dialog");
     }
 
     /**
@@ -1448,8 +1410,8 @@ public class MainActivity extends TranslatorBaseActivity {
             menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
             menu.findItem(R.id.action_sync).setVisible(projectEnabled);
             menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
-            Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
-            menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
+//            Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
+//            menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
 
             if(!hasResources) {
                 mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
@@ -1480,9 +1442,6 @@ public class MainActivity extends TranslatorBaseActivity {
                 return true;
             case R.id.action_settings:
                 openSettings();
-                return true;
-            case R.id.action_info:
-                openInfo();
                 return true;
             case R.id.action_bug:
                 openBugReporter();

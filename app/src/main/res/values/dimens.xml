@@ -13,8 +13,5 @@
     <dimen name="h3">25sp</dimen>
     <dimen name="h4">20sp</dimen>
     <dimen name="h5">15sp</dimen>
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="actionbar_height_short">40dp</dimen>
 
 </resources>

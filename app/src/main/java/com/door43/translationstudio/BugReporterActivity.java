@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.ServerUtilities;
@@ -159,7 +160,7 @@ public class BugReporterActivity extends TranslatorBaseActivity {
                     } catch (PackageManager.NameNotFoundException e) {
                         Logger.e(BugReporterActivity.this.getClass().getName(), "Could not find the package name", e);
                     }
-                    infoBuf.append("UDID: " + app().getUDID() + "\n");
+                    infoBuf.append("UDID: " + AppContext.udid() + "\n");
                     infoBuf.append("Android Release: " + Build.VERSION.RELEASE + "\n");
                     infoBuf.append("Androind SDK: " + Build.VERSION.SDK_INT + "\n");
                     infoBuf.append("Brand: " + Build.BRAND + "\n");

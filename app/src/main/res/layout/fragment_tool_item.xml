@@ -2,13 +2,12 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp">
+    android:layout_height="match_parent">
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/sharingToolImageView"
+        android:id="@+id/toolIconImageView"
         android:background="@color/gray"
         android:minHeight="25dp"
         android:minWidth="25dp" />
@@ -23,13 +22,13 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="New Text"
-            android:id="@+id/sharingToolTextView"
+            android:id="@+id/toolTitleText"
             android:textSize="@dimen/h4"/>
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="New Text"
-            android:id="@+id/sharingToolDescriptionTextView"
+            android:id="@+id/toolDescriptionText"
             android:textColor="@color/gray" />
     </LinearLayout>
 

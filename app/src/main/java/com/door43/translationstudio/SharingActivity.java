@@ -18,12 +18,11 @@ import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.events.ProjectImportApprovalEvent;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.SharingAdapter;
-import com.door43.translationstudio.util.SharingToolItem;
+import com.door43.translationstudio.util.ToolAdapter;
+import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
@@ -37,8 +36,8 @@ import java.util.ArrayList;
 
 public class SharingActivity extends TranslatorBaseActivity {
     private SharingActivity me = this;
-    private ArrayList<SharingToolItem> mSharingTools = new ArrayList<SharingToolItem>();
-    private SharingAdapter mAdapter;
+    private ArrayList<ToolItem> mSharingTools = new ArrayList<ToolItem>();
+    private ToolAdapter mAdapter;
     private static int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
 //    private static int IMPORT_DOKUWIKI_FROM_SD_REQUEST = 1;
 
@@ -50,13 +49,13 @@ public class SharingActivity extends TranslatorBaseActivity {
 
         // hook up list view
         ListView list = (ListView)findViewById(R.id.sharingListView);
-        mAdapter = new SharingAdapter(mSharingTools, this);
+        mAdapter = new ToolAdapter(mSharingTools, this);
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if (mSharingTools.size() > i && i >= 0) {
-                    SharingToolItem tool = mSharingTools.get(i);
+                    ToolItem tool = mSharingTools.get(i);
                     // execute the sharing action
                     if (tool.isEnabled()) {
                         tool.getAction().run();
@@ -127,7 +126,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             exportToAppEnabled = false;
             exportToAppMessage = R.string.choose_a_project;
         }
-        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new SharingToolItem.SharingToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 Thread thread = new Thread() {
@@ -179,7 +178,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             exportToSDEnabled = false;
             exportToSDMessage = R.string.choose_a_project;
         }
-        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new SharingToolItem.SharingToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 Thread thread = new Thread() {
@@ -248,7 +247,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             }
         }, exportToSDEnabled, exportToSDMessage));
 
-        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_sd), "", R.drawable.ic_icon_import_sd, new SharingToolItem.SharingToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_sd), "", R.drawable.ic_icon_import_sd, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 Intent intent = new Intent(me, FileExplorerActivity.class);
@@ -261,7 +260,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         boolean isNetworkAvailable = app().isNetworkAvailable();
 
         // TODO: we should check to see if the user has any sharable content first.
-        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new SharingToolItem.SharingToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 Intent intent = new Intent(me, DeviceToDeviceActivity.class);
@@ -272,7 +271,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             }
         }, isNetworkAvailable, R.string.internet_not_available));
 
-        mSharingTools.add(new SharingToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new SharingToolItem.SharingToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 Intent intent = new Intent(me, DeviceToDeviceActivity.class);

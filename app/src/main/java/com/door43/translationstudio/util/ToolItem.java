@@ -1,17 +1,17 @@
 package com.door43.translationstudio.util;
 
 /**
- * Defines a sharing tool option to be displayed in the sharing tools list
+ * Tool items allow you to easily provide tools within a ListView
  */
-public class SharingToolItem {
-    private SharingToolAction mAction;
+public class ToolItem {
+    private ToolAction mAction;
     private String mName;
     private String mDescription;
     private int mIcon;
     private Boolean mIsEnabled;
     private int mDisabledNotice;
 
-    public SharingToolItem(String nameResource, String descriptionResource, int iconResource, SharingToolAction action) {
+    public ToolItem(String nameResource, String descriptionResource, int iconResource, ToolAction action) {
         mAction = action;
         mDescription = descriptionResource;
         mName = nameResource;
@@ -27,7 +27,7 @@ public class SharingToolItem {
      * @param action the action to be performed
      * @param enabled sets the tool as enabled or disabled. when disabled a notice will be displayed
      */
-    public SharingToolItem(String nameResource, String descriptionResource, int icon, SharingToolAction action, Boolean enabled, int disabledNotice) {
+    public ToolItem(String nameResource, String descriptionResource, int icon, ToolAction action, Boolean enabled, int disabledNotice) {
         mAction = action;
         mDescription = descriptionResource;
         mName = nameResource;
@@ -40,7 +40,7 @@ public class SharingToolItem {
      * Returns the action to be performed
      * @return
      */
-    public SharingToolAction getAction() {
+    public ToolAction getAction() {
         return mAction;
     }
 
@@ -84,7 +84,7 @@ public class SharingToolItem {
         return mDisabledNotice;
     }
 
-    public interface SharingToolAction {
+    public interface ToolAction {
         public void run();
     }
 }

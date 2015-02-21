@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:text="@string/advanced_settings"
         android:textSize="@dimen/h3"
-        android:id="@+id/sharingToolTextView" />
+        android:id="@+id/toolTitleText" />
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -36,7 +36,7 @@
         android:layout_height="fill_parent"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/sharingToolTextView">
+        android:layout_below="@+id/toolTitleText">
 
         <Button
             android:layout_width="wrap_content"

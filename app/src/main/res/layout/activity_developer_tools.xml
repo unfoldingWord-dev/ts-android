@@ -1,0 +1,49 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context="com.door43.translationstudio.DeveloperToolsActivity">
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_green"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:paddingBottom="10dp"
+            android:layout_height="wrap_content">
+
+            <TextView android:text="version" android:layout_width="wrap_content"
+                android:textSize="@dimen/h4"
+                android:layout_weight="1"
+                android:textColor="@color/white"
+                android:id="@+id/appVersionText"
+                android:layout_height="wrap_content" />
+
+            <TextView android:text="build" android:layout_width="wrap_content"
+                android:textSize="@dimen/h4"
+                android:layout_weight="1"
+                android:textColor="@color/white"
+                android:id="@+id/appBuildNumberText"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView android:text="udid" android:layout_width="wrap_content"
+            android:textSize="@dimen/h4"
+            android:id="@+id/deviceUDIDText"
+            android:textColor="@color/white"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/developerToolsListView" />
+
+</LinearLayout>

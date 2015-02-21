@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.ServerUtilities;
@@ -134,7 +135,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity {
                                 infoBuf.append("build: " + pInfo.versionCode + "\n");
                             } catch (PackageManager.NameNotFoundException e) {
                             }
-                            infoBuf.append("UDID: " + app().getUDID() + "\n");
+                            infoBuf.append("UDID: " + AppContext.udid() + "\n");
                             infoBuf.append("Android Release: " + Build.VERSION.RELEASE + "\n");
                             infoBuf.append("Androind SDK: " + Build.VERSION.SDK_INT + "\n");
                             infoBuf.append("Brand: " + Build.BRAND + "\n");

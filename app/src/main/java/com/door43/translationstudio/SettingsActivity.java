@@ -13,7 +13,9 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -56,7 +58,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
     public static final String KEY_PREF_TYPEFACE_SIZE = "typeface_size";
     public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
-    public static final String KEY_PREF_ADVANCED_SETTINGS = "advanced_settings";
+//    public static final String KEY_PREF_ADVANCED_SETTINGS = "advanced_settings";
     public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
 
     /**
@@ -86,23 +88,33 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_preferences_legacy);
-
-        Toolbar actionbar = (Toolbar) findViewById(R.id.actionbar);
-        actionbar.setTitle("Settings");
-
-        actionbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_ab_back_holo_light_am));
-        actionbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SettingsActivity.this.finish();
-            }
-        });
+//        setContentView(R.layout.activity_preferences_legacy);
+//
+//        Toolbar actionbar = (Toolbar) findViewById(R.id.actionbar);
+//        actionbar.setTitle("Settings");
+//
+//        actionbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_ab_back_holo_light_am));
+//        actionbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                SettingsActivity.this.finish();
+//            }
+//        });
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+
+        LinearLayout root = (LinearLayout)findViewById(android.R.id.list).getParent().getParent().getParent();
+        Toolbar bar = (Toolbar) LayoutInflater.from(this).inflate(R.layout.toolbar_settings, root, false);
+        root.addView(bar, 0); // insert at top
+        bar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
 
         setupSimplePreferencesScreen();
     }
@@ -121,7 +133,7 @@ public class SettingsActivity extends PreferenceActivity {
         // use the older PreferenceActivity APIs.
 
         // Add 'general' preferences.
-        addPreferencesFromResource(R.xml.pref_general);
+        addPreferencesFromResource(R.xml.general_preferences);
 
         // NOTE: this is a copy paste from GeneralPreferenceFragment
         // identify all typefaces in the assets directory
@@ -162,19 +174,19 @@ public class SettingsActivity extends PreferenceActivity {
         PreferenceCategory preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_sharing);
         getPreferenceScreen().addPreference(preferenceHeader);
-        addPreferencesFromResource(R.xml.pref_sharing);
+        addPreferencesFromResource(R.xml.sharing_preferences);
 
         // Add 'upload' preferences, and a corresponding header.
         preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_synchronization);
         getPreferenceScreen().addPreference(preferenceHeader);
-        addPreferencesFromResource(R.xml.pref_save_and_sync);
+        addPreferencesFromResource(R.xml.save_preferences);
 
         // add advanced preferences and coresponding hreader
         preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_advanced);
         getPreferenceScreen().addPreference(preferenceHeader);
-        addPreferencesFromResource(R.xml.pref_advanced);
+        addPreferencesFromResource(R.xml.advanced_preferences);
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
@@ -223,7 +235,7 @@ public class SettingsActivity extends PreferenceActivity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public void onBuildHeaders(List<Header> target) {
         if (!isSimplePreferences(this)) {
-            loadHeadersFromResource(R.xml.pref_headers, target);
+            loadHeadersFromResource(R.xml.headers, target);
         }
     }
 
@@ -286,7 +298,7 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_general);
+            addPreferencesFromResource(R.xml.general_preferences);
 
             // TODO: this should be done once when the app is installed or updated. The results can be cached in a config file.
             // identify all typefaces in the assets directory
@@ -333,7 +345,7 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_save_and_sync);
+            addPreferencesFromResource(R.xml.save_preferences);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
@@ -356,7 +368,7 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_sharing);
+            addPreferencesFromResource(R.xml.sharing_preferences);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
@@ -374,7 +386,7 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_advanced);
+            addPreferencesFromResource(R.xml.advanced_preferences);
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         }
     }

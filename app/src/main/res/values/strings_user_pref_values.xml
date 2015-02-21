@@ -42,7 +42,7 @@
     </string-array>
 
     <!-- advanced -->
-    <string name="pref_default_advanced_settings" translatable="false">false</string>
+    <!--<string name="pref_default_advanced_settings" translatable="false">false</string>-->
     <string name="pref_default_logging_level" translatable="false">0</string>
     <string-array name="pref_logging_level_values" translatable="false">
         <item>0</item>

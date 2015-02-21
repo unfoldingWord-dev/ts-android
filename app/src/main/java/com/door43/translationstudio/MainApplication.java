@@ -18,9 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.widget.Toast;
 
-import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.translations.TranslationManager;
 import com.door43.translationstudio.util.CustomExceptionHandler;
 import com.door43.translationstudio.util.DummyDialogListener;
 import com.door43.translationstudio.util.Logger;
@@ -82,10 +80,10 @@ public class MainApplication extends Application {
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
-        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_save_and_sync, false);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_sharing, false);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_advanced, false);
+        PreferenceManager.setDefaultValues(this, R.xml.general_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.save_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.sharing_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
     }
 
     /**
@@ -463,7 +461,7 @@ public class MainApplication extends Application {
         try{
             KeyPair kpair=KeyPair.genKeyPair(jsch, type);
             kpair.writePrivateKey(privateKeyPath);
-            kpair.writePublicKey(publicKeyPath, getUDID());
+            kpair.writePublicKey(publicKeyPath, AppContext.udid());
             kpair.dispose();
         }
         catch(Exception e){
@@ -533,14 +531,6 @@ public class MainApplication extends Application {
         int termsVersion = getResources().getInteger(R.integer.terms_of_use_version);
         editor.putBoolean("has_accepted_terms_v"+termsVersion, hasAcceptedTerms);
         editor.apply();
-    }
-
-    /**
-     * Returns the device id
-     * @return
-     */
-    public String getUDID() {
-        return Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
     /**

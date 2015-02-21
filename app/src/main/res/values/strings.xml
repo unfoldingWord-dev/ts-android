@@ -153,7 +153,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="export_to_device" translatable="false">Export to nearby device</string>
-    <!--This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
+    <!-- This is the translation guidelines that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we can find a reliable source -->
     <string name="translation_guidlines" translatable="false">
 <![CDATA[
 <h1>Translation Guidelines</h1>
@@ -184,7 +184,7 @@
 </p>
 ]]>
     </string>
-    <!--This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
+    <!-- This is the statement of faith that users must agree to before using the app. It is formatted as HTML. Translation on this will wait until we have a reliable source -->
     <string name="statement_of_faith" translatable="false">
 <![CDATA[
 <h1>Statement of Faith</h1>
@@ -239,4 +239,15 @@
     <string name="contact_form_description">Please provide your contact information. This information will be securely transfered to the server when you publish a translation.</string>
     <string name="verse_out_of_bounds">Choose a verse between <xliff:g id="number" example="1">%1$s</xliff:g> and <xliff:g id="number" example="100">%2$s</xliff:g></string>
     <string name="no_key_terms">There are no important terms</string>
+    <string name="title_activity_developer">Developer Tools</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <!-- displays the application build or version code -->
+    <string name="app_version_code">BUILD <xliff:g id="verion_code" example="61">%1$s</xliff:g></string>
+    <!-- displays the application version name -->
+    <string name="app_version_name">VERSION <xliff:g id="verion_name" example="2.1.2">%1$s</xliff:g></string>
+    <!-- displays the unique device id -->
+    <string name="app_udid">UDID <xliff:g id="unique_device_id" example="4c3lk3id9392kkdnw983">%1$s</xliff:g></string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+
 </resources>

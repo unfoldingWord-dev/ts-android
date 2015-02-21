@@ -5,15 +5,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application
         android:name=".MainApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:theme="@style/Theme.Titled"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Titled" >
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.door43.translationstudio.fileprovider"
@@ -121,12 +121,21 @@
         <activity
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
+            android:parentActivityName=".SharingActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.Titled"
-            android:parentActivityName=".SharingActivity" >
+            android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.SharingActivity" />
+        </activity>
+        <activity
+            android:name=".DeveloperToolsActivity"
+            android:theme="@style/Theme.Titled"
+            android:label="@string/title_activity_developer" >
+            <intent-filter>
+                <action android:name="com.activity.DeveloperToolsActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 

@@ -90,7 +90,7 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     private String getRemotePath(Project project, Language lang) {
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, mContext.getResources().getString(R.string.pref_default_git_server));
-        return server + ":tS/" + mContext.getUDID() + "/" + mParentProjectSlug + "-" + project.getId() + "-" + lang.getId();
+        return server + ":tS/" + AppContext.udid() + "/" + mParentProjectSlug + "-" + project.getId() + "-" + lang.getId();
     }
 
     /**
@@ -102,7 +102,7 @@ public class TranslationManager implements TCPClient.TcpListener {
             try {
                 String key = FileUtilities.getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
                 json.put("key", key);
-                json.put("udid", mContext.getUDID());
+                json.put("udid", AppContext.udid());
                 // TODO: provide support for using user names
 //                json.put("username", "");
                 Log.d(TAG, json.toString());
