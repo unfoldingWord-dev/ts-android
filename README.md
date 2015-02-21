@@ -1,7 +1,7 @@
-Translation Studio 2.0
+translationStudio
 --
 
-translationStudio for unfoldingWord
+unfoldingWord translationStudio is an Android app for translating biblical content in any language.
 
 [![Crowdin](https://d322cqt584bo4o.cloudfront.net/translation-studio/localized.png)](https://crowdin.com/project/translation-studio)
 
