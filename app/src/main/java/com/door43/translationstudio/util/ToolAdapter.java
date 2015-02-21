@@ -72,6 +72,8 @@ public class ToolAdapter extends BaseAdapter {
         // mark tool as disabled.
         if (!getItem(i).isEnabled()) {
             titleText.setTextColor(mContext.getResources().getColor(R.color.gray));
+        } else {
+            titleText.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
         }
 
         return view;

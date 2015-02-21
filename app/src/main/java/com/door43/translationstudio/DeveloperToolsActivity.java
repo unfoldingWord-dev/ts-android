@@ -89,7 +89,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
         });
 
         // load tools
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.regenerate_keys), "", 0, new ToolItem.ToolAction() {
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.regenerate_keys), getResources().getString(R.string.regenerate_keys_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 ProgressDialog loading = AppContext.showLoading(DeveloperToolsActivity.this);
@@ -104,7 +104,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 AppContext.context().showToastMessage("not implimented yet");
                 // TODO: perform the forced update. We'll need to update the project manager to support this.
             }
-        }, true, 0));
+        }, false, 0));
     }
 
     /**
