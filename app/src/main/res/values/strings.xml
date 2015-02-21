@@ -243,11 +243,13 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <!-- displays the application build or version code -->
-    <string name="app_version_code">BUILD <xliff:g id="verion_code" example="61">%1$s</xliff:g></string>
+    <string name="app_version_code" translatable="false">BUILD <xliff:g id="verion_code" example="61">%1$s</xliff:g></string>
     <!-- displays the application version name -->
-    <string name="app_version_name">VERSION <xliff:g id="verion_name" example="2.1.2">%1$s</xliff:g></string>
+    <string name="app_version_name" translatable="false">VERSION <xliff:g id="verion_name" example="2.1.2">%1$s</xliff:g></string>
     <!-- displays the unique device id -->
-    <string name="app_udid">UDID <xliff:g id="unique_device_id" example="4c3lk3id9392kkdnw983">%1$s</xliff:g></string>
-    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="app_udid" translatable="false">UDID <xliff:g id="unique_device_id" example="4c3lk3id9392kkdnw983">%1$s</xliff:g></string>
+    <string name="copied_to_clipboard" translatable="false">Copied to clipboard</string>
+    <string name="force_update_projects" translatable="false">Force update projects</string>
+    <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
 
 </resources>

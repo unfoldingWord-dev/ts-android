@@ -98,6 +98,13 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 AppContext.context().showToastMessage(R.string.success);
             }
         }));
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                AppContext.context().showToastMessage("not implimented yet");
+                // TODO: perform the forced update. We'll need to update the project manager to support this.
+            }
+        }, true, 0));
     }
 
     /**
