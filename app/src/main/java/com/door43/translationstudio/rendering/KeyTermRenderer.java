@@ -1,17 +1,11 @@
 package com.door43.translationstudio.rendering;
 
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.View;
 
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.spannables.FancySpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
-import com.door43.translationstudio.util.Logger;
 
 import java.util.List;
 import java.util.Vector;

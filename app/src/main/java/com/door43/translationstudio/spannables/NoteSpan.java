@@ -9,7 +9,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Xml;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.Logger;
+import com.door43.logging.Logger;
 import com.door43.translationstudio.util.AppContext;
 
 import org.w3c.dom.Document;

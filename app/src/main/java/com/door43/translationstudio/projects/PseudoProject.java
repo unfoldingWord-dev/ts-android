@@ -1,6 +1,6 @@
 package com.door43.translationstudio.projects;
 
-import com.door43.translationstudio.util.Logger;
+import com.door43.logging.Logger;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;

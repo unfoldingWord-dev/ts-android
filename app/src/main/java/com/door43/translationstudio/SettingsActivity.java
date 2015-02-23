@@ -17,7 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.door43.translationstudio.util.Logger;
+import com.door43.logging.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TTFAnalyzer;
 

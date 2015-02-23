@@ -1,8 +1,10 @@
-package com.door43.translationstudio.util;
+package com.door43.logging;
 
+import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.util.Log;
 
+import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 
@@ -25,7 +27,17 @@ import java.util.Locale;
  */
 public class Logger
 {
-//    private static Level mLoggingLevel = Level.Info;
+    private static MainApplication mContext;
+
+    /**
+     * Initializes the logger.
+     * This should be executed before using the logger
+     * @param context
+     */
+    public Logger(MainApplication context) {
+        mContext = context;
+    }
+
     public static enum Level {
         Info(0),
         Warning(1),
@@ -41,18 +53,6 @@ public class Logger
             return level;
         }
     }
-
-    /**
-     * Specifies the minimum level included in the logs
-     * @param level
-     */
-//    public static void setLoggingLevel(Level level) {
-//        if(level == null) {
-//            mLoggingLevel = Level.Info;
-//        } else {
-//            mLoggingLevel = level;
-//        }
-//    }
 
     /**
      * Sends an error message to LogCat and to a log file.
@@ -155,8 +155,10 @@ public class Logger
      */
     private static void logToFile(Level level, String logMessageTag, String logMessage)
     {
+        if(mContext == null) return;
+
         // filter out logging levels
-        int minLevel = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, AppContext.context().getResources().getString(R.string.pref_default_logging_level)));
+        int minLevel = Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, mContext.getResources().getString(R.string.pref_default_logging_level)));
         if(level.getLevel() < minLevel) return;
 
         try
@@ -164,7 +166,7 @@ public class Logger
             // Gets the log file from the root of the primary storage. If it does
             // not exist, the file is created.
             // TODO: this path should be some place global
-            File logFile = new File(AppContext.context().getExternalCacheDir(), "log.txt");
+            File logFile = new File(mContext.getExternalCacheDir(), "log.txt");
             if (!logFile.exists()) {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
@@ -201,7 +203,7 @@ public class Logger
             // Refresh the data so it can seen when the device is plugged in a
             // computer. You may have to unplug and replug to see the latest
             // changes
-            MediaScannerConnection.scanFile(AppContext.context(), new String[]{logFile.toString()}, null, null);
+            MediaScannerConnection.scanFile(mContext, new String[]{logFile.toString()}, null, null);
         }
         catch (IOException e)
         {

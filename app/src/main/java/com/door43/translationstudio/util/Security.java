@@ -1,5 +1,7 @@
 package com.door43.translationstudio.util;
 
+import com.door43.logging.Logger;
+
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

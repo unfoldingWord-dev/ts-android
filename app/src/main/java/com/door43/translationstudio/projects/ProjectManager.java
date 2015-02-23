@@ -6,8 +6,7 @@ import android.util.Log;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
-import com.door43.translationstudio.util.Logger;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;

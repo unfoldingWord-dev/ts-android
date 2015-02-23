@@ -3,20 +3,14 @@ package com.door43.translationstudio.uploadwizard;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ContactFormDialog;
-import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.spannables.NoteSpan;
-import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.Logger;
+import com.door43.logging.Logger;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.ArrayList;

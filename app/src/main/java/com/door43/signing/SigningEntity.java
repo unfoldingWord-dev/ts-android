@@ -1,8 +1,8 @@
-package com.door43.translationstudio.security;
+package com.door43.signing;
 
 import android.util.Base64;
 
-import com.door43.translationstudio.util.Logger;
+import com.door43.logging.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;

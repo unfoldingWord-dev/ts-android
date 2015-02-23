@@ -2,6 +2,8 @@ package com.door43.translationstudio.util;
 
 import android.os.Environment;
 
+import com.door43.logging.Logger;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

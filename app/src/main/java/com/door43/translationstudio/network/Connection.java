@@ -1,6 +1,6 @@
 package com.door43.translationstudio.network;
 
-import com.door43.translationstudio.util.Logger;
+import com.door43.logging.Logger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

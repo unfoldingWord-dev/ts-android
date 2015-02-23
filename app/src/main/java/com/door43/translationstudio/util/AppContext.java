@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.provider.Settings;
 
+import com.door43.logging.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
@@ -40,6 +41,7 @@ public class AppContext {
             mTranslationManager = new TranslationManager(context);
             mProjectManager = new ProjectManager(context);
             mNavigator = new Navigator(context, mProjectManager, getEventBus());
+            new Logger(context);
         }
     }
 

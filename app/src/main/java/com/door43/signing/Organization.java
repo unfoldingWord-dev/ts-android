@@ -1,6 +1,6 @@
-package com.door43.translationstudio.security;
+package com.door43.signing;
 
-import com.door43.translationstudio.util.Logger;
+import com.door43.logging.Logger;
 
 import org.json.JSONObject;
 

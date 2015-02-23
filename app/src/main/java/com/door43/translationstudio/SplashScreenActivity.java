@@ -12,8 +12,8 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.security.Crypto;
-import com.door43.translationstudio.security.SigningEntity;
+import com.door43.signing.Crypto;
+import com.door43.signing.SigningEntity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 

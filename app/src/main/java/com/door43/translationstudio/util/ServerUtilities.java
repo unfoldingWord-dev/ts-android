@@ -1,5 +1,7 @@
 package com.door43.translationstudio.util;
 
+import com.door43.logging.Logger;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
