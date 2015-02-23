@@ -6,16 +6,22 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.security.Crypto;
+import com.door43.translationstudio.security.SigningEntity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.PublicKey;
 
 /**
  * Created by joel on 9/29/2014.
@@ -31,22 +37,27 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         setContentView(R.layout.activity_splash);
 
         // -- cert testing
-//        Crypto crypto = new Crypto();
-//
-//        File pubKey = MainContext.getContext().getAssetAsFile("certs/uW-test-openssl-vk.pem");
-//        File sig = MainContext.getContext().getAssetAsFile("certs/obs-en.384.sig");
-//        File data = MainContext.getContext().getAssetAsFile("certs/obs-en.json");
-//        Crypto.Status s = crypto.verifyECDSASignature(pubKey, sig, data);
-//        switch(s) {
-//            case VERIFIED:
-//                Log.d("CRYPTO", "the data is ok!");
-//                break;
-//            case FAILED:
-//                Log.d("CRYPTO", "the data has been tampered with!");
-//                break;
-//            default:
-//                Log.d("CRYPTO", "the signature could not be verified.");
-//        }
+        try {
+            // Signing Identity
+            InputStream signingIdentity = AppContext.context().getAssets().open("test_certs/uW-vk.pem");
+            // Certificate Authority public key
+            InputStream caPubKey = AppContext.context().getAssets().open("test_certs/ca.pub");
+            PublicKey pk = Crypto.loadPublicECDSAKey(caPubKey);
+            SigningEntity se = SigningEntity.generateFromIdentity(pk, signingIdentity);
+            switch(se.getStatus()) {
+                case VERIFIED:
+                    Log.d("CRYPTO", "The Signing Entity is valid!");
+                    Log.d("CRYPTO", se.organization.toString());
+                    break;
+                case FAILED:
+                    Log.d("CRYPTO", "The Signing Entity is INVALID!");
+                    break;
+                default:
+                    Log.d("CRYPTO", "The Signing Entity could not be verified.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // -- end cert testing
 
         mProgressTextView = (TextView)findViewById(R.id.loadingText);

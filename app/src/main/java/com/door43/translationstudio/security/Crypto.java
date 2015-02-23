@@ -36,7 +36,7 @@ public class Crypto {
         Security.insertProviderAt(new org.spongycastle.jce.provider.BouncyCastleProvider(), 1);
     }
 
-    public enum Status {
+    public static enum Status {
         VERIFIED, // everything is ok
         FAILED, // the data was tampered with
         ERROR // something went wrong durring the verification.
@@ -44,6 +44,7 @@ public class Crypto {
 
     /**
      * Verifies a signature
+     * @deprecated use verifyECDSASignature(PubliKey, byte[], byte[]) instead
      * @param publicKeyFile the public key
      * @param signatureFile the signature
      * @param dataFile the data on which the signature was made
@@ -73,7 +74,36 @@ public class Crypto {
     }
 
     /**
+     * Verifies the signature of some data
+     * @param key the public key
+     * @param sig the signature
+     * @param data the data to verify the signature against
+     * @return
+     */
+    public static Status verifyECDSASignature(PublicKey key, byte[] sig, byte[] data) {
+        // TODO: we may want to change this to SHA384WITHECDSA if we decide the iOS code can support it.
+        String sigAlgorithm = "SHA1WITHECDSA";
+
+        if(key != null && data.length > 0 && sig.length > 0) {
+            try {
+                Signature signature = Signature.getInstance(sigAlgorithm);
+                signature.initVerify(key);
+                signature.update(data);
+                if(signature.verify(sig)) {
+                    return Status.VERIFIED;
+                } else {
+                    return Status.FAILED;
+                }
+            } catch (Exception e) {
+                Logger.e(Crypto.class.getName(), "failed to verify the signature", e);
+            }
+        }
+        return Status.ERROR;
+    }
+
+    /**
      * Reads a public ECDSA key from a file
+     * @deprecated use loadPublicECKey(InputStream) instead
      * @param publicKey
      * @return
      */
@@ -140,8 +170,95 @@ public class Crypto {
     }
 
     /**
+     * Loads a public key from an input stream
+     * The key may contain comments and new lines
+     * @param keyStream
+     * @return
+     */
+    public static PublicKey loadPublicECDSAKey(InputStream keyStream) {
+        BufferedReader br = new BufferedReader(new InputStreamReader(keyStream));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        try {
+            while ((line = br.readLine()) != null) {
+                if(!line.startsWith("-----")) {
+                    sb.append(line);
+                }
+            }
+        } catch (IOException e) {
+            Logger.e(Crypto.class.getName(), "Failed to read the public key stream", e);
+            return null;
+        }
+        if(sb.length() > 0) {
+            String keyString = sb.toString();
+            return loadPublicECDSAKey(keyString);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Loads the public key from a string.
+     * The key should not include any comments or new lines
+     * @param keyString the public key string
+     * @return if an error occures null will be returned
+     */
+    public static PublicKey loadPublicECDSAKey(String keyString) {
+        byte[] keyBytes;
+        try {
+            keyBytes = Base64.decode(keyString.getBytes("UTF-8"), Base64.DEFAULT);
+        } catch (UnsupportedEncodingException e) {
+            Logger.e(Crypto.class.getName(), "wrong encoding for key decoding", e);
+            return null;
+        }
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory;
+        try {
+            keyFactory = KeyFactory.getInstance("ECDSA", "SC");
+        } catch (NoSuchAlgorithmException e) {
+            Logger.e(Crypto.class.getName(), "The public key algorithm is invalid", e);
+            return null;
+        } catch (NoSuchProviderException e) {
+            Logger.e(Crypto.class.getName(), "The public key security provider is invalid", e);
+            return null;
+        }
+        PublicKey key;
+        try {
+            key = keyFactory.generatePublic(spec);
+        } catch (InvalidKeySpecException e) {
+            Logger.e(Crypto.class.getName(), "The public key keyspec is invalid", e);
+            return null;
+        }
+        return key;
+    }
+
+    /**
+     * Reads in bytes from an input stream
+     * @deprecated
+     * @param is
+     * @return
+     */
+    public byte[] readInputStreamToBytes(InputStream is) {
+        byte[] bytes = new byte[0];
+        try {
+            bytes = new byte[is.available()];
+            is.read(bytes);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to read bytes from the stream", e);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "failed to close the input stream", e);
+            }
+        }
+        return bytes;
+    }
+
+    /**
      * Returns bytes from a file
      * If there are exceptions while reading the file an empty byte array will be returned.
+     * @deprecated use readInputStreamToBytes instead
      * @param file
      * @return
      */
