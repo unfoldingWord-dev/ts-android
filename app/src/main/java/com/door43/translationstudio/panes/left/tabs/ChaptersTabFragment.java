@@ -12,6 +12,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -42,16 +43,20 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // save changes to the current frame first
-                ((MainActivity)me.getActivity()).save();
-                // select the chapter
-                AppContext.projectManager().getSelectedProject().setSelectedChapter(i);
-                // reload the center pane so we don't accidently overwrite a frame
-                ((MainActivity)me.getActivity()).reloadCenterPane();
-                // open up the frames tab
-                ((MainActivity)me.getActivity()).getLeftPane().selectTab(2);
-                // let the adapter redraw itself so the selected chapter is corectly highlighted
-                NotifyAdapterDataSetChanged();
+                if(getActivity() != null) {
+                    // save changes to the current frame first
+                    ((MainActivity) getActivity()).save();
+                    // select the chapter
+                    AppContext.projectManager().getSelectedProject().setSelectedChapter(i);
+                    // reload the center pane so we don't accidently overwrite a frame
+                    ((MainActivity) getActivity()).reloadCenterPane();
+                    // open up the frames tab
+                    ((MainActivity) getActivity()).getLeftPane().selectTab(2);
+                    // let the adapter redraw itself so the selected chapter is corectly highlighted
+                    NotifyAdapterDataSetChanged();
+                } else{
+                    Logger.e(this.getClass().getName(), "onItemClickListener the activity is null");
+                }
             }
         });
 

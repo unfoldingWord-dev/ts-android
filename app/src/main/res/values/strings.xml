@@ -253,4 +253,7 @@
     <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
     <string name="regenerate_keys_description" translatable="false">Discards and regenerates the ssh keys used for git</string>
 
+    <!-- TODO: these are deprecated, but we need to strip out the translations before removing these so we don't get errors-->
+    <string name="pref_title_advanced_settings"></string>
+    <string name="pref_description_advanced_settings" ></string>
 </resources>

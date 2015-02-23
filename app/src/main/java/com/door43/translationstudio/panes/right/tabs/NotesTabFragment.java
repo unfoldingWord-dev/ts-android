@@ -23,6 +23,7 @@ import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -71,55 +72,59 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
                         mNotesInfoScroll.setVisibility(View.VISIBLE);
 
                         for (final TranslationNote.Note noteItem : note.getNotes()) {
-                            LinearLayout noteItemView = (LinearLayout)getActivity().getLayoutInflater().inflate(R.layout.fragment_pane_right_resources_note_item, null);
+                            if(getActivity() != null) {
+                                LinearLayout noteItemView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_pane_right_resources_note_item, null);
 
-                            // title
-                            TextView titleText = (TextView)noteItemView.findViewById(R.id.translationNoteReferenceText);
-                            titleText.setText(noteItem.getRef());
+                                // title
+                                TextView titleText = (TextView) noteItemView.findViewById(R.id.translationNoteReferenceText);
+                                titleText.setText(noteItem.getRef());
 
-                            // passage
-                            TextView passageText = (TextView)noteItemView.findViewById(R.id.translationNoteText);
-                            LinkRenderer renderingEngine = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
-                                @Override
-                                public boolean onPreprocess(PassageLinkSpan span) {
-                                    return getLinkEndpoint(span) != null;
-                                }
-                            }, new Span.OnClickListener() {
-                                @Override
-                                public void onClick(View view, Span span, int start, int end) {
-                                    PassageLinkSpan link = (PassageLinkSpan)span;
-                                    final Frame f = getLinkEndpoint(link);
-                                    if(f != null) {
-                                        final ProgressDialog dialog = AppContext.showLoading(getActivity());
-                                        AppContext.navigator().open(f.getChapter().getProject(), new Navigator.OnSuccessListener() {
-                                            @Override
-                                            public void onSuccess() {
-                                                AppContext.navigator().open(f.getChapter());
-                                                AppContext.navigator().open(f);
-                                                dialog.dismiss();
-                                            }
+                                // passage
+                                TextView passageText = (TextView) noteItemView.findViewById(R.id.translationNoteText);
+                                LinkRenderer renderingEngine = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
+                                    @Override
+                                    public boolean onPreprocess(PassageLinkSpan span) {
+                                        return getLinkEndpoint(span) != null;
+                                    }
+                                }, new Span.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view, Span span, int start, int end) {
+                                        PassageLinkSpan link = (PassageLinkSpan) span;
+                                        final Frame f = getLinkEndpoint(link);
+                                        if (f != null) {
+                                            final ProgressDialog dialog = AppContext.showLoading(getActivity());
+                                            AppContext.navigator().open(f.getChapter().getProject(), new Navigator.OnSuccessListener() {
+                                                @Override
+                                                public void onSuccess() {
+                                                    AppContext.navigator().open(f.getChapter());
+                                                    AppContext.navigator().open(f);
+                                                    dialog.dismiss();
+                                                }
 
-                                            @Override
-                                            public void onFailed() {
-                                                dialog.dismiss();
-                                            }
-                                        });
-                                        ((MainActivity)getActivity()).closeDrawers();
+                                                @Override
+                                                public void onFailed() {
+                                                    dialog.dismiss();
+                                                }
+                                            });
+                                            ((MainActivity) getActivity()).closeDrawers();
+                                        }
+                                    }
+                                });
+                                CharSequence text = renderingEngine.render(Html.fromHtml(noteItem.getText()));
+                                passageText.setText(text);
+
+                                // make passage links clickable
+                                MovementMethod mmNotes = passageText.getMovementMethod();
+                                if ((mmNotes == null) || !(mmNotes instanceof LinkMovementMethod)) {
+                                    if (passageText.getLinksClickable()) {
+                                        passageText.setMovementMethod(LinkMovementMethod.getInstance());
                                     }
                                 }
-                            });
-                            CharSequence text = renderingEngine.render(Html.fromHtml(noteItem.getText()));
-                            passageText.setText(text);
 
-                            // make passage links clickable
-                            MovementMethod mmNotes = passageText.getMovementMethod();
-                            if ((mmNotes == null) || !(mmNotes instanceof LinkMovementMethod)) {
-                                if (passageText.getLinksClickable()) {
-                                    passageText.setMovementMethod(LinkMovementMethod.getInstance());
-                                }
+                                mNotesView.addView(noteItemView);
+                            } else {
+                                Logger.e(this.getClass().getName(), "showNotes the activity is null");
                             }
-
-                            mNotesView.addView(noteItemView);
                         }
                     } else {
                         mNotesMessageText.setVisibility(View.VISIBLE);

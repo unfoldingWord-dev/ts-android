@@ -1205,6 +1205,7 @@ public class MainActivity extends TranslatorBaseActivity {
 
     /**
      * Saves the translation
+     * @deprecated the navigator should handle saves from now on so that saves are not tied to the activity.
      */
     public void save() {
         if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {

@@ -43,13 +43,13 @@ MERGED from com.android.support:support-v4:21.0.3:16:5
 MERGED from com.jpardogo.materialtabstrip:library:1.0.8:9:5
 MERGED from com.android.support:support-v4:21.0.3:16:5
 	android:label
-		ADDED from AndroidManifest.xml:16:9
+		ADDED from AndroidManifest.xml:15:9
 	android:allowBackup
 		ADDED from AndroidManifest.xml:13:9
 	android:icon
 		ADDED from AndroidManifest.xml:14:9
 	android:theme
-		ADDED from AndroidManifest.xml:15:9
+		ADDED from AndroidManifest.xml:16:9
 	android:name
 		ADDED from AndroidManifest.xml:12:9
 provider#android.support.v4.content.FileProvider
@@ -199,15 +199,33 @@ ADDED from AndroidManifest.xml:116:9
 activity#com.door43.translationstudio.device2device.DeviceToDeviceActivity
 ADDED from AndroidManifest.xml:121:9
 	android:screenOrientation
-		ADDED from AndroidManifest.xml:124:13
+		ADDED from AndroidManifest.xml:125:13
 	android:label
 		ADDED from AndroidManifest.xml:123:13
 	android:parentActivityName
-		ADDED from AndroidManifest.xml:126:13
+		ADDED from AndroidManifest.xml:124:13
 	android:theme
-		ADDED from AndroidManifest.xml:125:13
+		ADDED from AndroidManifest.xml:126:13
 	android:name
 		ADDED from AndroidManifest.xml:122:13
+activity#com.door43.translationstudio.DeveloperToolsActivity
+ADDED from AndroidManifest.xml:131:9
+	android:label
+		ADDED from AndroidManifest.xml:134:13
+	android:theme
+		ADDED from AndroidManifest.xml:133:13
+	android:name
+		ADDED from AndroidManifest.xml:132:13
+intent-filter#android.intent.category.DEFAULT+com.activity.DeveloperToolsActivity
+ADDED from AndroidManifest.xml:135:13
+action#com.activity.DeveloperToolsActivity
+ADDED from AndroidManifest.xml:136:17
+	android:name
+		ADDED from AndroidManifest.xml:136:25
+category#android.intent.category.DEFAULT
+ADDED from AndroidManifest.xml:137:17
+	android:name
+		ADDED from AndroidManifest.xml:137:27
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from com.android.support:appcompat-v7:21.0.0:15:5

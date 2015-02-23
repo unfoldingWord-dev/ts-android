@@ -185,42 +185,46 @@ import java.util.ArrayList;
             if(term.numExamples() > 0) {
                 mExamplePassagesTitle.setVisibility(View.VISIBLE);
                 for (final Term.Example example : term.getExamples()) {
-                    LinearLayout exampleView = (LinearLayout)getActivity().getLayoutInflater().inflate(R.layout.fragment_pane_right_resources_example_item, null);
+                    if(getActivity() != null) {
+                        LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_pane_right_resources_example_item, null);
 
-                    // link
-                    TextView linkText = (TextView)exampleView.findViewById(R.id.examplePassageLinkText);
-                    final String linkName = "[" + example.getChapterId() + "-" + example.getFrameId() + "]";
-                    TermSpan span = new TermSpan(linkName, linkName);
-                    span.setOnClickListener(new Span.OnClickListener() {
-                        @Override
-                        public void onClick(View view, Span span, int start, int end) {
-                            p.setSelectedChapter(example.getChapterId());
-                            p.getSelectedChapter().setSelectedFrame(example.getFrameId());
-                            ((MainActivity) getActivity()).reloadCenterPane();
-                            ((MainActivity) getActivity()).closeDrawers();
-                            Chapter c = p.getChapter(example.getChapterId());
-                            if (c != null) {
-                                app().showToastMessage(String.format(getResources().getString(R.string.now_viewing_frame), example.getFrameId(), c.getTitle()));
-                            } else {
-                                app().showToastMessage(R.string.missing_chapter);
+                        // link
+                        TextView linkText = (TextView) exampleView.findViewById(R.id.examplePassageLinkText);
+                        final String linkName = "[" + example.getChapterId() + "-" + example.getFrameId() + "]";
+                        TermSpan span = new TermSpan(linkName, linkName);
+                        span.setOnClickListener(new Span.OnClickListener() {
+                            @Override
+                            public void onClick(View view, Span span, int start, int end) {
+                                p.setSelectedChapter(example.getChapterId());
+                                p.getSelectedChapter().setSelectedFrame(example.getFrameId());
+                                ((MainActivity) getActivity()).reloadCenterPane();
+                                ((MainActivity) getActivity()).closeDrawers();
+                                Chapter c = p.getChapter(example.getChapterId());
+                                if (c != null) {
+                                    app().showToastMessage(String.format(getResources().getString(R.string.now_viewing_frame), example.getFrameId(), c.getTitle()));
+                                } else {
+                                    app().showToastMessage(R.string.missing_chapter);
+                                }
+                            }
+                        });
+                        linkText.setText(span.toCharSequence());
+
+                        // make links clickable
+                        MovementMethod m = linkText.getMovementMethod();
+                        if ((m == null) || !(m instanceof LinkMovementMethod)) {
+                            if (linkText.getLinksClickable()) {
+                                linkText.setMovementMethod(LinkMovementMethod.getInstance());
                             }
                         }
-                    });
-                    linkText.setText(span.toCharSequence());
 
-                    // make links clickable
-                    MovementMethod m = linkText.getMovementMethod();
-                    if ((m == null) || !(m instanceof LinkMovementMethod)) {
-                        if (linkText.getLinksClickable()) {
-                            linkText.setMovementMethod(LinkMovementMethod.getInstance());
-                        }
+                        // passage
+                        TextView passageText = (TextView) exampleView.findViewById(R.id.examplePassageText);
+                        passageText.setText(Html.fromHtml(example.getText()));
+
+                        mExamplePassagesView.addView(exampleView);
+                    } else {
+                        Logger.e(this.getClass().getName(), "showTerm the activity is null");
                     }
-
-                    // passage
-                    TextView passageText = (TextView)exampleView.findViewById(R.id.examplePassageText);
-                    passageText.setText(Html.fromHtml(example.getText()));
-
-                    mExamplePassagesView.addView(exampleView);
                 }
                 mExamplePassagesView.setVisibility(View.VISIBLE);
             } else {

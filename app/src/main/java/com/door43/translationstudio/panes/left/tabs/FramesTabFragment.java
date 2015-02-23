@@ -14,6 +14,7 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
@@ -44,22 +45,26 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // save changes to the current frame first
-                ((MainActivity) me.getActivity()).save();
-                // select the new frame
-                AppContext.projectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
-                ((MainActivity) me.getActivity()).reloadCenterPane();
-                // we're ready to begin translating. close the left pane
-                ((MainActivity) me.getActivity()).closeDrawers();
-                // let the adapter redraw itself so the selected frame is corectly highlighted
-                NotifyAdapterDataSetChanged();
+                if(getActivity() != null) {
+                    // save changes to the current frame first
+                    ((MainActivity) getActivity()).save();
+                    // select the new frame
+                    AppContext.projectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
+                    ((MainActivity) getActivity()).reloadCenterPane();
+                    // we're ready to begin translating. close the left pane
+                    ((MainActivity) getActivity()).closeDrawers();
+                    // let the adapter redraw itself so the selected frame is corectly highlighted
+                    NotifyAdapterDataSetChanged();
 
-                // Display chapter translation dialog if translating a new chapter
-                if (!AppContext.projectManager().getSelectedProject().getSelectedChapter().translationInProgress()) {
-                    // only display the chapter settings if the title and reference are not null
-                    if (AppContext.projectManager().getSelectedProject().getSelectedChapter().hasChapterSettings()) {
-                        ((MainActivity) me.getActivity()).showChapterSettingsMenu();
+                    // Display chapter translation dialog if translating a new chapter
+                    if (!AppContext.projectManager().getSelectedProject().getSelectedChapter().translationInProgress()) {
+                        // only display the chapter settings if the title and reference are not null
+                        if (AppContext.projectManager().getSelectedProject().getSelectedChapter().hasChapterSettings()) {
+                            ((MainActivity) getActivity()).showChapterSettingsMenu();
+                        }
                     }
+                } else {
+                    Logger.e(this.getClass().getName(), "onItemClickListener the activity is null");
                 }
             }
         });

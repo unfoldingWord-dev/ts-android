@@ -1,5 +1,6 @@
 package com.door43.translationstudio.panes.left.tabs;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
@@ -21,6 +22,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.squareup.otto.Subscribe;
@@ -29,7 +31,6 @@ import com.squareup.otto.Subscribe;
  * Created by joel on 8/29/2014.
  */
 public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
-    private ProjectsTabFragment me = this;
     private ModelItemAdapter mModelItemAdapter;
 
     @Override
@@ -46,17 +47,22 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // TRICKY: the project list may contain meta projects as well as normal projects.
-                // save changes to the current frame first
-                ((MainActivity)me.getActivity()).save();
-                Model m = mModelItemAdapter.getItem(i);
-                boolean isProject = m.getClass().equals(Project.class);
 
-                if(isProject) {
-                    // this is a normal project
-                    handleProjectSelection((Project)m);
+                if(getActivity() != null) {
+                    // save changes to the current frame first
+                    ((MainActivity) getActivity()).save();
+                    Model m = mModelItemAdapter.getItem(i);
+                    boolean isProject = m.getClass().equals(Project.class);
+
+                    if (isProject) {
+                        // this is a normal project
+                        handleProjectSelection((Project) m);
+                    } else {
+                        // this is a meta project
+                        handleMetaSelection((PseudoProject) m);
+                    }
                 } else {
-                    // this is a meta project
-                    handleMetaSelection((PseudoProject)m);
+                    Logger.e(this.getClass().getName(), "onItemClickListener the activity is null");
                 }
             }
         });
@@ -77,23 +83,28 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      * @param p
      */
     private void handleProjectSelection(Project p) {
-        // this is a normal project
-        if (AppContext.projectManager().getSelectedProject() == null || !AppContext.projectManager().getSelectedProject().getId().equals(p.getId())) {
-            // reload the center pane so we don't accidently overwrite a frame
-            ((MainActivity) me.getActivity()).reloadCenterPane();
+        Activity activity = getActivity();
+        if(activity != null) {
+            // this is a normal project
+            if (AppContext.projectManager().getSelectedProject() == null || !AppContext.projectManager().getSelectedProject().getId().equals(p.getId())) {
+                // reload the center pane so we don't accidently overwrite a frame
+                ((MainActivity) activity).reloadCenterPane();
 
-            AppContext.projectManager().setSelectedProject(p.getId());
-            // load the project source
-            new LoadProjectTask().execute();
+                AppContext.projectManager().setSelectedProject(p.getId());
+                // load the project source
+                new LoadProjectTask().execute();
+            } else {
+                // select the project
+                AppContext.projectManager().setSelectedProject(p.getId());
+                // reload the center pane so we don't accidently overwrite a frame
+                ((MainActivity) activity).reloadCenterPane();
+                // open up the chapters tab
+                ((MainActivity) activity).getLeftPane().selectTab(1);
+                // let the adapter redraw itself so the selected project is corectly highlighted
+                NotifyAdapterDataSetChanged();
+            }
         } else {
-            // select the project
-            AppContext.projectManager().setSelectedProject(p.getId());
-            // reload the center pane so we don't accidently overwrite a frame
-            ((MainActivity) me.getActivity()).reloadCenterPane();
-            // open up the chapters tab
-            ((MainActivity) me.getActivity()).getLeftPane().selectTab(1);
-            // let the adapter redraw itself so the selected project is corectly highlighted
-            NotifyAdapterDataSetChanged();
+            Logger.e(this.getClass().getName(), "handleProjectSelection the activity is null");
         }
     }
 
@@ -118,7 +129,12 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         newFragment.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                ProjectsTabFragment.this.getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+                Activity activity = getActivity();
+                if(activity != null) {
+                    activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+                } else {
+                    Logger.e(this.getClass().getName(), "handleMetaSelection the activity is null");
+                }
             }
         });
         newFragment.show(ft, "dialog");
@@ -133,13 +149,18 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         }
 
         protected void onPostExecute(Void result) {
-            // populate the center pane
-            ((MainActivity) me.getActivity()).reloadCenterPane();
-            // open up the chapters tab
-            ((MainActivity)me.getActivity()).getLeftPane().selectTab(1);
-            // reload the frames tab so we don't see frames from the previous project
-            ((MainActivity)me.getActivity()).getLeftPane().reloadFramesTab();
-            // let the adapter redraw itself so the selected project is corectly highlighted
+            Activity activity = getActivity();
+            if(activity != null) {
+                // populate the center pane
+                ((MainActivity) activity).reloadCenterPane();
+                // open up the chapters tab
+                ((MainActivity) activity).getLeftPane().selectTab(1);
+                // reload the frames tab so we don't see frames from the previous project
+                ((MainActivity) activity).getLeftPane().reloadFramesTab();
+                // let the adapter redraw itself so the selected project is corectly highlighted
+            } else {
+                Logger.e(this.getClass().getName(), "onPostExecute the activity is null");
+            }
             NotifyAdapterDataSetChanged();
         }
     }
@@ -148,6 +169,10 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public void onSelectedProjectFromMeta(ChoseProjectEvent event) {
         handleProjectSelection(event.getProject());
         event.getDialog().dismiss();
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        if(getActivity() != null) {
+            getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        } else {
+            Logger.e(this.getClass().getName(), "onSelectedProjectFromMeta the activity is null");
+        }
     }
 }
