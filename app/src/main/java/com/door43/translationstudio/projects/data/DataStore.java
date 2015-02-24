@@ -5,7 +5,7 @@ import android.net.Uri;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.util.FileUtilities;
-import com.door43.logging.Logger;
+import com.door43.util.Logger;
 import com.door43.translationstudio.util.Security;
 import com.door43.translationstudio.util.ServerUtilities;
 

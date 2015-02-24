@@ -17,9 +17,9 @@ import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
-import com.door43.logging.Logger;
+import com.door43.util.Logger;
 import com.door43.translationstudio.util.Security;
-import com.door43.translationstudio.util.Zip;
+import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.AddCommand;
@@ -945,7 +945,7 @@ public class ProjectSharing {
         }
 
         // zip
-        AppContext.context().zip(outputDir.getAbsolutePath(), outputZipFile.getAbsolutePath());
+        com.door43.util.Zip.zip(outputDir.getAbsolutePath(), outputZipFile.getAbsolutePath());
         // cleanup
         FileUtilities.deleteRecursive(outputDir);
         return outputZipFile.getAbsolutePath();

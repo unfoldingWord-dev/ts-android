@@ -1,4 +1,4 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -12,9 +12,40 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Created by joel on 1/9/2015.
+ * This class handles zipping and un-zipping files and directories
  */
 public class Zip {
+    /**
+     * Creates a zip archive
+     * http://stackoverflow.com/questions/6683600/zip-compress-a-folder-full-of-files-on-android
+     * @param sourcePath
+     * @param destPath
+     * @throws java.io.IOException
+     */
+    public static void zip(String sourcePath, String destPath) throws IOException {
+        final int BUFFER = 2048;
+        File sourceFile = new File(sourcePath);
+        BufferedInputStream origin = null;
+        FileOutputStream dest = new FileOutputStream(destPath);
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+        if (sourceFile.isDirectory()) {
+            // TRICKY: we add 1 to the base path length to exclude the leading path separator
+            zipSubFolder(out, sourceFile, sourceFile.getParent().length() + 1);
+        } else {
+            byte data[] = new byte[BUFFER];
+            FileInputStream fi = new FileInputStream(sourcePath);
+            origin = new BufferedInputStream(fi, BUFFER);
+            String[] segments = sourcePath.split("/");
+            String lastPathComponent = segments[segments.length - 1];
+            ZipEntry entry = new ZipEntry(lastPathComponent);
+            out.putNextEntry(entry);
+            int count;
+            while ((count = origin.read(data, 0, BUFFER)) != -1) {
+                out.write(data, 0, count);
+            }
+        }
+        out.close();
+    }
 
     /**
      * Adds a file to a zip archive
@@ -88,7 +119,6 @@ public class Zip {
      */
     public static void zip(File[] files, File archivePath) throws IOException {
         final int BUFFER = 2048;
-//        File sourceFile = new File(sourcePath);
         BufferedInputStream origin = null;
         FileOutputStream dest = new FileOutputStream(archivePath);
         ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
@@ -113,39 +143,6 @@ public class Zip {
             }
         }
 
-        out.close();
-    }
-
-    /**
-     * Creates a zip archive
-     * http://stackoverflow.com/questions/6683600/zip-compress-a-folder-full-of-files-on-android
-     * @param sourcePath
-     * @param destPath
-     * @throws java.io.IOException
-     */
-    public static void zip(String sourcePath, String destPath) throws IOException {
-        final int BUFFER = 2048;
-        File sourceFile = new File(sourcePath);
-        BufferedInputStream origin = null;
-        FileOutputStream dest = new FileOutputStream(destPath);
-        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(
-                dest));
-        if (sourceFile.isDirectory()) {
-            // TRICKY: we add 1 to the base path length to exclude the leading path separator
-            zipSubFolder(out, sourceFile, sourceFile.getParent().length() + 1);
-        } else {
-            byte data[] = new byte[BUFFER];
-            FileInputStream fi = new FileInputStream(sourcePath);
-            origin = new BufferedInputStream(fi, BUFFER);
-            String[] segments = sourcePath.split("/");
-            String lastPathComponent = segments[segments.length - 1];
-            ZipEntry entry = new ZipEntry(lastPathComponent);
-            out.putNextEntry(entry);
-            int count;
-            while ((count = origin.read(data, 0, BUFFER)) != -1) {
-                out.write(data, 0, count);
-            }
-        }
         out.close();
     }
 
@@ -178,6 +175,43 @@ public class Zip {
                 origin.close();
             }
         }
+    }
+
+    /**
+     * Extracts a zip archive
+     * @param zipPath
+     * @throws IOException
+     */
+    public static void unzip(String zipPath, String destPath) throws IOException {
+        InputStream is;
+        ZipInputStream zis;
+        String filename;
+        ZipEntry ze;
+        int count;
+        byte[] buffer = new byte[1024];
+        is = new FileInputStream(zipPath);
+        zis = new ZipInputStream(new BufferedInputStream(is));
+
+        File destDir = new File(destPath);
+        destDir.mkdirs();
+
+        while ((ze = zis.getNextEntry()) != null) {
+            filename = ze.getName();
+            File f = new File(destPath, filename);
+            if (ze.isDirectory()) {
+                f.mkdirs();
+                continue;
+            }
+            f.getParentFile().mkdirs();
+            f.createNewFile();
+            FileOutputStream fout = new FileOutputStream(f.getAbsolutePath());
+            while ((count = zis.read(buffer)) != -1) {
+                fout.write(buffer, 0, count);
+            }
+            fout.close();
+            zis.closeEntry();
+        }
+        zis.close();
     }
 
     /**

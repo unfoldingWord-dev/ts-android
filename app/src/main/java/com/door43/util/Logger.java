@@ -1,4 +1,4 @@
-package com.door43.logging;
+package com.door43.util;
 
 import android.content.Context;
 import android.media.MediaScannerConnection;

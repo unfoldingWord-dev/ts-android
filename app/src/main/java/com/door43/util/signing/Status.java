@@ -1,4 +1,4 @@
-package com.door43.signing;
+package com.door43.util.signing;
 
 /**
  * Created by joel on 2/23/2015.

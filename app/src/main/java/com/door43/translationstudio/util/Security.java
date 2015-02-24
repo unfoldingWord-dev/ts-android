@@ -1,6 +1,6 @@
 package com.door43.translationstudio.util;
 
-import com.door43.logging.Logger;
+import com.door43.util.Logger;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;

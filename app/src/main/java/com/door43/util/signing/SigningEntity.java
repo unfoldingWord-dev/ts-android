@@ -1,4 +1,4 @@
-package com.door43.signing;
+package com.door43.util.signing;
 
 import android.util.Base64;
 

@@ -6,27 +6,16 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.door43.signing.Status;
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.signing.Crypto;
-import com.door43.signing.SigningEntity;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.PublicKey;
 
 /**
  * Created by joel on 9/29/2014.

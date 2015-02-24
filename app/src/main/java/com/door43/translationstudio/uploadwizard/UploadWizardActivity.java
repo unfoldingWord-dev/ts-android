@@ -10,7 +10,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.logging.Logger;
+import com.door43.util.Logger;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.ArrayList;
