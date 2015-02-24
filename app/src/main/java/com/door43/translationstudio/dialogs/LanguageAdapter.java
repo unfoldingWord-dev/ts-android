@@ -42,8 +42,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
         mLanguageList = languageList;
         // place translated languages at the top of the list
         if(!isSourceLanguages) {
-            // test
-            ThreadableUI thread = new ThreadableUI(context) {
+            new ThreadableUI(context) {
                 @Override
                 public void onStop() {
 
@@ -73,8 +72,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
                 public void onPostExecute() {
                     LanguageAdapter.this.notifyDataSetChanged();
                 }
-            };
-            thread.start();
+            }.start();
         }
     }
 

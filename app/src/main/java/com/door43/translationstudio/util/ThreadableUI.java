@@ -23,7 +23,6 @@ public abstract class ThreadableUI {
         mThread = new Thread() {
             @Override
             public void run() {
-                Looper.prepare();
                 // execute the tasks
                 ThreadableUI.this.run();
                 // execute cleanup on the ui thread

@@ -208,9 +208,8 @@ public class Project implements Model {
      * @return
      */
     public String getTitle() {
-        Translation t = mTitleTranslations.get(mSelectedSourceLanguageId);
-        if(t != null) {
-            return t.getText();
+        if(mTitleTranslations.get(mSelectedSourceLanguageId) != null) {
+            return mTitleTranslations.get(mSelectedSourceLanguageId).getText();
         } else {
             return mDefaultTitle;
         }
@@ -222,9 +221,8 @@ public class Project implements Model {
      * @return
      */
     public String getDescription(SourceLanguage l) {
-        Translation t = mDescriptionTranslations.get(l.getId());
-        if(t != null) {
-            return t.getText();
+        if(mDescriptionTranslations.get(l.getId()) != null) {
+            return mDescriptionTranslations.get(l.getId()).getText();
         } else {
             return mDefaultDescription;
         }
@@ -235,9 +233,8 @@ public class Project implements Model {
      * @return
      */
     public String getDescription() {
-        Translation t = mDescriptionTranslations.get(mSelectedSourceLanguageId);
-        if(t != null) {
-            return t.getText();
+        if(mDescriptionTranslations.get(mSelectedSourceLanguageId) != null) {
+            return mDescriptionTranslations.get(mSelectedSourceLanguageId).getText();
         } else {
             return mDefaultDescription;
         }

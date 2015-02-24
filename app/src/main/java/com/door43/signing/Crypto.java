@@ -40,8 +40,7 @@ public class Crypto {
      * @return
      */
     public static Status verifyECDSASignature(PublicKey key, byte[] sig, byte[] data) {
-        // TODO: we may want to change this to SHA384WITHECDSA if we decide the iOS code can support it.
-        String sigAlgorithm = "SHA1WITHECDSA";
+        String sigAlgorithm = "SHA384WITHECDSA";
 
         if(key != null && data.length > 0 && sig.length > 0) {
             try {

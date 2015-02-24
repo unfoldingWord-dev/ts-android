@@ -81,6 +81,8 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 
                                 // passage
                                 TextView passageText = (TextView) noteItemView.findViewById(R.id.translationNoteText);
+
+                                // passage links
                                 LinkRenderer renderingEngine = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
                                     @Override
                                     public boolean onPreprocess(PassageLinkSpan span) {

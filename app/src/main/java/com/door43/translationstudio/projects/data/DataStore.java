@@ -706,7 +706,7 @@ public class DataStore {
                 InputStream is = mContext.getAssets().open("data/" + key);
                 return FileUtilities.convertStreamToString(is);
             } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to load the linked packaged asset "+path, e);
+                Logger.w(this.getClass().getName(), "The linked packaged asset data/"+key+" does not exist for "+path);
             }
         }
 
@@ -715,7 +715,7 @@ public class DataStore {
             InputStream is = mContext.getAssets().open(path);
             return FileUtilities.convertStreamToString(is);
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "failed to load the packaged asset "+path, e);
+            Logger.i(this.getClass().getName(), "The packaged asset does not exist "+path);
         }
 
         return null;

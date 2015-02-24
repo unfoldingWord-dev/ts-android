@@ -77,13 +77,12 @@ public class ModelItemAdapter extends BaseAdapter {
     public View getView(int position, View convertView, final ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = new ViewHolder();
-        Model m = getItem(position);
         String imageUri;
 
-        if(AppContext.assetExists(m.getImagePath())) {
-            imageUri = "assets://"+ m.getImagePath();
-        } else if(AppContext.assetExists(m.getDefaultImagePath())){
-            imageUri = "assets://"+ m.getDefaultImagePath();
+        if(AppContext.assetExists(getItem(position).getImagePath())) {
+            imageUri = "assets://"+ getItem(position).getImagePath();
+        } else if(AppContext.assetExists(getItem(position).getDefaultImagePath())){
+            imageUri = "assets://"+ getItem(position).getDefaultImagePath();
         } else {
             imageUri = null;
         }
@@ -115,10 +114,10 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.image.clearAnimation();
         holder.bodyLayout.clearAnimation();
 
-        holder.title.setText(m.getTitle());
-        holder.altTitle.setText(m.getTitle());
-        holder.description.setText(m.getDescription());
-        holder.altDescription.setText(m.getDescription());
+        holder.title.setText(getItem(position).getTitle());
+        holder.altTitle.setText(getItem(position).getTitle());
+        holder.description.setText(getItem(position).getDescription());
+        holder.altDescription.setText(getItem(position).getDescription());
 
         // display the correct layout
         if(imageUri != null) {
@@ -158,12 +157,9 @@ public class ModelItemAdapter extends BaseAdapter {
 
         // prepare image
         holder.image.setVisibility(View.INVISIBLE);
-//        ViewGroup.LayoutParams params = holder.bodyLayout.getLayoutParams();
-//        params.width = parent.getWidth();
-//        holder.bodyLayout.setLayoutParams(params);
 
         final ViewHolder staticHolder = holder;
-        final Model staticModel = m;
+        final Model staticModel = getItem(position);
         final boolean staticIsSelected = isSelected;
 
 
@@ -178,14 +174,15 @@ public class ModelItemAdapter extends BaseAdapter {
 
                     // animate views
                     AnimationUtilities.fadeIn(staticHolder.image, 100);
-//                    AnimationUtilities.slideInLeft(staticHolder.image);
-//                    AnimationUtilities.resizeWidth(staticHolder.bodyLayout, parent.getWidth(), parent.getWidth() - mImageWidth);
                 }
             });
         }
 
         // enable icons
-        new ThreadableUI(mContext) {
+        if(holder.statusThread != null) {
+            holder.statusThread.stop();
+        }
+        holder.statusThread = new ThreadableUI(mContext) {
             private boolean isTranslating;
             private boolean isTranslatingGlobal;
             private boolean hasAudio;
@@ -218,7 +215,8 @@ public class ModelItemAdapter extends BaseAdapter {
                     AnimationUtilities.fadeIn(staticHolder.iconGroup, 100);
                 }
             }
-        }.start();
+        };
+        holder.statusThread.start();
 
         return v;
     }
@@ -249,5 +247,7 @@ public class ModelItemAdapter extends BaseAdapter {
         public ImageView languagesIcon;
         public ImageView audioIcon;
         public LinearLayout iconGroup;
+
+        public ThreadableUI statusThread;
     }
 }
