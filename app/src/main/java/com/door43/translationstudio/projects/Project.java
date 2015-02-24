@@ -29,20 +29,18 @@ import java.util.Map;
  * This source text is subdivided into Chapters and Frames.
  */
 public class Project implements Model {
+    private ListMap<Chapter> mChapters = new ListMap<>();
     // so we can look up by index
-    private List<Chapter> mChapters = new ArrayList<Chapter>();
+//    private List<Chapter> mChapters = new ArrayList<Chapter>();
     // so we can look up by id
-    private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
+//    private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
     private List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
     private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
     private List<Language> mTargetLanguages = new ArrayList<Language>();
     private Map<String,Language> mTargetLanguageMap = new HashMap<String, Language>();
-    private List<Term> mTerms = new ArrayList<Term>();
-    private Map<String, Term> mTermMap = new HashMap<String, Term>();
+    private ListMap<Term> mTerms = new ListMap<>();
     private List<PseudoProject> mPseudoProjects = new ArrayList<PseudoProject>();
     private Map<String, PseudoProject> mSudoProjectMap = new HashMap<String, PseudoProject>();
-//    private Map<String, Translation> mTitleTranslationMap = new HashMap<String, Translation>();
-//    private List<Translation> mTitleTranslations = new ArrayList<Translation>();
     private ListMap<Translation> mTitleTranslations = new ListMap<Translation>();
     private ListMap<Translation> mDescriptionTranslations = new ListMap<Translation>();
 
@@ -177,8 +175,8 @@ public class Project implements Model {
      * Dumps all the frames and chapters from the project
      */
     public void flush() {
-        mChapters = new ArrayList<>();
-        mChapterMap = new HashMap<>();
+        mChapters = new ListMap<>();
+        mTerms = new ListMap<>();
         mSelectedChapterId = null;
     }
 
@@ -267,7 +265,7 @@ public class Project implements Model {
      * @return
      */
     public int numChapters() {
-        return mChapterMap.size();
+        return mChapters.size();
     }
 
     /**
@@ -284,11 +282,7 @@ public class Project implements Model {
      * @return null if the chapter does not exist
      */
     public Chapter getChapter(String id) {
-        if(mChapterMap.containsKey(id)) {
-            return mChapterMap.get(id);
-        } else {
-            return null;
-        }
+        return mChapters.get(id);
     }
 
     /**
@@ -412,10 +406,9 @@ public class Project implements Model {
      * @param c the chapter to add
      */
     public void addChapter(Chapter c) {
-        if(!mChapterMap.containsKey(c.getId())) {
+        if(mChapters.get(c.getId()) == null) {
             c.setProject(this);
-            mChapterMap.put(c.getId(), c);
-            mChapters.add(c);
+            mChapters.add(c.getId(), c);
         }
     }
 
@@ -464,15 +457,14 @@ public class Project implements Model {
      * @param term
      */
     public void addTerm(Term term) {
-        if(!mTermMap.containsKey(term.getName())) {
-            mTermMap.put(term.getName(), term);
-            mTerms.add(term);
+        if(mTerms.get(term.getName()) == null) {
+            mTerms.add(term.getName(), term);
 
             // also add the aliases
             List<String> aliases = term.getAliases();
             for(String alias:aliases) {
-                if(!mTermMap.containsKey(alias)) {
-                    mTermMap.put(alias, term);
+                if(mTerms.get(alias) == null) {
+                    mTerms.add(alias, term);
                 }
             }
         }
@@ -505,11 +497,7 @@ public class Project implements Model {
      * @return
      */
     public Term getTerm(String name) {
-        if(mTermMap.containsKey(name)) {
-            return mTermMap.get(name);
-        } else {
-            return null;
-        }
+        return mTerms.get(name);
     }
 
     /**
@@ -517,7 +505,7 @@ public class Project implements Model {
      * @return
      */
     public List<Term> getTerms() {
-        return mTerms;
+        return mTerms.getAll();
     }
 
     /**
@@ -866,7 +854,7 @@ public class Project implements Model {
      * @return
      */
     public Chapter[] getChapters() {
-        return mChapters.toArray(new Chapter[mChapters.size()]);
+        return mChapters.getAll().toArray(new Chapter[mChapters.size()]);
     }
 
     /**

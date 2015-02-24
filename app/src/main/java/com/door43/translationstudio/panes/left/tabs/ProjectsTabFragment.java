@@ -86,11 +86,16 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         Activity activity = getActivity();
         if(activity != null) {
             // this is a normal project
-            if (AppContext.projectManager().getSelectedProject() == null || !AppContext.projectManager().getSelectedProject().getId().equals(p.getId())) {
+            Project previousProject = AppContext.projectManager().getSelectedProject();
+            if (previousProject == null || !previousProject.getId().equals(p.getId())) {
                 // reload the center pane so we don't accidently overwrite a frame
                 ((MainActivity) activity).reloadCenterPane();
 
                 AppContext.projectManager().setSelectedProject(p.getId());
+
+                // clear out the previous project so we don't waste memory
+                previousProject.flush();
+
                 // load the project source
                 new LoadProjectTask().execute();
             } else {
