@@ -275,9 +275,9 @@ public class MainActivity extends TranslatorBaseActivity {
     private void onKeyboardChanged(View root) {
         Rect r = new Rect();
         root.getWindowVisibleDisplayFrame(r);
-        int screenHeight = root.getRootView().getHeight();
-        int heightDiff = screenHeight - (r.bottom - r.top);
-        if(heightDiff > 100) {
+//        int screenHeight = root.getRootView().getHeight();
+//        int heightDiff = screenHeight - (r.bottom - r.top);
+        if((root.getRootView().getHeight() - (r.bottom - r.top)) > 100) {
             onKeyboardOpen(r);
         } else {
             onKeyboardClose(r);
@@ -289,13 +289,15 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param r the dimensions of the visible area
      */
     private void onKeyboardOpen(Rect r) {
-        mKeyboardIsOpen = true;
-        resizeRootView(r);
+        if(!mKeyboardIsOpen) {
+            mKeyboardIsOpen = true;
+            resizeRootView(r);
 
-        // display the translation menu
-        mMainToolbar.setBackgroundColor(getResources().getColor(R.color.light_blue));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        invalidateOptionsMenu();
+            // display the translation menu
+            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.light_blue));
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            invalidateOptionsMenu();
+        }
     }
 
     /**
@@ -303,14 +305,16 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param r the dimensions of the visible area
      */
     private void onKeyboardClose(Rect r) {
-        mKeyboardIsOpen = false;
-        mTranslationEditText.clearFocus();
-        resizeRootView(r);
+        if(mKeyboardIsOpen) {
+            mKeyboardIsOpen = false;
+            mTranslationEditText.clearFocus();
+            resizeRootView(r);
 
-        // display the main menu
-        mMainToolbar.setBackgroundColor(getResources().getColor(R.color.green));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        invalidateOptionsMenu();
+            // display the main menu
+            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.green));
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            invalidateOptionsMenu();
+        }
     }
 
     /**
