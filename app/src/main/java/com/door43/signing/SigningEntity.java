@@ -2,19 +2,12 @@ package com.door43.signing;
 
 import android.util.Base64;
 
-import com.door43.logging.Logger;
-import com.door43.translationstudio.util.FileUtilities;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.PublicKey;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -134,7 +127,7 @@ public class SigningEntity {
                 }
             }
         } catch (IOException e) {
-            Logger.e(SigningEntity.class.getName(), "Failed to read the Signing Identity", e);
+            e.printStackTrace();
             return null;
         }
 
@@ -144,14 +137,14 @@ public class SigningEntity {
             try {
                 keyOrgData = dataBuilder.toString().getBytes("UTF-8");
             } catch (UnsupportedEncodingException e) {
-                Logger.e(SigningEntity.class.getName(), "Failed to concat Signing Entity key and organization", e);
+                e.printStackTrace();
                 return null;
             }
             byte[] keyBytes;
             try {
                 keyBytes = Base64.decode(pkBuilder.toString().getBytes("UTF-8"), Base64.DEFAULT);
             } catch (UnsupportedEncodingException e) {
-                Logger.e(SigningEntity.class.getName(), "Failed to read the public key", e);
+                e.printStackTrace();
                 return null;
             }
             PublicKey key = Crypto.loadPublicECDSAKey(keyBytes);

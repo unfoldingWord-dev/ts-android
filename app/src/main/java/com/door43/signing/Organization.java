@@ -1,7 +1,5 @@
 package com.door43.signing;
 
-import com.door43.logging.Logger;
-
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
@@ -56,7 +54,7 @@ public class Organization {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             return new Organization(format.parse(json.getString("created")), json.getString("email"), format.parse(json.getString("expires")), format.parse(json.getString("modified")), json.getString("org"), json.getString("slug"), json.getString("web"));
         } catch (Exception e) {
-            Logger.e(Organization.class.getName(), "Failed to load the organization information", e);
+            e.printStackTrace();
         }
         return null;
     }
