@@ -204,6 +204,7 @@ public class DataStore {
      * @return the key to the linked asset
      */
     private String resolveLink(File link) {
+
         if(link != null) {
             try {
                 // resolve key aliases
@@ -669,7 +670,7 @@ public class DataStore {
         File linkedAsset = new File(cachedAsset.getParentFile(), linkPath);
 
         // resolve links
-        if(linkedAsset.exists()) {
+        if(linkedAsset.exists() && linkedAsset.isFile()) {
             String key = resolveLink(linkedAsset);
             if(key != null) {
                 cachedAsset = getLinkedAsset(key);
