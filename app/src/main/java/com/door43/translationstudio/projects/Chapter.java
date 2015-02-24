@@ -7,6 +7,7 @@ import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.logging.Logger;
+import com.door43.translationstudio.util.ListMap;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,11 +23,7 @@ import java.util.Map;
 public class Chapter implements Model {
     private static final String REFERENCE_FILE = "reference.txt";
     private static final String TITLE_FILE = "title.txt";
-    // so we can look up by index
-    private List<Frame> mFrames = new ArrayList<Frame>();
-    // so we can look up by id
-    private Map<String, Frame> mFrameMap = new HashMap<String, Frame>();
-
+    private ListMap<Frame> mFrames = new ListMap<>();
     private String mId;
     private String mTitle;
     private String mReference;
@@ -213,7 +210,7 @@ public class Chapter implements Model {
      * @return
      */
     public int numFrames() {
-        return mFrameMap.size();
+        return mFrames.size();
     }
 
     /**
@@ -222,11 +219,7 @@ public class Chapter implements Model {
      * @return null if the frame does not exist
      */
     public Frame getFrame(String id) {
-        if(mFrameMap.containsKey(id)) {
-            return mFrameMap.get(id);
-        } else {
-            return null;
-        }
+        return mFrames.get(id);
     }
 
     /**
@@ -235,11 +228,7 @@ public class Chapter implements Model {
      * @return null if the frame does not exist
      */
     public Frame getFrame(int index) {
-        if(index < mFrames.size() && index >= 0) {
-            return mFrames.get(index);
-        } else {
-            return null;
-        }
+        return mFrames.get(index);
     }
 
     /**
@@ -316,10 +305,9 @@ public class Chapter implements Model {
      * @param f the frame to add
      */
     public void addFrame(Frame f) {
-        if(!mFrameMap.containsKey(f.getId())) {
+        if(mFrames.get(f.getId()) == null) {
             f.setChapter(this);
-            mFrameMap.put(f.getId(), f);
-            mFrames.add(f);
+            mFrames.add(f.getId(), f);
         }
     }
 
@@ -511,7 +499,7 @@ public class Chapter implements Model {
      * @return
      */
     public Model[] getFrames() {
-        return mFrames.toArray(new Model[mFrameMap.size()]);
+        return mFrames.getAll().toArray(new Model[mFrames.size()]);
     }
 
     /**

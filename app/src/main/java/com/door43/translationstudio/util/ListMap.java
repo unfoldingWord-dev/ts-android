@@ -1,5 +1,7 @@
 package com.door43.translationstudio.util;
 
+import com.door43.translationstudio.projects.Frame;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,11 +81,11 @@ public class ListMap<E> {
     }
 
     /**
-     * Returns all the objects
+     * Returns all the objects in the order they were added
      * @return
      */
     public ArrayList<E> getAll() {
-        return new ArrayList<E>(mObjectMap.values());
+        return new ArrayList<E>(mObjects);
     }
 
     /**
@@ -92,5 +94,14 @@ public class ListMap<E> {
      */
     public int size() {
         return mObjects.size();
+    }
+
+    /**
+     * Returns the index of the object
+     * @param object
+     * @return
+     */
+    public int indexOf(E object) {
+        return mObjects.indexOf(object);
     }
 }
