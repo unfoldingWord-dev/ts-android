@@ -94,7 +94,9 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 AppContext.projectManager().setSelectedProject(p.getId());
 
                 // clear out the previous project so we don't waste memory
-                previousProject.flush();
+                if(previousProject != null) {
+                    previousProject.flush();
+                }
 
                 // load the project source
                 new LoadProjectTask().execute();
