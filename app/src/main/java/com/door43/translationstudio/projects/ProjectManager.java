@@ -155,9 +155,6 @@ public class ProjectManager {
      * @param displayNotice you dispaly a loading notice to the user
      */
     public void fetchProjectSource(Project p, Boolean displayNotice) {
-        if(displayNotice) {
-            mContext.showProgressDialog(R.string.loading_project_chapters);
-        }
         if(p == null || p.getSelectedSourceLanguage() == null) return;
 
         String source = mDataStore.fetchSource(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false);
@@ -185,9 +182,6 @@ public class ProjectManager {
             }
         }
         loadNotes(notes, p);
-        if(displayNotice) {
-            mContext.closeProgressDialog(true);
-        }
     }
 
     /**

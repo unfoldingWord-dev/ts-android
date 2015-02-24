@@ -92,9 +92,10 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.regenerate_keys), getResources().getString(R.string.regenerate_keys_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                ProgressDialog loading = AppContext.showLoading(DeveloperToolsActivity.this);
+                ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
+                dialog.setMessage(getResources().getString(R.string.loading));
                 AppContext.context().generateKeys();
-                loading.dismiss();
+                dialog.dismiss();
                 AppContext.context().showToastMessage(R.string.success);
             }
         }));

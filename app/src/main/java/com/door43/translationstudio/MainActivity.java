@@ -3,6 +3,7 @@ package com.door43.translationstudio;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -378,6 +379,9 @@ public class MainActivity extends TranslatorBaseActivity {
                         @Override
                         public void onChoose(Resource resource) {
                             if(p == null) return;
+                            final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
+                            dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                            dialog.show();
                             p.getSelectedSourceLanguage().setSelectedResource(resource.getId());
                             new ThreadableUI(MainActivity.this) {
 
@@ -395,6 +399,7 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void onPostExecute() {
                                     // refresh the ui
+                                    dialog.dismiss();
                                     reloadCenterPane();
                                     mLeftPane.reloadFramesTab();
                                     mLeftPane.reloadChaptersTab();
@@ -1462,14 +1467,13 @@ public class MainActivity extends TranslatorBaseActivity {
                 }
                 return true;
             case R.id.action_update:
-                // TODO: we need to display a better ui and progress indicator. Probably a dialog that users can cancel to stop the download.
-                final Thread t = new Thread() {
+                final ProgressDialog dialog = new ProgressDialog(this);
+                dialog.setMessage(getResources().getString(R.string.downloading_updates));
+                final ThreadableUI t = new ThreadableUI(this) {
+                    @Override
+                    public void onStop() {}
                     @Override
                     public void run() {
-                        app().showProgressDialog(R.string.downloading_updates);
-
-                        Logger.i(this.getName().getClass().getName(), "downloading updates");
-
                         // check for updates to current projects
                         int numProjects = AppContext.projectManager().numProjects();
                         for (int i = 0; i < numProjects; i ++) {
@@ -1478,23 +1482,17 @@ public class MainActivity extends TranslatorBaseActivity {
 
                         // check for new projects to download
                         AppContext.projectManager().downloadNewProjects();
+                    }
 
-                        app().closeProgressDialog();
+                    @Override
+                    public void onPostExecute() {
+                        dialog.dismiss();
                         app().showToastMessage(R.string.project_updates_downloaded);
-
                         // reload the content
-                        Handler mainHandler = new Handler(getMainLooper());
-                        Runnable myRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                reloadCenterPane();
-                                mLeftPane.reloadProjectsTab();
-                                mLeftPane.reloadChaptersTab();
-                                mLeftPane.reloadFramesTab();
-                            }
-                        };
-                        mainHandler.post(myRunnable);
-
+                        reloadCenterPane();
+                        mLeftPane.reloadProjectsTab();
+                        mLeftPane.reloadChaptersTab();
+                        mLeftPane.reloadFramesTab();
                     }
                 };
 
@@ -1504,6 +1502,8 @@ public class MainActivity extends TranslatorBaseActivity {
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
+                                Logger.i(this.getClass().getName(), "downloading updates");
+                                dialog.show();
                                 t.start();
                             }
                         })

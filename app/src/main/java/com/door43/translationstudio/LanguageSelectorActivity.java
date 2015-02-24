@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -10,12 +11,14 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.LanguageAdapter;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.List;
@@ -57,13 +60,33 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                final ProgressDialog dialog = new ProgressDialog(LanguageSelectorActivity.this);
+                dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                dialog.show();
                 if(willShowSourceLanguages) {
                     AppContext.projectManager().getSelectedProject().setSelectedSourceLanguage(adapter.getItem(i).getId());
-                    // TODO: this can be slow. We should probably wait for this until after the user returns to the main screen.
-                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
-                    finish();
+                    new ThreadableUI(LanguageSelectorActivity.this) {
+
+                        @Override
+                        public void onStop() {
+
+                        }
+
+                        @Override
+                        public void run() {
+                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+                        }
+
+                        @Override
+                        public void onPostExecute() {
+                            dialog.dismiss();
+                            finish();
+                        }
+                    }.start();
+
                 } else {
                     AppContext.projectManager().getSelectedProject().setSelectedTargetLanguage(adapter.getItem(i).getId());
+                    dialog.dismiss();
                     finish();
                 }
             }

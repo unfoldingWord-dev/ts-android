@@ -21,6 +21,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.StorageUtils;
@@ -39,6 +40,7 @@ public class SharingActivity extends TranslatorBaseActivity {
     private ArrayList<ToolItem> mSharingTools = new ArrayList<ToolItem>();
     private ToolAdapter mAdapter;
     private static int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
+    ProgressDialog mProgressDialog;
 //    private static int IMPORT_DOKUWIKI_FROM_SD_REQUEST = 1;
 
     @Override
@@ -46,6 +48,8 @@ public class SharingActivity extends TranslatorBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sharing);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mProgressDialog = new ProgressDialog(SharingActivity.this);
 
         // hook up list view
         ListView list = (ListView)findViewById(R.id.sharingListView);
@@ -70,7 +74,8 @@ public class SharingActivity extends TranslatorBaseActivity {
     @Override
     public void onResume() {
         super.onResume();
-        AppContext.context().showProgressDialog(R.string.loading);
+        mProgressDialog.setMessage(getResources().getString(R.string.loading));
+        mProgressDialog.show();
 
         // stage and commit changes to the current project
         Project p = AppContext.projectManager().getSelectedProject();
@@ -79,19 +84,19 @@ public class SharingActivity extends TranslatorBaseActivity {
                 @Override
                 public void success() {
                     init();
-                    AppContext.context().closeProgressDialog();
+                    mProgressDialog.dismiss();
                 }
 
                 @Override
                 public void error(Throwable e) {
-                    AppContext.context().closeProgressDialog();
+                    mProgressDialog.dismiss();
                     AppContext.context().showToastMessage(R.string.project_share_exception);
                     finish();
                 }
             });
         } else {
             init();
-            AppContext.context().closeProgressDialog();
+            mProgressDialog.dismiss();
         }
     }
 
@@ -129,9 +134,17 @@ public class SharingActivity extends TranslatorBaseActivity {
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                Thread thread = new Thread() {
+                mProgressDialog.setMessage(getResources().getString(R.string.exporting_project));
+                mProgressDialog.show();
+                new ThreadableUI(SharingActivity.this) {
+
+                    @Override
+                    public void onStop() {
+
+                    }
+
+                    @Override
                     public void run() {
-                        app().showProgressDialog(R.string.exporting_project);
                         try {
                             String archivePath;
 
@@ -163,10 +176,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                         } catch (IOException e) {
                             app().showException(e);
                         }
-                        app().closeProgressDialog();
                     }
-                };
-                thread.start();
+
+                    @Override
+                    public void onPostExecute() {
+                        mProgressDialog.dismiss();
+                    }
+                }.start();
             }
         }, exportToAppEnabled, exportToAppMessage));
 
@@ -181,6 +197,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new ToolItem.ToolAction() {
             @Override
             public void run() {
+                // TODO: need to replace this with a threadableui class.
                 Thread thread = new Thread() {
                     public void run() {
                         Looper.prepare();
@@ -295,9 +312,17 @@ public class SharingActivity extends TranslatorBaseActivity {
                     Boolean success = false;
                     if (name[name.length - 1].toLowerCase().equals(Project.PROJECT_EXTENSION)) {
                         // import translationStudio project
-                        Runnable prepareImport = new Runnable() {
+                        mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                        mProgressDialog.show();
+                        new ThreadableUI(this) {
+
+                            @Override
+                            public void onStop() {
+
+                            }
+
+                            @Override
                             public void run() {
-                                app().showProgressDialog(R.string.importing_project);
                                 ProjectImport[] importRequests = ProjectSharing.prepareArchiveImport(file);
                                 if (importRequests.length > 0) {
                                     boolean importWarnings = false;
@@ -317,6 +342,24 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         app().closeToastMessage();
                                         ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
                                         newFragment.setImportRequests(importRequests);
+                                        newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+                                            @Override
+                                            public void onOk(ProjectImport[] requests) {
+                                                mProgressDialog.setMessage(getResources().getString(R.string.loading));
+                                                mProgressDialog.show();
+                                                for(ProjectImport r:requests) {
+                                                    ProjectSharing.importProject(r);
+                                                }
+                                                ProjectSharing.cleanImport(requests);
+                                                AppContext.context().showToastMessage(R.string.success);
+                                                mProgressDialog.dismiss();
+                                            }
+
+                                            @Override
+                                            public void onCancel(ProjectImport[] requests) {
+
+                                            }
+                                        });
                                         newFragment.show(ft, "dialog");
                                     } else {
                                         // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
@@ -330,54 +373,68 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     ProjectSharing.cleanImport(importRequests);
                                     app().showToastMessage(R.string.translation_import_failed);
                                 }
-
-                                app().closeProgressDialog();
                             }
-                        };
-                        new Thread(prepareImport).start();
+
+                            @Override
+                            public void onPostExecute() {
+                                mProgressDialog.dismiss();
+                            }
+                        }.start();
                     } else if(name[name.length - 1].toLowerCase().equals("zip")) {
                         // import DokuWiki files
-                        Runnable prepareImport = new Runnable() {
+                        mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                        mProgressDialog.show();
+                        new ThreadableUI(this) {
+
+                            @Override
+                            public void onStop() {
+
+                            }
+
+                            @Override
                             public void run() {
-                                app().showProgressDialog(R.string.importing_project);
                                 if(ProjectSharing.importDokuWikiArchive(file)) {
                                     app().showToastMessage(R.string.success);
                                 } else {
                                     app().showToastMessage(R.string.translation_import_failed);
                                 }
-                                app().closeProgressDialog();
                             }
-                        };
-                        new Thread(prepareImport).start();
+
+                            @Override
+                            public void onPostExecute() {
+                                mProgressDialog.dismiss();
+                            }
+                        }.start();
                     } else if(name[name.length - 1].toLowerCase().equals("txt")) {
                         // import legacy 1.x DokuWiki files
-                        Runnable prepareImport = new Runnable() {
+                        mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                        mProgressDialog.show();
+                        new ThreadableUI(this) {
+
+                            @Override
+                            public void onStop() {
+
+                            }
+
+                            @Override
                             public void run() {
-                                app().showProgressDialog(R.string.importing_project);
                                 if(ProjectSharing.importDokuWiki(file)) {
                                     app().showToastMessage(R.string.success);
                                 } else {
                                     app().showToastMessage(R.string.translation_import_failed);
                                 }
-                                app().closeProgressDialog();
                             }
-                        };
-                        new Thread(prepareImport).start();
+
+                            @Override
+                            public void onPostExecute() {
+                                mProgressDialog.dismiss();
+                            }
+                        }.start();
                     }
                 } else {
                     app().showToastMessage(R.string.missing_file);
                 }
             }
         }
-    }
-
-    @Subscribe
-    public void onProjectImportApproval(ProjectImportApprovalEvent event) {
-        app().showProgressDialog(R.string.loading);
-        for(ProjectImport r:event.getImportRequests()) {
-            ProjectSharing.importProject(r);
-        }
-        ProjectSharing.cleanImport(event.getImportRequests());
-        app().closeProgressDialog();
     }
 }

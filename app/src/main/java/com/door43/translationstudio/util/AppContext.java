@@ -111,18 +111,6 @@ public class AppContext {
     }
 
     /**
-     * Displays a generic progress dialog in the given activity
-     * @param activity
-     * @return
-     */
-    public static ProgressDialog showLoading(final Activity activity) {
-        ProgressDialog dialog = new ProgressDialog(activity);
-        dialog.setMax(R.string.loading);
-        dialog.show();
-        return dialog;
-    }
-
-    /**
      * Returns the directory in which the ssh keys are stored
      * @return
      */

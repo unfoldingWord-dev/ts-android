@@ -94,7 +94,9 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
                                         PassageLinkSpan link = (PassageLinkSpan) span;
                                         final Frame f = getLinkEndpoint(link);
                                         if (f != null) {
-                                            final ProgressDialog dialog = AppContext.showLoading(getActivity());
+                                            final ProgressDialog dialog = new ProgressDialog(getActivity());
+                                            dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                                            dialog.show();
                                             AppContext.navigator().open(f.getChapter().getProject(), new Navigator.OnSuccessListener() {
                                                 @Override
                                                 public void onSuccess() {

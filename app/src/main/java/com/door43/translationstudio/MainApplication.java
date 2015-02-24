@@ -389,23 +389,6 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Closes the progress dialog
-     * @param agressive if set to true the progress dialog will be closed the next time it opens if it is not currently shown
-     */
-    public void closeProgressDialog(boolean agressive) {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mClosingProgressDialog = false;
-            try {
-                mProgressDialog.dismiss();
-            } catch (Exception e) {
-                showToastMessage(e.getMessage());
-            }
-        } else if(mProgressDialog != null) {
-            mClosingProgressDialog = true;
-        }
-    }
-
-    /**
      * Checks if the ssh keys have already been generated
      * @return
      */
