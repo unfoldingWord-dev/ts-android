@@ -1597,13 +1597,15 @@ public class MainActivity extends TranslatorBaseActivity {
     private void insertVerseMarker(final int position) {
         Project p = AppContext.projectManager().getSelectedProject();
         int defaultVerseNumber = 1;
+        int endingVerse = 1;
         if(p != null) {
             if(p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
                 defaultVerseNumber = p.getSelectedChapter().getSelectedFrame().getStartingVerseNumber();
+                endingVerse = p.getSelectedChapter().getSelectedFrame().getEndingVerseNumber();
             }
         }
         final int minVerseNumber = defaultVerseNumber;
-        final int maxVerseNumber = p.getSelectedChapter().getSelectedFrame().getEndingVerseNumber();
+        final int maxVerseNumber = endingVerse;
         new ThreadableUI(this) {
             private int mSuggestedVerse = minVerseNumber;
 
@@ -1770,6 +1772,8 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param verse
      */
     private void updateVerseMarker(final VerseSpan verse, final int spanStart, final int spanEnd) {
+        if(!frameIsSelected()) return;
+
         // Create and show the dialog
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
