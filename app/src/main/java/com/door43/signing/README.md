@@ -1,5 +1,5 @@
 The security module provides tools for verifying signed content.
-Below is an example of loading and verifying a Signing Entity from it's Signing Identity file.
+Below is an example of loading and verifying a Signing Entity from it's Signing Identity file as well as verifying some signed content.
 
 ```
 try {
@@ -13,6 +13,21 @@ try {
         case VERIFIED:
             Log.d("CRYPTO", "The Signing Entity is valid!");
             Log.d("CRYPTO", se.organization.toString());
+
+            // verify signed content
+            InputStream sigStream = AppContext.context().getAssets().open("test_certs/signed_data/obs-en.sig");
+            String sigJson = FileUtilities.convertStreamToString(sigStream);
+            JSONArray json = new JSONArray(sigJson);
+            JSONObject sigObj = json.getJSONObject(0);
+            String sig = sigObj.getString("sig");
+
+            InputStream dataStream = AppContext.context().getAssets().open("test_certs/signed_data/obs-en.json");
+            byte[] data = Crypto.readInputStreamToBytes(dataStream);
+
+            Status contentStatus = se.verifyContent(sig, data);
+            if(contentStatus == Status.VERIFIED) {
+                Log.d("CRYPTO", "The content is verified");
+            }
             break;
         case FAILED:
             Log.d("CRYPTO", "The Signing Entity is INVALID!");
@@ -24,7 +39,3 @@ try {
     e.printStackTrace();
 }
 ```
-
-Below is an example of verifying some signed content with the Signing Entity above
-
-TODO: create example.

@@ -4,15 +4,18 @@ import com.door43.logging.Logger;
 
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by joel on 2/23/2015.
  */
 public class Organization {
 
-    public final String createdAt;
+    public final Date createdAt;
     public final String email;
-    public final String expiresAt;
-    public final String modifiedAt;
+    public final Date expiresAt;
+    public final Date modifiedAt;
     public final String name;
     public final String slug;
     public final String url;
@@ -27,7 +30,7 @@ public class Organization {
      * @param slug
      * @param url
      */
-    public Organization(String createdAt, String email, String expiresAt, String modifiedAt, String name, String slug, String url) {
+    public Organization(Date createdAt, String email, Date expiresAt, Date modifiedAt, String name, String slug, String url) {
         this.createdAt = createdAt;
         this.email = email;
         this.expiresAt = expiresAt;
@@ -50,7 +53,8 @@ public class Organization {
     public static Organization generate(String orgJsonString) {
         try {
             JSONObject json = new JSONObject(orgJsonString);
-            return new Organization(json.getString("created"), json.getString("email"), json.getString("expires"), json.getString("modified"), json.getString("org"), json.getString("slug"), json.getString("web"));
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            return new Organization(format.parse(json.getString("created")), json.getString("email"), format.parse(json.getString("expires")), format.parse(json.getString("modified")), json.getString("org"), json.getString("slug"), json.getString("web"));
         } catch (Exception e) {
             Logger.e(Organization.class.getName(), "Failed to load the organization information", e);
         }

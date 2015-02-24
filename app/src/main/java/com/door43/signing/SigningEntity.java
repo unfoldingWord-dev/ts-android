@@ -3,6 +3,10 @@ package com.door43.signing;
 import android.util.Base64;
 
 import com.door43.logging.Logger;
+import com.door43.translationstudio.util.FileUtilities;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +14,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.PublicKey;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * A Signing Identity represents an organization that has been registered to sign content.
@@ -21,7 +27,9 @@ public class SigningEntity {
     public final Organization organization;
     private final byte[] mData;
     private final byte[] mSignature;
-    private Crypto.Status mStatus;
+    private Status mStatus;
+
+
 
     /**
      * Creates a new Signing Entity
@@ -45,12 +53,32 @@ public class SigningEntity {
      * Checks the validation status of this Signing Entity
      * @return
      */
-    public Crypto.Status getStatus() {
+    public Status getStatus() {
         if(mStatus == null) {
-            // TODO: we need to ouse the root public key
             mStatus = Crypto.verifyECDSASignature(mCAPublicKey, mSignature, mData);
+            if(mStatus == Status.VERIFIED) {
+                // check if expired
+                if(new Date().after(organization.expiresAt)) {
+                    mStatus = Status.EXPIRED;
+                }
+            }
         }
         return mStatus;
+    }
+
+    /**
+     * Checks the validation status of the signed content.
+     * @param signature The signature of hte data as signed by the Se
+     * @param data The data that will be validated against the signature (the source translation)
+     * @return
+     */
+    public Status verifyContent(String signature, byte[] data) {
+        if(getStatus() == Status.VERIFIED) {
+            byte[] sig = Base64.decode(signature, Base64.NO_WRAP);
+            return verifyContent(sig, data);
+        } else {
+            return getStatus();
+        }
     }
 
     /**
@@ -59,9 +87,12 @@ public class SigningEntity {
      * @param data The data that will be validated against the signature (the source translation)
      * @return
      */
-    public Crypto.Status verifyContent(InputStream signature,  byte[] data) {
-        // TODO: impliment the verification of signed content
-        return Crypto.Status.FAILED;
+    public Status verifyContent(byte[] signature,  byte[] data) {
+        if(getStatus() == Status.VERIFIED) {
+            return Crypto.verifyECDSASignature(mPublicKey, signature, data);
+        } else {
+            return getStatus();
+        }
     }
 
     /**
@@ -116,7 +147,14 @@ public class SigningEntity {
                 Logger.e(SigningEntity.class.getName(), "Failed to concat Signing Entity key and organization", e);
                 return null;
             }
-            PublicKey key = Crypto.loadPublicECDSAKey(pkBuilder.toString());
+            byte[] keyBytes;
+            try {
+                keyBytes = Base64.decode(pkBuilder.toString().getBytes("UTF-8"), Base64.DEFAULT);
+            } catch (UnsupportedEncodingException e) {
+                Logger.e(SigningEntity.class.getName(), "Failed to read the public key", e);
+                return null;
+            }
+            PublicKey key = Crypto.loadPublicECDSAKey(keyBytes);
             byte[] signature = Base64.decode(sigBuilder.toString(), Base64.NO_WRAP);
             String orgJsonString = new String(Base64.decode(orgBuilder.toString(), Base64.NO_WRAP));
             Organization org = Organization.generate(orgJsonString);

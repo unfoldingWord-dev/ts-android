@@ -10,12 +10,17 @@ import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.signing.Status;
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.signing.Crypto;
 import com.door43.signing.SigningEntity;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -48,6 +53,21 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 case VERIFIED:
                     Log.d("CRYPTO", "The Signing Entity is valid!");
                     Log.d("CRYPTO", se.organization.toString());
+
+                    // verify signed content
+                    InputStream sigStream = AppContext.context().getAssets().open("test_certs/signed_data/obs-en.sig");
+                    String sigJson = FileUtilities.convertStreamToString(sigStream);
+                    JSONArray json = new JSONArray(sigJson);
+                    JSONObject sigObj = json.getJSONObject(0);
+                    String sig = sigObj.getString("sig");
+
+                    InputStream dataStream = AppContext.context().getAssets().open("test_certs/signed_data/obs-en.json");
+                    byte[] data = Crypto.readInputStreamToBytes(dataStream);
+
+                    Status contentStatus = se.verifyContent(sig, data);
+                    if(contentStatus == Status.VERIFIED) {
+                        Log.d("CRYPTO", "The content is verified");
+                    }
                     break;
                 case FAILED:
                     Log.d("CRYPTO", "The Signing Entity is INVALID!");
@@ -55,7 +75,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 default:
                     Log.d("CRYPTO", "The Signing Entity could not be verified.");
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         // -- end cert testing
