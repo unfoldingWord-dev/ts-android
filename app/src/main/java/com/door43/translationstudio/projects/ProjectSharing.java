@@ -142,63 +142,65 @@ public class ProjectSharing {
      * @return true if the import was successful
      */
     public static ProjectImport[] prepareArchiveImport(File archive) {
-        Map<String, ProjectImport> projectImports = new HashMap<String, ProjectImport>();
+        Map<String, ProjectImport> projectImports = new HashMap<>();
 
-        // validate extension
-        String[] name = archive.getName().split("\\.");
-        if(name[name.length - 1].equals(Project.PROJECT_EXTENSION)) {
-            long timestamp = System.currentTimeMillis();
-            File extractedDir = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
+        if(archive != null && archive.exists()) {
+            // validate extension
+            String[] name = archive.getName().split("\\.");
+            if (name[name.length - 1].equals(Project.PROJECT_EXTENSION)) {
+                long timestamp = System.currentTimeMillis();
+                File extractedDir = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.imported_projects_dir) + "/" + timestamp);
 
-            // extract the archive
-            if(!extractedDir.exists()) {
-                try {
-                    Zip.unzip(archive, extractedDir);
-                } catch (IOException e) {
-                    FileUtilities.deleteRecursive(extractedDir);
-                    Logger.e(ProjectSharing.class.getName(), "failed to extract the project archive", e);
-                    return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
-                }
-            }
-
-            File manifest = new File(extractedDir, "manifest.json");
-            if(manifest.exists() && manifest.isFile()) {
-                try {
-                    JSONObject manifestJson = new JSONObject(FileUtils.readFileToString(manifest));
-
-                    // load the source files
-                    if(manifestJson.has("source")) {
-                        File sourceDir = new File(extractedDir, manifestJson.getString("source"));
-                        if(sourceDir.exists()) {
-                            AppContext.projectManager().importSource(sourceDir);
-                        }
+                // extract the archive
+                if (!extractedDir.exists()) {
+                    try {
+                        Zip.unzip(archive, extractedDir);
+                    } catch (IOException e) {
+                        FileUtilities.deleteRecursive(extractedDir);
+                        Logger.e(ProjectSharing.class.getName(), "failed to extract the project archive", e);
+                        return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
                     }
+                }
 
-                    // load the list of projects to import
-                    if(manifestJson.has("projects")) {
-                        JSONArray projectsJson = manifestJson.getJSONArray("projects");
-                        for(int i=0; i<projectsJson.length(); i++) {
-                            JSONObject projJson = projectsJson.getJSONObject(i);
-                            if(projJson.has("path") && projJson.has("project") && projJson.has("target_language")) {
-                                // create new or load existing project import
-                                ProjectImport pi = new ProjectImport(projJson.getString("project"), extractedDir);
-                                if(projectImports.containsKey(pi.projectId)) {
-                                    pi = projectImports.get(pi.projectId);
-                                } else {
-                                    projectImports.put(pi.projectId, pi);
-                                }
-                                // prepare the translation import
-                                boolean hadTranslationWarnings = prepareImport(pi, projJson.getString("target_language"), new File(extractedDir, projJson.getString("path")));
-                                if(hadTranslationWarnings) {
-                                    pi.setWarning("Some translations already exist");
+                File manifest = new File(extractedDir, "manifest.json");
+                if (manifest.exists() && manifest.isFile()) {
+                    try {
+                        JSONObject manifestJson = new JSONObject(FileUtils.readFileToString(manifest));
+
+                        // load the source files
+                        if (manifestJson.has("source")) {
+                            File sourceDir = new File(extractedDir, manifestJson.getString("source"));
+                            if (sourceDir.exists()) {
+                                AppContext.projectManager().importSource(sourceDir);
+                            }
+                        }
+
+                        // load the list of projects to import
+                        if (manifestJson.has("projects")) {
+                            JSONArray projectsJson = manifestJson.getJSONArray("projects");
+                            for (int i = 0; i < projectsJson.length(); i++) {
+                                JSONObject projJson = projectsJson.getJSONObject(i);
+                                if (projJson.has("path") && projJson.has("project") && projJson.has("target_language")) {
+                                    // create new or load existing project import
+                                    ProjectImport pi = new ProjectImport(projJson.getString("project"), extractedDir);
+                                    if (projectImports.containsKey(pi.projectId)) {
+                                        pi = projectImports.get(pi.projectId);
+                                    } else {
+                                        projectImports.put(pi.projectId, pi);
+                                    }
+                                    // prepare the translation import
+                                    boolean hadTranslationWarnings = prepareImport(pi, projJson.getString("target_language"), new File(extractedDir, projJson.getString("path")));
+                                    if (hadTranslationWarnings) {
+                                        pi.setWarning("Some translations already exist");
+                                    }
                                 }
                             }
                         }
+                    } catch (JSONException e) {
+                        Logger.e(ProjectSharing.class.getName(), "failed to parse the manifest", e);
+                    } catch (IOException e) {
+                        Logger.e(ProjectSharing.class.getName(), "failed to read the manifest file", e);
                     }
-                } catch (JSONException e) {
-                    Logger.e(ProjectSharing.class.getName(), "failed to parse the manifest", e);
-                } catch (IOException e) {
-                    Logger.e(ProjectSharing.class.getName(), "failed to read the manifest file", e);
                 }
             }
         }
@@ -247,7 +249,7 @@ public class ProjectSharing {
                 ProjectImport pi = new ProjectImport(translationInfo.projectId, extractedDirectory);
                 prepareImport(pi, translationInfo.languageId, importDirectory);
                 // TODO: for now we are just blindly importing legacy projects (dangerous). We'll need to update this method as well as the DokuWiki import method in order to properly handle these legacy projects
-                importProject(pi);
+                success = importProject(pi);
                 cleanImport(pi);
             }
             FileUtilities.deleteRecursive(extractedDirectory);
@@ -953,6 +955,8 @@ public class ProjectSharing {
 
     /**
      * Imports a DokuWiki file into a project.
+     * This works files with a single translation/project as well as those with multiple projects/translations.
+     * If multiple translations exist in a file they should each include their own project and language tags as in the case of single translations
      * @param file the doku wiki file
      * @return
      */
@@ -979,12 +983,16 @@ public class ProjectSharing {
                             // retrieve project
                             project = AppContext.projectManager().getProject(line);
                             if(project == null) return false;
+
+                            // load the project source
+                            AppContext.projectManager().fetchProjectSource(project, false);
+
                             // place this translation into the correct language
                             project.setSelectedTargetLanguage(targetLanguage.getId());
                         } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
                             // retrieve chapter reference (end of chapter)
-                            Chapter c =  project.getChapter(chapterId);
-                            if(c != null) {
+                            Chapter c = project.getChapter(chapterId);
+                            if (c != null) {
                                 c.setReferenceTranslation(line);
                                 if (!chapterTitle.isEmpty()) {
                                     c.setTitleTranslation(chapterTitle);
@@ -998,14 +1006,22 @@ public class ProjectSharing {
                                     f.save();
                                 }
                             } else {
-                                Logger.w(ProjectSharing.class.getName(), "importDokuWiki: unknown chapter "+chapterId);
+                                Logger.w(ProjectSharing.class.getName(), "importDokuWiki: unknown chapter " + chapterId);
                             }
                             chapterId = "";
                             frameId = "";
                             frameBuffer.setLength(0);
                         } else {
-                            // unexpected input
-                            return false;
+                            // start loading a new translation
+                            project = null;
+                            chapterId = "";
+                            frameId = "";
+                            chapterTitle = "";
+                            frameBuffer.setLength(0);
+
+                            // retrieve the translation language
+                            targetLanguage = AppContext.projectManager().getLanguageByName(line);
+                            if(targetLanguage == null) return false;
                         }
                     } else if(line.length() >= 12 && line.substring(0, 6).equals("======")) {
                         // start of a new chapter

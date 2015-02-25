@@ -313,139 +313,146 @@ public class SharingActivity extends TranslatorBaseActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
             if(data != null) {
-                try {
-                    final File file = new File(data.getData().getPath());
-                    if (file.exists() && file.isFile()) {
-                        String[] name = file.getName().split("\\.");
-                        Boolean success = false;
-                        if (name[name.length - 1].toLowerCase().equals(Project.PROJECT_EXTENSION)) {
-                            // import translationStudio project
-                            mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                            mProgressDialog.show();
-                            new ThreadableUI(this) {
+                File file = new File(data.getData().getPath());
+                importTranslation(file);
+            }
+        }
+    }
 
-                                @Override
-                                public void onStop() {
+    /**
+     * Detects the format of the file and imports it
+     * @param file
+     */
+    public void importTranslation(final File file) {
+        try {
+            if (file.exists() && file.isFile()) {
+                String[] name = file.getName().split("\\.");
+                if (name[name.length - 1].toLowerCase().equals(Project.PROJECT_EXTENSION)) {
+                    // import translationStudio project
+                    mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                    mProgressDialog.show();
+                    new ThreadableUI(this) {
 
+                        @Override
+                        public void onStop() {
+
+                        }
+
+                        @Override
+                        public void run() {
+                            ProjectImport[] importRequests = ProjectSharing.prepareArchiveImport(file);
+                            if (importRequests.length > 0) {
+                                boolean importWarnings = false;
+                                for (ProjectImport s : importRequests) {
+                                    if (!s.isApproved()) {
+                                        importWarnings = true;
+                                    }
                                 }
-
-                                @Override
-                                public void run() {
-                                    ProjectImport[] importRequests = ProjectSharing.prepareArchiveImport(file);
-                                    if (importRequests.length > 0) {
-                                        boolean importWarnings = false;
-                                        for (ProjectImport s : importRequests) {
-                                            if (!s.isApproved()) {
-                                                importWarnings = true;
-                                            }
-                                        }
-                                        if (importWarnings) {
-                                            // review the import status in a dialog
-                                            FragmentTransaction ft = getFragmentManager().beginTransaction();
-                                            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-                                            if (prev != null) {
-                                                ft.remove(prev);
-                                            }
-                                            ft.addToBackStack(null);
-                                            app().closeToastMessage();
-                                            ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
-                                            newFragment.setImportRequests(importRequests);
-                                            newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
-                                                @Override
-                                                public void onOk(ProjectImport[] requests) {
-                                                    mProgressDialog.setMessage(getResources().getString(R.string.loading));
-                                                    mProgressDialog.show();
-                                                    for (ProjectImport r : requests) {
-                                                        ProjectSharing.importProject(r);
-                                                    }
-                                                    ProjectSharing.cleanImport(requests);
-                                                    AppContext.context().showToastMessage(R.string.success);
-                                                    mProgressDialog.dismiss();
-                                                }
-
-                                                @Override
-                                                public void onCancel(ProjectImport[] requests) {
-
-                                                }
-                                            });
-                                            newFragment.show(ft, "dialog");
-                                        } else {
-                                            // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
-                                            for (ProjectImport r : importRequests) {
+                                if (importWarnings) {
+                                    // review the import status in a dialog
+                                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                    Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                                    if (prev != null) {
+                                        ft.remove(prev);
+                                    }
+                                    ft.addToBackStack(null);
+                                    app().closeToastMessage();
+                                    ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
+                                    newFragment.setImportRequests(importRequests);
+                                    newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+                                        @Override
+                                        public void onOk(ProjectImport[] requests) {
+                                            mProgressDialog.setMessage(getResources().getString(R.string.loading));
+                                            mProgressDialog.show();
+                                            for (ProjectImport r : requests) {
                                                 ProjectSharing.importProject(r);
                                             }
-                                            ProjectSharing.cleanImport(importRequests);
-                                            app().showToastMessage(R.string.success);
+                                            ProjectSharing.cleanImport(requests);
+                                            AppContext.context().showToastMessage(R.string.success);
+                                            mProgressDialog.dismiss();
                                         }
-                                    } else {
-                                        ProjectSharing.cleanImport(importRequests);
-                                        app().showToastMessage(R.string.translation_import_failed);
+
+                                        @Override
+                                        public void onCancel(ProjectImport[] requests) {
+
+                                        }
+                                    });
+                                    newFragment.show(ft, "dialog");
+                                } else {
+                                    // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
+                                    for (ProjectImport r : importRequests) {
+                                        ProjectSharing.importProject(r);
                                     }
+                                    ProjectSharing.cleanImport(importRequests);
+                                    app().showToastMessage(R.string.success);
                                 }
-
-                                @Override
-                                public void onPostExecute() {
-                                    mProgressDialog.dismiss();
-                                }
-                            }.start();
-                        } else if (name[name.length - 1].toLowerCase().equals("zip")) {
-                            // import DokuWiki files
-                            mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                            mProgressDialog.show();
-                            new ThreadableUI(this) {
-
-                                @Override
-                                public void onStop() {
-
-                                }
-
-                                @Override
-                                public void run() {
-                                    if (ProjectSharing.importDokuWikiArchive(file)) {
-                                        app().showToastMessage(R.string.success);
-                                    } else {
-                                        app().showToastMessage(R.string.translation_import_failed);
-                                    }
-                                }
-
-                                @Override
-                                public void onPostExecute() {
-                                    mProgressDialog.dismiss();
-                                }
-                            }.start();
-                        } else if (name[name.length - 1].toLowerCase().equals("txt")) {
-                            // import legacy 1.x DokuWiki files
-                            mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                            mProgressDialog.show();
-                            new ThreadableUI(this) {
-
-                                @Override
-                                public void onStop() {
-
-                                }
-
-                                @Override
-                                public void run() {
-                                    if (ProjectSharing.importDokuWiki(file)) {
-                                        app().showToastMessage(R.string.success);
-                                    } else {
-                                        app().showToastMessage(R.string.translation_import_failed);
-                                    }
-                                }
-
-                                @Override
-                                public void onPostExecute() {
-                                    mProgressDialog.dismiss();
-                                }
-                            }.start();
+                            } else {
+                                ProjectSharing.cleanImport(importRequests);
+                                app().showToastMessage(R.string.translation_import_failed);
+                            }
                         }
-                    } else {
-                        app().showToastMessage(R.string.missing_file);
-                    }
-                } catch(Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to read file", e);
+
+                        @Override
+                        public void onPostExecute() {
+                            mProgressDialog.dismiss();
+                        }
+                    }.start();
+                } else if (name[name.length - 1].toLowerCase().equals("zip")) {
+                    // import DokuWiki files
+                    mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                    mProgressDialog.show();
+                    new ThreadableUI(this) {
+
+                        @Override
+                        public void onStop() {
+
+                        }
+
+                        @Override
+                        public void run() {
+                            if (ProjectSharing.importDokuWikiArchive(file)) {
+                                app().showToastMessage(R.string.success);
+                            } else {
+                                app().showToastMessage(R.string.translation_import_failed);
+                            }
+                        }
+
+                        @Override
+                        public void onPostExecute() {
+                            mProgressDialog.dismiss();
+                        }
+                    }.start();
+                } else if (name[name.length - 1].toLowerCase().equals("txt")) {
+                    // import legacy 1.x DokuWiki files
+                    mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                    mProgressDialog.show();
+                    new ThreadableUI(this) {
+
+                        @Override
+                        public void onStop() {
+
+                        }
+
+                        @Override
+                        public void run() {
+                            if (ProjectSharing.importDokuWiki(file)) {
+                                app().showToastMessage(R.string.success);
+                            } else {
+                                app().showToastMessage(R.string.translation_import_failed);
+                            }
+                        }
+
+                        @Override
+                        public void onPostExecute() {
+                            mProgressDialog.dismiss();
+                        }
+                    }.start();
                 }
+            } else {
+                app().showToastMessage(R.string.missing_file);
             }
+        } catch(Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to read file", e);
         }
     }
 }
