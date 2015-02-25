@@ -1,5 +1,7 @@
 package com.door43.translationstudio.util;
 
+import android.os.Build;
+import android.os.Environment;
 import android.provider.Settings;
 
 import com.door43.util.Logger;
@@ -8,6 +10,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
+import com.door43.util.root.Root;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
@@ -115,5 +118,36 @@ public class AppContext {
             folder.mkdir();
         }
         return folder;
+    }
+
+    /**
+     * Checks if the external media is mounted and writeable
+     * @return
+     */
+    public static boolean isExternalMediaAvailable() {
+        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
+            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+            return removeableMediaInfo != null;
+        } else {
+            return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+        }
+    }
+
+    /**
+     * Returns the file to the external public downloads directory
+     * @return
+     */
+    public static File getPublicDownloadsDirectory() {
+        File dir;
+        // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
+            StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
+            dir = new File("/storage/" + removeableMediaInfo.getMountName() + "/Download/translationStudio");
+        } else {
+            dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
+        }
+        dir.mkdirs();
+        return dir;
     }
 }

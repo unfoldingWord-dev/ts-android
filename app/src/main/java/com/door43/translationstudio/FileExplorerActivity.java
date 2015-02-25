@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +14,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.Logger;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -47,12 +50,9 @@ public class FileExplorerActivity extends TranslatorBaseActivity {
         // TODO: support fetching files from the internal downloads directory
 
         // external sd
-        StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-        if(removeableMediaInfo != null) {
-            // write files to the removeable sd card
-            mPath = new File("/storage/" + removeableMediaInfo.getMountName());
+        if (AppContext.isExternalMediaAvailable()) {
+            mPath = AppContext.getPublicDownloadsDirectory();
         } else {
-            // the external storage could not be found
             finish();
         }
 

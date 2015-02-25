@@ -5,7 +5,9 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.FileProvider;
@@ -26,6 +28,7 @@ import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.Logger;
 import com.squareup.otto.Subscribe;
 
 import org.apache.commons.io.FileUtils;
@@ -105,8 +108,6 @@ public class SharingActivity extends TranslatorBaseActivity {
         final Project p = AppContext.projectManager().getSelectedProject();
         final File internalDestDir = new File(getCacheDir(), "sharing/");
 
-        // NOTE: we check again in the threads just in case they removed the card while this activity was open
-        StorageUtils.StorageInfo removeableMedia = StorageUtils.getRemoveableMediaDevice();
         internalDestDir.mkdirs();
 
         // load export format
@@ -187,11 +188,11 @@ public class SharingActivity extends TranslatorBaseActivity {
         }, exportToAppEnabled, exportToAppMessage));
 
 
-        boolean exportToSDEnabled = removeableMedia != null;
+        boolean externalMediaAvailable = AppContext.isExternalMediaAvailable();
         int exportToSDMessage = R.string.missing_external_storage;
         if(p == null) {
             // TODO: eventually this export tool needs to allow the user to choose which project(s) to export. Then we'll just need to check if there are any translations available in the current projects
-            exportToSDEnabled = false;
+            externalMediaAvailable = false;
             exportToSDMessage = R.string.choose_a_project;
         }
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new ToolItem.ToolAction() {
@@ -215,11 +216,10 @@ public class SharingActivity extends TranslatorBaseActivity {
                         String library = ProjectSharing.generateLibrary(AppContext.projectManager().getProjects());
 
                         // try to locate the removable sd card
-                        StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-                        if(removeableMediaInfo != null) {
+                        if(AppContext.isExternalMediaAvailable()) {
                             try {
                                 // TODO: this does not seem to work on all devices.
-                                File externalDestDir = new File("/storage/" + removeableMediaInfo.getMountName() + "/TranslationStudio/");
+                                File externalDestDir = AppContext.getPublicDownloadsDirectory();
                                 String archivePath;
 
                                 // export the project
@@ -262,15 +262,22 @@ public class SharingActivity extends TranslatorBaseActivity {
                 };
                 thread.start();
             }
-        }, exportToSDEnabled, exportToSDMessage));
+        }, externalMediaAvailable, exportToSDMessage));
 
         mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_sd), "", R.drawable.ic_icon_import_sd, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                Intent intent = new Intent(me, FileExplorerActivity.class);
-                startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
+                if(AppContext.isExternalMediaAvailable()) {
+                    // write files to the removeable sd card
+                    File path = AppContext.getPublicDownloadsDirectory();
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setDataAndType(Uri.fromFile(path), "file/*");
+                    startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
+                } else {
+                    // the external storage could not be found
+                }
             }
-        }, removeableMedia != null, R.string.missing_external_storage));
+        }, AppContext.isExternalMediaAvailable(), R.string.missing_external_storage));
 
         // p2p sharing requires an active network connection.
         // TODO: Later we may need to adjust this since bluetooth and other services do not require an actual network.
@@ -306,133 +313,137 @@ public class SharingActivity extends TranslatorBaseActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
             if(data != null) {
-                final File file = new File(data.getExtras().getString("path"));
-                if(file.exists() && file.isFile()) {
-                    String[] name = file.getName().split("\\.");
-                    Boolean success = false;
-                    if (name[name.length - 1].toLowerCase().equals(Project.PROJECT_EXTENSION)) {
-                        // import translationStudio project
-                        mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                        mProgressDialog.show();
-                        new ThreadableUI(this) {
+                try {
+                    final File file = new File(data.getData().getPath());
+                    if (file.exists() && file.isFile()) {
+                        String[] name = file.getName().split("\\.");
+                        Boolean success = false;
+                        if (name[name.length - 1].toLowerCase().equals(Project.PROJECT_EXTENSION)) {
+                            // import translationStudio project
+                            mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                            mProgressDialog.show();
+                            new ThreadableUI(this) {
 
-                            @Override
-                            public void onStop() {
+                                @Override
+                                public void onStop() {
 
-                            }
+                                }
 
-                            @Override
-                            public void run() {
-                                ProjectImport[] importRequests = ProjectSharing.prepareArchiveImport(file);
-                                if (importRequests.length > 0) {
-                                    boolean importWarnings = false;
-                                    for(ProjectImport s:importRequests) {
-                                        if(!s.isApproved()) {
-                                            importWarnings = true;
+                                @Override
+                                public void run() {
+                                    ProjectImport[] importRequests = ProjectSharing.prepareArchiveImport(file);
+                                    if (importRequests.length > 0) {
+                                        boolean importWarnings = false;
+                                        for (ProjectImport s : importRequests) {
+                                            if (!s.isApproved()) {
+                                                importWarnings = true;
+                                            }
                                         }
-                                    }
-                                    if(importWarnings) {
-                                        // review the import status in a dialog
-                                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-                                        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-                                        if (prev != null) {
-                                            ft.remove(prev);
-                                        }
-                                        ft.addToBackStack(null);
-                                        app().closeToastMessage();
-                                        ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
-                                        newFragment.setImportRequests(importRequests);
-                                        newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
-                                            @Override
-                                            public void onOk(ProjectImport[] requests) {
-                                                mProgressDialog.setMessage(getResources().getString(R.string.loading));
-                                                mProgressDialog.show();
-                                                for(ProjectImport r:requests) {
-                                                    ProjectSharing.importProject(r);
+                                        if (importWarnings) {
+                                            // review the import status in a dialog
+                                            FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                                            if (prev != null) {
+                                                ft.remove(prev);
+                                            }
+                                            ft.addToBackStack(null);
+                                            app().closeToastMessage();
+                                            ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
+                                            newFragment.setImportRequests(importRequests);
+                                            newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+                                                @Override
+                                                public void onOk(ProjectImport[] requests) {
+                                                    mProgressDialog.setMessage(getResources().getString(R.string.loading));
+                                                    mProgressDialog.show();
+                                                    for (ProjectImport r : requests) {
+                                                        ProjectSharing.importProject(r);
+                                                    }
+                                                    ProjectSharing.cleanImport(requests);
+                                                    AppContext.context().showToastMessage(R.string.success);
+                                                    mProgressDialog.dismiss();
                                                 }
-                                                ProjectSharing.cleanImport(requests);
-                                                AppContext.context().showToastMessage(R.string.success);
-                                                mProgressDialog.dismiss();
-                                            }
 
-                                            @Override
-                                            public void onCancel(ProjectImport[] requests) {
+                                                @Override
+                                                public void onCancel(ProjectImport[] requests) {
 
+                                                }
+                                            });
+                                            newFragment.show(ft, "dialog");
+                                        } else {
+                                            // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
+                                            for (ProjectImport r : importRequests) {
+                                                ProjectSharing.importProject(r);
                                             }
-                                        });
-                                        newFragment.show(ft, "dialog");
-                                    } else {
-                                        // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
-                                        for(ProjectImport r:importRequests) {
-                                            ProjectSharing.importProject(r);
+                                            ProjectSharing.cleanImport(importRequests);
+                                            app().showToastMessage(R.string.success);
                                         }
+                                    } else {
                                         ProjectSharing.cleanImport(importRequests);
-                                        app().showToastMessage(R.string.success);
+                                        app().showToastMessage(R.string.translation_import_failed);
                                     }
-                                } else {
-                                    ProjectSharing.cleanImport(importRequests);
-                                    app().showToastMessage(R.string.translation_import_failed);
                                 }
-                            }
 
-                            @Override
-                            public void onPostExecute() {
-                                mProgressDialog.dismiss();
-                            }
-                        }.start();
-                    } else if(name[name.length - 1].toLowerCase().equals("zip")) {
-                        // import DokuWiki files
-                        mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                        mProgressDialog.show();
-                        new ThreadableUI(this) {
-
-                            @Override
-                            public void onStop() {
-
-                            }
-
-                            @Override
-                            public void run() {
-                                if(ProjectSharing.importDokuWikiArchive(file)) {
-                                    app().showToastMessage(R.string.success);
-                                } else {
-                                    app().showToastMessage(R.string.translation_import_failed);
+                                @Override
+                                public void onPostExecute() {
+                                    mProgressDialog.dismiss();
                                 }
-                            }
+                            }.start();
+                        } else if (name[name.length - 1].toLowerCase().equals("zip")) {
+                            // import DokuWiki files
+                            mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                            mProgressDialog.show();
+                            new ThreadableUI(this) {
 
-                            @Override
-                            public void onPostExecute() {
-                                mProgressDialog.dismiss();
-                            }
-                        }.start();
-                    } else if(name[name.length - 1].toLowerCase().equals("txt")) {
-                        // import legacy 1.x DokuWiki files
-                        mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                        mProgressDialog.show();
-                        new ThreadableUI(this) {
+                                @Override
+                                public void onStop() {
 
-                            @Override
-                            public void onStop() {
-
-                            }
-
-                            @Override
-                            public void run() {
-                                if(ProjectSharing.importDokuWiki(file)) {
-                                    app().showToastMessage(R.string.success);
-                                } else {
-                                    app().showToastMessage(R.string.translation_import_failed);
                                 }
-                            }
 
-                            @Override
-                            public void onPostExecute() {
-                                mProgressDialog.dismiss();
-                            }
-                        }.start();
+                                @Override
+                                public void run() {
+                                    if (ProjectSharing.importDokuWikiArchive(file)) {
+                                        app().showToastMessage(R.string.success);
+                                    } else {
+                                        app().showToastMessage(R.string.translation_import_failed);
+                                    }
+                                }
+
+                                @Override
+                                public void onPostExecute() {
+                                    mProgressDialog.dismiss();
+                                }
+                            }.start();
+                        } else if (name[name.length - 1].toLowerCase().equals("txt")) {
+                            // import legacy 1.x DokuWiki files
+                            mProgressDialog.setMessage(getResources().getString(R.string.import_project));
+                            mProgressDialog.show();
+                            new ThreadableUI(this) {
+
+                                @Override
+                                public void onStop() {
+
+                                }
+
+                                @Override
+                                public void run() {
+                                    if (ProjectSharing.importDokuWiki(file)) {
+                                        app().showToastMessage(R.string.success);
+                                    } else {
+                                        app().showToastMessage(R.string.translation_import_failed);
+                                    }
+                                }
+
+                                @Override
+                                public void onPostExecute() {
+                                    mProgressDialog.dismiss();
+                                }
+                            }.start();
+                        }
+                    } else {
+                        app().showToastMessage(R.string.missing_file);
                     }
-                } else {
-                    app().showToastMessage(R.string.missing_file);
+                } catch(Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to read file", e);
                 }
             }
         }
