@@ -984,17 +984,21 @@ public class ProjectSharing {
                         } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
                             // retrieve chapter reference (end of chapter)
                             Chapter c =  project.getChapter(chapterId);
-                            c.setReferenceTranslation(line);
-                            if(!chapterTitle.isEmpty()) {
-                                c.setTitleTranslation(chapterTitle);
-                            }
-                            c.save();
+                            if(c != null) {
+                                c.setReferenceTranslation(line);
+                                if (!chapterTitle.isEmpty()) {
+                                    c.setTitleTranslation(chapterTitle);
+                                }
+                                c.save();
 
-                            // save the last frame of the chapter
-                            if(frameBuffer.length() > 0) {
-                                Frame f = c.getFrame(frameId);
-                                f.setTranslation(frameBuffer.toString().trim());
-                                f.save();
+                                // save the last frame of the chapter
+                                if (frameBuffer.length() > 0) {
+                                    Frame f = c.getFrame(frameId);
+                                    f.setTranslation(frameBuffer.toString().trim());
+                                    f.save();
+                                }
+                            } else {
+                                Logger.w(ProjectSharing.class.getName(), "importDokuWiki: unknown chapter "+chapterId);
                             }
                             chapterId = "";
                             frameId = "";
