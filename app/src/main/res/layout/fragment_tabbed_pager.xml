@@ -6,12 +6,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
-
-    <!--<com.door43.slidingtabs.SlidingTabLayout-->
-        <!--android:id="@+id/sliding_tabs"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--/>-->
     <com.astuetz.PagerSlidingTabStrip
         android:id="@+id/sliding_tabs"
         android:layout_width="match_parent"

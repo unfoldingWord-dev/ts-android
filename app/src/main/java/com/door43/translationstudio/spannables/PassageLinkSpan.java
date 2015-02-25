@@ -85,12 +85,23 @@ public class PassageLinkSpan extends Span {
      */
     private void explodeAddress(String address) {
         String[] parts = address.split(":");
-        if(parts.length == 6) {
+        if(parts.length == 6 && parts[1].equals("bible")) {
+            // example: en:bible:notes:gen:03:04
             mLanguageId = parts[0];
 
             mProjectId = parts[3];
             mChapterId = parts[4];
             mFrameId = parts[5];
+        } else if(parts.length == 5 && parts[3].equals("frames")) {
+            // example: en:obs:notes:frames:01-11
+            String[] chapterFrame = parts[4].split("-");
+            if(chapterFrame.length == 2) {
+                mLanguageId = parts[0];
+                mProjectId = parts[1];
+                mChapterId = chapterFrame[0];
+                mFrameId = chapterFrame[1];
+            }
+
         } else {
             Logger.w(this.getClass().getName(), "invalid passage link address "+address);
         }
