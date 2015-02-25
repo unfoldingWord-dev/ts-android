@@ -82,7 +82,6 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
      * Initiates the actual upload
      */
     private void upload() {
-        // TODO: we need to upload the profile as well
         // prepare upload
         app().showProgressDialog(R.string.preparing_upload);
         AppContext.projectManager().getSelectedProject().commit(new Project.OnCommitComplete() {

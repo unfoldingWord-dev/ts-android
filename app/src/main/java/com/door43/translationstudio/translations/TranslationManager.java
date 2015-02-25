@@ -16,6 +16,7 @@ import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TCPClient;
+import com.door43.util.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +60,10 @@ public class TranslationManager implements TCPClient.TcpListener {
      */
     private void pushSelectedProjectRepo() {
         Project p = AppContext.projectManager().getSelectedProject();
+
+        if(p.translationIsReady()) {
+            Logger.i(this.getClass().getName(), "Publishing project " + p.getId() + " to the server");
+        }
 
         final String remotePath = getRemotePath(p, p.getSelectedTargetLanguage());
         final Repo repo = new Repo(p.getRepositoryPath());
