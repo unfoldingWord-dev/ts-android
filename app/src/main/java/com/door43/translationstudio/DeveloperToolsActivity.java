@@ -1,23 +1,33 @@
 package com.door43.translationstudio;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class DeveloperToolsActivity extends TranslatorBaseActivity {
@@ -94,18 +104,144 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
             public void run() {
                 ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
                 dialog.setMessage(getResources().getString(R.string.loading));
+                dialog.show();
                 AppContext.context().generateKeys();
                 dialog.dismiss();
                 AppContext.context().showToastMessage(R.string.success);
             }
         }));
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.read_debugging_log), getResources().getString(R.string.read_debugging_log_description), 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                final ProgressDialog progress = new ProgressDialog(DeveloperToolsActivity.this);
+                progress.setMessage(getResources().getString(R.string.loading));
+                progress.show();
+
+                final Dialog dialog = new Dialog(DeveloperToolsActivity.this);
+                dialog.setTitle("Logs");
+
+                // begin loading logs in thread for better performance
+                final Handler handle = new Handler(Looper.getMainLooper());
+                new ThreadableUI(DeveloperToolsActivity.this) {
+                    String logText;
+
+                    @Override
+                    public void onStop() {
+                        handle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progress.dismiss();
+                                dialog.dismiss();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void run() {
+                        try {
+                            logText = FileUtils.readFileToString(Logger.getLogFile());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            logText = "We couldn't find any logs.";
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+                        TextView text = new TextView(DeveloperToolsActivity.this);
+                        text.setVerticalScrollBarEnabled(true);
+                        text.setMovementMethod(ScrollingMovementMethod.getInstance());
+                        text.setPadding(10, 10, 10, 10);
+                        text.setText(logText);
+                        dialog.setContentView(text);
+
+                        progress.dismiss();
+                        dialog.show();
+                    }
+                }.start();
+            }
+        }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                AppContext.context().showToastMessage("not implimented yet");
-                // TODO: perform the forced update. We'll need to update the project manager to support this.
+                final Project[] projects = AppContext.projectManager().getProjects();
+
+                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setIndeterminate(true);
+                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                dialog.setMax(projects.length);
+                dialog.setMessage(getResources().getString(R.string.downloading_updates));
+
+                final Handler handle = new Handler(Looper.getMainLooper());
+
+                final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
+
+                    @Override
+                    public void onStop() {
+                        handle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.dismiss();
+                            }
+                        });
+                        AppContext.context().showToastMessage("Download was canceled");
+                    }
+
+                    @Override
+                    public void run() {
+                        for(int i=0; i<projects.length; i ++) {
+                            if(isInterrupted()) break;
+                            // update progress
+                            final int progress = i;
+                            final String title = projects[i].getId();
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setIndeterminate(false);
+                                    dialog.setProgress(progress);
+                                    dialog.setMessage("downloading source for "+title);
+                                }
+                            });
+
+                            // TODO: use callback to update secondary progress bar.
+                            AppContext.projectManager().downloadProjectUpdates(projects[i], true);
+                        }
+
+                        // reload the select project source
+                        if(AppContext.projectManager().getSelectedProject() != null) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setProgress(dialog.getMax());
+                                    dialog.setMessage("reloading current project");
+                                }
+                            });
+                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+                        dialog.dismiss();
+                        AppContext.context().showToastMessage(R.string.success);
+                    }
+                };
+
+                // allow the user to cancel the dialog
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        thread.stop();
+                    }
+                });
+                dialog.setSecondaryProgress(dialog.getMax()/2); // just for testing
+                dialog.show();
+
+                thread.start();
             }
-        }, false, 0));
+        }));
     }
 
     /**

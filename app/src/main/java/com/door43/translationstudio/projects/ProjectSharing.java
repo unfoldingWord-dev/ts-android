@@ -650,7 +650,7 @@ public class ProjectSharing {
                     File languageSourceDir = new File(projectSourceDir, l.getId());
                     languageSourceDir.mkdirs();
                     File resCatFile = new File(languageSourceDir, "resources_catalog.json");
-                    String resources = ds.fetchResourceCatalog(p.getId(), l.getId(), false);
+                    String resources = ds.fetchResourceCatalog(p.getId(), l.getId(), false, false);
                     FileUtils.writeStringToFile(resCatFile, resources);
 
                     for(Resource r:l.getResources()) {
@@ -659,17 +659,17 @@ public class ProjectSharing {
 
                         // terms
                         File termsFile = new File(resourceDir, "terms.json");
-                        String terms = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false);
+                        String terms = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false, false);
                         FileUtils.writeStringToFile(termsFile, terms);
 
                         // source
                         File sourceFile = new File(resourceDir, "source.json");
-                        String source = ds.fetchSource(p.getId(), l.getId(), r.getId(), false);
+                        String source = ds.fetchSource(p.getId(), l.getId(), r.getId(), false, false);
                         FileUtils.writeStringToFile(sourceFile, source);
 
                         // notes
                         File notesFile = new File(resourceDir, "notes.json");
-                        String notes = ds.fetchNotes(p.getId(), l.getId(), r.getId(), false);
+                        String notes = ds.fetchNotes(p.getId(), l.getId(), r.getId(), false, false);
                         FileUtils.writeStringToFile(notesFile, notes);
 
                         // images

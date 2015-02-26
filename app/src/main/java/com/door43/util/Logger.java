@@ -166,7 +166,7 @@ public class Logger
             // Gets the log file from the root of the primary storage. If it does
             // not exist, the file is created.
             // TODO: this path should be some place global
-            File logFile = new File(mContext.getExternalCacheDir(), "log.txt");
+            File logFile = getLogFile();
             if (!logFile.exists()) {
                 logFile.getParentFile().mkdirs();
                 logFile.createNewFile();
@@ -209,5 +209,13 @@ public class Logger
         {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Returns the log file
+     * @return
+     */
+    public static File getLogFile() {
+        return new File(mContext.getExternalCacheDir(), "log.txt");
     }
 }

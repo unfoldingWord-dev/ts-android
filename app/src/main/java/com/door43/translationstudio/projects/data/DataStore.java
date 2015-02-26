@@ -47,7 +47,7 @@ public class DataStore {
      */
     public void importProject(String json) {
         File file = new File(cachedAssetsDir(),projectCatalogPath());
-        String catJson = fetchProjectCatalog(false);
+        String catJson = fetchProjectCatalog(false, false);
         try {
             JSONArray cat = new JSONArray();
             if(catJson != null) {
@@ -68,7 +68,7 @@ public class DataStore {
      */
     public void importSourceLanguage(String projectId, String json) {
         File file = new File(cachedAssetsDir(), sourceLanguageCatalogPath(projectId));
-        String catJson = fetchSourceLanguageCatalog(projectId, false);
+        String catJson = fetchSourceLanguageCatalog(projectId, false, false);
         try {
             JSONArray cat = new JSONArray();
             if(catJson != null) {
@@ -90,7 +90,7 @@ public class DataStore {
      */
     public void importResource(String projectId, String languageId, String json) {
         File file = new File(cachedAssetsDir(), resourceCatalogPath(projectId, languageId));
-        String catJson = fetchResourceCatalog(projectId, languageId, false);
+        String catJson = fetchResourceCatalog(projectId, languageId, false, false);
         try {
             JSONArray cat = new JSONArray();
             if(catJson != null) {
@@ -318,9 +318,10 @@ public class DataStore {
     /**
      * Downloads a file and places it in the cached assets directory
      * @param urlString the url from which the file will be downloaded
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
-    private String downloadAsset(String urlString) {
+    private String downloadAsset(String urlString, boolean ignoreCache) {
         SharedPreferences.Editor editor = mSettings.edit();
         Uri uri = Uri.parse(urlString);
         String key = Security.md5(uri.getHost()+uri.getPath());
@@ -328,7 +329,7 @@ public class DataStore {
         String dateModifiedRaw = uri.getQueryParameter("date_modified");
 
         // identify existing data
-        if(file.exists() && dateModifiedRaw != null) {
+        if(!ignoreCache  && file.exists() && dateModifiedRaw != null) {
             int dateModified = Integer.parseInt(dateModifiedRaw);
             try {
                 int oldDateModified = mSettings.getInt(key + "_modified", 0);
@@ -368,13 +369,14 @@ public class DataStore {
      * Returns the projects
      * This should not be ran on the main thread when checking the server
      * @param checkServer indicates an updated list of projects should be downloaded from the server
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchProjectCatalog(boolean checkServer) {
+    public String fetchProjectCatalog(boolean checkServer, boolean ignoreCache) {
         String path = projectCatalogPath();
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json", ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -393,13 +395,14 @@ public class DataStore {
      * This should not be ran on the main thread when checking the server
      * @param projectId the slug of the project for which languages will be returned
      * @param checkServer indicates an updated list of projects should be downloaded from the server
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchSourceLanguageCatalog(String projectId, boolean checkServer) {
+    public String fetchSourceLanguageCatalog(String projectId, boolean checkServer, boolean ignoreCache) {
         String path = sourceLanguageCatalogPath(projectId);
 
         if(checkServer) {
-            String key = downloadAsset(sourceLanguageCatalogUrl(projectId));
+            String key = downloadAsset(sourceLanguageCatalogUrl(projectId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -429,13 +432,14 @@ public class DataStore {
      * @param projectId the id of the project that contains the language
      * @param languageId the id of the language for which resources will be returned
      * @param checkServer indicates an updated list of projects should be downloaded from the server
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchResourceCatalog(String projectId, String languageId, boolean checkServer) {
+    public String fetchResourceCatalog(String projectId, String languageId, boolean checkServer, boolean ignoreCache) {
         String path = resourceCatalogPath(projectId, languageId);
 
         if(checkServer) {
-            String key = downloadAsset(resourceCatalogUrl(projectId, languageId));
+            String key = downloadAsset(resourceCatalogUrl(projectId, languageId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -477,13 +481,14 @@ public class DataStore {
      * @param languageId
      * @param resourceId
      * @param checkServer indicates an updated list of terms should be downloaded from the server
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchTerms(String projectId, String languageId, String resourceId, boolean checkServer) {
+    public String fetchTerms(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = termsPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json", ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -497,12 +502,13 @@ public class DataStore {
      * @param languageId
      * @param resourceId
      * @param urlString the url from which the terms will be downloaded
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchTerms(String projectId, String languageId, String resourceId, String urlString) {
+    public String fetchTerms(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
         String path = termsPath(projectId, languageId, resourceId);
 
-        String key = downloadAsset(urlString);
+        String key = downloadAsset(urlString, ignoreCache);
         linkAsset(key, path);
 
         return loadJSONAsset(path);
@@ -525,13 +531,14 @@ public class DataStore {
      * @param languageId
      * @param resourceId
      * @param checkServer indicates an updated list of notes should be downloaded from the server
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchNotes(String projectId, String languageId, String resourceId, boolean checkServer) {
+    public String fetchNotes(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = notesPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json", ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -545,12 +552,13 @@ public class DataStore {
      * @param languageId
      * @param resourceId
      * @param urlString the url from which the notes will be downloaded
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchNotes(String projectId, String languageId, String resourceId, String urlString) {
+    public String fetchNotes(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
         String path = notesPath(projectId, languageId, resourceId);
 
-        String key = downloadAsset(urlString);
+        String key = downloadAsset(urlString, ignoreCache);
         linkAsset(key, path);
 
         return loadJSONAsset(path);
@@ -573,13 +581,14 @@ public class DataStore {
      * @param languageId
      * @param resourceId
      * @param checkServer indicates an updated version of the source should be downloaded from the server
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchSource(String projectId, String languageId, String resourceId, boolean checkServer) {
+    public String fetchSource(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = sourcePath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json");
+            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json", ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -593,12 +602,13 @@ public class DataStore {
      * @param languageId
      * @param resourceId
      * @param urlString the url from which the source will be downloaded
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchSource(String projectId, String languageId, String resourceId, String urlString) {
+    public String fetchSource(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
         String path = sourcePath(projectId, languageId, resourceId);
 
-        String key = downloadAsset(urlString);
+        String key = downloadAsset(urlString, ignoreCache);
         linkAsset(key, path);
 
         return loadJSONAsset(path);
