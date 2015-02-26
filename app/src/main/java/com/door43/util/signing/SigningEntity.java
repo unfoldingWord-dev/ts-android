@@ -46,7 +46,7 @@ public class SigningEntity {
      * Checks the validation status of this Signing Entity
      * @return
      */
-    public Status getStatus() {
+    public Status status() {
         if(mStatus == null) {
             mStatus = Crypto.verifyECDSASignature(mCAPublicKey, mSignature, mData);
             if(mStatus == Status.VERIFIED) {
@@ -66,11 +66,14 @@ public class SigningEntity {
      * @return
      */
     public Status verifyContent(String signature, byte[] data) {
-        if(getStatus() == Status.VERIFIED) {
-            byte[] sig = Base64.decode(signature, Base64.NO_WRAP);
-            return verifyContent(sig, data);
+        byte[] sig = Base64.decode(signature, Base64.NO_WRAP);
+        Status contentStatus = verifyContent(sig, data);
+
+        // always return the most severe status
+        if(contentStatus.weight() > status().weight()) {
+            return contentStatus;
         } else {
-            return getStatus();
+            return status();
         }
     }
 
@@ -81,10 +84,13 @@ public class SigningEntity {
      * @return
      */
     public Status verifyContent(byte[] signature,  byte[] data) {
-        if(getStatus() == Status.VERIFIED) {
-            return Crypto.verifyECDSASignature(mPublicKey, signature, data);
+        Status contentStatus = Crypto.verifyECDSASignature(mPublicKey, signature, data);
+
+        // always return the most severe status
+        if(contentStatus.weight() > status().weight()) {
+            return contentStatus;
         } else {
-            return getStatus();
+            return status();
         }
     }
 
@@ -149,7 +155,13 @@ public class SigningEntity {
             }
             PublicKey key = Crypto.loadPublicECDSAKey(keyBytes);
             byte[] signature = Base64.decode(sigBuilder.toString(), Base64.NO_WRAP);
-            String orgJsonString = new String(Base64.decode(orgBuilder.toString(), Base64.NO_WRAP));
+            String orgJsonString;
+            try {
+                orgJsonString = new String(Base64.decode(orgBuilder.toString(), Base64.NO_WRAP));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
             Organization org = Organization.generate(orgJsonString);
             if(org != null) {
                 return new SigningEntity(caPublicKey, key, org, keyOrgData, signature);

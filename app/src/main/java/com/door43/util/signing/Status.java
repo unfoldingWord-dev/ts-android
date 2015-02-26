@@ -1,11 +1,25 @@
 package com.door43.util.signing;
 
 /**
- * Created by joel on 2/23/2015.
+ * Indicates the verification status of Signing Identities and signatures.
  */
 public enum Status {
-    VERIFIED, // everything is ok
-    EXPIRED, // everything is ok, but the SI expired
-    FAILED, // the data was tampered with
-    ERROR // something went wrong durring the verification.
+    VERIFIED(0), // everything is ok
+    EXPIRED(1), // everything is ok, but the SE expired
+    ERROR(2), // something went wrong durring the verification.
+    FAILED(3); // the data was tampered with
+
+    private final int mWeight;
+
+    Status(int weight) {
+        mWeight = weight;
+    }
+
+    /**
+     * Returns the weight of this status
+     * @return
+     */
+    public int weight() {
+        return mWeight;
+    }
 }

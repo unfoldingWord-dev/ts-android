@@ -1,10 +1,8 @@
 package com.door43.translationstudio;
 
 import android.test.ActivityInstrumentationTestCase2;
-import android.util.Log;
 
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.FileUtilities;
 import com.door43.util.signing.Crypto;
 import com.door43.util.signing.SigningEntity;
 import com.door43.util.signing.Status;
@@ -17,8 +15,11 @@ import java.security.PublicKey;
  */
 public class SigningTest extends ActivityInstrumentationTestCase2<MainActivity> {
     private PublicKey mCA;
-    private SigningEntity mSE;
+    private SigningEntity mVerifiedSE;
     private byte[] mData;
+    private SigningEntity mExpiredSE;
+    private SigningEntity mErrorSE;
+    private SigningEntity mFailedSE;
 
     public SigningTest() {
         super(MainActivity.class);
@@ -27,14 +28,25 @@ public class SigningTest extends ActivityInstrumentationTestCase2<MainActivity> 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        InputStream caPubKey = AppContext.context().getAssets().open("certs/ca.pub");
-        mCA = Crypto.loadPublicECDSAKey(caPubKey);
+        if(mCA == null) {
+            InputStream caPubKey = AppContext.context().getAssets().open("certs/ca.pub");
+            mCA = Crypto.loadPublicECDSAKey(caPubKey);
 
-        InputStream verifiedStream = AppContext.context().getAssets().open("tests/signing/si/verified.pem");
-        mSE = SigningEntity.generateFromIdentity(mCA, verifiedStream);
+            InputStream verifiedStream = AppContext.context().getAssets().open("tests/signing/si/verified.pem");
+            mVerifiedSE = SigningEntity.generateFromIdentity(mCA, verifiedStream);
 
-        InputStream dataStream = AppContext.context().getAssets().open("tests/signing/data.json");
-        mData = Crypto.readInputStreamToBytes(dataStream);
+            InputStream failedStream = AppContext.context().getAssets().open("tests/signing/si/failed.pem");
+            mFailedSE = SigningEntity.generateFromIdentity(mCA, failedStream);
+
+            InputStream errorStream = AppContext.context().getAssets().open("tests/signing/si/error.pem");
+            mErrorSE = SigningEntity.generateFromIdentity(mCA, errorStream);
+
+            InputStream expiredStream = AppContext.context().getAssets().open("tests/signing/si/expired.pem");
+            mExpiredSE = SigningEntity.generateFromIdentity(mCA, expiredStream);
+
+            InputStream dataStream = AppContext.context().getAssets().open("tests/signing/data.json");
+            mData = Crypto.readInputStreamToBytes(dataStream);
+        }
     }
 
     public void testLoadPublicECDSAKey() throws Exception {
@@ -42,36 +54,60 @@ public class SigningTest extends ActivityInstrumentationTestCase2<MainActivity> 
     }
 
     public void testLoadSigningIdentity() throws Exception {
-        assertNotNull(mSE);
+        assertNotNull(mVerifiedSE);
     }
 
     public void testVerifySigningEntity() throws Exception {
-        assertEquals(Status.VERIFIED, mSE.getStatus());
-
-        InputStream failedStream = AppContext.context().getAssets().open("tests/signing/si/failed.pem");
-        SigningEntity failed = SigningEntity.generateFromIdentity(mCA, failedStream);
-        assertEquals(Status.FAILED, failed.getStatus());
-
-        InputStream expiredStream = AppContext.context().getAssets().open("tests/signing/si/expired.pem");
-        SigningEntity expired = SigningEntity.generateFromIdentity(mCA, expiredStream);
-        assertEquals(Status.EXPIRED, expired.getStatus());
-
-        InputStream errorStream = AppContext.context().getAssets().open("tests/signing/si/error.pem");
-        SigningEntity error = SigningEntity.generateFromIdentity(mCA, errorStream);
-        assertEquals(Status.ERROR, error.getStatus());
+        assertEquals(Status.VERIFIED, mVerifiedSE.status());
+        assertEquals(Status.FAILED, mFailedSE.status());
+        assertEquals(Status.EXPIRED, mExpiredSE.status());
+        // TODO: we need to get an expired SI for testing.
+        assertEquals(Status.ERROR, mErrorSE.status());
     }
 
-    public void testVerifySignature() throws Exception {
-        Status verified = mSE.verifyContent(Util.loadSig("tests/signing/sig/verified.sig"), mData);
+    public void testVerifyValidSESignatures() throws Exception {
+        Status verified = mVerifiedSE.verifyContent(Util.loadSig("tests/signing/sig/verified.sig"), mData);
         assertEquals(Status.VERIFIED, verified);
 
-        Status failed = mSE.verifyContent(Util.loadSig("tests/signing/sig/failed.sig"), mData);
+        Status failed = mVerifiedSE.verifyContent(Util.loadSig("tests/signing/sig/failed.sig"), mData);
         assertEquals(Status.FAILED, failed);
 
-        Status error = mSE.verifyContent(Util.loadSig("tests/signing/sig/error.sig"), mData);
+        Status error = mVerifiedSE.verifyContent(Util.loadSig("tests/signing/sig/error.sig"), mData);
         assertEquals(Status.ERROR, error);
 
-        Status expired = mSE.verifyContent(Util.loadSig("tests/signing/sig/expired.sig"), mData);
-        assertEquals(Status.EXPIRED, expired);
+        // NOTE: signatures don't expire themselves
+    }
+
+    public void testVerifyExpiredSESignatures() throws Exception {
+        Status verified = mExpiredSE.verifyContent(Util.loadSig("tests/signing/sig/verified.sig"), mData);
+        assertEquals(Status.EXPIRED, verified);
+
+        Status failed = mExpiredSE.verifyContent(Util.loadSig("tests/signing/sig/failed.sig"), mData);
+        assertEquals(Status.FAILED, failed);
+
+        Status error = mExpiredSE.verifyContent(Util.loadSig("tests/signing/sig/error.sig"), mData);
+        assertEquals(Status.ERROR, error);
+    }
+
+    public void testVerifyFailedSESignatures() throws Exception {
+        Status verified = mFailedSE.verifyContent(Util.loadSig("tests/signing/sig/verified.sig"), mData);
+        assertEquals(Status.FAILED, verified);
+
+        Status failed = mFailedSE.verifyContent(Util.loadSig("tests/signing/sig/failed.sig"), mData);
+        assertEquals(Status.FAILED, failed);
+
+        Status error = mFailedSE.verifyContent(Util.loadSig("tests/signing/sig/error.sig"), mData);
+        assertEquals(Status.FAILED, error);
+    }
+
+    public void testVerifyErrorSESignatures() throws Exception {
+        Status verified = mErrorSE.verifyContent(Util.loadSig("tests/signing/sig/verified.sig"), mData);
+        assertEquals(Status.ERROR, verified);
+
+        Status failed = mErrorSE.verifyContent(Util.loadSig("tests/signing/sig/failed.sig"), mData);
+        assertEquals(Status.FAILED, failed);
+
+        Status error = mErrorSE.verifyContent(Util.loadSig("tests/signing/sig/error.sig"), mData);
+        assertEquals(Status.ERROR, error);
     }
 }

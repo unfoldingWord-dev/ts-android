@@ -18,12 +18,11 @@ public class Util {
      * @return
      * @throws Exception
      */
-    public static byte[] loadSig(String sig) throws Exception {
+    public static String loadSig(String sig) throws Exception {
         InputStream sigStream = AppContext.context().getAssets().open(sig);
         String sigJson = FileUtilities.convertStreamToString(sigStream);
         JSONArray json = new JSONArray(sigJson);
         JSONObject sigObj = json.getJSONObject(0);
-        String sigString = sigObj.getString("sig");
-        return sigString.getBytes("UTF-8");
+        return sigObj.getString("sig");
     }
 }
