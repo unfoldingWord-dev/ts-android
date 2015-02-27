@@ -51,21 +51,15 @@
             android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:paddingBottom="10dp"
-            android:gravity="bottom"
             android:id="@+id/linearLayout3">
 
             <Button
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/label_cancel"
-                android:background="@drawable/bordered_button"
                 android:id="@+id/cancelButton"
-                android:textColor="@color/blue"
-                android:layout_marginRight="5dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                style="@style/Widget.Button.Secondary"/>
 
             <Button
                 android:layout_width="fill_parent"
@@ -73,9 +67,7 @@
                 android:text="@string/menu_upload"
                 android:id="@+id/okButton"
                 android:layout_weight="1"
-                android:layout_marginLeft="5dp"
-                android:background="@color/blue"
-                android:textColor="@color/white" />
+                style="@style/Widget.Button.Primary" />
 
         </LinearLayout>
     </LinearLayout>

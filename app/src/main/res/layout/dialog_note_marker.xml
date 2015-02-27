@@ -61,18 +61,15 @@
             android:text="@string/label_cancel"
             android:id="@+id/cancelButton"
             android:layout_weight="1"
-            android:background="@drawable/bordered_button"
-            android:layout_margin="10dp" />
+            style="@style/Widget.Button.Secondary"/>
 
         <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/label_delete"
             android:id="@+id/deleteButton"
-            android:background="@drawable/bordered_button"
             android:layout_weight="1"
-            android:layout_gravity="top"
-            android:layout_margin="10dp" />
+            style="@style/Widget.Button.Secondary"/>
 
         <Button
             android:layout_width="fill_parent"
@@ -80,9 +77,7 @@
             android:text="@string/label_ok"
             android:id="@+id/okButton"
             android:layout_weight="1"
-            android:background="@color/blue"
-            android:textColor="@color/white"
-            android:layout_margin="10dp" />
+            style="@style/Widget.Button.Primary"/>
     </LinearLayout>
 
 </RelativeLayout>

@@ -90,22 +90,16 @@
             android:layout_height="wrap_content"
             android:text="@string/label_cancel"
             android:id="@+id/buttonCancel"
-            android:background="@drawable/bordered_button"
-            android:padding="10dp"
-            android:textColor="@color/blue"
             android:layout_weight="1"
-            android:layout_marginRight="5dp" />
+            style="@style/Widget.Button.Secondary"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/label_ok"
             android:id="@+id/buttonOk"
-            android:background="@color/blue"
-            android:textColor="@color/white"
-            android:padding="10dp"
             android:layout_weight="1"
-            android:layout_marginLeft="5dp" />
+            style="@style/Widget.Button.Primary"/>
 
     </LinearLayout>
 

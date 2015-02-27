@@ -3,7 +3,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:padding="10dp">
 
     <ScrollView
         android:layout_width="fill_parent"
@@ -34,13 +34,9 @@
         android:text="@string/label_ok"
         android:id="@+id/dismiss_license_btn"
         android:layout_gravity="center_horizontal"
-        android:background="@color/blue"
-        android:textSize="@dimen/h4"
-        android:textColor="@color/white"
-        android:padding="10dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="10dp" />
+        style="@style/Widget.Button.Primary"/>
 
 </RelativeLayout>

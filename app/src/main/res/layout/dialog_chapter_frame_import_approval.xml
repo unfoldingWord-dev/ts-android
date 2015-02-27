@@ -38,9 +38,7 @@
             android:layout_height="wrap_content"
             android:text="@string/label_back"
             android:id="@+id/buttonBack"
-            android:background="@drawable/bordered_button"
-            android:padding="10dp"
-            android:textColor="@color/blue"/>
+            style="@style/Widget.Button.Secondary"/>
 
 
     </LinearLayout>
