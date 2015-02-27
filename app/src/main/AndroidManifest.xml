@@ -110,8 +110,7 @@
         <activity
             android:name=".CrashReporterActivity"
             android:label="@string/title_activity_crash_reporter"
-            android:theme="@style/Theme.Titled"
-            android:windowSoftInputMode="adjustPan" >
+            android:theme="@style/Theme.Titled" >
         </activity>
         <activity
             android:name=".BugReporterActivity"

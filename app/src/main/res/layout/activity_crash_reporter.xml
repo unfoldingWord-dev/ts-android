@@ -7,23 +7,26 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="10dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="10dp"
         android:layout_above="@+id/linearLayout4">
 
-        <TextView android:text="@string/crash_reports" android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/dark_gray"
-            android:textSize="@dimen/h5"
-            android:paddingBottom="20dp"
-            android:id="@+id/crashReportNoticeText" />
+        <!-- TODO: display an info icon that users can click to display this message -->
+        <!--<TextView android:text="@string/crash_reports" android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="@color/dark_gray"-->
+            <!--android:textSize="@dimen/h5"-->
+            <!--android:paddingBottom="20dp"-->
+            <!--android:id="@+id/crashReportNoticeText" />-->
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/dark_gray"
-            android:text="@string/crash_details_label"
-            android:id="@+id/titleTextView"
-            android:textStyle="bold" />
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="@color/dark_gray"-->
+            <!--android:text="@string/crash_details_label"-->
+            <!--android:id="@+id/titleTextView"-->
+            <!--android:textStyle="bold" />-->
 
         <EditText
             android:layout_width="fill_parent"
