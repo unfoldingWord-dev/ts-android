@@ -39,7 +39,6 @@ import java.util.ArrayList;
 
 
 public class SharingActivity extends TranslatorBaseActivity {
-    private SharingActivity me = this;
     private ArrayList<ToolItem> mSharingTools = new ArrayList<ToolItem>();
     private ToolAdapter mAdapter;
     private static int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
@@ -270,11 +269,12 @@ public class SharingActivity extends TranslatorBaseActivity {
                 if(AppContext.isExternalMediaAvailable()) {
                     // write files to the removeable sd card
                     File path = AppContext.getPublicDownloadsDirectory();
-                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    Intent intent = new Intent(SharingActivity.this, FileExplorerActivity.class);
                     intent.setDataAndType(Uri.fromFile(path), "file/*");
                     startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
                 } else {
-                    // the external storage could not be found
+                    Logger.w(SharingActivity.class.getName(), "The external storage could not be found");
                 }
             }
         }, AppContext.isExternalMediaAvailable(), R.string.missing_external_storage));
@@ -287,7 +287,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                Intent intent = new Intent(SharingActivity.this, DeviceToDeviceActivity.class);
                 Bundle extras = new Bundle();
                 extras.putBoolean("startAsServer", true);
                 intent.putExtras(extras);
@@ -298,7 +298,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                Intent intent = new Intent(me, DeviceToDeviceActivity.class);
+                Intent intent = new Intent(SharingActivity.this, DeviceToDeviceActivity.class);
                 Bundle extras = new Bundle();
                 extras.putBoolean("startAsServer", false);
                 intent.putExtras(extras);

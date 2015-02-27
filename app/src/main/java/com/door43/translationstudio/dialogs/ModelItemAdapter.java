@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Model;
+import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
@@ -118,6 +119,15 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.altTitle.setText(getItem(position).getTitle());
         holder.description.setText(getItem(position).getDescription());
         holder.altDescription.setText(getItem(position).getDescription());
+
+        /**
+         * Display selected project names on pseudo projects
+         */
+        if(mIndicateSelected && getItem(position).getClass().getName().equals(PseudoProject.class.getName())) {
+            if(getItem(position).isSelected() && AppContext.projectManager().getSelectedProject() != null) {
+                holder.altDescription.setText(AppContext.projectManager().getSelectedProject().getTitle());
+            }
+        }
 
         // display the correct layout
         if(imageUri != null) {

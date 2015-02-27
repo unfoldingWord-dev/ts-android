@@ -5,6 +5,7 @@ import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -47,29 +48,24 @@ public class FileExplorerActivity extends TranslatorBaseActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        // TODO: support fetching files from the internal downloads directory
-
-        // external sd
-        if (AppContext.isExternalMediaAvailable()) {
-            mPath = AppContext.getPublicDownloadsDirectory();
+        Intent intent = getIntent();
+        if(intent.getData() != null) {
+            mPath = new File(intent.getData().getPath());
+            if(!mPath.exists()) {
+                finish();
+                setResult(RESULT_CANCELED, null);
+            }
         } else {
             finish();
+            setResult(RESULT_CANCELED, null);
         }
 
 		loadFileList();
 
 		showDialog(DIALOG_LOAD_FILE);
-		Log.d(TAG, mPath.getAbsolutePath());
-
 	}
 
 	private void loadFileList() {
-		try {
-			mPath.mkdirs();
-		} catch (SecurityException e) {
-//			Log.e(TAG, "unable to write on the sd card ");
-		}
-
 		// Checks whether path exists
 		if (mPath.exists()) {
 			FilenameFilter filter = new FilenameFilter() {
@@ -206,8 +202,7 @@ public class FileExplorerActivity extends TranslatorBaseActivity {
 					} else {
 						// pass path to the calling activity
                         Intent i = getIntent();
-
-                        i.putExtra("path", new File(mPath, mChosenFile).getAbsolutePath());
+                        i.setData(Uri.fromFile(new File(mPath, mChosenFile)));
                         setResult(RESULT_OK, i);
                         finish();
 					}
