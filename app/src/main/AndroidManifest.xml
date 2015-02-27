@@ -83,7 +83,7 @@
                 android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
-            android:name=".FileExplorerActivity"
+            android:name=".filebrowser.FileBrowserActivity"
             android:label="@string/title_activity_file_explorer"
             android:theme="@style/Theme.Transparent" >
             <meta-data

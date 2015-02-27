@@ -5,9 +5,7 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.FileProvider;
@@ -18,7 +16,7 @@ import android.widget.Toast;
 
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
-import com.door43.translationstudio.events.ProjectImportApprovalEvent;
+import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
@@ -26,10 +24,8 @@ import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
-import com.door43.translationstudio.util.StorageUtils;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.Logger;
-import com.squareup.otto.Subscribe;
 
 import org.apache.commons.io.FileUtils;
 
@@ -197,27 +193,25 @@ public class SharingActivity extends TranslatorBaseActivity {
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                // TODO: need to replace this with a threadableui class.
-                Thread thread = new Thread() {
-                    public void run() {
-                        Looper.prepare();
-                        Handler handle = new Handler(getMainLooper());
-                        final ProgressDialog dialog = new ProgressDialog(SharingActivity.this);
-                        dialog.setMessage(getResources().getString(R.string.loading));
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.show();
-                            }
-                        });
+                final ProgressDialog dialog = new ProgressDialog(SharingActivity.this);
+                dialog.setMessage(getResources().getString(R.string.loading));
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.show();
+                ThreadableUI thread = new ThreadableUI(SharingActivity.this) {
+                    @Override
+                    public void onStop() {
 
+                    }
+
+                    @Override
+                    public void run() {
                         // TODO: allow the user to choose which projects to export
                         String library = ProjectSharing.generateLibrary(AppContext.projectManager().getProjects());
 
                         // try to locate the removable sd card
                         if(AppContext.isExternalMediaAvailable()) {
                             try {
-                                // TODO: this does not seem to work on all devices.
                                 File externalDestDir = AppContext.getPublicDownloadsDirectory();
                                 String archivePath;
 
@@ -229,34 +223,24 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     archivePath = ProjectSharing.export(p);
                                 }
                                 File archiveFile = new File(archivePath);
-
-
-                                externalDestDir.mkdirs();
                                 File output = new File(externalDestDir, archiveFile.getName());
 
-                                // copy the exported archive to the sd card
+                                // copy the exported archive to the output dir
                                 FileUtils.copyFile(archiveFile, output);
                                 archiveFile.delete();
 
-                                // verify
-                                if (output.exists() && output.isFile()) {
-                                    app().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
-                                } else {
-                                    app().showToastMessage(R.string.project_archive_missing);
-                                }
+                                AppContext.context().showToastMessage(String.format(getResources().getString(R.string.project_exported_to), output.getParentFile().getAbsolutePath()), Toast.LENGTH_SHORT);
                             } catch (IOException e) {
-                                app().showException(e);
+                                AppContext.context().showException(e);
                             }
                         } else {
-                            app().showToastMessage(R.string.missing_external_storage);
+                            AppContext.context().showToastMessage(R.string.missing_external_storage);
                         }
+                    }
 
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.hide();
-                            }
-                        });
+                    @Override
+                    public void onPostExecute() {
+                        dialog.dismiss();
                     }
                 };
                 thread.start();
@@ -269,8 +253,8 @@ public class SharingActivity extends TranslatorBaseActivity {
                 if(AppContext.isExternalMediaAvailable()) {
                     // write files to the removeable sd card
                     File path = AppContext.getPublicDownloadsDirectory();
-//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                    Intent intent = new Intent(SharingActivity.this, FileExplorerActivity.class);
+//                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT); // native file browser
+                    Intent intent = new Intent(SharingActivity.this, FileBrowserActivity.class);
                     intent.setDataAndType(Uri.fromFile(path), "file/*");
                     startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
                 } else {
@@ -329,8 +313,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                 String[] name = file.getName().split("\\.");
                 if (name[name.length - 1].toLowerCase().equals(Project.PROJECT_EXTENSION)) {
                     // import translationStudio project
-                    mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                    mProgressDialog.show();
+                    final ProgressDialog dialog = new ProgressDialog(this);
+                    dialog.setMessage(getResources().getString(R.string.import_project));
+                    dialog.setCancelable(false);
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.show();
+
+                    final Handler handle = new Handler(Looper.getMainLooper());
                     new ThreadableUI(this) {
 
                         @Override
@@ -362,14 +351,25 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
                                         @Override
                                         public void onOk(ProjectImport[] requests) {
-                                            mProgressDialog.setMessage(getResources().getString(R.string.loading));
-                                            mProgressDialog.show();
+                                            handle.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    dialog.setMessage(getResources().getString(R.string.loading));
+                                                    dialog.show();
+                                                }
+                                            });
+
                                             for (ProjectImport r : requests) {
                                                 ProjectSharing.importProject(r);
                                             }
                                             ProjectSharing.cleanImport(requests);
                                             AppContext.context().showToastMessage(R.string.success);
-                                            mProgressDialog.dismiss();
+                                            handle.post(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    dialog.dismiss();
+                                                }
+                                            });
                                         }
 
                                         @Override
@@ -394,13 +394,16 @@ public class SharingActivity extends TranslatorBaseActivity {
 
                         @Override
                         public void onPostExecute() {
-                            mProgressDialog.dismiss();
+                            dialog.dismiss();
                         }
                     }.start();
                 } else if (name[name.length - 1].toLowerCase().equals("zip")) {
                     // import DokuWiki files
-                    mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                    mProgressDialog.show();
+                    final ProgressDialog dialog = new ProgressDialog(SharingActivity.this);
+                    dialog.setMessage(getResources().getString(R.string.import_project));
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setCancelable(false);
+                    dialog.show();
                     new ThreadableUI(this) {
 
                         @Override
@@ -419,13 +422,17 @@ public class SharingActivity extends TranslatorBaseActivity {
 
                         @Override
                         public void onPostExecute() {
-                            mProgressDialog.dismiss();
+                            dialog.dismiss();
                         }
                     }.start();
                 } else if (name[name.length - 1].toLowerCase().equals("txt")) {
                     // import legacy 1.x DokuWiki files
-                    mProgressDialog.setMessage(getResources().getString(R.string.import_project));
-                    mProgressDialog.show();
+
+                    final ProgressDialog dialog = new ProgressDialog(SharingActivity.this);
+                    dialog.setMessage(getResources().getString(R.string.import_project));
+                    dialog.setCanceledOnTouchOutside(false);
+                    dialog.setCancelable(false);
+                    dialog.show();
                     new ThreadableUI(this) {
 
                         @Override
@@ -444,7 +451,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 
                         @Override
                         public void onPostExecute() {
-                            mProgressDialog.dismiss();
+                            dialog.dismiss();
                         }
                     }.start();
                 }

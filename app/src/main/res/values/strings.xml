@@ -268,4 +268,6 @@
     <string name="loading_languages">Loading languages</string>
     <string name="loading_resources">Loading resources</string>
     <string name="downloading_project">Downloading project <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
+    <string name="up">Up</string>
+    <string name="empty_directory">That directory is empty</string>
 </resources>

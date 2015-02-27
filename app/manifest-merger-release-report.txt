@@ -152,7 +152,7 @@ ADDED from AndroidManifest.xml:75:9
 		ADDED from AndroidManifest.xml:80:13
 	android:name
 		ADDED from AndroidManifest.xml:76:13
-activity#com.door43.translationstudio.FileExplorerActivity
+activity#com.door43.translationstudio.filebrowser.FileExplorerActivity
 ADDED from AndroidManifest.xml:85:9
 	android:label
 		ADDED from AndroidManifest.xml:87:13
