@@ -85,7 +85,7 @@
         <activity
             android:name=".FileExplorerActivity"
             android:label="@string/title_activity_file_explorer"
-            android:theme="@style/Theme.Titled" >
+            android:theme="@style/Theme.Transparent" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.SharingActivity" />

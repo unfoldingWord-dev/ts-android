@@ -706,16 +706,14 @@ public class ProjectSharing {
                     AddCommand add = repo.getGit().add();
                     add.addFilepattern(".").call();
 
-
+                    // commit changes
+                    CommitCommand commit = repo.getGit().commit();
+                    commit.setAll(true);
+                    commit.setMessage("auto save before export");
+                    commit.call();
                 }
-
-                // commit changes
-                CommitCommand commit = repo.getGit().commit();
-                commit.setAll(true);
-                commit.setMessage("auto save before export");
-                commit.call();
             } catch (Exception e) {
-                Logger.e(ProjectSharing.class.getName(), "failed to stage the repo", e);
+                Logger.e(ProjectSharing.class.getName(), "failed to stage the repo before exporting tS archive", e);
                 stagingSucceeded = false;
                 continue;
             }
@@ -761,7 +759,13 @@ public class ProjectSharing {
 
         // zip
         if(stagingSucceeded) {
-            File outputZipFile = new File(exportDir, Project.GLOBAL_PROJECT_SLUG + "-" + p.getId() + "_" + tag + "." + Project.PROJECT_EXTENSION);
+            File outputZipFile;
+            if(targetLanguages.length == 1) {
+                // include the language id if this archive only contains a single language
+                outputZipFile = new File(exportDir, Project.GLOBAL_PROJECT_SLUG + "-" + p.getId() + "-" + targetLanguages[0].getId() + "_" + tag + "." + Project.PROJECT_EXTENSION);
+            } else {
+                outputZipFile = new File(exportDir, Project.GLOBAL_PROJECT_SLUG + "-" + p.getId() + "_" + tag + "." + Project.PROJECT_EXTENSION);
+            }
 
             // create the archive if it does not already exist
             if(!outputZipFile.exists()) {
@@ -828,15 +832,15 @@ public class ProjectSharing {
         }
 
         // TRICKY: this has to be read after we commit changes to the repo
-        String translationVersion = p.getLocalTranslationVersion();
-        File outputZipFile = new File(exportDir, projectComplexName + "_" + translationVersion + ".zip");
-        File outputDir = new File(exportDir, projectComplexName + "_" + translationVersion);
+        String tag = p.getLocalTranslationVersion().substring(0, 10);
+        File outputZipFile = new File(exportDir, projectComplexName + "_" + tag + ".zip");
+        File outputDir = new File(exportDir, projectComplexName + "_" + tag);
 
         // clean up old exports
         String[] cachedExports = exportDir.list();
         for(int i=0; i < cachedExports.length; i ++) {
             String[] pieces = cachedExports[i].split("_");
-            if(pieces[0].equals(projectComplexName) && !pieces[1].equals(translationVersion)) {
+            if(pieces[0].equals(projectComplexName) && !pieces[1].equals(tag)) {
                 File oldDir = new File(exportDir, cachedExports[i]);
                 FileUtilities.deleteRecursive(oldDir);
             }
