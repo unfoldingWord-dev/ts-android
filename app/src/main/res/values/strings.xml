@@ -258,4 +258,7 @@
     <string name="pref_description_advanced_settings" ></string>
     <string name="read_debugging_log" translatable="false">Read debugging log</string>
     <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
+    <string name="downloading_project_updates">Downloading updates for <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
+    <string name="checking_for_new_projects">Checking for new projects</string>
+    <string name="download_canceled">The download was canceled</string>
 </resources>

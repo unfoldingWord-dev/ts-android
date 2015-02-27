@@ -163,25 +163,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onStop() {
-                        // reload the select project source
-                        if(AppContext.projectManager().getSelectedProject() != null) {
-                            handle.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.setProgress(dialog.getMax());
-                                    dialog.setMessage("reloading current project");
-                                }
-                            });
-                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
-                        }
-
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.dismiss();
-                            }
-                        });
-                        AppContext.context().showToastMessage("Download was canceled");
+                        dialog.show();
+                        AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
                     }
 
                     @Override
@@ -196,7 +179,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                                 public void run() {
                                     dialog.setIndeterminate(false);
                                     dialog.setProgress(progress);
-                                    dialog.setMessage("downloading source for "+title);
+                                    dialog.setMessage(String.format(getResources().getString(R.string.downloading_project_updates), title));
                                 }
                             });
 
@@ -204,13 +187,14 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                             AppContext.projectManager().downloadProjectUpdates(projects[i], true);
                         }
 
-                        // reload the select project source
+                        // reload the selected project source
                         if(AppContext.projectManager().getSelectedProject() != null) {
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     dialog.setProgress(dialog.getMax());
-                                    dialog.setMessage("reloading current project");
+                                    dialog.setIndeterminate(true);
+                                    dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                                 }
                             });
                             AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
@@ -219,8 +203,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onPostExecute() {
+                        dialog.dismiss();
                         if(!isInterrupted()) {
-                            dialog.dismiss();
                             AppContext.context().showToastMessage(R.string.success);
                         }
                     }

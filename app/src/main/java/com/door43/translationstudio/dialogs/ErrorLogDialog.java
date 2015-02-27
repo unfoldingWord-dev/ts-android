@@ -109,7 +109,7 @@ public class ErrorLogDialog  extends DialogFragment{
              */
             private void saveLog(Logger.ErrorLog log, String details) {
                 numLogs ++;
-                log.setDetails(details);
+                log.setDetails(details.trim());
 
                 // update the ui
                 final Logger.ErrorLog staticLog = log;

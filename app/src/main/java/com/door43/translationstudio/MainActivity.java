@@ -17,6 +17,7 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -1467,25 +1468,80 @@ public class MainActivity extends TranslatorBaseActivity {
             case R.id.action_update:
                 final ProgressDialog dialog = new ProgressDialog(this);
                 dialog.setMessage(getResources().getString(R.string.downloading_updates));
-                final ThreadableUI t = new ThreadableUI(this) {
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setIndeterminate(true);
+                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                dialog.setMax(AppContext.projectManager().numProjects());
+
+                final Handler handle = new Handler(Looper.getMainLooper());
+
+                // download thread
+                final ThreadableUI thread = new ThreadableUI(this) {
                     @Override
-                    public void onStop() {}
+                    public void onStop() {
+                        dialog.show();
+                        AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
+                    }
                     @Override
                     public void run() {
                         // check for updates to current projects
                         int numProjects = AppContext.projectManager().numProjects();
                         for (int i = 0; i < numProjects; i ++) {
-                            AppContext.projectManager().downloadProjectUpdates(AppContext.projectManager().getProject(i));
+                            if(isInterrupted()) break;
+                            Project p = AppContext.projectManager().getProject(i);
+
+                            // update progress
+                            final String title = p.getTitle();
+                            final int progress = i;
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setIndeterminate(false);
+                                    dialog.setProgress(progress);
+                                    dialog.setMessage(String.format(getResources().getString(R.string.downloading_project_updates), title));
+                                }
+                            });
+
+                            // TODO: use the secondary progress to track details of the project download
+                            AppContext.projectManager().downloadProjectUpdates(p);
                         }
 
                         // check for new projects to download
-                        AppContext.projectManager().downloadNewProjects();
+                        if(!isInterrupted()) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setIndeterminate(true);
+                                    dialog.setProgress(0);
+                                    dialog.setMessage(getResources().getString(R.string.checking_for_new_projects));
+                                }
+                            });
+                            AppContext.projectManager().downloadNewProjects();
+                            // TODO: display progress for downloading new projects
+                            // TODO: also use secondary progress
+                        }
+
+                        // reload the selected project source
+                        if( AppContext.projectManager().getSelectedProject() != null) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setIndeterminate(true);
+                                    dialog.setProgress(dialog.getMax());
+                                    dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                                }
+                            });
+                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+                        }
                     }
 
                     @Override
                     public void onPostExecute() {
                         dialog.dismiss();
-                        app().showToastMessage(R.string.project_updates_downloaded);
+                        if(!isInterrupted()) {
+                            app().showToastMessage(R.string.project_updates_downloaded);
+                        }
                         // reload the content
                         reloadCenterPane();
                         mLeftPane.reloadProjectsTab();
@@ -1494,6 +1550,15 @@ public class MainActivity extends TranslatorBaseActivity {
                     }
                 };
 
+                // enable cancel
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        thread.stop();
+                    }
+                });
+
+                // download confirmation
                 new AlertDialog.Builder(this)
                         .setMessage(R.string.update_confirmation)
                         .setCancelable(false)
@@ -1502,7 +1567,7 @@ public class MainActivity extends TranslatorBaseActivity {
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Logger.i(this.getClass().getName(), "downloading updates");
                                 dialog.show();
-                                t.start();
+                                thread.start();
                             }
                         })
                         .setNegativeButton(R.string.no, null)

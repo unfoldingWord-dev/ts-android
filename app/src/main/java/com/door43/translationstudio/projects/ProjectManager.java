@@ -132,6 +132,7 @@ public class ProjectManager {
 
     /**
      * Downloads the latest version of the project sources from the server
+     * You should always reload the selected project after running this
      * @param p the project for which updates will be downloaded
      */
     public void downloadProjectUpdates(Project p) {
@@ -139,7 +140,8 @@ public class ProjectManager {
     }
 
     /**
-     * Downloads the latest version of the project source from the server
+     * Downloads the latest version of the project source from the server.
+     * You should always reload the selected project after running this.
      * @param p the project for which updates will be downloaded
      * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
@@ -148,6 +150,7 @@ public class ProjectManager {
         String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true, ignoreCache);
         List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog, true, ignoreCache);
         for(SourceLanguage l:languages) {
+            if(Thread.currentThread().isInterrupted()) break;
             // reload the source if this is the currently selected project
             if(p.getId().equals(mSelectedProjectId) && getSelectedProject().getSelectedSourceLanguage().equals(l)) {
                 fetchProjectSource(p, false);
@@ -798,6 +801,7 @@ public class ProjectManager {
 
         // load the data
         for(int i=0; i<json.length(); i++) {
+            if(Thread.currentThread().isInterrupted()) break;
             try {
                 JSONObject jsonLanguage = json.getJSONObject(i);
                 if(jsonLanguage.has("language") && jsonLanguage.has("project")) {
@@ -916,6 +920,7 @@ public class ProjectManager {
 
         // load the data
         for(int i=0; i<json.length(); i++) {
+            if(Thread.currentThread().isInterrupted()) break;
             try {
                 JSONObject jsonResource = json.getJSONObject(i);
                 if(jsonResource.has("slug") && jsonResource.has("name") && jsonResource.has("date_modified") && jsonResource.has("status")) {
@@ -985,6 +990,7 @@ public class ProjectManager {
 
         // load the data
         for(int i=0; i<jsonNotes.length(); i++) {
+            if(Thread.currentThread().isInterrupted()) break;
             try {
                 JSONObject jsonNote = jsonNotes.getJSONObject(i);
                 if(jsonNote.has("date_modified")) continue; // skip the timestamp
@@ -1047,6 +1053,7 @@ public class ProjectManager {
 
         // load the data
         for(int i=0; i<jsonTerms.length(); i++) {
+            if(Thread.currentThread().isInterrupted()) break;
             try {
                 JSONObject jsonTerm = jsonTerms.getJSONObject(i);
                 if(jsonTerm.has("date_modified")) continue; // skip the timestamp

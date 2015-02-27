@@ -327,9 +327,9 @@ public class DataStore {
         String key = Security.md5(uri.getHost()+uri.getPath());
         File file = new File(cachedAssetsDir(), "data/" + key);
         String dateModifiedRaw = uri.getQueryParameter("date_modified");
-
+        boolean fileExists = file.exists();
         // identify existing data
-        if(!ignoreCache  && file.exists() && dateModifiedRaw != null) {
+        if(!ignoreCache  && fileExists && dateModifiedRaw != null) {
             int dateModified = Integer.parseInt(dateModifiedRaw);
             try {
                 int oldDateModified = mSettings.getInt(key + "_modified", 0);
@@ -357,7 +357,11 @@ public class DataStore {
                 editor.remove(key+"_modified");
             }
             editor.apply();
-            Logger.i(this.getClass().getName(), "downloaded new/updated asset from "+urlString);
+            if(fileExists) {
+                Logger.i(this.getClass().getName(), "downloaded updated asset from " + urlString);
+            } else {
+                Logger.i(this.getClass().getName(), "downloaded new asset from " + urlString);
+            }
             return key;
         } catch (MalformedURLException e) {
             Logger.e(this.getClass().getName(), "malformed url", e);
