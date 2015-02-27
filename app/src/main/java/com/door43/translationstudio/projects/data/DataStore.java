@@ -681,7 +681,7 @@ public class DataStore {
         validateAssetCache();
 
         File cachedAsset = new File(cachedAssetsDir(), path);
-        File linkedAsset = new File(cachedAsset.getParentFile(), linkPath);
+        File linkedAsset = new File(cachedAssetsDir(), linkPath);
 
         // resolve links
         if(linkedAsset.exists() && linkedAsset.isFile()) {

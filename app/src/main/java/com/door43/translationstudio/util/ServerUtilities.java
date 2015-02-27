@@ -84,6 +84,7 @@ public class ServerUtilities {
         if(!destFile.exists()) {
             destFile.getParentFile().mkdirs();
         }
+        destFile.delete();
         try {
             URLConnection conn = url.openConnection();
             conn.setReadTimeout(5000);
