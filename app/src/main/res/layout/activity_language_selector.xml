@@ -4,13 +4,15 @@ xmlns:tools="http://schemas.android.com/tools"
 android:orientation="vertical"
 android:layout_width="fill_parent"
 android:layout_height="fill_parent"
-tools:context="com.door43.translationstudio.LanguageSelectorActivity"
-android:padding="20dp">
+tools:context="com.door43.translationstudio.LanguageSelectorActivity" >
 <!-- Editext for Search -->
 <LinearLayout
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:paddingTop="10dp"
+    android:paddingRight="10dp"
+    android:paddingLeft="10dp"
     android:id="@+id/linearLayout2">
 
     <TextView

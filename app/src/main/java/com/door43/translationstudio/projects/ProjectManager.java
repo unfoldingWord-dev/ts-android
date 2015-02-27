@@ -742,6 +742,7 @@ public class ProjectManager {
                             downloadLanguages = true;
                         }
                     }
+                    downloadLanguages = downloadLanguages || ignoreCache;
 
                     // add project to the internal list and continue loading
                     if(addProject(p)) {
@@ -751,6 +752,7 @@ public class ProjectManager {
                     // load source languages
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), downloadLanguages, ignoreCache);
                     // TRICKY: pull the project from the cache so we have a history of cached languages and resources when checking if a download is needed
+                    // TRICKY: we pass in downloadLanguages rather than checkSever directly to stop needless download propogation
                     List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages, ignoreCache);
                     // validate project has languages
                     if(languages.size() == 0) {
@@ -854,6 +856,7 @@ public class ProjectManager {
                             downloadResources = true;
                         }
                     }
+                    downloadResources = downloadResources || ignoreCache;
 
                     if(p.getId().equals("luk") && l.getId().equals("ar")) {
                         Log.i("test", "test");
@@ -861,6 +864,7 @@ public class ProjectManager {
 
                     // load translation versions
                     String resourcesCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), downloadResources, ignoreCache);
+                    // TRICKY: we pass in downloadResources rather than checkSever directly to stop needless download propogation
                     List<Resource> importedResources = loadResourcesCatalog(p, l, resourcesCatalog, downloadResources, ignoreCache);
 
                     // only resources with the minium checking level will get imported, so it's possible we'll need to skip a language
