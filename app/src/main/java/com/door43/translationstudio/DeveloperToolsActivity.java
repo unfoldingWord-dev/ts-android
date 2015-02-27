@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.util.Logger;
@@ -163,7 +164,15 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onStop() {
-                        dialog.show();
+                        handle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.setMessage("Cancelling...");
+                                dialog.setIndeterminate(true);
+                                dialog.show();
+                            }
+                        });
+
                         AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
                     }
 
@@ -173,18 +182,34 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                             if(isInterrupted()) break;
                             // update progress
                             final int progress = i;
-                            final String title = projects[i].getId();
+                            final String title = String.format(getResources().getString(R.string.downloading_project_updates), projects[i].getId());
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     dialog.setIndeterminate(false);
                                     dialog.setProgress(progress);
-                                    dialog.setMessage(String.format(getResources().getString(R.string.downloading_project_updates), title));
+                                    dialog.setMessage(title);
                                 }
                             });
 
                             // TODO: use callback to update secondary progress bar.
-                            AppContext.projectManager().downloadProjectUpdates(projects[i], true);
+                            AppContext.projectManager().downloadProjectUpdates(projects[i], true, new ProjectManager.OnProgressCallback() {
+                                @Override
+                                public void onProgress(final double progress, final String message) {
+                                    handle.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            dialog.setSecondaryProgress((int)Math.round(dialog.getMax()*progress));
+                                            dialog.setMessage(title+"\n"+message);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onSuccess() {
+
+                                }
+                            });
                         }
 
                         // reload the selected project source

@@ -256,9 +256,16 @@
     <!-- TODO: these are deprecated, but we need to strip out the translations before removing these so we don't get errors-->
     <string name="pref_title_advanced_settings"></string>
     <string name="pref_description_advanced_settings" ></string>
+
+
     <string name="read_debugging_log" translatable="false">Read debugging log</string>
     <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
-    <string name="downloading_project_updates">Downloading updates for <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
+    <string name="downloading_project_updates">Checking for updates to <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
     <string name="checking_for_new_projects">Checking for new projects</string>
     <string name="download_canceled">The download was canceled</string>
+    <string name="downloading_languages">Downloading source languages</string>
+    <string name="downloading_resources">Downloading resources</string>
+    <string name="loading_languages">Loading languages</string>
+    <string name="loading_resources">Loading resources</string>
+    <string name="downloading_project">Downloading project <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
 </resources>

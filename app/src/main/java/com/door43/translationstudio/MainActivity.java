@@ -73,6 +73,7 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -1467,6 +1468,9 @@ public class MainActivity extends TranslatorBaseActivity {
                 return true;
             case R.id.action_update:
                 final ProgressDialog dialog = new ProgressDialog(this);
+                // this is a little hack to share the title between callbacks
+                final String[] newProjectDownloadTitle = new String[1];
+                newProjectDownloadTitle[0] = "";
                 dialog.setMessage(getResources().getString(R.string.downloading_updates));
                 dialog.setCancelable(true);
                 dialog.setCanceledOnTouchOutside(false);
@@ -1492,34 +1496,85 @@ public class MainActivity extends TranslatorBaseActivity {
                             Project p = AppContext.projectManager().getProject(i);
 
                             // update progress
-                            final String title = p.getTitle();
+                            final String title = String.format(getResources().getString(R.string.downloading_project_updates), p.getId());
                             final int progress = i;
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     dialog.setIndeterminate(false);
                                     dialog.setProgress(progress);
-                                    dialog.setMessage(String.format(getResources().getString(R.string.downloading_project_updates), title));
+                                    dialog.setMessage(title);
                                 }
                             });
 
-                            // TODO: use the secondary progress to track details of the project download
-                            AppContext.projectManager().downloadProjectUpdates(p);
+                            AppContext.projectManager().downloadProjectUpdates(p, new ProjectManager.OnProgressCallback() {
+                                @Override
+                                public void onProgress(final double progress, final String message) {
+                                    handle.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            dialog.setSecondaryProgress((int)Math.round(dialog.getMax()*progress));
+                                            dialog.setMessage(title + "\n" + message);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onSuccess() {
+
+                                }
+                            });
                         }
 
                         // check for new projects to download
+                        final String downloadNewTitle = getResources().getString(R.string.checking_for_new_projects);
                         if(!isInterrupted()) {
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     dialog.setIndeterminate(true);
+                                    dialog.setMax(100);
                                     dialog.setProgress(0);
-                                    dialog.setMessage(getResources().getString(R.string.checking_for_new_projects));
+                                    dialog.setSecondaryProgress(0);
+                                    dialog.setMessage(downloadNewTitle);
                                 }
                             });
-                            AppContext.projectManager().downloadNewProjects();
-                            // TODO: display progress for downloading new projects
-                            // TODO: also use secondary progress
+                            AppContext.projectManager().downloadNewProjects(new ProjectManager.OnProgressCallback() {
+                                @Override
+                                public void onProgress(final double progress, final String message) {
+                                    handle.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            dialog.setIndeterminate(false);
+                                            dialog.setProgress((int)Math.round(100*progress));
+                                            dialog.setMessage(message);
+                                            newProjectDownloadTitle[0] = message;
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onSuccess() {
+
+                                }
+                            }, new ProjectManager.OnProgressCallback() {
+                                @Override
+                                public void onProgress(final double progress, final String message) {
+                                    handle.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            dialog.setIndeterminate(false);
+                                            dialog.setSecondaryProgress((int)Math.round(100*progress));
+                                            dialog.setMessage(newProjectDownloadTitle[0] + "\n" + message);
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onSuccess() {
+
+                                }
+                            });
                         }
 
                         // reload the selected project source

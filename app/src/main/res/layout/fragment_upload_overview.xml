@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:background="@color/white"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:padding="10dp"
     tools:context="com.door43.translationstudio.uploadwizard.ReviewFragment">
 
     <TextView
@@ -30,7 +30,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:layout_alignParentEnd="false"
+        android:layout_alignParentRight="false"
         android:layout_alignParentStart="false"
+        android:layout_alignParentLeft="false"
         android:layout_alignParentBottom="true"
         android:id="@+id/linearLayout">
 
@@ -39,21 +41,15 @@
             android:layout_height="wrap_content"
             android:text="@string/label_cancel"
             android:id="@+id/upload_wizard_cancel_btn"
-            android:layout_gravity="bottom"
             android:layout_weight="1"
-            android:layout_marginRight="10dp"
-            android:background="@drawable/bordered_button"
-            android:textColor="@color/blue" />
+            style="@style/Widget.Button.Secondary"/>
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/label_continue"
             android:id="@+id/upload_wizard_continue_btn"
-            android:layout_gravity="bottom"
             android:layout_weight="1"
-            android:layout_marginLeft="10dp"
-            android:background="@color/blue"
-            android:textColor="@color/white" />
+            style="@style/Widget.Button.Primary"/>
     </LinearLayout>
 </RelativeLayout>

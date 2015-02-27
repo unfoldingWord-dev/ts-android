@@ -63,7 +63,7 @@ public class ProjectManager {
     private static String mSelectedProjectId;
     private static MainApplication mContext;
     private static final String TAG = "ProjectManager";
-    private OnProgressCallback mCallback;
+    private OnProgressCallback mInitProgressCallback;
     private static boolean mHasLoaded = false;
 
     public ProjectManager(MainApplication context) {
@@ -93,15 +93,15 @@ public class ProjectManager {
         // make sure we only call this once.
         if(!mHasLoaded) {
             mHasLoaded = true;
-            mCallback = callback;
+            mInitProgressCallback = callback;
             // begin loading target languages
             String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
             loadTargetLanguagesCatalog(targetLanguageCatalog);
             // begin loading projects
             initProjects();
         }
-        if(mCallback != null) {
-            mCallback.onSuccess();
+        if(mInitProgressCallback != null) {
+            mInitProgressCallback.onSuccess();
         }
     }
 
@@ -110,24 +110,24 @@ public class ProjectManager {
      */
     private void initProjects() {
         String projectsCatalog = mDataStore.fetchProjectCatalog(false, false);
-        loadProjectsCatalog(projectsCatalog, false, false);
+        loadProjectsCatalog(projectsCatalog, false, false, null, null);
     }
 
     /**
      * Downloads any new projects from the server
+     * TODO: this should only download a list of projects so we can run the download project updates seperately and display a primary and secondary progress bar.
      */
-    public void downloadNewProjects() {
-        downloadNewProjects(false);
+    public void downloadNewProjects(OnProgressCallback callback, OnProgressCallback secondaryCallback) {
+        downloadNewProjects(false, callback, secondaryCallback);
     }
 
     /**
      * Downloads any new projects from the server
      * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
-    public void downloadNewProjects(boolean ignoreCache) {
-        Logger.i(this.getClass().getName(), "downloading new projects");
+    public void downloadNewProjects(boolean ignoreCache, OnProgressCallback callback, OnProgressCallback secondaryCallback) {
         String catalog = mDataStore.fetchProjectCatalog(true, ignoreCache);
-        loadProjectsCatalog(catalog, true, ignoreCache);
+        loadProjectsCatalog(catalog, true, ignoreCache, callback, secondaryCallback);
     }
 
     /**
@@ -135,8 +135,8 @@ public class ProjectManager {
      * You should always reload the selected project after running this
      * @param p the project for which updates will be downloaded
      */
-    public void downloadProjectUpdates(Project p) {
-        downloadProjectUpdates(p, false);
+    public void downloadProjectUpdates(Project p, OnProgressCallback callback) {
+        downloadProjectUpdates(p, false, callback);
     }
 
     /**
@@ -145,17 +145,13 @@ public class ProjectManager {
      * @param p the project for which updates will be downloaded
      * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
-    public void downloadProjectUpdates(Project p, boolean ignoreCache) {
+    public void downloadProjectUpdates(Project p, boolean ignoreCache, OnProgressCallback callback) {
         // download the source language catalog
-        String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true, ignoreCache);
-        List<SourceLanguage> languages = loadSourceLanguageCatalog(p, languageCatalog, true, ignoreCache);
-        for(SourceLanguage l:languages) {
-            if(Thread.currentThread().isInterrupted()) break;
-            // reload the source if this is the currently selected project
-            if(p.getId().equals(mSelectedProjectId) && getSelectedProject().getSelectedSourceLanguage().equals(l)) {
-                fetchProjectSource(p, false);
-            }
+        if(callback != null) {
+            callback.onProgress(0.0, mContext.getResources().getString(R.string.downloading_languages));
         }
+        String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true, ignoreCache);
+        loadSourceLanguageCatalog(p, languageCatalog, true, ignoreCache, callback);
     }
 
     /**
@@ -181,24 +177,24 @@ public class ProjectManager {
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            if(mCallback != null) {
-                mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
+            if(mInitProgressCallback != null) {
+                mInitProgressCallback.onProgress(mProgress, mContext.getResources().getString(R.string.opening_project));
             }
         }
         loadProject(source, p);
         String terms = mDataStore.fetchTerms(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            if(mCallback != null) {
-                mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
+            if(mInitProgressCallback != null) {
+                mInitProgressCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_key_terms));
             }
         }
         loadTerms(terms, p);
         String notes = mDataStore.fetchNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
-            if(mCallback != null) {
-                mCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
+            if(mInitProgressCallback != null) {
+                mInitProgressCallback.onProgress(mProgress, mContext.getResources().getString(R.string.loading_translation_notes));
             }
         }
         loadNotes(notes, p);
@@ -637,8 +633,8 @@ public class ProjectManager {
                     mProgress += PERCENT_TARGET_LANGUAGES / numLanguages;
                     // publish updates every 100 languages to ease up on the ui
                     if(i % 100 == 0) {
-                        if(mCallback != null) {
-                            mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
+                        if(mInitProgressCallback != null) {
+                            mInitProgressCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
                         }
                     }
                     // TODO: it would be best to include the language direction in the target language list
@@ -660,7 +656,7 @@ public class ProjectManager {
      * @param checkServer indicates the latest languages should be downloaded from the server
      * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
-    private List<Project> loadProjectsCatalog(String projectsCatalog, boolean checkServer, boolean ignoreCache) {
+    private List<Project> loadProjectsCatalog(String projectsCatalog, boolean checkServer, boolean ignoreCache, OnProgressCallback callback, OnProgressCallback secondaryCallback) {
         List<Project> importedProjects = new ArrayList<Project>();
         // load projects
         JSONArray json;
@@ -678,8 +674,8 @@ public class ProjectManager {
                 JSONObject jsonProject = json.getJSONObject(i);
                 if(jsonProject.has("slug") && jsonProject.has("date_modified")) {
                     mProgress += PERCENT_PROJECTS / numProjects;
-                    if(mCallback != null) {
-                        mCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
+                    if(mInitProgressCallback != null) {
+                        mInitProgressCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
                     }
                     Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
                     if(jsonProject.has("sort")) {
@@ -749,11 +745,24 @@ public class ProjectManager {
                         importedProjects.add(p);
                     }
 
+                    if(callback != null) {
+                        if(downloadLanguages) {
+                            callback.onProgress((i+1)/(double)json.length(), String.format(mContext.getResources().getString(R.string.downloading_project), p.getId()));
+                        } else {
+                            callback.onProgress((i+1)/(double)json.length(), String.format(mContext.getResources().getString(R.string.loading_project), p.getId()));
+                        }
+                    }
+
+                    // skip loading if it was determined not to download
+                    if(checkServer && !downloadLanguages) {
+                        continue;
+                    }
+
                     // load source languages
                     String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), downloadLanguages, ignoreCache);
                     // TRICKY: pull the project from the cache so we have a history of cached languages and resources when checking if a download is needed
                     // TRICKY: we pass in downloadLanguages rather than checkSever directly to stop needless download propogation
-                    List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages, ignoreCache);
+                    List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages, ignoreCache, secondaryCallback);
                     // validate project has languages
                     if(languages.size() == 0) {
                         Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
@@ -787,7 +796,7 @@ public class ProjectManager {
      * @param checkServer indicates that the latest resources should be downloaded from the server
      * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLanguageCatalog, boolean checkServer, boolean ignoreCache) {
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLanguageCatalog, boolean checkServer, boolean ignoreCache, OnProgressCallback callback) {
         List<SourceLanguage> importedLanguages = new ArrayList<>();
         if(sourceLanguageCatalog == null) {
             return importedLanguages;
@@ -860,6 +869,15 @@ public class ProjectManager {
 
                     if(p.getId().equals("luk") && l.getId().equals("ar")) {
                         Log.i("test", "test");
+                    }
+
+                    // update progress
+                    if(callback != null) {
+                        if(downloadResources) {
+                            callback.onProgress((i + 1) / (double)json.length(), mContext.getResources().getString(R.string.downloading_resources));
+                        } else {
+                            callback.onProgress((i + 1) / (double)json.length(), mContext.getResources().getString(R.string.loading_resources));
+                        }
                     }
 
                     // load translation versions
