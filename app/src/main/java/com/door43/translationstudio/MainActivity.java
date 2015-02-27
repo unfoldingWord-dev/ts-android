@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -144,6 +145,9 @@ public class MainActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // just in case something breaks while this is disabled we'll enable it again
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
         // set up toolbars
         mMainToolbar = (Toolbar)findViewById(R.id.toolbar_main);
@@ -381,6 +385,8 @@ public class MainActivity extends TranslatorBaseActivity {
                             if(p == null) return;
                             final ProgressDialog dialog = new ProgressDialog(MainActivity.this);
                             dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                            dialog.setCancelable(false);
+                            dialog.setCanceledOnTouchOutside(false);
                             dialog.show();
                             p.getSelectedSourceLanguage().setSelectedResource(resource.getId());
                             new ThreadableUI(MainActivity.this) {
@@ -392,6 +398,8 @@ public class MainActivity extends TranslatorBaseActivity {
 
                                 @Override
                                 public void run() {
+                                    // disable screen rotation so we don't break things
+                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                                     // reload the source so we get the correct language resource
                                     AppContext.projectManager().fetchProjectSource(p);
                                 }
@@ -403,6 +411,9 @@ public class MainActivity extends TranslatorBaseActivity {
                                     reloadCenterPane();
                                     mLeftPane.reloadFramesTab();
                                     mLeftPane.reloadChaptersTab();
+
+                                    // re-enable screen rotation
+                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                                 }
                             }.start();
                         }
@@ -1489,6 +1500,8 @@ public class MainActivity extends TranslatorBaseActivity {
                     }
                     @Override
                     public void run() {
+                        // disable rotation sensor so we don't break things
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         // check for updates to current projects
                         int numProjects = AppContext.projectManager().numProjects();
                         for (int i = 0; i < numProjects; i ++) {
@@ -1583,7 +1596,7 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void run() {
                                     dialog.setIndeterminate(true);
-                                    dialog.setProgress(dialog.getMax());
+                                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                                     dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                                 }
                             });
@@ -1597,11 +1610,15 @@ public class MainActivity extends TranslatorBaseActivity {
                         if(!isInterrupted()) {
                             app().showToastMessage(R.string.project_updates_downloaded);
                         }
+
                         // reload the content
                         reloadCenterPane();
                         mLeftPane.reloadProjectsTab();
                         mLeftPane.reloadChaptersTab();
                         mLeftPane.reloadFramesTab();
+
+                        // re-enable screen rotation
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                     }
                 };
 

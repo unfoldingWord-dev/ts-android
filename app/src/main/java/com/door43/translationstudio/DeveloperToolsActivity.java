@@ -7,6 +7,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -121,12 +122,16 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void run() {
+                        // disable screen rotation so we don't break things
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         AppContext.context().generateKeys();
                     }
 
                     @Override
                     public void onPostExecute() {
                         dialog.dismiss();
+                        // re-enable screen rotation
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         AppContext.context().showToastMessage(R.string.success);
                     }
                 }.start();
@@ -178,6 +183,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void run() {
+                        // disable screen rotation so we don't break things
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         for(int i=0; i<projects.length; i ++) {
                             if(isInterrupted()) break;
                             // update progress
@@ -217,7 +224,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    dialog.setProgress(dialog.getMax());
+                                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                                     dialog.setIndeterminate(true);
                                     dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                                 }
@@ -229,6 +236,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                     @Override
                     public void onPostExecute() {
                         dialog.dismiss();
+                        // re-enable screen rotation
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         if(!isInterrupted()) {
                             AppContext.context().showToastMessage(R.string.success);
                         }
