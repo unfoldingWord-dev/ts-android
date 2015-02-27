@@ -1,6 +1,5 @@
 package com.door43.util;
 
-import android.content.Context;
 import android.media.MediaScannerConnection;
 import android.util.Log;
 
@@ -30,6 +29,11 @@ public class Logger
     private static MainApplication mContext;
 
     /**
+     * The pattern to match the leading log line
+     */
+    public final static String PATTERN = "(\\d+\\/\\d+\\/\\d+\\s+\\d+:\\d+\\s+[A|P]M)\\s+([A-Z|])\\/(((?!:).)*):(.*)";
+
+    /**
      * Initializes the logger.
      * This should be executed before using the logger
      * @param context
@@ -39,18 +43,37 @@ public class Logger
     }
 
     public static enum Level {
-        Info(0),
-        Warning(1),
-        Error(2);
+        Info(0, "I"),
+        Warning(1, "W"),
+        Error(2, "E");
 
-        Level(int i) {
+        Level(int i, String label) {
             this.level = i;
+            this.label = label;
         }
 
         private int level;
+        private String label;
 
         public int getLevel() {
             return level;
+        }
+        public String getLabel() {
+            return label;
+        }
+
+        /**
+         * Returns a level by it's label
+         * @param label
+         * @return null if the level does not exist
+         */
+        public static Level getLevel(String label) {
+            for(Level l:Level.values()) {
+                if(l.getLabel().toLowerCase().equals(label.toLowerCase())) {
+                    return l;
+                }
+            }
+            return null;
         }
     }
 
@@ -217,5 +240,60 @@ public class Logger
      */
     public static File getLogFile() {
         return new File(mContext.getExternalCacheDir(), "log.txt");
+    }
+
+    public static class ErrorLog {
+
+        public final Date date;
+        public final Level level;
+        public final String classPath;
+        public final String message;
+        private String mDetails;
+
+        /**
+         * Creates a new error object
+         * @param date
+         * @param level
+         * @param classPath
+         * @param message
+         */
+        public ErrorLog(Date date, Level level, String classPath, String message) {
+            this.date = date;
+            this.level = level;
+            this.classPath = classPath;
+            this.message = message;
+        }
+
+        /**
+         * Creates a new error object
+         * @param date
+         * @param level
+         * @param classPath
+         * @param message
+         * @param details
+         */
+        public ErrorLog(Date date, Level level, String classPath, String message, String details) {
+            this.date = date;
+            this.level = level;
+            this.classPath = classPath;
+            this.message = message;
+            mDetails = details;
+        }
+
+        /**
+         * Sets the error log details
+         * @param details
+         */
+        public void setDetails(String details) {
+            mDetails = details;
+        }
+
+        /**
+         * Returns the error log details
+         * @return
+         */
+        public String getDetails() {
+            return mDetails;
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
-import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -11,12 +12,12 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
@@ -25,9 +26,6 @@ import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class DeveloperToolsActivity extends TranslatorBaseActivity {
@@ -102,35 +100,19 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.regenerate_keys), getResources().getString(R.string.regenerate_keys_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
+                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
                 dialog.setMessage(getResources().getString(R.string.loading));
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
-                AppContext.context().generateKeys();
-                dialog.dismiss();
-                AppContext.context().showToastMessage(R.string.success);
-            }
-        }));
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.read_debugging_log), getResources().getString(R.string.read_debugging_log_description), 0, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                final ProgressDialog progress = new ProgressDialog(DeveloperToolsActivity.this);
-                progress.setMessage(getResources().getString(R.string.loading));
-                progress.show();
-
-                final Dialog dialog = new Dialog(DeveloperToolsActivity.this);
-                dialog.setTitle("Logs");
-
-                // begin loading logs in thread for better performance
                 final Handler handle = new Handler(Looper.getMainLooper());
                 new ThreadableUI(DeveloperToolsActivity.this) {
-                    String logText;
 
                     @Override
                     public void onStop() {
                         handle.post(new Runnable() {
                             @Override
                             public void run() {
-                                progress.dismiss();
                                 dialog.dismiss();
                             }
                         });
@@ -138,27 +120,28 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void run() {
-                        try {
-                            logText = FileUtils.readFileToString(Logger.getLogFile());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            logText = "We couldn't find any logs.";
-                        }
+                        AppContext.context().generateKeys();
                     }
 
                     @Override
                     public void onPostExecute() {
-                        TextView text = new TextView(DeveloperToolsActivity.this);
-                        text.setVerticalScrollBarEnabled(true);
-                        text.setMovementMethod(ScrollingMovementMethod.getInstance());
-                        text.setPadding(10, 10, 10, 10);
-                        text.setText(logText);
-                        dialog.setContentView(text);
-
-                        progress.dismiss();
-                        dialog.show();
+                        dialog.dismiss();
+                        AppContext.context().showToastMessage(R.string.success);
                     }
                 }.start();
+            }
+        }));
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.read_debugging_log), getResources().getString(R.string.read_debugging_log_description), 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                ErrorLogDialog dialog = new ErrorLogDialog();
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
+                dialog.show(ft, "dialog");
             }
         }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
@@ -180,6 +163,18 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onStop() {
+                        // reload the select project source
+                        if(AppContext.projectManager().getSelectedProject() != null) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setProgress(dialog.getMax());
+                                    dialog.setMessage("reloading current project");
+                                }
+                            });
+                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+                        }
+
                         handle.post(new Runnable() {
                             @Override
                             public void run() {
@@ -224,8 +219,10 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onPostExecute() {
-                        dialog.dismiss();
-                        AppContext.context().showToastMessage(R.string.success);
+                        if(!isInterrupted()) {
+                            dialog.dismiss();
+                            AppContext.context().showToastMessage(R.string.success);
+                        }
                     }
                 };
 
@@ -236,7 +233,6 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                         thread.stop();
                     }
                 });
-                dialog.setSecondaryProgress(dialog.getMax()/2); // just for testing
                 dialog.show();
 
                 thread.start();

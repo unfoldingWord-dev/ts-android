@@ -10,6 +10,8 @@
     <color name="blue">#0099cc</color>
     <color name="medium_blue">#ff0086b8</color>
     <color name="purple">#9933cc</color>
+    <color name="red">#ffc53f2f</color>
+    <color name="yellow">#fffffe50</color>
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
     <color name="dark_gray">#ff3a3a3a</color>
