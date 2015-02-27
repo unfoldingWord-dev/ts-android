@@ -224,9 +224,9 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                                     dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                                     dialog.setIndeterminate(true);
-                                    dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                                 }
                             });
                             AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());

@@ -1596,8 +1596,8 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void run() {
                                     dialog.setIndeterminate(true);
-                                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                                     dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                                 }
                             });
                             AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
