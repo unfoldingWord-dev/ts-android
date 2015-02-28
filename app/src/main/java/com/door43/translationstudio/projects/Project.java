@@ -506,28 +506,41 @@ public class Project implements Model {
     }
 
     /**
-     * Checks if the project is being translated in the given language
+     * Checks if the project is being translated in the given language.
+     * If no targetlanguage is selected this will always return false, but isTranslatingGlobal may still return true.
      * @param projectId the project to check
      * @param languageId the language to check
      * @return
      */
     public static boolean isTranslating(String projectId, String languageId) {
-        File dir = new File(Project.getRepositoryPath(projectId, languageId));
-        String[] files = dir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File file, String s) {
-                return !s.equals(".git") && new File(file, s).isDirectory();
-            }
-        });
-        return files != null && files.length > 0;
+        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
+        String selectedTargetLanguage = settings.getString("selected_target_language_"+projectId, null);
+
+        if(selectedTargetLanguage != null) {
+            File dir = new File(Project.getRepositoryPath(projectId, languageId));
+            String[] files = dir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File file, String s) {
+                    return !s.equals(".git") && new File(file, s).isDirectory();
+                }
+            });
+            return files != null && files.length > 0;
+        } else {
+            return false;
+        }
     }
 
     /**
-     * Checks to see if this project is currently being translated in the selected target language
+     * Checks to see if this project is currently being translated in the selected target language.
+     * If no target language is selected this will always return false, but isTranslatingGlobal may still return true.
      * @return
      */
     public boolean isTranslating() {
-        return isTranslating(getId(), getSelectedTargetLanguage().getId());
+        if(hasChosenTargetLanguage()) {
+            return isTranslating(getId(), getSelectedTargetLanguage().getId());
+        } else {
+            return false;
+        }
     }
 
     @Override

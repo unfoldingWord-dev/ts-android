@@ -107,6 +107,7 @@ public class ModelItemAdapter extends BaseAdapter {
             holder.languagesIcon = (ImageView)v.findViewById(R.id.languagesIcon);
             holder.translationIcon = (ImageView)v.findViewById(R.id.translationIcon);
             holder.iconGroup = (LinearLayout)v.findViewById(R.id.iconGroupLayout);
+            holder.iconGroup.setVisibility(View.INVISIBLE);
             v.setTag(holder);
         } else {
             holder = (ViewHolder)v.getTag();
@@ -223,6 +224,8 @@ public class ModelItemAdapter extends BaseAdapter {
                 if(isTranslating || isTranslatingGlobal || hasAudio) {
                     staticHolder.iconGroup.setVisibility(View.VISIBLE);
                     AnimationUtilities.fadeIn(staticHolder.iconGroup, 100);
+                } else {
+                    staticHolder.iconGroup.setVisibility(View.INVISIBLE);
                 }
             }
         };
