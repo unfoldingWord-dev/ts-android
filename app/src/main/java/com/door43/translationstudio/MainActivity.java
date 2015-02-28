@@ -34,6 +34,7 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -1504,7 +1505,10 @@ public class MainActivity extends TranslatorBaseActivity {
                                         @Override
                                         public void run() {
                                             dialog.setSecondaryProgress((int)Math.round(dialog.getMax()*progress));
-                                            dialog.setMessage(title + "\n" + message);
+                                            SpannableStringBuilder spannable = new SpannableStringBuilder(message);
+                                            spannable.setSpan(new RelativeSizeSpan(0.8f), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                            spannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.medium_gray)), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                            dialog.setMessage(TextUtils.concat(title,"\n", spannable));
                                         }
                                     });
                                 }
@@ -1554,8 +1558,11 @@ public class MainActivity extends TranslatorBaseActivity {
                                         @Override
                                         public void run() {
                                             dialog.setIndeterminate(false);
-                                            dialog.setSecondaryProgress((int)Math.round(100*progress));
-                                            dialog.setMessage(newProjectDownloadTitle[0] + "\n" + message);
+                                            dialog.setSecondaryProgress((int) Math.round(100 * progress));
+                                            SpannableStringBuilder spannable = new SpannableStringBuilder(message);
+                                            spannable.setSpan(new RelativeSizeSpan(0.8f), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                            spannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.medium_gray)), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                            dialog.setMessage(TextUtils.concat(newProjectDownloadTitle[0],"\n",spannable));
                                         }
                                     });
                                 }
@@ -1572,6 +1579,8 @@ public class MainActivity extends TranslatorBaseActivity {
                             handle.post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    dialog.setProgress(dialog.getMax());
+                                    dialog.setSecondaryProgress(dialog.getMax());
                                     dialog.setIndeterminate(true);
                                     dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                                     dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -1583,16 +1592,16 @@ public class MainActivity extends TranslatorBaseActivity {
 
                     @Override
                     public void onPostExecute() {
-                        dialog.dismiss();
-                        if(!isInterrupted()) {
-                            app().showToastMessage(R.string.project_updates_downloaded);
-                        }
-
                         // reload the content
                         reloadCenterPane();
                         mLeftPane.reloadProjectsTab();
                         mLeftPane.reloadChaptersTab();
                         mLeftPane.reloadFramesTab();
+
+                        dialog.dismiss();
+                        if(!isInterrupted()) {
+                            app().showToastMessage(R.string.project_updates_downloaded);
+                        }
 
                         // re-enable screen rotation
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);

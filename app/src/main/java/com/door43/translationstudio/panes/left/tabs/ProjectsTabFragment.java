@@ -121,7 +121,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
                     @Override
                     public void onPostExecute() {
-                        dialog.dismiss();
                         if(getActivity() != null) {
                             // populate the center pane
                             ((MainActivity) getActivity()).reloadCenterPane();
@@ -133,6 +132,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                         } else {
                             Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
                         }
+                        dialog.dismiss();
                         // re-enable screen rotation
                         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         NotifyAdapterDataSetChanged();
