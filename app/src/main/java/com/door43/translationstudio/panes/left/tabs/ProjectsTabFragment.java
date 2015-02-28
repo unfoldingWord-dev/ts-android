@@ -115,7 +115,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                     @Override
                     public void run() {
                         // disable screen rotation so we don't break things
-                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+//                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
                     }
 
@@ -128,13 +128,12 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                             ((MainActivity) getActivity()).getLeftPane().selectTab(1);
                             // reload the frames tab so we don't see frames from the previous project
                             ((MainActivity) getActivity()).getLeftPane().reloadFramesTab();
-                            // let the adapter redraw itself so the selected project is corectly highlighted
                         } else {
                             Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
                         }
                         dialog.dismiss();
                         // re-enable screen rotation
-                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+//                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         NotifyAdapterDataSetChanged();
                     }
                 }.start();

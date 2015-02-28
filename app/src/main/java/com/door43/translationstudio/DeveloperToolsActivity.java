@@ -129,7 +129,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                     @Override
                     public void run() {
                         // disable screen rotation so we don't break things
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         AppContext.context().generateKeys();
                     }
 
@@ -137,7 +137,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                     public void onPostExecute() {
                         dialog.dismiss();
                         // re-enable screen rotation
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         AppContext.context().showToastMessage(R.string.success);
                     }
                 }.start();
@@ -190,7 +190,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                     @Override
                     public void run() {
                         // disable screen rotation so we don't break things
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         for(int i=0; i<projects.length; i ++) {
                             if(isInterrupted()) break;
                             // update progress
@@ -243,7 +243,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                     public void onPostExecute() {
                         dialog.dismiss();
                         // re-enable screen rotation
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         if(!isInterrupted()) {
                             AppContext.context().showToastMessage(R.string.success);
                         }

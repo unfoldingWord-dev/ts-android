@@ -148,7 +148,7 @@ public class MainActivity extends TranslatorBaseActivity {
         setContentView(R.layout.activity_main);
 
         // just in case something breaks while this is disabled we'll enable it again
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
         // set up toolbars
         mMainToolbar = (Toolbar)findViewById(R.id.toolbar_main);
@@ -377,7 +377,7 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void run() {
                                     // disable screen rotation so we don't break things
-                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+//                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                                     // reload the source so we get the correct language resource
                                     AppContext.projectManager().fetchProjectSource(p);
                                 }
@@ -391,7 +391,7 @@ public class MainActivity extends TranslatorBaseActivity {
                                     mLeftPane.reloadChaptersTab();
 
                                     // re-enable screen rotation
-                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+//                                    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                                 }
                             }.start();
                         }
@@ -1479,7 +1479,7 @@ public class MainActivity extends TranslatorBaseActivity {
                     @Override
                     public void run() {
                         // disable rotation sensor so we don't break things
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         // check for updates to current projects
                         int numProjects = AppContext.projectManager().numProjects();
                         for (int i = 0; i < numProjects; i ++) {
@@ -1604,7 +1604,7 @@ public class MainActivity extends TranslatorBaseActivity {
                         }
 
                         // re-enable screen rotation
-                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                     }
                 };
 
