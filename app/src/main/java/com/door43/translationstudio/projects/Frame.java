@@ -294,9 +294,8 @@ public class Frame implements Model {
             }
             CharSequence out = renderer.render(mText);
             int maxLen = 130;
-            // account for ellipses
-            if (out.length() > maxLen - 3) {
-                mCachedDescription = out.subSequence(0, maxLen).toString().trim().replaceFirst("^\\d+(\\-\\d+)?", "") + "...";
+            if (out.length() > maxLen) {
+                mCachedDescription = out.subSequence(0, maxLen-3).toString().trim().replaceFirst("^\\d+(\\-\\d+)?", "") + "...";
             } else {
                 mCachedDescription = out.toString().trim().replaceFirst("^\\d+(\\-\\d+)?", "");
             }
