@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -100,6 +101,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
                 // load the project source
                 final ProgressDialog dialog = new ProgressDialog(getActivity());
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                 dialog.show();
                 new ThreadableUI(this.getActivity()) {
@@ -111,6 +114,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
                     @Override
                     public void run() {
+                        // disable screen rotation so we don't break things
+                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
                     }
 
@@ -128,6 +133,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                         } else {
                             Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
                         }
+                        // re-enable screen rotation
+                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         NotifyAdapterDataSetChanged();
                     }
                 }.start();
