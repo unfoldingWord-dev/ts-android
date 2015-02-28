@@ -1,1 +1,1 @@
-[{"language": {"date_modified": "20150219", "direction": "rtl", "name": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629", "slug": "ar"}, "project": {"desc": "", "meta": ["Bible: OT"], "name": "\u0645\u0650\u064a\u062e\u064e\u0627", "sort": "33"}, "res_catalog": "https://api.unfoldingword.org/ts/txt/2/mic/ar/resources.json"}]
+[{"res_catalog":"https:\/\/api.unfoldingword.org\/ts\/txt\/2\/mic\/ar\/resources.json","project":{"meta":["Bible: OT"],"name":"مِيخَا","desc":""},"language":{"date_modified":"20150219","slug":"ar","direction":"rtl","name":"العربية"}}]

@@ -1,1 +1,1 @@
-[{"language": {"date_modified": "20150219", "direction": "rtl", "name": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629", "slug": "ar"}, "project": {"desc": "", "meta": ["Bible: OT"], "name": "\u064a\u064f\u0648\u0626\u0650\u064a\u0644", "sort": "29"}, "res_catalog": "https://api.unfoldingword.org/ts/txt/2/jol/ar/resources.json"}]
+[{"res_catalog":"https:\/\/api.unfoldingword.org\/ts\/txt\/2\/jol\/ar\/resources.json","project":{"meta":["Bible: OT"],"name":"يُوئِيل","desc":""},"language":{"date_modified":"20150219","slug":"ar","direction":"rtl","name":"العربية"}}]
