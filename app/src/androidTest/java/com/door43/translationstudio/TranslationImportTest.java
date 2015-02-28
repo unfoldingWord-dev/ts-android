@@ -3,7 +3,7 @@ package com.door43.translationstudio;
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectSharing;
+import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.FileUtilities;
@@ -36,7 +36,7 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
      */
     public void testLegacyDokuwikiImport() throws Exception {
         File asset = AppContext.context().getAssetAsFile("tests/exports/1.0_deutsch.txt");
-        assertTrue(ProjectSharing.importDokuWiki(asset));
+        assertTrue(Sharing.importDokuWiki(asset));
 
         // TODO: verify content imported correctly
     }
@@ -46,7 +46,7 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
      */
     public void testLegacyDokuwikiMultipleImport() throws Exception {
         File asset = AppContext.context().getAssetAsFile("tests/exports/1.0_afaraf_deutsch.txt");
-        assertTrue(ProjectSharing.importDokuWiki(asset));
+        assertTrue(Sharing.importDokuWiki(asset));
 
         // TODO: verify content imported correctly
     }
@@ -56,7 +56,7 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
      */
     public void testDokuwikiImport() throws Exception {
         File asset = AppContext.context().getAssetAsFile("tests/exports/2.0.0_uw-obs-de_dokuwiki.zip");
-        assertTrue(ProjectSharing.importDokuWikiArchive(asset));
+        assertTrue(Sharing.importDokuWikiArchive(asset));
 
         // TODO: verify content imported correctly
     }
@@ -68,7 +68,7 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
      */
     public void testLegacyProjectRedirectsFromDokuwikiArchiveImport() throws Exception {
         File asset = AppContext.context().getAssetAsFile("tests/exports/2.0.0_uw-obs-de.zip");
-        assertTrue(ProjectSharing.importDokuWikiArchive(asset));
+        assertTrue(Sharing.importDokuWikiArchive(asset));
 
         // TODO: verify content imported correctly
     }
@@ -79,7 +79,7 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
      */
     public void testLegacyProjectImport() throws Exception {
         File asset = AppContext.context().getAssetAsFile("tests/exports/2.0.0_uw-obs-de.zip");
-        assertTrue(ProjectSharing.prepareLegacyArchiveImport(asset));
+        assertTrue(Sharing.prepareLegacyArchiveImport(asset));
 
         // TODO: verify content imported correctly
     }
@@ -90,10 +90,10 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
      */
     public void testProjectImport() throws Exception {
         File dokuwiki = AppContext.context().getAssetAsFile("tests/exports/2.0.3_uw-obs-de.tstudio");
-        ProjectImport[] projects = ProjectSharing.prepareArchiveImport(dokuwiki);
+        ProjectImport[] projects = Sharing.prepareArchiveImport(dokuwiki);
         assertTrue(projects.length > 0);
         for(ProjectImport p:projects) {
-            assertTrue(ProjectSharing.importProject(p));
+            assertTrue(Sharing.importProject(p));
         }
 
         // TODO: verify content imported correctly

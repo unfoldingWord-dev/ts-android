@@ -11,7 +11,6 @@ import android.widget.Button;
 import android.widget.ExpandableListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.ProjectSharing;
 import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;

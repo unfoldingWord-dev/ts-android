@@ -2,6 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -22,6 +23,7 @@ import com.door43.translationstudio.util.Security;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.json.JSONArray;
@@ -45,7 +47,7 @@ import java.util.regex.Pattern;
  * This class handles all the features for importing and exporting projects.
  * TODO: we need to pull all of the existing import and export code into this class.
  */
-public class ProjectSharing {
+public class Sharing {
 
     /**
      * Exports a json array of projects and the translations available.
@@ -128,7 +130,7 @@ public class ProjectSharing {
                     json.put("target_languages", languagesJson);
                     libraryJson.put(json);
                 } catch (JSONException e) {
-                    Logger.e(ProjectSharing.class.getName(), "Failed to generate a library record for the project "+p.getId(), e);
+                    Logger.e(Sharing.class.getName(), "Failed to generate a library record for the project "+p.getId(), e);
                 }
             }
         }
@@ -157,7 +159,7 @@ public class ProjectSharing {
                         Zip.unzip(archive, extractedDir);
                     } catch (IOException e) {
                         FileUtilities.deleteRecursive(extractedDir);
-                        Logger.e(ProjectSharing.class.getName(), "failed to extract the project archive", e);
+                        Logger.e(Sharing.class.getName(), "failed to extract the project archive", e);
                         return projectImports.values().toArray(new ProjectImport[projectImports.size()]);
                     }
                 }
@@ -197,9 +199,9 @@ public class ProjectSharing {
                             }
                         }
                     } catch (JSONException e) {
-                        Logger.e(ProjectSharing.class.getName(), "failed to parse the manifest", e);
+                        Logger.e(Sharing.class.getName(), "failed to parse the manifest", e);
                     } catch (IOException e) {
-                        Logger.e(ProjectSharing.class.getName(), "failed to read the manifest file", e);
+                        Logger.e(Sharing.class.getName(), "failed to read the manifest file", e);
                     }
                 }
             }
@@ -227,7 +229,7 @@ public class ProjectSharing {
                 File[] files = extractedDirectory.listFiles(new FilenameFilter() {
                     @Override
                     public boolean accept(File file, String s) {
-                        return ProjectSharing.validateProjectArchiveName(s);
+                        return Sharing.validateProjectArchiveName(s);
                     }
                 });
                 if(files.length == 1) {
@@ -239,7 +241,7 @@ public class ProjectSharing {
                 }
             } catch (IOException e) {
                 FileUtilities.deleteRecursive(extractedDirectory);
-                Logger.e(ProjectSharing.class.getName(), "failed to extract the legacy project archive", e);
+                Logger.e(Sharing.class.getName(), "failed to extract the legacy project archive", e);
                 return false;
             }
 
@@ -329,7 +331,7 @@ public class ProjectSharing {
         final Project p = AppContext.projectManager().getProject(projectImport.projectId);
         if(p == null) {
             projectImport.setMissingSource(true);
-            Logger.i(ProjectSharing.class.getName(), "Missing project source for import");
+            Logger.i(Sharing.class.getName(), "Missing project source for import");
         }
 
         // look through items to import
@@ -390,7 +392,7 @@ public class ProjectSharing {
                         for (String frameFileName : frameFileNames) {
                             String[] pieces = frameFileName.split("\\.");
                             if (pieces.length != 2) {
-                                Logger.w(ProjectSharing.class.getName(), "Unexpected file in frame import " + frameFileName);
+                                Logger.w(Sharing.class.getName(), "Unexpected file in frame import " + frameFileName);
                                 continue;
                             }
                             String frameId = pieces[0];
@@ -451,7 +453,7 @@ public class ProjectSharing {
                                             }
                                             destFile.getParentFile().mkdirs();
                                             if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
-                                                Logger.e(ProjectSharing.class.getName(), "Failed to import frame");
+                                                Logger.e(Sharing.class.getName(), "Failed to import frame");
                                                 hadErrors = true;
                                             }
                                         }
@@ -468,7 +470,7 @@ public class ProjectSharing {
                                                 }
                                                 destFile.getParentFile().mkdirs();
                                                 if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
-                                                    Logger.e(ProjectSharing.class.getName(), "Failed to import chapter title");
+                                                    Logger.e(Sharing.class.getName(), "Failed to import chapter title");
                                                     hadErrors = true;
                                                 }
                                             } else if(fi.getId().equals("reference")) {
@@ -480,15 +482,15 @@ public class ProjectSharing {
                                                 }
                                                 destFile.getParentFile().mkdirs();
                                                 if (!FileUtilities.moveOrCopy(srcFile, destFile)) {
-                                                    Logger.e(ProjectSharing.class.getName(), "Failed to import chapter reference");
+                                                    Logger.e(Sharing.class.getName(), "Failed to import chapter reference");
                                                     hadErrors = true;
                                                 }
                                             } else {
-                                                Logger.w(ProjectSharing.class.getName(), "Unknown file import request. Expecting title or reference but found "+fi.getId());
+                                                Logger.w(Sharing.class.getName(), "Unknown file import request. Expecting title or reference but found "+fi.getId());
                                             }
                                         }
                                     } else {
-                                        Logger.w(ProjectSharing.class.getName(), "Unknown import request. Expecting FrameImport or FileImport but found "+r.getClass().getName());
+                                        Logger.w(Sharing.class.getName(), "Unknown import request. Expecting FrameImport or FileImport but found "+r.getClass().getName());
                                     }
                                 }
                             }
@@ -500,7 +502,7 @@ public class ProjectSharing {
                             try {
                                 FileUtils.moveDirectory(ti.translationDirectory, repoDir);
                             } catch (IOException e) {
-                                Logger.e(ProjectSharing.class.getName(), "failed to import the project directory", e);
+                                Logger.e(Sharing.class.getName(), "failed to import the project directory", e);
                                 hadErrors = true;
                                 continue;
                             }
@@ -556,6 +558,179 @@ public class ProjectSharing {
         return export(p, new SourceLanguage[0], new Language[]{p.getSelectedTargetLanguage()});
     }
 
+    /**
+     * Exports all of the source for multiple projects
+     * @param projects an array of source projects that will be exported
+     * @return the path to the export archive
+     */
+    public static String exportSource(Project[] projects, OnProgressCallback callback) throws IOException {
+        File exportDir = new File(AppContext.context().getCacheDir() + "/" + AppContext.context().getResources().getString(R.string.exported_projects_dir));
+        ArrayList<File> zipList = new ArrayList<>();
+        MainApplication context = AppContext.context();
+        File stagingDir = new File(exportDir, System.currentTimeMillis() + "");
+        File sourceDir = new File(stagingDir, "sourceTranslations");
+        File dataDir = new File(stagingDir, "data");
+        File manifestFile = new File(stagingDir, "manifest.json");
+        JSONObject manifestJson = new JSONObject();
+        JSONArray projectsCatalogJson = new JSONArray();
+        DataStore ds = AppContext.projectManager().getDataStore();
+        sourceDir.mkdirs();
+        dataDir.mkdirs();
+
+        // prepare manifest
+        try {
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            manifestJson.put("generator", "translationStudio");
+            manifestJson.put("version", pInfo.versionCode);
+            manifestJson.put("timestamp", System.currentTimeMillis());
+        } catch (JSONException e) {
+            Logger.e(Sharing.class.getName(), "failed to add to json object", e);
+            return "";
+        } catch (PackageManager.NameNotFoundException e) {
+            Logger.e(Sharing.class.getName(), "failed to get the package name", e);
+            return "";
+        }
+
+        // export project source
+        for(int i = 0; i < projects.length; i ++) {
+            if(Thread.currentThread().isInterrupted()) break;
+            callback.onProgress(i/(double)projects.length, String.format(AppContext.context().getResources().getString(R.string.loading_project), projects[i].getId()));
+
+            try {
+                // build project catalog
+                JSONArray projectMetaJson = new JSONArray();
+                JSONObject projectCatalogItemJson = new JSONObject();
+                projectCatalogItemJson.put("date_modified", projects[i].getDateModified() + "");
+                projectCatalogItemJson.put("slug", projects[i].getId());
+                projectCatalogItemJson.put("sort", projects[i].getSortKey());
+                for (PseudoProject sp : projects[i].getPseudoProjects()) {
+                    projectMetaJson.put(sp.getId());
+                }
+                projectCatalogItemJson.put("meta", projectMetaJson);
+                projectCatalogItemJson.put("lang_catalog", ds.sourceLanguageCatalogUrl(projects[i].getId()));
+
+                // prepare source
+                prepareProjectSourceExport(projects[i], sourceDir, dataDir);
+
+                // write projects catalog
+                projectsCatalogJson.put(projectCatalogItemJson);
+            } catch (Exception e) {
+                continue;
+            }
+        }
+
+        String projKey = ds.getKey(Uri.parse(ds.projectCatalogUrl()));
+        FileUtils.writeStringToFile(new File(dataDir, projKey), projectsCatalogJson.toString());
+        FileUtils.writeStringToFile(new File(sourceDir, "projects_catalog.link"), projKey);
+
+        // close manifest
+        FileUtils.write(manifestFile, manifestJson.toString());
+        zipList.add(manifestFile);
+        zipList.add(sourceDir);
+        zipList.add(dataDir);
+
+        // zip
+        File outputZipFile = new File(exportDir, Project.GLOBAL_PROJECT_SLUG + "_source.zip");
+        Zip.zip(zipList.toArray(new File[zipList.size()]), outputZipFile);
+
+        // clean up staging area
+        FileUtilities.deleteRecursive(stagingDir);
+
+        return outputZipFile.getAbsolutePath();
+    }
+
+    /**
+     * Prepares the source of a single project for export
+     * The prepared source is placed in the correct locations within the provided source and data directories
+     * @param p the project who's source will be prepared for export
+     * @return the path to the staging directory for this project's source
+     */
+    private static void prepareProjectSourceExport(Project p, File sourceDir, File dataDir) throws IOException {
+        SourceLanguage[] sourceLanguages = p.getSourceLanguages().toArray(new SourceLanguage[p.getSourceLanguages().size()]);
+
+        // compile source languages to include
+        // TODO: we could probably place this in a different method.
+        if(sourceLanguages.length > 0) {
+            try {
+                DataStore ds = AppContext.projectManager().getDataStore();
+                dataDir.mkdirs();
+
+
+
+                File projectSourceDir = new File(sourceDir, p.getId());
+                projectSourceDir.mkdirs();
+                JSONArray srcLangCatJson = new JSONArray();
+
+                // build language catalogs
+                for (SourceLanguage s : sourceLanguages) {
+                    SourceLanguage l = p.getSourceLanguage(s.getId());
+                    if(l == null) continue;
+
+                    JSONObject srcLangCatItemJson = new JSONObject();
+                    JSONArray srcLangCatProjMetaJson = new JSONArray();
+                    JSONObject srcLangCatProj = new JSONObject();
+                    srcLangCatProj.put("desc", p.getDescription(l));
+                    for(PseudoProject sp:p.getPseudoProjects()) {
+                        srcLangCatProjMetaJson.put(sp.getTitle(l));
+                    }
+                    srcLangCatProj.put("meta",srcLangCatProjMetaJson);
+                    srcLangCatProj.put("name", p.getTitle(l));
+
+                    JSONObject srcLangCatLang = new JSONObject();
+                    srcLangCatLang.put("date_modified", l.getDateModified() + "");
+                    srcLangCatLang.put("direction", l.getDirectionName());
+                    srcLangCatLang.put("name", l.getName());
+                    srcLangCatLang.put("slug", l.getId());
+
+                    srcLangCatItemJson.put("language", srcLangCatLang);
+                    srcLangCatItemJson.put("project", srcLangCatProj);
+                    srcLangCatItemJson.put("res_catalog", ds.resourceCatalogUrl(p.getId(), l.getId()));
+
+                    srcLangCatJson.put(srcLangCatItemJson);
+
+                    // resources catalog
+                    File languageSourceDir = new File(projectSourceDir, l.getId());
+                    languageSourceDir.mkdirs();
+                    String resources = ds.fetchResourceCatalog(p.getId(), l.getId(), false, false);
+                    String resKey = ds.getKey(Uri.parse(ds.resourceCatalogUrl(p.getId(), l.getId())));
+                    FileUtils.writeStringToFile(new File(dataDir, resKey), resources);
+                    FileUtils.writeStringToFile(new File(languageSourceDir, "resources_catalog.link"), resKey);
+
+                    for(Resource r:l.getResources()) {
+                        File resourceDir = new File(languageSourceDir, r.getId());
+                        resourceDir.mkdirs();
+
+                        // terms
+                        String terms = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false, false);
+                        String termKey = ds.getKey(Uri.parse(ds.termsUrl(p.getId(), l.getId(), r.getId())));
+                        FileUtils.writeStringToFile(new File(dataDir, termKey), terms);
+                        FileUtils.writeStringToFile(new File(resourceDir, "terms.link"), termKey);
+
+                        // source
+                        String source = ds.fetchSource(p.getId(), l.getId(), r.getId(), false, false);
+                        String srcKey = ds.getKey(Uri.parse(ds.sourceUrl(p.getId(), l.getId(), r.getId())));
+                        FileUtils.writeStringToFile(new File(dataDir, srcKey), source);
+                        FileUtils.writeStringToFile(new File(resourceDir, "source.link"), srcKey);
+
+                        // notes
+                        String notes = ds.fetchNotes(p.getId(), l.getId(), r.getId(), false, false);
+                        String notesKey = ds.getKey(Uri.parse(ds.notesUrl(p.getId(), l.getId(), r.getId())));
+                        FileUtils.writeStringToFile(new File(dataDir, notesKey), notes);
+                        FileUtils.writeStringToFile(new File(resourceDir, "notes.link"), notesKey);
+
+                        // images
+                        // TODO: copy images over as well. we don't want to do this until the zipper supports specifying the location in the archive so we don't have to copy all the images.
+                    }
+                }
+                // write languages catalog
+                String langKey = ds.getKey(Uri.parse(ds.sourceLanguageCatalogUrl(p.getId())));
+                FileUtils.writeStringToFile(new File(dataDir, langKey), srcLangCatJson.toString());
+                FileUtils.writeStringToFile(new File(projectSourceDir, "languages_catalog.link"), langKey);
+            } catch (JSONException e) {
+                Logger.e(Sharing.class.getName(), "Failed to generate source catalogs", e);
+            }
+        }
+    }
 
     /**
      * Exports the project in multiple languages as a translationStudio project.
@@ -586,15 +761,16 @@ public class ProjectSharing {
             manifestJson.put("version", pInfo.versionCode);
             manifestJson.put("timestamp", System.currentTimeMillis());
         } catch (JSONException e) {
-            Logger.e(ProjectSharing.class.getName(), "failed to add to json object", e);
+            Logger.e(Sharing.class.getName(), "failed to add to json object", e);
             return archivePath;
         } catch (PackageManager.NameNotFoundException e) {
-            Logger.e(ProjectSharing.class.getName(), "failed to get the package name", e);
+            Logger.e(Sharing.class.getName(), "failed to get the package name", e);
             return archivePath;
         }
 
         // compile source languages to include
         // TODO: we could probably place this in a different method.
+        // TODO: use prepareProjectSourceExport in place of this below.
         if(sourceLanguages.length > 0) {
             try {
                 DataStore ds = AppContext.projectManager().getDataStore();
@@ -688,7 +864,7 @@ public class ProjectSharing {
 
                 zipList.add(sourceCatalogDir);
             } catch (JSONException e) {
-                Logger.e(ProjectSharing.class.getName(), "Failed to generate source catalogs", e);
+                Logger.e(Sharing.class.getName(), "Failed to generate source catalogs", e);
             }
         }
 
@@ -713,7 +889,7 @@ public class ProjectSharing {
                     commit.call();
                 }
             } catch (Exception e) {
-                Logger.e(ProjectSharing.class.getName(), "failed to stage the repo before exporting tS archive", e);
+                Logger.e(Sharing.class.getName(), "failed to stage the repo before exporting tS archive", e);
                 stagingSucceeded = false;
                 continue;
             }
@@ -733,7 +909,7 @@ public class ProjectSharing {
                 translationJson.put("git_commit", gitCommit);
                 translationJson.put("path", projectComplexName);
             } catch (JSONException e) {
-                Logger.e(ProjectSharing.class.getName(), "failed to add to json object", e);
+                Logger.e(Sharing.class.getName(), "failed to add to json object", e);
                 return archivePath;
             }
             projectsJson.put(translationJson);
@@ -751,7 +927,7 @@ public class ProjectSharing {
             }
             manifestJson.put("signature", signature);
         } catch (JSONException e) {
-            Logger.e(ProjectSharing.class.getName(), "failed to add to json object", e);
+            Logger.e(Sharing.class.getName(), "failed to add to json object", e);
             return archivePath;
         }
         FileUtils.write(manifestFile, manifestJson.toString());
@@ -1010,7 +1186,7 @@ public class ProjectSharing {
                                     f.save();
                                 }
                             } else {
-                                Logger.w(ProjectSharing.class.getName(), "importDokuWiki: unknown chapter " + chapterId);
+                                Logger.w(Sharing.class.getName(), "importDokuWiki: unknown chapter " + chapterId);
                             }
                             chapterId = "";
                             frameId = "";
@@ -1053,7 +1229,7 @@ public class ProjectSharing {
                     }
                 }
             } catch (IOException e) {
-                Logger.e(ProjectSharing.class.getName(), "failed to import the DokuWiki file", e);
+                Logger.e(Sharing.class.getName(), "failed to import the DokuWiki file", e);
                 return false;
             }
             return true;
@@ -1075,7 +1251,7 @@ public class ProjectSharing {
             try {
                 Zip.unzip(archive, extractedDirectory);
             } catch (IOException e) {
-                Logger.e(ProjectSharing.class.getName(), "failed to extract the DokuWiki translation", e);
+                Logger.e(Sharing.class.getName(), "failed to extract the DokuWiki translation", e);
                 FileUtilities.deleteRecursive(extractedDirectory);
                 return false;
             }
@@ -1097,7 +1273,7 @@ public class ProjectSharing {
                 File gitDir = new File(realPath, ".git");
                 if(gitDir.exists() && gitDir.isDirectory()) {
                     FileUtilities.deleteRecursive(extractedDirectory);
-                    return ProjectSharing.prepareLegacyArchiveImport(archive);
+                    return Sharing.prepareLegacyArchiveImport(archive);
                 }
 
                 // begin import
@@ -1110,5 +1286,10 @@ public class ProjectSharing {
             FileUtilities.deleteRecursive(extractedDirectory);
         }
         return success;
+    }
+
+    public interface OnProgressCallback {
+        void onProgress(double progress, String message);
+        void onSuccess();
     }
 }

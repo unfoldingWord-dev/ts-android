@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.util.Logger;
@@ -28,6 +29,11 @@ import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class DeveloperToolsActivity extends TranslatorBaseActivity {
@@ -241,6 +247,81 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                         if(!isInterrupted()) {
                             AppContext.context().showToastMessage(R.string.success);
                         }
+                    }
+                };
+
+                // allow the user to cancel the dialog
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        thread.stop();
+                    }
+                });
+                dialog.show();
+
+                thread.start();
+            }
+        }));
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                final Handler handle = new Handler(Looper.getMainLooper());
+                final Project[] projects = AppContext.projectManager().getProjects();
+                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setIndeterminate(true);
+                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                dialog.setMax(projects.length);
+                dialog.setMessage(getResources().getString(R.string.exporting_source));
+
+                final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
+                    @Override
+                    public void onStop() {
+
+                    }
+
+                    @Override
+                    public void run() {
+                        try {
+                            File archiveFile = new File(Sharing.exportSource(projects, new Sharing.OnProgressCallback() {
+                                @Override
+                                public void onProgress(final double progress, final String message) {
+                                    handle.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            dialog.setIndeterminate(false);
+                                            dialog.setMessage(message);
+                                            dialog.setProgress((int)Math.round(projects.length*progress));
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onSuccess() {
+
+                                }
+                            }));
+                            if(isInterrupted()) {
+                                archiveFile.delete();
+                                return;
+                            }
+                            if(archiveFile.exists()) {
+                                File output = new File(AppContext.getPublicDownloadsDirectory(), archiveFile.getName());
+                                FileUtils.copyFile(archiveFile, output);
+                            }
+                        } catch (IOException e) {
+                            AppContext.context().showException(e);
+                            stop();
+                        }
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+                        if(!isInterrupted()) {
+                            AppContext.context().showToastMessage(R.string.success);
+                        }
+                        dialog.dismiss();
                     }
                 };
 

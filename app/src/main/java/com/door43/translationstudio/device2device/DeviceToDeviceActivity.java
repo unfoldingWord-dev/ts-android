@@ -29,7 +29,7 @@ import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectSharing;
+import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
@@ -577,7 +577,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
                     // generate project library
                     // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
-                    String library = ProjectSharing.generateLibrary(AppContext.projectManager().getProjects(), preferredLanguages);
+                    String library = Sharing.generateLibrary(AppContext.projectManager().getProjects(), preferredLanguages);
 
                     mService.writeTo(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 } else if(data[0].equals(SocketMessages.MSG_PROJECT_ARCHIVE)) {
@@ -626,7 +626,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     }
                                 }
                                 if(requestedTranslations.size() > 0) {
-                                    String path = ProjectSharing.export(p, requestedSourceLanguages.toArray(new SourceLanguage[requestedSourceLanguages.size()]), requestedTranslations.toArray(new Language[requestedTranslations.size()]));
+                                    String path = Sharing.export(p, requestedSourceLanguages.toArray(new SourceLanguage[requestedSourceLanguages.size()]), requestedTranslations.toArray(new Language[requestedTranslations.size()]));
                                     final File archive = new File(path);
                                     if(archive.exists()) {
                                         // open a socket to send the project
@@ -804,7 +804,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             in.close();
 
                             // import the project
-                            ProjectImport[] importStatuses = ProjectSharing.prepareArchiveImport(file);
+                            ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
                             if (importStatuses.length > 0) {
                                 boolean importWarnings = false;
                                 for(ProjectImport s:importStatuses) {
@@ -827,9 +827,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                         public void onOk(ProjectImport[] requests) {
                                             showProgress(getResources().getString(R.string.loading));
                                             for(ProjectImport r:requests) {
-                                                ProjectSharing.importProject(r);
+                                                Sharing.importProject(r);
                                             }
-                                            ProjectSharing.cleanImport(requests);
+                                            Sharing.cleanImport(requests);
                                             file.delete();
                                             hideProgress();
                                             app().showToastMessage(R.string.success);
@@ -838,7 +838,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                         @Override
                                         public void onCancel(ProjectImport[] requests) {
                                             // import was aborted
-                                            ProjectSharing.cleanImport(requests);
+                                            Sharing.cleanImport(requests);
                                             file.delete();
                                         }
                                     });
@@ -847,9 +847,9 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     newFragment.show(ft, "dialog");
                                 } else {
                                     for(ProjectImport r:importStatuses) {
-                                        ProjectSharing.importProject(r);
+                                        Sharing.importProject(r);
                                     }
-                                    ProjectSharing.cleanImport(importStatuses);
+                                    Sharing.cleanImport(importStatuses);
                                     file.delete();
                                     app().showToastMessage(R.string.success);
                                 }

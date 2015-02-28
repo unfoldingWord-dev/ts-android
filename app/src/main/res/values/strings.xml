@@ -268,6 +268,11 @@
     <string name="loading_languages">Loading languages</string>
     <string name="loading_resources">Loading resources</string>
     <string name="downloading_project">Downloading project <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
+    <!-- This is the direction up. The opposite of down. -->
     <string name="up">Up</string>
+    <!-- indicates the directory/folder on the device does not contain any files -->
     <string name="empty_directory">That directory is empty</string>
+    <string name="export_source" translatable="false">Export source projects</string>
+    <string name="export_source_description" translatable="false">Exports all of the project sources into an archive that may be imported to another device or added to an apk</string>
+    <string name="exporting_source">Exporting source projects</string>
 </resources>

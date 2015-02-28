@@ -316,6 +316,15 @@ public class DataStore {
     }
 
     /**
+     * Generates the data key from a uri
+     * @param uri
+     * @return
+     */
+    public static String getKey(Uri uri) {
+        return Security.md5(uri.getHost()+uri.getPath());
+    }
+
+    /**
      * Downloads a file and places it in the cached assets directory
      * @param urlString the url from which the file will be downloaded
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
@@ -324,7 +333,7 @@ public class DataStore {
     private String downloadAsset(String urlString, boolean ignoreCache) {
         SharedPreferences.Editor editor = mSettings.edit();
         Uri uri = Uri.parse(urlString);
-        String key = Security.md5(uri.getHost()+uri.getPath());
+        String key = getKey(uri);
         File file = new File(cachedAssetsDir(), "data/" + key);
         String dateModifiedRaw = uri.getQueryParameter("date_modified");
         boolean fileExists = file.exists();
@@ -380,7 +389,7 @@ public class DataStore {
         String path = projectCatalogPath();
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json", ignoreCache);
+            String key = downloadAsset(projectCatalogUrl(), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -392,6 +401,14 @@ public class DataStore {
      */
     public static String projectCatalogPath() {
         return SOURCE_TRANSLATIONS_DIR + "projects_catalog.json";
+    }
+
+    /**
+     * Returns the project catalog url
+     * @return
+     */
+    public static String projectCatalogUrl() {
+        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json";
     }
 
     /**
@@ -492,7 +509,7 @@ public class DataStore {
         String path = termsPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json", ignoreCache);
+            String key = downloadAsset(termsUrl(projectId, languageId, resourceId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -530,6 +547,17 @@ public class DataStore {
     }
 
     /**
+     * Returns the terms url
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public static String termsUrl(String projectId, String languageId, String resourceId) {
+        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
+    }
+
+    /**
      * Returns the notes
      * @param projectId
      * @param languageId
@@ -542,7 +570,7 @@ public class DataStore {
         String path = notesPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json", ignoreCache);
+            String key = downloadAsset(notesUrl(projectId, languageId, resourceId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -580,6 +608,17 @@ public class DataStore {
     }
 
     /**
+     * Returns the notes url
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public String notesUrl(String projectId, String languageId, String resourceId) {
+        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
+    }
+
+    /**
      * Returns the source text
      * @param projectId
      * @param languageId
@@ -592,7 +631,7 @@ public class DataStore {
         String path = sourcePath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json", ignoreCache);
+            String key = downloadAsset(sourceUrl(projectId, languageId, resourceId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -627,6 +666,17 @@ public class DataStore {
      */
     public String sourcePath(String projectId, String languageId, String resourceId) {
         return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
+    }
+
+    /**
+     * Returns the source url
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public String sourceUrl(String projectId, String languageId, String resourceId) {
+        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json";
     }
 
     /**

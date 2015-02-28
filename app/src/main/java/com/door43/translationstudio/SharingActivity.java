@@ -18,7 +18,7 @@ import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectSharing;
+import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
@@ -145,9 +145,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                             String archivePath;
 
                             if (exportAsDokuwiki) {
-                                archivePath = ProjectSharing.exportDW(p);
+                                archivePath = Sharing.exportDW(p);
                             } else {
-                                archivePath = ProjectSharing.export(p);
+                                archivePath = Sharing.export(p);
                             }
                             File archiveFile = new File(archivePath);
                             if(archiveFile.exists()) {
@@ -207,7 +207,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     @Override
                     public void run() {
                         // TODO: allow the user to choose which projects to export
-                        String library = ProjectSharing.generateLibrary(AppContext.projectManager().getProjects());
+                        String library = Sharing.generateLibrary(AppContext.projectManager().getProjects());
 
                         // try to locate the removable sd card
                         if(AppContext.isExternalMediaAvailable()) {
@@ -218,9 +218,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                                 // export the project
                                 // TODO: we need to allow the user to choose which project(s) to export
                                 if (exportAsDokuwiki) {
-                                    archivePath = ProjectSharing.exportDW(p);
+                                    archivePath = Sharing.exportDW(p);
                                 } else {
-                                    archivePath = ProjectSharing.export(p);
+                                    archivePath = Sharing.export(p);
                                 }
                                 File archiveFile = new File(archivePath);
                                 File output = new File(externalDestDir, archiveFile.getName());
@@ -329,7 +329,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 
                         @Override
                         public void run() {
-                            ProjectImport[] importRequests = ProjectSharing.prepareArchiveImport(file);
+                            ProjectImport[] importRequests = Sharing.prepareArchiveImport(file);
                             if (importRequests.length > 0) {
                                 boolean importWarnings = false;
                                 for (ProjectImport s : importRequests) {
@@ -360,9 +360,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                                             });
 
                                             for (ProjectImport r : requests) {
-                                                ProjectSharing.importProject(r);
+                                                Sharing.importProject(r);
                                             }
-                                            ProjectSharing.cleanImport(requests);
+                                            Sharing.cleanImport(requests);
                                             AppContext.context().showToastMessage(R.string.success);
                                             handle.post(new Runnable() {
                                                 @Override
@@ -381,13 +381,13 @@ public class SharingActivity extends TranslatorBaseActivity {
                                 } else {
                                     // TODO: we should update the status with the results of the import and let the user see an overview of the import process.
                                     for (ProjectImport r : importRequests) {
-                                        ProjectSharing.importProject(r);
+                                        Sharing.importProject(r);
                                     }
-                                    ProjectSharing.cleanImport(importRequests);
+                                    Sharing.cleanImport(importRequests);
                                     app().showToastMessage(R.string.success);
                                 }
                             } else {
-                                ProjectSharing.cleanImport(importRequests);
+                                Sharing.cleanImport(importRequests);
                                 app().showToastMessage(R.string.translation_import_failed);
                             }
                         }
@@ -413,7 +413,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 
                         @Override
                         public void run() {
-                            if (ProjectSharing.importDokuWikiArchive(file)) {
+                            if (Sharing.importDokuWikiArchive(file)) {
                                 app().showToastMessage(R.string.success);
                             } else {
                                 app().showToastMessage(R.string.translation_import_failed);
@@ -442,7 +442,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 
                         @Override
                         public void run() {
-                            if (ProjectSharing.importDokuWiki(file)) {
+                            if (Sharing.importDokuWiki(file)) {
                                 app().showToastMessage(R.string.success);
                             } else {
                                 app().showToastMessage(R.string.translation_import_failed);
