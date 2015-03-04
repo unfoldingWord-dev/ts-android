@@ -1495,7 +1495,6 @@ public class MainActivity extends TranslatorBaseActivity {
                                     dialog.setMessage(title);
                                 }
                             });
-
                             AppContext.projectManager().downloadProjectUpdates(p, new ProjectManager.OnProgressCallback() {
                                 @Override
                                 public void onProgress(final double progress, final String message) {

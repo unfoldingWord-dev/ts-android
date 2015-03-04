@@ -973,6 +973,14 @@ public class Project implements Model {
         }
     }
 
+    /**
+     * Checks if a source language has been selected
+     * @return
+     */
+    public boolean hasSelectedSourceLanguage() {
+        return getSourceLanguage(mSelectedSourceLanguageId) != null;
+    }
+
     public interface OnCommitComplete {
         public void success();
         public void error(Throwable e);

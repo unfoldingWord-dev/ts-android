@@ -907,14 +907,16 @@ public class ProjectManager {
             }
         }
 
-        // attempt to select a more accurate default language for the project title and description
+        // Attempt to select a more accurate default language for the project title and description
         String deviceLocale = Locale.getDefault().getLanguage();
-        if(p.getSourceLanguage(deviceLocale) != null) {
-            p.setSelectedSourceLanguage(deviceLocale);
-        } else if(p.getSourceLanguage("en") != null) {
-            p.setSelectedSourceLanguage("en");
+        // don't change the source language if already selecteed
+        if(!p.hasSelectedSourceLanguage()) {
+            if (p.getSourceLanguage(deviceLocale) != null) {
+                p.setSelectedSourceLanguage(deviceLocale);
+            } else if (p.getSourceLanguage("en") != null) {
+                p.setSelectedSourceLanguage("en");
+            }
         }
-
         return importedLanguages;
     }
 

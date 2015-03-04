@@ -53,6 +53,7 @@ public class USXRenderer extends RenderingEngine {
         out = renderLineBreaks(out);
         out = renderWhiteSpace(out);
         out = renderParagraph(out);
+        out = renderBlankLine(out);
         out = renderPoeticLine(out);
         out = renderVerse(out);
         out = renderNote(out);
@@ -206,7 +207,26 @@ public class USXRenderer extends RenderingEngine {
     }
 
     /**
-     * Renders all paragraph tgs
+     * Renders all blank line tags
+     * @param in
+     * @return
+     */
+    public CharSequence renderBlankLine(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = paraShortPattern("b");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), "\n\n");
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Renders all paragraph tags
      * @param in
      * @return
      */
@@ -255,11 +275,20 @@ public class USXRenderer extends RenderingEngine {
     }
 
     /**
-     * Returns a pattern that matches a para tag
+     * Returns a pattern that matches a para tag pair e.g. <para style=""></para>
      * @param style a string or regular expression to identify the style
      * @return
      */
     private static Pattern paraPattern(String style) {
         return Pattern.compile("<para\\s+style=\""+style+"\"\\s*>\\s*(((?!</para>).)*)</para>", Pattern.DOTALL);
+    }
+
+    /**
+     * Returns a pattern that matches a single para tag e.g. <para style=""/>
+     * @param style a string or regular expression to identify the style
+     * @return
+     */
+    private static Pattern paraShortPattern(String style) {
+        return Pattern.compile("<para\\s+style=\""+style+"\"\\s*/>", Pattern.DOTALL);
     }
 }
