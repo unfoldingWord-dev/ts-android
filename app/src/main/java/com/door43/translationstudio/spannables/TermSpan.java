@@ -13,6 +13,7 @@ import com.door43.translationstudio.util.AppContext;
 public class TermSpan extends Span {
     private SpannableStringBuilder mSpannable;
     private final String mTermId;
+    public static final String PATTERN = "<keyterm>(((?!</keyterm>).)*)</keyterm>";
 
     public TermSpan(String id, String text) {
         super(text, text);

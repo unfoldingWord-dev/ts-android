@@ -1006,7 +1006,7 @@ public class ProjectManager {
         try {
             jsonNotes = new JSONArray(jsonString);
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "malformed notes", e);
+            Logger.e(this.getClass().getName(), "malformed notes for project "+p.getId(), e);
             return;
         }
 
@@ -1069,7 +1069,7 @@ public class ProjectManager {
         try {
             jsonTerms = new JSONArray(jsonString);
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "malformed terms", e);
+            Logger.e(this.getClass().getName(), "malformed terms for project "+p.getId(), e);
             return;
         }
 

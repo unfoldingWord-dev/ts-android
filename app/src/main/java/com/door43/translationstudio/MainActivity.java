@@ -170,6 +170,12 @@ public class MainActivity extends TranslatorBaseActivity {
                 updateNoteMarker((NoteSpan)span, start, end);
             }
         };
+        mKeyTermClickListener = new Span.OnClickListener() {
+            @Override
+            public void onClick(View view, Span span, int start, int end) {
+                showTermDetails(((TermSpan)span).getTermId());
+            }
+        };
 
         mActivityIsInitializing = true;
         app().setMainActivity(this);
@@ -326,14 +332,6 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
         mTranslationProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.translationProgressBar);
         mSourceProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.sourceProgressBar);
-
-        // listens for for key term clicks and opens term drawer
-        mKeyTermClickListener = new Span.OnClickListener() {
-            @Override
-            public void onClick(View view, Span span, int start, int end) {
-                showTermDetails(((TermSpan)span).getTermId());
-            }
-        };
 
         // set up resource switching
         mSourceTitleText.setOnClickListener(new View.OnClickListener() {
