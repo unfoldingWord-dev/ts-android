@@ -7,7 +7,6 @@ import android.os.Looper;
  * Created by joel on 1/26/2015.
  */
 public abstract class RenderingEngine {
-//    private String mInput;
     private OnRenderCallback mCallback;
     private boolean mStopped = false;
     private boolean mRunning = false;
@@ -22,11 +21,9 @@ public abstract class RenderingEngine {
         mCallback = callback;
         mRunning = true;
         mStopped = false;
-//        final Handler handle = new Handler();
         new Thread() {
             @Override
             public void run() {
-//                Looper.prepare();
                 CharSequence output = render(input);
                 if(output != null) {
                     mCallback.onComplete(output);
@@ -34,7 +31,6 @@ public abstract class RenderingEngine {
                     mCallback.onError(input);
                 }
                 mRunning = false;
-//                Looper.loop();
             }
         }.start();
     }

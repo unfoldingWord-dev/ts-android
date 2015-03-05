@@ -67,7 +67,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
     public void NotifyAdapterDataSetChanged() {
         if(mModelItemAdapter != null && AppContext.projectManager().getSelectedProject() != null) {
             mModelItemAdapter.changeDataSet(AppContext.projectManager().getSelectedProject().getChapters());
-        } else {
+        } else if(mModelItemAdapter != null)  {
             mModelItemAdapter.changeDataSet(new Model[]{});
         }
         if(mListView != null) {

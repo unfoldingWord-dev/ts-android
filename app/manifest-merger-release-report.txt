@@ -209,9 +209,9 @@ ADDED from AndroidManifest.xml:120:9
 activity#com.door43.translationstudio.DeveloperToolsActivity
 ADDED from AndroidManifest.xml:130:9
 	android:label
-		ADDED from AndroidManifest.xml:133:13
-	android:theme
 		ADDED from AndroidManifest.xml:132:13
+	android:theme
+		ADDED from AndroidManifest.xml:133:13
 	android:name
 		ADDED from AndroidManifest.xml:131:13
 intent-filter#android.intent.category.DEFAULT+com.activity.DeveloperToolsActivity
@@ -221,9 +221,19 @@ ADDED from AndroidManifest.xml:135:17
 	android:name
 		ADDED from AndroidManifest.xml:135:25
 category#android.intent.category.DEFAULT
-ADDED from AndroidManifest.xml:136:17
+ADDED from AndroidManifest.xml:137:17
 	android:name
-		ADDED from AndroidManifest.xml:136:27
+		ADDED from AndroidManifest.xml:137:27
+activity#com.door43.translationstudio.GetMoreProjectsActivity
+ADDED from AndroidManifest.xml:144:9
+	android:label
+		ADDED from AndroidManifest.xml:146:13
+	android:parentActivityName
+		ADDED from AndroidManifest.xml:147:13
+	android:theme
+		ADDED from AndroidManifest.xml:148:13
+	android:name
+		ADDED from AndroidManifest.xml:145:13
 uses-sdk
 INJECTED from AndroidManifest.xml:0:0 reason: use-sdk injection requested
 MERGED from com.android.support:appcompat-v7:21.0.0:15:5

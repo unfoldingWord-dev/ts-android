@@ -141,6 +141,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
     private boolean mTranslationEditTextIsFocused;
+    private TextView mHelpText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -332,6 +333,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mTranslationEditText = (EditText)mCenterPane.findViewById(R.id.inputText);
         mTranslationProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.translationProgressBar);
         mSourceProgressBar = (ProgressBar)mCenterPane.findViewById(R.id.sourceProgressBar);
+        mHelpText = (TextView)findViewById(R.id.helpTextView);
 
         // set up resource switching
         mSourceTitleText.setOnClickListener(new View.OnClickListener() {
@@ -638,8 +640,7 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         });
 
-        // display help text when sourceText is empty.
-        final TextView helpText = (TextView)findViewById(R.id.helpTextView);
+        // display help text when sourceText is empty
         mSourceText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
@@ -649,10 +650,10 @@ public class MainActivity extends TranslatorBaseActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
                 if(charSequence.length() > 0) {
-                    helpText.setVisibility(View.GONE);
+//                    mHelpText.setVisibility(View.VISIBLE);
                     mTranslationEditText.setEnabled(true);
                 } else {
-                    helpText.setVisibility(View.VISIBLE);
+//                    mHelpText.setVisibility(View.GONE);
                     mTranslationEditText.setEnabled(false);
                 }
             }
@@ -746,12 +747,12 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // this thread handles the fading animations
         mHighlightSourceThread = new ThreadableUI(MainActivity.this) {
-
+            ThreadableUI renderThread;
             @Override
             public void onStop() {
                 // kill children if this thread is stopped
                 mHighlightSourceThread = null;
-                mSourceRendering.stop();
+                renderThread.stop();
             }
 
             @Override
@@ -794,19 +795,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 } else {
                     mSourceRendering.addEngine(new DefaultRenderer());
                 }
-                mSourceRendering.init(mSelectedFrame.getText(), new RenderingGroup.Callback() {
-                    @Override
-                    public void onComplete(CharSequence output) {
-                        mSourceText.setText(output);
-                        mSourceText.clearAnimation();
-                        mSourceText.startAnimation(in);
-                        mSourceProgressBar.clearAnimation();
-                        mSourceProgressBar.startAnimation(outProgress);
-                        // scroll to top
-                        mSourceText.scrollTo(0, 0);
-                        mRightPane.reloadTermsTab();
-                    }
-                });
+                mSourceRendering.init(mSelectedFrame.getText());
 
                 in.setAnimationListener(new Animation.AnimationListener() {
                     @Override
@@ -823,7 +812,35 @@ public class MainActivity extends TranslatorBaseActivity {
                     public void onAnimationEnd(Animation animation) {
                         if(!isInterrupted()) {
                             mSourceText.setVisibility(View.INVISIBLE);
-                            mSourceRendering.start();
+                            renderThread = new ThreadableUI(MainActivity.this) {
+                                CharSequence output;
+                                @Override
+                                public void onStop() {
+                                    mSourceRendering.stop();
+                                }
+
+                                @Override
+                                public void run() {
+                                    if(!isInterrupted()) {
+                                        output = mSourceRendering.start();
+                                    }
+                                }
+
+                                @Override
+                                public void onPostExecute() {
+                                    if(!isInterrupted()) {
+                                        mSourceText.setText(output);
+                                        mSourceText.clearAnimation();
+                                        mSourceText.startAnimation(in);
+                                        mSourceProgressBar.clearAnimation();
+                                        mSourceProgressBar.startAnimation(outProgress);
+                                        // scroll to top
+                                        mSourceText.scrollTo(0, 0);
+                                        mRightPane.reloadTermsTab();
+                                    }
+                                }
+                            };
+                            renderThread.start();
                         } else {
                             mSourceText.setAnimation(in);
                             mSourceProgressBar.clearAnimation();
@@ -868,12 +885,12 @@ public class MainActivity extends TranslatorBaseActivity {
             mHighlightTranslationThread.stop();
         }
         mHighlightTranslationThread = new ThreadableUI(MainActivity.this) {
-
+            ThreadableUI renderThread;
             @Override
             public void onStop() {
                 // kill children if this thread is stopped
                 mHighlightTranslationThread = null;
-                mTranslationRendering.stop();
+                renderThread.stop();
             }
 
             @Override
@@ -913,20 +930,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 } else {
                     mTranslationRendering.addEngine(new DefaultRenderer(mNoteClickListener));
                 }
-                mTranslationRendering.init(text, new RenderingGroup.Callback() {
-                    @Override
-                    public void onComplete(CharSequence output) {
-                        mTranslationEditText.setText(output);
-                        mTranslationEditText.clearAnimation();
-                        mTranslationEditText.startAnimation(in);
-                        mTranslationProgressBar.clearAnimation();
-                        mTranslationProgressBar.startAnimation(outProgress);
-                        // scroll to top
-                        mTranslationEditText.scrollTo(0, 0);
-                        mTranslationEditText.clearFocus();
-                        mProcessingTranslation = false;
-                    }
-                });
+                mTranslationRendering.init(text);
 
                 in.setAnimationListener(new Animation.AnimationListener() {
                     @Override
@@ -944,7 +948,36 @@ public class MainActivity extends TranslatorBaseActivity {
                         if(!isInterrupted()) {
 //                            mTranslationEditText.setText("");
                             mTranslationEditText.setVisibility(View.INVISIBLE);
-                            mTranslationRendering.start();
+                            renderThread = new ThreadableUI(MainActivity.this) {
+                                CharSequence output;
+                                @Override
+                                public void onStop() {
+                                    mTranslationRendering.stop();
+                                }
+
+                                @Override
+                                public void run() {
+                                    if(!isInterrupted()) {
+                                        output = mTranslationRendering.start();
+                                    }
+                                }
+
+                                @Override
+                                public void onPostExecute() {
+                                    if(!isInterrupted()) {
+                                        mTranslationEditText.setText(output);
+                                        mTranslationEditText.clearAnimation();
+                                        mTranslationEditText.startAnimation(in);
+                                        mTranslationProgressBar.clearAnimation();
+                                        mTranslationProgressBar.startAnimation(outProgress);
+                                        // scroll to top
+                                        mTranslationEditText.scrollTo(0, 0);
+                                        mTranslationEditText.clearFocus();
+                                        mProcessingTranslation = false;
+                                    }
+                                }
+                            };
+                            renderThread.start();
                         } else {
                             mTranslationEditText.setAnimation(in);
                             mTranslationProgressBar.clearAnimation();
@@ -1117,6 +1150,12 @@ public class MainActivity extends TranslatorBaseActivity {
                     return false;
                 }
             });
+
+            if(mSelectedFrame.getText().length() > 0) {
+                mHelpText.setVisibility(View.GONE);
+            } else {
+                mHelpText.setVisibility(View.VISIBLE);
+            }
 
             // render the source text
             renderSourceText();

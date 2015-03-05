@@ -9,12 +9,10 @@ import java.util.List;
  * Created by joel on 1/26/2015.
  */
 public class RenderingGroup {
-    private Thread mThread;
     private boolean mStopped = false;
     private boolean mRunning = false;
     private List<RenderingEngine> mEngines =  new ArrayList<RenderingEngine>();
     private CharSequence mInput;
-    private Callback mCallback;
 
     /**
      * Adds a rendering engine to the queue
@@ -27,23 +25,17 @@ public class RenderingGroup {
     /**
      * Begins the rendering operations
      */
-    public void start() {
-        if(mRunning || mInput == null || mCallback == null) return;
+    public CharSequence start() {
+        if(mRunning || mInput == null) return "";
         mRunning = true;
         mStopped = false;
-        mThread = new Thread() {
-            @Override
-            public void run() {
-                CharSequence rendered = mInput;
-                for(RenderingEngine engine:mEngines) {
-                    if(mStopped) break;
-                    rendered = engine.render(rendered);
-                }
-                mCallback.onComplete(rendered);
-                mRunning = false;
-            }
-        };
-        mThread.run();
+        CharSequence rendered = mInput;
+        for(RenderingEngine engine:mEngines) {
+            if(mStopped) break;
+            rendered = engine.render(rendered);
+        }
+        mRunning = false;
+        return rendered;
     }
 
     /**
@@ -59,14 +51,8 @@ public class RenderingGroup {
     /**
      * Initializes the rendering group
      * @param input
-     * @param callback
      */
-    public void init(String input, Callback callback) {
-        mCallback = callback;
+    public void init(String input) {
         mInput = input;
-    }
-
-    public static interface Callback {
-        public void onComplete(CharSequence output);
     }
 }
