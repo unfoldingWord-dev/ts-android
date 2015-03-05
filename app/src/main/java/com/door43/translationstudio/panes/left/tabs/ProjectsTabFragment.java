@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,8 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 
+import com.door43.translationstudio.GetMoreProjectsActivity;
+import com.door43.translationstudio.LanguageSelectorActivity;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectDialog;
@@ -39,6 +43,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pane_left_projects, container, false);
         ListView listView = (ListView)view.findViewById(R.id.projects_list_view);
+        Button moreProjectsButton = (Button)view.findViewById(R.id.moreProjectsButton);
 
         // create adapter
         if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects());
@@ -66,6 +71,14 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 } else {
                     Logger.e(this.getClass().getName(), "onItemClickListener the activity is null");
                 }
+            }
+        });
+
+        moreProjectsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent languageIntent = new Intent(getActivity(), GetMoreProjectsActivity.class);
+                startActivity(languageIntent);
             }
         });
 

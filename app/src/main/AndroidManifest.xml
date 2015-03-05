@@ -129,15 +129,26 @@
         </activity>
         <activity
             android:name=".DeveloperToolsActivity"
-            android:theme="@style/Theme.Titled"
-            android:label="@string/title_activity_developer" >
+            android:label="@string/title_activity_developer"
+            android:theme="@style/Theme.Titled" >
             <intent-filter>
                 <action android:name="com.activity.DeveloperToolsActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.door43.translationstudio.SettingsActivity" />
+        </activity>
+        <activity
+            android:name=".GetMoreProjectsActivity"
+            android:label="@string/title_activity_get_more_projects"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.Titled">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.door43.translationstudio.MainActivity" />
         </activity>
     </application>
 

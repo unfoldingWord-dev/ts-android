@@ -253,11 +253,9 @@
     <string name="force_update_projects_description" translatable="false">Re-downloads all the source for projects on the device without regard to the cache</string>
     <string name="regenerate_keys_description" translatable="false">Discards and regenerates the ssh keys used for git</string>
 
-    <!-- TODO: these are deprecated, but we need to strip out the translations before removing these so we don't get errors-->
+    <!-- TODO: these are deprecated, but we need to strip out the translations before removing these so we don't get errors -->
     <string name="pref_title_advanced_settings"></string>
-    <string name="pref_description_advanced_settings" ></string>
-
-
+    <string name="pref_description_advanced_settings"></string>
     <string name="read_debugging_log" translatable="false">Read debugging log</string>
     <string name="read_debugging_log_description" translatable="false">View the error logs that have been generated on this device.</string>
     <string name="downloading_project_updates">Checking for updates to <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
@@ -275,4 +273,8 @@
     <string name="export_source" translatable="false">Export source projects</string>
     <string name="export_source_description" translatable="false">Exports all of the project sources into an archive that may be imported to another device or added to an apk</string>
     <string name="exporting_source">Exporting source projects</string>
+    <string name="get_more_projects">Get more projects</string>
+    <string name="title_activity_get_more_projects" translatable="false">@string/get_more_projects</string>
+    <string name="get_more_projects_description">You may update existing projects or get new projects using several different methods. Please choose your preferred method below.</string>
+
 </resources>
