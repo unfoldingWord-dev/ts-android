@@ -1,7 +1,17 @@
 package com.door43.translationstudio;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,10 +19,14 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.Logger;
 
 import java.util.ArrayList;
 
@@ -48,19 +62,19 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
 
     private void init() {
         Boolean hasNetwork = AppContext.context().isNetworkAvailable();
-        mGetProjectTools.add(new ToolItem("Download from the server", "Requires an internet connection. Projects will be downloaded from the server", 0, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem("Download from the server", "Requires an internet connection. Projects will be downloaded from the server", R.drawable.ic_download, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                downloadFromServer();
+            }
+        }, hasNetwork, R.string.internet_not_available));
+        mGetProjectTools.add(new ToolItem("Transfer from a nearby device ", "Requires a local area network connection. Projects will be transferred over the network from a nearby device", R.drawable.ic_phone, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // TODO: implement
             }
         }, hasNetwork, R.string.internet_not_available));
-        mGetProjectTools.add(new ToolItem("Transfer from a nearby device ", "Requires a local area network connection. Projects will be transferred over the network from a nearby device", 0, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                // TODO: implement
-            }
-        }, hasNetwork, R.string.internet_not_available));
-        mGetProjectTools.add(new ToolItem("Import from the external storage", "Projects will be imported from the external storage on this device", 0, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem("Import from the external storage", "Projects will be imported from the external storage on this device", R.drawable.ic_folder, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // TODO: implement
@@ -89,5 +103,175 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void downloadFromServer() {
+        final ProgressDialog dialog = new ProgressDialog(this);
+        // this is a little hack to share the title between callbacks
+        final String[] newProjectDownloadTitle = new String[1];
+        newProjectDownloadTitle[0] = "";
+        dialog.setMessage(getResources().getString(R.string.downloading_updates));
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setIndeterminate(true);
+        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setMax(AppContext.projectManager().numProjects());
+
+        final Handler handle = new Handler(Looper.getMainLooper());
+
+        // download thread
+        final ThreadableUI thread = new ThreadableUI(this) {
+            @Override
+            public void onStop() {
+                dialog.show();
+                AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
+            }
+            @Override
+            public void run() {
+                // disable rotation sensor so we don't break things
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+                // check for updates to current projects
+                int numProjects = AppContext.projectManager().numProjects();
+                for (int i = 0; i < numProjects; i ++) {
+                    if(isInterrupted()) break;
+                    Project p = AppContext.projectManager().getProject(i);
+
+                    // update progress
+                    final String title = String.format(getResources().getString(R.string.downloading_project_updates), p.getId());
+                    final int progress = i;
+                    handle.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.setIndeterminate(false);
+                            dialog.setProgress(progress);
+                            dialog.setMessage(title);
+                        }
+                    });
+                    AppContext.projectManager().downloadProjectUpdates(p, new ProjectManager.OnProgressCallback() {
+                        @Override
+                        public void onProgress(final double progress, final String message) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setSecondaryProgress((int)Math.round(dialog.getMax()*progress));
+                                    SpannableStringBuilder spannable = new SpannableStringBuilder(message);
+                                    spannable.setSpan(new RelativeSizeSpan(0.8f), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                    spannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.medium_gray)), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                    dialog.setMessage(TextUtils.concat(title, "\n", spannable));
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onSuccess() {
+
+                        }
+                    });
+                }
+
+                // check for new projects to download
+                final String downloadNewTitle = getResources().getString(R.string.checking_for_new_projects);
+                if(!isInterrupted()) {
+                    handle.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.setIndeterminate(true);
+                            dialog.setMax(100);
+                            dialog.setProgress(0);
+                            dialog.setSecondaryProgress(0);
+                            dialog.setMessage(downloadNewTitle);
+                        }
+                    });
+                    AppContext.projectManager().downloadNewProjects(new ProjectManager.OnProgressCallback() {
+                        @Override
+                        public void onProgress(final double progress, final String message) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setIndeterminate(false);
+                                    dialog.setProgress((int)Math.round(100*progress));
+                                    dialog.setMessage(message);
+                                    newProjectDownloadTitle[0] = message;
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onSuccess() {
+
+                        }
+                    }, new ProjectManager.OnProgressCallback() {
+                        @Override
+                        public void onProgress(final double progress, final String message) {
+                            handle.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    dialog.setIndeterminate(false);
+                                    dialog.setSecondaryProgress((int) Math.round(100 * progress));
+                                    SpannableStringBuilder spannable = new SpannableStringBuilder(message);
+                                    spannable.setSpan(new RelativeSizeSpan(0.8f), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                    spannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.medium_gray)), 0, spannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                    dialog.setMessage(TextUtils.concat(newProjectDownloadTitle[0],"\n",spannable));
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onSuccess() {
+
+                        }
+                    });
+                }
+
+                // reload the selected project source
+                if( AppContext.projectManager().getSelectedProject() != null) {
+                    handle.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.setProgress(dialog.getMax());
+                            dialog.setSecondaryProgress(dialog.getMax());
+                            dialog.setIndeterminate(true);
+                            dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                        }
+                    });
+                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+                }
+            }
+
+            @Override
+            public void onPostExecute() {
+                dialog.dismiss();
+                if(!isInterrupted()) {
+                    app().showToastMessage(R.string.project_updates_downloaded);
+                }
+
+                // re-enable screen rotation
+//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+            }
+        };
+
+        // enable cancel
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                thread.stop();
+            }
+        });
+
+        // download confirmation
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.update_confirmation)
+                .setCancelable(false)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Logger.i(this.getClass().getName(), "downloading updates");
+                        dialog.show();
+                        thread.start();
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
     }
 }
