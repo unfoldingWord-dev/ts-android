@@ -3,9 +3,9 @@ package com.door43.translationstudio;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -18,7 +18,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.door43.translationstudio.R;
+import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;
@@ -62,22 +62,33 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
 
     private void init() {
         Boolean hasNetwork = AppContext.context().isNetworkAvailable();
-        mGetProjectTools.add(new ToolItem("Download from the server", "Requires an internet connection. Projects will be downloaded from the server", R.drawable.ic_download, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem("Browse available projects", "New projects will be downloaded from the server", R.drawable.ic_download, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                downloadFromServer();
+                browseProjects();
             }
         }, hasNetwork, R.string.internet_not_available));
-        mGetProjectTools.add(new ToolItem("Transfer from a nearby device ", "Requires a local area network connection. Projects will be transferred over the network from a nearby device", R.drawable.ic_phone, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem("Update projects", "Project updates will be downloaded from the server", R.drawable.ic_update, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                // TODO: implement
+                updateProjects();
             }
         }, hasNetwork, R.string.internet_not_available));
-        mGetProjectTools.add(new ToolItem("Import from the external storage", "Projects will be imported from the external storage on this device", R.drawable.ic_folder, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem("Transfer from device", "Projects will be transferred over the network from a nearby device", R.drawable.ic_phone, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                // TODO: implement
+                Intent intent = new Intent(GetMoreProjectsActivity.this, DeviceToDeviceActivity.class);
+                Bundle extras = new Bundle();
+                extras.putBoolean("startAsServer", false);
+                extras.putBoolean("browseSourceProjects", true);
+                intent.putExtras(extras);
+                startActivity(intent);
+            }
+        }, hasNetwork, R.string.internet_not_available));
+        mGetProjectTools.add(new ToolItem("Import from storage", "Projects will be imported from the external storage on this device", R.drawable.ic_folder, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                // TODO: This is the same as for the Sharing activity though we should package it all up into a single method call.
             }
         }));
         mAdapter.notifyDataSetChanged();
@@ -105,7 +116,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void downloadFromServer() {
+    private void updateProjects() {
         final ProgressDialog dialog = new ProgressDialog(this);
         // this is a little hack to share the title between callbacks
         final String[] newProjectDownloadTitle = new String[1];
@@ -128,8 +139,6 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
             }
             @Override
             public void run() {
-                // disable rotation sensor so we don't break things
-//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                 // check for updates to current projects
                 int numProjects = AppContext.projectManager().numProjects();
                 for (int i = 0; i < numProjects; i ++) {
@@ -169,6 +178,78 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                     });
                 }
 
+                // reload the selected project source
+                if( AppContext.projectManager().getSelectedProject() != null) {
+                    handle.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.setProgress(dialog.getMax());
+                            dialog.setSecondaryProgress(dialog.getMax());
+                            dialog.setIndeterminate(true);
+                            dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                            dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                        }
+                    });
+                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+                }
+            }
+
+            @Override
+            public void onPostExecute() {
+                dialog.dismiss();
+                if(!isInterrupted()) {
+                    app().showToastMessage(R.string.project_updates_downloaded);
+                }
+            }
+        };
+
+        // enable cancel
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                thread.stop();
+            }
+        });
+
+        // download confirmation
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.update_confirmation)
+                .setCancelable(false)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Logger.i(this.getClass().getName(), "downloading updates");
+                        dialog.show();
+                        thread.start();
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    private void browseProjects() {
+        final ProgressDialog dialog = new ProgressDialog(this);
+        // this is a little hack to share the title between callbacks
+        final String[] newProjectDownloadTitle = new String[1];
+        newProjectDownloadTitle[0] = "";
+        dialog.setMessage(getResources().getString(R.string.downloading_updates));
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.setIndeterminate(true);
+        dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        dialog.setMax(AppContext.projectManager().numProjects());
+
+        final Handler handle = new Handler(Looper.getMainLooper());
+
+        // download thread
+        final ThreadableUI thread = new ThreadableUI(this) {
+            @Override
+            public void onStop() {
+                dialog.show();
+                AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
+            }
+            @Override
+            public void run() {
                 // check for new projects to download
                 final String downloadNewTitle = getResources().getString(R.string.checking_for_new_projects);
                 if(!isInterrupted()) {

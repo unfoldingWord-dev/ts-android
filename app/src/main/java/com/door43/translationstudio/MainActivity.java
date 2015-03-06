@@ -752,7 +752,9 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onStop() {
                 // kill children if this thread is stopped
                 mHighlightSourceThread = null;
-                renderThread.stop();
+                if(renderThread != null) {
+                    renderThread.stop();
+                }
             }
 
             @Override
@@ -890,7 +892,9 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onStop() {
                 // kill children if this thread is stopped
                 mHighlightTranslationThread = null;
-                renderThread.stop();
+                if(renderThread != null) {
+                    renderThread.stop();
+                }
             }
 
             @Override
