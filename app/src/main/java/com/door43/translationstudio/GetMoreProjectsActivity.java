@@ -67,13 +67,13 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
             public void run() {
                 browseProjects();
             }
-        }, hasNetwork, R.string.internet_not_available));
+        }, hasNetwork, getResources().getString(R.string.internet_not_available)));
         mGetProjectTools.add(new ToolItem("Update projects", "Project updates will be downloaded from the server", R.drawable.ic_update, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 updateProjects();
             }
-        }, hasNetwork, R.string.internet_not_available));
+        }, hasNetwork, getResources().getString(R.string.internet_not_available)));
         mGetProjectTools.add(new ToolItem("Transfer from device", "Projects will be transferred over the network from a nearby device", R.drawable.ic_phone, new ToolItem.ToolAction() {
             @Override
             public void run() {
@@ -84,20 +84,20 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                 intent.putExtras(extras);
                 startActivity(intent);
             }
-        }, hasNetwork, R.string.internet_not_available));
+        }, false, "Not implimented"));// hasNetwork, getResources().getString(R.string.internet_not_available)));
         mGetProjectTools.add(new ToolItem("Import from storage", "Projects will be imported from the external storage on this device", R.drawable.ic_folder, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // TODO: This is the same as for the Sharing activity though we should package it all up into a single method call.
             }
-        }));
+        }, false, "Not implimented"));
         mAdapter.notifyDataSetChanged();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_get_more_projects, menu);
+//        getMenuInflater().inflate(R.menu.menu_get_more_projects, menu);
         return true;
     }
 

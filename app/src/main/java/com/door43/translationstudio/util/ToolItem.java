@@ -9,7 +9,7 @@ public class ToolItem {
     private String mDescription;
     private int mIcon;
     private Boolean mIsEnabled;
-    private int mDisabledNotice;
+    private String mDisabledNotice;
 
     public ToolItem(String nameResource, String descriptionResource, int iconResource, ToolAction action) {
         mAction = action;
@@ -17,7 +17,7 @@ public class ToolItem {
         mName = nameResource;
         mIcon = iconResource;
         mIsEnabled = true;
-        mDisabledNotice = 0;
+        mDisabledNotice = "";
     }
 
     /**
@@ -27,7 +27,7 @@ public class ToolItem {
      * @param action the action to be performed
      * @param enabled sets the tool as enabled or disabled. when disabled a notice will be displayed
      */
-    public ToolItem(String nameResource, String descriptionResource, int icon, ToolAction action, Boolean enabled, int disabledNotice) {
+    public ToolItem(String nameResource, String descriptionResource, int icon, ToolAction action, Boolean enabled, String disabledNotice) {
         mAction = action;
         mDescription = descriptionResource;
         mName = nameResource;
@@ -80,7 +80,7 @@ public class ToolItem {
      * Returns the notice to be shown when the tool is disabled
      * @return
      */
-    public int getDisabledNotice() {
+    public String getDisabledNotice() {
         return mDisabledNotice;
     }
 

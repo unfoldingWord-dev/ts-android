@@ -121,11 +121,11 @@ public class SharingActivity extends TranslatorBaseActivity {
 
         // define sharing tools
         boolean exportToAppEnabled = true;
-        int exportToAppMessage = R.string.missing_external_storage;
+        String exportToAppMessage = getResources().getString(R.string.missing_external_storage);
         if(p == null) {
             // TODO: eventually this export tool needs to allow the user to choose which project(s) to export. Then we'll just need to check if there are any translations available in the current projects
             exportToAppEnabled = false;
-            exportToAppMessage = R.string.choose_a_project;
+            exportToAppMessage = getResources().getString(R.string.choose_a_project);
         }
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new ToolItem.ToolAction() {
             @Override
@@ -184,11 +184,11 @@ public class SharingActivity extends TranslatorBaseActivity {
 
 
         boolean externalMediaAvailable = AppContext.isExternalMediaAvailable();
-        int exportToSDMessage = R.string.missing_external_storage;
+        String exportToSDMessage = getResources().getString(R.string.missing_external_storage);
         if(p == null) {
             // TODO: eventually this export tool needs to allow the user to choose which project(s) to export. Then we'll just need to check if there are any translations available in the current projects
             externalMediaAvailable = false;
-            exportToSDMessage = R.string.choose_a_project;
+            exportToSDMessage = getResources().getString(R.string.choose_a_project);
         }
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new ToolItem.ToolAction() {
             @Override
@@ -261,7 +261,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     Logger.w(SharingActivity.class.getName(), "The external storage could not be found");
                 }
             }
-        }, AppContext.isExternalMediaAvailable(), R.string.missing_external_storage));
+        }, AppContext.isExternalMediaAvailable(), getResources().getString(R.string.missing_external_storage)));
 
         // p2p sharing requires an active network connection.
         // TODO: Later we may need to adjust this since bluetooth and other services do not require an actual network.
@@ -277,7 +277,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 intent.putExtras(extras);
                 startActivity(intent);
             }
-        }, isNetworkAvailable, R.string.internet_not_available));
+        }, isNetworkAvailable, getResources().getString(R.string.internet_not_available)));
 
         mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new ToolItem.ToolAction() {
             @Override
@@ -288,7 +288,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 intent.putExtras(extras);
                 startActivity(intent);
             }
-        }, isNetworkAvailable, R.string.internet_not_available));
+        }, isNetworkAvailable, getResources().getString(R.string.internet_not_available)));
 
         mAdapter.notifyDataSetChanged();
     }
