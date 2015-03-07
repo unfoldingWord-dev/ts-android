@@ -18,8 +18,6 @@ import java.util.Map;
  */
 public class PseudoProject implements Model {
     private final String mId;
-//    private MetaProject mMetaChild;
-//    private Project mProjectChild;
     private Map<String, Model> mChildrenMap = new HashMap<String, Model>();
     private List<Model> mChildren = new ArrayList<>();
     private Map<String, Translation> mTranslationMap = new HashMap<String, Translation>();
@@ -51,7 +49,6 @@ public class PseudoProject implements Model {
         Translation t = getTranslation(index);
         if(t != null) {
             mSelectedTranslationId = t.getLanguage().getId();
-//            storeSelectedSourceLanguage(mSelectedSourceLanguageId);
         }
         return t != null;
     }
@@ -89,7 +86,7 @@ public class PseudoProject implements Model {
 
     /**
      * Returns the title of the sudo project.
-     * Sudo projects may contain different translations of it's title so we attempt to dynamically
+     * Pseudo projects may contain different translations of it's title so we attempt to dynamically
      * determine which language to use.
      * @return
      */
@@ -104,7 +101,7 @@ public class PseudoProject implements Model {
 
         // use the currently selected source language
         Project p = AppContext.projectManager().getSelectedProject();
-        if(p != null) {
+        if(p != null && isSelected()) {
             t = getTranslation(p.getSelectedSourceLanguage().getId());
             if (t != null) {
                 return t.getText();
@@ -126,9 +123,56 @@ public class PseudoProject implements Model {
         }
     }
 
+    /**
+     * Pseudo project may contain multiple projects so we display the title of the selected project or an emtpy string
+     * @return
+     */
     @Override
     public String getDescription() {
-        return "";
+        if(isSelected() && AppContext.projectManager().getSelectedProject() != null) {
+            return AppContext.projectManager().getSelectedProject().getTitle();
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Pseudo projects may contain multiple languages so we attempt to dynamically
+     * determine which language to use
+     * @return
+     */
+    @Override
+    public SourceLanguage getSelectedSourceLanguage() {
+        Translation t;
+        // try to use the current device language
+        t = getTranslation(Locale.getDefault().getLanguage());
+        if(t != null) {
+            return (SourceLanguage)t.getLanguage();
+        }
+
+        // use the currently selected source language of a child project
+        Project p = AppContext.projectManager().getSelectedProject();
+        if(p != null && isSelected()) {
+            t = getTranslation(p.getSelectedSourceLanguage().getId());
+            if (t != null) {
+                return (SourceLanguage)t.getLanguage();
+            }
+        }
+
+        // try to use english
+        t = getTranslation("en");
+        if(t != null) {
+            return (SourceLanguage)t.getLanguage();
+        }
+
+        // just use the first language we find.
+        t = getSelectedTranslation();
+        if(t != null) {
+            return (SourceLanguage)t.getLanguage();
+        } else {
+            // This should never ever ever happen!
+            return AppContext.projectManager().getSourceLanguage(0);
+        }
     }
 
     /**

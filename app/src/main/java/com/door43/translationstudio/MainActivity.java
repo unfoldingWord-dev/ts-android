@@ -93,8 +93,12 @@ import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.TTFAnalyzer;
 import com.squareup.otto.Subscribe;
 
+import org.sil.palaso.Graphite;
+
+import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -252,6 +256,7 @@ public class MainActivity extends TranslatorBaseActivity {
             // don't reload the center pane the first time the app starts.
             mActivityIsInitializing = false;
         }
+        initFonts();
     }
 
     /**
@@ -317,6 +322,25 @@ public class MainActivity extends TranslatorBaseActivity {
         if(newHeight != params.height) {
             params.height = newHeight;
             mDrawerLayout.setLayoutParams(params);
+        }
+    }
+
+    /**
+     * Initializes the fonts
+     */
+    private void initFonts() {
+        if(mSourceText != null && mTranslationEditText != null) {
+            // set up graphite fontface
+            if (AppContext.projectManager().getSelectedProject() != null) {
+                Project p = AppContext.projectManager().getSelectedProject();
+                mTranslationEditText.setTypeface(AppContext.graphiteTypeface(p.getSelectedTargetLanguage()), 0);
+                mSourceText.setTypeface(AppContext.graphiteTypeface(p.getSelectedSourceLanguage()), 0);
+            }
+
+            // set custom font size (sp)
+            float typefaceSize = AppContext.typefaceSize();
+            mTranslationEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
+            mSourceText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
         }
     }
 
@@ -402,16 +426,6 @@ public class MainActivity extends TranslatorBaseActivity {
         });
 
         mTranslationEditText.setEnabled(false);
-
-        // set up custom fonts
-        Typeface translationTypeface = app().getTranslationTypeface();
-        mTranslationEditText.setTypeface(translationTypeface);
-        mSourceText.setTypeface(translationTypeface);
-
-        // set custom font size (sp)
-        int typefaceSize = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TYPEFACE_SIZE, AppContext.context().getResources().getString(R.string.pref_default_typeface_size)));
-        mTranslationEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
-        mSourceText.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
         // watch for the soft keyboard open and close
         final View rootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);

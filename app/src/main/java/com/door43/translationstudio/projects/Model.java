@@ -9,6 +9,12 @@ public interface Model {
     public CharSequence getDescription();
 
     /**
+     * Returns the selected source language of the model
+     * @return
+     */
+    public SourceLanguage getSelectedSourceLanguage();
+
+    /**
      * Returns the key used for sorting
      * @return
      */

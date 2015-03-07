@@ -93,22 +93,6 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Returns the custom typeface used for translation
-     * @return
-     */
-    public Typeface getTranslationTypeface() {
-        String typeFace = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getResources().getString(R.string.pref_default_translation_typeface));
-        if(!mSelectedTypeface.equals(typeFace)) {
-            mTranslationTypeface = Typeface.createFromAsset(getAssets(), "fonts/" + typeFace);
-        }
-        mSelectedTypeface = typeFace;
-
-        // TODO: fonts should be initialized when the app starts.
-        // TODO: should return the default font if the font is missing.
-        return mTranslationTypeface;
-    }
-
-    /**
      * Checks if the app should use the saved positions.
      * @return
      */

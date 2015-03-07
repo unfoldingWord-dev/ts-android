@@ -19,7 +19,7 @@ import android.widget.LinearLayout;
 
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TTFAnalyzer;
+import com.door43.util.TTFAnalyzer;
 
 import java.io.File;
 import java.io.IOException;

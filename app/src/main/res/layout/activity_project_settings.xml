@@ -27,6 +27,7 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="Change"
+                android:textSize="@dimen/h3"
                 android:id="@+id/switchSourceLanguageButton"
                 style="@style/Widget.Button.Secondary" />
 
@@ -59,6 +60,7 @@
                 android:text="Change"
                 android:id="@+id/switchTargetLanguageButton"
                 android:drawableRight="@drawable/ic_pencil_dark"
+                android:textSize="@dimen/h3"
                 style="@style/Widget.Button.Secondary" />
 
             <TextView

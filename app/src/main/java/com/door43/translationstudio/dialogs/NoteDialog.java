@@ -1,6 +1,7 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.DialogFragment;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Switch;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.PassageNoteEvent;
@@ -51,8 +53,11 @@ public class NoteDialog extends DialogFragment {
         footnoteSwitch.setVisibility(View.GONE);
 
         // set up fonts
-        passageNoteText.setTypeface(AppContext.context().getTranslationTypeface());
-        passageText.setTypeface(AppContext.context().getTranslationTypeface());
+        if (AppContext.projectManager().getSelectedProject() != null) {
+            Project p = AppContext.projectManager().getSelectedProject();
+            passageNoteText.setTypeface(AppContext.graphiteTypeface(p.getSelectedTargetLanguage()), 0);
+            passageText.setTypeface(AppContext.graphiteTypeface(p.getSelectedTargetLanguage()), 0);
+        }
 
         // hook up buttons
         Button cancelBtn = (Button)v.findViewById(R.id.cancelButton);

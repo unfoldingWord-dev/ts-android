@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -73,6 +74,10 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
             } else {
                 targetLanguageBtn.setCompoundDrawables(null, null, null, null);
             }
+
+            // set graphite fontface
+            targetLanguageBtn.setTypeface(AppContext.graphiteTypeface(mProject.getSelectedTargetLanguage()), 0);
+            sourceLanguageBtn.setTypeface(AppContext.graphiteTypeface(mProject.getSelectedSourceLanguage()), 0);
         }
     }
 

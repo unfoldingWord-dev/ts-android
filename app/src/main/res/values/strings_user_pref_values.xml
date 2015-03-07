@@ -12,9 +12,10 @@
 
     <string name="pref_default_typeface_size" translatable="false">25</string>
     <string-array name="pref_typeface_size_values" translatable="false">
-        <item>20</item>
+        <item>15</item>
         <item>25</item>
-        <item>30</item>
+        <item>35</item>
+        <item>45</item>
     </string-array>
 
     <string name="pref_default_autosave" translatable="false">5000</string>

@@ -22,6 +22,7 @@
     <string name="pref_title_typeface_size">Translation Typeface Size</string>
     <string-array name="pref_typeface_size_titles">
         <item>small</item>
+        <item>normal</item>
         <item>medium</item>
         <item>large</item>
     </string-array>

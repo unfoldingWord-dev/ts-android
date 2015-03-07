@@ -1,4 +1,4 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

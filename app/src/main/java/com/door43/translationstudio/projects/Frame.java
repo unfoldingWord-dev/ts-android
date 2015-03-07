@@ -174,11 +174,11 @@ public class Frame implements Model {
      * @return
      */
     public String getImagePath() {
-        return "sourceTranslations/"+getChapter().getProject().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getId()+"/"+getChapter().getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapterFrameId()+".jpg";
+        return "sourceTranslations/"+getChapter().getProject().getId()+"/"+getSelectedSourceLanguage().getId()+"/"+getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapterFrameId()+".jpg";
     }
 
     public String getDefaultImagePath() {
-        return "sourceTranslations/"+getChapter().getProject().getId()+"/en/"+getChapter().getProject().getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapterFrameId()+".jpg";
+        return "sourceTranslations/"+getChapter().getProject().getId()+"/en/"+getSelectedSourceLanguage().getSelectedResource().getId()+"/images/"+getChapterFrameId()+".jpg";
     }
 
     /**
@@ -301,6 +301,11 @@ public class Frame implements Model {
             }
         }
         return mCachedDescription;
+    }
+
+    @Override
+    public SourceLanguage getSelectedSourceLanguage() {
+        return mChapter.getSelectedSourceLanguage();
     }
 
     @Override

@@ -197,6 +197,11 @@ public class Chapter implements Model {
     }
 
     @Override
+    public SourceLanguage getSelectedSourceLanguage() {
+        return mProject.getSelectedSourceLanguage();
+    }
+
+    @Override
     public String getSortKey() {
         return null;
     }

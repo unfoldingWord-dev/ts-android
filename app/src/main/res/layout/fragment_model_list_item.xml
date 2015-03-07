@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="@dimen/model_list_item_height">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <RelativeLayout
+        android:visibility="gone"
         android:id="@+id/bodyLayout"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_weight="3"
-        android:layout_height="@dimen/model_list_item_height"
-        android:layout_toRightOf="@+id/modelImage"
-        android:layout_toEndOf="@+id/modelImage"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
+        android:layout_height="wrap_content">
 
         <ImageView
-            android:layout_width="@dimen/model_list_item_image_width"
-            android:layout_height="@dimen/model_list_item_height"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/modelImage"
-            android:background="@color/lighter_gray" />
+            android:layout_centerVertical="true"
+            android:background="@color/gray" />
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_toRightOf="@+id/modelImage"
             android:layout_toEndOf="@+id/modelImage"
             android:paddingTop="1dp"
@@ -49,55 +48,57 @@
                 android:text="Model Description\ntest"
                 android:id="@+id/modelDescription"
                 android:ellipsize="end"
-                android:maxLines="2" />
+                android:maxLines="2"
+                android:textSize="@dimen/h5" />
         </LinearLayout>
 
     </RelativeLayout>
 
     <RelativeLayout
-        android:visibility="gone"
+        android:visibility="visible"
         android:id="@+id/bodyLayoutAlt"
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_weight="3"
-        android:layout_height="@dimen/model_list_item_height"
+        android:layout_height="wrap_content"
         android:paddingLeft="5dp"
-        android:paddingRight="2dp"
-        android:paddingTop="1dp"
-        android:paddingBottom="1dp"
-        android:layout_toRightOf="@+id/modelImage"
-        android:layout_toEndOf="@+id/modelImage"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
+        android:paddingRight="2dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="Model Title"
-            android:id="@+id/modelTitleAlt"
-            android:ellipsize="marquee"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:textSize="@dimen/h4"
-            android:gravity="center"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:textColor="@color/dark_gray"
-            android:singleLine="true"
-            android:textStyle="bold"
-            android:layout_above="@+id/modelDescriptionAlt" />
-
-        <TextView
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/modelDescriptionAlt"
-            android:ellipsize="end"
-            android:maxLines="2"
-            android:layout_alignParentBottom="true"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
-            android:gravity="center"
-            android:text="Model Description" />
+            android:paddingTop="1dp"
+            android:paddingBottom="1dp"
+            android:layout_centerVertical="true">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Model Title"
+                android:id="@+id/modelTitleAlt"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:textSize="@dimen/h4"
+                android:gravity="center"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:textColor="@color/dark_gray"
+                android:singleLine="true"
+                android:textStyle="bold"
+                android:layout_above="@+id/modelDescriptionAlt" />
 
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/modelDescriptionAlt"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:gravity="center"
+                android:text="Model Description"
+                android:textSize="@dimen/h4" />
+        </LinearLayout>
     </RelativeLayout>
 
     <LinearLayout
@@ -105,9 +106,10 @@
         android:visibility="visible"
         android:id="@+id/iconGroupLayout"
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
+        android:layout_height="wrap_content"
         android:padding="2dp"
         android:background="@color/lighter_gray"
+        android:minHeight="@dimen/model_list_item_height"
         android:gravity="center">
 
         <ImageView

@@ -3,6 +3,7 @@ package com.door43.translationstudio.dialogs;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -116,19 +117,32 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.image.clearAnimation();
         holder.bodyLayout.clearAnimation();
 
+        // set title and description
         holder.title.setText(getItem(position).getTitle());
         holder.altTitle.setText(getItem(position).getTitle());
         holder.description.setText(getItem(position).getDescription());
         holder.altDescription.setText(getItem(position).getDescription());
 
-        /**
-         * Display selected project names on pseudo projects
-         */
+        // set graphite fontface
+        Typeface typeface = AppContext.graphiteTypeface(getItem(position).getSelectedSourceLanguage());
+        holder.title.setTypeface(typeface, 0);
+        holder.altTitle.setTypeface(typeface, 0);
+        holder.description.setTypeface(typeface, 0);
+        holder.altDescription.setTypeface(typeface, 0);
+
+        // use selected project language in pseudo project description fontface
         if(mIndicateSelected && getItem(position).getClass().getName().equals(PseudoProject.class.getName())) {
             if(getItem(position).isSelected() && AppContext.projectManager().getSelectedProject() != null) {
-                holder.altDescription.setText(AppContext.projectManager().getSelectedProject().getTitle());
+                holder.altDescription.setTypeface(AppContext.graphiteTypeface(AppContext.projectManager().getSelectedProject().getSelectedSourceLanguage()), 0);
             }
         }
+
+        // set font size
+        float fontsize = AppContext.typefaceSize();
+        holder.title.setTextSize(fontsize);
+        holder.altTitle.setTextSize(fontsize);
+        holder.description.setTextSize((float)(fontsize*0.7));
+        holder.altDescription.setTextSize((float)(fontsize*0.7));
 
         // display the correct layout
         if(imageUri != null) {
