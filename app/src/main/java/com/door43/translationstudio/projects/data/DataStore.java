@@ -4,10 +4,10 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.util.FileUtilities;
+import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
-import com.door43.translationstudio.util.Security;
-import com.door43.translationstudio.util.ServerUtilities;
+import com.door43.util.Security;
+import com.door43.util.ServerUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -31,10 +31,11 @@ public class DataStore {
     private static MainApplication mContext;
     private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";
     private static final String PREFERENCES_TAG = "com.door43.translationstudio.assets";
+    private static final String TEMP_ASSET_PREFIX = "temp_";
     private SharedPreferences mSettings;
     private static final int API_VERSION = 2;
     // this is used so we can force a cache reset between versions of the app if we make changes to api implimentation
-    private static final int API_VERSION_INTERNAL = 7;
+    private static final int API_VERSION_INTERNAL = 8;
 
     public DataStore(MainApplication context) {
         mContext = context;
@@ -46,8 +47,8 @@ public class DataStore {
      * @param json
      */
     public void importProject(String json) {
-        File file = new File(cachedAssetsDir(),projectCatalogPath());
-        String catJson = fetchProjectCatalog(false, false);
+        File file = new File(assetsDir(),projectCatalogPath());
+        String catJson = pullProjectCatalog(false, false);
         try {
             JSONArray cat = new JSONArray();
             if(catJson != null) {
@@ -67,8 +68,8 @@ public class DataStore {
      * @param json
      */
     public void importSourceLanguage(String projectId, String json) {
-        File file = new File(cachedAssetsDir(), sourceLanguageCatalogPath(projectId));
-        String catJson = fetchSourceLanguageCatalog(projectId, false, false);
+        File file = new File(assetsDir(), sourceLanguageCatalogPath(projectId));
+        String catJson = pullSourceLanguageCatalog(projectId, false, false);
         try {
             JSONArray cat = new JSONArray();
             if(catJson != null) {
@@ -89,8 +90,8 @@ public class DataStore {
      * @param json
      */
     public void importResource(String projectId, String languageId, String json) {
-        File file = new File(cachedAssetsDir(), resourceCatalogPath(projectId, languageId));
-        String catJson = fetchResourceCatalog(projectId, languageId, false, false);
+        File file = new File(assetsDir(), resourceCatalogPath(projectId, languageId));
+        String catJson = pullResourceCatalog(projectId, languageId, false, false);
         try {
             JSONArray cat = new JSONArray();
             if(catJson != null) {
@@ -112,7 +113,7 @@ public class DataStore {
      * @param data
      */
     public void importNotes(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(cachedAssetsDir(), notesPath(projectId, languageId, resourceId));
+        File file = new File(assetsDir(), notesPath(projectId, languageId, resourceId));
         try {
             FileUtils.writeStringToFile(file, data);
         } catch (IOException e) {
@@ -128,7 +129,7 @@ public class DataStore {
      * @param data
      */
     public void importSource(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(cachedAssetsDir(), sourcePath(projectId, languageId, resourceId));
+        File file = new File(assetsDir(), sourcePath(projectId, languageId, resourceId));
         try {
             FileUtils.writeStringToFile(file, data);
         } catch (IOException e) {
@@ -144,7 +145,7 @@ public class DataStore {
      * @param data
      */
     public void importTerms(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(cachedAssetsDir(), termsPath(projectId, languageId, resourceId));
+        File file = new File(assetsDir(), termsPath(projectId, languageId, resourceId));
         try {
             FileUtils.writeStringToFile(file, data);
         } catch (IOException e) {
@@ -163,9 +164,9 @@ public class DataStore {
         if(numLinks <=0 ) {
             // asset is orphaned
             editor.remove(key);
-            editor.remove(key+"_modified");
+            editor.remove(key + "_modified");
             editor.remove(key + "_alias");
-            File file = getLinkedAsset(key);
+            File file = getAsset(key);
             file.delete();
         } else {
             // decrement link count
@@ -263,7 +264,7 @@ public class DataStore {
      * @param path relative path to the link file
      */
     private void linkAsset(String key, String path) {
-        File link = new File(cachedAssetsDir(), path);
+        File link = new File(assetsDir(), path);
         linkAsset(key, link);
     }
 
@@ -308,11 +309,28 @@ public class DataStore {
     }
 
     /**
+     * Returns the fiel to a temp asset
+     * @param key
+     * @return
+     */
+    private File getTempAsset(String key) {
+        return getLinkedAsset(key, tempAssetsDir(), TEMP_ASSET_PREFIX);
+    }
+
+    /**
      * String returns the file to an asset
      * @param key
      */
-    private File getLinkedAsset(String key) {
-        return new File(cachedAssetsDir(), "data/" + key);
+    private File getAsset(String key) {
+        return getLinkedAsset(key, assetsDir(), "");
+    }
+
+    /**
+     * String returns the file to an asset
+     * @param key
+     */
+    private File getLinkedAsset(String key, File dir, String prefix) {
+        return new File(dir, prefix + "data/" + key);
     }
 
     /**
@@ -325,23 +343,44 @@ public class DataStore {
     }
 
     /**
-     * Downloads a file and places it in the cached assets directory
+     * Downloads an asset to the device
      * @param urlString the url from which the file will be downloaded
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
     private String downloadAsset(String urlString, boolean ignoreCache) {
+        return downloadFile(urlString, assetsDir(), "", ignoreCache);
+    }
+
+    /**
+     * Downloads a temp asset to the device
+     * @param urlString the url from which the file will be downloaded
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
+     * @return the asset key
+     */
+    private String downloadTempAsset(String urlString, boolean ignoreCache) {
+        return downloadFile(urlString, tempAssetsDir(), TEMP_ASSET_PREFIX, ignoreCache);
+    }
+
+    /**
+     * Downloads an asset to the device
+     * @param urlString the url from which the file will be downloaded
+     * @param prefix the asset prefix. This allows you to download and track separate groups of assets
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
+     * @return the asset key
+     */
+    private String downloadFile(String urlString, File directory, String prefix, boolean ignoreCache) {
         SharedPreferences.Editor editor = mSettings.edit();
         Uri uri = Uri.parse(urlString);
         String key = getKey(uri);
-        File file = new File(cachedAssetsDir(), "data/" + key);
+        File file = new File(directory, prefix + "data/" + key);
         String dateModifiedRaw = uri.getQueryParameter("date_modified");
         boolean fileExists = file.exists();
         // identify existing data
         if(!ignoreCache  && fileExists && dateModifiedRaw != null) {
             int dateModified = Integer.parseInt(dateModifiedRaw);
             try {
-                int oldDateModified = mSettings.getInt(key + "_modified", 0);
+                int oldDateModified = mSettings.getInt(prefix + key + "_modified", 0);
                 if (dateModified <= oldDateModified) {
                     // current data is up to date
                     return key;
@@ -358,12 +397,12 @@ public class DataStore {
             // record date modified if provided
             if(dateModifiedRaw != null) {
                 try {
-                    editor.putInt(key + "_modified", Integer.parseInt(dateModifiedRaw));
+                    editor.putInt(prefix + key + "_modified", Integer.parseInt(dateModifiedRaw));
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "invalid datetime value " +dateModifiedRaw, e);
                 }
             } else {
-                editor.remove(key+"_modified");
+                editor.remove(prefix + key+"_modified");
             }
             editor.apply();
             if(fileExists) {
@@ -380,12 +419,13 @@ public class DataStore {
 
     /**
      * Returns the projects
-     * This should not be ran on the main thread when checking the server
+     * This should not be ran on the main thread when checking the server.
+     * If downloaded this will replace the current project catalog
      * @param checkServer indicates an updated list of projects should be downloaded from the server
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchProjectCatalog(boolean checkServer, boolean ignoreCache) {
+    public String pullProjectCatalog(boolean checkServer, boolean ignoreCache) {
         String path = projectCatalogPath();
 
         if(checkServer) {
@@ -393,6 +433,21 @@ public class DataStore {
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Downloads the project catalog from the server and stores it in the temp cache
+     * @param ignoreCache
+     * @return
+     */
+    public String fetchProjectCatalog(boolean ignoreCache) {
+        String key = downloadTempAsset(projectCatalogUrl(), ignoreCache);
+        try {
+            return FileUtils.readFileToString(getTempAsset(key));
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to read the downloaded project catalog", e);
+            return "";
+        }
     }
 
     /**
@@ -414,12 +469,13 @@ public class DataStore {
     /**
      * Returns the source languages for a specific project
      * This should not be ran on the main thread when checking the server
+     * If downloaded this will replace the current source language catalog
      * @param projectId the slug of the project for which languages will be returned
      * @param checkServer indicates an updated list of projects should be downloaded from the server
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchSourceLanguageCatalog(String projectId, boolean checkServer, boolean ignoreCache) {
+    public String pullSourceLanguageCatalog(String projectId, boolean checkServer, boolean ignoreCache) {
         String path = sourceLanguageCatalogPath(projectId);
 
         if(checkServer) {
@@ -427,6 +483,21 @@ public class DataStore {
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
+    }
+
+    /**
+     * Downloads the source language catalog from the server and stores it in the temp cache
+     * @param ignoreCache
+     * @return
+     */
+    public String fetchSourceLanguageCatalog(String projectId, boolean ignoreCache) {
+        String key = downloadTempAsset(sourceLanguageCatalogPath(projectId), ignoreCache);
+        try {
+            return FileUtils.readFileToString(getTempAsset(key));
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to read the downloaded source language catalog", e);
+            return "";
+        }
     }
 
     /**
@@ -450,13 +521,14 @@ public class DataStore {
     /**
      * Returns the resources for a specific language
      * This should not be ran on the main thread when checking the server
+     * If downloaded this will replace the current resources catalog
      * @param projectId the id of the project that contains the language
      * @param languageId the id of the language for which resources will be returned
      * @param checkServer indicates an updated list of projects should be downloaded from the server
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchResourceCatalog(String projectId, String languageId, boolean checkServer, boolean ignoreCache) {
+    public String pullResourceCatalog(String projectId, String languageId, boolean checkServer, boolean ignoreCache) {
         String path = resourceCatalogPath(projectId, languageId);
 
         if(checkServer) {
@@ -489,7 +561,7 @@ public class DataStore {
     /**
      * Returns the target languages
      */
-    public String fetchTargetLanguageCatalog() {
+    public String pullTargetLanguageCatalog() {
         // TODO: check for updates on the server
         // https://api.unfoldingword.org/ts/txt/1/langnames.json
         String path = "target_languages.json";
@@ -498,6 +570,7 @@ public class DataStore {
 
     /**
      * Returns the key terms.
+     * If downloaded this will replace the current terms
      * @param projectId
      * @param languageId
      * @param resourceId
@@ -505,7 +578,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchTerms(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
+    public String pullTerms(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = termsPath(projectId, languageId, resourceId);
 
         if(checkServer) {
@@ -519,6 +592,7 @@ public class DataStore {
      * Downloads and returns the key terms.
      * Rather than using the standard download url this method allows you to specify from which url
      * to download the terms. This is especially helpful when cross referencing api's.
+     * If downloaded this will replace the current terms
      * @param projectId
      * @param languageId
      * @param resourceId
@@ -526,7 +600,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchTerms(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
+    public String pullTerms(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
         String path = termsPath(projectId, languageId, resourceId);
 
         String key = downloadAsset(urlString, ignoreCache);
@@ -558,7 +632,8 @@ public class DataStore {
     }
 
     /**
-     * Returns the notes
+     * Returns the notes.
+     * If downloaded the the existing notes will be replaced
      * @param projectId
      * @param languageId
      * @param resourceId
@@ -566,7 +641,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchNotes(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
+    public String pullNotes(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = notesPath(projectId, languageId, resourceId);
 
         if(checkServer) {
@@ -580,6 +655,7 @@ public class DataStore {
      * Downloads and returns the notes.
      * Rather than using the standard download url this method allows you to specify from which url
      * to download the notes. This is especially helpful when cross referencing api's.
+     * If downloaded the existing notes will be replaced
      * @param projectId
      * @param languageId
      * @param resourceId
@@ -587,7 +663,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchNotes(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
+    public String pullNotes(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
         String path = notesPath(projectId, languageId, resourceId);
 
         String key = downloadAsset(urlString, ignoreCache);
@@ -620,6 +696,7 @@ public class DataStore {
 
     /**
      * Returns the source text
+     * If downloaded this will replace the current source
      * @param projectId
      * @param languageId
      * @param resourceId
@@ -627,7 +704,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchSource(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
+    public String pullSource(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = sourcePath(projectId, languageId, resourceId);
 
         if(checkServer) {
@@ -641,6 +718,7 @@ public class DataStore {
      * Downloads and returns the source.
      * Rather than using the standard download url this method allows you to specify from which url
      * to download the source. This is especially helpful when cross referencing api's.
+     * If downloaded this will replace the current source
      * @param projectId
      * @param languageId
      * @param resourceId
@@ -648,7 +726,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String fetchSource(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
+    public String pullSource(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
         String path = sourcePath(projectId, languageId, resourceId);
 
         String key = downloadAsset(urlString, ignoreCache);
@@ -680,10 +758,18 @@ public class DataStore {
     }
 
     /**
-     * Returns the file for the cached assets directory
+     * Returns the file for the assets directory
      * @return
      */
-    public static File cachedAssetsDir() {
+    private static File assetsDir() {
+        return new File(mContext.getFilesDir(), "assets");
+    }
+
+    /**
+     * Returns the file for the temp assets directory
+     * @return
+     */
+    private static File tempAssetsDir() {
         return new File(mContext.getCacheDir(), "assets");
     }
 
@@ -691,7 +777,7 @@ public class DataStore {
      * Validates the asset cache version
      */
     private void validateAssetCache() {
-        File cacheDir = cachedAssetsDir();
+        File cacheDir = assetsDir();
         // verify the cached assets match the expected server api level
         File cacheVersionFile = new File(cacheDir, ".cache_api_version");
         if(cacheVersionFile.exists() && cacheVersionFile.isFile()) {
@@ -730,14 +816,14 @@ public class DataStore {
 
         validateAssetCache();
 
-        File cachedAsset = new File(cachedAssetsDir(), path);
-        File linkedAsset = new File(cachedAssetsDir(), linkPath);
+        File cachedAsset = new File(assetsDir(), path);
+        File linkedAsset = new File(assetsDir(), linkPath);
 
         // resolve links
         if(linkedAsset.exists() && linkedAsset.isFile()) {
             String key = resolveLink(linkedAsset);
             if(key != null) {
-                cachedAsset = getLinkedAsset(key);
+                cachedAsset = getAsset(key);
             }
         }
 

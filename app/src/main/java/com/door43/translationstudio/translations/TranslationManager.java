@@ -13,9 +13,9 @@ import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.user.ProfileManager;
-import com.door43.translationstudio.util.FileUtilities;
+import com.door43.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TCPClient;
+import com.door43.util.TCPClient;
 import com.door43.util.Logger;
 
 import org.json.JSONException;

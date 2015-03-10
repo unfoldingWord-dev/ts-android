@@ -1,8 +1,6 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
 import android.os.Environment;
-
-import com.door43.util.Logger;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -111,9 +109,9 @@ public class StorageUtils {
             }
 
         } catch (FileNotFoundException e) {
-            Logger.e(StorageUtils.class.getName(), "failed to read the mount points", e);
+            e.printStackTrace();
         } catch (IOException e) {
-            Logger.e(StorageUtils.class.getName(), "failed to read the mount points", e);
+            e.printStackTrace();
         } finally {
             if (buf_reader != null) {
                 try {

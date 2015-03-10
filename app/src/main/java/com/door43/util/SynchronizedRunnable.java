@@ -1,4 +1,4 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
 /**
  * Created by joel on 1/29/2015.

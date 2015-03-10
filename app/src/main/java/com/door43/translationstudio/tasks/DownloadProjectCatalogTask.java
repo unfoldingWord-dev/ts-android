@@ -10,34 +10,11 @@ import com.door43.util.threads.ManagedTask;
 public class DownloadProjectCatalogTask extends ManagedTask {
     private OnProgressListener mPrimaryListener;
     private OnProgressListener mSecondaryListener;
+    private String mCatalog;
 
     @Override
     public void start() {
-        AppContext.projectManager().downloadNewProjects(new ProjectManager.OnProgressCallback() {
-            @Override
-            public void onProgress(final double progress, final String message) {
-                if(mPrimaryListener != null) {
-                    mPrimaryListener.onProgress(progress, message);
-                }
-            }
-
-            @Override
-            public void onSuccess() {
-
-            }
-        }, new ProjectManager.OnProgressCallback() {
-            @Override
-            public void onProgress(final double progress, final String message) {
-                if(mSecondaryListener != null) {
-                    mSecondaryListener.onProgress(progress, message);
-                }
-            }
-
-            @Override
-            public void onSuccess() {
-
-            }
-        });
+        mCatalog = AppContext.projectManager().getDataStore().fetchProjectCatalog(false);
     }
 
     /**
@@ -47,6 +24,14 @@ public class DownloadProjectCatalogTask extends ManagedTask {
     public void setProgressListener(OnProgressListener primaryListener, OnProgressListener secondaryListener) {
         mPrimaryListener = primaryListener;
         mSecondaryListener = secondaryListener;
+    }
+
+    /**
+     * Returns the downloaded catalog contents.
+     * @return
+     */
+    public String getCatalog() {
+        return mCatalog;
     }
 
     public static interface OnProgressListener {

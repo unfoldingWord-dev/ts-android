@@ -14,12 +14,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.FileUtilities;
+import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
-import com.door43.translationstudio.util.ServerUtilities;
+import com.door43.util.ServerUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import org.apache.commons.io.FileUtils;

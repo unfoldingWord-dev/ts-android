@@ -1,10 +1,6 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
-import com.door43.translationstudio.projects.Frame;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

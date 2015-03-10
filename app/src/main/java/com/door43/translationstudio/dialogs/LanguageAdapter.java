@@ -14,8 +14,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.threads.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.HashMap;

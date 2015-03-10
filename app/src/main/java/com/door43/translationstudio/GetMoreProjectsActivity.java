@@ -33,7 +33,7 @@ import com.door43.translationstudio.tasks.DownloadProjectCatalogTask;
 import com.door43.translationstudio.tasks.DownloadProjectSourceTask;
 import com.door43.translationstudio.tasks.ReloadProjectTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -50,6 +50,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity implements P
     private BrowseState mBrowseState = BrowseState.NOTHING;
     private int mBrowseTaskId = -1;
     private ProgressDialog mBrowsingProgressDialog;
+    private String mProjectCatalog;
 
     /**
      * State options for browsing projects
@@ -145,6 +146,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity implements P
                 if(mBrowseTaskId != -1) {
                     // check progress
                     DownloadProjectCatalogTask task = (DownloadProjectCatalogTask) ThreadManager.getTask(mBrowseTaskId);
+                    mProjectCatalog = task.getCatalog();
                     // TODO: extract downloaded project catalog from task
                     if (task.isFinished()) {
                         ThreadManager.clearTask(mBrowseTaskId);
@@ -194,8 +196,9 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity implements P
                 }
                 ft.addToBackStack(null);
                 ProjectLibraryDialog dialog = new ProjectLibraryDialog();
-                // TODO: set the projects we just downloaded
-                dialog.setProjects(AppContext.projectManager().getListableProjects());
+                Bundle args = new Bundle();
+                args.putString("project_catalog", mProjectCatalog);
+                dialog.setArguments(args);
                 dialog.show(ft, "dialog");
                 break;
             case DOWNLOADING_LANGUAGES_CATALOG:

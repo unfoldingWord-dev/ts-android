@@ -1,4 +1,4 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -8,6 +8,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 /**
+ * This class write exceptions to a file on disk before killing the app
+ * This allows you to retrieve them later for debugging.
  * http://stackoverflow.com/questions/601503/how-do-i-obtain-crash-data-from-my-android-application
  */
 public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {

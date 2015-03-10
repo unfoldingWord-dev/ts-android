@@ -6,7 +6,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.FileUtilities;
+import com.door43.util.FileUtilities;
 
 import java.io.File;
 

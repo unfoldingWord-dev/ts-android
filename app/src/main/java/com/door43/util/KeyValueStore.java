@@ -1,4 +1,4 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
 import java.util.HashMap;
 import java.util.Map;

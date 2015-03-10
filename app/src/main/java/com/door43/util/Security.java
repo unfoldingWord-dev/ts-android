@@ -1,6 +1,4 @@
-package com.door43.translationstudio.util;
-
-import com.door43.util.Logger;
+package com.door43.util;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -21,7 +19,7 @@ public class Security {
         try {
             encrypter = MessageDigest.getInstance("MD5");
         } catch (NoSuchAlgorithmException e) {
-            Logger.e(Security.class.getName(), "failed to generate md5 sum", e);
+            e.printStackTrace();
         }
         encrypter.update(s.getBytes(), 0, s.length());
         String md5 = new BigInteger(1, encrypter.digest()).toString(16);

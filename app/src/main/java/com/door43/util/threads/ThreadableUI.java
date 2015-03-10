@@ -1,8 +1,7 @@
-package com.door43.translationstudio.util;
+package com.door43.util.threads;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 
 /**
  * This class allows you to execute operations in a seperate thread and then finish up by running some code on the ui thread

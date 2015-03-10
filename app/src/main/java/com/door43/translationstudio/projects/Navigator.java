@@ -6,7 +6,7 @@ import com.door43.translationstudio.events.OpenedChapterEvent;
 import com.door43.translationstudio.events.OpenedFrameEvent;
 import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.squareup.otto.Bus;
 
 /**

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.xml.transform.Source;
+
 /**
  * The project manager handles all of the projects within the app.
  * Created by joel on 8/29/2014.
@@ -95,7 +97,7 @@ public class ProjectManager {
             mHasLoaded = true;
             mInitProgressCallback = callback;
             // begin loading target languages
-            String targetLanguageCatalog = mDataStore.fetchTargetLanguageCatalog();
+            String targetLanguageCatalog = mDataStore.pullTargetLanguageCatalog();
             loadTargetLanguagesCatalog(targetLanguageCatalog);
             // begin loading projects
             initProjects();
@@ -109,7 +111,7 @@ public class ProjectManager {
      * Loads the projects
      */
     private void initProjects() {
-        String projectsCatalog = mDataStore.fetchProjectCatalog(false, false);
+        String projectsCatalog = mDataStore.pullProjectCatalog(false, false);
         loadProjectsCatalog(projectsCatalog, false, false, null, null);
     }
 
@@ -126,7 +128,7 @@ public class ProjectManager {
      * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
     public void downloadNewProjects(boolean ignoreCache, OnProgressCallback callback, OnProgressCallback secondaryCallback) {
-        String catalog = mDataStore.fetchProjectCatalog(true, ignoreCache);
+        String catalog = mDataStore.pullProjectCatalog(true, ignoreCache);
         loadProjectsCatalog(catalog, true, ignoreCache, callback, secondaryCallback);
     }
 
@@ -150,7 +152,7 @@ public class ProjectManager {
         if(callback != null) {
             callback.onProgress(0.0, mContext.getResources().getString(R.string.downloading_languages));
         }
-        String languageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), true, ignoreCache);
+        String languageCatalog = mDataStore.pullSourceLanguageCatalog(p.getId(), true, ignoreCache);
         loadSourceLanguageCatalog(p, languageCatalog, true, ignoreCache, callback);
     }
 
@@ -173,7 +175,7 @@ public class ProjectManager {
     public void fetchProjectSource(Project p, Boolean displayNotice) {
         if(p == null || p.getSelectedSourceLanguage() == null) return;
 
-        String source = mDataStore.fetchSource(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
+        String source = mDataStore.pullSource(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
@@ -182,7 +184,7 @@ public class ProjectManager {
             }
         }
         loadProject(source, p);
-        String terms = mDataStore.fetchTerms(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
+        String terms = mDataStore.pullTerms(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             if(mInitProgressCallback != null) {
@@ -190,7 +192,7 @@ public class ProjectManager {
             }
         }
         loadTerms(terms, p);
-        String notes = mDataStore.fetchNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
+        String notes = mDataStore.pullNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             if(mInitProgressCallback != null) {
@@ -244,7 +246,36 @@ public class ProjectManager {
      * Sorts the listable projects
      */
     public void sortListableProjects() {
-        Collections.sort(mListableProjects, new Comparator<Model>() {
+        sortModelList(mListableProjects);
+//        Collections.sort(mListableProjects, new Comparator<Model>() {
+//            @Override
+//            public int compare(Model model, Model model2) {
+//                try {
+//                    // sort children
+//                    if(model.getClass().getName().equals(PseudoProject.class.getName())) {
+//                        ((PseudoProject)model).sortChildren();
+//                    }
+//                    if(model2.getClass().getName().equals(PseudoProject.class.getName())) {
+//                        ((PseudoProject)model2).sortChildren();
+//                    }
+//                    // sort models
+//                    int i = Integer.parseInt(model.getSortKey());
+//                    int i2 = Integer.parseInt(model2.getSortKey());
+//                    return i - i2;
+//                } catch (Exception e) {
+//                    Logger.e(this.getClass().getName(), "unable to sort models", e);
+//                    return 0;
+//                }
+//            }
+//        });
+    }
+
+    /**
+     * Sorts a list of models
+     * @param models
+     */
+    public void sortModelList(List<Model> models) {
+        Collections.sort(models, new Comparator<Model>() {
             @Override
             public int compare(Model model, Model model2) {
                 try {
@@ -651,6 +682,61 @@ public class ProjectManager {
     }
 
     /**
+     * Downloads a list of available projects
+     * This should not be ran on the main thread
+     * @return
+     */
+    public List<Model> fetchAvailableProjects() {
+        String projectsCatalog = mDataStore.fetchProjectCatalog(false);
+        List<Model> availableProjects = new ArrayList<>();
+
+        // load projects
+        JSONArray json;
+        try {
+            json = new JSONArray(projectsCatalog);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "malformed projects catalog", e);
+            return new ArrayList<>();
+        }
+
+        // load the data
+        int numProjects = json.length();
+        for(int i=0; i<numProjects; i++) {
+            try {
+                JSONObject jsonProject = json.getJSONObject(i);
+                if(jsonProject.has("slug") && jsonProject.has("date_modified")) {
+                    Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
+                    if(jsonProject.has("sort")) {
+                        p.setSortKey(jsonProject.getString("sort"));
+                    }
+
+                    // load meta
+                    if(jsonProject.has("meta")) {
+                        JSONArray jsonMeta = jsonProject.getJSONArray("meta");
+                        for(int j=0; j < jsonMeta.length(); j++) {
+                            p.addSudoProject(new PseudoProject(jsonMeta.get(j).toString()));
+                        }
+                    }
+
+                    availableProjects.add(p);
+
+                    // load source languages
+                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
+                    loadProjectTranslations(getProject(p.getId()), sourceLanguageCatalog);
+                } else {
+                    Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "failed to load projects catalog", e);
+                continue;
+            }
+        }
+
+        sortModelList(availableProjects);
+        return availableProjects;
+    }
+
+    /**
      * Loads the projects catalog
      * @param projectsCatalog
      * @param checkServer indicates the latest languages should be downloaded from the server
@@ -759,9 +845,9 @@ public class ProjectManager {
                     }
 
                     // load source languages
-                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), downloadLanguages, ignoreCache);
+                    String sourceLanguageCatalog = mDataStore.pullSourceLanguageCatalog(p.getId(), downloadLanguages, ignoreCache);
                     // TRICKY: pull the project from the cache so we have a history of cached languages and resources when checking if a download is needed
-                    // TRICKY: we pass in downloadLanguages rather than checkSever directly to stop needless download propogation
+                    // TRICKY: we pass in downloadLanguages rather than checkServer directly to stop needless download propogation
                     List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages, ignoreCache, secondaryCallback);
                     // validate project has languages
                     if(languages.size() == 0) {
@@ -787,6 +873,15 @@ public class ProjectManager {
         sortListableProjects();
 
         return importedProjects;
+    }
+
+    /**
+     * Loads the project title and description translations
+     * @param p
+     * @param sourceLanguageCatalog
+     */
+    private void loadProjectTranslations(Project p, String sourceLanguageCatalog) {
+
     }
 
     /**
@@ -881,7 +976,7 @@ public class ProjectManager {
                     }
 
                     // load translation versions
-                    String resourcesCatalog = mDataStore.fetchResourceCatalog(p.getId(), l.getId(), downloadResources, ignoreCache);
+                    String resourcesCatalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), downloadResources, ignoreCache);
                     // TRICKY: we pass in downloadResources rather than checkSever directly to stop needless download propogation
                     List<Resource> importedResources = loadResourcesCatalog(p, l, resourcesCatalog, downloadResources, ignoreCache);
 
@@ -959,19 +1054,19 @@ public class ProjectManager {
                             if(checkServer) {
                                 // we will attempt to use the provided urls before using the default download path
                                 if(jsonResource.has("notes")) {
-                                    mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), jsonResource.getString("notes"), ignoreCache);
+                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), jsonResource.getString("notes"), ignoreCache);
                                 } else {
-                                    mDataStore.fetchNotes(p.getId(), l.getId(), r.getId(), true, ignoreCache);
+                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), true, ignoreCache);
                                 }
                                 if(jsonResource.has("terms")) {
-                                    mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), jsonResource.getString("terms"), ignoreCache);
+                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), jsonResource.getString("terms"), ignoreCache);
                                 } else {
-                                    mDataStore.fetchTerms(p.getId(), l.getId(), r.getId(), true, ignoreCache);
+                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), true, ignoreCache);
                                 }
                                 if(jsonResource.has("source")) {
-                                    mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), jsonResource.getString("source"), ignoreCache);
+                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), jsonResource.getString("source"), ignoreCache);
                                 } else {
-                                    mDataStore.fetchSource(p.getId(), l.getId(), r.getId(), true, ignoreCache);
+                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), true, ignoreCache);
                                 }
                             }
 

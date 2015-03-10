@@ -6,7 +6,6 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +16,6 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.door43.translationstudio.GetMoreProjectsActivity;
-import com.door43.translationstudio.LanguageSelectorActivity;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectDialog;
@@ -29,7 +27,7 @@ import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.squareup.otto.Subscribe;
 

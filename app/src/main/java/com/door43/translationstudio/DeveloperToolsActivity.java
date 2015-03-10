@@ -7,7 +7,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -23,7 +22,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
@@ -32,7 +31,6 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
 import java.util.ArrayList;
 

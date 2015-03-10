@@ -1,24 +1,19 @@
 package com.door43.translationstudio;
 
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -34,7 +29,6 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -75,7 +69,6 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -91,14 +84,10 @@ import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.door43.util.TTFAnalyzer;
 import com.squareup.otto.Subscribe;
 
-import org.sil.palaso.Graphite;
-
-import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 

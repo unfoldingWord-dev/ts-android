@@ -1,6 +1,6 @@
 package com.door43.translationstudio.projects.imports;
 
-import com.door43.translationstudio.util.ListMap;
+import com.door43.util.ListMap;
 
 /**
  * This provides the base class for an import request.

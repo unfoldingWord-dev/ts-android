@@ -1,6 +1,6 @@
 package com.door43.translationstudio.network;
 
-import com.door43.translationstudio.util.KeyValueStore;
+import com.door43.util.KeyValueStore;
 
 /**
  * A peer is any device that is connected to another device.

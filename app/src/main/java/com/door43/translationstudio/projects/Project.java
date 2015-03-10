@@ -8,7 +8,7 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ListMap;
+import com.door43.util.ListMap;
 import com.door43.util.Logger;
 
 import org.apache.commons.io.FileUtils;

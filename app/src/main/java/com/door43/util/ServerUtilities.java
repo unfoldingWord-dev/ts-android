@@ -1,6 +1,4 @@
-package com.door43.translationstudio.util;
-
-import com.door43.util.Logger;
+package com.door43.util;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;

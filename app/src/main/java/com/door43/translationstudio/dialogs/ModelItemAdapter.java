@@ -19,11 +19,8 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by joel on 8/29/2014.

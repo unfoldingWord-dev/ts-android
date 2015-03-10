@@ -16,7 +16,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.door43.util.Logger;
 
 

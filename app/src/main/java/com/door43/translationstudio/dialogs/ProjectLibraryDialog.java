@@ -1,7 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -12,17 +11,18 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.threads.ThreadableUI;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This dialog allows a user to browse a project dialog and make selections.
  */
 public class ProjectLibraryDialog extends DialogFragment {
-    private Model[] mProjectList;
     private ModelItemAdapter mAdapter;
     private String mSelectedProjectId;
     private Boolean mDismissed = false;
@@ -46,8 +46,26 @@ public class ProjectLibraryDialog extends DialogFragment {
 //                if (mAdapter == null) mAdapter = new ModelItemAdapter(AppContext.context(), p.getChildren());
 //            }
 //        }
-        if(savedInstanceState != null) {
-            mProjectList = (Model[]) savedInstanceState.getSerializable("projects");
+        Bundle args = getArguments();
+        if(args != null) {
+            final String mCatalog = args.getString("project_catalog");
+            new ThreadableUI(getActivity()) {
+                private List<Model> projects = new ArrayList<>();
+                @Override
+                public void onStop() {
+
+                }
+
+                @Override
+                public void run() {
+                    // TODO: parse catalog
+                }
+
+                @Override
+                public void onPostExecute() {
+                    mAdapter.changeDataSet(projects.toArray(new Model[projects.size()]));
+                }
+            };
         }
 
         // connect adapter
@@ -56,31 +74,19 @@ public class ProjectLibraryDialog extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Model m = mAdapter.getItem(i);
-                if(m.getClass().equals(PseudoProject.class)) {
+                if (m.getClass().equals(PseudoProject.class)) {
                     // re-load list
-                    mAdapter.changeDataSet(((PseudoProject)m).getChildren());
+                    mAdapter.changeDataSet(((PseudoProject) m).getChildren());
                 } else {
                     // return the selected project.
                     mSelectedProjectId = m.getId();
-                    if(getActivity() != null) {
-                        ((ProjectLibraryListener)getActivity()).onProjectLibrarySelected(ProjectLibraryDialog.this, mSelectedProjectId);
+                    if (getActivity() != null) {
+                        ((ProjectLibraryListener) getActivity()).onProjectLibrarySelected(ProjectLibraryDialog.this, mSelectedProjectId);
                     }
                 }
             }
         });
-
-        init();
-
         return v;
-    }
-
-    /**
-     * Initializes the adapter data
-     */
-    public void init() {
-        if(mAdapter != null && mProjectList != null) {
-            mAdapter.changeDataSet(mProjectList);
-        }
     }
 
     /**
@@ -123,9 +129,9 @@ public class ProjectLibraryDialog extends DialogFragment {
      * Sets an array of projects and Pseudo projects to display in the list
      * @param projects
      */
-    public void setProjects(Model[] projects) {
-        mProjectList = projects;
-    }
+//    public void setProjects(Model[] projects) {
+//        mProjectList = projects;
+//    }
 
     /**
      * Sets the callback to be notified when submitting or canceling the dialog.
@@ -156,7 +162,7 @@ public class ProjectLibraryDialog extends DialogFragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putSerializable("projects", mProjectList);
+//        outState.putSerializable("projects", mProjectList);
         outState.putSerializable("selected_project_id", mSelectedProjectId);
     }
 

@@ -1,7 +1,6 @@
-package com.door43.translationstudio.util;
+package com.door43.util;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -102,7 +101,6 @@ public class TCPClient {
                         System.arraycopy(buffer, 0, tempdata, 0, read);
                         serverMessage = new String(tempdata);
                     }
-                    Log.d(TAG, serverMessage);
 
                     // handle response from the server
                     if (serverMessage != null && mTcpListener != null) {

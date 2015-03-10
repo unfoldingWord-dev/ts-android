@@ -4,7 +4,6 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
-import android.util.TypedValue;
 
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Language;
@@ -14,9 +13,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.translations.TranslationManager;
+import com.door43.util.StorageUtils;
 import com.door43.util.TTFAnalyzer;
-import com.door43.util.root.Root;
-import com.door43.util.threads.ThreadManager;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 

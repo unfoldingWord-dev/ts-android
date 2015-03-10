@@ -45,7 +45,7 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="Model Description\ntest"
+                android:layout_margin="20dp"
                 android:id="@+id/modelDescription"
                 android:ellipsize="end"
                 android:maxLines="2"
@@ -96,7 +96,7 @@
                 android:paddingLeft="5dp"
                 android:paddingRight="5dp"
                 android:gravity="center"
-                android:text="Model Description"
+                android:text="Model Description\ntest\testsdfsd f\ntest"
                 android:textSize="@dimen/h4" />
         </LinearLayout>
     </RelativeLayout>
@@ -106,7 +106,7 @@
         android:visibility="visible"
         android:id="@+id/iconGroupLayout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:padding="2dp"
         android:background="@color/lighter_gray"
         android:minHeight="@dimen/model_list_item_height"

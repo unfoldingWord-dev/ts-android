@@ -11,14 +11,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.LanguageAdapter;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.ThreadableUI;
+import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.List;

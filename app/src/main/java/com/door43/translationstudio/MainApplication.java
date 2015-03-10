@@ -18,7 +18,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.util.CustomExceptionHandler;
+import com.door43.util.CustomExceptionHandler;
 import com.door43.translationstudio.util.DummyDialogListener;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -27,23 +27,13 @@ import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
-import org.kamranzafar.jtar.TarEntry;
-import org.kamranzafar.jtar.TarInputStream;
-import org.kamranzafar.jtar.TarOutputStream;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes

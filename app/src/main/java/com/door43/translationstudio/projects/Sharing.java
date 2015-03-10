@@ -17,13 +17,12 @@ import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.FileUtilities;
+import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
-import com.door43.translationstudio.util.Security;
+import com.door43.util.Security;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.json.JSONArray;
@@ -691,7 +690,7 @@ public class Sharing {
                     // resources catalog
                     File languageSourceDir = new File(projectSourceDir, l.getId());
                     languageSourceDir.mkdirs();
-                    String resources = ds.fetchResourceCatalog(p.getId(), l.getId(), false, false);
+                    String resources = ds.pullResourceCatalog(p.getId(), l.getId(), false, false);
                     String resKey = ds.getKey(Uri.parse(ds.resourceCatalogUrl(p.getId(), l.getId())));
                     FileUtils.writeStringToFile(new File(dataDir, resKey), resources);
                     FileUtils.writeStringToFile(new File(languageSourceDir, "resources_catalog.link"), resKey);
@@ -701,19 +700,19 @@ public class Sharing {
                         resourceDir.mkdirs();
 
                         // terms
-                        String terms = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false, false);
+                        String terms = ds.pullTerms(p.getId(), l.getId(), r.getId(), false, false);
                         String termKey = ds.getKey(Uri.parse(ds.termsUrl(p.getId(), l.getId(), r.getId())));
                         FileUtils.writeStringToFile(new File(dataDir, termKey), terms);
                         FileUtils.writeStringToFile(new File(resourceDir, "terms.link"), termKey);
 
                         // source
-                        String source = ds.fetchSource(p.getId(), l.getId(), r.getId(), false, false);
+                        String source = ds.pullSource(p.getId(), l.getId(), r.getId(), false, false);
                         String srcKey = ds.getKey(Uri.parse(ds.sourceUrl(p.getId(), l.getId(), r.getId())));
                         FileUtils.writeStringToFile(new File(dataDir, srcKey), source);
                         FileUtils.writeStringToFile(new File(resourceDir, "source.link"), srcKey);
 
                         // notes
-                        String notes = ds.fetchNotes(p.getId(), l.getId(), r.getId(), false, false);
+                        String notes = ds.pullNotes(p.getId(), l.getId(), r.getId(), false, false);
                         String notesKey = ds.getKey(Uri.parse(ds.notesUrl(p.getId(), l.getId(), r.getId())));
                         FileUtils.writeStringToFile(new File(dataDir, notesKey), notes);
                         FileUtils.writeStringToFile(new File(resourceDir, "notes.link"), notesKey);
@@ -826,7 +825,7 @@ public class Sharing {
                     File languageSourceDir = new File(projectSourceDir, l.getId());
                     languageSourceDir.mkdirs();
                     File resCatFile = new File(languageSourceDir, "resources_catalog.json");
-                    String resources = ds.fetchResourceCatalog(p.getId(), l.getId(), false, false);
+                    String resources = ds.pullResourceCatalog(p.getId(), l.getId(), false, false);
                     FileUtils.writeStringToFile(resCatFile, resources);
 
                     for(Resource r:l.getResources()) {
@@ -835,17 +834,17 @@ public class Sharing {
 
                         // terms
                         File termsFile = new File(resourceDir, "terms.json");
-                        String terms = ds.fetchTerms(p.getId(), l.getId(), r.getId(), false, false);
+                        String terms = ds.pullTerms(p.getId(), l.getId(), r.getId(), false, false);
                         FileUtils.writeStringToFile(termsFile, terms);
 
                         // source
                         File sourceFile = new File(resourceDir, "source.json");
-                        String source = ds.fetchSource(p.getId(), l.getId(), r.getId(), false, false);
+                        String source = ds.pullSource(p.getId(), l.getId(), r.getId(), false, false);
                         FileUtils.writeStringToFile(sourceFile, source);
 
                         // notes
                         File notesFile = new File(resourceDir, "notes.json");
-                        String notes = ds.fetchNotes(p.getId(), l.getId(), r.getId(), false, false);
+                        String notes = ds.pullNotes(p.getId(), l.getId(), r.getId(), false, false);
                         FileUtils.writeStringToFile(notesFile, notes);
 
                         // images
