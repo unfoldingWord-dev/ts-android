@@ -35,7 +35,7 @@ public class ProjectManager {
     private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
 
     // meta projects
-    private static Map<String, PseudoProject> mMetaProjectMap = new HashMap<String, PseudoProject>();
+    private static Map<String, PseudoProject> mPseudoProjectMap = new HashMap<String, PseudoProject>();
 
     private static List<Model> mListableProjects = new ArrayList<Model>();
     private static Map<String, Model> mListableProjectMap = new HashMap<String, Model>();
@@ -232,8 +232,8 @@ public class ProjectManager {
      * @return
      */
     private boolean addMetaProject(PseudoProject p) {
-        if(!mMetaProjectMap.containsKey(p.getId())) {
-            mMetaProjectMap.put(p.getId(), p);
+        if(!mPseudoProjectMap.containsKey(p.getId())) {
+            mPseudoProjectMap.put(p.getId(), p);
             return true;
         } else {
             return false;
@@ -363,9 +363,9 @@ public class ProjectManager {
      * @param id
      * @return
      */
-    public PseudoProject getMetaProject(String id) {
-        if(mMetaProjectMap.containsKey(id)) {
-            return mMetaProjectMap.get(id);
+    public PseudoProject getPseudoProject(String id) {
+        if(mPseudoProjectMap.containsKey(id)) {
+            return mPseudoProjectMap.get(id);
         } else {
             return null;
         }
@@ -696,7 +696,7 @@ public class ProjectManager {
 
                             // get the root meta
                             String metaSlug = jsonMeta.get(0).toString();
-                            rootPseudoProject = getMetaProject(metaSlug);
+                            rootPseudoProject = getPseudoProject(metaSlug);
                             if(rootPseudoProject == null) {
                                 rootPseudoProject = new PseudoProject(metaSlug);
                                 addMetaProject(rootPseudoProject);

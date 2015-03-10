@@ -276,5 +276,6 @@
     <string name="get_more_projects">Get more projects</string>
     <string name="title_activity_get_more_projects" translatable="false">@string/get_more_projects</string>
     <string name="get_more_projects_description">You may update existing projects or get new projects using several different methods. Please choose your preferred method below.</string>
+    <string name="source_language_library">Source Language Library</string>
 
 </resources>

@@ -1,163 +1,167 @@
 package com.door43.translationstudio.dialogs;
 
+import android.app.Activity;
+import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 /**
  * This dialog allows a user to browse a project dialog and make selections.
  */
 public class ProjectLibraryDialog extends DialogFragment {
-    // TODO: we need to finish implimenting this and replace ChooseProjectToImportDialog with it.
+    private Model[] mProjectList;
+    private ModelItemAdapter mAdapter;
+    private String mSelectedProjectId;
+    private Boolean mDismissed = false;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.project_library);
         View v = inflater.inflate(R.layout.dialog_choose_project, container, false);
 
-        // don't destroy this dialog on device rotations
-        setRetainInstance(true);
-
         ListView listView = (ListView)v.findViewById(R.id.listView);
-//        if(mModelList != null) {
-//            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(MainContext.getContext(), mModelList, false);
-//            // connect adapter
-//            listView.setAdapter(mModelItemAdapter);
-//            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//                    Model m = mModelItemAdapter.getItem(i);
-//                    if (m.getClass().equals(PseudoProject.class)) {
-//                        // re-load list
-//                        mModelItemAdapter.changeDataSet(((PseudoProject) m).getChildren());
-//                    } else {
-//                        // return the selected project.
-//                        Project p = (Project) m;
-//                        MainContext.getEventBus().post(new ChoseProjectToImportEvent(mPeer, p, ChooseProjectToImportDialog.this));
-//                        // NOTE: the caller should close this dialog
-//                    }
-//                }
-//            });
-//        } else {
-//            listView.setAdapter(new ModelItemAdapter(MainContext.getContext(), new Model[]{},false));
-//            dismiss();
+
+
+
+        if(mAdapter == null) mAdapter = new ModelItemAdapter(AppContext.context(), new Model[0]);
+
+
+//        else {
+//            Bundle args = getArguments();
+//            String id = args.getString("metaId");
+//            PseudoProject p = AppContext.projectManager().getPseudoProject(id);
+//            if(p != null) {
+//                if (mAdapter == null) mAdapter = new ModelItemAdapter(AppContext.context(), p.getChildren());
+//            }
 //        }
+        if(savedInstanceState != null) {
+            mProjectList = (Model[]) savedInstanceState.getSerializable("projects");
+        }
+
+        // connect adapter
+        listView.setAdapter(mAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Model m = mAdapter.getItem(i);
+                if(m.getClass().equals(PseudoProject.class)) {
+                    // re-load list
+                    mAdapter.changeDataSet(((PseudoProject)m).getChildren());
+                } else {
+                    // return the selected project.
+                    mSelectedProjectId = m.getId();
+                    if(getActivity() != null) {
+                        ((ProjectLibraryListener)getActivity()).onProjectLibrarySelected(ProjectLibraryDialog.this, mSelectedProjectId);
+                    }
+                }
+            }
+        });
+
+        init();
 
         return v;
     }
 
-    public Model[] parseLibrary(String library) {
-        ArrayList<Model> projects = new ArrayList<Model>();
-        android.os.Handler handle = new android.os.Handler(getActivity().getMainLooper());
-        JSONArray json;
-        try {
-            json = new JSONArray(library);
-        } catch (final JSONException e) {
-            handle.post(new Runnable() {
-                @Override
-                public void run() {
-                    AppContext.context().showException(e);
-                }
-            });
-            return new Model[0];
+    /**
+     * Initializes the adapter data
+     */
+    public void init() {
+        if(mAdapter != null && mProjectList != null) {
+            mAdapter.changeDataSet(mProjectList);
         }
+    }
 
-        // load the data
-        for(int i=0; i<json.length(); i++) {
-            try {
-                JSONObject projectJson = json.getJSONObject(i);
-                if (projectJson.has("id") && projectJson.has("project") && projectJson.has("language") && projectJson.has("target_languages")) {
-                    Project p = new Project(projectJson.getString("id"));
-
-                    // source language (just for project info)
-                    JSONObject sourceLangJson = projectJson.getJSONObject("language");
-                    String sourceLangDirection = sourceLangJson.getString("direction");
-                    Language.Direction langDirection;
-                    if(sourceLangDirection.toLowerCase().equals("ltr")) {
-                        langDirection = Language.Direction.LeftToRight;
-                    } else {
-                        langDirection = Language.Direction.RightToLeft;
-                    }
-                    SourceLanguage sourceLanguage = new SourceLanguage(sourceLangJson.getString("slug"), sourceLangJson.getString("name"), langDirection, 0);
-                    p.addSourceLanguage(sourceLanguage);
-                    p.setSelectedSourceLanguage(sourceLanguage.getId());
-
-                    // project info
-                    JSONObject projectInfoJson = projectJson.getJSONObject("project");
-                    p.setDefaultTitle(projectInfoJson.getString("name"));
-                    if(projectInfoJson.has("description")) {
-                        p.setDefaultDescription(projectInfoJson.getString("description"));
-                    }
-
-                    // meta (sudo projects)
-                    // TRICKY: we are actually getting the meta names instead of the id's since we only receive one translation of the project info
-                    if (projectInfoJson.has("meta")) {
-                        JSONArray metaJson = projectInfoJson.getJSONArray("meta");
-                        PseudoProject currentPseudoProject = null;
-                        for(int j=0; j<metaJson.length(); j++) {
-                            // create sudo project out of the meta name
-                            PseudoProject sp  = new PseudoProject(metaJson.getString(j));
-                            // link to parent sudo project
-                            if(currentPseudoProject != null) {
-                                currentPseudoProject.addChild(sp);
-                            }
-                            // add to project
-                            p.addSudoProject(sp);
-                            currentPseudoProject = sp;
-                        }
-                    }
-
-                    // available translation languages
-                    JSONArray languagesJson = projectJson.getJSONArray("target_languages");
-                    for(int j=0; j<languagesJson.length(); j++) {
-                        JSONObject langJson = languagesJson.getJSONObject(j);
-                        String languageId = langJson.getString("slug");
-                        String languageName = langJson.getString("name");
-                        String direction  = langJson.getString("direction");
-                        Language.Direction langDir;
-                        if(direction.toLowerCase().equals("ltr")) {
-                            langDir = Language.Direction.LeftToRight;
-                        } else {
-                            langDir = Language.Direction.RightToLeft;
-                        }
-                        Language l = new Language(languageId, languageName, langDir);
-                        p.addTargetLanguage(l);
-                    }
-                    // finish linking the sudo projects together with the project so the menu can be rendered correctly
-                    if(p.numSudoProjects() > 0) {
-                        p.getSudoProject(p.numSudoProjects() - 1).addChild(p);
-                        projects.add(p.getSudoProject(0));
-                    } else {
-                        projects.add(p);
-                    }
-                } else {
-                    // TODO: invalid json
-                }
-            } catch(final JSONException e) {
-                handle.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        AppContext.context().showException(e);
-                    }
-                });
+    /**
+     * Ensure the activity is configured properly
+     * @param activity
+     */
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if(!(activity instanceof ProjectLibraryListener)) {
+            throw new ClassCastException(activity.toString() + " must implement ProjectLibraryListener");
+        } else {
+            if(mDismissed) {
+                ((ProjectLibraryListener)getActivity()).onProjectLibraryDismissed(this);
+            } else if(mSelectedProjectId != null) {
+                ((ProjectLibraryListener)getActivity()).onProjectLibrarySelected(this, mSelectedProjectId);
             }
         }
-        return projects.toArray(new Model[projects.size()]);
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        mDismissed = true;
+        if(getActivity() != null) {
+            ((ProjectLibraryListener)getActivity()).onProjectLibraryDismissed(this);
+        }
+        super.onCancel(dialog);
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        mDismissed = true;
+        if(getActivity() != null) {
+            ((ProjectLibraryListener)getActivity()).onProjectLibraryDismissed(this);
+        }
+        super.onDismiss(dialog);
+    }
+
+    /**
+     * Sets an array of projects and Pseudo projects to display in the list
+     * @param projects
+     */
+    public void setProjects(Model[] projects) {
+        mProjectList = projects;
+    }
+
+    /**
+     * Sets the callback to be notified when submitting or canceling the dialog.
+     * IMPORTANT! You should always reset the listener on screen rotation
+     * @param listener
+     */
+//    public void setOnClickListener(OnClickListener listener) {
+//        mListener = listener;
+//        if(mDismissed) {
+//            listener.onClick(this, null);
+//        } else if(mSelectedProject != null) {
+//            listener.onClick(this, mSelectedProject);
+//        }
+//    }
+
+    /**
+     * interface to handle submitting the dialog
+     */
+//    public static interface OnClickListener {
+//        /**
+//         * Called when the user dismisses the dialog or selects a project
+//         * @param dialog the dialog instance
+//         * @param p the project that was selected. This will be null if the dialog was dismissed.
+//         */
+//        public void onClick(ProjectLibraryDialog dialog, Project p);
+//    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putSerializable("projects", mProjectList);
+        outState.putSerializable("selected_project_id", mSelectedProjectId);
+    }
+
+    public static interface ProjectLibraryListener {
+        public void onProjectLibrarySelected(ProjectLibraryDialog dialog, String projectId);
+        public void onProjectLibraryDismissed(ProjectLibraryDialog dialog);
     }
 }

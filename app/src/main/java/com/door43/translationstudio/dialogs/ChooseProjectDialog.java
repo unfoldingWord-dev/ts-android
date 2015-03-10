@@ -39,7 +39,7 @@ public class ChooseProjectDialog extends DialogFragment {
         } else {
             Bundle args = getArguments();
             String id = args.getString("metaId");
-            PseudoProject p = AppContext.projectManager().getMetaProject(id);
+            PseudoProject p = AppContext.projectManager().getPseudoProject(id);
             if(p != null) {
                 if (mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), p.getChildren());
             }
