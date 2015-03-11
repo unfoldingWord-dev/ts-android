@@ -18,7 +18,7 @@ import com.door43.util.TTFAnalyzer;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
-import org.sil.palaso.Graphite;
+//import org.sil.palaso.Graphite;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,7 +41,7 @@ public class AppContext {
      */
     public AppContext(MainApplication context) {
         if(mContext == null) {
-            Graphite.loadGraphite();
+//            Graphite.loadGraphite();
             mContext = context;
             mTranslationManager = new TranslationManager(context);
             mProjectManager = new ProjectManager(context);
@@ -166,17 +166,17 @@ public class AppContext {
     public static Typeface graphiteTypeface(Language l) {
         String typeFace = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getResources().getString(R.string.pref_default_translation_typeface));
         File font = AppContext.context().getAssetAsFile("fonts/" + typeFace);
-        if (font != null) {
-            TTFAnalyzer analyzer = new TTFAnalyzer();
-            String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
-            if (fontname != null) {
-                // assets container, font asset, font name, rtl, language, feats (what's this for????)
-                int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
-                return (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
-            }
-        }
-        Logger.w(AppContext.class.getName(), "Could not load the typeface "+typeFace);
-        return Typeface.DEFAULT;
+//        if (font != null) {
+//            TTFAnalyzer analyzer = new TTFAnalyzer();
+//            String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
+//            if (fontname != null) {
+//                // assets container, font asset, font name, rtl, language, feats (what's this for????)
+//                int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
+//                return (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
+//            }
+//        }
+//        Logger.w(AppContext.class.getName(), "Could not load the typeface "+typeFace);
+        return Typeface.createFromFile(font);//Typeface.DEFAULT;
     }
 
     /**

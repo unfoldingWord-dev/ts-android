@@ -19,7 +19,7 @@ public abstract class ManagedTask implements Runnable {
         }
         mFinished = true;
         if(mListener != null) {
-            mListener.onFinished();
+            mListener.onFinished(this);
         }
     }
 
@@ -53,6 +53,6 @@ public abstract class ManagedTask implements Runnable {
     }
 
     public static interface OnFinishedListener {
-        public void onFinished();
+        public void onFinished(ManagedTask task);
     }
 }

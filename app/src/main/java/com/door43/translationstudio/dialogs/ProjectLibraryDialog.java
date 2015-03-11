@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * This dialog allows a user to browse a project dialog and make selections.
+ * @deprecated we're moving the project library into an activity
  */
 public class ProjectLibraryDialog extends DialogFragment {
     private ModelItemAdapter mAdapter;

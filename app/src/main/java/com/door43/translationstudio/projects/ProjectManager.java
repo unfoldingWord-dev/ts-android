@@ -881,7 +881,80 @@ public class ProjectManager {
      * @param sourceLanguageCatalog
      */
     private void loadProjectTranslations(Project p, String sourceLanguageCatalog) {
+        if(sourceLanguageCatalog == null) {
+            return;
+        }
+        // parse source languages
+        JSONArray json;
+        try {
+            json = new JSONArray(sourceLanguageCatalog);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "malformed source language catalog", e);
+            return;
+        }
 
+        // load the data
+        for(int i=0; i<json.length(); i++) {
+            if(Thread.currentThread().isInterrupted()) break;
+            try {
+                JSONObject jsonLanguage = json.getJSONObject(i);
+                if(jsonLanguage.has("language") && jsonLanguage.has("project")) {
+                    JSONObject jsonLangInfo = jsonLanguage.getJSONObject("language");
+                    JSONObject jsonProjInfo = jsonLanguage.getJSONObject("project");
+
+                    // load language
+                    Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
+                    SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
+
+                    // load the rest of the project info
+                    // TRICKY: we need to specify a default title and description for the project
+                    if(i == 0) {
+                        p.setDefaultTitle(jsonProjInfo.getString("name"));
+                        p.setDefaultDescription(jsonProjInfo.getString("desc"));
+                    }
+
+                    // load title and description translations.
+                    p.setTitle(jsonProjInfo.getString("name"), l);
+                    p.setDescription(jsonProjInfo.getString("desc"), l);
+
+                    // load sudo project names
+                    if(jsonProjInfo.has("meta") && p.numSudoProjects() > 0) {
+                        JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
+                        if(jsonMeta.length() > 0) {
+                            for (int j = 0; j < jsonMeta.length(); j++) {
+                                PseudoProject sp = p.getSudoProject(j);
+                                if(sp != null) {
+                                    sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
+                                } else {
+                                    Logger.w(this.getClass().getName(), "missing meta category in project "+p.getId());
+                                    break;
+                                }
+                            }
+                        } else {
+                            Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                        }
+                    } else if(p.numSudoProjects() > 0) {
+                        Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                    }
+                } else {
+                    Logger.w(this.getClass().getName(), "missing required parameters in the source language catalog");
+                }
+            } catch (JSONException e) {
+                Logger.w(this.getClass().getName(), "failed to load source language", e);
+                continue;
+            }
+        }
+
+        // Attempt to select a more accurate default language for the project title and description
+        String deviceLocale = Locale.getDefault().getLanguage();
+        // don't change the source language if already selecteed
+        if(!p.hasSelectedSourceLanguage()) {
+            if (p.getSourceLanguage(deviceLocale) != null) {
+                p.setSelectedSourceLanguage(deviceLocale);
+            } else if (p.getSourceLanguage("en") != null) {
+                p.setSelectedSourceLanguage("en");
+            }
+        }
     }
 
     /**
