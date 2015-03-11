@@ -28,6 +28,7 @@ import com.door43.util.threads.ThreadManager;
  * <p/>
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
+ * TODO: we need to display a notice if there are no new projects available
  */
 public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener {
 
@@ -115,6 +116,11 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
     }
 
+    /**
+     * Fetches a list of available projects
+     * TODO: we should first load all the projects then load each set of languages one at a time so we can update the ui as we receive more projects.
+     * TODO: then we should just display a loading icon at the bottom of the screen.
+     */
     private void preparProjectList() {
         if(mTaskId != -1) {
             // check progress

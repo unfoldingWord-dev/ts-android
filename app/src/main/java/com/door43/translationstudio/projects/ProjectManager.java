@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.xml.transform.Source;
-
 /**
  * The project manager handles all of the projects within the app.
  * Created by joel on 8/29/2014.
@@ -710,11 +708,6 @@ public class ProjectManager {
                         p.setSortKey(jsonProject.getString("sort"));
                     }
 
-                    // skip projects we already have
-                    if(getProject(p.getId()) != null) {
-                        continue;
-                    }
-
                     // load meta
                     if(jsonProject.has("meta")) {
                         JSONArray jsonMeta = jsonProject.getJSONArray("meta");
@@ -723,11 +716,14 @@ public class ProjectManager {
                         }
                     }
 
-                    availableProjects.add(p);
-
                     // load source languages
                     String sourceLanguageCatalog = mDataStore.fetchTempAsset(jsonProject.getString("lang_catalog"), false);
-                    loadProjectTranslations(p, sourceLanguageCatalog);
+                    loadAvailableProjectTranslations(p, sourceLanguageCatalog);
+
+                    // make sure we have languages. We skip languages that have already been downloaded.
+                    if(p.getSourceLanguages().size() > 0) {
+                        availableProjects.add(p);
+                    }
                 } else {
                     Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
                 }
@@ -881,11 +877,11 @@ public class ProjectManager {
     }
 
     /**
-     * Loads the project title and description translations
+     * Loads the available projects title and description translations
      * @param p
      * @param sourceLanguageCatalog
      */
-    private void loadProjectTranslations(Project p, String sourceLanguageCatalog) {
+    private void loadAvailableProjectTranslations(Project p, String sourceLanguageCatalog) {
         if(sourceLanguageCatalog == null) {
             return;
         }
@@ -910,6 +906,11 @@ public class ProjectManager {
                     // load language
                     Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
+
+                    // skip languages we've already downloaded.
+                    if(getProject(p.getId()) != null && getProject(p.getId()).getSourceLanguage(l.getId()) != null) {
+                        continue;
+                    }
 
                     // load the rest of the project info
                     // TRICKY: we need to specify a default title and description for the project
