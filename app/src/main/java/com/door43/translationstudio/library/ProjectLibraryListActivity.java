@@ -2,6 +2,7 @@ package com.door43.translationstudio.library;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
@@ -37,7 +38,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_library_list);
         // Show the Up button in the action bar.
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (findViewById(R.id.project_detail_container) != null) {
             // The detail container view will be present only in the

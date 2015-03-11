@@ -682,7 +682,7 @@ public class ProjectManager {
     }
 
     /**
-     * Downloads a list of available projects
+     * Downloads a list of available (new) projects
      * This should not be ran on the main thread
      * @return
      */
@@ -710,6 +710,11 @@ public class ProjectManager {
                         p.setSortKey(jsonProject.getString("sort"));
                     }
 
+                    // skip projects we already have
+                    if(getProject(p.getId()) != null) {
+                        continue;
+                    }
+
                     // load meta
                     if(jsonProject.has("meta")) {
                         JSONArray jsonMeta = jsonProject.getJSONArray("meta");
@@ -721,8 +726,8 @@ public class ProjectManager {
                     availableProjects.add(p);
 
                     // load source languages
-                    String sourceLanguageCatalog = mDataStore.fetchSourceLanguageCatalog(p.getId(), false);
-                    loadProjectTranslations(getProject(p.getId()), sourceLanguageCatalog);
+                    String sourceLanguageCatalog = mDataStore.fetchTempAsset(jsonProject.getString("lang_catalog"), false);
+                    loadProjectTranslations(p, sourceLanguageCatalog);
                 } else {
                     Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
                 }

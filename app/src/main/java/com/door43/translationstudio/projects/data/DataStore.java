@@ -491,11 +491,27 @@ public class DataStore {
      * @return
      */
     public String fetchSourceLanguageCatalog(String projectId, boolean ignoreCache) {
-        String key = downloadTempAsset(sourceLanguageCatalogPath(projectId), ignoreCache);
+        String key = downloadTempAsset(sourceLanguageCatalogUrl(projectId), ignoreCache);
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to read the downloaded source language catalog", e);
+            return "";
+        }
+    }
+
+    /**
+     * Downloads a temporary asset and returns it's contents
+     * @param url
+     * @param ignoreCache If set to true the asset will be downloaded every time
+     * @return
+     */
+    public String fetchTempAsset(String url, boolean ignoreCache) {
+        String key = downloadTempAsset(url, ignoreCache);
+        try {
+            return FileUtils.readFileToString(getTempAsset(key));
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to read the downloaded the temp asset", e);
             return "";
         }
     }

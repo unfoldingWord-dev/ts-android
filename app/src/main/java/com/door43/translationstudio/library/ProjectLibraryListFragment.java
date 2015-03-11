@@ -29,26 +29,40 @@ import com.door43.util.threads.ThreadManager;
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
-public class ProjectLibraryListFragment extends ListFragment {
+public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
      * activated item position. Only used on tablets.
      */
     private static final String STATE_ACTIVATED_POSITION = "activated_position";
-    private State mState = State.NOTHING;
-    private int mTaskId;
+    private static final String STATE_TASK_ID = "task_id";
+    private int mTaskId = -1;
     private ModelItemAdapter mAdapter;
+    private boolean mActivityPaused = false;
 
-    private enum State {
-        NOTHING,
-        DOWNLOADING_PROJECTS_CATALOG,
-        BROWSING_PROJECTS_CATALOG,
-        DOWNLOADING_LANGUAGES_CATALOG,
-        BROWSING_LANGUAGES_CATALOG,
-        DOWNLOADING_PROJECT_SOURCE,
-        RELOADING_SELECTED_PROJECT
+    /**
+     * Called when the task has finished fetching the available projects
+     * @param task
+     */
+    @Override
+    public void onFinished(ManagedTask task) {
+        // TODO: hide loading status
+        final GetAvailableProjectsTask myTask = ((GetAvailableProjectsTask)task);
+        LibraryTempData.setAvailableProjects(myTask.getProjects().toArray(new Project[myTask.getProjects().size()]));
+
+        Handler handle = new Handler(Looper.getMainLooper());
+        handle.post(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.changeDataSet(myTask.getProjects().toArray(new Model[myTask.getProjects().size()]));
+            }
+        });
+
+        ThreadManager.clearTask(mTaskId);
+        mTaskId = -1;
     }
+
     /**
      * The fragment's current callback object, which is notified of list item
      * clicks.
@@ -93,70 +107,59 @@ public class ProjectLibraryListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        LibraryTempData.setAvailableProjects(new Project[]{});
         mAdapter = new ModelItemAdapter(AppContext.context(), LibraryTempData.getProjects(), false);
         setListAdapter(mAdapter);
 
-        preparProjectList();
+        if(LibraryTempData.getProjects().length == 0) {
+            preparProjectList();
+        }
     }
 
     private void preparProjectList() {
         if(mTaskId != -1) {
             // check progress
-            GetAvailableProjectsTask task = (GetAvailableProjectsTask) ThreadManager.getTask(mTaskId);
+            final GetAvailableProjectsTask task = (GetAvailableProjectsTask) ThreadManager.getTask(mTaskId);
 
             if (task.isFinished()) {
                 LibraryTempData.setAvailableProjects(task.getProjects().toArray(new Project[task.getProjects().size()]));
-                notifyDataChanged();
+                Handler handle = new Handler(Looper.getMainLooper());
+                handle.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.changeDataSet(task.getProjects().toArray(new Model[task.getProjects().size()]));
+                    }
+                });
 
                 ThreadManager.clearTask(mTaskId);
                 mTaskId = -1;
             } else {
+                task.setOnFinishedListener(this);
                 // TODO: display loading status
             }
         } else {
             // start process
             GetAvailableProjectsTask task = new GetAvailableProjectsTask();
-            task.setOnFinishedListener(new ManagedTask.OnFinishedListener() {
-                @Override
-                public void onFinished(ManagedTask task) {
-                    // TODO: hide loading status
-                    GetAvailableProjectsTask myTask = ((GetAvailableProjectsTask)task);
-                    LibraryTempData.setAvailableProjects(myTask.getProjects().toArray(new Project[myTask.getProjects().size()]));
-                    notifyDataChanged();
-
-                    ThreadManager.clearTask(mTaskId);
-                    mTaskId = -1;
-                }
-            });
+            task.setOnFinishedListener(this);
             mTaskId = ThreadManager.addTask(task);
 
             // TODO: display loading status
         }
     }
 
-    /**
-     * Let the adapter know the data has changed
-     */
-    private void notifyDataChanged() {
-        Handler handle = new Handler(Looper.getMainLooper());
-        handle.post(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.notifyDataSetChanged();
-            }
-        });
-    }
-
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Restore the previously serialized activated item position.
-        if (savedInstanceState != null
-                && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
-            setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+        // Restore the previously serialized information
+        if (savedInstanceState != null) {
+           if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
+               setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+           }
+            if(savedInstanceState.containsKey(STATE_TASK_ID)) {
+                mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
+            }
         }
+        mActivityPaused = false;
     }
 
     @Override
@@ -195,6 +198,11 @@ public class ProjectLibraryListFragment extends ListFragment {
             // Serialize and persist the activated item position.
             outState.putInt(STATE_ACTIVATED_POSITION, mActivatedPosition);
         }
+        if(mTaskId != -1) {
+            outState.putInt(STATE_TASK_ID, mTaskId);
+            ThreadManager.getTask(mTaskId).setOnFinishedListener(null);
+        }
+        mActivityPaused = true;
     }
 
     /**
@@ -217,5 +225,13 @@ public class ProjectLibraryListFragment extends ListFragment {
         }
 
         mActivatedPosition = position;
+    }
+
+    public void onDestroy() {
+        if(!mActivityPaused) {
+            // the activity is being destroyed
+            LibraryTempData.setAvailableProjects(new Project[]{});
+        }
+        super.onDestroy();
     }
 }
