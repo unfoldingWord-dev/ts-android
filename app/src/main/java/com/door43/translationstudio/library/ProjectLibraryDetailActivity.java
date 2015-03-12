@@ -44,9 +44,7 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity {
                     getIntent().getStringExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
             ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
             fragment.setArguments(arguments);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.project_detail_container, fragment)
-                    .commit();
+            getFragmentManager().beginTransaction().add(R.id.project_detail_container, fragment).commit();
         }
     }
 

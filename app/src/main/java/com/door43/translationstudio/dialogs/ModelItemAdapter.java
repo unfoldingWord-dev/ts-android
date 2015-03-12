@@ -30,6 +30,7 @@ public class ModelItemAdapter extends BaseAdapter {
     private final MainApplication mContext;
     private final float mImageWidth;
     private final boolean mIndicateSelected;
+    private final boolean mIndicateStatus;
     private Model[] mModels;
 
     /**
@@ -42,19 +43,36 @@ public class ModelItemAdapter extends BaseAdapter {
         mModels = models;
         mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
         mIndicateSelected = true;
+        mIndicateStatus = true;
     }
 
     /**
      *
      * @param c
      * @param models
-     * @param indicatSelection if true the adapter will highlight models that are selected.
+     * @param indicatSelection highlight selected project
      */
     public ModelItemAdapter(MainApplication c, Model[] models, boolean indicatSelection) {
         mContext = c;
         mModels = models;
         mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
         mIndicateSelected = indicatSelection;
+        mIndicateStatus = true;
+    }
+
+    /**
+     *
+     * @param c
+     * @param models
+     * @param indicatSelection highlight selected project
+     * @param indicateStatus display project status
+     */
+    public ModelItemAdapter(MainApplication c, Model[] models, boolean indicatSelection, boolean indicateStatus) {
+        mContext = c;
+        mModels = models;
+        mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
+        mIndicateSelected = indicatSelection;
+        mIndicateStatus = indicateStatus;
     }
 
     @Override
@@ -240,7 +258,9 @@ public class ModelItemAdapter extends BaseAdapter {
                 }
             }
         };
-        holder.statusThread.start();
+        if(mIndicateStatus) {
+            holder.statusThread.start();
+        }
 
         return v;
     }

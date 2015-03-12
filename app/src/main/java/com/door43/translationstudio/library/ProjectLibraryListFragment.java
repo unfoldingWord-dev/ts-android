@@ -129,7 +129,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
         mActivityPaused = false;
 
-        mAdapter = new ModelItemAdapter(AppContext.context(), LibraryTempData.getProjects(), false);
+        mAdapter = new ModelItemAdapter(AppContext.context(), LibraryTempData.getProjects(), false, false);
         setListAdapter(mAdapter);
 
         preparProjectList();

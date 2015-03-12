@@ -1,16 +1,23 @@
 package com.door43.translationstudio.library;
 
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
+import com.astuetz.PagerSlidingTabStrip;
 import com.door43.translationstudio.R;
 
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.util.StringFragmentKeySet;
+import com.door43.translationstudio.util.TabbedViewPagerAdapter;
+import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.translationstudio.util.TranslatorBaseFragment;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a single Project detail screen.
@@ -18,17 +25,13 @@ import com.door43.translationstudio.projects.Project;
  * in two-pane mode (on tablets) or a {@link ProjectLibraryDetailActivity}
  * on handsets.
  */
-public class ProjectLibraryDetailFragment extends Fragment {
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
+public class ProjectLibraryDetailFragment extends TranslatorBaseFragment {
     public static final String ARG_ITEM_INDEX = "item_id";
-
-    /**
-     * The dummy content this fragment is presenting.
-     */
     private Project mItem;
+    private ArrayList<StringFragmentKeySet> mTabs = new ArrayList<>();
+    private LanguagesTabFragment mLanguagesTab = new LanguagesTabFragment();
+    private ViewPager mViewPager;
+    private int mDefaultPage = 0;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -42,23 +45,48 @@ public class ProjectLibraryDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_INDEX)) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
             mItem = LibraryTempData.getProject(getArguments().getInt(ARG_ITEM_INDEX));
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_project_library_detail, container, false);
 
-        // Show the dummy content as text in a TextView.
-        if (mItem != null) {
-            ((TextView) rootView.findViewById(R.id.project_detail)).setText(mItem.getTitle());
-        }
+        // Tabs
+        mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.languages), mLanguagesTab));
+
+        // view pager
+        mViewPager = (ViewPager) rootView.findViewById(R.id.projectBrowserViewPager);
+        TabbedViewPagerAdapter tabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), mTabs);
+        mViewPager.setAdapter(tabbedViewPagerAdapter);
+
+        // sliding tabs layout
+        PagerSlidingTabStrip slidingTabLayout = (PagerSlidingTabStrip) rootView.findViewById(R.id.projectBrowserTabs);
+        slidingTabLayout.setViewPager(mViewPager);
+        slidingTabLayout.setIndicatorColor(getResources().getColor(R.color.blue));
+        slidingTabLayout.setDividerColor(Color.TRANSPARENT);
+
+        selectTab(mDefaultPage);
+
 
         return rootView;
+    }
+
+    /**
+     * Changes the selected tab
+     * @param i
+     */
+    public void selectTab(int i) {
+        if(mViewPager != null) {
+            if(mTabs.size() > i && i >= 0) {
+                // select the tab
+                mViewPager.setCurrentItem(i);
+                // notify the tab list adapter that it should reload
+                ((TabsFragmentAdapterNotification) mTabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
+            }
+        } else {
+            mDefaultPage = i;
+        }
     }
 }

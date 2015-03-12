@@ -280,5 +280,6 @@
     <string name="title_activity_project_library">ProjectLibrary</string>
     <string name="title_project_list">Project Library</string>
     <string name="title_project_detail">Project Library Languages</string>
+    <string name="languages">Languages</string>
 
 </resources>
