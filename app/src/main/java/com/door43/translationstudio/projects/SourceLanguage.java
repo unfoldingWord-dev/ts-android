@@ -4,6 +4,9 @@ import android.content.SharedPreferences;
 
 import com.door43.translationstudio.util.AppContext;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +22,7 @@ public class SourceLanguage extends Language {
     private List<Resource> mResources = new ArrayList<Resource>();
     private String mSelectedResourceId = null;
     private Project mProject;
+    private String mResourceCatalogUrl;
 
     public SourceLanguage(String code, String name, Direction direction,  int dateModified) {
         super(code, name, direction);
@@ -172,5 +176,42 @@ public class SourceLanguage extends Language {
      */
     public void setDateModified(int dateModified) {
         mDateModified = dateModified;
+    }
+
+    /**
+     * Generates a source language instance from json
+     *
+     * @param json
+     * @return the language or null
+     */
+    public static SourceLanguage generate(JSONObject json) {
+        try {
+            JSONObject jsonLang = json.getJSONObject("language");
+            Language.Direction langDirection = jsonLang.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
+            SourceLanguage l = new SourceLanguage(jsonLang.get("slug").toString(), jsonLang.get("name").toString(), langDirection, Integer.parseInt(jsonLang.get("date_modified").toString()));
+            if (json.has("res_catalog")) {
+                l.setResourceCatalog(json.getString("res_catalog"));
+            }
+            return l;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Specifies the resource catalog url for this source language (as it pertains this this project)
+     * This is where the resources will be downloaded from
+     * @param resourceCatalogUrl
+     */
+    public void setResourceCatalog(String resourceCatalogUrl) {
+        mResourceCatalogUrl = resourceCatalogUrl;
+    }
+
+    /**
+     * Returns the url to the resource catalog
+     * @return the url string or null
+     */
+    public String getResourceCatalog() {
+        return mResourceCatalogUrl;
     }
 }

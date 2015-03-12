@@ -487,6 +487,7 @@ public class DataStore {
 
     /**
      * Downloads the source language catalog from the server and stores it in the temp cache
+     * @deprecated we can get this functionality by using fetchTempAsset and sourceLanguageCatalogUrl
      * @param ignoreCache
      * @return
      */
@@ -793,9 +794,8 @@ public class DataStore {
      * Validates the asset cache version
      */
     private void validateAssetCache() {
-        File cacheDir = assetsDir();
         // verify the cached assets match the expected server api level
-        File cacheVersionFile = new File(cacheDir, ".cache_api_version");
+        File cacheVersionFile = new File(assetsDir(), ".cache_api_version");
         if(cacheVersionFile.exists() && cacheVersionFile.isFile()) {
             try {
                 // version is composed of API_VERSION.API_VERSION_INTERNAL e.g. "2.1"
@@ -810,9 +810,11 @@ public class DataStore {
         }
         if(!cacheVersionFile.exists() || !cacheVersionFile.isFile()) {
             Logger.i(this.getClass().getName(), "clearing the asset cache to support api version "+API_VERSION+"."+API_VERSION_INTERNAL);
-            FileUtilities.deleteRecursive(cacheDir);
+            FileUtilities.deleteRecursive(assetsDir());
+            FileUtilities.deleteRecursive(tempAssetsDir());
             // record cache version
-            cacheDir.mkdirs();
+            assetsDir().mkdirs();
+            tempAssetsDir().mkdirs();
             try {
                 cacheVersionFile.createNewFile();
                 FileUtils.write(cacheVersionFile, API_VERSION+"."+API_VERSION_INTERNAL);

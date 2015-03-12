@@ -1,16 +1,13 @@
 package com.door43.translationstudio.library;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.ListFragment;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Model;
@@ -18,7 +15,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.GetAvailableProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.ThreadManager;
+import com.door43.util.threads.TaskManager;
 
 /**
  * A list fragment representing a list of Projects. This fragment
@@ -30,7 +27,7 @@ import com.door43.util.threads.ThreadManager;
  * interface.
  * TODO: we need to display a notice if there are no new projects available
  */
-public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener {
+public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener, GetAvailableProjectsTask.OnProgress {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -49,19 +46,27 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     @Override
     public void onFinished(ManagedTask task) {
         // TODO: hide loading status
-        final GetAvailableProjectsTask myTask = ((GetAvailableProjectsTask)task);
-        LibraryTempData.setAvailableProjects(myTask.getProjects().toArray(new Project[myTask.getProjects().size()]));
-
-        Handler handle = new Handler(Looper.getMainLooper());
-        handle.post(new Runnable() {
-            @Override
-            public void run() {
-                mAdapter.changeDataSet(myTask.getProjects().toArray(new Model[myTask.getProjects().size()]));
-            }
-        });
-
-        ThreadManager.clearTask(mTaskId);
+        updateList();
+        TaskManager.clearTask(mTaskId);
         mTaskId = -1;
+    }
+
+    /**
+     * Pulls the latest results from the task and populates the list
+     */
+    private void updateList() {
+        if(TaskManager.getTask(mTaskId) != null) {
+            final GetAvailableProjectsTask task = ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId));
+            LibraryTempData.setAvailableProjects(task.getProjects().toArray(new Project[task.getProjects().size()]));
+
+            Handler handle = new Handler(Looper.getMainLooper());
+            handle.post(new Runnable() {
+                @Override
+                public void run() {
+                    mAdapter.changeDataSet(task.getProjects().toArray(new Model[task.getProjects().size()]));
+                }
+            });
+        }
     }
 
     /**
@@ -74,6 +79,11 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      * The current activated item position. Only used on tablets.
      */
     private int mActivatedPosition = ListView.INVALID_POSITION;
+
+    @Override
+    public void onProgress(double progress, String message) {
+        updateList();
+    }
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -108,12 +118,21 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Restore the previously serialized information
+        if (savedInstanceState != null) {
+            if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
+                setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+            }
+            if(savedInstanceState.containsKey(STATE_TASK_ID)) {
+                mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
+            }
+        }
+        mActivityPaused = false;
+
         mAdapter = new ModelItemAdapter(AppContext.context(), LibraryTempData.getProjects(), false);
         setListAdapter(mAdapter);
 
-        if(LibraryTempData.getProjects().length == 0) {
-            preparProjectList();
-        }
+        preparProjectList();
     }
 
     /**
@@ -122,51 +141,40 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      * TODO: then we should just display a loading icon at the bottom of the screen.
      */
     private void preparProjectList() {
-        if(mTaskId != -1) {
+        if(TaskManager.getTask(mTaskId) != null) {
             // check progress
-            final GetAvailableProjectsTask task = (GetAvailableProjectsTask) ThreadManager.getTask(mTaskId);
+            final GetAvailableProjectsTask task = (GetAvailableProjectsTask) TaskManager.getTask(mTaskId);
 
             if (task.isFinished()) {
-                LibraryTempData.setAvailableProjects(task.getProjects().toArray(new Project[task.getProjects().size()]));
-                Handler handle = new Handler(Looper.getMainLooper());
-                handle.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAdapter.changeDataSet(task.getProjects().toArray(new Model[task.getProjects().size()]));
-                    }
-                });
-
-                ThreadManager.clearTask(mTaskId);
-                mTaskId = -1;
+                onFinished(task);
             } else {
                 task.setOnFinishedListener(this);
-                // TODO: display loading status
+                task.setOnProgressListener(this);
             }
-        } else {
+        } else if(LibraryTempData.getProjects().length == 0) {
             // start process
             GetAvailableProjectsTask task = new GetAvailableProjectsTask();
             task.setOnFinishedListener(this);
-            mTaskId = ThreadManager.addTask(task);
-
-            // TODO: display loading status
+            task.setOnProgressListener(this);
+            mTaskId = TaskManager.addTask(task);
         }
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // Restore the previously serialized information
-        if (savedInstanceState != null) {
-           if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
-               setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
-           }
-            if(savedInstanceState.containsKey(STATE_TASK_ID)) {
-                mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
-            }
-        }
-        mActivityPaused = false;
-    }
+//    @Override
+//    public void onViewCreated(View view, Bundle savedInstanceState) {
+//        super.onViewCreated(view, savedInstanceState);
+//
+//        // Restore the previously serialized information
+//        if (savedInstanceState != null) {
+//           if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
+//               setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+//           }
+//            if(savedInstanceState.containsKey(STATE_TASK_ID)) {
+//                mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
+//            }
+//        }
+//        mActivityPaused = false;
+//    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -206,7 +214,9 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
         if(mTaskId != -1) {
             outState.putInt(STATE_TASK_ID, mTaskId);
-            ThreadManager.getTask(mTaskId).setOnFinishedListener(null);
+            // disconnect listeners
+            TaskManager.getTask(mTaskId).setOnFinishedListener(null);
+            ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId)).setOnProgressListener(null);
         }
         mActivityPaused = true;
     }

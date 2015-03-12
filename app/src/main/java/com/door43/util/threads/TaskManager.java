@@ -1,8 +1,6 @@
 package com.door43.util.threads;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -13,11 +11,11 @@ import java.util.concurrent.TimeUnit;
  * This class manages multiple threads from a static singleton so you can easily keep track of
  * threads accross activities.
  */
-public class ThreadManager {
+public class TaskManager {
 
     private static Map<Integer, ManagedTask> mTaskMap = new HashMap<>();
     private static int mCurrentTaskIndex = 0;
-    private static final ThreadManager sInstance;
+    private static final TaskManager sInstance;
     private static final int KEEP_ALIVE_TIME = 1;
     private static final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
     private static final BlockingQueue<Runnable> mWorkQueue = new LinkedBlockingQueue<>();
@@ -30,10 +28,10 @@ public class ThreadManager {
             mWorkQueue);
 
     static {
-        sInstance = new ThreadManager();
+        sInstance = new TaskManager();
     }
 
-    private ThreadManager() {
+    private TaskManager() {
 
     }
 

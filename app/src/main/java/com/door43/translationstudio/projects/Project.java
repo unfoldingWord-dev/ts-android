@@ -14,6 +14,8 @@ import com.door43.util.Logger;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -30,10 +32,6 @@ import java.util.Map;
  */
 public class Project implements Model {
     private ListMap<Chapter> mChapters = new ListMap<>();
-    // so we can look up by index
-//    private List<Chapter> mChapters = new ArrayList<Chapter>();
-    // so we can look up by id
-//    private Map<String,Chapter> mChapterMap = new HashMap<String, Chapter>();
     private List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
     private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
     private List<Language> mTargetLanguages = new ArrayList<Language>();
@@ -60,6 +58,7 @@ public class Project implements Model {
     private static final String TRANSLATION_READY_TAG = "READY";
     private boolean mHasNotes = false;
     private String mSortKey;
+    private String mLanguageCatalogUrl;
 
     /**
      * Creates a new project
@@ -979,6 +978,56 @@ public class Project implements Model {
      */
     public boolean hasSelectedSourceLanguage() {
         return getSourceLanguage(mSelectedSourceLanguageId) != null;
+    }
+
+    /**
+     * Generates a project instance from json
+     *
+     * @param json
+     * @return the project or null
+     */
+    public static Project generate(JSONObject json) {
+        try {
+            Project p = new Project(json.get("slug").toString(), Integer.parseInt(json.get("date_modified").toString()));
+
+            // sorting key
+            if (json.has("sort")) {
+                p.setSortKey(json.getString("sort"));
+            }
+
+            // meta (Pseudo projects)
+            if (json.has("meta")) {
+                JSONArray jsonMeta = json.getJSONArray("meta");
+                for (int j = 0; j < jsonMeta.length(); j++) {
+                    p.addSudoProject(new PseudoProject(jsonMeta.get(j).toString()));
+                }
+            }
+
+            // language catalog
+            if (json.has("lang_catalog")) {
+                p.setLanguageCatalog(json.getString("lang_catalog"));
+            }
+            return p;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Specifies the language catalog url for this project
+     * This is where the source languages will be downloaded from
+     * @param languageCatalogUrl
+     */
+    public void setLanguageCatalog(String languageCatalogUrl) {
+        this.mLanguageCatalogUrl = languageCatalogUrl;
+    }
+
+    /**
+     * Returns the url to the language catalog
+     * @return the url string or null
+     */
+    public String getLanguageCatalog() {
+        return mLanguageCatalogUrl;
     }
 
     public interface OnCommitComplete {

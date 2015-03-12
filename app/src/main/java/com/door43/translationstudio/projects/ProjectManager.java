@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.xml.transform.Source;
+
 /**
  * The project manager handles all of the projects within the app.
  * Created by joel on 8/29/2014.
@@ -272,7 +274,7 @@ public class ProjectManager {
      * Sorts a list of models
      * @param models
      */
-    public void sortModelList(List<Model> models) {
+    public void sortModelList(List<? extends Model> models) {
         Collections.sort(models, new Comparator<Model>() {
             @Override
             public int compare(Model model, Model model2) {
@@ -680,8 +682,138 @@ public class ProjectManager {
     }
 
     /**
+     * Returns a list of projects that are available on the server
+     * These are just the plain projects without any translation information.
+     * The downloaded data is stored temporarily and does not affect the currently loaded projects
+     * @return
+     */
+    public List<Project> downloadProjectList(boolean ignoreCache) {
+        String catalog = mDataStore.fetchProjectCatalog(ignoreCache);
+        List<Project> projects = new ArrayList<>();
+
+        // load projects
+        JSONArray json;
+        try {
+            json = new JSONArray(catalog);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "malformed projects catalog", e);
+            return new ArrayList<>();
+        }
+
+        // load the data
+        for(int i=0; i<json.length(); i ++) {
+            if(Thread.currentThread().isInterrupted()) break;
+            try {
+                JSONObject jsonProj = json.getJSONObject(i);
+                Project p = Project.generate(jsonProj);
+                if(p != null) {
+                    projects.add(p);
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "Failed to read the project entry", e);
+                continue;
+            }
+        }
+
+        sortModelList(projects);
+        return projects;
+    }
+
+
+    /**
+     * Returns a list of project source languages that are available on the server
+     * These are just the plain languages without any resources.
+     * The downloaded data is stored temporarily and does not affect the currently loaded source languages
+     * The languages are also loaded into the project
+     * @param p
+     * @param ignoreCache
+     * @return
+     */
+    public List<SourceLanguage> downloadSourceLanguageList(Project p, boolean ignoreCache) {
+        String catalog;
+        List<SourceLanguage> languages = new ArrayList<>();
+        if(p.getLanguageCatalog() != null) {
+            catalog = mDataStore.fetchTempAsset(p.getLanguageCatalog(), false);
+        } else {
+            catalog = mDataStore.fetchTempAsset(mDataStore.sourceLanguageCatalogUrl(p.getId()), false);
+        }
+
+        // parse source languages
+        JSONArray json;
+        try {
+            json = new JSONArray(catalog);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "malformed source language catalog", e);
+            return languages;
+        }
+
+        // load the data
+        for(int i=0; i<json.length(); i ++) {
+            if(Thread.currentThread().isInterrupted()) break;
+            try {
+                JSONObject jsonLang = json.getJSONObject(i);
+                JSONObject jsonProj = jsonLang.getJSONObject("project");
+                SourceLanguage l = SourceLanguage.generate(jsonLang);
+                if(l != null) {
+                    // default title and description
+                    if(i == 0) {
+                        p.setDefaultTitle(jsonProj.getString("name"));
+                        p.setDefaultDescription(jsonProj.getString("desc"));
+                    }
+
+                    // title and description translations
+                    p.setTitle(jsonProj.getString("name"), l);
+                    p.setDescription(jsonProj.getString("desc"), l);
+
+                    // meta translations (Pseudo projects)
+                    if(jsonProj.has("meta") && p.numSudoProjects() > 0) {
+                        JSONArray jsonMeta = jsonProj.getJSONArray("meta");
+                        if(jsonMeta.length() > 0) {
+                            for (int j = 0; j < jsonMeta.length(); j++) {
+                                PseudoProject sp = p.getSudoProject(j);
+                                if(sp != null) {
+                                    sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
+                                } else {
+                                    Logger.w(this.getClass().getName(), "missing meta category in project "+p.getId());
+                                    break;
+                                }
+                            }
+                        } else {
+                            Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                        }
+                    } else if(p.numSudoProjects() > 0) {
+                        Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                    }
+
+                    // source language handle
+                    p.addSourceLanguage(l);
+
+                    languages.add(l);
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "Failed to read the source language entry", e);
+                continue;
+            }
+        }
+
+        // Attempt to select a more accurate default language for the project title and description
+        String deviceLocale = Locale.getDefault().getLanguage();
+        // don't change the source language if already selecteed
+        if(!p.hasSelectedSourceLanguage()) {
+            if (p.getSourceLanguage(deviceLocale) != null) {
+                p.setSelectedSourceLanguage(deviceLocale);
+            } else if (p.getSourceLanguage("en") != null) {
+                p.setSelectedSourceLanguage("en");
+            }
+        }
+
+        return languages;
+    }
+
+    /**
      * Downloads a list of available (new) projects
      * This should not be ran on the main thread
+     * @deprecated we've moving towards downloading a single component at a time. See downloadProjectList.
      * @return
      */
     public List<Model> fetchAvailableProjects() {
@@ -878,6 +1010,7 @@ public class ProjectManager {
 
     /**
      * Loads the available projects title and description translations
+     * @deprecated we are moving away from downloading everything in one shot. see downloadSourceLanguageList
      * @param p
      * @param sourceLanguageCatalog
      */
@@ -908,9 +1041,11 @@ public class ProjectManager {
                     SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
 
                     // skip languages we've already downloaded.
-                    if(getProject(p.getId()) != null && getProject(p.getId()).getSourceLanguage(l.getId()) != null) {
-                        continue;
-                    }
+//                    if(getProject(p.getId()) != null && getProject(p.getId()).getSourceLanguage(l.getId()) != null) {
+//                        continue;
+//                    }
+
+                    p.addSourceLanguage(l);
 
                     // load the rest of the project info
                     // TRICKY: we need to specify a default title and description for the project
