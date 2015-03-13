@@ -142,15 +142,10 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      */
     private void preparProjectList() {
         if(TaskManager.getTask(mTaskId) != null) {
-            // check progress
-            final GetAvailableProjectsTask task = (GetAvailableProjectsTask) TaskManager.getTask(mTaskId);
-
-            if (task.isFinished()) {
-                onFinished(task);
-            } else {
-                task.setOnFinishedListener(this);
-                task.setOnProgressListener(this);
-            }
+            // connect to existing task
+            GetAvailableProjectsTask task = (GetAvailableProjectsTask) TaskManager.getTask(mTaskId);
+            task.setOnFinishedListener(this);
+            task.setOnProgressListener(this);
         } else if(LibraryTempData.getProjects().length == 0) {
             // start process
             GetAvailableProjectsTask task = new GetAvailableProjectsTask();

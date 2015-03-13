@@ -46,6 +46,8 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity {
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction().add(R.id.project_detail_container, fragment).commit();
         }
+
+
     }
 
     @Override

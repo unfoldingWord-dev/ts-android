@@ -719,6 +719,17 @@ public class ProjectManager {
         return projects;
     }
 
+    /**
+     * Downloads the project image from the server and returns the local path.
+     * The image is stored in a temporary location and does not affect the currently loaded image
+     * @param p the project who's image will be downloaded
+     * @param ignoreCache
+     * @return
+     */
+    public String downloadProjectImage(Project p, boolean ignoreCache) {
+        // TODO: impliment the download.
+        return "";
+    }
 
     /**
      * Returns a list of project source languages that are available on the server

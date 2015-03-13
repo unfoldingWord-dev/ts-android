@@ -309,7 +309,7 @@ public class DataStore {
     }
 
     /**
-     * Returns the fiel to a temp asset
+     * Returns the file to a temp asset
      * @param key
      * @return
      */
@@ -318,7 +318,7 @@ public class DataStore {
     }
 
     /**
-     * String returns the file to an asset
+     * returns the file to an asset
      * @param key
      */
     private File getAsset(String key) {
