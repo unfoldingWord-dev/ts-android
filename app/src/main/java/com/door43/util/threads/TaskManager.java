@@ -1,6 +1,10 @@
 package com.door43.util.threads;
 
+import com.door43.util.ListMap;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -13,6 +17,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class TaskManager {
 
+    private static List<ManagedTask> mTaskList = new ArrayList<>();
+    private static Map<String, Integer> mTaskKeys = new HashMap<>();
     private static Map<Integer, ManagedTask> mTaskMap = new HashMap<>();
     private static int mCurrentTaskIndex = 0;
     private static final TaskManager sInstance;
@@ -48,6 +54,23 @@ public class TaskManager {
     }
 
     /**
+     * Adds a task to be executed.
+     * If the key is already in use the task will not be added.
+     * @param task the task to be executed
+     * @param key a key to retrieve the task at a later time
+     * @return true if the key was added
+     */
+    static public boolean addTask(ManagedTask task, String key) {
+        if(!mTaskKeys.containsKey(key)) {
+            int index = addTask(task);
+            mTaskKeys.put(key, index);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Checks if a task has finished
      * @param id
      * @return
@@ -64,6 +87,19 @@ public class TaskManager {
     static public ManagedTask getTask(int id) {
         if(mTaskMap.containsKey(id)) {
             return mTaskMap.get(id);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Returns the task by it's key
+     * @param key
+     * @return
+     */
+    static public ManagedTask getTask(String key) {
+        if(mTaskKeys.containsKey(key)) {
+            return getTask(mTaskKeys.get(key));
         } else {
             return null;
         }

@@ -24,7 +24,7 @@ public class SourceLanguage extends Language {
     private Project mProject;
     private String mResourceCatalogUrl;
 
-    public SourceLanguage(String code, String name, Direction direction,  int dateModified) {
+    public SourceLanguage(String code, String name, Direction direction, int dateModified) {
         super(code, name, direction);
         mDateModified = dateModified;
     }
@@ -42,8 +42,6 @@ public class SourceLanguage extends Language {
             getResource(r.getId()).setDateModified(r.getDateModified());
         }
     }
-
-
 
     /**
      * Returns an array of all the resources in this language

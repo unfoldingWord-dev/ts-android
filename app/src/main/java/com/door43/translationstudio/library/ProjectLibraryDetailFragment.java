@@ -2,6 +2,7 @@ package com.door43.translationstudio.library;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -37,9 +38,11 @@ import java.util.ArrayList;
  */
 public class ProjectLibraryDetailFragment extends TranslatorBaseFragment implements ManagedTask.OnFinishedListener {
     public static final String ARG_ITEM_INDEX = "item_id";
+    private static final String IMAGE_TASK_PREFIX = "project-image-";
     private Project mProject;
     private ArrayList<StringFragmentKeySet> mTabs = new ArrayList<>();
     private LanguagesTabFragment mLanguagesTab = new LanguagesTabFragment();
+    private TranslationDraftsTabFragment mDraftsTab = new TranslationDraftsTabFragment();
     private ViewPager mViewPager;
     private int mDefaultPage = 0;
     private ImageView mIcon;
@@ -69,6 +72,8 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         // Tabs
         mLanguagesTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
         mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.languages), mLanguagesTab));
+//        mDraftsTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
+//        mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.drafts), mDraftsTab));
 
         // view pager
         mViewPager = (ViewPager) rootView.findViewById(R.id.projectBrowserViewPager);
@@ -91,17 +96,27 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         mIcon = (ImageView)rootView.findViewById(R.id.modelImage);
         mIcon.setVisibility(View.GONE);
 
+        // set graphite fontface
+        Typeface typeface = AppContext.graphiteTypeface(mProject.getSelectedSourceLanguage());
+        projectDescription.setTypeface(typeface, 0);
+        projectTitle.setTypeface(typeface, 0);
+
+        // set font size
+        float fontsize = AppContext.typefaceSize();
+        projectDescription.setTextSize(fontsize);
+        projectTitle.setTextSize((float)(fontsize * 1.2));
+
         if(mImagePath == null) {
             // download project image
             if (TaskManager.getTask(mTaskId) != null) {
                 // connect to existing task
-                DownloadProjectImageTask task = (DownloadProjectImageTask) TaskManager.getTask(mTaskId);
+                DownloadProjectImageTask task = (DownloadProjectImageTask) TaskManager.getTask(IMAGE_TASK_PREFIX+mProject.getId());
                 task.setOnFinishedListener(this);
             } else {
                 // begin downloading the image
-                DownloadProjectImageTask task = new DownloadProjectImageTask();
+                DownloadProjectImageTask task = new DownloadProjectImageTask(mProject);
                 task.setOnFinishedListener(this);
-                mTaskId = TaskManager.addTask(task);
+                TaskManager.addTask(task, IMAGE_TASK_PREFIX+mProject.getId());
             }
         } else {
             loadImage();

@@ -36,7 +36,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private static final String STATE_ACTIVATED_POSITION = "activated_position";
     private static final String STATE_TASK_ID = "task_id";
     private int mTaskId = -1;
-    private ModelItemAdapter mAdapter;
+    private LibraryProjectAdapter mAdapter;
     private boolean mActivityPaused = false;
 
     /**
@@ -63,7 +63,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             handle.post(new Runnable() {
                 @Override
                 public void run() {
-                    mAdapter.changeDataSet(task.getProjects().toArray(new Model[task.getProjects().size()]));
+                    mAdapter.changeDataSet(LibraryTempData.getProjects());
                 }
             });
         }
@@ -129,7 +129,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
         mActivityPaused = false;
 
-        mAdapter = new ModelItemAdapter(AppContext.context(), LibraryTempData.getProjects(), false, false);
+        mAdapter = new LibraryProjectAdapter(AppContext.context(), LibraryTempData.getProjects());
         setListAdapter(mAdapter);
 
         preparProjectList();
@@ -154,22 +154,6 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             mTaskId = TaskManager.addTask(task);
         }
     }
-
-//    @Override
-//    public void onViewCreated(View view, Bundle savedInstanceState) {
-//        super.onViewCreated(view, savedInstanceState);
-//
-//        // Restore the previously serialized information
-//        if (savedInstanceState != null) {
-//           if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
-//               setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
-//           }
-//            if(savedInstanceState.containsKey(STATE_TASK_ID)) {
-//                mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
-//            }
-//        }
-//        mActivityPaused = false;
-//    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -197,6 +181,8 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
+        mAdapter.setSelected(position);
+        mAdapter.notifyDataSetChanged();
         mCallbacks.onItemSelected(position);
     }
 

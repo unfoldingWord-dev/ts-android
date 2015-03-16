@@ -117,6 +117,7 @@ public class ProjectManager {
 
     /**
      * Downloads any new projects from the server
+     * @deprecated
      * TODO: this should only download a list of projects so we can run the download project updates seperately and display a primary and secondary progress bar.
      */
     public void downloadNewProjects(OnProgressCallback callback, OnProgressCallback secondaryCallback) {
@@ -125,6 +126,7 @@ public class ProjectManager {
 
     /**
      * Downloads any new projects from the server
+     * @deprecated
      * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
     public void downloadNewProjects(boolean ignoreCache, OnProgressCallback callback, OnProgressCallback secondaryCallback) {
@@ -133,6 +135,7 @@ public class ProjectManager {
     }
 
     /**
+     *
      * Downloads the latest version of the project sources from the server
      * You should always reload the selected project after running this
      * @param p the project for which updates will be downloaded
@@ -727,8 +730,9 @@ public class ProjectManager {
      * @return
      */
     public String downloadProjectImage(Project p, boolean ignoreCache) {
-        // TODO: impliment the download.
-        return "";
+        // TODO: we are waiting for the project image url to be made avaiable in the api.
+//        return mDataStore.fetchTempAsset(p.getImageUrl(), ignoreCache);
+        return null;
     }
 
     /**
@@ -744,9 +748,9 @@ public class ProjectManager {
         String catalog;
         List<SourceLanguage> languages = new ArrayList<>();
         if(p.getLanguageCatalog() != null) {
-            catalog = mDataStore.fetchTempAsset(p.getLanguageCatalog(), false);
+            catalog = mDataStore.fetchTempAsset(p.getLanguageCatalog(), ignoreCache);
         } else {
-            catalog = mDataStore.fetchTempAsset(mDataStore.sourceLanguageCatalogUrl(p.getId()), false);
+            catalog = mDataStore.fetchTempAsset(mDataStore.sourceLanguageCatalogUrl(p.getId()), ignoreCache);
         }
 
         // parse source languages
@@ -819,6 +823,99 @@ public class ProjectManager {
         }
 
         return languages;
+    }
+
+    /**
+     * Returns a list of source language resources that are available on the server
+     * These are just the plain resources without any data e.g. notes, terms, source.
+     * The downloaded data is stored temporarily and does not affect the currently loaded resources
+     * The resoruces are also loaded into the language
+     * @param p
+     * @param l
+     * @return
+     */
+    public List<Resource> downloadResourceList(Project p, SourceLanguage l, boolean ignoreCache) {
+        String catalog;
+        List<Resource> resources = new ArrayList<>();
+        if(p.getLanguageCatalog() != null) {
+            catalog = mDataStore.fetchTempAsset(p.getSourceLanguage(l.getId()).getResourceCatalog(), ignoreCache);
+        } else {
+            catalog = mDataStore.fetchTempAsset(mDataStore.resourceCatalogUrl(p.getId(), l.getId()), ignoreCache);
+        }
+
+        // parse resources
+        JSONArray json;
+        try {
+            json = new JSONArray(catalog);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "malformed resource catalog", e);
+            return resources;
+        }
+
+        // load the data
+        for(int i=0; i<json.length(); i ++) {
+            if(Thread.currentThread().isInterrupted()) break;
+            try {
+                JSONObject jsonRes = json.getJSONObject(i);
+                Resource r = Resource.generate(jsonRes);
+                if(r != null) {
+                    resources.add(r);
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "Failed to read the resource entry", e);
+                continue;
+            }
+        }
+
+        return resources;
+    }
+
+    /**
+     * Downloads the notes from the server.
+     * The downloaded data is stored temporarily and does not affect the currently loaded notes
+     * @param p the project
+     * @param l the source language
+     * @param r the resource
+     * @param ignoreCache
+     */
+    public void downloadNotes(Project p, SourceLanguage l, Resource r, boolean ignoreCache) {
+        if(r.getNotesCatalog() != null) {
+            mDataStore.fetchTempAsset(r.getNotesCatalog(), ignoreCache);
+        } else {
+            mDataStore.fetchTempAsset(mDataStore.notesUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
+        }
+    }
+
+    /**
+     * Downloads the terms from the server.
+     * The downloaded data is stored temporarily and does not affect the currently loaded terms
+     * @param p the project
+     * @param l the source language
+     * @param r the resource
+     * @param ignoreCache
+     */
+    public void downloadTerms(Project p, SourceLanguage l, Resource r, boolean ignoreCache) {
+        if(r.getNotesCatalog() != null) {
+            mDataStore.fetchTempAsset(r.getTermsCatalog(), ignoreCache);
+        } else {
+            mDataStore.fetchTempAsset(mDataStore.termsUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
+        }
+    }
+
+    /**
+     * Downloads the source from the server.
+     * The downloaded data is stored temporarily and does not affect the currently loaded source
+     * @param p the project
+     * @param l the source language
+     * @param r the resource
+     * @param ignoreCache
+     */
+    public void downloadSource(Project p, SourceLanguage l, Resource r, boolean ignoreCache) {
+        if(r.getNotesCatalog() != null) {
+            mDataStore.fetchTempAsset(r.getSourceCatalog(), ignoreCache);
+        } else {
+            mDataStore.fetchTempAsset(mDataStore.sourceUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
+        }
     }
 
     /**
@@ -1271,9 +1368,9 @@ public class ProjectManager {
                     // verify the checking level
                     JSONObject jsonStatus = jsonResource.getJSONObject("status");
                     if(jsonStatus.has("checking_level")) {
-                        if (Integer.parseInt(jsonStatus.get("checking_level").toString()) >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
+                        if (jsonStatus.getInt("checking_level") >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
                             // load resource
-                            Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonResource.getInt("date_modified"));
+                            Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonStatus.getInt("checking_level"), jsonResource.getInt("date_modified"));
 
                             // NOTE: the data store will automatically determine if a download is nessesary if the url includes a date_modified parameter.
                             if(checkServer) {

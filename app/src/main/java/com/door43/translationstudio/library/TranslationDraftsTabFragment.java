@@ -18,13 +18,15 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 
+import javax.xml.transform.Source;
+
 /**
- * Created by joel on 3/12/2015.
+ * Created by joel on 3/16/2015.
  */
-public class LanguagesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, ManagedTask.OnFinishedListener {
+public class TranslationDraftsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, ManagedTask.OnFinishedListener {
     private LibraryLanguageAdapter mAdapter;
     private Project mProject;
-    public static final String DOWNLOAD_LANGUAGE_PREFIX = "download-language-";
+    public static final String DOWNLOAD_DRAFT_PREFIX = "download-draft-";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
@@ -55,16 +57,16 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
      * @param language
      */
     private void connectDownloadTask(SourceLanguage language) {
-        String taskId = DOWNLOAD_LANGUAGE_PREFIX +mProject.getId()+"-"+language.getId();
-        DownloadLanguageTask task = (DownloadLanguageTask) TaskManager.getTask(taskId);
+        String taskId = DOWNLOAD_DRAFT_PREFIX +mProject.getId()+"-"+language.getId();
+        DownloadLanguageTask task = (DownloadLanguageTask)TaskManager.getTask(taskId);
         if(task == null) {
             // start new download
             task = new DownloadLanguageTask(mProject, language);
-//            task.setOnFinishedListener(LanguagesTabFragment.this);
+            task.setOnFinishedListener(TranslationDraftsTabFragment.this);
             TaskManager.addTask(task, taskId);
         } else {
             // attach to existing task
-//            task.setOnFinishedListener(LanguagesTabFragment.this);
+            task.setOnFinishedListener(TranslationDraftsTabFragment.this);
         }
     }
 
@@ -81,6 +83,6 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
 
     @Override
     public void onFinished(ManagedTask task) {
-        // TODO: the source has finished downloading
+        // TODO: the darft has finished downloading
     }
 }
