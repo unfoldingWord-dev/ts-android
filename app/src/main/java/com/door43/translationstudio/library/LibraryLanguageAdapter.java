@@ -75,7 +75,6 @@ public class LibraryLanguageAdapter extends BaseAdapter {
 
         holder.name.setText(getItem(i).getName());
         holder.downloadedImage.setVisibility(View.INVISIBLE);
-        // TODO: indicate if the language has been downloaded yet.
 
         // set graphite fontface
         Typeface typeface = AppContext.graphiteTypeface(getItem(i));

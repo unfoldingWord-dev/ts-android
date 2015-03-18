@@ -852,13 +852,10 @@ public class ProjectManager {
 
         // Attempt to select a more accurate default language for the project title and description
         String deviceLocale = Locale.getDefault().getLanguage();
-        // don't change the source language if already selecteed
-        if(!p.hasSelectedSourceLanguage()) {
-            if (p.getSourceLanguage(deviceLocale) != null) {
-                p.setSelectedSourceLanguage(deviceLocale);
-            } else if (p.getSourceLanguage("en") != null) {
-                p.setSelectedSourceLanguage("en");
-            }
+        if (p.getSourceLanguage(deviceLocale) != null) {
+            p.setSelectedSourceLanguage(deviceLocale);
+        } else if (p.getSourceLanguage("en") != null) {
+            p.setSelectedSourceLanguage("en");
         }
 
         return languages;
@@ -2015,7 +2012,7 @@ public class ProjectManager {
                     }
 
                     // reload the selected project source
-                    if(getSelectedProject().getId().equals(p.getId())) {
+                    if(getSelectedProject() != null && getSelectedProject().getId().equals(p.getId())) {
                         fetchProjectSource(p, false);
                     }
                     break;

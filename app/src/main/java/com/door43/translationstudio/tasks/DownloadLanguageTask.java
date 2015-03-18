@@ -34,7 +34,7 @@ public class DownloadLanguageTask extends ManagedTask {
     @Override
     public void start() {
         // download resources
-        boolean ignoreCache = true;
+        boolean ignoreCache = false;
         publishProgress(-1, "");
         // make sure we have the latest project and source language catalogs
         AppContext.projectManager().downloadProjectList(ignoreCache);
