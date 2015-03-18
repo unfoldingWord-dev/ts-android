@@ -94,7 +94,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             // In single-pane mode, simply start the detail activity
             // for the selected item ID.
             Intent detailIntent = new Intent(this, ProjectLibraryDetailActivity.class);
-            detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index);
+            detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index+"");
             startActivity(detailIntent);
         }
     }

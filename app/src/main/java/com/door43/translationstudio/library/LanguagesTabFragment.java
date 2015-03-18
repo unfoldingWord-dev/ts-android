@@ -21,7 +21,7 @@ import com.door43.util.threads.TaskManager;
 /**
  * Created by joel on 3/12/2015.
  */
-public class LanguagesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, ManagedTask.OnFinishedListener {
+public class LanguagesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private LibraryLanguageAdapter mAdapter;
     private Project mProject;
     public static final String DOWNLOAD_LANGUAGE_PREFIX = "download-language-";
@@ -30,7 +30,7 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
 
         if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)) {
-            mProject = LibraryTempData.getProject(getArguments().getInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
+            mProject = LibraryTempData.getProject(Integer.parseInt(getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)));
         }
 
         mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId());
@@ -51,7 +51,7 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
     }
 
     /**
-     * Begins or connects to an existing download
+     * Begins a new download if one is not already in progress
      * @param language
      */
     private void connectDownloadTask(SourceLanguage language) {
@@ -60,12 +60,8 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
         if(task == null) {
             // start new download
             task = new DownloadLanguageTask(mProject, language);
-//            task.setOnFinishedListener(LanguagesTabFragment.this);
             TaskManager.addTask(task, taskId);
             mAdapter.notifyDataSetChanged();
-        } else {
-            // attach to existing task
-//            task.setOnFinishedListener(LanguagesTabFragment.this);
         }
     }
 
@@ -77,11 +73,8 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        populateList();
-    }
-
-    @Override
-    public void onFinished(ManagedTask task) {
-        // TODO: the source has finished downloading
+        if(mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
     }
 }

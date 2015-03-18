@@ -129,7 +129,7 @@ public class ProjectManager {
      */
     public void downloadNewProjects(boolean ignoreCache, OnProgressCallback callback, OnProgressCallback secondaryCallback) {
         String catalog = mDataStore.pullProjectCatalog(true, ignoreCache);
-        loadProjectsCatalog(catalog, true, ignoreCache, callback, secondaryCallback);
+//        loadProjectsCatalog(catalog, true, ignoreCache, callback, secondaryCallback);
     }
 
     /**
@@ -1092,16 +1092,16 @@ public class ProjectManager {
                     }
 
                     // determine if the language catalog should be re-downloaded
-                    boolean downloadLanguages = false;
-                    if(checkServer) {
-                        Project cachedProject = getProject(p.getId());
-                        if(cachedProject == null) {
-                            downloadLanguages = true;
-                        } else if(p.getDateModified() > cachedProject.getDateModified()) {
-                            downloadLanguages = true;
-                        }
-                    }
-                    downloadLanguages = downloadLanguages || ignoreCache;
+//                    boolean downloadLanguages = false;
+//                    if(checkServer) {
+//                        Project cachedProject = getProject(p.getId());
+//                        if(cachedProject == null) {
+//                            downloadLanguages = true;
+//                        } else if(p.getDateModified() > cachedProject.getDateModified()) {
+//                            downloadLanguages = true;
+//                        }
+//                    }
+//                    downloadLanguages = downloadLanguages || ignoreCache;
 
                     // add project to the internal list and continue loading
                     if(addProject(p)) {
@@ -1109,23 +1109,24 @@ public class ProjectManager {
                     }
 
                     if(callback != null) {
-                        if(downloadLanguages) {
-                            callback.onProgress((i+1)/(double)json.length(), String.format(mContext.getResources().getString(R.string.downloading_project), p.getId()));
-                        } else {
+//                        if(downloadLanguages) {
+//                            callback.onProgress((i+1)/(double)json.length(), String.format(mContext.getResources().getString(R.string.downloading_project), p.getId()));
+//                        } else {
                             callback.onProgress((i+1)/(double)json.length(), String.format(mContext.getResources().getString(R.string.loading_project), p.getId()));
-                        }
+//                        }
                     }
 
+//                    continue;
                     // skip loading if it was determined not to download
-                    if(checkServer && !downloadLanguages) {
-                        continue;
-                    }
+//                    if(checkServer && !downloadLanguages) {
+//                        continue;
+//                    }
 
                     // load source languages
-                    String sourceLanguageCatalog = mDataStore.pullSourceLanguageCatalog(p.getId(), downloadLanguages, ignoreCache);
+                    String sourceLanguageCatalog = mDataStore.pullSourceLanguageCatalog(p.getId(), false, ignoreCache);
                     // TRICKY: pull the project from the cache so we have a history of cached languages and resources when checking if a download is needed
                     // TRICKY: we pass in downloadLanguages rather than checkServer directly to stop needless download propogation
-                    List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, downloadLanguages, ignoreCache, secondaryCallback);
+                    List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, false, ignoreCache, secondaryCallback);
                     // validate project has languages
                     if(languages.size() == 0) {
                         Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
@@ -1326,13 +1327,13 @@ public class ProjectManager {
                     }
 
                     // load the resources
-                    String resourcesCatalog;
-                    if(l.getResourceCatalog() != null) {
-                        resourcesCatalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), l.getResourceCatalog(), ignoreCache);
-                    } else {
-                        resourcesCatalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), checkServer, ignoreCache);
-                    }
-                    List<Resource> importedResources = loadResourcesCatalog(p, l, resourcesCatalog, checkServer, ignoreCache);
+//                    String resourcesCatalog;
+//                    if(l.getResourceCatalog() != null) {
+//                        resourcesCatalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), l.getResourceCatalog(), ignoreCache);
+//                    } else {
+                        String resourcesCatalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), false, ignoreCache);
+//                    }
+                    List<Resource> importedResources = loadResourcesCatalog(p, l, resourcesCatalog, false, ignoreCache);
 
                     // only resources with the minium checking level will get imported, so it's possible we'll need to skip a language
                     if(importedResources.size() > 0) {
@@ -1408,25 +1409,25 @@ public class ProjectManager {
                             // load resource
                             Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonStatus.getInt("checking_level"), jsonResource.getInt("date_modified"));
 
-                            // NOTE: the data store will automatically determine if a download is nessesary if the url includes a date_modified parameter.
-                            if(checkServer) {
-                                // we will attempt to use the provided urls before using the default download path
-                                if(jsonResource.has("notes")) {
-                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), jsonResource.getString("notes"), ignoreCache);
-                                } else {
-                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), true, ignoreCache);
-                                }
-                                if(jsonResource.has("terms")) {
-                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), jsonResource.getString("terms"), ignoreCache);
-                                } else {
-                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), true, ignoreCache);
-                                }
-                                if(jsonResource.has("source")) {
-                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), jsonResource.getString("source"), ignoreCache);
-                                } else {
-                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), true, ignoreCache);
-                                }
-                            }
+//                            // NOTE: the data store will automatically determine if a download is nessesary if the url includes a date_modified parameter.
+//                            if(checkServer) {
+//                                // we will attempt to use the provided urls before using the default download path
+//                                if(jsonResource.has("notes")) {
+//                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), jsonResource.getString("notes"), ignoreCache);
+//                                } else {
+//                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), true, ignoreCache);
+//                                }
+//                                if(jsonResource.has("terms")) {
+//                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), jsonResource.getString("terms"), ignoreCache);
+//                                } else {
+//                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), true, ignoreCache);
+//                                }
+//                                if(jsonResource.has("source")) {
+//                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), jsonResource.getString("source"), ignoreCache);
+//                                } else {
+//                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), true, ignoreCache);
+//                                }
+//                            }
 
                             l.addResource(r);
                             importedResources.add(r);
