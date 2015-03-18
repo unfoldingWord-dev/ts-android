@@ -49,6 +49,7 @@ public class TaskManager {
     static public int addTask(ManagedTask task) {
         mCurrentTaskIndex ++;
         mTaskMap.put(mCurrentTaskIndex, task);
+        task.setTaskId(mCurrentTaskIndex);
         queueTask(task);
         return mCurrentTaskIndex;
     }
@@ -63,6 +64,7 @@ public class TaskManager {
     static public boolean addTask(ManagedTask task, String key) {
         if(!mTaskKeys.containsKey(key)) {
             int index = addTask(task);
+            task.setTaskId(key);
             mTaskKeys.put(key, index);
             return true;
         } else {
@@ -112,6 +114,17 @@ public class TaskManager {
     static public void clearTask(int id) {
         if(mTaskMap.containsKey(id) && mTaskMap.get(id).isFinished()) {
             mTaskMap.remove(id);
+        }
+    }
+
+    /**
+     * Removes a finished task from the manager
+     * @param key
+     */
+    static public void clearTask(String key) {
+        if(mTaskKeys.containsKey(key)) {
+            clearTask(mTaskKeys.get(key));
+            mTaskKeys.remove(key);
         }
     }
 

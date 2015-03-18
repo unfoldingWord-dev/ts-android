@@ -62,6 +62,7 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
             task = new DownloadLanguageTask(mProject, language);
 //            task.setOnFinishedListener(LanguagesTabFragment.this);
             TaskManager.addTask(task, taskId);
+            mAdapter.notifyDataSetChanged();
         } else {
             // attach to existing task
 //            task.setOnFinishedListener(LanguagesTabFragment.this);

@@ -9,6 +9,7 @@ public abstract class ManagedTask implements Runnable {
     private Thread mThread;
     private boolean mFinished;
     private OnFinishedListener mListener;
+    private Object mTaskId;
 
     @Override
     public final void run() {
@@ -25,6 +26,22 @@ public abstract class ManagedTask implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Sets the task id
+     * @param id
+     */
+    public void setTaskId(Object id) {
+        mTaskId = id;
+    }
+
+    /**
+     * Returns the task id
+     * @return
+     */
+    public Object getTaskId() {
+        return mTaskId;
     }
 
     /**

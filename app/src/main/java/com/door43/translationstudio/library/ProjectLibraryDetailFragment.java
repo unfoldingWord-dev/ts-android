@@ -103,8 +103,8 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
 
         // set font size
         float fontsize = AppContext.typefaceSize();
-        projectDescription.setTextSize(fontsize);
-        projectTitle.setTextSize((float)(fontsize * 1.2));
+        projectDescription.setTextSize((float)(fontsize*.7));
+        projectTitle.setTextSize(fontsize);
 
         if(mImagePath == null) {
             // download project image

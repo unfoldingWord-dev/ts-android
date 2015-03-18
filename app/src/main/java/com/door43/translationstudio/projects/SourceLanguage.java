@@ -1,6 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import com.door43.translationstudio.util.AppContext;
 
@@ -17,12 +18,13 @@ import java.util.Map;
  */
 public class SourceLanguage extends Language {
 //    private String mVariant;
-    private int mDateModified;
+    private int mDateModified = 0;
     private Map<String, Resource> mResourceMap = new HashMap<String, Resource>();
     private List<Resource> mResources = new ArrayList<Resource>();
     private String mSelectedResourceId = null;
     private Project mProject;
     private String mResourceCatalogUrl;
+    private int mResourcesDateModified = 0;
 
     public SourceLanguage(String code, String name, Direction direction, int dateModified) {
         super(code, name, direction);
@@ -38,7 +40,6 @@ public class SourceLanguage extends Language {
             mResourceMap.put(r.getId(), r);
             mResources.add(r);
         } else {
-            // TODO: update the date modified on the resource
             getResource(r.getId()).setDateModified(r.getDateModified());
         }
     }
@@ -159,14 +160,14 @@ public class SourceLanguage extends Language {
         mProject = project;
     }
 
-    /**
-     * Creates a source language from a generic language.
-     * @param l
-     * @return
-     */
-    public static SourceLanguage fromLanguage(Language l) {
-        return new SourceLanguage(l.getId(), l.getName(), l.getDirection(), 0);
-    }
+//    /**
+//     * Creates a source language from a generic language.
+//     * @param l
+//     * @return
+//     */
+//    public static SourceLanguage fromLanguage(Language l) {
+//        return new SourceLanguage(l.getId(), l.getName(), l.getDirection(), 0);
+//    }
 
     /**
      * Sets the date the language was last modified.
@@ -203,7 +204,15 @@ public class SourceLanguage extends Language {
      */
     public void setResourceCatalog(String resourceCatalogUrl) {
         mResourceCatalogUrl = resourceCatalogUrl;
+        // set the resources date modified
+        Uri uri = Uri.parse(resourceCatalogUrl);
+        String dateModified = uri.getQueryParameter("date_modified");
+        if(dateModified != null) {
+            mResourcesDateModified = Integer.parseInt(dateModified);
+        }
     }
+
+
 
     /**
      * Returns the url to the resource catalog
@@ -211,5 +220,13 @@ public class SourceLanguage extends Language {
      */
     public String getResourceCatalog() {
         return mResourceCatalogUrl;
+    }
+
+    /**
+     * Returns the date the resources catalog was last modified
+     * @return
+     */
+    public int getResourcesDateModified() {
+        return mResourcesDateModified;
     }
 }

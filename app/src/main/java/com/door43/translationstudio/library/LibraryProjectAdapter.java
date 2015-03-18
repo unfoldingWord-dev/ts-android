@@ -74,9 +74,11 @@ public class LibraryProjectAdapter extends BaseAdapter {
 
         // indicated selected
         if(i == mSelectedIndex) {
-            holder.container.setBackgroundColor(Color.WHITE);
+            holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            holder.name.setTextColor(mContext.getResources().getColor(R.color.white));
         } else {
-            holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.medium_gray));
+            holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.white));
+            holder.name.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
         }
 
         return v;

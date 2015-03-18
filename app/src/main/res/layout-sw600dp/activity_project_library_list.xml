@@ -3,7 +3,8 @@
     android:layout_height="match_parent"  android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal" android:orientation="horizontal"
     android:showDividers="middle"
-    tools:context="com.door43.translationstudio.library.ProjectLibraryListActivity">
+    tools:context="com.door43.translationstudio.library.ProjectLibraryListActivity"
+    android:background="@color/white">
 
     <!--
     This layout is a two-pane layout for the Projects
@@ -15,6 +16,12 @@
         android:name="com.door43.translationstudio.library.ProjectLibraryListFragment"
         android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
         tools:layout="@android:layout/list_content" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="2dp"
+        android:layout_height="fill_parent"
+        android:background="@color/blue"></LinearLayout>
 
     <FrameLayout android:id="@+id/project_detail_container" android:layout_width="0dp"
         android:layout_height="match_parent" android:layout_weight="3" />

@@ -2,16 +2,19 @@ package com.door43.translationstudio.library;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
@@ -23,12 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import javax.xml.transform.Source;
-
 /**
  * This adpater handles the display of source languages in the server library
  */
-public class LibraryLanguageAdapter extends BaseAdapter implements DownloadLanguageTask.OnProgressListener, ManagedTask.OnFinishedListener {
+public class LibraryLanguageAdapter extends BaseAdapter {
     private final Context mContext;
     private final String mProjectId;
     private List<SourceLanguage> mLanguages = new ArrayList<>();
@@ -63,6 +64,9 @@ public class LibraryLanguageAdapter extends BaseAdapter implements DownloadLangu
             v = inflater.inflate(R.layout.fragment_project_library_languages_item, null);
             // layout
             holder.name = (TextView)v.findViewById(R.id.languageNameTextView);
+            holder.progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
+            holder.progressBar.setMax(100);
+            holder.downloadedImage = (ImageView)v.findViewById(R.id.downloadedImageView);
 
             v.setTag(holder);
         } else {
@@ -70,6 +74,7 @@ public class LibraryLanguageAdapter extends BaseAdapter implements DownloadLangu
         }
 
         holder.name.setText(getItem(i).getName());
+        holder.downloadedImage.setVisibility(View.INVISIBLE);
         // TODO: indicate if the language has been downloaded yet.
 
         // set graphite fontface
@@ -80,6 +85,12 @@ public class LibraryLanguageAdapter extends BaseAdapter implements DownloadLangu
         float fontsize = AppContext.typefaceSize();
         holder.name.setTextSize(fontsize);
 
+        final Handler hand = new Handler(Looper.getMainLooper());
+        final ViewHolder staticHolder = holder;
+
+        holder.progressBar.setVisibility(View.INVISIBLE);
+        holder.progressBar.setProgress(0);
+
         // connect download task
         if(holder.downloadTask != null) {
             holder.downloadTask.setOnProgressListener(null);
@@ -87,10 +98,53 @@ public class LibraryLanguageAdapter extends BaseAdapter implements DownloadLangu
         }
         holder.downloadTask = (DownloadLanguageTask)TaskManager.getTask(LanguagesTabFragment.DOWNLOAD_LANGUAGE_PREFIX+mProjectId+"-"+getItem(i).getId());
         if(holder.downloadTask != null) {
-            holder.downloadTask.setOnProgressListener(this);
-            holder.downloadTask.setOnFinishedListener(this);
+            holder.downloadedImage.setVisibility(View.VISIBLE);
+            holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_download_small));
+            holder.downloadTask.setOnProgressListener(new DownloadLanguageTask.OnProgressListener() {
+                @Override
+                public void onProgress(final double progress, String message) {
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            staticHolder.progressBar.setVisibility(View.VISIBLE);
+                            if(progress == -1) {
+                                staticHolder.progressBar.setIndeterminate(true);
+                                staticHolder.progressBar.setProgress(staticHolder.progressBar.getMax());
+                            } else {
+                                staticHolder.progressBar.setIndeterminate(false);
+                                staticHolder.progressBar.setProgress((int) (100 * progress));
+                            }
+                        }
+                    });
+                }
+            });
+            holder.downloadTask.setOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onFinished(ManagedTask task) {
+                    TaskManager.clearTask((String)task.getTaskId());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            staticHolder.progressBar.setVisibility(View.GONE);
+                            staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                            staticHolder.downloadedImage.setVisibility(View.VISIBLE);
+                        }
+                    });
+                }
+            });
         } else {
-            // TODO: check the download status of this language and display a notice accordingly
+            // check if this language has been downloaded
+            if(AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId())) {
+                // check if an update for this language exists
+                if(AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i))) {
+                    staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                } else {
+                    staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                }
+                staticHolder.downloadedImage.setVisibility(View.VISIBLE);
+            } else {
+                staticHolder.downloadedImage.setVisibility(View.INVISIBLE);
+            }
         }
         return v;
     }
@@ -134,20 +188,10 @@ public class LibraryLanguageAdapter extends BaseAdapter implements DownloadLangu
         }.start();
     }
 
-    @Override
-    public void onProgress(double progress, String message) {
-        // TODO: update the progress display
-        Log.d("test", progress+"");
-    }
-
-    @Override
-    public void onFinished(ManagedTask task) {
-        // TODO: update the download status
-        Log.d("test", "download is finished");
-    }
-
     private class ViewHolder {
         public TextView name;
         public DownloadLanguageTask downloadTask;
+        public ProgressBar progressBar;
+        public ImageView downloadedImage;
     }
 }

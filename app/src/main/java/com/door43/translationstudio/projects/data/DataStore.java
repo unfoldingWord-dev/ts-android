@@ -44,19 +44,37 @@ public class DataStore {
 
     /**
      * Adds a project entry into the project catalog
-     * @param json
+     * @param newProjectString
      */
-    public void importProject(String json) {
-        File file = new File(assetsDir(),projectCatalogPath());
-        String catJson = pullProjectCatalog(false, false);
+    public void importProject(String newProjectString) {
+        String path = projectCatalogPath();
+        String key = getKey(Uri.parse(projectCatalogUrl()));
+        File file = getAsset(key);
+
+        String catalog = pullProjectCatalog(false, false);
         try {
-            JSONArray cat = new JSONArray();
-            if(catJson != null) {
-                cat = new JSONArray(catJson);
+            JSONArray json = new JSONArray();
+            if(catalog != null) {
+                json = new JSONArray(catalog);
             }
-            JSONObject proj = new JSONObject(json);
-            cat.put(proj);
-            FileUtils.writeStringToFile(file, cat.toString());
+            JSONObject jsonNewProj = new JSONObject(newProjectString);
+            // remove old project
+            int oldProjIndex = -1;
+            for(int i=0; i<json.length(); i++) {
+                JSONObject jsonProj = json.getJSONObject(i);
+                if(jsonProj.getString("slug").equals(jsonNewProj.getString("slug"))) {
+                    oldProjIndex = i;
+                    break;
+                }
+            }
+            // add new project
+            if(oldProjIndex != -1) {
+                json.put(oldProjIndex, jsonNewProj);
+            } else {
+                json.put(jsonNewProj);
+            }
+            FileUtils.writeStringToFile(file, json.toString());
+            linkAsset(key, path);
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "failed to add the project to the catalog", e);
         }
@@ -65,19 +83,36 @@ public class DataStore {
     /**
      * Adds a source language entry into the languages catalog
      * @param projectId
-     * @param json
+     * @param newLanguageString
      */
-    public void importSourceLanguage(String projectId, String json) {
-        File file = new File(assetsDir(), sourceLanguageCatalogPath(projectId));
-        String catJson = pullSourceLanguageCatalog(projectId, false, false);
+    public void importSourceLanguage(String projectId, String newLanguageString) {
+        String path = sourceLanguageCatalogPath(projectId);
+        String key = getKey(Uri.parse(sourceLanguageCatalogUrl(projectId)));
+        File file = getAsset(key);
+        String catalog = pullSourceLanguageCatalog(projectId, false, false);
         try {
-            JSONArray cat = new JSONArray();
-            if(catJson != null) {
-                cat = new JSONArray(catJson);
+            JSONArray json = new JSONArray();
+            if(catalog != null) {
+                json = new JSONArray(catalog);
             }
-            JSONObject lang = new JSONObject(json);
-            cat.put(lang);
-            FileUtils.writeStringToFile(file, cat.toString());
+            JSONObject jsonNewLang = new JSONObject(newLanguageString);
+            // remove old language
+            int oldLangIndex = -1;
+            for(int i=0; i<json.length(); i++) {
+                JSONObject jsonLang = json.getJSONObject(i).getJSONObject("language");
+                if(jsonLang.getString("slug").equals(jsonNewLang.getJSONObject("language").getString("slug"))) {
+                    oldLangIndex = i;
+                    break;
+                }
+            }
+            // add new language
+            if(oldLangIndex != -1) {
+                json.put(oldLangIndex, jsonNewLang);
+            } else {
+                json.put(jsonNewLang);
+            }
+            FileUtils.writeStringToFile(file, json.toString());
+            linkAsset(key, path);
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "failed to add the source language to the catalog", e);
         }
@@ -87,19 +122,36 @@ public class DataStore {
      * Adds a resource entry to the resource catalog
      * @param projectId
      * @param languageId
-     * @param json
+     * @param newResString
      */
-    public void importResource(String projectId, String languageId, String json) {
-        File file = new File(assetsDir(), resourceCatalogPath(projectId, languageId));
-        String catJson = pullResourceCatalog(projectId, languageId, false, false);
+    public void importResource(String projectId, String languageId, String newResString) {
+        String path = resourceCatalogPath(projectId, languageId);
+        String key = getKey(Uri.parse(resourceCatalogUrl(projectId, languageId)));
+        File file = getAsset(key);
+        String catalog = pullResourceCatalog(projectId, languageId, false, false);
         try {
-            JSONArray cat = new JSONArray();
-            if(catJson != null) {
-                cat = new JSONArray(catJson);
+            JSONArray json = new JSONArray();
+            if(catalog != null) {
+                json = new JSONArray(catalog);
             }
-            JSONObject res = new JSONObject(json);
-            cat.put(res);
-            FileUtils.writeStringToFile(file, cat.toString());
+            JSONObject jsonNewRes = new JSONObject(newResString);
+            // remove old resource
+            int oldResIndex = -1;
+            for(int i=0; i<json.length(); i++) {
+                JSONObject jsonRes = json.getJSONObject(i);
+                if(jsonRes.getString("slug").equals(jsonNewRes.getString("slug"))) {
+                    oldResIndex = i;
+                    break;
+                }
+            }
+            // add new resource
+            if(oldResIndex != -1) {
+                json.put(oldResIndex, jsonNewRes);
+            } else {
+                json.put(jsonNewRes);
+            }
+            FileUtils.writeStringToFile(file, json.toString());
+            linkAsset(key, path);
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "failed to add the resource to the catalog", e);
         }
@@ -113,9 +165,12 @@ public class DataStore {
      * @param data
      */
     public void importNotes(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(assetsDir(), notesPath(projectId, languageId, resourceId));
+        String path = notesPath(projectId, languageId, resourceId);
+        String key = getKey(Uri.parse(notesUrl(projectId, languageId, resourceId)));
+        File file = getAsset(key);
         try {
             FileUtils.writeStringToFile(file, data);
+            linkAsset(key, path);
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "failed to add the notes to the resource", e);
         }
@@ -129,9 +184,12 @@ public class DataStore {
      * @param data
      */
     public void importSource(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(assetsDir(), sourcePath(projectId, languageId, resourceId));
+        String path = sourcePath(projectId, languageId, resourceId);
+        String key = getKey(Uri.parse(sourceUrl(projectId, languageId, resourceId)));
+        File file = getAsset(key);
         try {
             FileUtils.writeStringToFile(file, data);
+            linkAsset(key, path);
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "failed to add the source to the resource", e);
         }
@@ -145,9 +203,12 @@ public class DataStore {
      * @param data
      */
     public void importTerms(String projectId, String languageId, String resourceId, String data) {
-        File file = new File(assetsDir(), termsPath(projectId, languageId, resourceId));
+        String path = termsPath(projectId, languageId, resourceId);
+        String key = getKey(Uri.parse(termsUrl(projectId, languageId, resourceId)));
+        File file = getAsset(key);
         try {
             FileUtils.writeStringToFile(file, data);
+            linkAsset(key, path);
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "failed to add the terms to the resource", e);
         }
@@ -194,39 +255,44 @@ public class DataStore {
      */
     private void aliasAsset(String newKey, String oldKey) {
         SharedPreferences.Editor editor = mSettings.edit();
-        editor.putString(oldKey+"_alias", newKey);
+        editor.putString(oldKey + "_alias", newKey);
         editor.apply();
     }
 
     /**
      * Resolves the key to the linked cached asset.
      * This will automatically update outdated links
-     * @param link
+     * @param file
      * @return the key to the linked asset
      */
-    private String resolveLink(File link) {
+    private String resolveLink(File file) {
+        if(file != null) {
+            // ensure the file extension is correct
+            String linkPath = FilenameUtils.removeExtension(file.getAbsolutePath()) + ".link";
+            File link = new File(linkPath);
 
-        if(link != null) {
-            try {
-                // resolve key aliases
-                String key;
-                String alias = FileUtils.readFileToString(link);
-                if(alias != null) alias = alias.trim();
-                String originalKey = alias;
-                do {
-                    key = alias;
-                    alias = mSettings.getString(alias+"_alias", null);
-                } while(alias != null);
-                if(key != null) key = key.trim();
+            if(link.exists() && link.isFile()) {
+                try {
+                    // resolve key aliases
+                    String key;
+                    String alias = FileUtils.readFileToString(link);
+                    if (alias != null) alias = alias.trim();
+                    String originalKey = alias;
+                    do {
+                        key = alias;
+                        alias = mSettings.getString(alias + "_alias", null);
+                    } while (alias != null);
+                    if (key != null) key = key.trim();
 
-                // update link if nessesary
-                if(!key.equals(originalKey)) {
-                    linkAsset(key, link);
+                    // update link if nessesary
+                    if (!key.equals(originalKey)) {
+                        linkAsset(key, link);
+                    }
+
+                    return key;
+                } catch (IOException e) {
+                    Logger.e(this.getClass().getName(), "failed to read the key from the asset link " + link.getAbsolutePath(), e);
                 }
-
-                return key;
-            } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to read the key from the asset link " + link.getAbsolutePath(), e);
             }
         } else {
             Logger.e(this.getClass().getName(), "received a null asset link");
@@ -313,7 +379,7 @@ public class DataStore {
      * @param key
      * @return
      */
-    private File getTempAsset(String key) {
+    public File getTempAsset(String key) {
         return getLinkedAsset(key, tempAssetsDir(), TEMP_ASSET_PREFIX);
     }
 
@@ -321,12 +387,12 @@ public class DataStore {
      * returns the file to an asset
      * @param key
      */
-    private File getAsset(String key) {
+    public File getAsset(String key) {
         return getLinkedAsset(key, assetsDir(), "");
     }
 
     /**
-     * String returns the file to an asset
+     * returns the file to an asset
      * @param key
      */
     private File getLinkedAsset(String key, File dir, String prefix) {
@@ -512,7 +578,7 @@ public class DataStore {
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to read the downloaded the temp asset", e);
+            Logger.w(this.getClass().getName(), "Failed to read the downloaded the temp asset from " + url, e);
             return "";
         }
     }
@@ -552,6 +618,24 @@ public class DataStore {
             String key = downloadAsset(resourceCatalogUrl(projectId, languageId), ignoreCache);
             linkAsset(key, path);
         }
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the resources for the specified language.
+     * This should not be ranon the main thread.
+     * If downloaded this will replace the current resources catalog
+     * @param projectId the id of the project that contains the language
+     * @param languageId the id of the language for which resources will be returned
+     * @param urlString the url from which to download the resources
+     * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
+     * @return
+     */
+    public String pullResourceCatalog(String projectId, String languageId, String urlString, boolean ignoreCache) {
+        String path = resourceCatalogPath(projectId, languageId);
+        String key = downloadAsset(urlString, ignoreCache);
+        linkAsset(key, path);
+
         return loadJSONAsset(path);
     }
 
@@ -804,7 +888,7 @@ public class DataStore {
                     cacheVersionFile.delete();
                 }
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "failed to read the cached assets api version", e);
+                Logger.w(this.getClass().getName(), "failed to read the cached assets api version", e);
                 cacheVersionFile.delete();
             }
         }
@@ -830,19 +914,14 @@ public class DataStore {
      * @return the string contents of the json file
      */
     private String loadJSONAsset(String path) {
-        String linkPath = FilenameUtils.removeExtension(path) + ".link";
-
         validateAssetCache();
 
         File cachedAsset = new File(assetsDir(), path);
-        File linkedAsset = new File(assetsDir(), linkPath);
 
-        // resolve links
-        if(linkedAsset.exists() && linkedAsset.isFile()) {
-            String key = resolveLink(linkedAsset);
-            if(key != null) {
-                cachedAsset = getAsset(key);
-            }
+        // resolve links (if there are any)
+        String key = resolveLink(cachedAsset);
+        if(key != null) {
+            cachedAsset = getAsset(key);
         }
 
         // load the asset
