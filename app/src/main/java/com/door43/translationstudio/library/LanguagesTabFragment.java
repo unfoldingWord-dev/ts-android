@@ -30,7 +30,11 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
 
         if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)) {
-            mProject = LibraryTempData.getProject(Integer.parseInt(getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)));
+            try {
+                mProject = LibraryTempData.getProject(Integer.parseInt(getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)));
+            } catch (Exception e) {
+                mProject = LibraryTempData.getProject(getArguments().getInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
+            }
         }
 
         mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId());

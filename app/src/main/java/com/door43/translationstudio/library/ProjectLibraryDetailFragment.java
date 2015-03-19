@@ -61,7 +61,11 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         super.onCreate(savedInstanceState);
 
         if (getArguments().containsKey(ARG_ITEM_INDEX)) {
-            mProject = LibraryTempData.getProject(Integer.parseInt(getArguments().getString(ARG_ITEM_INDEX)));
+            try {
+                mProject = LibraryTempData.getProject(Integer.parseInt(getArguments().getString(ARG_ITEM_INDEX)));
+            } catch(Exception e) {
+                mProject = LibraryTempData.getProject(getArguments().getInt(ARG_ITEM_INDEX));
+            }
         }
     }
 

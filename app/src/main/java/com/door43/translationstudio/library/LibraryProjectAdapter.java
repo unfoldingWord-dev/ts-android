@@ -7,7 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
@@ -53,7 +56,10 @@ public class LibraryProjectAdapter extends BaseAdapter {
             v = inflater.inflate(R.layout.fragment_project_library_projects_item, null);
             // layout
             holder.name = (TextView)v.findViewById(R.id.projectNameTextView);
-            holder.container = (LinearLayout)v.findViewById(R.id.projectItemContainer);
+            holder.container = (RelativeLayout)v.findViewById(R.id.projectItemContainer);
+            holder.progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
+            holder.progressBar.setMax(100);
+            holder.downloadedImage = (ImageView)v.findViewById(R.id.downloadedImageView);
 
             v.setTag(holder);
         } else {
@@ -70,7 +76,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
 
         // set value
         holder.name.setText(getItem(i).getTitle());
-
+        holder.downloadedImage.setVisibility(View.INVISIBLE);
 
         // indicated selected
         if(i == mSelectedIndex) {
@@ -79,6 +85,21 @@ public class LibraryProjectAdapter extends BaseAdapter {
         } else {
             holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.white));
             holder.name.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
+
+            // TODO: hook onto update progress.
+
+            // check download status
+            if(AppContext.projectManager().isProjectDownloaded(getItem(i).getId())) {
+                // check if an update for this project exists
+                if(AppContext.projectManager().isProjectUpdateAvailable(getItem(i))) {
+                    holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                } else {
+                    holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                }
+                holder.downloadedImage.setVisibility(View.VISIBLE);
+            } else {
+                holder.downloadedImage.setVisibility(View.INVISIBLE);
+            }
         }
 
         return v;
@@ -91,7 +112,9 @@ public class LibraryProjectAdapter extends BaseAdapter {
 
     private class ViewHolder {
         public TextView name;
-        public LinearLayout container;
+        public RelativeLayout container;
+        public ProgressBar progressBar;
+        public ImageView downloadedImage;
     }
 
     public void setSelected(int index) {

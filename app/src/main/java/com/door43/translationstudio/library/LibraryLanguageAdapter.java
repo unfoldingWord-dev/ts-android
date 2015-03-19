@@ -133,7 +133,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
             // check if this language has been downloaded
             if(AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId())) {
                 // check if an update for this language exists
-                if(AppContext.projectManager().updateAvailable(mProjectId, getItem(i))) {
+                if(AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i))) {
                     staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
                 } else {
                     staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));

@@ -55,7 +55,6 @@ public class ProjectManager {
 
     private static String mSelectedProjectId;
     private static MainApplication mContext;
-    private static final String TAG = "ProjectManager";
     private OnProgressCallback mInitProgressCallback;
     private static boolean mHasLoaded = false;
 
@@ -585,12 +584,22 @@ public class ProjectManager {
     }
 
     /**
+     * Checks if a proejct has been downloaded
+     * @param projectId
+     * @return
+     */
+    public boolean isProjectDownloaded(String projectId) {
+        Project p = getProject(projectId);
+        return p != null;
+    }
+
+    /**
      * Checks if there are updates available for the source language
      * @param projectId the id of the project to which the source language belongs
      * @param latestLanguage the source language that contains the latest date modified info
      * @return
      */
-    public boolean updateAvailable(String projectId, SourceLanguage latestLanguage) {
+    public boolean isSourceLanguageUpdateAvailable(String projectId, SourceLanguage latestLanguage) {
         Project p = getProject(projectId);
         if(p != null) {
             SourceLanguage currentLanguage = p.getSourceLanguage(latestLanguage.getId());
@@ -607,11 +616,20 @@ public class ProjectManager {
      * @param latestProject the project that contains the latest date modified info
      * @return
      */
-    public boolean updateAvailable(Project latestProject) {
+    public boolean isProjectUpdateAvailable(Project latestProject) {
         if(latestProject != null) {
             Project currentProject = getProject(latestProject.getId());
-            if(currentProject != null && (latestProject.getDateModified() > currentProject.getDateModified() || latestProject.getSourceLanguagesDateModified() > currentProject.getSourceLanguagesDateModified())) {
-                return true;
+            if(currentProject != null) {
+                if(latestProject.getDateModified() > currentProject.getDateModified()) {
+                    return true;
+                } else {
+                    // TRICKY: we cannot just use the source language catalog date modified because it get's updated even if just one language is downloaded
+                    for(SourceLanguage l:latestProject.getSourceLanguages()) {
+                        if(isSourceLanguageUpdateAvailable(latestProject.getId(), l)) {
+                            return true;
+                        }
+                    }
+                }
             }
         }
         return false;
@@ -828,39 +846,7 @@ public class ProjectManager {
                 Project p = Project.generate(jsonProj);
 
                 if(p != null) {
-                    // build pseudo category's in the library
-                    PseudoProject rootPseudoProject = null;
-                    if(p.getPseudoProjects().length > 0) {
-                        // load or set the root pseudo category
-                        rootPseudoProject = getPseudoProject(p.getPseudoProjects()[0].getId());
-                        if (rootPseudoProject == null) {
-                            rootPseudoProject = p.getPseudoProjects()[0];
-                            addMetaProject(rootPseudoProject);
-                        }
-
-                        // populate pseudo sub-categories
-                        PseudoProject currentPseudoProject = rootPseudoProject;
-                        for (int j = 1; j < p.getPseudoProjects().length; j++) {
-                            PseudoProject sp = p.getPseudoProjects()[j];
-                            if (currentPseudoProject.getMetaChild(sp.getId()) != null) {
-                                // follow existing pseudo sub-categories
-                                currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
-                            } else {
-                                // insert new pseudo sub-category
-                                currentPseudoProject.addChild(sp);
-                                currentPseudoProject = sp;
-                            }
-                        }
-                        // close with the project
-                        currentPseudoProject.addChild(p);
-                    }
-
-                    // add project or pseudo category to the library list
-                    if(rootPseudoProject == null) {
-                        addListableProject(p);
-                    } else {
-                        addListableProject(rootPseudoProject);
-                    }
+                    generateProjectListEntry(p);
 
                     // add project to internal list of projects
                     if(addProject(p)) {
@@ -874,12 +860,7 @@ public class ProjectManager {
                         Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
                         importedProjects.remove(p);
                         deleteProject(p);
-                        if(rootPseudoProject == null) {
-                            deleteListableProject(p);
-                        } else {
-                            // TODO: this might delete all the projects from the list
-                            deleteListableProject(rootPseudoProject);
-                        }
+                        removeProjectListEntry(p);
                     }
                 }
             } catch (JSONException e) {
@@ -1510,6 +1491,64 @@ public class ProjectManager {
     }
 
     /**
+     * Generates an entry in the listable projects
+     * This sets up the pseudo project categories
+     * @param p
+     */
+    private void generateProjectListEntry(Project p) {
+        // build pseudo category's in the library
+        PseudoProject rootPseudoProject = null;
+        if(p.getPseudoProjects().length > 0) {
+            // load or set the root pseudo category
+            rootPseudoProject = getPseudoProject(p.getPseudoProjects()[0].getId());
+            if (rootPseudoProject == null) {
+                rootPseudoProject = p.getPseudoProjects()[0];
+                addMetaProject(rootPseudoProject);
+            }
+
+            // populate pseudo sub-categories
+            PseudoProject currentPseudoProject = rootPseudoProject;
+            for (int j = 1; j < p.getPseudoProjects().length; j++) {
+                PseudoProject sp = p.getPseudoProjects()[j];
+                if (currentPseudoProject.getMetaChild(sp.getId()) != null) {
+                    // follow existing pseudo sub-categories
+                    currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
+                } else {
+                    // insert new pseudo sub-category
+                    currentPseudoProject.addChild(sp);
+                    currentPseudoProject = sp;
+                }
+            }
+            // close with the project
+            currentPseudoProject.addChild(p);
+        }
+
+        // add project or pseudo category to the library list
+        if(rootPseudoProject == null) {
+            addListableProject(p);
+        } else {
+            addListableProject(rootPseudoProject);
+        }
+    }
+
+    /**
+     * Removes an entry form the listable projects
+     * @param p
+     */
+    private void removeProjectListEntry(Project p) {
+        if(p != null) {
+            if (p.getPseudoProjects().length > 0) {
+                PseudoProject rootCategory = getPseudoProject(p.getPseudoProjects()[0].getId());
+                if (rootCategory != null) {
+                    deleteListableProject(rootCategory);
+                }
+            } else {
+                deleteListableProject(p);
+            }
+        }
+    }
+
+    /**
      * Reloads the project from the disk
      * @param projectId
      */
@@ -1529,82 +1568,36 @@ public class ProjectManager {
         for(int i=0; i<json.length(); i++) {
             try {
                 JSONObject jsonProj = json.getJSONObject(i);
-                if(jsonProj.getString("slug") .equals(projectId)) {
-                    // reload the project
-                    Project p = new Project(jsonProj.get("slug").toString(), Integer.parseInt(jsonProj.get("date_modified").toString()));
-                    if(jsonProj.has("sort")) {
-                        p.setSortKey(jsonProj.getString("sort"));
-                    }
-
-                    // remove the old project
-                    Project originalProject = getProject(p.getId());
-                    if(originalProject != null) {
-                        deleteProject(originalProject);
-                        if(originalProject.getPseudoProjects().length > 0) {
-                            PseudoProject originalRoot = originalProject.getPseudoProjects()[0];
-                            deleteListableProject(originalRoot);
-                        }
-                    }
-
-                    // load meta
-                    PseudoProject rootPseudoProject = null;
-                    if(jsonProj.has("meta")) {
-                        JSONArray jsonMeta = jsonProj.getJSONArray("meta");
-                        if(jsonMeta.length() > 0) {
-                            // get the root meta
-                            String metaSlug = jsonMeta.get(0).toString();
-                            rootPseudoProject = getPseudoProject(metaSlug);
-                            if(rootPseudoProject == null) {
-                                rootPseudoProject = new PseudoProject(metaSlug);
-                                addMetaProject(rootPseudoProject);
+                if(jsonProj.getString("slug").equals(projectId)) {
+                    Project p = Project.generate(jsonProj);
+                    if(p != null) {
+                        // remove the old project
+                        Project originalProject = getProject(p.getId());
+                        if(originalProject != null) {
+                            deleteProject(originalProject);
+                            if(originalProject.getPseudoProjects().length > 0) {
+                                PseudoProject originalRoot = originalProject.getPseudoProjects()[0];
+                                deleteListableProject(originalRoot);
                             }
-                            p.addSudoProject(rootPseudoProject);
-                            // load children meta
-                            PseudoProject currentPseudoProject = rootPseudoProject;
-                            for (int j = 1; j < jsonMeta.length(); j++) {
-                                PseudoProject sp = new PseudoProject(jsonMeta.get(j).toString());
-                                if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
-                                    // load already created meta
-                                    currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
-                                } else {
-                                    // create new meta
-                                    currentPseudoProject.addChild(sp);
-                                    currentPseudoProject = sp;
-                                }
-                                p.addSudoProject(sp);
-                            }
-                            // close with the project
-                            currentPseudoProject.addChild(p);
                         }
-                    }
 
-                    // add project or meta to the project list
-                    if(rootPseudoProject == null) {
-                        addListableProject(p);
-                    } else {
-                        addListableProject(rootPseudoProject);
-                    }
+                        generateProjectListEntry(p);
+                        addProject(p);
 
-                    // add project to the internal list and continue loading
-                    addProject(p);
+                        // load source languages
+                        List<SourceLanguage> languages = loadSourceLanguageCatalog(p);
 
-                    // load source languages
-                    List<SourceLanguage> languages = loadSourceLanguageCatalog(p);
-                    // validate project has languages
-                    if(languages.size() == 0) {
-                        Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
-                        deleteProject(p);
-                        if(rootPseudoProject == null) {
-                            deleteListableProject(p);
-                        } else {
-                            // TODO: this might delete all the projects from the list
-                            deleteListableProject(rootPseudoProject);
+                        // validate project has languages
+                        if(languages.size() == 0) {
+                            Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
+                            deleteProject(p);
+                            removeProjectListEntry(p);
                         }
-                    }
 
-                    // reload the selected project source
-                    if(getSelectedProject() != null && getSelectedProject().getId().equals(p.getId())) {
-                        fetchProjectSource(p, false);
+                        // reload the selected project source
+                        if(getSelectedProject() != null && getSelectedProject().getId().equals(p.getId())) {
+                            fetchProjectSource(p, false);
+                        }
                     }
                     break;
                 }
