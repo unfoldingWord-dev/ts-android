@@ -203,24 +203,26 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                                 }
                             });
 
-                            // TODO: use callback to update secondary progress bar.
-                            AppContext.projectManager().downloadProjectUpdates(projects[i], true, new ProjectManager.OnProgressCallback() {
-                                @Override
-                                public void onProgress(final double progress, final String message) {
-                                    handle.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            dialog.setSecondaryProgress((int)Math.round(dialog.getMax()*progress));
-                                            dialog.setMessage(title+"\n"+message);
-                                        }
-                                    });
-                                }
+                            // TODO: use the update all task with flag to ignore the cache
+                            AppContext.context().showToastMessage("Not implimented yet");
 
-                                @Override
-                                public void onSuccess() {
-
-                                }
-                            });
+//                            AppContext.projectManager().downloadProjectUpdates(projects[i], true, new ProjectManager.OnProgressCallback() {
+//                                @Override
+//                                public void onProgress(final double progress, final String message) {
+//                                    handle.post(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            dialog.setSecondaryProgress((int)Math.round(dialog.getMax()*progress));
+//                                            dialog.setMessage(title+"\n"+message);
+//                                        }
+//                                    });
+//                                }
+//
+//                                @Override
+//                                public void onSuccess() {
+//
+//                                }
+//                            });
                         }
 
                         // reload the selected project source

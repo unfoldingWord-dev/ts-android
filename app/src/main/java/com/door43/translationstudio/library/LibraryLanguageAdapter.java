@@ -9,9 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -135,7 +133,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
             // check if this language has been downloaded
             if(AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId())) {
                 // check if an update for this language exists
-                if(AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i))) {
+                if(AppContext.projectManager().updateAvailable(mProjectId, getItem(i))) {
                     staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
                 } else {
                     staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));

@@ -167,12 +167,7 @@ public class PseudoProject implements Model {
 
         // just use the first language we find.
         t = getSelectedTranslation();
-        if(t != null) {
-            return (SourceLanguage)t.getLanguage();
-        } else {
-            // This should never ever ever happen!
-            return AppContext.projectManager().getSourceLanguage(0);
-        }
+        return (SourceLanguage)t.getLanguage();
     }
 
     /**

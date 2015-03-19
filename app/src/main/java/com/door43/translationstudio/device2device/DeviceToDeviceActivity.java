@@ -562,11 +562,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     // send the project list to the client
 
                     // read preferred source languages (for better readability on the client)
-                    List<SourceLanguage> preferredLanguages = new ArrayList<SourceLanguage>();
+                    List<Language> preferredLanguages = new ArrayList<>();
                     try {
                         JSONArray preferredLanguagesJson = new JSONArray(data[1]);
                         for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
-                            SourceLanguage lang = AppContext.projectManager().getSourceLanguage(preferredLanguagesJson.getString(i));
+                            Language lang = AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
                             if(lang != null) {
                                 preferredLanguages.add(lang);
                             }

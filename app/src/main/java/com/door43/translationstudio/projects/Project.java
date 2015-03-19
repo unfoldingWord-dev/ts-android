@@ -1,6 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
+import android.net.Uri;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -47,7 +48,7 @@ public class Project implements Model {
 
     private String mDefaultTitle;
     private final String mSlug;
-    private int mDateModified;
+    private int mDateModified = 0;
     private String mDefaultDescription;
     private String mSelectedChapterId = null;
     private String mSelectedSourceLanguageId;
@@ -59,6 +60,7 @@ public class Project implements Model {
     private boolean mHasNotes = false;
     private String mSortKey;
     private String mLanguageCatalogUrl;
+    private int mSourceLanguagesDateModified = 0;
 
     /**
      * Creates a new project
@@ -1005,7 +1007,7 @@ public class Project implements Model {
 
             // language catalog
             if (json.has("lang_catalog")) {
-                p.setLanguageCatalog(json.getString("lang_catalog"));
+                p.setSourceLanguageCatalog(json.getString("lang_catalog"));
             }
             return p;
         } catch (JSONException e) {
@@ -1018,8 +1020,14 @@ public class Project implements Model {
      * This is where the source languages will be downloaded from
      * @param languageCatalogUrl
      */
-    public void setLanguageCatalog(String languageCatalogUrl) {
+    public void setSourceLanguageCatalog(String languageCatalogUrl) {
         this.mLanguageCatalogUrl = languageCatalogUrl;
+        // set the source languges date modified
+        Uri uri = Uri.parse(languageCatalogUrl);
+        String dateModified = uri.getQueryParameter("date_modified");
+        if(dateModified != null) {
+            mSourceLanguagesDateModified = Integer.parseInt(dateModified);
+        }
     }
 
     /**
@@ -1028,6 +1036,14 @@ public class Project implements Model {
      */
     public String getLanguageCatalog() {
         return mLanguageCatalogUrl;
+    }
+
+    /**
+     * Returns the date the source language catalog was last modified
+     * @return
+     */
+    public int getSourceLanguagesDateModified() {
+        return mSourceLanguagesDateModified;
     }
 
     public interface OnCommitComplete {

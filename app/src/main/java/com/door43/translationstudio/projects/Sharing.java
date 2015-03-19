@@ -67,7 +67,7 @@ public class Sharing {
      * @param preferredLibraryLanguages the preferred language(S) in which the library will be generated. The first available language will be used by order of index on per project basis.
      * @return
      */
-    public static String generateLibrary(Project[] projects, List<SourceLanguage> preferredLibraryLanguages) {
+    public static String generateLibrary(Project[] projects, List<Language> preferredLibraryLanguages) {
         JSONArray libraryJson = new JSONArray();
 
         for(Project p:projects) {
@@ -79,7 +79,7 @@ public class Sharing {
                     // for better readability we attempt to give the project details in one of the preferred languages
                     SourceLanguage libraryLanguage = p.getSelectedSourceLanguage();
                     if(preferredLibraryLanguages != null && preferredLibraryLanguages.size() > 0) {
-                        for(SourceLanguage pref:preferredLibraryLanguages) {
+                        for(Language pref:preferredLibraryLanguages) {
                             SourceLanguage l = p.getSourceLanguage(pref.getId());
                             if(l != null) {
                                 libraryLanguage = l;

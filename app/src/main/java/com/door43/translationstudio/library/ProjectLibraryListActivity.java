@@ -27,6 +27,8 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  */
 public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks {
 
+    public static final String ARG_ONLY_SHOW_UPDATES = "only_show_updates";
+    public static final String ARG_ONLY_SHOW_NEW = "only_show_new";
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -52,6 +54,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             ((ProjectLibraryListFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.project_list))
                     .setActivateOnItemClick(true);
+
+            // TODO: handle the display of just updates, just new projects, or both.
         }
 
         // TODO: If exposing deep links into your app, handle intents here.

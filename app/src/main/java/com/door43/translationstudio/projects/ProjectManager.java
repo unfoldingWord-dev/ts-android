@@ -30,29 +30,22 @@ public class ProjectManager {
     private static DataStore mDataStore;
 
     // so we can look up by index
-    private static List<Project> mProjects = new ArrayList<Project>();
+    private static List<Project> mProjects = new ArrayList<>();
     // so we can look up by id
-    private static Map<String, Project> mProjectMap = new HashMap<String, Project>();
+    private static Map<String, Project> mProjectMap = new HashMap<>();
 
     // meta projects
-    private static Map<String, PseudoProject> mPseudoProjectMap = new HashMap<String, PseudoProject>();
+    private static Map<String, PseudoProject> mPseudoProjectMap = new HashMap<>();
 
-    private static List<Model> mListableProjects = new ArrayList<Model>();
-    private static Map<String, Model> mListableProjectMap = new HashMap<String, Model>();
-
-    // so we can look up by index
-    private static List<Language> mLanguages = new ArrayList<Language>();
-    // so we can look up by id
-    private static Map<String, Language> mLanguagesMap = new HashMap<String, Language>();
-    // so we can look up by name
-    private static Map<String, Language> mLanguagesNameMap = new HashMap<String, Language>();
+    private static List<Model> mListableProjects = new ArrayList<>();
+    private static Map<String, Model> mListableProjectMap = new HashMap<>();
 
     // so we can look up by index
-    private static List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
+    private static List<Language> mLanguages = new ArrayList<>();
     // so we can look up by id
-    private static Map<String, SourceLanguage> mSourceLanguagesMap = new HashMap<String, SourceLanguage>();
+    private static Map<String, Language> mLanguagesMap = new HashMap<>();
     // so we can look up by name
-    private static Map<String, SourceLanguage> mSourceLanguagesNameMap = new HashMap<String, SourceLanguage>();
+    private static Map<String, Language> mLanguagesNameMap = new HashMap<>();
 
     // these constants are used to bind the progress bar to within certain ranges for the data.
     private final double PERCENT_TARGET_LANGUAGES = 70.0;
@@ -95,67 +88,13 @@ public class ProjectManager {
             mHasLoaded = true;
             mInitProgressCallback = callback;
             // begin loading target languages
-            String targetLanguageCatalog = mDataStore.pullTargetLanguageCatalog();
-            loadTargetLanguagesCatalog(targetLanguageCatalog);
+            initTargetLanguages();
             // begin loading projects
             initProjects();
         }
         if(mInitProgressCallback != null) {
             mInitProgressCallback.onSuccess();
         }
-    }
-
-    /**
-     * Loads the projects
-     */
-    private void initProjects() {
-        String projectsCatalog = mDataStore.pullProjectCatalog(false, false);
-        loadProjectsCatalog(projectsCatalog, false, false, null, null);
-    }
-
-    /**
-     * Downloads any new projects from the server
-     * @deprecated
-     * TODO: this should only download a list of projects so we can run the download project updates seperately and display a primary and secondary progress bar.
-     */
-    public void downloadNewProjects(OnProgressCallback callback, OnProgressCallback secondaryCallback) {
-        downloadNewProjects(false, callback, secondaryCallback);
-    }
-
-    /**
-     * Downloads any new projects from the server
-     * @deprecated we are using the graphical ui now
-     * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
-     */
-    public void downloadNewProjects(boolean ignoreCache, OnProgressCallback callback, OnProgressCallback secondaryCallback) {
-        String catalog = mDataStore.pullProjectCatalog(true, ignoreCache);
-//        loadProjectsCatalog(catalog, true, ignoreCache, callback, secondaryCallback);
-    }
-
-    /**
-     *
-     * Downloads the latest version of the project sources from the server
-     * You should always reload the selected project after running this
-     * @param p the project for which updates will be downloaded
-     */
-    public void downloadProjectUpdates(Project p, OnProgressCallback callback) {
-        downloadProjectUpdates(p, false, callback);
-    }
-
-    /**
-     * Downloads the latest version of the project source from the server.
-     * You should always reload the selected project after running this.
-     * @deprecated we are using the graphical ui now
-     * @param p the project for which updates will be downloaded
-     * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
-     */
-    public void downloadProjectUpdates(Project p, boolean ignoreCache, OnProgressCallback callback) {
-        // download the source language catalog
-        if(callback != null) {
-            callback.onProgress(0.0, mContext.getResources().getString(R.string.downloading_languages));
-        }
-        String languageCatalog = mDataStore.pullSourceLanguageCatalog(p.getId(), true, ignoreCache);
-        loadSourceLanguageCatalog(p, languageCatalog, true, ignoreCache, callback);
     }
 
     /**
@@ -249,27 +188,6 @@ public class ProjectManager {
      */
     public void sortListableProjects() {
         sortModelList(mListableProjects);
-//        Collections.sort(mListableProjects, new Comparator<Model>() {
-//            @Override
-//            public int compare(Model model, Model model2) {
-//                try {
-//                    // sort children
-//                    if(model.getClass().getName().equals(PseudoProject.class.getName())) {
-//                        ((PseudoProject)model).sortChildren();
-//                    }
-//                    if(model2.getClass().getName().equals(PseudoProject.class.getName())) {
-//                        ((PseudoProject)model2).sortChildren();
-//                    }
-//                    // sort models
-//                    int i = Integer.parseInt(model.getSortKey());
-//                    int i2 = Integer.parseInt(model2.getSortKey());
-//                    return i - i2;
-//                } catch (Exception e) {
-//                    Logger.e(this.getClass().getName(), "unable to sort models", e);
-//                    return 0;
-//                }
-//            }
-//        });
     }
 
     /**
@@ -414,49 +332,7 @@ public class ProjectManager {
             mLanguagesNameMap.put(l.getName(), l);
             mLanguages.add(l);
             return true;
-//        } else if(getLanguage(l.getId()).getDateModified() == 0) {
-//            // replace plain target languages with source languages because they contain more information
-//            // remove
-//            mLanguagesMap.remove(l.getId());
-//            mLanguagesNameMap.remove(l.getName());
-//            mLanguages.remove(l);
-//            // add
-//            mLanguagesMap.put(l.getId(), l);
-//            mLanguagesNameMap.put(l.getName(), l);
-//            mLanguages.add(l);
-//            return true;
         } else {
-            return false;
-        }
-    }
-
-    /**
-     * Adds a source lanuage to the manager
-     * @param l the language to add
-     */
-    private boolean addSourceLanguage(SourceLanguage l) {
-        if(!mSourceLanguagesMap.containsKey(l.getId())) {
-            mSourceLanguagesMap.put(l.getId(), l);
-            mSourceLanguagesNameMap.put(l.getName(), l);
-            mSourceLanguages.add(l);
-            return true;
-//        } else if(getLanguage(l.getId()).getDateModified() == 0) {
-//            // replace plain target languages with source languages because they contain more information
-//            // remove
-//            mLanguagesMap.remove(l.getId());
-//            mLanguagesNameMap.remove(l.getName());
-//            mLanguages.remove(l);
-//            // add
-//            mLanguagesMap.put(l.getId(), l);
-//            mLanguagesNameMap.put(l.getName(), l);
-//            mLanguages.add(l);
-//            return true;
-        } else {
-            // updated the date modified so we can keep track of updates from the server
-            SourceLanguage cachedLanguage = getSourceLanguage(l.getId());
-            if(l.getDateModified() > cachedLanguage.getDateModified()) {
-                cachedLanguage.setDateModified(l.getDateModified());
-            }
             return false;
         }
     }
@@ -509,19 +385,6 @@ public class ProjectManager {
     }
 
     /**
-     * Returns a source language by id
-     * @param id the langyage id a.k.a language code
-     * @return null if the language does not exist
-     */
-    public SourceLanguage getSourceLanguage(String id) {
-        if(mSourceLanguagesMap.containsKey(id)) {
-            return mSourceLanguagesMap.get(id);
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Finds a language by the human readable name
      * @param name the name of the language
      * @return null if the language does not exist
@@ -535,19 +398,6 @@ public class ProjectManager {
     }
 
     /**
-     * Finds a language by the human readable name
-     * @param name the name of the language
-     * @return null if the language does not exist
-     */
-    private Language getSourceLanguageByName(String name) {
-        if(mSourceLanguagesNameMap.containsKey(name)) {
-            return mSourceLanguagesNameMap.get(name);
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * Returns a source lanuage
      * @param index the language index
      * @return null if the language does not exist
@@ -555,19 +405,6 @@ public class ProjectManager {
     public Language getLanguage(int index) {
         if(index < mLanguages.size() && index >= 0) {
             return mLanguages.get(index);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a source lanuage
-     * @param index the language index
-     * @return null if the language does not exist
-     */
-    public SourceLanguage getSourceLanguage(int index) {
-        if(index < mSourceLanguages.size() && index >= 0) {
-            return mSourceLanguages.get(index);
         } else {
             return null;
         }
@@ -625,10 +462,6 @@ public class ProjectManager {
 
         Project selectedProject = getProject(mSelectedProjectId);;
         if(selectedProject == null) {
-            // auto select the first project if no other project has been selected
-//            int defaultProjectIndex = 0;
-//            setSelectedProject(defaultProjectIndex);
-//            return getProject(defaultProjectIndex);
             return null;
         } else {
             return selectedProject;
@@ -644,14 +477,14 @@ public class ProjectManager {
     }
 
     /**
-     * Loads the target languages catalog
-     * @param targetLanguages
+     * Loads a list of target languages from the disk
      */
-    private void loadTargetLanguagesCatalog(String targetLanguages) {
+    private void initTargetLanguages() {
+        String catalog = mDataStore.pullTargetLanguageCatalog();
         // parse target languages
         JSONArray json;
         try {
-            json = new JSONArray(targetLanguages);
+            json = new JSONArray(catalog);
         } catch (JSONException e) {
             Logger.e(this.getClass().getName(), "malformed project source", e);
             return;
@@ -748,26 +581,36 @@ public class ProjectManager {
                 return l.getResources().length > 0;
             }
         }
-//        if (mDataStore.pullSourceLanguageCatalog(projectId, false, false) != null) {
-//            if (mDataStore.pullResourceCatalog(projectId, languageId, false, false) != null) {
-//                return true;
-//            }
-//        }
         return false;
     }
 
     /**
-     * Checks if an update to the stored source language is available
-     * @param projectId
-     * @param latestLanguage the source language that contains the available date modified info
+     * Checks if there are updates available for the source language
+     * @param projectId the id of the project to which the source language belongs
+     * @param latestLanguage the source language that contains the latest date modified info
      * @return
      */
-    public boolean isSourceLanguageUpdateAvailable(String projectId, SourceLanguage latestLanguage) {
+    public boolean updateAvailable(String projectId, SourceLanguage latestLanguage) {
         Project p = getProject(projectId);
         if(p != null) {
             SourceLanguage currentLanguage = p.getSourceLanguage(latestLanguage.getId());
             if(currentLanguage != null && (latestLanguage.getDateModified() > currentLanguage.getDateModified() || latestLanguage.getResourcesDateModified() > currentLanguage.getResourcesDateModified())) {
                 // there is an update to the language definition or the resources
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if there are updates available for the project
+     * @param latestProject the project that contains the latest date modified info
+     * @return
+     */
+    public boolean updateAvailable(Project latestProject) {
+        if(latestProject != null) {
+            Project currentProject = getProject(latestProject.getId());
+            if(currentProject != null && (latestProject.getDateModified() > currentProject.getDateModified() || latestProject.getSourceLanguagesDateModified() > currentProject.getSourceLanguagesDateModified())) {
                 return true;
             }
         }
@@ -955,76 +798,16 @@ public class ProjectManager {
     }
 
     /**
-     * Downloads a list of available (new) projects
-     * This should not be ran on the main thread
-     * @deprecated we've moving towards downloading a single component at a time. See downloadProjectList.
-     * @return
+     * Loads a list of projects from the disk
      */
-//    public List<Model> fetchAvailableProjects() {
-//        String projectsCatalog = mDataStore.fetchProjectCatalog(false);
-//        List<Model> availableProjects = new ArrayList<>();
-//
-//        // load projects
-//        JSONArray json;
-//        try {
-//            json = new JSONArray(projectsCatalog);
-//        } catch (JSONException e) {
-//            Logger.e(this.getClass().getName(), "malformed projects catalog", e);
-//            return new ArrayList<>();
-//        }
-//
-//        // load the data
-//        int numProjects = json.length();
-//        for(int i=0; i<numProjects; i++) {
-//            try {
-//                JSONObject jsonProject = json.getJSONObject(i);
-//                if(jsonProject.has("slug") && jsonProject.has("date_modified")) {
-//                    Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
-//                    if(jsonProject.has("sort")) {
-//                        p.setSortKey(jsonProject.getString("sort"));
-//                    }
-//
-//                    // load meta
-//                    if(jsonProject.has("meta")) {
-//                        JSONArray jsonMeta = jsonProject.getJSONArray("meta");
-//                        for(int j=0; j < jsonMeta.length(); j++) {
-//                            p.addSudoProject(new PseudoProject(jsonMeta.get(j).toString()));
-//                        }
-//                    }
-//
-//                    // load source languages
-//                    String sourceLanguageCatalog = mDataStore.fetchTempAsset(jsonProject.getString("lang_catalog"), false);
-//                    loadAvailableProjectTranslations(p, sourceLanguageCatalog);
-//
-//                    // make sure we have languages. We skip languages that have already been downloaded.
-//                    if(p.getSourceLanguages().size() > 0) {
-//                        availableProjects.add(p);
-//                    }
-//                } else {
-//                    Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
-//                }
-//            } catch (JSONException e) {
-//                Logger.e(this.getClass().getName(), "failed to load projects catalog", e);
-//                continue;
-//            }
-//        }
-//
-//        sortModelList(availableProjects);
-//        return availableProjects;
-//    }
+    private List<Project> initProjects() {
+        String catalog = mDataStore.pullProjectCatalog(false, false);
 
-    /**
-     * Loads the projects catalog
-     * @param projectsCatalog
-     * @param checkServer indicates the latest languages should be downloaded from the server
-     * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
-     */
-    private List<Project> loadProjectsCatalog(String projectsCatalog, boolean checkServer, boolean ignoreCache, OnProgressCallback callback, OnProgressCallback secondaryCallback) {
-        List<Project> importedProjects = new ArrayList<Project>();
+        List<Project> importedProjects = new ArrayList<>();
         // load projects
         JSONArray json;
         try {
-            json = new JSONArray(projectsCatalog);
+            json = new JSONArray(catalog);
         } catch (JSONException e) {
             Logger.e(this.getClass().getName(), "malformed projects catalog", e);
             return new ArrayList<>();
@@ -1034,99 +817,58 @@ public class ProjectManager {
         int numProjects = json.length();
         for(int i=0; i<numProjects; i++) {
             try {
-                JSONObject jsonProject = json.getJSONObject(i);
-                if(jsonProject.has("slug") && jsonProject.has("date_modified")) {
-                    mProgress += PERCENT_PROJECTS / numProjects;
-                    if(mInitProgressCallback != null) {
-                        mInitProgressCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProject.get("slug").toString()));
-                    }
-                    Project p = new Project(jsonProject.get("slug").toString(), Integer.parseInt(jsonProject.get("date_modified").toString()));
-                    if(jsonProject.has("sort")) {
-                        p.setSortKey(jsonProject.getString("sort"));
-                    }
+                JSONObject jsonProj = json.getJSONObject(i);
+                // update the progress
+                mProgress += PERCENT_PROJECTS / numProjects;
+                if(mInitProgressCallback != null) {
+                    mInitProgressCallback.onProgress(mProgress, String.format(mContext.getResources().getString(R.string.loading_project), jsonProj.get("slug").toString()));
+                }
 
-                    // load meta
+                // generate project
+                Project p = Project.generate(jsonProj);
+
+                if(p != null) {
+                    // build pseudo category's in the library
                     PseudoProject rootPseudoProject = null;
-                    if(jsonProject.has("meta")) {
-                        JSONArray jsonMeta = jsonProject.getJSONArray("meta");
-                        if(jsonMeta.length() > 0) {
-                            // TRICKY: if the meta has changed it will display twice in the project list so we always remove old meta
-                            Project originalProject = getProject(p.getId());
-                            if(originalProject != null && originalProject.getPseudoProjects().length > 0) {
-                                PseudoProject originalRoot = originalProject.getPseudoProjects()[0];
-                                deleteListableProject(originalRoot);
-                            }
-
-                            // get the root meta
-                            String metaSlug = jsonMeta.get(0).toString();
-                            rootPseudoProject = getPseudoProject(metaSlug);
-                            if(rootPseudoProject == null) {
-                                rootPseudoProject = new PseudoProject(metaSlug);
-                                addMetaProject(rootPseudoProject);
-                            }
-                            p.addSudoProject(rootPseudoProject);
-                            // load children meta
-                            PseudoProject currentPseudoProject = rootPseudoProject;
-                            for (int j = 1; j < jsonMeta.length(); j++) {
-                                PseudoProject sp = new PseudoProject(jsonMeta.get(j).toString());
-                                if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
-                                    // load already created meta
-                                    currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
-                                } else {
-                                    // create new meta
-                                    currentPseudoProject.addChild(sp);
-                                    currentPseudoProject = sp;
-                                }
-                                p.addSudoProject(sp);
-                            }
-                            // close with the project
-                            currentPseudoProject.addChild(p);
+                    if(p.getPseudoProjects().length > 0) {
+                        // load or set the root pseudo category
+                        rootPseudoProject = getPseudoProject(p.getPseudoProjects()[0].getId());
+                        if (rootPseudoProject == null) {
+                            rootPseudoProject = p.getPseudoProjects()[0];
+                            addMetaProject(rootPseudoProject);
                         }
+
+                        // populate pseudo sub-categories
+                        PseudoProject currentPseudoProject = rootPseudoProject;
+                        for (int j = 1; j < p.getPseudoProjects().length; j++) {
+                            PseudoProject sp = p.getPseudoProjects()[j];
+                            if (currentPseudoProject.getMetaChild(sp.getId()) != null) {
+                                // follow existing pseudo sub-categories
+                                currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
+                            } else {
+                                // insert new pseudo sub-category
+                                currentPseudoProject.addChild(sp);
+                                currentPseudoProject = sp;
+                            }
+                        }
+                        // close with the project
+                        currentPseudoProject.addChild(p);
                     }
 
-                    // add project or meta to the project list
+                    // add project or pseudo category to the library list
                     if(rootPseudoProject == null) {
                         addListableProject(p);
                     } else {
                         addListableProject(rootPseudoProject);
                     }
 
-                    // determine if the language catalog should be re-downloaded
-//                    boolean downloadLanguages = false;
-//                    if(checkServer) {
-//                        Project cachedProject = getProject(p.getId());
-//                        if(cachedProject == null) {
-//                            downloadLanguages = true;
-//                        } else if(p.getDateModified() > cachedProject.getDateModified()) {
-//                            downloadLanguages = true;
-//                        }
-//                    }
-//                    downloadLanguages = downloadLanguages || ignoreCache;
-
-                    // add project to the internal list and continue loading
+                    // add project to internal list of projects
                     if(addProject(p)) {
                         importedProjects.add(p);
                     }
 
-                    if(callback != null) {
-//                        if(downloadLanguages) {
-//                            callback.onProgress((i+1)/(double)json.length(), String.format(mContext.getResources().getString(R.string.downloading_project), p.getId()));
-//                        } else {
-                            callback.onProgress((i+1)/(double)json.length(), String.format(mContext.getResources().getString(R.string.loading_project), p.getId()));
-//                        }
-                    }
-
-//                    continue;
-                    // skip loading if it was determined not to download
-//                    if(checkServer && !downloadLanguages) {
-//                        continue;
-//                    }
-
-                    // load source languages
-                    String sourceLanguageCatalog = mDataStore.pullSourceLanguageCatalog(p.getId(), false, ignoreCache);
-                    // TRICKY: pull the project from the cache so we have a history of cached languages and resources when checking if a download is needed
-                    // TRICKY: we pass in downloadLanguages rather than checkServer directly to stop needless download propogation
-                    List<SourceLanguage> languages = loadSourceLanguageCatalog(getProject(p.getId()), sourceLanguageCatalog, false, ignoreCache, secondaryCallback);
+                    // loads the source languages into the project
+                    List<SourceLanguage> languages = loadSourceLanguageCatalog(p);
                     // validate project has languages
                     if(languages.size() == 0) {
                         Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
@@ -1139,8 +881,6 @@ public class ProjectManager {
                             deleteListableProject(rootPseudoProject);
                         }
                     }
-                } else {
-                    Logger.w(this.getClass().getName(), "missing required parameters in the project catalog");
                 }
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "failed to load projects catalog", e);
@@ -1155,111 +895,20 @@ public class ProjectManager {
     }
 
     /**
-     * Loads the available projects title and description translations
-     * @deprecated we are moving away from downloading everything in one shot. see downloadSourceLanguageList
+     * Loads source languages from the disk into the project
      * @param p
-     * @param sourceLanguageCatalog
      */
-//    private void loadAvailableProjectTranslations(Project p, String sourceLanguageCatalog) {
-//        if(sourceLanguageCatalog == null) {
-//            return;
-//        }
-//        // parse source languages
-//        JSONArray json;
-//        try {
-//            json = new JSONArray(sourceLanguageCatalog);
-//        } catch (Exception e) {
-//            Logger.e(this.getClass().getName(), "malformed source language catalog", e);
-//            return;
-//        }
-//
-//        // load the data
-//        for(int i=0; i<json.length(); i++) {
-//            if(Thread.currentThread().isInterrupted()) break;
-//            try {
-//                JSONObject jsonLanguage = json.getJSONObject(i);
-//                if(jsonLanguage.has("language") && jsonLanguage.has("project")) {
-//                    JSONObject jsonLangInfo = jsonLanguage.getJSONObject("language");
-//                    JSONObject jsonProjInfo = jsonLanguage.getJSONObject("project");
-//
-//                    // load language
-//                    Language.Direction langDir = jsonLangInfo.get("direction").toString().equals("ltr") ? Language.Direction.LeftToRight : Language.Direction.RightToLeft;
-//                    SourceLanguage l = new SourceLanguage(jsonLangInfo.get("slug").toString(), jsonLangInfo.get("name").toString(), langDir, Integer.parseInt(jsonLangInfo.get("date_modified").toString()));
-//
-//                    // skip languages we've already downloaded.
-////                    if(getProject(p.getId()) != null && getProject(p.getId()).getSourceLanguage(l.getId()) != null) {
-////                        continue;
-////                    }
-//
-//                    p.addSourceLanguage(l);
-//
-//                    // load the rest of the project info
-//                    // TRICKY: we need to specify a default title and description for the project
-//                    if(i == 0) {
-//                        p.setDefaultTitle(jsonProjInfo.getString("name"));
-//                        p.setDefaultDescription(jsonProjInfo.getString("desc"));
-//                    }
-//
-//                    // load title and description translations.
-//                    p.setTitle(jsonProjInfo.getString("name"), l);
-//                    p.setDescription(jsonProjInfo.getString("desc"), l);
-//
-//                    // load sudo project names
-//                    if(jsonProjInfo.has("meta") && p.numSudoProjects() > 0) {
-//                        JSONArray jsonMeta = jsonProjInfo.getJSONArray("meta");
-//                        if(jsonMeta.length() > 0) {
-//                            for (int j = 0; j < jsonMeta.length(); j++) {
-//                                PseudoProject sp = p.getSudoProject(j);
-//                                if(sp != null) {
-//                                    sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
-//                                } else {
-//                                    Logger.w(this.getClass().getName(), "missing meta category in project "+p.getId());
-//                                    break;
-//                                }
-//                            }
-//                        } else {
-//                            Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
-//                        }
-//                    } else if(p.numSudoProjects() > 0) {
-//                        Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
-//                    }
-//                } else {
-//                    Logger.w(this.getClass().getName(), "missing required parameters in the source language catalog");
-//                }
-//            } catch (JSONException e) {
-//                Logger.w(this.getClass().getName(), "failed to load source language", e);
-//                continue;
-//            }
-//        }
-//
-//        // Attempt to select a more accurate default language for the project title and description
-//        String deviceLocale = Locale.getDefault().getLanguage();
-//        // don't change the source language if already selecteed
-//        if(!p.hasSelectedSourceLanguage()) {
-//            if (p.getSourceLanguage(deviceLocale) != null) {
-//                p.setSelectedSourceLanguage(deviceLocale);
-//            } else if (p.getSourceLanguage("en") != null) {
-//                p.setSelectedSourceLanguage("en");
-//            }
-//        }
-//    }
+    private List<SourceLanguage> loadSourceLanguageCatalog(Project p) {
+        String catalog = mDataStore.pullSourceLanguageCatalog(p.getId(), false, false);
 
-    /**
-     * Loads the source languages into the given project
-     * @param p the project into which the source languages will be
-     * @param sourceLanguageCatalog the catalog of source languages
-     * @param checkServer indicates that the latest resources should be downloaded from the server
-     * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
-     */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p, String sourceLanguageCatalog, boolean checkServer, boolean ignoreCache, OnProgressCallback callback) {
         List<SourceLanguage> importedLanguages = new ArrayList<>();
-        if(sourceLanguageCatalog == null) {
+        if(catalog == null) {
             return importedLanguages;
         }
         // parse source languages
         JSONArray json;
         try {
-            json = new JSONArray(sourceLanguageCatalog);
+            json = new JSONArray(catalog);
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "malformed source language catalog", e);
             return new ArrayList<>();
@@ -1284,7 +933,7 @@ public class ProjectManager {
                     p.setTitle(jsonProj.getString("name"), l);
                     p.setDescription(jsonProj.getString("desc"), l);
 
-                    // meta translations (Pseudo projects)
+                    // meta (pseudo project/category) translations
                     if(jsonProj.has("meta") && p.numSudoProjects() > 0) {
                         JSONArray jsonMeta = jsonProj.getJSONArray("meta");
                         if(jsonMeta.length() > 0) {
@@ -1304,42 +953,13 @@ public class ProjectManager {
                         Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
                     }
 
-                    // determine if resources should be re-downloaded
-//                    boolean downloadResources = false;
-//                    if(checkServer) {
-//                        Project cachedProject = getProject(p.getId());
-//                        SourceLanguage cachedLanguage = cachedProject.getSourceLanguage(l.getId());
-//                        if(cachedLanguage == null) {
-//                            downloadResources = true;
-//                        } else if(l.getDateModified() > cachedLanguage.getDateModified()) {
-//                            downloadResources = true;
-//                        }
-//                    }
-//                    downloadResources = downloadResources || ignoreCache;
+                    List<Resource> importedResources = loadResourcesCatalog(p, l);
 
-                    // update progress
-                    if(callback != null) {
-//                        if(downloadResources) {
-//                            callback.onProgress((i + 1) / (double)json.length(), mContext.getResources().getString(R.string.downloading_resources));
-//                        } else {
-                            callback.onProgress((i + 1) / (double)json.length(), mContext.getResources().getString(R.string.loading_resources));
-//                        }
-                    }
-
-                    // load the resources
-//                    String resourcesCatalog;
-//                    if(l.getResourceCatalog() != null) {
-//                        resourcesCatalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), l.getResourceCatalog(), ignoreCache);
-//                    } else {
-                        String resourcesCatalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), false, ignoreCache);
-//                    }
-                    List<Resource> importedResources = loadResourcesCatalog(p, l, resourcesCatalog, false, ignoreCache);
-
-                    // only resources with the minium checking level will get imported, so it's possible we'll need to skip a language
+                    // only resources with the minium checking level are valid for source translations
                     if(importedResources.size() > 0) {
-                        // TODO: we need to put all the new information (resources etc.) from the new language into the existing source language. (not sure if we actually need to do this)
-                        // For the most part source and target languages can be used interchangably, however there are some cases were we need some extra information in source languages.
-                        addSourceLanguage(l);
+                        // TRICKY: we add source languages to the language list as a precautionary measure
+                        // to make sure we have as much info as possible
+                        addLanguage(l);
                         importedLanguages.add(l);
 
                         if (p != null) {
@@ -1375,22 +995,22 @@ public class ProjectManager {
     }
 
     /**
-     * Loads the resources into the given source language.
-     * The soruce terms and notes may be downloaded, but will not be loaded at this time.
+     * Loads the resource definitions for the given language.
+     * This does not load any of the source
+     * @param p  the project
      * @param l the source language
-     * @param resourcesCatalog the json resources
-     * @param checkServer indicates the latest source terms and notes should be downloaded.
-     * @param ignoreCache indicates the cache should be ignored when determining whether or not to download
      */
-    private List<Resource> loadResourcesCatalog(Project p, SourceLanguage l, String resourcesCatalog, boolean checkServer, boolean ignoreCache) {
+    private List<Resource> loadResourcesCatalog(Project p, SourceLanguage l) {
+        String catalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), false, false);
+
         List<Resource> importedResources = new ArrayList<>();
-        if(resourcesCatalog == null) {
+        if(catalog == null) {
             return importedResources;
         }
         // parse resources
         JSONArray json;
         try {
-            json = new JSONArray(resourcesCatalog);
+            json = new JSONArray(catalog);
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "malformed resource catalog", e);
             return new ArrayList<>();
@@ -1408,27 +1028,6 @@ public class ProjectManager {
                         if (jsonStatus.getInt("checking_level") >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
                             // load resource
                             Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonStatus.getInt("checking_level"), jsonResource.getInt("date_modified"));
-
-//                            // NOTE: the data store will automatically determine if a download is nessesary if the url includes a date_modified parameter.
-//                            if(checkServer) {
-//                                // we will attempt to use the provided urls before using the default download path
-//                                if(jsonResource.has("notes")) {
-//                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), jsonResource.getString("notes"), ignoreCache);
-//                                } else {
-//                                    mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), true, ignoreCache);
-//                                }
-//                                if(jsonResource.has("terms")) {
-//                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), jsonResource.getString("terms"), ignoreCache);
-//                                } else {
-//                                    mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), true, ignoreCache);
-//                                }
-//                                if(jsonResource.has("source")) {
-//                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), jsonResource.getString("source"), ignoreCache);
-//                                } else {
-//                                    mDataStore.pullSource(p.getId(), l.getId(), r.getId(), true, ignoreCache);
-//                                }
-//                            }
-
                             l.addResource(r);
                             importedResources.add(r);
                         }
@@ -1774,14 +1373,6 @@ public class ProjectManager {
     }
 
     /**
-     * Returns a list of languages
-     * @return
-     */
-    public List<SourceLanguage> getSourceLanguages() {
-        return mSourceLanguages;
-    }
-
-    /**
      * Returns the data store. This should not be used unless you know what you are doing.
      * @return
      */
@@ -1998,8 +1589,7 @@ public class ProjectManager {
                     addProject(p);
 
                     // load source languages
-                    String sourceLanguageCatalog = mDataStore.pullSourceLanguageCatalog(p.getId(), false, false);
-                    List<SourceLanguage> languages = loadSourceLanguageCatalog(p, sourceLanguageCatalog, false, false, null);
+                    List<SourceLanguage> languages = loadSourceLanguageCatalog(p);
                     // validate project has languages
                     if(languages.size() == 0) {
                         Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
