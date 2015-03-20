@@ -1,5 +1,6 @@
 package com.door43.translationstudio.projects;
 
+import com.door43.util.ListMap;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 
@@ -18,8 +19,9 @@ import java.util.Map;
  */
 public class PseudoProject implements Model {
     private final String mId;
-    private Map<String, Model> mChildrenMap = new HashMap<String, Model>();
-    private List<Model> mChildren = new ArrayList<>();
+    private ListMap<Model> mChildren = new ListMap<>();
+//    private Map<String, Model> mChildrenMap = new HashMap<String, Model>();
+//    private List<Model> mChildren = new ArrayList<>();
     private Map<String, Translation> mTranslationMap = new HashMap<String, Translation>();
     private List<Translation> mTranslations = new ArrayList<Translation>();
     private String mSelectedTranslationId;
@@ -33,10 +35,25 @@ public class PseudoProject implements Model {
         mId = slug;
     }
 
+    /**
+     * Returns the selected translation of the title
+     * @return
+     */
     public Translation getSelectedTranslation() {
+        // use the project source language if selected
+        for(Model m:mChildren.values()) {
+            if(!m.isSelected()) {
+                continue;
+            } else {
+                SourceLanguage l = m.getSelectedSourceLanguage();
+                setSelectedTranslation(l.getId());
+                break;
+            }
+        }
+
         Translation selectedTranslation = getTranslation(mSelectedTranslationId);
         if(selectedTranslation == null) {
-            // auto select the first chapter if no other chapter has been selected
+            // auto select the first language
             int defaultLanguageIndex = 0;
             setSelectedTranslation(defaultLanguageIndex);
             return getTranslation(defaultLanguageIndex);
@@ -45,6 +62,11 @@ public class PseudoProject implements Model {
         }
     }
 
+    /**
+     * Sets the translation to use for the title
+     * @param index
+     * @return
+     */
     public boolean setSelectedTranslation(int index) {
         Translation t = getTranslation(index);
         if(t != null) {
@@ -53,6 +75,11 @@ public class PseudoProject implements Model {
         return t != null;
     }
 
+    /**
+     * Sets the translation to use for the title
+     * @param id
+     * @return
+     */
     public boolean setSelectedTranslation(String id) {
         if(mTranslationMap.containsKey(id)) {
             mSelectedTranslationId = id;
@@ -176,7 +203,7 @@ public class PseudoProject implements Model {
      */
     @Override
     public String getSortKey() {
-        for(Model m:mChildrenMap.values()) {
+        for(Model m:mChildren.values()) {
             if(m.getSortKey() != null) {
                 return m.getSortKey();
             }
@@ -196,7 +223,7 @@ public class PseudoProject implements Model {
 
     @Override
     public boolean isTranslating() {
-        for(Model m:mChildrenMap.values()) {
+        for(Model m:mChildren.values()) {
             if(!m.isTranslating()) {
                 continue;
             } else {
@@ -208,7 +235,7 @@ public class PseudoProject implements Model {
 
     @Override
     public boolean isTranslatingGlobal() {
-        for(Model m:mChildrenMap.values()) {
+        for(Model m:mChildren.values()) {
             if(!m.isTranslatingGlobal()) {
                 continue;
             } else {
@@ -230,7 +257,7 @@ public class PseudoProject implements Model {
      */
     @Override
     public boolean isSelected() {
-        for(Model m:mChildrenMap.values()) {
+        for(Model m:mChildren.values()) {
             if(!m.isSelected()) {
                 continue;
             } else {
@@ -245,23 +272,20 @@ public class PseudoProject implements Model {
      * @param meta
      */
     public void addChild(PseudoProject meta) {
-        if(!mChildrenMap.containsKey("m-"+meta.getId())) {
-            mChildrenMap.put("m-" + meta.getId(), meta);
-            mChildren.add(meta);
+        if(mChildren.get("m-"+meta.getId()) != null) {
+            mChildren.add("m-" + meta.getId(), meta);
             mIsSorted = false;
         }
     }
 
     /**
      * Adds a project to the meta project.
+     * Previous versions of the project will be replaced to ensure the latest translations are loaded
      * @param child
      */
     public void addChild(Project child) {
-        if(!mChildrenMap.containsKey(child.getId())) {
-            mChildrenMap.put(child.getId(), child);
-            mChildren.add(child);
-            mIsSorted = false;
-        }
+        mChildren.replace(child.getId(), child);
+        mIsSorted = false;
     }
 
     /**
@@ -269,7 +293,7 @@ public class PseudoProject implements Model {
      * @return
      */
     public Model[] getChildren() {
-        return mChildren.toArray(new Model[mChildren.size()]);
+        return mChildren.getAll().toArray(new Model[mChildren.size()]);
     }
 
     /**
@@ -278,8 +302,8 @@ public class PseudoProject implements Model {
      * @return
      */
     public PseudoProject getMetaChild(String id) {
-        if(mChildrenMap.containsKey("m-"+id)) {
-            return (PseudoProject) mChildrenMap.get("m-"+id);
+        if(mChildren.get("m-"+id) != null) {
+            return (PseudoProject) mChildren.get("m-"+id);
         } else {
             return null;
         }
@@ -328,7 +352,7 @@ public class PseudoProject implements Model {
     public void sortChildren() {
         // only sort if needed
         if(!mIsSorted) {
-            Collections.sort(mChildren, new Comparator<Model>() {
+            Collections.sort(mChildren.list(), new Comparator<Model>() {
                 @Override
                 public int compare(Model model, Model model2) {
                     try {

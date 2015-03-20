@@ -57,6 +57,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private void updateList() {
         if(TaskManager.getTask(mTaskId) != null) {
             final GetAvailableProjectsTask task = ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId));
+            // TODO: sort list
             LibraryTempData.setAvailableProjects(task.getProjects().toArray(new Project[task.getProjects().size()]));
 
             Handler handle = new Handler(Looper.getMainLooper());

@@ -3,6 +3,8 @@ package com.door43.translationstudio.dialogs;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +17,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.threads.ThreadableUI;
 
 /**
  * This dialog displays a list view that allows the user to dig down through projects and meta projects.
@@ -25,8 +28,8 @@ import com.door43.translationstudio.util.AppContext;
  */
 public class ChooseProjectDialog extends DialogFragment {
     private ModelItemAdapter mModelItemAdapter;
-    private Model[] mModelList = null;
     private DialogInterface.OnDismissListener mDismissListener;
+    private String mMetaId;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.projects);
@@ -34,18 +37,12 @@ public class ChooseProjectDialog extends DialogFragment {
 
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
-        if(mModelList != null) {
-            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), mModelList);
-        } else {
-            Bundle args = getArguments();
-            String id = args.getString("metaId");
-            PseudoProject p = AppContext.projectManager().getPseudoProject(id);
-            if(p != null) {
-                if (mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), p.getChildren());
-            }
-        }
+        Bundle args = getArguments();
+        mMetaId = args.getString("metaId");
 
-        if(mModelItemAdapter != null) {
+        mModelItemAdapter = new ModelItemAdapter(AppContext.context(), new Model[]{});
+
+        if(mMetaId != null) {
             // connect adapter
             listView.setAdapter(mModelItemAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -67,16 +64,37 @@ public class ChooseProjectDialog extends DialogFragment {
             dismiss();
         }
 
+        populateList();
+
         return v;
     }
 
     /**
-     * Specifies the model list to use in the dialog.
-     * This must be called before showing the dialog.
-     * @deprecated this was used by the p2p import before splitting into a different dialog.
+     * Loads the list async
      */
-    public void setModels(Model[] models) {
-        mModelList = models;
+    private void populateList() {
+        new ThreadableUI(getActivity()) {
+            private PseudoProject p;
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                p = AppContext.projectManager().getPseudoProject(mMetaId);
+                if(p!=null) {
+                    p.sortChildren();
+                }
+            }
+
+            @Override
+            public void onPostExecute() {
+                if(p != null) {
+                    mModelItemAdapter.changeDataSet(p.getChildren());
+                }
+            }
+        }.start();
     }
 
     public void onDismiss(DialogInterface dialog) {

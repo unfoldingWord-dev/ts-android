@@ -163,8 +163,9 @@ public class ProjectManager {
      */
     private void deleteProject(Project p) {
         if(mProjectMap.containsKey(p.getId())) {
+            mProjects.remove(mProjectMap.get(p.getId()));
             mProjectMap.remove(p.getId());
-            mProjects.remove(p);
+
         }
     }
 
@@ -247,8 +248,9 @@ public class ProjectManager {
      */
     private void deleteListableProject(Project p) {
         if(mListableProjectMap.containsKey(p.getId())) {
+            mListableProjects.remove(mListableProjectMap.get(p.getId()));
             mListableProjectMap.remove(p.getId());
-            mListableProjects.remove(p);
+
         }
     }
 
@@ -258,8 +260,8 @@ public class ProjectManager {
      */
     private void deleteListableProject(PseudoProject p) {
         if(mListableProjectMap.containsKey("m-"+p.getId())) {
+            mListableProjects.remove(mListableProjectMap.get("m-"+p.getId()));
             mListableProjectMap.remove("m-" + p.getId());
-            mListableProjects.remove(p);
         }
     }
 
@@ -1568,6 +1570,7 @@ public class ProjectManager {
         for(int i=0; i<json.length(); i++) {
             try {
                 JSONObject jsonProj = json.getJSONObject(i);
+                // just reload this project
                 if(jsonProj.getString("slug").equals(projectId)) {
                     Project p = Project.generate(jsonProj);
                     if(p != null) {
@@ -1575,10 +1578,7 @@ public class ProjectManager {
                         Project originalProject = getProject(p.getId());
                         if(originalProject != null) {
                             deleteProject(originalProject);
-                            if(originalProject.getPseudoProjects().length > 0) {
-                                PseudoProject originalRoot = originalProject.getPseudoProjects()[0];
-                                deleteListableProject(originalRoot);
-                            }
+                            removeProjectListEntry(originalProject);
                         }
 
                         generateProjectListEntry(p);

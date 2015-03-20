@@ -1,6 +1,9 @@
 package com.door43.util;
 
+import com.door43.translationstudio.projects.Model;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,5 +102,21 @@ public class ListMap<E> {
      */
     public int indexOf(E object) {
         return mObjects.indexOf(object);
+    }
+
+    /**
+     * Returns a collection of all the values
+     * @return
+     */
+    public Collection<E> values() {
+        return mObjectMap.values();
+    }
+
+    /**
+     * Returns the object list
+     * @return
+     */
+    public List<E> list() {
+        return mObjects;
     }
 }
