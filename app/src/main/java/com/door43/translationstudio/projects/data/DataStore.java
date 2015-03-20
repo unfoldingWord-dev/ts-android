@@ -664,7 +664,7 @@ public class DataStore {
      */
     public String pullTargetLanguageCatalog() {
         // TODO: check for updates on the server
-        // https://api.unfoldingword.org/ts/txt/1/langnames.json
+        // http://td.unfoldingword.org/exports/langnames.json
         String path = "target_languages.json";
         return loadJSONAsset(path);
     }

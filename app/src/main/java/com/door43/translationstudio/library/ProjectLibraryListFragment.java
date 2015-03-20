@@ -228,6 +228,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         if(!mActivityPaused) {
             // the activity is being destroyed
             LibraryTempData.setAvailableProjects(new Project[]{});
+
         }
         super.onDestroy();
     }
