@@ -22,14 +22,16 @@ public class GetAvailableProjectsTask extends ManagedTask {
         List<Project> projects = AppContext.projectManager().downloadProjectList(false);
 
         // download (or load from cache) the source languages
+        int i = 0;
         for(Project p:projects) {
             if(mListener != null) {
-                mListener.onProgress(projects.size() / 100, p.getId());
+                mListener.onProgress(i / (double)projects.size(), p.getId());
             }
             List<SourceLanguage> languages = AppContext.projectManager().downloadSourceLanguageList(p, false);
             if(languages.size() > 0) {
                 mProjects.add(p);
             }
+            i++;
         }
     }
 

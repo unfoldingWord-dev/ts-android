@@ -1,5 +1,6 @@
 package com.door43.util.threads;
 
+import com.door43.translationstudio.tasks.GetAvailableProjectsTask;
 import com.door43.util.ListMap;
 
 import java.util.ArrayList;
@@ -108,22 +109,45 @@ public class TaskManager {
     }
 
     /**
-     * Removes a finished task from the manager
+     * Removes a task from the manager
+     * @param id
+     * @param forced
+     */
+    private static void clearTask(Object id, boolean forced) {
+        if(id instanceof String) {
+            clearTask((String)id, forced);
+        } else if(id instanceof Integer) {
+            clearTask((int)id, forced);
+        }
+    }
+
+    /**
+     * Removes a task from the manager
      * @param id
      */
-    static public void clearTask(int id) {
-        if(mTaskMap.containsKey(id) && mTaskMap.get(id).isFinished()) {
+    public static void clearTask(Object id) {
+        clearTask(id, false);
+    }
+
+    /**
+     * Removes a task from the manager
+     * @param id
+     * @param forced if true the task will be removed even if it is not finished
+     */
+    private static void clearTask(int id, boolean forced) {
+        if(mTaskMap.containsKey(id) && (mTaskMap.get(id).isFinished() || forced)) {
             mTaskMap.remove(id);
         }
     }
 
     /**
-     * Removes a finished task from the manager
+     * Removes a task from the manager
      * @param key
+     * @param forced if true the task will be removed even if it is not finished
      */
-    static public void clearTask(String key) {
+    private static void clearTask(String key, boolean forced) {
         if(mTaskKeys.containsKey(key)) {
-            clearTask(mTaskKeys.get(key));
+            clearTask(mTaskKeys.get(key), forced);
             mTaskKeys.remove(key);
         }
     }
@@ -153,5 +177,34 @@ public class TaskManager {
      */
     private static void queueTask(ManagedTask task) {
         sInstance.mThreadPool.execute(task);
+    }
+
+    /**
+     * Cancels and clears out a task
+     * @param task
+     */
+    public static void cancelTask(ManagedTask task) {
+        ManagedTask[] runnableArray = new ManagedTask[mWorkQueue.size()];
+        // Populates the array with the Runnables in the queue
+        mWorkQueue.toArray(runnableArray);
+        // Stores the array length in order to iterate over the array
+        int len = runnableArray.length;
+        /*
+         * Iterates over the array of Runnables and interrupts just the one thread
+         */
+        synchronized (sInstance) {
+            for (int runnableIndex = 0; runnableIndex < len; runnableIndex++) {
+                if(runnableArray[runnableIndex].getTaskId().equals(task.getTaskId())) {
+                    // stop the thread
+                    Thread thread = runnableArray[runnableIndex].getThread();
+                    if (null != thread) {
+                        thread.interrupt();
+                    }
+                    // clear the task
+                    clearTask(runnableArray[runnableIndex].getTaskId(), true);
+                    break;
+                }
+            }
+        }
     }
 }

@@ -1,16 +1,22 @@
 package com.door43.translationstudio.library.temp;
 
+import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.SourceLanguage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class handles the temporary list of available projects
  */
 public class LibraryTempData {
-    private static Project[] mProjects = new Project[]{};
+    private static List<Project> mProjects = new ArrayList<>();
 
-    public static void setAvailableProjects(Project[] projects) {
+    public static void setAvailableProjects(List<Project> projects) {
         mProjects = projects;
+        ProjectManager.sortModelList(mProjects);
     }
 
     /**
@@ -18,7 +24,7 @@ public class LibraryTempData {
      * @return
      */
     public static Project[] getProjects() {
-        return mProjects;
+        return mProjects.toArray(new Project[mProjects.size()]);
     }
 
     /**
@@ -27,6 +33,6 @@ public class LibraryTempData {
      * @return
      */
     public static Project getProject(int i) {
-        return mProjects[i];
+        return mProjects.get(i);
     }
 }

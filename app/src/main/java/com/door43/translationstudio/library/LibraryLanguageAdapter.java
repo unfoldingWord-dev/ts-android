@@ -118,7 +118,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
             holder.downloadTask.setOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onFinished(ManagedTask task) {
-                    TaskManager.clearTask((String)task.getTaskId());
+                    TaskManager.clearTask(task.getTaskId());
                     hand.post(new Runnable() {
                         @Override
                         public void run() {

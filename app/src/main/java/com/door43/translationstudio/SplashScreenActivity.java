@@ -152,6 +152,8 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         }
 
         protected void onPostExecute(Void item) {
+            mProgressBar.setProgress(mProgressBar.getMax());
+            mProgressBar.setIndeterminate(true);
             mProgressTextView.setText(getResources().getString(R.string.launching_translator));
             startMainActivity();
         }

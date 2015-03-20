@@ -1,6 +1,8 @@
 package com.door43.translationstudio.library;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,14 +10,15 @@ import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.widget.ListView;
 
-import com.door43.translationstudio.dialogs.ModelItemAdapter;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
-import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.GetAvailableProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
+
+import java.util.ArrayList;
 
 /**
  * A list fragment representing a list of Projects. This fragment
@@ -27,7 +30,7 @@ import com.door43.util.threads.TaskManager;
  * interface.
  * TODO: we need to display a notice if there are no new projects available
  */
-public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener, GetAvailableProjectsTask.OnProgress {
+public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener, GetAvailableProjectsTask.OnProgress, DialogInterface.OnCancelListener {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -35,9 +38,12 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      */
     private static final String STATE_ACTIVATED_POSITION = "activated_position";
     private static final String STATE_TASK_ID = "task_id";
+    private static final String STATE_FINISHED_LOADING = "finished_loading";
     private int mTaskId = -1;
     private LibraryProjectAdapter mAdapter;
+    private ProgressDialog mDialog;
     private boolean mActivityPaused = false;
+    private boolean mFinishedLoading = false;
 
     /**
      * Called when the task has finished fetching the available projects
@@ -45,10 +51,13 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      */
     @Override
     public void onFinished(ManagedTask task) {
-        // TODO: hide loading status
         updateList();
         TaskManager.clearTask(mTaskId);
         mTaskId = -1;
+        if(mDialog != null && mDialog.isShowing()) {
+            mDialog.dismiss();
+        }
+        mFinishedLoading = true;
     }
 
     /**
@@ -57,8 +66,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private void updateList() {
         if(TaskManager.getTask(mTaskId) != null) {
             final GetAvailableProjectsTask task = ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId));
-            // TODO: sort list
-            LibraryTempData.setAvailableProjects(task.getProjects().toArray(new Project[task.getProjects().size()]));
+            LibraryTempData.setAvailableProjects(task.getProjects());
 
             Handler handle = new Handler(Looper.getMainLooper());
             handle.post(new Runnable() {
@@ -82,8 +90,49 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private int mActivatedPosition = ListView.INVALID_POSITION;
 
     @Override
-    public void onProgress(double progress, String message) {
-        updateList();
+    public void onProgress(final double progress, final String message) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(mDialog == null) {
+                    if(getActivity() != null) {
+                        mDialog = new ProgressDialog(getActivity());
+                        mDialog.setCancelable(true);
+                        mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        mDialog.setCanceledOnTouchOutside(false);
+                        mDialog.setOnCancelListener(ProjectLibraryListFragment.this);
+                        mDialog.setMax(100);
+                        mDialog.setTitle(R.string.loading);
+                        mDialog.setMessage("");
+                    }
+                }
+                if(getActivity() != null) {
+                    if (!mDialog.isShowing()) {
+                        mDialog.show();
+                    }
+                    if (progress == -1) {
+                        mDialog.setIndeterminate(true);
+                        mDialog.setProgress(mDialog.getMax());
+                    } else {
+                        mDialog.setIndeterminate(false);
+                        mDialog.setProgress((int) Math.ceil(progress * 100));
+                    }
+                    mDialog.setMessage(message);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialogInterface) {
+        if(TaskManager.getTask(mTaskId) != null) {
+            GetAvailableProjectsTask task = (GetAvailableProjectsTask) TaskManager.getTask(mTaskId);
+            task.setOnFinishedListener(null);
+            task.setOnProgressListener(null);
+            TaskManager.cancelTask(task);
+            mTaskId = -1;
+        }
     }
 
     /**
@@ -127,11 +176,19 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             if(savedInstanceState.containsKey(STATE_TASK_ID)) {
                 mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
             }
+            if(savedInstanceState.containsKey(STATE_FINISHED_LOADING)) {
+                mFinishedLoading = savedInstanceState.getBoolean(STATE_FINISHED_LOADING);
+            }
         }
         mActivityPaused = false;
 
         mAdapter = new LibraryProjectAdapter(AppContext.context(), LibraryTempData.getProjects());
         setListAdapter(mAdapter);
+
+        // show the progress dialog when we start up
+        if(!mFinishedLoading) {
+            onProgress(-1, "");
+        }
 
         preparProjectList();
     }
@@ -200,6 +257,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             TaskManager.getTask(mTaskId).setOnFinishedListener(null);
             ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId)).setOnProgressListener(null);
         }
+        outState.putBoolean(STATE_FINISHED_LOADING, mFinishedLoading);
         mActivityPaused = true;
     }
 
@@ -228,8 +286,13 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     public void onDestroy() {
         if(!mActivityPaused) {
             // the activity is being destroyed
-            LibraryTempData.setAvailableProjects(new Project[]{});
+            LibraryTempData.setAvailableProjects(new ArrayList<Project>());
 
+        }
+        if(mDialog != null) {
+            mDialog.setOnCancelListener(null);
+            mDialog.setOnDismissListener(null);
+            mDialog.dismiss();
         }
         super.onDestroy();
     }

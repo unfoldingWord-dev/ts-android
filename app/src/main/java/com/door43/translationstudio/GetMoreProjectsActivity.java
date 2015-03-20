@@ -38,6 +38,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
 
     private ArrayList<ToolItem> mGetProjectTools = new ArrayList<>();
     private ToolAdapter mAdapter;
+    private AlertDialog mBrowseDialog;
 //    private BrowseState mBrowseState = BrowseState.NOTHING;
 //    private int mBrowseTaskId = -1;
 //    private ProgressDialog mBrowsingProgressDialog;
@@ -96,9 +97,21 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
         mGetProjectTools.add(new ToolItem("Browse available projects", "New projects will be downloaded from the server", R.drawable.ic_download, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
-                intent.putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, true);
-                startActivity(intent);
+                mBrowseDialog = new AlertDialog.Builder(GetMoreProjectsActivity.this)
+                        .setTitle(R.string.browse_projects)
+                        .setMessage(R.string.use_internet_confirmation)
+                        .setCancelable(false)
+                        .setIcon(R.drawable.ic_download_small)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
+                                intent.putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, true);
+                                startActivity(intent);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
             }
         }, hasNetwork, getResources().getString(R.string.internet_not_available)));
         mGetProjectTools.add(new ToolItem("Update projects", "Project updates will be downloaded from the server", R.drawable.ic_update, new ToolItem.ToolAction() {
@@ -643,5 +656,14 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
 //        outState.putSerializable("browseState", mBrowseState);
 //        outState.putInt("browseTaskId", mBrowseTaskId);
         // TODO: maintain state
+    }
+
+    @Override
+    public void onDestroy() {
+        if(mBrowseDialog != null) {
+            mBrowseDialog.dismiss();
+            mBrowseDialog = null;
+        }
+        super.onDestroy();
     }
 }

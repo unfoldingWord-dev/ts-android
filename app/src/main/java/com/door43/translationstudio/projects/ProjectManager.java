@@ -194,7 +194,7 @@ public class ProjectManager {
      * Sorts a list of models
      * @param models
      */
-    public void sortModelList(List<? extends Model> models) {
+    public static void sortModelList(List<? extends Model> models) {
         Collections.sort(models, new Comparator<Model>() {
             @Override
             public int compare(Model model, Model model2) {
@@ -1599,6 +1599,8 @@ public class ProjectManager {
                             fetchProjectSource(p, false);
                         }
                     }
+
+                    sortListableProjects();
                     break;
                 }
             } catch (JSONException e) {

@@ -282,5 +282,7 @@
     <string name="title_project_detail">Project Library Languages</string>
     <string name="languages">Languages</string>
     <string name="drafts">Translation Drafts</string>
+    <string name="browse_projects">Browse Projects</string>
+    <string name="use_internet_confirmation">This will use your internet connection to download information from the server, continue?</string>
 
 </resources>
