@@ -662,7 +662,6 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
     public void onDestroy() {
         if(mBrowseDialog != null) {
             mBrowseDialog.dismiss();
-            mBrowseDialog = null;
         }
         super.onDestroy();
     }

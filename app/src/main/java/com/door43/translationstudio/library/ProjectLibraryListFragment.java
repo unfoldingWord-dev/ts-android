@@ -38,12 +38,10 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      */
     private static final String STATE_ACTIVATED_POSITION = "activated_position";
     private static final String STATE_TASK_ID = "task_id";
-    private static final String STATE_FINISHED_LOADING = "finished_loading";
     private int mTaskId = -1;
     private LibraryProjectAdapter mAdapter;
     private ProgressDialog mDialog;
     private boolean mActivityPaused = false;
-    private boolean mFinishedLoading = false;
 
     /**
      * Called when the task has finished fetching the available projects
@@ -57,7 +55,6 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         if(mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
         }
-        mFinishedLoading = true;
     }
 
     /**
@@ -91,37 +88,40 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
 
     @Override
     public void onProgress(final double progress, final String message) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                if(mDialog == null) {
-                    if(getActivity() != null) {
-                        mDialog = new ProgressDialog(getActivity());
-                        mDialog.setCancelable(true);
-                        mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                        mDialog.setCanceledOnTouchOutside(false);
-                        mDialog.setOnCancelListener(ProjectLibraryListFragment.this);
-                        mDialog.setMax(100);
-                        mDialog.setTitle(R.string.loading);
-                        mDialog.setMessage("");
+        // don't display anything if we've already loading the results
+        if(LibraryTempData.getProjects().length == 0) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mDialog == null) {
+                        if (getActivity() != null) {
+                            mDialog = new ProgressDialog(getActivity());
+                            mDialog.setCancelable(true);
+                            mDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                            mDialog.setCanceledOnTouchOutside(false);
+                            mDialog.setOnCancelListener(ProjectLibraryListFragment.this);
+                            mDialog.setMax(100);
+                            mDialog.setTitle(R.string.loading);
+                            mDialog.setMessage("");
+                        }
+                    }
+                    if (getActivity() != null) {
+                        if (!mDialog.isShowing()) {
+                            mDialog.show();
+                        }
+                        if (progress == -1) {
+                            mDialog.setIndeterminate(true);
+                            mDialog.setProgress(mDialog.getMax());
+                        } else {
+                            mDialog.setIndeterminate(false);
+                            mDialog.setProgress((int) Math.ceil(progress * 100));
+                        }
+                        mDialog.setMessage(message);
                     }
                 }
-                if(getActivity() != null) {
-                    if (!mDialog.isShowing()) {
-                        mDialog.show();
-                    }
-                    if (progress == -1) {
-                        mDialog.setIndeterminate(true);
-                        mDialog.setProgress(mDialog.getMax());
-                    } else {
-                        mDialog.setIndeterminate(false);
-                        mDialog.setProgress((int) Math.ceil(progress * 100));
-                    }
-                    mDialog.setMessage(message);
-                }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -176,19 +176,11 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             if(savedInstanceState.containsKey(STATE_TASK_ID)) {
                 mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
             }
-            if(savedInstanceState.containsKey(STATE_FINISHED_LOADING)) {
-                mFinishedLoading = savedInstanceState.getBoolean(STATE_FINISHED_LOADING);
-            }
         }
         mActivityPaused = false;
 
         mAdapter = new LibraryProjectAdapter(AppContext.context(), LibraryTempData.getProjects());
         setListAdapter(mAdapter);
-
-        // show the progress dialog when we start up
-        if(!mFinishedLoading) {
-            onProgress(-1, "");
-        }
 
         preparProjectList();
     }
@@ -200,11 +192,13 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      */
     private void preparProjectList() {
         if(TaskManager.getTask(mTaskId) != null) {
+            onProgress(-1, "");
             // connect to existing task
             GetAvailableProjectsTask task = (GetAvailableProjectsTask) TaskManager.getTask(mTaskId);
             task.setOnFinishedListener(this);
             task.setOnProgressListener(this);
         } else if(LibraryTempData.getProjects().length == 0) {
+            onProgress(-1, "");
             // start process
             GetAvailableProjectsTask task = new GetAvailableProjectsTask();
             task.setOnFinishedListener(this);
@@ -257,7 +251,6 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             TaskManager.getTask(mTaskId).setOnFinishedListener(null);
             ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId)).setOnProgressListener(null);
         }
-        outState.putBoolean(STATE_FINISHED_LOADING, mFinishedLoading);
         mActivityPaused = true;
     }
 
