@@ -23,6 +23,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.library.ProjectLibraryListActivity;
+import com.door43.translationstudio.library.ProjectLibraryListFragment;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;

@@ -168,6 +168,11 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // get starting configuration
+        // TODO: finish implementing this.
+        Boolean showNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, true);
+        Boolean showProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
+
         // Restore the previously serialized information
         if (savedInstanceState != null) {
             if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
