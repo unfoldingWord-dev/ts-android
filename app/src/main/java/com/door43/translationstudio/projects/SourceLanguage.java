@@ -25,6 +25,7 @@ public class SourceLanguage extends Language {
     private Project mProject;
     private String mResourceCatalogUrl;
     private int mResourcesDateModified = 0;
+    private int mCheckingLevel = -1;
 
     public SourceLanguage(String code, String name, Direction direction, int dateModified) {
         super(code, name, direction);
@@ -42,6 +43,7 @@ public class SourceLanguage extends Language {
         } else {
             getResource(r.getId()).setDateModified(r.getDateModified());
         }
+        mCheckingLevel = -1;
     }
 
     /**
@@ -228,5 +230,23 @@ public class SourceLanguage extends Language {
      */
     public int getResourcesDateModified() {
         return mResourcesDateModified;
+    }
+
+    /**
+     * Returns the maximum checking level found within this language
+     *
+     * @return
+     */
+    public int checkingLevel() {
+        if(mCheckingLevel == -1) {
+            int maxCheckingLevel = -1;
+            for(Resource r:mResources) {
+                if(r.getCheckingLevel() > maxCheckingLevel) {
+                    maxCheckingLevel = r.getCheckingLevel();
+                }
+            }
+            mCheckingLevel = maxCheckingLevel;
+        }
+        return mCheckingLevel;
     }
 }

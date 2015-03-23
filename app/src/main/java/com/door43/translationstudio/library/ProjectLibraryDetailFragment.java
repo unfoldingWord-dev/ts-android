@@ -48,6 +48,8 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     private ImageView mIcon;
     private String mImagePath;
     private int mTaskId = -1;
+    private boolean mShowNewProjects;
+    private boolean mShowProjectUpdates;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -60,11 +62,23 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mShowNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false);
+        mShowProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
+
         if (getArguments().containsKey(ARG_ITEM_INDEX)) {
+            int index;
             try {
-                mProject = LibraryTempData.getProject(Integer.parseInt(getArguments().getString(ARG_ITEM_INDEX)));
+                index = Integer.parseInt(getArguments().getString(ARG_ITEM_INDEX));
             } catch(Exception e) {
-                mProject = LibraryTempData.getProject(getArguments().getInt(ARG_ITEM_INDEX));
+                index = getArguments().getInt(ARG_ITEM_INDEX);
+            }
+
+            if(mShowNewProjects && !mShowProjectUpdates) {
+                mProject = LibraryTempData.getNewProject(index);
+            } else if(mShowProjectUpdates && !mShowNewProjects) {
+                mProject = LibraryTempData.getUpdatedProject(index);
+            } else {
+                mProject = LibraryTempData.getProject(index);
             }
         }
     }

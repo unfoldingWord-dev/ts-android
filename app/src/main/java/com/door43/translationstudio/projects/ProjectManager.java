@@ -605,8 +605,29 @@ public class ProjectManager {
         Project p = getProject(projectId);
         if(p != null) {
             SourceLanguage currentLanguage = p.getSourceLanguage(latestLanguage.getId());
-            if(currentLanguage != null && (latestLanguage.getDateModified() > currentLanguage.getDateModified() || latestLanguage.getResourcesDateModified() > currentLanguage.getResourcesDateModified())) {
+            if(currentLanguage != null && latestLanguage.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level) && (latestLanguage.getDateModified() > currentLanguage.getDateModified() || latestLanguage.getResourcesDateModified() > currentLanguage.getResourcesDateModified())) {
                 // there is an update to the language definition or the resources
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if any new source languages are available for download
+     * @param latestProject the project that contains the latest list of source languages
+     * @return
+     */
+    public boolean isNewSourceLanguageAvailable(Project latestProject) {
+        if(latestProject != null) {
+            Project currentProject = getProject(latestProject.getId());
+            if(currentProject != null) {
+                for(SourceLanguage l:latestProject.getSourceLanguages()) {
+                    if(l.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level) && currentProject.getSourceLanguage(l.getId()) == null) {
+                        return true;
+                    }
+                }
+            } else {
                 return true;
             }
         }
@@ -622,14 +643,11 @@ public class ProjectManager {
         if(latestProject != null) {
             Project currentProject = getProject(latestProject.getId());
             if(currentProject != null) {
-                if(latestProject.getDateModified() > currentProject.getDateModified()) {
-                    return true;
-                } else {
-                    // TRICKY: we cannot just use the source language catalog date modified because it get's updated even if just one language is downloaded
-                    for(SourceLanguage l:latestProject.getSourceLanguages()) {
-                        if(isSourceLanguageUpdateAvailable(latestProject.getId(), l)) {
-                            return true;
-                        }
+                // NOTE: project details are updated automatically when browsing for languages updates so we don't consider the project date modified here
+                // TRICKY: we cannot just use the source language catalog date modified because it get's updated even if just one language is downloaded
+                for(SourceLanguage l:latestProject.getSourceLanguages()) {
+                    if(isSourceLanguageUpdateAvailable(latestProject.getId(), l)) {
+                        return true;
                     }
                 }
             }
@@ -820,7 +838,7 @@ public class ProjectManager {
     /**
      * Loads a list of projects from the disk
      */
-    private List<Project> initProjects() {
+    public List<Project> initProjects() {
         String catalog = mDataStore.pullProjectCatalog(false, false);
 
         List<Project> importedProjects = new ArrayList<>();

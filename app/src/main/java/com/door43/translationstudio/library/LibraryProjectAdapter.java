@@ -23,12 +23,14 @@ import com.door43.translationstudio.util.AppContext;
  */
 public class LibraryProjectAdapter extends BaseAdapter {
     private final MainApplication mContext;
+    private final boolean mDisplayAsNewProjects;
     private int mSelectedIndex = -1;
     private Project[] mProjects;
 
-    public LibraryProjectAdapter(MainApplication context, Project[] projects) {
+    public LibraryProjectAdapter(MainApplication context, Project[] projects, boolean displayAsNewProjects) {
         mProjects = projects;
         mContext = context;
+        mDisplayAsNewProjects = displayAsNewProjects;
     }
 
     @Override
@@ -86,10 +88,8 @@ public class LibraryProjectAdapter extends BaseAdapter {
             holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.white));
             holder.name.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
 
-            // TODO: hook onto update progress.
-
             // check download status
-            if(AppContext.projectManager().isProjectDownloaded(getItem(i).getId())) {
+            if(!mDisplayAsNewProjects && AppContext.projectManager().isProjectDownloaded(getItem(i).getId())) {
                 // check if an update for this project exists
                 if(AppContext.projectManager().isProjectUpdateAvailable(getItem(i))) {
                     holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
@@ -97,8 +97,6 @@ public class LibraryProjectAdapter extends BaseAdapter {
                     holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
                 }
                 holder.downloadedImage.setVisibility(View.VISIBLE);
-            } else {
-                holder.downloadedImage.setVisibility(View.INVISIBLE);
             }
         }
 

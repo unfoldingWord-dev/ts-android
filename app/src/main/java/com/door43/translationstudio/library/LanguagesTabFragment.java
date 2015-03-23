@@ -17,6 +17,12 @@ import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
+import com.door43.util.threads.ThreadableUI;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.transform.Source;
 
 /**
  * Created by joel on 3/12/2015.
@@ -25,15 +31,28 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
     private LibraryLanguageAdapter mAdapter;
     private Project mProject;
     public static final String DOWNLOAD_LANGUAGE_PREFIX = "download-language-";
+    private boolean mShowNewProjects;
+    private boolean mShowProjectUpdates;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
 
+        mShowNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false);
+        mShowProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
+
         if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)) {
+            int index;
             try {
-                mProject = LibraryTempData.getProject(Integer.parseInt(getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)));
+                index = Integer.parseInt(getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
             } catch (Exception e) {
-                mProject = LibraryTempData.getProject(getArguments().getInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
+                index = getArguments().getInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX);
+            }
+            if(mShowNewProjects && !mShowProjectUpdates) {
+                mProject = LibraryTempData.getNewProject(index);
+            } else if(mShowProjectUpdates && !mShowNewProjects) {
+                mProject = LibraryTempData.getUpdatedProject(index);
+            } else {
+                mProject = LibraryTempData.getProject(index);
             }
         }
 
@@ -65,14 +84,49 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
             // start new download
             task = new DownloadLanguageTask(mProject, language);
             TaskManager.addTask(task, taskId);
+            // NOTE: the LibraryLanguageAdapter handles the onProgress and onFinish events
             mAdapter.notifyDataSetChanged();
         }
     }
 
     private void populateList() {
-        if(mProject != null && mAdapter != null) {
-            mAdapter.changeDataSet(mProject.getSourceLanguages());
-        }
+        // filter languages
+        // TODO: it would be safer to put this in the task manager
+        new ThreadableUI(getActivity()) {
+            List<SourceLanguage> languages = new ArrayList<>();
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                if(mProject != null) {
+                    for(SourceLanguage l: mProject.getSourceLanguages()) {
+                        if(l.checkingLevel() >= AppContext.context().getResources().getInteger(R.integer.min_source_lang_checking_level)) {
+                            if(mShowNewProjects && !mShowProjectUpdates) {
+                                if(!AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
+                                    languages.add(l);
+                                }
+                            } else if(mShowProjectUpdates && !mShowNewProjects) {
+                                if(AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
+                                    languages.add(l);
+                                }
+                            } else {
+                                languages.add(l);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onPostExecute() {
+                if(mAdapter != null) {
+                    mAdapter.changeDataSet(languages);
+                }
+            }
+        }.start();
     }
 
     @Override

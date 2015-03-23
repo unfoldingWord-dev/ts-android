@@ -284,5 +284,8 @@
     <string name="drafts">Translation Drafts</string>
     <string name="browse_projects">Browse Projects</string>
     <string name="use_internet_confirmation">This will use your internet connection to download information from the server, continue?</string>
+    <string name="update_projects">Update Projects</string>
+    <string name="browse_projects_description">Find and download new projects from the server</string>
+    <string name="update_projects_description">View and download available updates from the server</string>
 
 </resources>

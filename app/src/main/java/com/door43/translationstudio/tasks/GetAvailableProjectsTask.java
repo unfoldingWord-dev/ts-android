@@ -2,6 +2,7 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.threads.ManagedTask;
@@ -27,7 +28,23 @@ public class GetAvailableProjectsTask extends ManagedTask {
             if(mListener != null) {
                 mListener.onProgress(i / (double)projects.size(), p.getId());
             }
+            // update the project details
+            Project oldProject = AppContext.projectManager().getProject(p.getId());
+            if(p.getDateModified() > oldProject.getDateModified()) {
+                AppContext.projectManager().mergeProject(p.getId());
+                AppContext.projectManager().reloadProject(p.getId());
+            }
+
+            // download source language
             List<SourceLanguage> languages = AppContext.projectManager().downloadSourceLanguageList(p, false);
+
+            // download (or load from cache) the resources
+            for(SourceLanguage l:languages) {
+                List<Resource> resources = AppContext.projectManager().downloadResourceList(p, l, false);
+                for(Resource r:resources) {
+                    l.addResource(r);
+                }
+            }
             if(languages.size() > 0) {
                 mProjects.add(p);
             }

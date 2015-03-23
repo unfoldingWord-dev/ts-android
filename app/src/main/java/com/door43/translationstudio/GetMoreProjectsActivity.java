@@ -95,7 +95,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
 
     private void init() {
         Boolean hasNetwork = AppContext.context().isNetworkAvailable();
-        mGetProjectTools.add(new ToolItem("Browse available projects", "New projects will be downloaded from the server", R.drawable.ic_download, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.browse_projects), getResources().getString(R.string.browse_projects_description), R.drawable.ic_download, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 mBrowseDialog = new AlertDialog.Builder(GetMoreProjectsActivity.this)
@@ -115,12 +115,24 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                         .show();
             }
         }, hasNetwork, getResources().getString(R.string.internet_not_available)));
-        mGetProjectTools.add(new ToolItem("Update projects", "Project updates will be downloaded from the server", R.drawable.ic_update, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.update_projects), getResources().getString(R.string.update_projects_description), R.drawable.ic_update, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
-                intent.putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, true);
-                startActivity(intent);
+                mBrowseDialog = new AlertDialog.Builder(GetMoreProjectsActivity.this)
+                        .setTitle(R.string.update_projects)
+                        .setMessage(R.string.use_internet_confirmation)
+                        .setCancelable(false)
+                        .setIcon(R.drawable.ic_update_small)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
+                                intent.putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, true);
+                                startActivity(intent);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
             }
         }, hasNetwork, getResources().getString(R.string.internet_not_available)));
         mGetProjectTools.add(new ToolItem("Transfer from device", "Projects will be transferred over the network from a nearby device", R.drawable.ic_phone, new ToolItem.ToolAction() {

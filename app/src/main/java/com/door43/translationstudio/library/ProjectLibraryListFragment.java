@@ -42,6 +42,8 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private LibraryProjectAdapter mAdapter;
     private ProgressDialog mDialog;
     private boolean mActivityPaused = false;
+    private boolean mShowNewProjects = true;
+    private boolean mShowProjectUpdates = false;
 
     /**
      * Called when the task has finished fetching the available projects
@@ -69,7 +71,16 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             handle.post(new Runnable() {
                 @Override
                 public void run() {
-                    mAdapter.changeDataSet(LibraryTempData.getProjects());
+                    if(mShowNewProjects && !mShowProjectUpdates) {
+                        // new languages/projects
+                        mAdapter.changeDataSet(LibraryTempData.getNewProjects());
+                    } else if(mShowProjectUpdates && !mShowNewProjects) {
+                        // updates
+                        mAdapter.changeDataSet(LibraryTempData.getUpdatedProjects());
+                    } else {
+                        // just show everything
+                        mAdapter.changeDataSet(LibraryTempData.getProjects());
+                    }
                 }
             });
         }
@@ -169,9 +180,8 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         super.onCreate(savedInstanceState);
 
         // get starting configuration
-        // TODO: finish implementing this.
-        Boolean showNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, true);
-        Boolean showProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
+        mShowNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false);
+        mShowProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
 
         // Restore the previously serialized information
         if (savedInstanceState != null) {
@@ -184,7 +194,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
         mActivityPaused = false;
 
-        mAdapter = new LibraryProjectAdapter(AppContext.context(), LibraryTempData.getProjects());
+        mAdapter = new LibraryProjectAdapter(AppContext.context(), LibraryTempData.getProjects(), mShowNewProjects);
         setListAdapter(mAdapter);
 
         preparProjectList();

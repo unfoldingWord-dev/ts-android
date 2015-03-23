@@ -88,7 +88,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
-            Bundle arguments = new Bundle();
+//            Bundle arguments = new Bundle();
+            Bundle arguments = getIntent().getExtras();
             arguments.putInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index);
             ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
             fragment.setArguments(arguments);
@@ -98,6 +99,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             // In single-pane mode, simply start the detail activity
             // for the selected item ID.
             Intent detailIntent = new Intent(this, ProjectLibraryDetailActivity.class);
+            Bundle arguments = getIntent().getExtras();
+            detailIntent.putExtras(arguments);
             detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index+"");
             startActivity(detailIntent);
         }
