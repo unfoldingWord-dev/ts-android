@@ -90,8 +90,8 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         // Tabs
         mLanguagesTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
         mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.languages), mLanguagesTab));
-//        mDraftsTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
-//        mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.drafts), mDraftsTab));
+        mDraftsTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
+        mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.drafts), mDraftsTab));
 
         // view pager
         mViewPager = (ViewPager) rootView.findViewById(R.id.projectBrowserViewPager);

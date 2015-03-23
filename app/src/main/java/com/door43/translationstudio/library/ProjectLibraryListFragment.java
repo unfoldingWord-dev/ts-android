@@ -13,7 +13,7 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.tasks.GetAvailableProjectsTask;
+import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
@@ -30,7 +30,7 @@ import java.util.ArrayList;
  * interface.
  * TODO: we need to display a notice if there are no new projects available
  */
-public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener, GetAvailableProjectsTask.OnProgress, DialogInterface.OnCancelListener {
+public class ProjectLibraryListFragment extends ListFragment implements ManagedTask.OnFinishedListener, DownloadAvailableProjectsTask.OnProgress, DialogInterface.OnCancelListener {
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -64,7 +64,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      */
     private void updateList() {
         if(TaskManager.getTask(mTaskId) != null) {
-            final GetAvailableProjectsTask task = ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId));
+            final DownloadAvailableProjectsTask task = ((DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId));
             LibraryTempData.setAvailableProjects(task.getProjects());
 
             Handler handle = new Handler(Looper.getMainLooper());
@@ -138,7 +138,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     @Override
     public void onCancel(DialogInterface dialogInterface) {
         if(TaskManager.getTask(mTaskId) != null) {
-            GetAvailableProjectsTask task = (GetAvailableProjectsTask) TaskManager.getTask(mTaskId);
+            DownloadAvailableProjectsTask task = (DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId);
             task.setOnFinishedListener(null);
             task.setOnProgressListener(null);
             TaskManager.cancelTask(task);
@@ -209,13 +209,13 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         if(TaskManager.getTask(mTaskId) != null) {
             onProgress(-1, "");
             // connect to existing task
-            GetAvailableProjectsTask task = (GetAvailableProjectsTask) TaskManager.getTask(mTaskId);
+            DownloadAvailableProjectsTask task = (DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId);
             task.setOnFinishedListener(this);
             task.setOnProgressListener(this);
         } else if(LibraryTempData.getProjects().length == 0) {
             onProgress(-1, "");
             // start process
-            GetAvailableProjectsTask task = new GetAvailableProjectsTask();
+            DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask();
             task.setOnFinishedListener(this);
             task.setOnProgressListener(this);
             mTaskId = TaskManager.addTask(task);
@@ -264,7 +264,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             outState.putInt(STATE_TASK_ID, mTaskId);
             // disconnect listeners
             TaskManager.getTask(mTaskId).setOnFinishedListener(null);
-            ((GetAvailableProjectsTask) TaskManager.getTask(mTaskId)).setOnProgressListener(null);
+            ((DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId)).setOnProgressListener(null);
         }
         mActivityPaused = true;
     }

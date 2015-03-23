@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Gets a list of projects that are available for download from the server
  */
-public class GetAvailableProjectsTask extends ManagedTask {
+public class DownloadAvailableProjectsTask extends ManagedTask {
     private List<Project> mProjects = new ArrayList<>();
     private OnProgress mListener;
 
@@ -25,14 +25,17 @@ public class GetAvailableProjectsTask extends ManagedTask {
         // download (or load from cache) the source languages
         int i = 0;
         for(Project p:projects) {
+            boolean didUpdateProjectInfo = false;
+
             if(mListener != null) {
                 mListener.onProgress(i / (double)projects.size(), p.getId());
             }
+
             // update the project details
             Project oldProject = AppContext.projectManager().getProject(p.getId());
-            if(p.getDateModified() > oldProject.getDateModified()) {
+            if(oldProject != null && p.getDateModified() > oldProject.getDateModified()) {
                 AppContext.projectManager().mergeProject(p.getId());
-                AppContext.projectManager().reloadProject(p.getId());
+                didUpdateProjectInfo = true;
             }
 
             // download source language
@@ -40,11 +43,26 @@ public class GetAvailableProjectsTask extends ManagedTask {
 
             // download (or load from cache) the resources
             for(SourceLanguage l:languages) {
+                // update the language details
+                if(oldProject != null) {
+                    SourceLanguage oldLanguage = oldProject.getSourceLanguage(l.getId());
+                    if(oldLanguage != null && l.getDateModified() > oldLanguage.getDateModified()) {
+                        AppContext.projectManager().mergeSourceLanguage(p.getId(), l.getId());
+                        didUpdateProjectInfo = true;
+                    }
+                }
+
                 List<Resource> resources = AppContext.projectManager().downloadResourceList(p, l, false);
                 for(Resource r:resources) {
                     l.addResource(r);
                 }
             }
+
+            // reload the project
+            if(didUpdateProjectInfo) {
+                AppContext.projectManager().reloadProject(p.getId());
+            }
+
             if(languages.size() > 0) {
                 mProjects.add(p);
             }

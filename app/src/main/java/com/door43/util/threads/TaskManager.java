@@ -1,8 +1,5 @@
 package com.door43.util.threads;
 
-import com.door43.translationstudio.tasks.GetAvailableProjectsTask;
-import com.door43.util.ListMap;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
