@@ -10,13 +10,14 @@
         android:layout_height="wrap_content"
         android:weightSum="3"
         android:padding="10dp"
-        android:id="@+id/relativeLayout">
+        android:id="@+id/relativeLayout"
+        android:background="@color/light_green">
 
         <ImageView
             android:layout_width="@dimen/model_list_item_image_width"
             android:layout_height="@dimen/model_list_item_height"
             android:id="@+id/modelImage"
-            android:background="@color/lighter_gray" />
+            android:background="@color/dark_green" />
 
         <LinearLayout
             android:id="@+id/bodyLayout"
@@ -39,7 +40,7 @@
                 android:text="Model Title"
                 android:id="@+id/modelTitle"
                 android:textSize="@dimen/h2"
-                android:textColor="@color/dark_gray" />
+                android:textColor="@color/white" />
 
             <TextView
                 android:layout_width="fill_parent"
@@ -47,7 +48,7 @@
                 android:text="Model Description\ntest"
                 android:id="@+id/modelDescription"
                 android:ellipsize="end"
-                android:textColor="@color/dark_gray"
+                android:textColor="@color/white"
                 android:maxLines="2" />
 
         </LinearLayout>
