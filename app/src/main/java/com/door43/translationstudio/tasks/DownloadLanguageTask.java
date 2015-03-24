@@ -49,19 +49,18 @@ public class DownloadLanguageTask extends ManagedTask {
         for(int i = 0; i < resources.size(); i ++) {
             Resource r = resources.get(i);
             AppContext.projectManager().mergeResource(mProject.getId(), mLanguage.getId(), r.getId());
-            if(r.getCheckingLevel() >= AppContext.context().getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                publishProgress(((i+1)/resources.size())*.3, "");
-                AppContext.projectManager().downloadNotes(mProject, mLanguage, r, ignoreCache);
-                AppContext.projectManager().mergeNotes(mProject.getId(), mLanguage.getId(), r.getId());
+            publishProgress(((i+1)/resources.size())*.3, "");
+            AppContext.projectManager().downloadNotes(mProject, mLanguage, r, ignoreCache);
+            AppContext.projectManager().mergeNotes(mProject.getId(), mLanguage.getId(), r.getId());
 
-                publishProgress(((i+1)/resources.size())*.6, "");
-                AppContext.projectManager().downloadTerms(mProject, mLanguage, r, ignoreCache);
-                AppContext.projectManager().mergeTerms(mProject.getId(), mLanguage.getId(), r.getId());
+            publishProgress(((i+1)/resources.size())*.6, "");
+            AppContext.projectManager().downloadTerms(mProject, mLanguage, r, ignoreCache);
+            AppContext.projectManager().mergeTerms(mProject.getId(), mLanguage.getId(), r.getId());
 
-                publishProgress(((i+1)/resources.size())*.9, "");
-                AppContext.projectManager().downloadSource(mProject, mLanguage, r, ignoreCache);
-                AppContext.projectManager().mergeSource(mProject.getId(), mLanguage.getId(), r.getId());
-            }
+            publishProgress(((i+1)/resources.size())*.9, "");
+            AppContext.projectManager().downloadSource(mProject, mLanguage, r, ignoreCache);
+            AppContext.projectManager().mergeSource(mProject.getId(), mLanguage.getId(), r.getId());
+
             publishProgress((i+1)/resources.size(), "");
             mLanguage.addResource(r);
         }

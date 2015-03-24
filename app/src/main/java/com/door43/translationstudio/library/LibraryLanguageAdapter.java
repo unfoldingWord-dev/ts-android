@@ -30,11 +30,13 @@ import java.util.ListIterator;
 public class LibraryLanguageAdapter extends BaseAdapter {
     private final Context mContext;
     private final String mProjectId;
+    private final String mTaskIdPrefix;
     private List<SourceLanguage> mLanguages = new ArrayList<>();
 
-    public LibraryLanguageAdapter(Context context, String projectId) {
+    public LibraryLanguageAdapter(Context context, String projectId, String taskIdPrefix) {
         mProjectId = projectId;
         mContext = context;
+        mTaskIdPrefix = taskIdPrefix;
     }
 
     @Override
@@ -93,7 +95,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
             holder.downloadTask.setOnProgressListener(null);
             holder.downloadTask.setOnFinishedListener(null);
         }
-        holder.downloadTask = (DownloadLanguageTask)TaskManager.getTask(LanguagesTabFragment.DOWNLOAD_LANGUAGE_PREFIX+mProjectId+"-"+getItem(i).getId());
+        holder.downloadTask = (DownloadLanguageTask)TaskManager.getTask(mTaskIdPrefix+mProjectId+"-"+getItem(i).getId());
         if(holder.downloadTask != null) {
             holder.downloadedImage.setVisibility(View.VISIBLE);
             holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_download_small));

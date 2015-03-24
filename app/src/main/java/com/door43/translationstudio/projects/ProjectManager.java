@@ -586,6 +586,23 @@ public class ProjectManager {
     }
 
     /**
+     * Checks if a language draft has been downloaded
+     * @param projectId
+     * @param draftId
+     * @return
+     */
+    public boolean isSourceLanguageDraftDownloaded(String projectId, String draftId) {
+        Project p = getProject(projectId);
+        if(p != null) {
+            SourceLanguage l = p.getSourceLanguageDraft(draftId);
+            if(l != null) {
+                return l.getResources().length > 0;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks if a proejct has been downloaded
      * @param projectId
      * @return
@@ -607,6 +624,23 @@ public class ProjectManager {
             SourceLanguage currentLanguage = p.getSourceLanguage(latestLanguage.getId());
             if(currentLanguage != null && latestLanguage.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level) && (latestLanguage.getDateModified() > currentLanguage.getDateModified() || latestLanguage.getResourcesDateModified() > currentLanguage.getResourcesDateModified())) {
                 // there is an update to the language definition or the resources
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if there are updates available for the source language draft
+     * @param projectId the id of the project to which the source language belongs
+     * @param latestDraft the source language that contains the latest date modified info
+     * @return
+     */
+    public boolean isSourceLanguageDraftUpdateAvailable(String projectId, SourceLanguage latestDraft) {
+        Project p = getProject(projectId);
+        if(p != null) {
+            SourceLanguage currentDraft = p.getSourceLanguageDraft(latestDraft.getId());
+            if(currentDraft != null && latestDraft.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level) && (latestDraft.getDateModified() > currentDraft.getDateModified() || latestDraft.getResourcesDateModified() > currentDraft.getResourcesDateModified())) {
                 return true;
             }
         }
@@ -924,50 +958,49 @@ public class ProjectManager {
                 SourceLanguage l = SourceLanguage.generate(jsonLang);
 
                 if(l != null) {
-                    // default title and description
-                    if(i == 0) {
-                        p.setDefaultTitle(jsonProj.getString("name"));
-                        p.setDefaultDescription(jsonProj.getString("desc"));
-                    }
+                    loadResourcesCatalog(p, l);
 
-                    // load title and description translations.
-                    p.setTitle(jsonProj.getString("name"), l);
-                    p.setDescription(jsonProj.getString("desc"), l);
+                    if(l.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
+                        // source language
 
-                    // meta (pseudo project/category) translations
-                    if(jsonProj.has("meta") && p.numSudoProjects() > 0) {
-                        JSONArray jsonMeta = jsonProj.getJSONArray("meta");
-                        if(jsonMeta.length() > 0) {
-                            for (int j = 0; j < jsonMeta.length(); j++) {
-                                PseudoProject sp = p.getSudoProject(j);
-                                if(sp != null) {
-                                    sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
-                                } else {
-                                    Logger.w(this.getClass().getName(), "missing meta category in project "+p.getId());
-                                    break;
-                                }
-                            }
-                        } else {
-                            Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
-                        }
-                    } else if(p.numSudoProjects() > 0) {
-                        Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
-                    }
-
-                    List<Resource> importedResources = loadResourcesCatalog(p, l);
-
-                    // only resources with the minium checking level are valid for source translations
-                    if(importedResources.size() > 0) {
                         // TRICKY: we add source languages to the language list as a precautionary measure
                         // to make sure we have as much info as possible
                         addLanguage(l);
                         importedLanguages.add(l);
+                        p.addSourceLanguage(l);
 
-                        if (p != null) {
-                            p.addSourceLanguage(l);
-                        } else {
-                            Logger.w(this.getClass().getName(), "could not find project while loading source languages");
+                        // default title and description
+                        if(i == 0) {
+                            p.setDefaultTitle(jsonProj.getString("name"));
+                            p.setDefaultDescription(jsonProj.getString("desc"));
                         }
+
+                        // load title and description translations.
+                        p.setTitle(jsonProj.getString("name"), l);
+                        p.setDescription(jsonProj.getString("desc"), l);
+
+                        // meta (pseudo project/category) translations
+                        if(jsonProj.has("meta") && p.numSudoProjects() > 0) {
+                            JSONArray jsonMeta = jsonProj.getJSONArray("meta");
+                            if(jsonMeta.length() > 0) {
+                                for (int j = 0; j < jsonMeta.length(); j++) {
+                                    PseudoProject sp = p.getSudoProject(j);
+                                    if(sp != null) {
+                                        sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
+                                    } else {
+                                        Logger.w(this.getClass().getName(), "missing meta category in project "+p.getId());
+                                        break;
+                                    }
+                                }
+                            } else {
+                                Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                            }
+                        } else if(p.numSudoProjects() > 0) {
+                            Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                        }
+                    } else {
+                        // language draft
+                        p.addSourceLanguageDraft(l);
                     }
                 } else {
                     Logger.w(this.getClass().getName(), "missing required parameters in the source language catalog");

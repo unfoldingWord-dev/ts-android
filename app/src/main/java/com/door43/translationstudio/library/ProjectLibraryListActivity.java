@@ -7,6 +7,7 @@ import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 /**
@@ -25,7 +26,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * {@link ProjectLibraryListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks {
+public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTabFragment.Callbacks {
 
     public static final String ARG_ONLY_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_ONLY_SHOW_NEW = "only_show_new";
@@ -55,7 +56,6 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                     .findFragmentById(R.id.project_list))
                     .setActivateOnItemClick(true);
 
-            // TODO: handle the display of just updates, just new projects, or both.
         }
 
         // TODO: If exposing deep links into your app, handle intents here.
@@ -92,7 +92,9 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             Bundle arguments = getIntent().getExtras();
             arguments.putInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index);
             ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
-            fragment.setArguments(arguments);
+            if(arguments != null) {
+                fragment.setArguments(arguments);
+            }
             getFragmentManager().beginTransaction().replace(R.id.project_detail_container, fragment).commit();
 
         } else {
@@ -100,9 +102,17 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             // for the selected item ID.
             Intent detailIntent = new Intent(this, ProjectLibraryDetailActivity.class);
             Bundle arguments = getIntent().getExtras();
-            detailIntent.putExtras(arguments);
-            detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index+"");
+            if(arguments != null) {
+                detailIntent.putExtras(arguments);
+            }
+            detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index + "");
             startActivity(detailIntent);
         }
+    }
+
+    @Override
+    public void onEmptyDraftsList() {
+        ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.project_detail_container);
+        fragment.hideDraftsTab();
     }
 }

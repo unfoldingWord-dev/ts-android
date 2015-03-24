@@ -33,8 +33,10 @@ import java.util.Map;
  */
 public class Project implements Model {
     private ListMap<Chapter> mChapters = new ListMap<>();
-    private List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
-    private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
+    private ListMap<SourceLanguage> mSourceLanguages = new ListMap<>();
+    private ListMap<SourceLanguage> mSourceLanguageDrafts = new ListMap<>();
+//    private List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
+//    private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
     private List<Language> mTargetLanguages = new ArrayList<Language>();
     private Map<String,Language> mTargetLanguageMap = new HashMap<String, Language>();
     private ListMap<Term> mTerms = new ListMap<>();
@@ -271,7 +273,7 @@ public class Project implements Model {
      * @return
      */
     public int numSourceLanguages() {
-        return mSourceLanguageMap.size();
+        return mSourceLanguages.size();
     }
 
     /**
@@ -415,10 +417,13 @@ public class Project implements Model {
      * @param l the source language to add
      */
     public boolean addSourceLanguage(SourceLanguage l) {
-        if(!mSourceLanguageMap.containsKey(l.getId())) {
+        if(mSourceLanguages.get(l.getId()) == null) {
             l.setProject(this);
-            mSourceLanguageMap.put(l.getId(), l);
-            mSourceLanguages.add(l);
+            mSourceLanguages.add(l.getId(), l);
+//        if(!mSourceLanguageMap.containsKey(l.getId())) {
+//            l.setProject(this);
+//            mSourceLanguageMap.put(l.getId(), l);
+//            mSourceLanguages.add(l);
             return true;
         } else {
             return false;
@@ -727,11 +732,12 @@ public class Project implements Model {
      * @return null if the language does not exist
      */
     public SourceLanguage getSourceLanguage(String id) {
-        if(mSourceLanguageMap.containsKey(id)) {
-            return mSourceLanguageMap.get(id);
-        } else {
-            return null;
-        }
+        return mSourceLanguages.get(id);
+//        if(mSourceLanguageMap.containsKey(id)) {
+//            return mSourceLanguageMap.get(id);
+//        } else {
+//            return null;
+//        }
     }
 
     /**
@@ -779,7 +785,24 @@ public class Project implements Model {
      * @return
      */
     public List<SourceLanguage> getSourceLanguages() {
-        return mSourceLanguages;
+        return mSourceLanguages.getAll();
+    }
+
+    /**
+     * Returns the source language drafts for this project
+     * @return
+     */
+    public List<SourceLanguage> getSourceLanguageDrafts() {
+        return mSourceLanguageDrafts.getAll();
+    }
+
+    /**
+     * Returns a source language draft
+     * @param id the id of the source language draft
+     * @return
+     */
+    public SourceLanguage getSourceLanguageDraft(String id) {
+        return mSourceLanguageDrafts.get(id);
     }
 
     /**
@@ -1044,6 +1067,20 @@ public class Project implements Model {
      */
     public int getSourceLanguagesDateModified() {
         return mSourceLanguagesDateModified;
+    }
+
+    /**
+     * Adds a source language draft to the project
+     * @param l
+     */
+    public boolean addSourceLanguageDraft(SourceLanguage l) {
+        if(mSourceLanguageDrafts.get(l.getId()) == null) {
+            l.setProject(this);
+            mSourceLanguageDrafts.add(l.getId(), l);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public interface OnCommitComplete {

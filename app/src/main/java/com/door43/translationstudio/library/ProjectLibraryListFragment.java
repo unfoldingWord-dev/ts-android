@@ -42,8 +42,6 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private LibraryProjectAdapter mAdapter;
     private ProgressDialog mDialog;
     private boolean mActivityPaused = false;
-    private boolean mShowNewProjects = true;
-    private boolean mShowProjectUpdates = false;
 
     /**
      * Called when the task has finished fetching the available projects
@@ -71,10 +69,10 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             handle.post(new Runnable() {
                 @Override
                 public void run() {
-                    if(mShowNewProjects && !mShowProjectUpdates) {
+                    if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
                         // new languages/projects
                         mAdapter.changeDataSet(LibraryTempData.getNewProjects());
-                    } else if(mShowProjectUpdates && !mShowNewProjects) {
+                    } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
                         // updates
                         mAdapter.changeDataSet(LibraryTempData.getUpdatedProjects());
                     } else {
@@ -179,9 +177,11 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // get starting configuration
-        mShowNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false);
-        mShowProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
+        if(getActivity() != null && savedInstanceState == null) {
+            // we only set the display arguments when first loading
+            LibraryTempData.setShowNewProjects(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false));
+            LibraryTempData.setShowProjectUpdates(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false));
+        }
 
         // Restore the previously serialized information
         if (savedInstanceState != null) {
@@ -194,7 +194,20 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
         mActivityPaused = false;
 
-        mAdapter = new LibraryProjectAdapter(AppContext.context(), LibraryTempData.getProjects(), mShowNewProjects);
+        Project[] projects;
+        if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
+            // new languages/projects
+            projects = LibraryTempData.getNewProjects();
+        } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
+            // updates
+            projects = LibraryTempData.getUpdatedProjects();
+        } else {
+            // just show everything
+            projects = LibraryTempData.getProjects();
+        }
+
+        mAdapter = new LibraryProjectAdapter(AppContext.context(), projects, LibraryTempData.getShowNewProjects());
+
         setListAdapter(mAdapter);
 
         preparProjectList();

@@ -17,7 +17,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * This activity is mostly just a 'shell' activity containing nothing
  * more than a {@link ProjectLibraryDetailFragment}.
  */
-public class ProjectLibraryDetailActivity extends TranslatorBaseActivity {
+public class ProjectLibraryDetailActivity extends TranslatorBaseActivity implements TranslationDraftsTabFragment.Callbacks {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +40,9 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
+            if(getIntent().getExtras() != null) {
+                arguments = getIntent().getExtras();
+            }
             arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX,
                     getIntent().getStringExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
             ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
@@ -61,9 +64,19 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity {
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
-            NavUtils.navigateUpTo(this, new Intent(this, ProjectLibraryListActivity.class));
+            Intent intent = new Intent(this, ProjectLibraryListActivity.class);
+            if(getIntent().getExtras() != null) {
+                intent.putExtras(getIntent().getExtras());
+            }
+            NavUtils.navigateUpTo(this, intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onEmptyDraftsList() {
+        ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.project_detail_container);
+        fragment.hideDraftsTab();
     }
 }

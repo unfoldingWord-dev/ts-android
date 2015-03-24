@@ -31,14 +31,9 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
     private LibraryLanguageAdapter mAdapter;
     private Project mProject;
     public static final String DOWNLOAD_LANGUAGE_PREFIX = "download-language-";
-    private boolean mShowNewProjects;
-    private boolean mShowProjectUpdates;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
-
-        mShowNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false);
-        mShowProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
 
         if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)) {
             int index;
@@ -47,16 +42,16 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
             } catch (Exception e) {
                 index = getArguments().getInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX);
             }
-            if(mShowNewProjects && !mShowProjectUpdates) {
+            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
                 mProject = LibraryTempData.getNewProject(index);
-            } else if(mShowProjectUpdates && !mShowNewProjects) {
+            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
                 mProject = LibraryTempData.getUpdatedProject(index);
             } else {
                 mProject = LibraryTempData.getProject(index);
             }
         }
 
-        mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId());
+        mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_LANGUAGE_PREFIX);
 
         ListView list = (ListView)view.findViewById(R.id.listView);
         list.setAdapter(mAdapter);
@@ -104,11 +99,11 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
                 if(mProject != null) {
                     for(SourceLanguage l: mProject.getSourceLanguages()) {
                         if(l.checkingLevel() >= AppContext.context().getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                            if(mShowNewProjects && !mShowProjectUpdates) {
+                            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
                                 if(!AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
                                     languages.add(l);
                                 }
-                            } else if(mShowProjectUpdates && !mShowNewProjects) {
+                            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
                                 if(AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
                                     languages.add(l);
                                 }

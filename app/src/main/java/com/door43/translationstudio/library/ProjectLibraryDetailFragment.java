@@ -48,8 +48,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     private ImageView mIcon;
     private String mImagePath;
     private int mTaskId = -1;
-    private boolean mShowNewProjects;
-    private boolean mShowProjectUpdates;
+    private TabbedViewPagerAdapter mTabbedViewPagerAdapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -62,9 +61,6 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mShowNewProjects = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false);
-        mShowProjectUpdates = getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false);
-
         if (getArguments().containsKey(ARG_ITEM_INDEX)) {
             int index;
             try {
@@ -73,9 +69,9 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
                 index = getArguments().getInt(ARG_ITEM_INDEX);
             }
 
-            if(mShowNewProjects && !mShowProjectUpdates) {
+            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
                 mProject = LibraryTempData.getNewProject(index);
-            } else if(mShowProjectUpdates && !mShowNewProjects) {
+            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
                 mProject = LibraryTempData.getUpdatedProject(index);
             } else {
                 mProject = LibraryTempData.getProject(index);
@@ -90,13 +86,16 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         // Tabs
         mLanguagesTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
         mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.languages), mLanguagesTab));
-        mDraftsTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
-        mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.drafts), mDraftsTab));
+
+        if(AppContext.projectManager().isProjectDownloaded(mProject.getId())) {
+            mDraftsTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
+            mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.drafts), mDraftsTab));
+        }
 
         // view pager
         mViewPager = (ViewPager) rootView.findViewById(R.id.projectBrowserViewPager);
-        TabbedViewPagerAdapter tabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), mTabs);
-        mViewPager.setAdapter(tabbedViewPagerAdapter);
+        mTabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), mTabs);
+        mViewPager.setAdapter(mTabbedViewPagerAdapter);
 
         // sliding tabs layout
         PagerSlidingTabStrip slidingTabLayout = (PagerSlidingTabStrip) rootView.findViewById(R.id.projectBrowserTabs);
@@ -186,5 +185,13 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
                 }
             });
         }
+    }
+
+    /**
+     * Removes the drafts tab
+     */
+    public void hideDraftsTab() {
+        mTabs.remove(1);
+        mTabbedViewPagerAdapter.notifyDataSetChanged();
     }
 }

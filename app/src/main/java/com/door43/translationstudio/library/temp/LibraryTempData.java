@@ -16,6 +16,8 @@ public class LibraryTempData {
     private static List<Project> mProjects = new ArrayList<>();
     private static List<Project> mNewProjects = new ArrayList<>();
     private static List<Project> mUpdatedProjects = new ArrayList<>();
+    private static Boolean mShowNewProjects = false;
+    private static Boolean mShowProjectUpdates = false;
 
     public static void setAvailableProjects(List<Project> projects) {
         mProjects = projects;
@@ -91,5 +93,21 @@ public class LibraryTempData {
      */
     public static Project[] getUpdatedProjects() {
         return mUpdatedProjects.toArray(new Project[mUpdatedProjects.size()]);
+    }
+
+    public static void setShowNewProjects(Boolean showNewProjects) {
+        mShowNewProjects = showNewProjects;
+    }
+
+    public static void setShowProjectUpdates(Boolean showProjectUpdates) {
+        mShowProjectUpdates = showProjectUpdates;
+    }
+
+    public static boolean getShowNewProjects() {
+        return mShowNewProjects;
+    }
+
+    public static boolean getShowProjectUpdates() {
+        return mShowProjectUpdates;
     }
 }
