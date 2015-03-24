@@ -1055,19 +1055,12 @@ public class ProjectManager {
             if(Thread.currentThread().isInterrupted()) break;
             try {
                 JSONObject jsonResource = json.getJSONObject(i);
-                if(jsonResource.has("slug") && jsonResource.has("name") && jsonResource.has("date_modified") && jsonResource.has("status")) {
-                    // verify the checking level
-                    JSONObject jsonStatus = jsonResource.getJSONObject("status");
-                    if(jsonStatus.has("checking_level")) {
-                        if (jsonStatus.getInt("checking_level") >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                            // load resource
-                            Resource r = new Resource(jsonResource.getString("slug"), jsonResource.getString("name"), jsonStatus.getInt("checking_level"), jsonResource.getInt("date_modified"));
-                            l.addResource(r);
-                            importedResources.add(r);
-                        }
-                    }
+                Resource r = Resource.generate(jsonResource);
+                if(r != null) {
+                    l.addResource(r);
+                    importedResources.add(r);
                 } else {
-                    Logger.w(this.getClass().getName(), "missing required parameters in the resoruces catalog for the language " + l.getId());
+                    Logger.w(this.getClass().getName(), "Corrupt resource definition for language " + l.getId());
                 }
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "failed to load the resources catalog", e);
