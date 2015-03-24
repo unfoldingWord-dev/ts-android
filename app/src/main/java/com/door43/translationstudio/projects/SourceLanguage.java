@@ -23,7 +23,7 @@ public class SourceLanguage extends Language {
     private List<Resource> mResources = new ArrayList<Resource>();
     private String mSelectedResourceId = null;
     private Project mProject;
-    private String mResourceCatalogUrl;
+    private Uri mResourceCatalogUri;
     private int mResourcesDateModified = 0;
     private int mCheckingLevel = -1;
 
@@ -205,12 +205,16 @@ public class SourceLanguage extends Language {
      * @param resourceCatalogUrl
      */
     public void setResourceCatalog(String resourceCatalogUrl) {
-        mResourceCatalogUrl = resourceCatalogUrl;
-        // set the resources date modified
-        Uri uri = Uri.parse(resourceCatalogUrl);
-        String dateModified = uri.getQueryParameter("date_modified");
-        if(dateModified != null) {
-            mResourcesDateModified = Integer.parseInt(dateModified);
+        if(resourceCatalogUrl != null) {
+            mResourceCatalogUri = Uri.parse(resourceCatalogUrl);
+
+            // set the resources date modified
+            String dateModified = mResourceCatalogUri.getQueryParameter("date_modified");
+            if(dateModified != null) {
+                mResourcesDateModified = Integer.parseInt(dateModified);
+            }
+        } else {
+            mResourceCatalogUri = null;
         }
     }
 
@@ -220,8 +224,8 @@ public class SourceLanguage extends Language {
      * Returns the url to the resource catalog
      * @return the url string or null
      */
-    public String getResourceCatalog() {
-        return mResourceCatalogUrl;
+    public Uri getResourceCatalog() {
+        return mResourceCatalogUri;
     }
 
     /**

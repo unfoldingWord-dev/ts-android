@@ -1424,7 +1424,7 @@ public class ProjectManager {
      * @param projectId
      */
     public void mergeProject(String projectId) {
-        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.projectCatalogUri())));
+        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(mDataStore.projectCatalogUri()));
         if(catalogFile.exists()) {
             try {
                 String catalog = FileUtils.readFileToString(catalogFile);
@@ -1448,7 +1448,7 @@ public class ProjectManager {
      * @param languageId
      */
     public void mergeSourceLanguage(String projectId, String languageId) {
-        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.sourceLanguageCatalogUri(projectId))));
+        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(mDataStore.sourceLanguageCatalogUri(projectId)));
         if(catalogFile.exists()) {
             try {
                 String catalog = FileUtils.readFileToString(catalogFile);
@@ -1473,7 +1473,7 @@ public class ProjectManager {
      * @param resourceId
      */
     public void mergeResource(String projectId, String languageId, String resourceId) {
-        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.resourceCatalogUri(projectId, languageId))));
+        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(mDataStore.resourceCatalogUri(projectId, languageId)));
         if(catalogFile.exists()) {
             try {
                 String catalog = FileUtils.readFileToString(catalogFile);
@@ -1502,7 +1502,7 @@ public class ProjectManager {
         if(resource.getNotesCatalog() != null) {
             key = mDataStore.getKey(resource.getNotesCatalog());
         } else {
-            key = mDataStore.getKey(Uri.parse(mDataStore.notesUri(projectId, languageId, resource.getId())));
+            key = mDataStore.getKey(mDataStore.notesUri(projectId, languageId, resource.getId()));
         }
         File newNotesFile = mDataStore.getTempAsset(key);
 
@@ -1526,7 +1526,7 @@ public class ProjectManager {
         if(resource.getTermsCatalog() != null) {
             key = mDataStore.getKey(resource.getTermsCatalog());
         } else {
-            key = mDataStore.getKey(Uri.parse(mDataStore.termsUri(projectId, languageId, resource.getId())));
+            key = mDataStore.getKey(mDataStore.termsUri(projectId, languageId, resource.getId()));
         }
         File newTermsFile = mDataStore.getTempAsset(key);
 
@@ -1550,7 +1550,7 @@ public class ProjectManager {
         if(resource.getSourceCatalog() != null) {
             key = mDataStore.getKey(resource.getSourceCatalog());
         } else {
-            key = mDataStore.getKey(Uri.parse(mDataStore.sourceUri(projectId, languageId, resource.getId())));
+            key = mDataStore.getKey(mDataStore.sourceUri(projectId, languageId, resource.getId()));
         }
         File newSourceFile = mDataStore.getTempAsset(key);
 

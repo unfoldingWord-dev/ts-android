@@ -61,7 +61,7 @@ public class Project implements Model {
     private static final String TRANSLATION_READY_TAG = "READY";
     private boolean mHasNotes = false;
     private String mSortKey;
-    private String mLanguageCatalogUrl;
+    private Uri mLanguageCatalogUri;
     private int mSourceLanguagesDateModified = 0;
 
     /**
@@ -1044,12 +1044,17 @@ public class Project implements Model {
      * @param languageCatalogUrl
      */
     public void setSourceLanguageCatalog(String languageCatalogUrl) {
-        this.mLanguageCatalogUrl = languageCatalogUrl;
-        // set the source languges date modified
-        Uri uri = Uri.parse(languageCatalogUrl);
-        String dateModified = uri.getQueryParameter("date_modified");
-        if(dateModified != null) {
-            mSourceLanguagesDateModified = Integer.parseInt(dateModified);
+        if(languageCatalogUrl != null) {
+            mLanguageCatalogUri = Uri.parse(languageCatalogUrl);
+
+            // set the source languges date modified
+            Uri uri = Uri.parse(languageCatalogUrl);
+            String dateModified = uri.getQueryParameter("date_modified");
+            if(dateModified != null) {
+                mSourceLanguagesDateModified = Integer.parseInt(dateModified);
+            }
+        } else {
+            mLanguageCatalogUri = null;
         }
     }
 
@@ -1057,8 +1062,8 @@ public class Project implements Model {
      * Returns the url to the language catalog
      * @return the url string or null
      */
-    public String getLanguageCatalog() {
-        return mLanguageCatalogUrl;
+    public Uri getLanguageCatalog() {
+        return mLanguageCatalogUri;
     }
 
     /**

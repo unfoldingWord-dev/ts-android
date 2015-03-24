@@ -618,7 +618,7 @@ public class Sharing {
             }
         }
 
-        String projKey = ds.getKey(Uri.parse(ds.projectCatalogUri()));
+        String projKey = ds.getKey(ds.projectCatalogUri());
         FileUtils.writeStringToFile(new File(dataDir, projKey), projectsCatalogJson.toString());
         FileUtils.writeStringToFile(new File(sourceDir, "projects_catalog.link"), projKey);
 
@@ -691,7 +691,7 @@ public class Sharing {
                     File languageSourceDir = new File(projectSourceDir, l.getId());
                     languageSourceDir.mkdirs();
                     String resources = ds.pullResourceCatalog(p.getId(), l.getId(), false, false);
-                    String resKey = ds.getKey(Uri.parse(ds.resourceCatalogUri(p.getId(), l.getId())));
+                    String resKey = ds.getKey(ds.resourceCatalogUri(p.getId(), l.getId()));
                     FileUtils.writeStringToFile(new File(dataDir, resKey), resources);
                     FileUtils.writeStringToFile(new File(languageSourceDir, "resources_catalog.link"), resKey);
 
@@ -701,19 +701,19 @@ public class Sharing {
 
                         // terms
                         String terms = ds.pullTerms(p.getId(), l.getId(), r.getId(), false, false);
-                        String termKey = ds.getKey(Uri.parse(ds.termsUri(p.getId(), l.getId(), r.getId())));
+                        String termKey = ds.getKey(ds.termsUri(p.getId(), l.getId(), r.getId()));
                         FileUtils.writeStringToFile(new File(dataDir, termKey), terms);
                         FileUtils.writeStringToFile(new File(resourceDir, "terms.link"), termKey);
 
                         // source
                         String source = ds.pullSource(p.getId(), l.getId(), r.getId(), false, false);
-                        String srcKey = ds.getKey(Uri.parse(ds.sourceUri(p.getId(), l.getId(), r.getId())));
+                        String srcKey = ds.getKey(ds.sourceUri(p.getId(), l.getId(), r.getId()));
                         FileUtils.writeStringToFile(new File(dataDir, srcKey), source);
                         FileUtils.writeStringToFile(new File(resourceDir, "source.link"), srcKey);
 
                         // notes
                         String notes = ds.pullNotes(p.getId(), l.getId(), r.getId(), false, false);
-                        String notesKey = ds.getKey(Uri.parse(ds.notesUri(p.getId(), l.getId(), r.getId())));
+                        String notesKey = ds.getKey(ds.notesUri(p.getId(), l.getId(), r.getId()));
                         FileUtils.writeStringToFile(new File(dataDir, notesKey), notes);
                         FileUtils.writeStringToFile(new File(resourceDir, "notes.link"), notesKey);
 
@@ -722,7 +722,7 @@ public class Sharing {
                     }
                 }
                 // write languages catalog
-                String langKey = ds.getKey(Uri.parse(ds.sourceLanguageCatalogUri(p.getId())));
+                String langKey = ds.getKey(ds.sourceLanguageCatalogUri(p.getId()));
                 FileUtils.writeStringToFile(new File(dataDir, langKey), srcLangCatJson.toString());
                 FileUtils.writeStringToFile(new File(projectSourceDir, "languages_catalog.link"), langKey);
             } catch (JSONException e) {
