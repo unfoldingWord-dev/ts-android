@@ -31,12 +31,14 @@ public class LibraryLanguageAdapter extends BaseAdapter {
     private final Context mContext;
     private final String mProjectId;
     private final String mTaskIdPrefix;
+    private final boolean mIsDrafts;
     private List<SourceLanguage> mLanguages = new ArrayList<>();
 
-    public LibraryLanguageAdapter(Context context, String projectId, String taskIdPrefix) {
+    public LibraryLanguageAdapter(Context context, String projectId, String taskIdPrefix, boolean isDrafts) {
         mProjectId = projectId;
         mContext = context;
         mTaskIdPrefix = taskIdPrefix;
+        mIsDrafts = isDrafts;
     }
 
     @Override
@@ -132,10 +134,20 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                 }
             });
         } else {
-            // check if this language has been downloaded
-            if(AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId())) {
-                // check if an update for this language exists
-                if(AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i))) {
+            boolean isDownloaded;
+            if(mIsDrafts) {
+                isDownloaded = AppContext.projectManager().isSourceLanguageDraftDownloaded(mProjectId, getItem(i).getId());
+            } else {
+                isDownloaded = AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId());
+            }
+            if(isDownloaded) {
+                boolean hasUpdate;
+                if(mIsDrafts) {
+                    hasUpdate = AppContext.projectManager().isSourceLanguageDraftUpdateAvailable(mProjectId, getItem(i));
+                } else {
+                    hasUpdate = AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i));
+                }
+                if(hasUpdate) {
                     staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
                 } else {
                     staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));

@@ -101,7 +101,6 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                 mBrowseDialog = new AlertDialog.Builder(GetMoreProjectsActivity.this)
                         .setTitle(R.string.browse_projects)
                         .setMessage(R.string.use_internet_confirmation)
-                        .setCancelable(false)
                         .setIcon(R.drawable.ic_download_small)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
@@ -121,7 +120,6 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                 mBrowseDialog = new AlertDialog.Builder(GetMoreProjectsActivity.this)
                         .setTitle(R.string.update_projects)
                         .setMessage(R.string.use_internet_confirmation)
-                        .setCancelable(false)
                         .setIcon(R.drawable.ic_update_small)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override

@@ -51,7 +51,7 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
             }
         }
 
-        mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_LANGUAGE_PREFIX);
+        mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_LANGUAGE_PREFIX, false);
 
         ListView list = (ListView)view.findViewById(R.id.listView);
         list.setAdapter(mAdapter);

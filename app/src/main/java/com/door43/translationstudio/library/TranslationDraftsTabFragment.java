@@ -51,7 +51,7 @@ public class TranslationDraftsTabFragment extends TranslatorBaseFragment impleme
             }
         }
 
-        mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_DRAFT_PREFIX);
+        mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_DRAFT_PREFIX, true);
 
         ListView list = (ListView)view.findViewById(R.id.listView);
         list.setAdapter(mAdapter);

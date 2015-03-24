@@ -846,7 +846,7 @@ public class ProjectManager {
      * @param ignoreCache
      */
     public void downloadTerms(Project p, SourceLanguage l, Resource r, boolean ignoreCache) {
-        if(r.getNotesCatalog() != null) {
+        if(r.getTermsCatalog() != null) {
             mDataStore.fetchTempAsset(r.getTermsCatalog(), ignoreCache);
         } else {
             mDataStore.fetchTempAsset(mDataStore.termsUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
@@ -862,7 +862,7 @@ public class ProjectManager {
      * @param ignoreCache
      */
     public void downloadSource(Project p, SourceLanguage l, Resource r, boolean ignoreCache) {
-        if(r.getNotesCatalog() != null) {
+        if(r.getSourceCatalog() != null) {
             mDataStore.fetchTempAsset(r.getSourceCatalog(), ignoreCache);
         } else {
             mDataStore.fetchTempAsset(mDataStore.sourceUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
@@ -1490,17 +1490,22 @@ public class ProjectManager {
      * Merges notes from the temp assets into the assets
      * @param projectId
      * @param languageId
-     * @param resourceId
+     * @param resource
      */
-    public void mergeNotes(String projectId, String languageId, String resourceId) {
-        String key = mDataStore.getKey(Uri.parse(mDataStore.notesUrl(projectId, languageId, resourceId)));
+    public void mergeNotes(String projectId, String languageId, Resource resource) {
+        String key;
+        if(resource.getNotesCatalog() != null) {
+            key = mDataStore.getKey(Uri.parse(resource.getNotesCatalog()));
+        } else {
+            key = mDataStore.getKey(Uri.parse(mDataStore.notesUrl(projectId, languageId, resource.getId())));
+        }
         File newNotesFile = mDataStore.getTempAsset(key);
 
         if(newNotesFile.exists()) {
             try {
-                mDataStore.importNotes(projectId, languageId, resourceId, FileUtils.readFileToString(newNotesFile));
+                mDataStore.importNotes(projectId, languageId, resource.getId(), FileUtils.readFileToString(newNotesFile));
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to merge the notes "+resourceId, e);
+                Logger.e(this.getClass().getName(), "Failed to merge the notes "+resource, e);
             }
         }
     }
@@ -1509,17 +1514,22 @@ public class ProjectManager {
      * Merges important terms from the temp assets into the assets
      * @param projectId
      * @param languageId
-     * @param resourceId
+     * @param resource
      */
-    public void mergeTerms(String projectId, String languageId, String resourceId) {
-        String key = mDataStore.getKey(Uri.parse(mDataStore.termsUrl(projectId, languageId, resourceId)));
+    public void mergeTerms(String projectId, String languageId, Resource resource) {
+        String key;
+        if(resource.getTermsCatalog() != null) {
+            key = mDataStore.getKey(Uri.parse(resource.getTermsCatalog()));
+        } else {
+            key = mDataStore.getKey(Uri.parse(mDataStore.termsUrl(projectId, languageId, resource.getId())));
+        }
         File newTermsFile = mDataStore.getTempAsset(key);
 
         if(newTermsFile.exists()) {
             try {
-                mDataStore.importTerms(projectId, languageId, resourceId, FileUtils.readFileToString(newTermsFile));
+                mDataStore.importTerms(projectId, languageId, resource.getId(), FileUtils.readFileToString(newTermsFile));
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to merge the terms "+resourceId, e);
+                Logger.e(this.getClass().getName(), "Failed to merge the terms "+resource, e);
             }
         }
     }
@@ -1528,17 +1538,22 @@ public class ProjectManager {
      * Merges source from the temp assets into the assets
      * @param projectId
      * @param languageId
-     * @param resourceId
+     * @param resource
      */
-    public void mergeSource(String projectId, String languageId, String resourceId) {
-        String key = mDataStore.getKey(Uri.parse(mDataStore.sourceUrl(projectId, languageId, resourceId)));
+    public void mergeSource(String projectId, String languageId, Resource resource) {
+        String key;
+        if(resource.getSourceCatalog() != null) {
+            key = mDataStore.getKey(Uri.parse(resource.getSourceCatalog()));
+        } else {
+            key = mDataStore.getKey(Uri.parse(mDataStore.sourceUrl(projectId, languageId, resource.getId())));
+        }
         File newSourceFile = mDataStore.getTempAsset(key);
 
         if(newSourceFile.exists()) {
             try {
-                mDataStore.importSource(projectId, languageId, resourceId, FileUtils.readFileToString(newSourceFile));
+                mDataStore.importSource(projectId, languageId, resource.getId(), FileUtils.readFileToString(newSourceFile));
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to merge the source "+resourceId, e);
+                Logger.e(this.getClass().getName(), "Failed to merge the source "+resource, e);
             }
         }
     }
