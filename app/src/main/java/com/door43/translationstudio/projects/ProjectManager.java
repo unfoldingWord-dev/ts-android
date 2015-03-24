@@ -704,7 +704,7 @@ public class ProjectManager {
         if(p.getLanguageCatalog() != null) {
             catalog = mDataStore.fetchTempAsset(p.getLanguageCatalog(), ignoreCache);
         } else {
-            catalog = mDataStore.fetchTempAsset(mDataStore.sourceLanguageCatalogUrl(p.getId()), ignoreCache);
+            catalog = mDataStore.fetchTempAsset(mDataStore.sourceLanguageCatalogUri(p.getId()), ignoreCache);
         }
 
         // parse source languages
@@ -791,7 +791,7 @@ public class ProjectManager {
         if(p.getLanguageCatalog() != null) {
             catalog = mDataStore.fetchTempAsset(p.getSourceLanguage(l.getId()).getResourceCatalog(), ignoreCache);
         } else {
-            catalog = mDataStore.fetchTempAsset(mDataStore.resourceCatalogUrl(p.getId(), l.getId()), ignoreCache);
+            catalog = mDataStore.fetchTempAsset(mDataStore.resourceCatalogUri(p.getId(), l.getId()), ignoreCache);
         }
 
         // parse resources
@@ -833,7 +833,7 @@ public class ProjectManager {
         if(r.getNotesCatalog() != null) {
             mDataStore.fetchTempAsset(r.getNotesCatalog(), ignoreCache);
         } else {
-            mDataStore.fetchTempAsset(mDataStore.notesUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
+            mDataStore.fetchTempAsset(mDataStore.notesUri(p.getId(), l.getId(), r.getId()), ignoreCache);
         }
     }
 
@@ -849,7 +849,7 @@ public class ProjectManager {
         if(r.getTermsCatalog() != null) {
             mDataStore.fetchTempAsset(r.getTermsCatalog(), ignoreCache);
         } else {
-            mDataStore.fetchTempAsset(mDataStore.termsUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
+            mDataStore.fetchTempAsset(mDataStore.termsUri(p.getId(), l.getId(), r.getId()), ignoreCache);
         }
     }
 
@@ -865,7 +865,7 @@ public class ProjectManager {
         if(r.getSourceCatalog() != null) {
             mDataStore.fetchTempAsset(r.getSourceCatalog(), ignoreCache);
         } else {
-            mDataStore.fetchTempAsset(mDataStore.sourceUrl(p.getId(), l.getId(), r.getId()), ignoreCache);
+            mDataStore.fetchTempAsset(mDataStore.sourceUri(p.getId(), l.getId(), r.getId()), ignoreCache);
         }
     }
 
@@ -1346,30 +1346,35 @@ public class ProjectManager {
                                                             for(int k = 0; k < resCatJson.length(); k ++) {
                                                                 try {
                                                                     JSONObject resJson = resCatJson.getJSONObject(k);
-                                                                    String resSlug = resJson.getString("slug");
-                                                                    int resDateModified = resJson.getInt("date_modified");
-                                                                    Resource existingResource = null;
-                                                                    if(existingLanguage != null) {
-                                                                        existingResource = existingLanguage.getResource(resSlug);
-                                                                    }
-                                                                    if(existingResource == null || existingResource.getDateModified() < resDateModified) {
-                                                                        // import/replace the resource catalog
-                                                                        mDataStore.importResource(projSlug, langSlug, resJson.toString());
-                                                                        // load the individual resource files
-                                                                        File resDir = new File(langDir, resSlug);
-                                                                        if(resDir.exists()) {
-                                                                            File notesFile = new File(resDir, "notes.json");
-                                                                            File sourceFile = new File(resDir, "source.json");
-                                                                            File termsFile = new File(resDir, "terms.json");
-
-                                                                            String notes = FileUtils.readFileToString(notesFile);
-                                                                            String source = FileUtils.readFileToString(sourceFile);
-                                                                            String terms = FileUtils.readFileToString(termsFile);
-
-                                                                            mDataStore.importNotes(projSlug, langSlug, resSlug, notes);
-                                                                            mDataStore.importSource(projSlug, langSlug, resSlug, source);
-                                                                            mDataStore.importTerms(projSlug, langSlug, resSlug, terms);
+                                                                    Resource r = Resource.generate(resJson);
+                                                                    if(r != null) {
+                                                                        Resource existingResource = null;
+                                                                        if (existingLanguage != null) {
+                                                                            existingResource = existingLanguage.getResource(r.getId());
                                                                         }
+                                                                        if (existingResource == null || existingResource.getDateModified() < r.getDateModified()) {
+                                                                            // import/replace the resource catalog
+                                                                            mDataStore.importResource(projSlug, langSlug, resJson.toString());
+
+
+                                                                            // load the individual resource files
+                                                                            File resDir = new File(langDir, r.getId());
+                                                                            if (resDir.exists()) {
+                                                                                File notesFile = new File(resDir, "notes.json");
+                                                                                File sourceFile = new File(resDir, "source.json");
+                                                                                File termsFile = new File(resDir, "terms.json");
+
+                                                                                String notes = FileUtils.readFileToString(notesFile);
+                                                                                String source = FileUtils.readFileToString(sourceFile);
+                                                                                String terms = FileUtils.readFileToString(termsFile);
+
+                                                                                mDataStore.importNotes(projSlug, langSlug, r.getId(), r.getNotesCatalog(), notes);
+                                                                                mDataStore.importSource(projSlug, langSlug, r.getId(), r.getSourceCatalog(), source);
+                                                                                mDataStore.importTerms(projSlug, langSlug, r.getId(), r.getTermsCatalog(), terms);
+                                                                            }
+                                                                        }
+                                                                    } else {
+                                                                        Logger.w(this.getClass().getName(), "invalid resource definition found while importing");
                                                                     }
                                                                 } catch (Exception e) {
                                                                     Logger.e(this.getClass().getName(), "failed to import the resource", e);
@@ -1419,7 +1424,7 @@ public class ProjectManager {
      * @param projectId
      */
     public void mergeProject(String projectId) {
-        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.projectCatalogUrl())));
+        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.projectCatalogUri())));
         if(catalogFile.exists()) {
             try {
                 String catalog = FileUtils.readFileToString(catalogFile);
@@ -1443,7 +1448,7 @@ public class ProjectManager {
      * @param languageId
      */
     public void mergeSourceLanguage(String projectId, String languageId) {
-        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.sourceLanguageCatalogUrl(projectId))));
+        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.sourceLanguageCatalogUri(projectId))));
         if(catalogFile.exists()) {
             try {
                 String catalog = FileUtils.readFileToString(catalogFile);
@@ -1468,7 +1473,7 @@ public class ProjectManager {
      * @param resourceId
      */
     public void mergeResource(String projectId, String languageId, String resourceId) {
-        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.resourceCatalogUrl(projectId, languageId))));
+        File catalogFile = mDataStore.getTempAsset(mDataStore.getKey(Uri.parse(mDataStore.resourceCatalogUri(projectId, languageId))));
         if(catalogFile.exists()) {
             try {
                 String catalog = FileUtils.readFileToString(catalogFile);
@@ -1495,15 +1500,15 @@ public class ProjectManager {
     public void mergeNotes(String projectId, String languageId, Resource resource) {
         String key;
         if(resource.getNotesCatalog() != null) {
-            key = mDataStore.getKey(Uri.parse(resource.getNotesCatalog()));
+            key = mDataStore.getKey(resource.getNotesCatalog());
         } else {
-            key = mDataStore.getKey(Uri.parse(mDataStore.notesUrl(projectId, languageId, resource.getId())));
+            key = mDataStore.getKey(Uri.parse(mDataStore.notesUri(projectId, languageId, resource.getId())));
         }
         File newNotesFile = mDataStore.getTempAsset(key);
 
         if(newNotesFile.exists()) {
             try {
-                mDataStore.importNotes(projectId, languageId, resource.getId(), FileUtils.readFileToString(newNotesFile));
+                mDataStore.importNotes(projectId, languageId, resource.getId(), resource.getNotesCatalog(), FileUtils.readFileToString(newNotesFile));
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to merge the notes "+resource, e);
             }
@@ -1519,15 +1524,15 @@ public class ProjectManager {
     public void mergeTerms(String projectId, String languageId, Resource resource) {
         String key;
         if(resource.getTermsCatalog() != null) {
-            key = mDataStore.getKey(Uri.parse(resource.getTermsCatalog()));
+            key = mDataStore.getKey(resource.getTermsCatalog());
         } else {
-            key = mDataStore.getKey(Uri.parse(mDataStore.termsUrl(projectId, languageId, resource.getId())));
+            key = mDataStore.getKey(Uri.parse(mDataStore.termsUri(projectId, languageId, resource.getId())));
         }
         File newTermsFile = mDataStore.getTempAsset(key);
 
         if(newTermsFile.exists()) {
             try {
-                mDataStore.importTerms(projectId, languageId, resource.getId(), FileUtils.readFileToString(newTermsFile));
+                mDataStore.importTerms(projectId, languageId, resource.getId(), resource.getTermsCatalog(), FileUtils.readFileToString(newTermsFile));
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to merge the terms "+resource, e);
             }
@@ -1543,15 +1548,15 @@ public class ProjectManager {
     public void mergeSource(String projectId, String languageId, Resource resource) {
         String key;
         if(resource.getSourceCatalog() != null) {
-            key = mDataStore.getKey(Uri.parse(resource.getSourceCatalog()));
+            key = mDataStore.getKey(resource.getSourceCatalog());
         } else {
-            key = mDataStore.getKey(Uri.parse(mDataStore.sourceUrl(projectId, languageId, resource.getId())));
+            key = mDataStore.getKey(Uri.parse(mDataStore.sourceUri(projectId, languageId, resource.getId())));
         }
         File newSourceFile = mDataStore.getTempAsset(key);
 
         if(newSourceFile.exists()) {
             try {
-                mDataStore.importSource(projectId, languageId, resource.getId(), FileUtils.readFileToString(newSourceFile));
+                mDataStore.importSource(projectId, languageId, resource.getId(), resource.getSourceCatalog(), FileUtils.readFileToString(newSourceFile));
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to merge the source "+resource, e);
             }

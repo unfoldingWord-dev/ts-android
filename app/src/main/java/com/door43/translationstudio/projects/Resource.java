@@ -1,5 +1,7 @@
 package com.door43.translationstudio.projects;
 
+import android.net.Uri;
+
 import org.json.JSONObject;
 
 /**
@@ -11,14 +13,14 @@ public class Resource {
     private final String mName;
     private final int mCheckingLevel;
     private int mDateModified;
-    private String mNotesUrl;
-    private String mSourceUrl;
-    private String mTermsUrl;
+    private Uri mNotesUri = null;
+    private Uri mSourceUri = null;
+    private Uri mTermsUri = null;
 
     // resources may have custom urls from which source, terms, and notes are retrieved
-//    private String mSourceUrl;
-//    private String mTermsUrl;
-//    private String mNotesUrl;
+//    private String mSourceUri;
+//    private String mTermsUri;
+//    private String mNotesUri;
 
     public Resource(String slug, String name, int checkingLevel, int dateModified) {
         mSlug = slug;
@@ -58,42 +60,6 @@ public class Resource {
     public int getDateModified() {
         return mDateModified;
     }
-
-    /**
-     * Returns the url to the source or null
-     * @return
-     */
-//    public String getSourceUrl() {
-//        if(mSourceUrl != null && !mSourceUrl.isEmpty()) {
-//            return mSourceUrl;
-//        } else {
-//            return null;
-//        }
-//    }
-
-    /**
-     * Returns the url to the terms or null
-     * @return
-     */
-//    public String getTermsUrl() {
-//        if(mTermsUrl != null && !mTermsUrl.isEmpty()) {
-//            return mTermsUrl;
-//        } else {
-//            return null;
-//        }
-//    }
-
-    /**
-     * Returns the url to the terms or null
-     * @return
-     */
-//    public String getNotesUrl() {
-//        if(mNotesUrl != null && !mNotesUrl.isEmpty()) {
-//            return mNotesUrl;
-//        } else {
-//            return null;
-//        }
-//    }
 
     @Override
     public String toString() {
@@ -138,7 +104,11 @@ public class Resource {
      * @param termsUrl
      */
     private void setTermsCatalog(String termsUrl) {
-        mTermsUrl = termsUrl;
+        if(termsUrl != null) {
+            mTermsUri = Uri.parse(termsUrl);
+        } else {
+            mTermsUri = null;
+        }
     }
 
     /**
@@ -146,7 +116,11 @@ public class Resource {
      * @param notesUrl
      */
     private void setNotesCatalog(String notesUrl) {
-        mNotesUrl = notesUrl;
+        if(notesUrl != null) {
+            mNotesUri = Uri.parse(notesUrl);
+        } else {
+            mNotesUri = null;
+        }
     }
 
     /**
@@ -154,30 +128,34 @@ public class Resource {
      * @param sourceUrl
      */
     public void setSourceCatalog(String sourceUrl) {
-        mSourceUrl = sourceUrl;
+        if(sourceUrl != null) {
+            mSourceUri = Uri.parse(sourceUrl);
+        } else {
+            mSourceUri = null;
+        }
     }
 
     /**
      * Returns the url to the terms catalog.
      * @return
      */
-    public String getTermsCatalog() {
-        return mTermsUrl;
+    public Uri getTermsCatalog() {
+        return mTermsUri;
     }
 
     /**
      * Returns the url to the notes catalog
      * @return
      */
-    public String getNotesCatalog() {
-        return mNotesUrl;
+    public Uri getNotesCatalog() {
+        return mNotesUri;
     }
 
     /**
      * Returns the url to the source catalog
      * @return
      */
-    public String getSourceCatalog() {
-        return mSourceUrl;
+    public Uri getSourceCatalog() {
+        return mSourceUri;
     }
 }

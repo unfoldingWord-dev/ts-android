@@ -48,7 +48,7 @@ public class DataStore {
      */
     public void importProject(String newProjectString) {
         String path = projectCatalogPath();
-        String key = getKey(Uri.parse(projectCatalogUrl()));
+        String key = getKey(projectCatalogUri());
         File file = getAsset(key);
 
         String catalog = pullProjectCatalog(false, false);
@@ -87,7 +87,7 @@ public class DataStore {
      */
     public void importSourceLanguage(String projectId, String newLanguageString) {
         String path = sourceLanguageCatalogPath(projectId);
-        String key = getKey(Uri.parse(sourceLanguageCatalogUrl(projectId)));
+        String key = getKey(sourceLanguageCatalogUri(projectId));
         File file = getAsset(key);
         String catalog = pullSourceLanguageCatalog(projectId, false, false);
         try {
@@ -126,7 +126,7 @@ public class DataStore {
      */
     public void importResource(String projectId, String languageId, String newResString) {
         String path = resourceCatalogPath(projectId, languageId);
-        String key = getKey(Uri.parse(resourceCatalogUrl(projectId, languageId)));
+        String key = getKey(resourceCatalogUri(projectId, languageId));
         File file = getAsset(key);
         String catalog = pullResourceCatalog(projectId, languageId, false, false);
         try {
@@ -159,14 +159,22 @@ public class DataStore {
 
     /**
      * Adds notes to the resources
+     * Notes may be located at an arbitrary location. If the uri is not null this custom location will
+     * be used when generating the key
      * @param projectId
      * @param languageId
      * @param resourceId
+     * @param notesUri The uri from which the notes originated
      * @param data
      */
-    public void importNotes(String projectId, String languageId, String resourceId, String data) {
+    public void importNotes(String projectId, String languageId, String resourceId, Uri notesUri, String data) {
         String path = notesPath(projectId, languageId, resourceId);
-        String key = getKey(Uri.parse(notesUrl(projectId, languageId, resourceId)));
+        String key;
+        if(notesUri != null) {
+            key = getKey(notesUri);
+        } else {
+            key = getKey(notesUri(projectId, languageId, resourceId));
+        }
         File file = getAsset(key);
         try {
             FileUtils.writeStringToFile(file, data);
@@ -178,14 +186,22 @@ public class DataStore {
 
     /**
      * Adds source to the resources
+     * Source may be located at an arbitrary location. If the uri is not null this custom location will
+     * be used when generating the key
      * @param projectId
      * @param languageId
      * @param resourceId
+     * @param sourceUri The uri from which the source originated
      * @param data
      */
-    public void importSource(String projectId, String languageId, String resourceId, String data) {
+    public void importSource(String projectId, String languageId, String resourceId, Uri sourceUri, String data) {
         String path = sourcePath(projectId, languageId, resourceId);
-        String key = getKey(Uri.parse(sourceUrl(projectId, languageId, resourceId)));
+        String key;
+        if(sourceUri != null) {
+            key = getKey(sourceUri);
+        } else {
+            key = getKey(sourceUri(projectId, languageId, resourceId));
+        }
         File file = getAsset(key);
         try {
             FileUtils.writeStringToFile(file, data);
@@ -197,14 +213,22 @@ public class DataStore {
 
     /**
      * Adds terms to the resources
+     * Terms may be located at an arbitrary location. If the uri is not null this custom location will
+     * be used when generating the key
      * @param projectId
      * @param languageId
      * @param resourceId
+     * @param termsUri The uri from which the terms originated
      * @param data
      */
-    public void importTerms(String projectId, String languageId, String resourceId, String data) {
+    public void importTerms(String projectId, String languageId, String resourceId, Uri termsUri, String data) {
         String path = termsPath(projectId, languageId, resourceId);
-        String key = getKey(Uri.parse(termsUrl(projectId, languageId, resourceId)));
+        String key;
+        if(termsUri != null) {
+            key = getKey(termsUri);
+        } else {
+            key = getKey(termsUri(projectId, languageId, resourceId));
+        }
         File file = getAsset(key);
         try {
             FileUtils.writeStringToFile(file, data);
@@ -410,34 +434,33 @@ public class DataStore {
 
     /**
      * Downloads an asset to the device
-     * @param urlString the url from which the file will be downloaded
+     * @param uri the uri from which the file will be downloaded
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
-    private String downloadAsset(String urlString, boolean ignoreCache) {
-        return downloadFile(urlString, assetsDir(), "", ignoreCache);
+    private String downloadAsset(Uri uri, boolean ignoreCache) {
+        return downloadFile(uri, assetsDir(), "", ignoreCache);
     }
 
     /**
      * Downloads a temp asset to the device
-     * @param urlString the url from which the file will be downloaded
+     * @param uri the uri from which the file will be downloaded
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
-    private String downloadTempAsset(String urlString, boolean ignoreCache) {
-        return downloadFile(urlString, tempAssetsDir(), TEMP_ASSET_PREFIX, ignoreCache);
+    private String downloadTempAsset(Uri uri, boolean ignoreCache) {
+        return downloadFile(uri, tempAssetsDir(), TEMP_ASSET_PREFIX, ignoreCache);
     }
 
     /**
      * Downloads an asset to the device
-     * @param urlString the url from which the file will be downloaded
+     * @param uri the uri from which the file will be downloaded
      * @param prefix the asset prefix. This allows you to download and track separate groups of assets
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
-    private String downloadFile(String urlString, File directory, String prefix, boolean ignoreCache) {
+    private String downloadFile(Uri uri, File directory, String prefix, boolean ignoreCache) {
         SharedPreferences.Editor editor = mSettings.edit();
-        Uri uri = Uri.parse(urlString);
         String key = getKey(uri);
         File file = new File(directory, prefix + "data/" + key);
         String dateModifiedRaw = uri.getQueryParameter("date_modified");
@@ -458,7 +481,7 @@ public class DataStore {
 
         // perform download
         try {
-            URL url = new URL(urlString);
+            URL url = new URL(uri.toString());
             ServerUtilities.downloadFile(url, file);
             // record date modified if provided
             if(dateModifiedRaw != null) {
@@ -472,9 +495,9 @@ public class DataStore {
             }
             editor.apply();
             if(fileExists) {
-                Logger.i(this.getClass().getName(), "downloaded updated asset from " + urlString);
+                Logger.i(this.getClass().getName(), "downloaded updated asset from " + uri);
             } else {
-                Logger.i(this.getClass().getName(), "downloaded new asset from " + urlString);
+                Logger.i(this.getClass().getName(), "downloaded new asset from " + uri);
             }
             return key;
         } catch (MalformedURLException e) {
@@ -495,7 +518,7 @@ public class DataStore {
         String path = projectCatalogPath();
 
         if(checkServer) {
-            String key = downloadAsset(projectCatalogUrl(), ignoreCache);
+            String key = downloadAsset(projectCatalogUri(), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -507,7 +530,7 @@ public class DataStore {
      * @return
      */
     public String fetchProjectCatalog(boolean ignoreCache) {
-        String key = downloadTempAsset(projectCatalogUrl(), ignoreCache);
+        String key = downloadTempAsset(projectCatalogUri(), ignoreCache);
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
@@ -525,11 +548,11 @@ public class DataStore {
     }
 
     /**
-     * Returns the project catalog url
+     * Returns the project catalog uri
      * @return
      */
-    public static String projectCatalogUrl() {
-        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json";
+    public static Uri projectCatalogUri() {
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json");
     }
 
     /**
@@ -545,7 +568,7 @@ public class DataStore {
         String path = sourceLanguageCatalogPath(projectId);
 
         if(checkServer) {
-            String key = downloadAsset(sourceLanguageCatalogUrl(projectId), ignoreCache);
+            String key = downloadAsset(sourceLanguageCatalogUri(projectId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -553,12 +576,12 @@ public class DataStore {
 
     /**
      * Downloads the source language catalog from the server and stores it in the temp cache
-     * @deprecated we can get this functionality by using fetchTempAsset and sourceLanguageCatalogUrl
+     * @deprecated we can get this functionality by using fetchTempAsset and sourceLanguageCatalogUri
      * @param ignoreCache
      * @return
      */
     public String fetchSourceLanguageCatalog(String projectId, boolean ignoreCache) {
-        String key = downloadTempAsset(sourceLanguageCatalogUrl(projectId), ignoreCache);
+        String key = downloadTempAsset(sourceLanguageCatalogUri(projectId), ignoreCache);
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
@@ -569,16 +592,16 @@ public class DataStore {
 
     /**
      * Downloads a temporary asset and returns it's contents
-     * @param url
+     * @param uri
      * @param ignoreCache If set to true the asset will be downloaded every time
      * @return
      */
-    public String fetchTempAsset(String url, boolean ignoreCache) {
-        String key = downloadTempAsset(url, ignoreCache);
+    public String fetchTempAsset(Uri uri, boolean ignoreCache) {
+        String key = downloadTempAsset(uri, ignoreCache);
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
-            Logger.w(this.getClass().getName(), "Failed to read the downloaded the temp asset from " + url, e);
+            Logger.w(this.getClass().getName(), "Failed to read the downloaded the temp asset from " + uri.toString(), e);
             return "";
         }
     }
@@ -593,12 +616,12 @@ public class DataStore {
     }
 
     /**
-     * generates the source language catalog url
+     * generates the source language catalog uri
      * @param projectId
      * @return
      */
-    public String sourceLanguageCatalogUrl(String projectId) {
-        return "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/languages.json";
+    public Uri sourceLanguageCatalogUri(String projectId) {
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/languages.json");
     }
 
     /**
@@ -615,7 +638,7 @@ public class DataStore {
         String path = resourceCatalogPath(projectId, languageId);
 
         if(checkServer) {
-            String key = downloadAsset(resourceCatalogUrl(projectId, languageId), ignoreCache);
+            String key = downloadAsset(resourceCatalogUri(projectId, languageId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -627,13 +650,13 @@ public class DataStore {
      * If downloaded this will replace the current resources catalog
      * @param projectId the id of the project that contains the language
      * @param languageId the id of the language for which resources will be returned
-     * @param urlString the url from which to download the resources
+     * @param uri the uri from which to download the resources
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullResourceCatalog(String projectId, String languageId, String urlString, boolean ignoreCache) {
+    public String pullResourceCatalog(String projectId, String languageId, Uri uri, boolean ignoreCache) {
         String path = resourceCatalogPath(projectId, languageId);
-        String key = downloadAsset(urlString, ignoreCache);
+        String key = downloadAsset(uri, ignoreCache);
         linkAsset(key, path);
 
         return loadJSONAsset(path);
@@ -650,13 +673,13 @@ public class DataStore {
     }
 
     /**
-     * generates the resource catalog url
+     * generates the resource catalog uri
      * @param projectId
      * @param languageId
      * @return
      */
-    public String resourceCatalogUrl(String projectId, String languageId) {
-        return "https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/resources.json";
+    public Uri resourceCatalogUri(String projectId, String languageId) {
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/resources.json");
     }
 
     /**
@@ -683,7 +706,7 @@ public class DataStore {
         String path = termsPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset(termsUrl(projectId, languageId, resourceId), ignoreCache);
+            String key = downloadAsset(termsUri(projectId, languageId, resourceId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -691,20 +714,20 @@ public class DataStore {
 
     /**
      * Downloads and returns the key terms.
-     * Rather than using the standard download url this method allows you to specify from which url
+     * Rather than using the standard download uri this method allows you to specify from which uri
      * to download the terms. This is especially helpful when cross referencing api's.
      * If downloaded this will replace the current terms
      * @param projectId
      * @param languageId
      * @param resourceId
-     * @param urlString the url from which the terms will be downloaded
+     * @param uri the uri from which the terms will be downloaded
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullTerms(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
+    public String pullTerms(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
         String path = termsPath(projectId, languageId, resourceId);
 
-        String key = downloadAsset(urlString, ignoreCache);
+        String key = downloadAsset(uri, ignoreCache);
         linkAsset(key, path);
 
         return loadJSONAsset(path);
@@ -722,14 +745,14 @@ public class DataStore {
     }
 
     /**
-     * Returns the terms url
+     * Returns the terms uri
      * @param projectId
      * @param languageId
      * @param resourceId
      * @return
      */
-    public static String termsUrl(String projectId, String languageId, String resourceId) {
-        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
+    public static Uri termsUri(String projectId, String languageId, String resourceId) {
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json");
     }
 
     /**
@@ -746,7 +769,7 @@ public class DataStore {
         String path = notesPath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset(notesUrl(projectId, languageId, resourceId), ignoreCache);
+            String key = downloadAsset(notesUri(projectId, languageId, resourceId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -754,20 +777,20 @@ public class DataStore {
 
     /**
      * Downloads and returns the notes.
-     * Rather than using the standard download url this method allows you to specify from which url
+     * Rather than using the standard download uri this method allows you to specify from which uri
      * to download the notes. This is especially helpful when cross referencing api's.
      * If downloaded the existing notes will be replaced
      * @param projectId
      * @param languageId
      * @param resourceId
-     * @param urlString the url from which the notes will be downloaded
+     * @param uri the uri from which the notes will be downloaded
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullNotes(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
+    public String pullNotes(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
         String path = notesPath(projectId, languageId, resourceId);
 
-        String key = downloadAsset(urlString, ignoreCache);
+        String key = downloadAsset(uri, ignoreCache);
         linkAsset(key, path);
 
         return loadJSONAsset(path);
@@ -785,14 +808,14 @@ public class DataStore {
     }
 
     /**
-     * Returns the notes url
+     * Returns the notes uri
      * @param projectId
      * @param languageId
      * @param resourceId
      * @return
      */
-    public String notesUrl(String projectId, String languageId, String resourceId) {
-        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
+    public Uri notesUri(String projectId, String languageId, String resourceId) {
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json");
     }
 
     /**
@@ -809,7 +832,7 @@ public class DataStore {
         String path = sourcePath(projectId, languageId, resourceId);
 
         if(checkServer) {
-            String key = downloadAsset(sourceUrl(projectId, languageId, resourceId), ignoreCache);
+            String key = downloadAsset(sourceUri(projectId, languageId, resourceId), ignoreCache);
             linkAsset(key, path);
         }
         return loadJSONAsset(path);
@@ -817,20 +840,20 @@ public class DataStore {
 
     /**
      * Downloads and returns the source.
-     * Rather than using the standard download url this method allows you to specify from which url
+     * Rather than using the standard download uri this method allows you to specify from which uri
      * to download the source. This is especially helpful when cross referencing api's.
      * If downloaded this will replace the current source
      * @param projectId
      * @param languageId
      * @param resourceId
-     * @param urlString the url from which the source will be downloaded
+     * @param uri the uri from which the source will be downloaded
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullSource(String projectId, String languageId, String resourceId, String urlString, boolean ignoreCache) {
+    public String pullSource(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
         String path = sourcePath(projectId, languageId, resourceId);
 
-        String key = downloadAsset(urlString, ignoreCache);
+        String key = downloadAsset(uri, ignoreCache);
         linkAsset(key, path);
 
         return loadJSONAsset(path);
@@ -848,14 +871,14 @@ public class DataStore {
     }
 
     /**
-     * Returns the source url
+     * Returns the source uri
      * @param projectId
      * @param languageId
      * @param resourceId
      * @return
      */
-    public String sourceUrl(String projectId, String languageId, String resourceId) {
-        return "https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json";
+    public Uri sourceUri(String projectId, String languageId, String resourceId) {
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json");
     }
 
     /**
