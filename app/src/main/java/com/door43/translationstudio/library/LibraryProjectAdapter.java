@@ -23,7 +23,7 @@ import com.door43.translationstudio.util.AppContext;
  */
 public class LibraryProjectAdapter extends BaseAdapter {
     private final MainApplication mContext;
-    private final boolean mDisplayAsNewProjects;
+    private boolean mDisplayAsNewProjects;
     private int mSelectedIndex = -1;
     private Project[] mProjects;
 
@@ -105,6 +105,13 @@ public class LibraryProjectAdapter extends BaseAdapter {
 
     public void changeDataSet(Project[] projects) {
         mProjects = projects;
+        notifyDataSetChanged();
+    }
+
+    public void changeDataSet(Project[] projects, boolean displayAsNewProjects) {
+        mProjects = projects;
+        mDisplayAsNewProjects = displayAsNewProjects;
+        mSelectedIndex = -1;
         notifyDataSetChanged();
     }
 

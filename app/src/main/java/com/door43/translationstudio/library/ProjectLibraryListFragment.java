@@ -173,6 +173,17 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     public ProjectLibraryListFragment() {
     }
 
+    /**
+     * Reloads the view according to the latest configuration
+     */
+    public void reload() {
+        getActivity().getIntent().putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, LibraryTempData.getShowNewProjects());
+        getActivity().getIntent().putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, LibraryTempData.getShowProjectUpdates());
+
+        getListView().smoothScrollToPosition(0);
+        mAdapter.changeDataSet(getProjectList(), LibraryTempData.getShowNewProjects());
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -194,23 +205,29 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
         mActivityPaused = false;
 
-        Project[] projects;
-        if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
-            // new languages/projects
-            projects = LibraryTempData.getNewProjects();
-        } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
-            // updates
-            projects = LibraryTempData.getUpdatedProjects();
-        } else {
-            // just show everything
-            projects = LibraryTempData.getProjects();
-        }
-
-        mAdapter = new LibraryProjectAdapter(AppContext.context(), projects, LibraryTempData.getShowNewProjects());
+        mAdapter = new LibraryProjectAdapter(AppContext.context(), getProjectList(), LibraryTempData.getShowNewProjects());
 
         setListAdapter(mAdapter);
 
         preparProjectList();
+    }
+
+    private Project[] getProjectList() {
+        Project[] projects;
+        if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
+            // new languages/projects
+            projects = LibraryTempData.getNewProjects();
+            getActivity().setTitle(getResources().getString(R.string.title_activity_project_library));
+        } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
+            // updates
+            projects = LibraryTempData.getUpdatedProjects();
+            getActivity().setTitle(getResources().getString(R.string.title_activity_project_updates));
+        } else {
+            // just show everything
+            projects = LibraryTempData.getProjects();
+            getActivity().setTitle(getResources().getString(R.string.title_activity_project_library));
+        }
+        return projects;
     }
 
     /**

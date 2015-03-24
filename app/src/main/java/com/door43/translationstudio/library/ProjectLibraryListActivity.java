@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
@@ -61,22 +63,22 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         // TODO: If exposing deep links into your app, handle intents here.
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. Use NavUtils to allow users
-            // to navigate up one level in the application structure. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            NavUtils.navigateUpFromSameTask(this);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        int id = item.getItemId();
+//        if (id == android.R.id.home) {
+//            // This ID represents the Home or Up button. In the case of this
+//            // activity, the Up button is shown. Use NavUtils to allow users
+//            // to navigate up one level in the application structure. For
+//            // more details, see the Navigation pattern on Android Design:
+//            //
+//            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
+//            //
+//            NavUtils.navigateUpFromSameTask(this);
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
     /**
      * Callback method from {@link ProjectLibraryListFragment.Callbacks}
@@ -114,5 +116,68 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     public void onEmptyDraftsList() {
         ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.project_detail_container);
         fragment.hideDraftsTab();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_project_library, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(LibraryTempData.getShowNewProjects()) {
+            menu.findItem(R.id.action_show_new).setVisible(false);
+            menu.findItem(R.id.action_download_all).setVisible(true);
+        } else{
+            menu.findItem(R.id.action_show_new).setVisible(true);
+            menu.findItem(R.id.action_download_all).setVisible(false);
+        }
+        if(LibraryTempData.getShowProjectUpdates()) {
+            menu.findItem(R.id.action_show_updates).setVisible(false);
+            menu.findItem(R.id.action_update_all).setVisible(true);
+        } else {
+            menu.findItem(R.id.action_show_updates).setVisible(true);
+            menu.findItem(R.id.action_update_all).setVisible(false);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_show_new:
+                LibraryTempData.setShowProjectUpdates(false);
+                LibraryTempData.setShowNewProjects(true);
+                reload();
+                return true;
+            case R.id.action_show_updates:
+                LibraryTempData.setShowProjectUpdates(true);
+                LibraryTempData.setShowNewProjects(false);
+                reload();
+                return true;
+            case R.id.action_update_all:
+                // TODO: display confirmation
+                return true;
+            case R.id.action_download_all:
+                // TODO: display confirmation
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void reload() {
+        invalidateOptionsMenu();
+        if(mTwoPane) {
+            // remove details
+            if(getFragmentManager().findFragmentById(R.id.project_detail_container) != null) {
+                getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.project_detail_container)).commit();
+            }
+        }
+        // reload list
+        ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
+        listFragment.reload();
     }
 }
