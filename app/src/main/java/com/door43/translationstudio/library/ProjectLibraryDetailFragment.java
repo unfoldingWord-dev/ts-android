@@ -9,6 +9,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -112,6 +113,20 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         projectDescription.setText(mProject.getDescription());
         mIcon = (ImageView)rootView.findViewById(R.id.modelImage);
         mIcon.setVisibility(View.GONE);
+
+        // delete project
+        Button deleteButton = (Button)rootView.findViewById(R.id.deleteProjectButton);
+        if(LibraryTempData.getEnableEditing()) {
+            deleteButton.setVisibility(View.VISIBLE);
+            deleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // TODO: delete this button
+                }
+            });
+        } else {
+            deleteButton.setVisibility(View.GONE);
+        }
 
         // set graphite fontface
         Typeface typeface = AppContext.graphiteTypeface(mProject.getSelectedSourceLanguage());

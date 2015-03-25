@@ -9,5 +9,9 @@
     <item android:id="@+id/action_update_all" android:title="@string/action_update_all"
         android:orderInCategory="300" app:showAsAction="never" />
     <item android:id="@+id/action_download_all" android:title="@string/action_download_all"
-        android:orderInCategory="300" app:showAsAction="never" />
+        android:orderInCategory="400" app:showAsAction="never" />
+    <item android:id="@+id/action_edit_projects" android:title="@string/action_edit_projects"
+        android:orderInCategory="500" app:showAsAction="never" />
+    <item android:id="@+id/action_cancel_edit_projects" android:title="@string/action_cancel_edit_projects"
+        android:orderInCategory="500" app:showAsAction="never" />
 </menu>

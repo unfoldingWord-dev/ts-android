@@ -1,5 +1,7 @@
 package com.door43.translationstudio.library;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -32,6 +34,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
     public static final String ARG_ONLY_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_ONLY_SHOW_NEW = "only_show_new";
+    private AlertDialog mConfirmDialog;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -137,9 +140,18 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         if(LibraryTempData.getShowProjectUpdates()) {
             menu.findItem(R.id.action_show_updates).setVisible(false);
             menu.findItem(R.id.action_update_all).setVisible(true);
+            if(LibraryTempData.getEnableEditing()) {
+                menu.findItem(R.id.action_edit_projects).setVisible(false);
+                menu.findItem(R.id.action_cancel_edit_projects).setVisible(true);
+            } else {
+                menu.findItem(R.id.action_edit_projects).setVisible(true);
+                menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
+            }
         } else {
             menu.findItem(R.id.action_show_updates).setVisible(true);
             menu.findItem(R.id.action_update_all).setVisible(false);
+            menu.findItem(R.id.action_edit_projects).setVisible(false);
+            menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
         }
         return true;
     }
@@ -158,10 +170,40 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 reload();
                 return true;
             case R.id.action_update_all:
-                // TODO: display confirmation
+                mConfirmDialog = new AlertDialog.Builder(this)
+                        .setTitle(R.string.action_update_all)
+                        .setMessage(R.string.download_all_confirmation)
+                        .setIcon(R.drawable.ic_update_small)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // TODO: begin update
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
                 return true;
             case R.id.action_download_all:
-                // TODO: display confirmation
+                mConfirmDialog = new AlertDialog.Builder(this)
+                        .setTitle(R.string.action_download_all)
+                        .setMessage(R.string.download_all_confirmation)
+                        .setIcon(R.drawable.ic_download_small)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // TODO: begin download
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+                return true;
+            case R.id.action_edit_projects:
+                LibraryTempData.setEnableEditing(true);
+                reload();
+                return true;
+            case R.id.action_cancel_edit_projects:
+                LibraryTempData.setEnableEditing(false);
+                reload();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -179,5 +221,12 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         // reload list
         ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
         listFragment.reload();
+    }
+
+    public void onDestroy() {
+        if(mConfirmDialog != null) {
+            mConfirmDialog.dismiss();
+        }
+        super.onDestroy();
     }
 }

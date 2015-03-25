@@ -58,8 +58,12 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                SourceLanguage lang = mAdapter.getItem(i);
-                connectDownloadTask(lang);
+                if(LibraryTempData.getEnableEditing()) {
+                    // TODO: delete the language
+                } else {
+                    SourceLanguage lang = mAdapter.getItem(i);
+                    connectDownloadTask(lang);
+                }
             }
         });
 

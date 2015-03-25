@@ -6,61 +6,78 @@
     android:background="@color/white"
     tools:context="com.door43.translationstudio.library.ProjectLibraryDetailFragment">
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="fill_parent"
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:weightSum="3"
-        android:padding="10dp"
-        android:id="@+id/relativeLayout"
-        android:background="@color/light_green">
+        android:background="@color/light_green"
+        android:id="@+id/linearLayout10">
 
-        <ImageView
-            android:layout_width="@dimen/model_list_item_image_width"
-            android:layout_height="@dimen/model_list_item_height"
-            android:id="@+id/modelImage"
-            android:background="@color/dark_green" />
-
-        <LinearLayout
-            android:id="@+id/bodyLayout"
-            android:orientation="vertical"
-            android:layout_width="fill_parent"
-            android:layout_weight="3"
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="5dp"
-            android:paddingRight="2dp"
-            android:paddingTop="1dp"
-            android:paddingBottom="1dp"
-            android:layout_toRightOf="@+id/modelImage"
-            android:layout_toEndOf="@+id/modelImage"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true">
+            android:weightSum="3"
+            android:padding="10dp"
+            android:id="@+id/relativeLayout">
 
-            <TextView
+            <ImageView
+                android:layout_width="@dimen/model_list_item_image_width"
+                android:layout_height="@dimen/model_list_item_height"
+                android:id="@+id/modelImage"
+                android:background="@color/dark_green" />
+
+            <LinearLayout
+                android:id="@+id/bodyLayout"
+                android:orientation="vertical"
                 android:layout_width="fill_parent"
+                android:layout_weight="3"
                 android:layout_height="wrap_content"
-                android:text="Model Title"
-                android:id="@+id/modelTitle"
-                android:textSize="@dimen/h2"
-                android:textColor="@color/white" />
+                android:paddingLeft="5dp"
+                android:paddingRight="2dp"
+                android:paddingTop="1dp"
+                android:paddingBottom="1dp"
+                android:layout_toRightOf="@+id/modelImage"
+                android:layout_toEndOf="@+id/modelImage"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true">
 
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="Model Description\ntest"
-                android:id="@+id/modelDescription"
-                android:ellipsize="end"
-                android:textColor="@color/white"
-                android:maxLines="2" />
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Model Title"
+                    android:id="@+id/modelTitle"
+                    android:textSize="@dimen/h2"
+                    android:textColor="@color/dark_gray" />
 
-        </LinearLayout>
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Model Description\ntest"
+                    android:id="@+id/modelDescription"
+                    android:ellipsize="end"
+                    android:textColor="@color/dark_gray"
+                    android:maxLines="2" />
 
-    </RelativeLayout>
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Project"
+            android:drawableLeft="@drawable/ic_close_small"
+            android:drawablePadding="-20sp"
+            style="@style/Widget.Button.Danger"
+            android:id="@+id/deleteProjectButton"
+            android:singleLine="true" />
+    </LinearLayout>
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_above="@+id/linearLayout6"
-        android:layout_below="@+id/relativeLayout">
+        android:layout_below="@+id/linearLayout10">
 
         <com.astuetz.PagerSlidingTabStrip
             android:id="@+id/projectBrowserTabs"

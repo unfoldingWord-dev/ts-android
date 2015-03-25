@@ -18,6 +18,7 @@ public class LibraryTempData {
     private static List<Project> mUpdatedProjects = new ArrayList<>();
     private static Boolean mShowNewProjects = false;
     private static Boolean mShowProjectUpdates = false;
+    private static boolean mEnableEditing = false;
 
     public static void setAvailableProjects(List<Project> projects) {
         mProjects = projects;
@@ -103,11 +104,36 @@ public class LibraryTempData {
         mShowProjectUpdates = showProjectUpdates;
     }
 
+    /**
+     * Checks if new projects should be shwon
+     * @return
+     */
     public static boolean getShowNewProjects() {
         return mShowNewProjects;
     }
 
+    /**
+     * Checks if project updates should be shown
+     * @return
+     */
     public static boolean getShowProjectUpdates() {
         return mShowProjectUpdates;
+    }
+
+    /**
+     * Enables the user to edit downloaded projects
+     * e.g. delete them.
+     * @param enableEditing
+     */
+    public static void setEnableEditing(boolean enableEditing) {
+        mEnableEditing = enableEditing;
+    }
+
+    /**
+     * Checks if the user can edit downloaded projects.
+     * @return
+     */
+    public static boolean getEnableEditing() {
+        return mEnableEditing;
     }
 }

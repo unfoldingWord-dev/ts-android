@@ -13,6 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
@@ -69,6 +70,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
             holder.progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
             holder.progressBar.setMax(100);
             holder.downloadedImage = (ImageView)v.findViewById(R.id.downloadedImageView);
+            holder.deleteImage = (ImageView)v.findViewById(R.id.deleteImageView);
 
             v.setTag(holder);
         } else {
@@ -77,6 +79,12 @@ public class LibraryLanguageAdapter extends BaseAdapter {
 
         holder.name.setText(getItem(i).getName());
         holder.downloadedImage.setVisibility(View.INVISIBLE);
+
+        if(LibraryTempData.getEnableEditing()) {
+            holder.deleteImage.setVisibility(View.VISIBLE);
+        } else {
+            holder.deleteImage.setVisibility(View.GONE);
+        }
 
         // set graphite fontface
         Typeface typeface = AppContext.graphiteTypeface(getItem(i));
@@ -127,7 +135,11 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                         @Override
                         public void run() {
                             staticHolder.progressBar.setVisibility(View.GONE);
-                            staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                            if(LibraryTempData.getEnableEditing()) {
+                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+                            } else {
+                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                            }
                             staticHolder.downloadedImage.setVisibility(View.VISIBLE);
                         }
                     });
@@ -148,9 +160,17 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                     hasUpdate = AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i));
                 }
                 if(hasUpdate) {
-                    staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                    if(LibraryTempData.getEnableEditing()) {
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small_disabled));
+                    } else {
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                    }
                 } else {
-                    staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                    if(LibraryTempData.getEnableEditing()) {
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+                    } else {
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                    }
                 }
                 staticHolder.downloadedImage.setVisibility(View.VISIBLE);
             } else {
@@ -204,5 +224,6 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         public DownloadLanguageTask downloadTask;
         public ProgressBar progressBar;
         public ImageView downloadedImage;
+        public ImageView deleteImage;
     }
 }

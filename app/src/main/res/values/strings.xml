@@ -291,5 +291,8 @@
     <string name="action_update_all">Update All</string>
     <string name="action_download_all">Download All</string>
     <string name="title_activity_project_updates">Project Updates</string>
+    <string name="action_edit_projects">Edit Projects</string>
+    <string name="download_all_confirmation">You are about to download a potentially large amount of data, continue?</string>
+    <string name="action_cancel_edit_projects">Stop Editing Projects</string>
 
 </resources>
