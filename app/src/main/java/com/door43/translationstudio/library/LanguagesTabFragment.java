@@ -59,7 +59,14 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(LibraryTempData.getEnableEditing()) {
-                    // TODO: delete the language
+                    // TODO: place all of this in a task
+                    SourceLanguage lang = mAdapter.getItem(i);
+                    AppContext.projectManager().deleteSourceLanguage(mProject.getId(), lang.getId());
+                    LibraryTempData.sortProjects();
+                    mAdapter.notifyDataSetChanged();
+                    if(!AppContext.projectManager().isProjectDownloaded(mProject.getId()) && getActivity() != null && getActivity() instanceof LibraryCallbacks) {
+                        ((LibraryCallbacks)getActivity()).refreshUI();
+                    }
                 } else {
                     SourceLanguage lang = mAdapter.getItem(i);
                     connectDownloadTask(lang);

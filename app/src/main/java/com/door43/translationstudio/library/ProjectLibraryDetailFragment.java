@@ -18,6 +18,7 @@ import com.door43.translationstudio.R;
 
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
@@ -121,7 +122,12 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
             deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // TODO: delete this button
+                    // TODO: place this in a task
+                    AppContext.projectManager().deleteProject(mProject.getId());
+                    LibraryTempData.sortProjects();
+                    if(getActivity() != null && getActivity() instanceof LibraryCallbacks) {
+                        ((LibraryCallbacks)getActivity()).refreshUI();
+                    }
                 }
             });
         } else {

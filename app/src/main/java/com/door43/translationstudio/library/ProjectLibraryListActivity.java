@@ -30,7 +30,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * {@link ProjectLibraryListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTabFragment.Callbacks {
+public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTabFragment.Callbacks, LibraryCallbacks {
 
     public static final String ARG_ONLY_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_ONLY_SHOW_NEW = "only_show_new";
@@ -62,26 +62,13 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                     .setActivateOnItemClick(true);
 
         }
-
         // TODO: If exposing deep links into your app, handle intents here.
     }
 
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        int id = item.getItemId();
-//        if (id == android.R.id.home) {
-//            // This ID represents the Home or Up button. In the case of this
-//            // activity, the Up button is shown. Use NavUtils to allow users
-//            // to navigate up one level in the application structure. For
-//            // more details, see the Navigation pattern on Android Design:
-//            //
-//            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-//            //
-//            NavUtils.navigateUpFromSameTask(this);
-//            return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
+    public void onResume() {
+        super.onResume();
+        reload();
+    }
 
     /**
      * Callback method from {@link ProjectLibraryListFragment.Callbacks}
@@ -228,5 +215,10 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             mConfirmDialog.dismiss();
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void refreshUI() {
+        reload();
     }
 }

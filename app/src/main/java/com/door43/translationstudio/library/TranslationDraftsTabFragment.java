@@ -58,8 +58,15 @@ public class TranslationDraftsTabFragment extends TranslatorBaseFragment impleme
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                SourceLanguage lang = mAdapter.getItem(i);
-                connectDownloadTask(lang);
+                if(LibraryTempData.getEnableEditing()) {
+                    // TODO: place this in a task
+                    SourceLanguage lang = mAdapter.getItem(i);
+                    AppContext.projectManager().deleteSourceLanguage(mProject.getId(), lang.getId());
+                    mAdapter.notifyDataSetChanged();
+                } else {
+                    SourceLanguage lang = mAdapter.getItem(i);
+                    connectDownloadTask(lang);
+                }
             }
         });
 

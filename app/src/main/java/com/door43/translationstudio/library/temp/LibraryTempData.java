@@ -1,9 +1,7 @@
 package com.door43.translationstudio.library.temp;
 
-import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
@@ -23,13 +21,13 @@ public class LibraryTempData {
     public static void setAvailableProjects(List<Project> projects) {
         mProjects = projects;
         ProjectManager.sortModelList(mProjects);
-        filter();
+        sortProjects();
     }
 
     /**
      * Filters projects into new projects and/or updated projects
      */
-    private static void filter() {
+    public static void sortProjects() {
         mNewProjects = new ArrayList<>();
         mUpdatedProjects = new ArrayList<>();
         for(Project p:mProjects) {

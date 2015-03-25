@@ -2,6 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.util.Log;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -1026,6 +1027,27 @@ public class ProjectManager {
         p.setDefaultTitle(p.getTitle(p.getSelectedSourceLanguage()));
         p.setDefaultDescription(p.getDescription(p.getSelectedSourceLanguage()));
         return importedLanguages;
+    }
+
+    /**
+     * Deletes a project definition from the assets.
+     * This will remove all it's source languages and drafts.
+     * @param projectId the id of the project to delete
+     */
+    public void deleteProject(String projectId) {
+        // TODO: delete the project
+        Log.d("ProjectManager", "Deleting projects has not been implemented yet");
+    }
+
+    /**
+     * Deletes a source language definition from the assets.
+     * This may also be a language draft
+     * @param projectId the id of the project that contains the language
+     * @param languageId the id of the language to delete
+     */
+    public void deleteSourceLanguage(String projectId, String languageId) {
+        // TODO: delete the source language
+        Log.d("ProjectManager", "Deleting source languages has not been implemented yet");
     }
 
     /**
