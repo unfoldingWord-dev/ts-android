@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
@@ -17,6 +18,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
     private Button targetLanguageBtn;
     private Button sourceLanguageBtn;
     private Project mProject;
+    private LinearLayout draftNoticeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,29 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
 
         targetLanguageBtn = (Button)findViewById(R.id.switchTargetLanguageButton);
         sourceLanguageBtn = (Button)findViewById(R.id.switchSourceLanguageButton);
+
+        draftNoticeLayout = (LinearLayout)findViewById(R.id.translationDraftNotice);
+
+        Button editDraftButton = (Button)findViewById(R.id.editDraftButton);
+        Button viewDraftButton = (Button)findViewById(R.id.viewDraftButton);
+
+        editDraftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO: display confirmation to replace translation work with this draft.
+                // we could alternatively provide a merge option
+                AppContext.context().showToastMessage("Not implemented yet");
+            }
+        });
+
+        viewDraftButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO: load the draft in read only mode
+                AppContext.context().showToastMessage("Not implemented yet");
+            }
+        });
+
 
         // hook up buttons
         targetLanguageBtn.setOnClickListener(new View.OnClickListener() {
@@ -67,6 +92,12 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
 
     private void loadValues() {
         if(mProject != null) {
+            if(mProject.getSourceLanguageDraft(mProject.getSelectedTargetLanguage().getId()) != null) {
+                draftNoticeLayout.setVisibility(View.VISIBLE);
+            } else {
+                draftNoticeLayout.setVisibility(View.GONE);
+            }
+
             targetLanguageBtn.setText(mProject.getSelectedTargetLanguage().getName());
             sourceLanguageBtn.setText(mProject.getSelectedSourceLanguage().getName());
             if (mProject.getSelectedTargetLanguage().isTranslating(mProject)) {

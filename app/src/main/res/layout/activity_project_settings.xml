@@ -1,76 +1,143 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.door43.translationstudio.ProjectSettingsActivity">
-
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_alignParentBottom="true">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:layout_above="@+id/translationDraftNotice">
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:orientation="vertical"
+                android:background="@drawable/gray_vertical_border"
+                android:layout_weight="1"
+                android:paddingRight="1dp">
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/source_language_field"
+                    android:textSize="@dimen/h4"
+                    android:textAlignment="center"
+                    android:textColor="@color/dark_gray"
+                    android:gravity="center_horizontal"
+                    android:padding="5dp" />
+                <Button
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Change"
+                    android:textSize="@dimen/h3"
+                    android:id="@+id/switchSourceLanguageButton"
+                    style="@style/Widget.Button.Secondary" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:text="@string/source_language_instructions"
+                    android:padding="5dp"
+                    android:textSize="@dimen/h5"
+                    android:textColor="@color/gray"
+                    android:gravity="center" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingLeft="1dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/target_language_field"
+                    android:textSize="@dimen/h4"
+                    android:textColor="@color/dark_gray"
+                    android:textAlignment="center"
+                    android:gravity="center_horizontal"
+                    android:padding="5dp" />
+
+                <Button
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Change"
+                    android:id="@+id/switchTargetLanguageButton"
+                    android:drawableRight="@drawable/ic_pencil_dark"
+                    android:drawablePadding="-30dp"
+                    android:paddingRight="10dp"
+                    android:textSize="@dimen/h3"
+                    style="@style/Widget.Button.Secondary" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:text="@string/target_language_instructions"
+                    android:padding="5dp"
+                    android:textSize="@dimen/h5"
+                    android:textColor="@color/gray"
+                    android:gravity="center" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
             android:orientation="vertical"
-            android:background="@drawable/gray_vertical_border"
-            android:padding="10dp"
-            android:layout_weight="1">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/source_language_field"
-                android:paddingRight="10dp"
-                android:textSize="@dimen/h4" />
-            <Button
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="Change"
-                android:textSize="@dimen/h3"
-                android:id="@+id/switchSourceLanguageButton"
-                style="@style/Widget.Button.Secondary" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:text="@string/source_language_instructions"
-                android:padding="10dp"
-                android:textSize="@dimen/h5"
-                android:textColor="@color/gray"
-                android:gravity="center" />
-        </LinearLayout>
-
-        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="10dp"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/target_language_field"
-                android:paddingRight="10dp"
-                android:textSize="@dimen/h4" />
+            android:layout_alignParentBottom="true"
+            android:id="@+id/translationDraftNotice"
+            android:background="@color/light_green">
 
-            <Button
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="Change"
-                android:id="@+id/switchTargetLanguageButton"
-                android:drawableRight="@drawable/ic_pencil_dark"
-                android:textSize="@dimen/h3"
-                style="@style/Widget.Button.Secondary" />
-
-            <TextView
+            <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:text="@string/target_language_instructions"
-                android:padding="10dp"
-                android:textSize="@dimen/h5"
-                android:textColor="@color/gray"
-                android:gravity="center" />
+                android:padding="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Translation Draft"
+                    android:textSize="@dimen/h3"
+                    android:textColor="@color/dark_gray" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="A draft is available for the selected target language"
+                    android:textSize="@dimen/h5"
+                    android:textColor="@color/dark_gray" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Edit"
+                    android:id="@+id/editDraftButton"
+                    android:layout_weight="1"
+                    style="@style/Widget.Button.Secondary" />
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View"
+                    android:id="@+id/viewDraftButton"
+                    android:layout_weight="1"
+                    style="@style/Widget.Button.Primary"/>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-</RelativeLayout>
+    </RelativeLayout>
+
+</LinearLayout>
