@@ -66,6 +66,8 @@
             android:layout_height="wrap_content"
             android:text="Delete Project"
             android:drawableLeft="@drawable/ic_close_small"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
             android:drawablePadding="-20sp"
             style="@style/Widget.Button.Danger"
             android:id="@+id/deleteProjectButton"

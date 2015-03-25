@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
 
@@ -92,9 +93,17 @@ public class LibraryProjectAdapter extends BaseAdapter {
             if(!mDisplayAsNewProjects && AppContext.projectManager().isProjectDownloaded(getItem(i).getId())) {
                 // check if an update for this project exists
                 if(AppContext.projectManager().isProjectUpdateAvailable(getItem(i))) {
-                    holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                    if(LibraryTempData.getEnableEditing()) {
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small_disabled));
+                    } else {
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                    }
                 } else {
-                    holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                    if(LibraryTempData.getEnableEditing()) {
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+                    } else {
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                    }
                 }
                 holder.downloadedImage.setVisibility(View.VISIBLE);
             }
