@@ -12,9 +12,8 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.translations.TranslationManager;
+import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.util.StorageUtils;
-import com.door43.util.TTFAnalyzer;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 

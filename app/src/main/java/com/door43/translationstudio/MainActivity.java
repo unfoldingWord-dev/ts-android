@@ -207,6 +207,8 @@ public class MainActivity extends TranslatorBaseActivity {
      * Enables autosave
      */
     private void enableAutosave() {
+        // cancel pending saves that got trapped after we disabled auto save
+        AppContext.translationManager().stageTranslation(null, null);
         mAutosaveEnabled = true;
     }
 
@@ -352,6 +354,7 @@ public class MainActivity extends TranslatorBaseActivity {
         mSourceTitleText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 final Project p = AppContext.projectManager().getSelectedProject();
                 if(p != null && p.getSelectedSourceLanguage().getResources().length > 1) {
                     // Create and show the dialog.
@@ -694,6 +697,9 @@ public class MainActivity extends TranslatorBaseActivity {
                 if (mAutosaveTimer != null) {
                     mAutosaveTimer.cancel();
                 }
+                if(mAutosaveEnabled) {
+                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
+                }
                 if (saveDelay != -1) {
                     mAutosaveTimer = new Timer();
                     if (mAutosaveEnabled) {
@@ -972,7 +978,9 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void onPostExecute() {
                                     if(!isInterrupted()) {
+                                        disableAutosave();
                                         mTranslationEditText.setText(output);
+                                        enableAutosave();
                                         mTranslationEditText.clearAnimation();
                                         mTranslationEditText.startAnimation(in);
                                         mTranslationProgressBar.clearAnimation();
@@ -1247,40 +1255,11 @@ public class MainActivity extends TranslatorBaseActivity {
 
     /**
      * Saves the translation
-     * @deprecated the navigator should handle saves from now on so that saves are not tied to the activity.
      */
     public void save() {
         if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
             disableAutosave();
-
-            // compile the translation
-            SpannedString[] spans = mTranslationEditText.getText().getSpans(0, mTranslationEditText.getText().length(), SpannedString.class);
-            Editable translationText = mTranslationEditText.getText();
-            StringBuilder compiledString = new StringBuilder();
-            int next;
-            int lastIndex = 0;
-            for(int i = 0; i < translationText.length(); i = next) {
-                next = translationText.nextSpanTransition(i, translationText.length(), SpannedString.class);
-                SpannedString[] verses = translationText.getSpans(i, next, SpannedString.class);
-                for(SpannedString s:verses) {
-                    int sStart = translationText.getSpanStart(s);
-                    int sEnd = translationText.getSpanEnd(s);
-                    // attach preceeding text
-                    if(lastIndex >= translationText.length() | sStart >= translationText.length()) {
-                        Logger.e(this.getClass().getName(), "out of bounds");
-                    }
-                    compiledString.append(translationText.toString().substring(lastIndex, sStart));
-                    // explode span
-                    compiledString.append(s.toString());
-                    lastIndex = sEnd;
-                }
-            }
-            // grab the last bit of text
-            compiledString.append(translationText.toString().substring(lastIndex, translationText.length()));
-
-            Frame f = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
-            f.setTranslation(compiledString.toString().trim());
-            f.save();
+            AppContext.translationManager().commitTranslation();
             enableAutosave();
         }
     }

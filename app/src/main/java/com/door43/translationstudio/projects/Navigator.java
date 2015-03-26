@@ -1,11 +1,14 @@
 package com.door43.translationstudio.projects;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.SpannedString;
 
 import com.door43.translationstudio.events.OpenedChapterEvent;
 import com.door43.translationstudio.events.OpenedFrameEvent;
 import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.Logger;
 import com.door43.util.threads.ThreadableUI;
 import com.squareup.otto.Bus;
 
@@ -18,6 +21,11 @@ public class Navigator {
     private final ProjectManager mProjectManager;
     private final Context mContext;
     private final Bus mEventBus;
+    private OnOpenListener mOpenProjectListener;
+    private OnOpenListener mOpenChapterListener;
+    private OnOpenListener mOpenFrameListener;
+    private OnOpenListener mOpenSourceLanguageListener;
+    private OnOpenListener mOpenResourceListener;
 
     // TODO: impliment this class and migrate all navigation operations into it
     // This class should also handle all the unsaved data so we don't to depend on what's in the translation edit text.
@@ -34,6 +42,116 @@ public class Navigator {
         mContext = context;
         mProjectManager = projectManager;
         mEventBus = eventBus;
+    }
+
+    /**
+     * Sets the listener to be called when a project is opened
+     * @param listener
+     */
+    public void setOnOpenProjectListener(OnOpenListener listener) {
+        mOpenProjectListener = listener;
+        onProjectOpen();
+    }
+
+    /**
+     * Sets the listener to be called when a chapter is opened
+     * @param listener
+     */
+    public void setOnOpenChapterListener(OnOpenListener listener) {
+        mOpenChapterListener = listener;
+        onChapterOpen();
+    }
+
+    /**
+     * Sets the listener to be called when a frame is opened
+     * @param listener
+     */
+    public void setOnOpenFrameListener(OnOpenListener listener) {
+        mOpenFrameListener = listener;
+        onFrameOpen();
+    }
+
+    /**
+     * Sets the listener to be called when a source language is opened
+     * @param listener
+     */
+    public void setOnOpenSourceLanguageListener(OnOpenListener listener) {
+        mOpenSourceLanguageListener = listener;
+        onSourceLanguageOpen();
+    }
+
+    /**
+     * Sets the listener to be called when a resource is opened
+     * @param listener
+     */
+    public void setOnOpenResourceListener(OnOpenListener listener) {
+        mOpenResourceListener = listener;
+        onResourceOpen();
+    }
+
+    /**
+     * Fires off the project open event
+     */
+    private void onProjectOpen() {
+        if(mOpenProjectListener != null) {
+            try {
+                mOpenProjectListener.onOpen();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Fires off the chapter open event
+     */
+    private void onChapterOpen() {
+        if(mOpenChapterListener != null) {
+            try {
+                mOpenChapterListener.onOpen();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Fires off the frame open event
+     */
+    private void onFrameOpen() {
+        if(mOpenFrameListener != null) {
+            try {
+                mOpenFrameListener.onOpen();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Fires off the source language open event
+     */
+    private void onSourceLanguageOpen() {
+        if(mOpenSourceLanguageListener != null) {
+            try {
+                mOpenSourceLanguageListener.onOpen();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Fires off the resource open event
+     */
+    private void onResourceOpen() {
+        if(mOpenResourceListener != null) {
+            try {
+                mOpenResourceListener.onOpen();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -69,6 +187,8 @@ public class Navigator {
             listener.onFailed();
         }
     }
+
+
 
     /**
      * Opens the chapter if it exists within the current project.
@@ -136,6 +256,10 @@ public class Navigator {
     public static interface OnSuccessListener {
         public void onSuccess();
         public void onFailed();
+    }
+
+    public static interface OnOpenListener {
+        public void onOpen();
     }
 }
 

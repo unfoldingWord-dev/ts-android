@@ -1,5 +1,7 @@
-package com.door43.translationstudio.translations;
+package com.door43.translationstudio.projects;
 
+import android.text.Editable;
+import android.text.SpannedString;
 import android.util.Log;
 
 import com.door43.translationstudio.MainApplication;
@@ -10,8 +12,6 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
-import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
@@ -30,6 +30,8 @@ public class TranslationManager implements TCPClient.TcpListener {
     private final String TAG = "TranslationManager";
     private final String mParentProjectSlug = "uw"; //  NOTE: not sure if this will ever need to be dynamic
     private TCPClient mTcpClient;
+    private Frame mFrame;
+    private Editable mText;
 
     public TranslationManager(MainApplication context) {
         mContext = context;
@@ -52,6 +54,54 @@ public class TranslationManager implements TCPClient.TcpListener {
             mTcpClient.connect();
         } else {
             pushSelectedProjectRepo();
+        }
+    }
+
+    /**
+     * Stages a new translation to be saved. This is usually called whenever the translation in a frame changes
+     * @param frame the frame for which the translation changed
+     * @param text the raw translation input
+     */
+    public void stageTranslation(Frame frame, Editable text) {
+        this.mFrame = frame;
+        this.mText = text;
+    }
+
+    /**
+     * Saves the staged translation
+     */
+    public void commitTranslation() {
+        if(mFrame != null && mText != null) {
+            Frame frame = mFrame;
+            mFrame = null;
+            Editable text = mText;
+            mText = null;
+
+            // compile the translation
+            StringBuilder compiledString = new StringBuilder();
+            int next;
+            int lastIndex = 0;
+            for (int i = 0; i < text.length(); i = next) {
+                next = text.nextSpanTransition(i, text.length(), SpannedString.class);
+                SpannedString[] verses = text.getSpans(i, next, SpannedString.class);
+                for (SpannedString s : verses) {
+                    int sStart = text.getSpanStart(s);
+                    int sEnd = text.getSpanEnd(s);
+                    // attach preceeding text
+                    if (lastIndex >= text.length() | sStart >= text.length()) {
+                        Logger.e(this.getClass().getName(), "out of bounds");
+                    }
+                    compiledString.append(text.toString().substring(lastIndex, sStart));
+                    // explode span
+                    compiledString.append(s.toString());
+                    lastIndex = sEnd;
+                }
+            }
+            // grab the last bit of text
+            compiledString.append(text.toString().substring(lastIndex, text.length()));
+
+            frame.setTranslation(compiledString.toString().trim());
+            frame.save();
         }
     }
 
