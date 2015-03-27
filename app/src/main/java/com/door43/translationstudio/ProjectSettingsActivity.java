@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,7 +22,7 @@ import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 
 
-public class ProjectSettingsActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
+public class ProjectSettingsActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
     private Button targetLanguageBtn;
     private Button sourceLanguageBtn;
     private Project mProject;
@@ -124,6 +126,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
         if(task != null) {
             // connect to existing task
             task.setOnFinishedListener(this);
+            task.setOnProgressListener(this);
             createLoadingDialog();
         }
     }
@@ -137,6 +140,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
             // create new task
             task = new ImportTranslationDraftTask(mProject);
             task.setOnFinishedListener(this);
+            task.setOnProgressListener(this);
             mImportDraftTaskId = TaskManager.addTask(task);
             createLoadingDialog();
         }
@@ -148,6 +152,8 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
             mLoadingDialog.setCancelable(true);
             mLoadingDialog.setCanceledOnTouchOutside(false);
             mLoadingDialog.setOnCancelListener(this);
+            mLoadingDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            mLoadingDialog.setMax(100);
             mLoadingDialog.setTitle(R.string.loading);
             mLoadingDialog.show();
         }
@@ -234,5 +240,25 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
             TaskManager.cancelTask(task);
             mImportDraftTaskId = -1;
         }
+    }
+
+    @Override
+    public void onProgress(ManagedTask task, final double progress, final String message) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(mLoadingDialog != null) {
+                    mLoadingDialog.setMessage(message);
+                    if(progress == -1) {
+                        mLoadingDialog.setIndeterminate(true);
+                        mLoadingDialog.setProgress(mLoadingDialog.getMax());
+                    } else {
+                        mLoadingDialog.setIndeterminate(false);
+                        mLoadingDialog.setProgress((int) Math.round(mLoadingDialog.getMax() * progress));
+                    }
+                }
+            }
+        });
     }
 }

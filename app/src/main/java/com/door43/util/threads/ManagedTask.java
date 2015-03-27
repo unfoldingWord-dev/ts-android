@@ -8,8 +8,11 @@ package com.door43.util.threads;
 public abstract class ManagedTask implements Runnable {
     private Thread mThread;
     private boolean mFinished;
-    private OnFinishedListener mListener;
+    private OnFinishedListener mFinishListener;
     private Object mTaskId;
+    private OnProgressListener mProgressListener;
+    private double mProgress = -1;
+    private String mProgressMessage = "";
 
     @Override
     public final void run() {
@@ -19,9 +22,9 @@ public abstract class ManagedTask implements Runnable {
             start();
         }
         mFinished = true;
-        if(mListener != null) {
+        if(mFinishListener != null) {
             try {
-                mListener.onFinished(this);
+                mFinishListener.onFinished(this);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -45,14 +48,47 @@ public abstract class ManagedTask implements Runnable {
     }
 
     /**
+     * Called when progress has been made.
+     * This method should be called manually by the implementing class to update the progress
+     * @param progress the progress being made between 1 and 0
+     * @param message the progress message
+     */
+    protected void onProgress(double progress, String message) {
+        mProgress = progress;
+        mProgressMessage = message;
+        if(mProgressListener != null) {
+            try {
+                mProgressListener.onProgress(this, mProgress, mProgressMessage);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Sets the listener to be called on progress updates
+     * @param listener
+     */
+    public void setOnProgressListener(OnProgressListener listener) {
+        mProgressListener = listener;
+        if(mProgressListener != null) {
+            try {
+                mProgressListener.onProgress(this, mProgress, mProgressMessage);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
      * Sets the listener to be called when the task is finished
      * @param listener
      */
     public void setOnFinishedListener(OnFinishedListener listener) {
-        mListener = listener;
-        if(mListener != null && isFinished()) {
+        mFinishListener = listener;
+        if(mFinishListener != null && isFinished()) {
             try {
-                mListener.onFinished(this);
+                mFinishListener.onFinished(this);
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -80,7 +116,12 @@ public abstract class ManagedTask implements Runnable {
         return mFinished;
     }
 
+
     public static interface OnFinishedListener {
         public void onFinished(ManagedTask task);
+    }
+
+    public static interface OnProgressListener {
+        public void onProgress(ManagedTask task, double progress, String message);
     }
 }

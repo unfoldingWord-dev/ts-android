@@ -17,7 +17,6 @@ import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.OnProgressListener;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 import com.door43.util.threads.ThreadableUI;
@@ -110,9 +109,9 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         if(holder.downloadTask != null) {
             holder.downloadedImage.setVisibility(View.VISIBLE);
             holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_download_small));
-            holder.downloadTask.setOnProgressListener(new OnProgressListener() {
+            holder.downloadTask.setOnProgressListener(new ManagedTask.OnProgressListener() {
                 @Override
-                public void onProgress(final double progress, String message) {
+                public void onProgress(ManagedTask task, final double progress, String message) {
                     hand.post(new Runnable() {
                         @Override
                         public void run() {

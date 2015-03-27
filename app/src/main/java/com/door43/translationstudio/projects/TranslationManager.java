@@ -12,9 +12,7 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
-import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
 import com.door43.translationstudio.user.ProfileManager;
-import com.door43.translationstudio.util.OnProgressListener;
 import com.door43.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.TCPClient;
@@ -278,11 +276,9 @@ public class TranslationManager implements TCPClient.TcpListener {
                     for(int j=0; j<jsonFrames.length(); j++) {
                         JSONObject jsonFrame = jsonFrames.getJSONObject(j);
                         if(jsonFrame.has("id") && jsonFrame.has("text")) {
-                            String format = "";
-                            if(jsonFrame.has("format")) {
-                                format = jsonFrame.getString("format");
-                            }
-                            Frame f = c.getFrame(jsonFrame.getString("id"));
+                            // parse id
+                            Frame draftFrame = new Frame(jsonFrame.getString("id"), "", "", "");
+                            Frame f = c.getFrame(draftFrame.getId());
 
                             // update the frame translation
                             if(f != null) {
@@ -412,5 +408,9 @@ public class TranslationManager implements TCPClient.TcpListener {
                 AppContext.projectManager().initProjects();
             }
         }
+    }
+
+    public interface OnProgressListener {
+        public void onProgress(double progress, String message);
     }
 }

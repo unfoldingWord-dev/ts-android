@@ -5,7 +5,6 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.OnProgressListener;
 import com.door43.util.threads.ManagedTask;
 
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import java.util.List;
  */
 public class DownloadAvailableProjectsTask extends ManagedTask {
     private List<Project> mProjects = new ArrayList<>();
-    private OnProgressListener mListener;
 
     @Override
     public void start() {
@@ -28,9 +26,7 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
         for(Project p:projects) {
             boolean didUpdateProjectInfo = false;
 
-            if(mListener != null) {
-                mListener.onProgress(i / (double)projects.size(), p.getId());
-            }
+            onProgress(i / (double)projects.size(), p.getId());
 
             // update the project details
             Project oldProject = AppContext.projectManager().getProject(p.getId());
@@ -77,16 +73,5 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
      */
     public List<Project> getProjects() {
         return mProjects;
-    }
-
-    /**
-     * Attaches a progress listener to the task
-     * @param listener
-     */
-    public void setOnProgressListener(OnProgressListener listener) {
-        mListener = listener;
-        if(isFinished() && mListener != null) {
-            mListener.onProgress(1, "");
-        }
     }
 }
