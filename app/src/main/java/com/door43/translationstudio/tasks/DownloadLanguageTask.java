@@ -5,6 +5,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.OnProgressListener;
 import com.door43.util.threads.ManagedTask;
 
 import java.util.List;
@@ -49,19 +50,19 @@ public class DownloadLanguageTask extends ManagedTask {
         for(int i = 0; i < resources.size(); i ++) {
             Resource r = resources.get(i);
             AppContext.projectManager().mergeResource(mProject.getId(), mLanguage.getId(), r.getId());
-            publishProgress(((i+1)/resources.size())*.3, "");
+            publishProgress(((i+1)/(double)resources.size())*.3, "");
             AppContext.projectManager().downloadNotes(mProject, mLanguage, r, ignoreCache);
             AppContext.projectManager().mergeNotes(mProject.getId(), mLanguage.getId(), r);
 
-            publishProgress(((i+1)/resources.size())*.6, "");
+            publishProgress(((i+1)/(double)resources.size())*.6, "");
             AppContext.projectManager().downloadTerms(mProject, mLanguage, r, ignoreCache);
             AppContext.projectManager().mergeTerms(mProject.getId(), mLanguage.getId(), r);
 
-            publishProgress(((i+1)/resources.size())*.9, "");
+            publishProgress(((i+1)/(double)resources.size())*.9, "");
             AppContext.projectManager().downloadSource(mProject, mLanguage, r, ignoreCache);
             AppContext.projectManager().mergeSource(mProject.getId(), mLanguage.getId(), r);
 
-            publishProgress((i+1)/resources.size(), "");
+            publishProgress((i+1)/(double)resources.size(), "");
             mLanguage.addResource(r);
         }
         publishProgress(-1, "");
@@ -112,9 +113,5 @@ public class DownloadLanguageTask extends ManagedTask {
      */
     public SourceLanguage getLanguage() {
         return mLanguage;
-    }
-
-    public static interface OnProgressListener {
-        public void onProgress(double progress, String message);
     }
 }

@@ -5,6 +5,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.OnProgressListener;
 import com.door43.util.threads.ManagedTask;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
  */
 public class DownloadAvailableProjectsTask extends ManagedTask {
     private List<Project> mProjects = new ArrayList<>();
-    private OnProgress mListener;
+    private OnProgressListener mListener;
 
     @Override
     public void start() {
@@ -82,14 +83,10 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
      * Attaches a progress listener to the task
      * @param listener
      */
-    public void setOnProgressListener(OnProgress listener) {
+    public void setOnProgressListener(OnProgressListener listener) {
         mListener = listener;
         if(isFinished() && mListener != null) {
             mListener.onProgress(1, "");
         }
-    }
-
-    public static interface OnProgress {
-        public void onProgress(double progress, String message);
     }
 }

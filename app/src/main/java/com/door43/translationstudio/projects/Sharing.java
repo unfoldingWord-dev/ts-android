@@ -172,7 +172,7 @@ public class Sharing {
                         if (manifestJson.has("source")) {
                             File sourceDir = new File(extractedDir, manifestJson.getString("source"));
                             if (sourceDir.exists()) {
-                                AppContext.projectManager().importSource(sourceDir);
+                                AppContext.translationManager().importSource(sourceDir);
                             }
                         }
 

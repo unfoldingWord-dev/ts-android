@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.translationstudio.util.OnProgressListener;
 import com.door43.util.threads.ManagedTask;
 
 /**
@@ -22,10 +23,5 @@ public class DownloadLanguagesCatalogTask extends ManagedTask {
      */
     public void setProgressListener(OnProgressListener listener) {
         mListener = listener;
-    }
-
-
-    public static interface OnProgressListener {
-        public void onProgress(double progress, String message);
     }
 }

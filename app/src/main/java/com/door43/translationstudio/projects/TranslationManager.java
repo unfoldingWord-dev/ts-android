@@ -12,14 +12,20 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
+import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
 import com.door43.translationstudio.user.ProfileManager;
+import com.door43.translationstudio.util.OnProgressListener;
 import com.door43.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.TCPClient;
 import com.door43.util.Logger;
 
+import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.File;
 
 /**
  * This class handles the storage of translated content.
@@ -201,5 +207,210 @@ public class TranslationManager implements TCPClient.TcpListener {
     @Override
     public void onError(Throwable t) {
         mContext.showException(t);
+    }
+
+    /**
+     * Imports a translation draft into a project.
+     * This will replace any current translation
+     * @param p the project to which the draft will be imported
+     * @param draft the draft that will be imported
+     */
+    public void importTranslationDraft(Project p, SourceLanguage draft) {
+        importTranslationDraft(p, draft, null);
+    }
+
+    /**
+     * Imports a translation draft into a project.
+     * This will replace any current translation
+     * @param p the project to which the draft will be imported
+     * @param draft the draft that will be imported
+     */
+    public void importTranslationDraft(Project p, SourceLanguage draft, OnProgressListener listener) {
+        String source = AppContext.projectManager().getDataStore().pullSource(p.getId(), draft.getId(), draft.getSelectedResource().getId(), false, false);
+
+        if(listener != null) {
+            listener.onProgress(-1, "");
+        }
+
+        // load source
+        JSONArray jsonChapters;
+        if(source == null) {
+            Logger.e(this.getClass().getName(), "The draft source was not found for "+p.getId());
+            return;
+        }
+        try {
+            JSONObject json = new JSONObject(source);
+            jsonChapters = json.getJSONArray("chapters");
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "malformed draft source", e);
+            return;
+        }
+
+        // load the data
+        for(int i=0; i<jsonChapters.length(); i++) {
+            try {
+                if(listener != null) {
+                    listener.onProgress((i+1)/(double)jsonChapters.length(), "");
+                }
+                JSONObject jsonChapter = jsonChapters.getJSONObject(i);
+                if(jsonChapter.has("frames")) {
+                    // load chapter
+                    String chapterNumber = jsonChapter.get("number").toString();
+                    String title = "";
+                    String reference = "";
+                    if(jsonChapter.has("title") && jsonChapter.has("ref")) {
+                        title = jsonChapter.get("title").toString();
+                        reference = jsonChapter.get("ref").toString();
+                    }
+                    Chapter c = p.getChapter(chapterNumber);
+                    if(c == null) {
+                        Logger.e(this.getClass().getName(), "Unknown chapter ("+chapterNumber+") in translation draft "+draft.getId());
+                        continue;
+                    }
+
+                    // update title and reference translation
+                    c.setTitleTranslation(title);
+                    c.setReferenceTranslation(reference);
+                    c.save();
+
+                    // load frames
+                    JSONArray jsonFrames = jsonChapter.getJSONArray("frames");
+                    for(int j=0; j<jsonFrames.length(); j++) {
+                        JSONObject jsonFrame = jsonFrames.getJSONObject(j);
+                        if(jsonFrame.has("id") && jsonFrame.has("text")) {
+                            String format = "";
+                            if(jsonFrame.has("format")) {
+                                format = jsonFrame.getString("format");
+                            }
+                            Frame f = c.getFrame(jsonFrame.getString("id"));
+
+                            // update the frame translation
+                            if(f != null) {
+                                f.setTranslation(jsonFrame.getString("text"));
+                                f.save();
+                            } else{
+                                Logger.e(this.getClass().getName(), "Unknown frame ("+chapterNumber+":"+jsonFrame.getString("id")+") in translation draft "+draft.getId());
+                            }
+                        } else {
+                            Logger.w(this.getClass().getName(), "missing required parameters in source frame at index "+i+":"+j);
+                        }
+                    }
+                } else {
+                    Logger.w(this.getClass().getName(), "missing required parameters in source chapter at index " + i);
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "Failed to load project source", e);
+                continue;
+            }
+        }
+    }
+
+    /**
+     * Imports the source from the given directory
+     * @param dir
+     */
+    public void importSource(File dir) {
+        Logger.i(this.getClass().getName(), "importing source files from "+ dir.getName());
+        if(dir.exists() && dir.isDirectory()) {
+            File projectsCatalogFile = new File(dir, "projects_catalog.json");
+            if(projectsCatalogFile.exists()) {
+                try {
+                    // load projects
+                    String projCat = FileUtils.readFileToString(projectsCatalogFile);
+                    JSONArray projCatJson = new JSONArray(projCat);
+                    for(int i = 0; i < projCatJson.length(); i ++) {
+                        try {
+                            JSONObject projJson = projCatJson.getJSONObject(i);
+                            String projSlug = projJson.getString("slug");
+                            Project existingProject = AppContext.projectManager().getProject(projSlug);
+                            int projDateModified = projJson.getInt("date_modified");
+                            if (existingProject == null || existingProject.getDateModified() < projDateModified) {
+                                // import/replace the project
+                                AppContext.projectManager().getDataStore().importProject(projJson.toString());
+                                // load languages
+                                File projDir = new File(dir, projSlug);
+                                if(projDir.exists()) {
+                                    File langCatFile = new File(projDir, "languages_catalog.json");
+                                    if(langCatFile.exists()) {
+                                        String langCat = FileUtils.readFileToString(langCatFile);
+                                        JSONArray langCatJson = new JSONArray(langCat);
+                                        for(int j = 0; j < langCatJson.length(); j ++) {
+                                            try {
+                                                JSONObject langJson = langCatJson.getJSONObject(j);
+                                                JSONObject langInfoJson = langJson.getJSONObject("language");
+                                                String langSlug = langInfoJson.getString("slug");
+                                                int langDateModified = langInfoJson.getInt("date_modified");
+                                                SourceLanguage existingLanguage = null;
+                                                if(existingProject != null) {
+                                                    existingLanguage = existingProject.getSourceLanguage(langSlug);
+                                                }
+                                                if(existingLanguage == null || existingLanguage.getDateModified() < langDateModified) {
+                                                    // import/replace the source language
+                                                    AppContext.projectManager().getDataStore().importSourceLanguage(projSlug, langJson.toString());
+                                                    // load resources
+                                                    File langDir = new File(projDir, langSlug);
+                                                    if(langDir.exists()) {
+                                                        File resCatFile = new File(langDir, "resources_catalog.json");
+                                                        if(resCatFile.exists()) {
+                                                            String resCat = FileUtils.readFileToString(resCatFile);
+                                                            JSONArray resCatJson = new JSONArray(resCat);
+                                                            for(int k = 0; k < resCatJson.length(); k ++) {
+                                                                try {
+                                                                    JSONObject resJson = resCatJson.getJSONObject(k);
+                                                                    Resource r = Resource.generate(resJson);
+                                                                    if(r != null) {
+                                                                        Resource existingResource = null;
+                                                                        if (existingLanguage != null) {
+                                                                            existingResource = existingLanguage.getResource(r.getId());
+                                                                        }
+                                                                        if (existingResource == null || existingResource.getDateModified() < r.getDateModified()) {
+                                                                            // import/replace the resource catalog
+                                                                            AppContext.projectManager().getDataStore().importResource(projSlug, langSlug, resJson.toString());
+
+
+                                                                            // load the individual resource files
+                                                                            File resDir = new File(langDir, r.getId());
+                                                                            if (resDir.exists()) {
+                                                                                File notesFile = new File(resDir, "notes.json");
+                                                                                File sourceFile = new File(resDir, "source.json");
+                                                                                File termsFile = new File(resDir, "terms.json");
+
+                                                                                String notes = FileUtils.readFileToString(notesFile);
+                                                                                String source = FileUtils.readFileToString(sourceFile);
+                                                                                String terms = FileUtils.readFileToString(termsFile);
+
+                                                                                AppContext.projectManager().getDataStore().importNotes(projSlug, langSlug, r.getId(), r.getNotesCatalog(), notes);
+                                                                                AppContext.projectManager().getDataStore().importSource(projSlug, langSlug, r.getId(), r.getSourceCatalog(), source);
+                                                                                AppContext.projectManager().getDataStore().importTerms(projSlug, langSlug, r.getId(), r.getTermsCatalog(), terms);
+                                                                            }
+                                                                        }
+                                                                    } else {
+                                                                        Logger.w(this.getClass().getName(), "invalid resource definition found while importing");
+                                                                    }
+                                                                } catch (Exception e) {
+                                                                    Logger.e(this.getClass().getName(), "failed to import the resource", e);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            } catch (Exception e) {
+                                                Logger.e(this.getClass().getName(), "failed to import the source language", e);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            Logger.e(this.getClass().getName(), "failed to import the source project", e);
+                        }
+                    }
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "failed to import the source files", e);
+                }
+                // reload the projects
+                AppContext.projectManager().initProjects();
+            }
+        }
     }
 }

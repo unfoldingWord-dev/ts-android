@@ -1,5 +1,8 @@
 package com.door43.translationstudio;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -10,21 +13,32 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.tasks.ImportTranslationDraftTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.threads.ManagedTask;
+import com.door43.util.threads.TaskManager;
 
 
-public class ProjectSettingsActivity extends TranslatorBaseActivity {
+public class ProjectSettingsActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
     private Button targetLanguageBtn;
     private Button sourceLanguageBtn;
     private Project mProject;
     private LinearLayout draftNoticeLayout;
+    private AlertDialog mConfirmDialog;
+    private int mImportDraftTaskId = -1;
+    private ProgressDialog mLoadingDialog;
+    private final String STATE_IMPORT_TASK_ID = "import_task_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_settings);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        if(savedInstanceState != null) {
+            mImportDraftTaskId = savedInstanceState.getInt(STATE_IMPORT_TASK_ID);
+        }
 
         mProject = AppContext.projectManager().getSelectedProject();
         if(mProject == null || mProject.getSelectedChapter() == null) {
@@ -49,9 +63,19 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         editDraftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: display confirmation to replace translation work with this draft.
-                // we could alternatively provide a merge option
-                AppContext.context().showToastMessage("Not implemented yet");
+                // TODO: we could alternatively provide a merge option
+                mConfirmDialog = new AlertDialog.Builder(ProjectSettingsActivity.this)
+                        .setTitle(R.string.import_draft)
+                        .setMessage(R.string.import_draft_confirmation)
+                        .setIcon(R.drawable.ic_new_pencil_small)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                startImportDraftTask();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
             }
         });
 
@@ -88,6 +112,45 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
     public void onResume() {
         super.onResume();
         loadValues();
+        connectImportDraftTask();
+    }
+
+    /**
+     * connects to an existing import task
+     * @return
+     */
+    private void connectImportDraftTask() {
+        ImportTranslationDraftTask task = (ImportTranslationDraftTask)TaskManager.getTask(mImportDraftTaskId);
+        if(task != null) {
+            // connect to existing task
+            task.setOnFinishedListener(this);
+            createLoadingDialog();
+        }
+    }
+
+    /**
+     * Begins importing a translation draft into the project
+     */
+    private void startImportDraftTask() {
+        ImportTranslationDraftTask task = (ImportTranslationDraftTask)TaskManager.getTask(mImportDraftTaskId);
+        if(task == null && mProject != null) {
+            // create new task
+            task = new ImportTranslationDraftTask(mProject);
+            task.setOnFinishedListener(this);
+            mImportDraftTaskId = TaskManager.addTask(task);
+            createLoadingDialog();
+        }
+    }
+
+    private void createLoadingDialog() {
+        if(mLoadingDialog == null) {
+            mLoadingDialog = new ProgressDialog(this);
+            mLoadingDialog.setCancelable(true);
+            mLoadingDialog.setCanceledOnTouchOutside(false);
+            mLoadingDialog.setOnCancelListener(this);
+            mLoadingDialog.setTitle(R.string.loading);
+            mLoadingDialog.show();
+        }
     }
 
     private void loadValues() {
@@ -118,6 +181,15 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        ImportTranslationDraftTask task = (ImportTranslationDraftTask)TaskManager.getTask(mImportDraftTaskId);
+        if(task != null) {
+            outState.putInt(STATE_IMPORT_TASK_ID, mImportDraftTaskId);
+            task.setOnFinishedListener(null);
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -129,6 +201,38 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public void onDestroy() {
+        if(mConfirmDialog != null) {
+            mConfirmDialog.dismiss();
+        }
+        if(mLoadingDialog != null) {
+            mLoadingDialog.setOnCancelListener(null);
+            mLoadingDialog.setOnDismissListener(null);
+            mLoadingDialog.dismiss();
+        }
+        super.onDestroy();
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        TaskManager.clearTask(mImportDraftTaskId);
+        mImportDraftTaskId = -1;
+        if(mLoadingDialog != null && mLoadingDialog.isShowing()) {
+            mLoadingDialog.dismiss();
+        }
+        finish();
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialogInterface) {
+        ImportTranslationDraftTask task = (ImportTranslationDraftTask)TaskManager.getTask(mImportDraftTaskId);
+        if(task != null) {
+            task.setOnFinishedListener(null);
+            TaskManager.cancelTask(task);
+            mImportDraftTaskId = -1;
         }
     }
 }
