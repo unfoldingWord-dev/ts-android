@@ -286,6 +286,7 @@ public class NoteSpan extends Span {
             parser.nextTag();
             return readXML(parser);
         } catch (XmlPullParserException e) {
+            Logger.e(NoteSpan.class.getName(), "Failed to parse note", e);
             return null;
         } catch(IOException e) {
             return null;

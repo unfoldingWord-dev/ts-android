@@ -152,9 +152,14 @@ public class USXRenderer extends RenderingEngine {
         while(matcher.find()) {
             if(isStopped()) return in;
             NoteSpan verse = NoteSpan.parseNote(matcher.group());
-            verse.setOnClickListener(mNoteListener);
+            if(verse != null) {
+                verse.setOnClickListener(mNoteListener);
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+            } else {
+                // failed to parse the note
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
+            }
 
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
@@ -174,9 +179,14 @@ public class USXRenderer extends RenderingEngine {
         while(matcher.find()) {
             if(isStopped()) return in;
             VerseSpan verse = new VerseSpan(matcher.group(1));
-            verse.setOnClickListener(mVerseListener);
+            if(verse != null) {
+                verse.setOnClickListener(mVerseListener);
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+            } else {
+                // failed to parse the verse
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
+            }
 
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
