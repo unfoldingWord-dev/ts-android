@@ -1544,7 +1544,7 @@ public class MainActivity extends TranslatorBaseActivity {
         newFragment.setOkListener(new NoteMarkerDialog.OnClickListener() {
             @Override
             public void onClick(String passage, String notes) {
-                final NoteSpan note = new NoteSpan(passage, notes, NoteSpan.NoteType.UserNote);
+                final NoteSpan note = NoteSpan.generateUserNote(passage, notes);
                 note.setOnClickListener(new Span.OnClickListener() {
                     @Override
                     public void onClick(View view, Span span, int start, int end) {
@@ -1676,7 +1676,7 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onClick(final String passage, String notes) {
                 if(!notes.isEmpty()) {
                     // update the verse
-                    final NoteSpan noteSpan = new NoteSpan(passage, notes, NoteSpan.NoteType.UserNote);
+                    final NoteSpan noteSpan = NoteSpan.generateUserNote(passage, notes);
                     noteSpan.setOnClickListener(new Span.OnClickListener() {
                         @Override
                         public void onClick(View view, Span span, int start, int end) {

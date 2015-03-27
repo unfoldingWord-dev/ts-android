@@ -2,7 +2,6 @@ package com.door43.translationstudio.projects;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -1096,10 +1095,10 @@ public class Sharing {
 
                             // extract note
                             NoteSpan note = NoteSpan.parseNote(matcher.group());
-                            if(note.getNoteType() == NoteSpan.NoteType.Footnote) {
+                            if(note.getStyle().equals("f")) {
                                 // include footnotes
                                 convertedText += note.generateDokuWikiTag();
-                            } else if(note.getNoteType() == NoteSpan.NoteType.UserNote) {
+                            } else if(note.getStyle().equals(NoteSpan.STYLE_USERNOTE)) {
                                 // skip user notes
                                 convertedText += note.getPassage();
                             }

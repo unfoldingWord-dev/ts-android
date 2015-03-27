@@ -12,16 +12,34 @@ import android.widget.TextView;
  * Created by joel on 1/28/2015.
  */
 public abstract class Span {
-    private final String mHumanReadable;
-    private final String mMachineReadable;
+    private String mHumanReadable;
+    private String mMachineReadable;
     private OnClickListener mListener;
 
     /**
+     * Creates a new empty span.
+     * This is useful for classes that extends this class because they may need to perform
+     * some proccesing before fully initializing.
+     */
+    public Span() {
+        init("", "");
+    }
+
+    /**
      * Creates a new span
+     * @param humanReadable the human readable title of the span
+     * @param machineReadable the machine readable definition of the span
+     */
+    public Span(String humanReadable, String machineReadable) {
+        init(humanReadable, machineReadable);
+    }
+
+    /**
+     * Initializes the span
      * @param humanReadable
      * @param machineReadable
      */
-    public Span(String humanReadable, String machineReadable) {
+    protected void init(String humanReadable, String machineReadable) {
         mHumanReadable = humanReadable;
         mMachineReadable = machineReadable;
     }

@@ -12,6 +12,7 @@ import com.door43.translationstudio.R;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 
+import org.apache.commons.io.input.CharSequenceReader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xmlpull.v1.XmlPullParser;
@@ -20,7 +21,8 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -40,27 +42,23 @@ import javax.xml.transform.stream.StreamResult;
 public class NoteSpan extends Span {
     private final String mNotes;
     private final String mPassage;
-    /**
-     * @deprecated
-     */
-    private NoteType mType;
-    private static final String ROOT_TAG = "note";
-    private static final String CHILDREN_TAG = "char";
-    private static final String FOOTNOTE_STYLE = "f";
-    private static final String USERNOTE_STYLE = "u";
-    private static final String NOTE_TEXT_STYLE = "ft";
-    private static final String NOTE_PASSAGE_STYLE = "pt";
+    private final String mCaller;
+    private static final String DEFAULT_CALLER = "+";
+    private String mStyle;
     private SpannableStringBuilder mSpannable;
-
     public static final String PATTERN = "<note ((?!>).)*>((?!</note>).)*</note>";
+
+
+    // custom usx styles
+    public static final String STYLE_USERNOTE = "u";
 
     /**
      * A custom enum to identify the note type.
      * This also stores the style value use to identify the note in xml.
      */
     public static enum NoteType {
-        UserNote(USERNOTE_STYLE),
-        Footnote(FOOTNOTE_STYLE);
+        UserNote(STYLE_USERNOTE),
+        Footnote("f");
 
         private final String mText;
         private NoteType(final String text) {
@@ -73,11 +71,34 @@ public class NoteSpan extends Span {
         }
     }
 
-    public NoteSpan(String text, String notes, NoteType type) {
-        super(text, generateTag(text, notes, type));
-        mPassage = text;
-        mNotes = notes;
-        mType = type;
+    /**
+     * @param style the note style
+     * @param caller the note caller
+     * @param chars a list of char elements that make up the note
+     */
+    public NoteSpan(String style, String caller, List<Char> chars) {
+        super();
+        String spanTitle = "";
+        String note = "";
+        for(Char c:chars) {
+            if(c.style.equals(Char.STYLE_PASSAGE_TEXT)) {
+                spanTitle = c.value;
+            } else {
+                // TODO: implement better. We may need to format the values
+                note += c.value;
+            }
+        }
+        if(spanTitle.isEmpty()) {
+            // TODO: implement better. e.g lettered notes. If a marker is not defined in the chars we should atomatically create a enw marker.
+            spanTitle = "[note]";
+        }
+
+        init(spanTitle, generateTag(style, caller, spanTitle, chars));
+
+        mCaller = caller;
+        mPassage = spanTitle;
+        mNotes = note;
+        mStyle = style;
     }
 
     @Override
@@ -90,113 +111,52 @@ public class NoteSpan extends Span {
         }
         return mSpannable;
     }
-//    public NoteSpan(String spanText, String noteText, NoteType noteType, OnClickListener clickListener) {
-//        super(mNumNotes + "", spanText, clickListener);
-//        mNumNotes++;
-//        if(noteType == NoteType.Footnote) {
-//            mNumFootnotes ++;
-//            mFootnoteId = mNumFootnotes;
-//        }
-//        mNotes = noteText;
-//        mType = noteType;
-//    }
-
-    /**
-     * Converts the footnote to a spannable char sequence
-     * @return
-     */
-//    public CharSequence toCharSequence() {
-//        Bundle attrs = new Bundle();
-//        attrs.putString("id", getSpanId());
-//        TextView textView;
-//        BitmapDrawable bm;
-//        CharSequence span;
-//        switch(mType) {
-//            case Footnote:
-//                // TODO: this case is deprecated and needs some work before we can support footnotes.
-//                // load custom footnote layout
-//                textView = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_footnote, null);
-//                textView.setText(Html.fromHtml(toString() + "<sup>" + mFootnoteId + "</sup>"));
-//                if(mTypefaceSize > 0) {
-//                    textView.setTextSize(mTypefaceSize);
-//                }
-//                if(mTypeface != null) {
-//                    textView.setTypeface(mTypeface);
-//                }
-//                bm = convertViewToDrawable(textView);
-//                span = generateImageSpan(generateTag(toString(), mNotes, mType, attrs), bm);
-//                break;
-//            case UserNote:
-//            default:
-//                // load custom user note layout
-//                textView = (TextView) MainContext.getContext().getCurrentActivity().getLayoutInflater().inflate(R.layout.span_usernote, null);
-//                textView.setText(toString());
-//                if(mTypefaceSize > 0) {
-//                    textView.setTextSize(mTypefaceSize);
-//                }
-//                if(mTypeface != null) {
-//                    textView.setTypeface(mTypeface);
-//                }
-//                bm = convertViewToDrawable(textView);
-//                span = generateImageSpan(generateTag(toString(), mNotes, mType, attrs), bm);
-//        }
-//        return span;
-//    }
-
-    /**
-     * Generates the note tag
-     * @param text the passage title
-     * @param notes the passage definition
-     * @return
-     */
-//    private static String generateTag(String text, String notes) {
-//        return generateTag(text, notes);
-//    }
-
-//    /**
-//     * Generates the regular expression used to select a note by id
-//     * @param id
-//     * @return
-//     */
-//    public static String regexNoteById(String id) {
-//        return "<" + ROOT_TAG + " ((?!>).)*id=\"" + id + "\"((?!>).)*>((?!" + REGEX_CLOSE_TAG + ").)*" + REGEX_CLOSE_TAG;
-//    }
 
     /**
      * Generates the passage note tag with additional attributes
-     * @param text
-     * @param notes
+     * @param style
+     * @param caller
+     * @param title
+     * @param chars
      * @return
      */
-    public static String generateTag(String text, String notes, NoteType noteType) {
+    public static String generateTag(String style, String caller, String title, List<Char> chars) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db;
         try {
             db = dbf.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            return text;
+            return title;
         }
         Document document = db.newDocument();
 
         // build root
-        Element rootElement = document.createElement(ROOT_TAG);
-        rootElement.setAttribute("style", noteType.toString());
+        Element rootElement = document.createElement("note");
+        rootElement.setAttribute("style", style);
+        rootElement.setAttribute("caller", caller);
         document.appendChild(rootElement);
 
-        // add note
-        Element noteElement = document.createElement(CHILDREN_TAG);
-        noteElement.setAttribute("style", NOTE_TEXT_STYLE);
+        // add chars
+//        Element noteElement = document.createElement(TAG_CHAR);
+//        noteElement.setAttribute("style", NOTE_TEXT_STYLE);
+
+        for(Char c:chars) {
+            Element element = document.createElement("char");
+            element.setAttribute("style", c.style);
+            element.setTextContent(c.value.replace("\n", "\\n"));
+            rootElement.appendChild(element);
+        }
         // TRICKY: spannables render incorrectly when there are newlines within the content.
-        noteElement.setTextContent(notes.replace("\n", "\\n"));
-        rootElement.appendChild(noteElement);
+//        noteElement.setTextContent(notes.replace("\n", "\\n"));
+//        rootElement.appendChild(noteElement);
 
         // add user note data
-        if(noteType == NoteType.UserNote) {
-            Element userNoteElement = document.createElement(CHILDREN_TAG);
-            userNoteElement.setAttribute("style", NOTE_PASSAGE_STYLE);
-            userNoteElement.setTextContent(text);
-            rootElement.appendChild(userNoteElement);
-        }
+//        if(type == NoteType.UserNote) {
+//            Element userNoteElement = document.createElement(TAG_CHAR);
+//            userNoteElement.setAttribute("style", STYLE_CHAR_PASSAGE_TEXT);
+//            userNoteElement.setTextContent(title);
+//            rootElement.appendChild(userNoteElement);
+//        }
 
         // generate
         DOMSource domSource = new DOMSource(document.getDocumentElement());
@@ -216,14 +176,14 @@ public class NoteSpan extends Span {
             transformer.setOutputProperties(outFormat);
             transformer.transform(domSource, result);
         } catch (TransformerConfigurationException e) {
-            return text;
+            return title;
         } catch (TransformerException e) {
             Logger.e(NoteSpan.class.getName(), "failed to transform the the span text", e);
         }
 
         String tag = output.toString();
-        if(noteType == NoteType.Footnote) {
-            tag = text + tag;
+        if(style.equals("f")) {
+            tag = title + tag;
         }
         return tag;
     }
@@ -237,12 +197,16 @@ public class NoteSpan extends Span {
         return "((ref:\""+ mPassage +"\",note:\""+ mNotes +"\"))";
     }
 
+    public String getCaller() {
+        return mCaller;
+    }
+
     /**
      * Returns the type of note this is
      * @return
      */
-    public NoteType getNoteType() {
-        return mType;
+    public String getStyle() {
+        return mStyle;
     }
 
     /**
@@ -261,14 +225,18 @@ public class NoteSpan extends Span {
         return mPassage;
     }
 
-//    /**
-//     * Resets the note counts.
-//     * This effectively puts the next note id back to 0
-//     */
-//    public static void reset() {
-//        mNumFootnotes = 0;
-//        mNumNotes = 0;
-//    }
+    /**
+     * Generates a new user note span
+     * @param passageText the passage on which the node is made
+     * @param note the note
+     * @return
+     */
+    public static NoteSpan generateUserNote(String passageText, String note) {
+        List<Char> chars = new ArrayList<>();
+        chars.add(new Char(Char.STYLE_PASSAGE_TEXT, passageText));
+        chars.add(new Char(Char.STYLE_FOOTNOTE_TEXT, note));
+        return new NoteSpan(STYLE_USERNOTE, DEFAULT_CALLER, chars);
+    }
 
     /**
      * Generates a new note span from the supplied xml and returns it.
@@ -278,11 +246,11 @@ public class NoteSpan extends Span {
      * @param usx
      * @return
      */
-    public static NoteSpan parseNote(String usx) {
+    public static NoteSpan parseNote(CharSequence usx) {
         XmlPullParser parser = Xml.newPullParser();
         try {
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(new StringReader(usx));
+            parser.setInput(new CharSequenceReader(usx));
             parser.nextTag();
             return readXML(parser);
         } catch (XmlPullParserException e) {
@@ -300,45 +268,57 @@ public class NoteSpan extends Span {
      * @throws XmlPullParserException
      */
     private static NoteSpan readXML(XmlPullParser parser) throws XmlPullParserException, IOException {
-        NoteType noteType;
-        String notes = "";
-        String text = ""; // just for user notes
+//        NoteType noteType;
+//        String notes = "";
+//        String passageText = "";
 
-        parser.require(XmlPullParser.START_TAG, null, ROOT_TAG);
+        parser.require(XmlPullParser.START_TAG, null, "note");
 
         // load attributes
         String style = parser.getAttributeValue("","style");
-        if(style != null) {
-            if(style.equals("f")) {
-                noteType = NoteType.Footnote;
-            } else {
-                // by default everything is a user note
-                noteType = NoteType.UserNote;
-            }
-        } else {
-            noteType = NoteType.UserNote;
+//        if(style != null) {
+//            if(style.equals(STYLE_FOOTNOTE)) {
+//                noteType = NoteType.Footnote;
+//            } else {
+//                // by default everything is a user note
+//                noteType = NoteType.UserNote;
+//            }
+//        } else {
+//            noteType = NoteType.UserNote;
+//        }
+
+        String caller = parser.getAttributeValue("", "caller");
+        if(caller == null) {
+            caller = DEFAULT_CALLER;
         }
 
         int eventType = parser.getEventType();
         parser.nextTag();
 
         // load char's
+//        CharSequence note = "";
+        List<Char> chars = new ArrayList<>();
         while(eventType != XmlPullParser.END_DOCUMENT) {
             if(eventType == XmlPullParser.START_TAG){
-                parser.require(XmlPullParser.START_TAG, null, CHILDREN_TAG);
-                String charStyle = parser.getAttributeValue("","style");
+                parser.require(XmlPullParser.START_TAG, null, "char");
+                String charStyle = parser.getAttributeValue("", "style");
                 String charText = parser.nextText();
 
-                if(charStyle.equals(NOTE_TEXT_STYLE)) {
-                    // TRICKY: add back the newlines that were removed to preserve spannable rendering
-                    notes = charText.replace("\\n", "\n");
-                } else if(charStyle.equals(NOTE_PASSAGE_STYLE)) {
-                    text = charText;
-                }
+                chars.add(new Char(charStyle, charText));
+//                if(charStyle.equals(NOTE_TEXT_STYLE)) {
+//                    // TRICKY: add back the newlines that were removed to preserve spannable rendering
+//                    TextUtils.concat(note, charText.replace("\\n", "\n"));
+//                } else if(charStyle.equals(STYLE_CHAR_PASSAGE_TEXT)) {
+//                    passageText = charText;
+//                }
+//
+//                if(charStyle.equals(STYLE_FOOTNOTE)) {
+//                    passageText = "footnote";
+//                }
             }
             eventType = parser.next();
         }
 
-        return new NoteSpan(text, notes, noteType);
+        return new NoteSpan(style, caller.trim(), chars);
     }
 }
