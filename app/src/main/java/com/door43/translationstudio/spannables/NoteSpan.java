@@ -48,28 +48,8 @@ public class NoteSpan extends Span {
     private SpannableStringBuilder mSpannable;
     public static final String PATTERN = "<note ((?!>).)*>((?!</note>).)*</note>";
 
-
     // custom usx styles
     public static final String STYLE_USERNOTE = "u";
-
-    /**
-     * A custom enum to identify the note type.
-     * This also stores the style value use to identify the note in xml.
-     */
-    public static enum NoteType {
-        UserNote(STYLE_USERNOTE),
-        Footnote("f");
-
-        private final String mText;
-        private NoteType(final String text) {
-            mText = text;
-        }
-
-        @Override
-        public String toString() {
-            return mText;
-        }
-    }
 
     /**
      * @param style the note style
