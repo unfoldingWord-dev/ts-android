@@ -153,10 +153,11 @@
         <activity
             android:name=".library.ProjectLibraryListActivity"
             android:label="@string/title_activity_project_library"
+            android:theme="@style/Theme.Main"
             android:parentActivityName=".GetMoreProjectsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.MainActivity" />
+                android:value=".GetMoreProjectsActivity" />
         </activity>
         <activity
             android:name=".library.ProjectLibraryDetailActivity"

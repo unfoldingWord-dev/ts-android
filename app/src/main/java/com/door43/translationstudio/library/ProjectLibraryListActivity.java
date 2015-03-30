@@ -47,6 +47,12 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_project_library_list);
+
+        // set up tool bar
+        mToolbar = (Toolbar)findViewById(R.id.toolbar_server_library);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
         // Show the Up button in the action bar.
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -65,10 +71,6 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
         }
 
-        // set up tool bar
-        mToolbar = (Toolbar)findViewById(R.id.toolbar_server_library);
-        setSupportActionBar(mToolbar);
-        getSupportActionBar().setHomeButtonEnabled(true);
         // TODO: If exposing deep links into your app, handle intents here.
     }
 

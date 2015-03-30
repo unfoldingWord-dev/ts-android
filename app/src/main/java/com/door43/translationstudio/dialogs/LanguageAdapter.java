@@ -26,6 +26,7 @@ import java.util.Map;
  * Created by joel on 10/7/2014.
  */
 public class LanguageAdapter extends ArrayAdapter<Language> implements Filterable {
+    @SuppressWarnings("unchecked")
     private List<Language> mLanguageList;
     private List<Language> mOrigLanguageList = new ArrayList<Language>();
     private Context mContext;

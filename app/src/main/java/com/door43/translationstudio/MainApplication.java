@@ -128,44 +128,45 @@ public class MainApplication extends Application {
 
     /**
      * Sends a new local notification
+     * @deprecated
      */
-    public void sendNotification(int notificationId, int titleResourceId, String message) {
-        // keep track of all the notifications
-        ArrayList<String> notifications;
-        if(mNotificationsMap.containsKey(""+notificationId)) {
-            notifications = mNotificationsMap.get(""+notificationId);
-        } else {
-            // add new notification group
-            notifications = new ArrayList<String>();
-            mNotificationsMap.put("" + notificationId, notifications);
-        }
-
-        // build notification
-        notifications.add(message);
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_stat_notify_msg)
-                        .setContentTitle(getResources().getString(titleResourceId))
-                        .setContentText(message)
-                        .setAutoCancel(true)
-                        .setNumber(notifications.size());
-
-        // build big notification
-        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-        inboxStyle.setBigContentTitle(getResources().getString(titleResourceId));
-        for (String event:notifications) {
-            inboxStyle.addLine(event);
-        }
-        mBuilder.setStyle(inboxStyle);
-
-        // issue notification
-        NotificationManager mNotifyMgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            mNotifyMgr.notify(notificationId, mBuilder.build());
-        } else {
-            mNotifyMgr.notify(notificationId, mBuilder.getNotification());
-        }
-    }
+//    public void sendNotification(int notificationId, int titleResourceId, String message) {
+//        // keep track of all the notifications
+//        ArrayList<String> notifications;
+//        if(mNotificationsMap.containsKey(""+notificationId)) {
+//            notifications = mNotificationsMap.get(""+notificationId);
+//        } else {
+//            // add new notification group
+//            notifications = new ArrayList<String>();
+//            mNotificationsMap.put("" + notificationId, notifications);
+//        }
+//
+//        // build notification
+//        notifications.add(message);
+//        NotificationCompat.Builder mBuilder =
+//                new NotificationCompat.Builder(this)
+//                        .setSmallIcon(R.drawable.ic_stat_notify_msg)
+//                        .setContentTitle(getResources().getString(titleResourceId))
+//                        .setContentText(message)
+//                        .setAutoCancel(true)
+//                        .setNumber(notifications.size());
+//
+//        // build big notification
+//        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+//        inboxStyle.setBigContentTitle(getResources().getString(titleResourceId));
+//        for (String event:notifications) {
+//            inboxStyle.addLine(event);
+//        }
+//        mBuilder.setStyle(inboxStyle);
+//
+//        // issue notification
+//        NotificationManager mNotifyMgr = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//            mNotifyMgr.notify(notificationId, mBuilder.build());
+//        } else {
+//            mNotifyMgr.notify(notificationId, mBuilder.getNotification());
+//        }
+//    }
 
     /**
      * Sets the current activity so we can access it throughout the app.

@@ -68,7 +68,8 @@ import java.util.ArrayList;
         mTermsListLayout = (ListView)view.findViewById(R.id.termsListLayout);
 
         // hook up adapter for key terms
-        mTermsAdapter = new ImportantTermsAdapter(this.getActivity(), new ArrayList(){});
+
+        mTermsAdapter = new ImportantTermsAdapter(this.getActivity(), new ArrayList<String>(){});
         mTermsListLayout.setAdapter(mTermsAdapter);
 
         mTermsListLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {

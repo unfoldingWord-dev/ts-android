@@ -65,7 +65,7 @@ public class LicenseDialog extends DialogFragment {
         if (getDialog() == null) {
             return;
         }
-        getDialog().getWindow().setLayout(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+        getDialog().getWindow().setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         // scroll to the top
         mScrollView.smoothScrollTo(0, 0);
     }

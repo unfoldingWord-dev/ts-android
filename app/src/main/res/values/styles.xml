@@ -66,21 +66,21 @@
     </style>
 
     <!--<style name="MySearchViewStyle" parent="Widget.AppCompat.SearchView">-->
-        <!--&lt;!&ndash; Background for the search query section (e.g. EditText) &ndash;&gt;-->
+        <!-- Background for the search query section (e.g. EditText) -->
         <!--<item name="queryBackground">...</item>-->
-        <!--&lt;!&ndash; Background for the actions section (e.g. voice, submit) &ndash;&gt;-->
+        <!-- Background for the actions section (e.g. voice, submit) -->
         <!--<item name="submitBackground">...</item>-->
-        <!--&lt;!&ndash; Close button icon &ndash;&gt;-->
+        <!-- Close button icon -->
         <!--<item name="closeIcon">...</item>-->
-        <!--&lt;!&ndash; Search button icon &ndash;&gt;-->
+        <!-- Search button icon -->
         <!--<item name="searchIcon">...</item>-->
-        <!--&lt;!&ndash; Go/commit button icon &ndash;&gt;-->
+        <!-- Go/commit button icon -->
         <!--<item name="goIcon">...</item>-->
-        <!--&lt;!&ndash; Voice search button icon &ndash;&gt;-->
+        <!-- Voice search button icon -->
         <!--<item name="voiceIcon">...</item>-->
-        <!--&lt;!&ndash; Commit icon shown in the query suggestion row &ndash;&gt;-->
+        <!-- Commit icon shown in the query suggestion row -->
         <!--<item name="commitIcon">...</item>-->
-        <!--&lt;!&ndash; Layout for query suggestion rows &ndash;&gt;-->
+        <!-- Layout for query suggestion rows -->
         <!--<item name="suggestionRowLayout">...</item>-->
     <!--</style>-->
 

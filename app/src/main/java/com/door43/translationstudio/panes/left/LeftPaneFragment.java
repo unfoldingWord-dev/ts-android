@@ -63,7 +63,7 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
         selectTab(mDefaultPage);
 
         if(mLayoutWidth != 0) {
-            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.FILL_PARENT));
+            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.MATCH_PARENT));
         }
 
         return mRootView;
@@ -125,7 +125,7 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
      */
     public void setLayoutWidth(int width) {
         if(mRootView != null) {
-            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.FILL_PARENT));
+            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.MATCH_PARENT));
         } else {
             mLayoutWidth = width;
         }
