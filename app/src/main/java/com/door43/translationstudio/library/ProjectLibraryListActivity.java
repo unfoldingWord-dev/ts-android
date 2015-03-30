@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -40,6 +41,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
      * device.
      */
     private boolean mTwoPane;
+    private Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,11 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                     .setActivateOnItemClick(true);
 
         }
+
+        // set up tool bar
+        mToolbar = (Toolbar)findViewById(R.id.toolbar_server_library);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setHomeButtonEnabled(true);
         // TODO: If exposing deep links into your app, handle intents here.
     }
 

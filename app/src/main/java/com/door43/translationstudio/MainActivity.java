@@ -15,7 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -724,7 +724,7 @@ public class MainActivity extends TranslatorBaseActivity {
         });
 
         // get notified when drawers open
-        mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, R.drawable.ic_ab_back_holo_light_am, R.string.close, R.string.close) {
+        mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, mMainToolbar, R.string.close, R.string.close) {
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 mTranslationEditText.setEnabled(true);

@@ -64,4 +64,24 @@
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
     </style>
+
+    <!--<style name="MySearchViewStyle" parent="Widget.AppCompat.SearchView">-->
+        <!--&lt;!&ndash; Background for the search query section (e.g. EditText) &ndash;&gt;-->
+        <!--<item name="queryBackground">...</item>-->
+        <!--&lt;!&ndash; Background for the actions section (e.g. voice, submit) &ndash;&gt;-->
+        <!--<item name="submitBackground">...</item>-->
+        <!--&lt;!&ndash; Close button icon &ndash;&gt;-->
+        <!--<item name="closeIcon">...</item>-->
+        <!--&lt;!&ndash; Search button icon &ndash;&gt;-->
+        <!--<item name="searchIcon">...</item>-->
+        <!--&lt;!&ndash; Go/commit button icon &ndash;&gt;-->
+        <!--<item name="goIcon">...</item>-->
+        <!--&lt;!&ndash; Voice search button icon &ndash;&gt;-->
+        <!--<item name="voiceIcon">...</item>-->
+        <!--&lt;!&ndash; Commit icon shown in the query suggestion row &ndash;&gt;-->
+        <!--<item name="commitIcon">...</item>-->
+        <!--&lt;!&ndash; Layout for query suggestion rows &ndash;&gt;-->
+        <!--<item name="suggestionRowLayout">...</item>-->
+    <!--</style>-->
+
 </resources>
