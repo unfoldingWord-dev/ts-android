@@ -1,11 +1,15 @@
 package com.door43.translationstudio.library;
 
 import android.app.AlertDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -70,6 +74,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                     .setActivateOnItemClick(true);
 
         }
+
+        handleIntent(getIntent());
 
         // TODO: If exposing deep links into your app, handle intents here.
     }
@@ -149,6 +155,12 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             menu.findItem(R.id.action_edit_projects).setVisible(false);
             menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
         }
+
+        // hook up the search
+        SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
+        MenuItem searchMenuItem = menu.findItem(R.id.action_search);
+        SearchView searchViewAction = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
+        searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         return true;
     }
 
@@ -201,6 +213,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 LibraryTempData.setEnableEditing(false);
                 reload();
                 return true;
+            case R.id.action_search:
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -224,6 +238,23 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             mConfirmDialog.dismiss();
         }
         super.onDestroy();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        handleIntent(intent);
+    }
+
+    /**
+     * Handles the search
+     * @param intent
+     */
+    private void handleIntent(Intent intent) {
+
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            // TODO: use the query to search your data somehow
+        }
     }
 
     @Override

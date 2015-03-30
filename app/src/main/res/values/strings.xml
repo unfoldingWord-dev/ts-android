@@ -296,5 +296,6 @@
     <string name="action_cancel_edit_projects">Stop Editing Projects</string>
     <string name="import_draft">Import Draft</string>
     <string name="import_draft_confirmation">This will replace your existing translation in this target language, continue?</string>
+    <string name="action_search">Search</string>
 
 </resources>

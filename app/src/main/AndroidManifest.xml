@@ -154,10 +154,18 @@
             android:name=".library.ProjectLibraryListActivity"
             android:label="@string/title_activity_project_library"
             android:theme="@style/Theme.Main"
+            android:launchMode="singleTop"
             android:parentActivityName=".GetMoreProjectsActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".GetMoreProjectsActivity" />
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable"/>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".library.ProjectLibraryDetailActivity"
