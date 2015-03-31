@@ -1,29 +1,43 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"  android:baselineAligned="false"
-    android:divider="?android:attr/dividerHorizontal" android:orientation="horizontal"
-    android:showDividers="middle"
-    tools:context="com.door43.translationstudio.library.ProjectLibraryListActivity"
-    android:background="@color/white">
+    android:orientation="vertical"
+    tools:context="com.door43.translationstudio.library.ProjectLibraryListActivity">
 
-    <!--
-    This layout is a two-pane layout for the Projects
-    master/detail flow.
-    
-    -->
+    <android.support.v7.widget.Toolbar
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/toolbar_server_library"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"/>
 
-    <fragment android:id="@+id/project_list"
-        android:name="com.door43.translationstudio.library.ProjectLibraryListFragment"
-        android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-        tools:layout="@android:layout/list_content" />
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="match_parent"  android:baselineAligned="false"
+        android:divider="?android:attr/dividerHorizontal" android:orientation="horizontal"
+        android:showDividers="middle"
+        android:background="@color/white">
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="2dp"
-        android:layout_height="fill_parent"
-        android:background="@color/blue"></LinearLayout>
+        <!--
+        This layout is a two-pane layout for the Projects
+        master/detail flow.
 
-    <FrameLayout android:id="@+id/project_detail_container" android:layout_width="0dp"
-        android:layout_height="match_parent" android:layout_weight="3" />
+        -->
 
+        <fragment android:id="@+id/project_list"
+            android:name="com.door43.translationstudio.library.ProjectLibraryListFragment"
+            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
+            tools:layout="@android:layout/list_content" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="2dp"
+            android:layout_height="fill_parent"
+            android:background="@color/blue"></LinearLayout>
+
+        <FrameLayout android:id="@+id/project_detail_container" android:layout_width="0dp"
+            android:layout_height="match_parent" android:layout_weight="3" />
+
+    </LinearLayout>
 </LinearLayout>
+
