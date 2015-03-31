@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.NavUtils;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -90,14 +88,14 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
      * indicating that the item with the given ID was selected.
      */
     @Override
-    public void onItemSelected(int index) {
+    public void onItemSelected(String id) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
 //            Bundle arguments = new Bundle();
             Bundle arguments = getIntent().getExtras();
-            arguments.putInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index);
+            arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
             ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
             if(arguments != null) {
                 fragment.setArguments(arguments);
@@ -112,7 +110,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             if(arguments != null) {
                 detailIntent.putExtras(arguments);
             }
-            detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX, index + "");
+            detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
             startActivity(detailIntent);
         }
     }
@@ -158,8 +156,33 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
         // hook up the search
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
-        MenuItem searchMenuItem = menu.findItem(R.id.action_search);
-        SearchView searchViewAction = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
+        final MenuItem searchMenuItem = menu.findItem(R.id.action_search);
+        final SearchView searchViewAction = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
+//        searchViewAction.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View view, boolean b) {
+//                if(searchViewAction.getQuery().toString().isEmpty()) {
+//                    search("");
+//                }
+//            }
+//        });
+        searchViewAction.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                // clear the search
+//                if(searchMenuItem.isActionViewExpanded() && !TextUtils.isEmpty(s)) {
+//                    search(s);
+//                    return true;
+//                }
+                search(s);
+                return true;
+            }
+        });
         searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         return true;
     }
@@ -250,11 +273,19 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
      * @param intent
      */
     private void handleIntent(Intent intent) {
-
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            // TODO: use the query to search your data somehow
+            search(query);
         }
+    }
+
+    /**
+     * Performs the search
+     * @param query
+     */
+    private void search(String query) {
+        ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
+        listFragment.filter(query);
     }
 
     @Override

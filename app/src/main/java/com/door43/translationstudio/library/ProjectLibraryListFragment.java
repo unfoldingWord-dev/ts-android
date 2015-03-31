@@ -19,6 +19,7 @@ import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A list fragment representing a list of Projects. This fragment
@@ -98,7 +99,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     @Override
     public void onProgress(ManagedTask task, final double progress, final String message) {
         // don't display anything if we've already loading the results
-        if(LibraryTempData.getProjects().length == 0) {
+        if(LibraryTempData.getProjects().size() == 0) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override
@@ -144,6 +145,12 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         }
     }
 
+    public void filter(String query) {
+        if(mAdapter != null) {
+            mAdapter.getFilter().filter(query);
+        }
+    }
+
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
@@ -153,7 +160,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(int index);
+        public void onItemSelected(String id);
     }
 
     /**
@@ -162,7 +169,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
      */
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(int index) {
+        public void onItemSelected(String id) {
         }
     };
 
@@ -212,8 +219,8 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         preparProjectList();
     }
 
-    private Project[] getProjectList() {
-        Project[] projects;
+    private List<Project> getProjectList() {
+        List<Project> projects;
         if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
             // new languages/projects
             projects = LibraryTempData.getNewProjects();
@@ -242,7 +249,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
 //            onProgress(task, -1, "");
             task.setOnFinishedListener(this);
             task.setOnProgressListener(this);
-        } else if(LibraryTempData.getProjects().length == 0) {
+        } else if(LibraryTempData.getProjects().size() == 0) {
 //            onProgress(-1, "");
             // start process
             DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask();
@@ -280,7 +287,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         // fragment is attached to one) that an item has been selected.
         mAdapter.setSelected(position);
         mAdapter.notifyDataSetChanged();
-        mCallbacks.onItemSelected(position);
+        mCallbacks.onItemSelected(mAdapter.getItem(position).getId());
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.door43.translationstudio.library;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -18,7 +17,6 @@ import com.door43.translationstudio.R;
 
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
@@ -39,7 +37,7 @@ import java.util.ArrayList;
  * on handsets.
  */
 public class ProjectLibraryDetailFragment extends TranslatorBaseFragment implements ManagedTask.OnFinishedListener {
-    public static final String ARG_ITEM_INDEX = "item_id";
+    public static final String ARG_ITEM_ID = "item_id";
     private static final String IMAGE_TASK_PREFIX = "project-image-";
     private Project mProject;
     private ArrayList<StringFragmentKeySet> mTabs = new ArrayList<>();
@@ -63,21 +61,15 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_INDEX)) {
-            int index;
-            try {
-                index = Integer.parseInt(getArguments().getString(ARG_ITEM_INDEX));
-            } catch(Exception e) {
-                index = getArguments().getInt(ARG_ITEM_INDEX);
-            }
-
-            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
-                mProject = LibraryTempData.getNewProject(index);
-            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
-                mProject = LibraryTempData.getUpdatedProject(index);
-            } else {
-                mProject = LibraryTempData.getProject(index);
-            }
+        if (getArguments().containsKey(ARG_ITEM_ID)) {
+            String id = getArguments().getString(ARG_ITEM_ID);
+//            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
+//                mProject = LibraryTempData.getNewProject(id);
+//            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
+//                mProject = LibraryTempData.getUpdatedProject(id);
+//            } else {
+                mProject = LibraryTempData.getProject(id);
+//            }
         }
     }
 
@@ -124,7 +116,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
                 public void onClick(View view) {
                     // TODO: place this in a task
                     AppContext.projectManager().deleteProject(mProject.getId());
-                    LibraryTempData.sortProjects();
+                    LibraryTempData.organizeProjects();
                     if(getActivity() != null && getActivity() instanceof LibraryCallbacks) {
                         ((LibraryCallbacks)getActivity()).refreshUI();
                     }

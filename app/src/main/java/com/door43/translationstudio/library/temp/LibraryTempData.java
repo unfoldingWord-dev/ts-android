@@ -1,16 +1,23 @@
 package com.door43.translationstudio.library.temp;
 
+import android.widget.Filter;
+
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class handles the temporary list of available projects
  */
 public class LibraryTempData {
+    private static Map<String, Integer> mProjectIds = new HashMap<>();
+//    private static Map<String, Integer> mNewProjectIds = new HashMap<>();
+//    private static Map<String, Integer> mUpdatedProjectIds = new HashMap<>();
     private static List<Project> mProjects = new ArrayList<>();
     private static List<Project> mNewProjects = new ArrayList<>();
     private static List<Project> mUpdatedProjects = new ArrayList<>();
@@ -19,15 +26,23 @@ public class LibraryTempData {
     private static boolean mEnableEditing = false;
 
     public static void setAvailableProjects(List<Project> projects) {
-        mProjects = projects;
+        setProjects(projects);
         ProjectManager.sortModelList(mProjects);
-        sortProjects();
+        organizeProjects();
+    }
+
+    private static void setProjects(List<Project> projects) {
+        mProjects = projects;
+        // map id's to index
+        for(int i = 0; i < projects.size(); i ++) {
+            mProjectIds.put(projects.get(i).getId(), i);
+        }
     }
 
     /**
      * Filters projects into new projects and/or updated projects
      */
-    public static void sortProjects() {
+    public static void organizeProjects() {
         mNewProjects = new ArrayList<>();
         mUpdatedProjects = new ArrayList<>();
         for(Project p:mProjects) {
@@ -40,58 +55,79 @@ public class LibraryTempData {
                 mUpdatedProjects.add(p);
             }
         }
+//
+//        // map id's to index
+//        for(int i = 0; i < mNewProjects.size(); i ++) {
+//            mNewProjectIds.put(mNewProjects.get(i).getId(), i);
+//        }
+//
+//        // map id's to index
+//        for(int i = 0; i < mUpdatedProjects.size(); i ++) {
+//            mUpdatedProjectIds.put(mUpdatedProjects.get(i).getId(), i);
+//        }
     }
 
     /**
      * Returns all of the projects
      * @return
      */
-    public static Project[] getProjects() {
-        return mProjects.toArray(new Project[mProjects.size()]);
+    public static List<Project> getProjects() {
+        return mProjects;
     }
 
     /**
      * Returns a cached project
-     * @deprecated
-     * @param i
+     * @param id
      * @return
      */
-    public static Project getProject(int i) {
-        return mProjects.get(i);
+    public static Project getProject(String id) {
+        if(mProjectIds.containsKey(id)) {
+            return mProjects.get(mProjectIds.get(id));
+        } else {
+            return null;
+        }
     }
 
     /**
      * Returns a cached updated project
-     * @param i
+     * @param id
      * @return
      */
-    public static Project getUpdatedProject(int i) {
-        return mUpdatedProjects.get(i);
-    }
+//    public static Project getUpdatedProject(String id) {
+//        if(mUpdatedProjectIds.containsKey(id)) {
+//            return mUpdatedProjects.get(mUpdatedProjectIds.get(id));
+//        } else {
+//            return null;
+//        }
+//    }
 
     /**
      * Returns a cached new project
-     * @param i
+     * @param id
      * @return
      */
-    public static Project getNewProject(int i) {
-        return mNewProjects.get(i);
-    }
+//    public static Project getNewProject(String id) {
+//        if(mNewProjectIds.containsKey(id)) {
+//            return mNewProjects.get(mNewProjectIds.get(id));
+//        } else {
+//            return null;
+//        }
+//    }
 
     /**
      * Returns a list of projects that are new or have new languages
      * @return
      */
-    public static Project[] getNewProjects() {
-        return mNewProjects.toArray(new Project[mNewProjects.size()]);
+    public static List<Project> getNewProjects() {
+        return mNewProjects;
     }
 
     /**
      * Returns a list of project updates
      * @return
      */
-    public static Project[] getUpdatedProjects() {
-        return mUpdatedProjects.toArray(new Project[mUpdatedProjects.size()]);
+    public static List<Project> getUpdatedProjects() {
+        return mUpdatedProjects;
     }
 
     public static void setShowNewProjects(Boolean showNewProjects) {

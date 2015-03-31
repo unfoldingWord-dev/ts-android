@@ -15,14 +15,11 @@ import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 import com.door43.util.threads.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.xml.transform.Source;
 
 /**
  * Created by joel on 3/12/2015.
@@ -35,20 +32,15 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
 
-        if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_INDEX)) {
-            int index;
-            try {
-                index = Integer.parseInt(getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
-            } catch (Exception e) {
-                index = getArguments().getInt(ProjectLibraryDetailFragment.ARG_ITEM_INDEX);
-            }
-            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
-                mProject = LibraryTempData.getNewProject(index);
-            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
-                mProject = LibraryTempData.getUpdatedProject(index);
-            } else {
-                mProject = LibraryTempData.getProject(index);
-            }
+        if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_ID)) {
+            String id = getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_ID);
+//            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
+//                mProject = LibraryTempData.getNewProject(id);
+//            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
+//                mProject = LibraryTempData.getUpdatedProject(id);
+//            } else {
+                mProject = LibraryTempData.getProject(id);
+//            }
         }
 
         mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_LANGUAGE_PREFIX, false);
@@ -62,7 +54,7 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
                     // TODO: place all of this in a task
                     SourceLanguage lang = mAdapter.getItem(i);
                     AppContext.projectManager().deleteSourceLanguage(mProject.getId(), lang.getId());
-                    LibraryTempData.sortProjects();
+                    LibraryTempData.organizeProjects();
                     mAdapter.notifyDataSetChanged();
                     if(!AppContext.projectManager().isProjectDownloaded(mProject.getId()) && getActivity() != null && getActivity() instanceof LibraryCallbacks) {
                         ((LibraryCallbacks)getActivity()).refreshUI();

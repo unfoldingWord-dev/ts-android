@@ -43,8 +43,8 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity impleme
             if(getIntent().getExtras() != null) {
                 arguments = getIntent().getExtras();
             }
-            arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_INDEX,
-                    getIntent().getStringExtra(ProjectLibraryDetailFragment.ARG_ITEM_INDEX));
+            arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID,
+                    getIntent().getStringExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID));
             ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction().add(R.id.project_detail_container, fragment).commit();
