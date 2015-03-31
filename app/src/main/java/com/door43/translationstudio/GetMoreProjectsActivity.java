@@ -25,19 +25,6 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
     private ToolAdapter mAdapter;
     private AlertDialog mBrowseDialog;
 
-    /**
-     * State options for browsing projects
-     */
-    private enum BrowseState {
-        NOTHING,
-        DOWNLOADING_PROJECTS_CATALOG,
-        BROWSING_PROJECTS_CATALOG,
-        DOWNLOADING_LANGUAGES_CATALOG,
-        BROWSING_LANGUAGES_CATALOG,
-        DOWNLOADING_PROJECT_SOURCE,
-        RELOADING_SELECTED_PROJECT
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,9 +89,10 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                         .show();
             }
         }, hasNetwork, getResources().getString(R.string.internet_not_available)));
-        mGetProjectTools.add(new ToolItem("Transfer from device", "Projects will be transferred over the network from a nearby device", R.drawable.ic_phone, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.transfer_from_device), getResources().getString(R.string.transfer_from_device_description), R.drawable.ic_phone, new ToolItem.ToolAction() {
             @Override
             public void run() {
+                // TODO: we need to update the p2p sharing to support requesting just the source.
                 Intent intent = new Intent(GetMoreProjectsActivity.this, DeviceToDeviceActivity.class);
                 Bundle extras = new Bundle();
                 extras.putBoolean("startAsServer", false);
@@ -113,41 +101,13 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                 startActivity(intent);
             }
         }, false, "Not implimented"));// hasNetwork, getResources().getString(R.string.internet_not_available)));
-        mGetProjectTools.add(new ToolItem("Import from storage", "Projects will be imported from the external storage on this device", R.drawable.ic_folder, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.import_from_storage), getResources().getString(R.string.import_from_storage_description), R.drawable.ic_folder, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // TODO: This is the same as for the Sharing activity though we should package it all up into a single method call.
             }
         }, false, "Not implimented"));
         mAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_get_more_projects, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
     }
 
     @Override

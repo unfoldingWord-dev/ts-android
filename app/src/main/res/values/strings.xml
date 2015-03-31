@@ -38,6 +38,7 @@
     <string name="missing_file" translatable="false">The file does not exist</string>
     <string name="export_to_app">Export to app</string>
     <string name="export_to_sd">Export to SD Card</string>
+    <!-- TODO: this is deprecated we should use import_from_storage instead -->
     <string name="import_from_sd">Import from SD Card</string>
     <string name="export_as_project" translatable="false">translationStudio</string>
     <string name="export_as_dokuwiki" translatable="false">DokuWiki</string>
@@ -297,5 +298,9 @@
     <string name="import_draft">Import Draft</string>
     <string name="import_draft_confirmation">This will replace your existing translation in this target language, continue?</string>
     <string name="action_search">Search</string>
+    <string name="transfer_from_device">Transfer from device</string>
+    <string name="transfer_from_device_description">Projects will be transferred over the network from a nearby device</string>
+    <string name="import_from_storage">Import from storage</string>
+    <string name="import_from_storage_description">Projects will be imported from the external storage on this device</string>
 
 </resources>
