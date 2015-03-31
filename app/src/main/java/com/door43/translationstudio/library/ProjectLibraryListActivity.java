@@ -54,6 +54,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         mToolbar = (Toolbar)findViewById(R.id.toolbar_server_library);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Show the Up button in the action bar.
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);

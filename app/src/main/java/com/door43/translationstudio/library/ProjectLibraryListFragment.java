@@ -332,7 +332,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         if(!mActivityPaused) {
             // the activity is being destroyed
             LibraryTempData.setAvailableProjects(new ArrayList<Project>());
-
+            LibraryTempData.setEnableEditing(false);
         }
         if(mDialog != null) {
             mDialog.setOnCancelListener(null);
