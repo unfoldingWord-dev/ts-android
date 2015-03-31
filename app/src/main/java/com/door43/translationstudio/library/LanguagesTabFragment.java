@@ -34,13 +34,7 @@ public class LanguagesTabFragment extends TranslatorBaseFragment implements Tabs
 
         if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_ID)) {
             String id = getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_ID);
-//            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
-//                mProject = LibraryTempData.getNewProject(id);
-//            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
-//                mProject = LibraryTempData.getUpdatedProject(id);
-//            } else {
-                mProject = LibraryTempData.getProject(id);
-//            }
+            mProject = LibraryTempData.getProject(id);
         }
 
         mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_LANGUAGE_PREFIX, false);

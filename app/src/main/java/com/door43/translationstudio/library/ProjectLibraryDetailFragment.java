@@ -63,13 +63,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             String id = getArguments().getString(ARG_ITEM_ID);
-//            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
-//                mProject = LibraryTempData.getNewProject(id);
-//            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
-//                mProject = LibraryTempData.getUpdatedProject(id);
-//            } else {
-                mProject = LibraryTempData.getProject(id);
-//            }
+            mProject = LibraryTempData.getProject(id);
         }
     }
 

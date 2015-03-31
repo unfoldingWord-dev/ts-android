@@ -16,8 +16,6 @@ import java.util.Map;
  */
 public class LibraryTempData {
     private static Map<String, Integer> mProjectIds = new HashMap<>();
-//    private static Map<String, Integer> mNewProjectIds = new HashMap<>();
-//    private static Map<String, Integer> mUpdatedProjectIds = new HashMap<>();
     private static List<Project> mProjects = new ArrayList<>();
     private static List<Project> mNewProjects = new ArrayList<>();
     private static List<Project> mUpdatedProjects = new ArrayList<>();
@@ -55,16 +53,6 @@ public class LibraryTempData {
                 mUpdatedProjects.add(p);
             }
         }
-//
-//        // map id's to index
-//        for(int i = 0; i < mNewProjects.size(); i ++) {
-//            mNewProjectIds.put(mNewProjects.get(i).getId(), i);
-//        }
-//
-//        // map id's to index
-//        for(int i = 0; i < mUpdatedProjects.size(); i ++) {
-//            mUpdatedProjectIds.put(mUpdatedProjects.get(i).getId(), i);
-//        }
     }
 
     /**
@@ -87,32 +75,6 @@ public class LibraryTempData {
             return null;
         }
     }
-
-    /**
-     * Returns a cached updated project
-     * @param id
-     * @return
-     */
-//    public static Project getUpdatedProject(String id) {
-//        if(mUpdatedProjectIds.containsKey(id)) {
-//            return mUpdatedProjects.get(mUpdatedProjectIds.get(id));
-//        } else {
-//            return null;
-//        }
-//    }
-
-    /**
-     * Returns a cached new project
-     * @param id
-     * @return
-     */
-//    public static Project getNewProject(String id) {
-//        if(mNewProjectIds.containsKey(id)) {
-//            return mNewProjects.get(mNewProjectIds.get(id));
-//        } else {
-//            return null;
-//        }
-//    }
 
     /**
      * Returns a list of projects that are new or have new languages

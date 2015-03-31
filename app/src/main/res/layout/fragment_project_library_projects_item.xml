@@ -31,6 +31,16 @@ android:layout_height="match_parent">
             android:layout_marginRight="10dp" />
     </RelativeLayout>
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="English, Deutsch"
+        android:id="@+id/availableLanguagesTextView"
+        android:padding="5dp"
+        android:textSize="@dimen/h5"
+        android:background="@color/lighter_gray"
+        android:textColor="@color/gray" />
+
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="fill_parent"
@@ -38,4 +48,5 @@ android:layout_height="match_parent">
         android:layout_marginTop="-10dp"
         android:visibility="gone"
         android:id="@+id/progressBar" />
+
 </LinearLayout>

@@ -3,6 +3,7 @@ package com.door43.translationstudio.library;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +19,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
     private List<Project> mProjects;
     private ProjectFilter mProjectFilter;
     private List<Project> mOriginalProjects = new ArrayList<>();
+    private boolean mSearching = false;
 
     public LibraryProjectAdapter(MainApplication context, List<Project> projects, boolean displayAsNewProjects) {
         mProjects = projects;
@@ -70,6 +73,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
             holder.progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
             holder.progressBar.setMax(100);
             holder.downloadedImage = (ImageView)v.findViewById(R.id.downloadedImageView);
+            holder.languagesText = (TextView)v.findViewById(R.id.availableLanguagesTextView);
 
             v.setTag(holder);
         } else {
@@ -87,6 +91,18 @@ public class LibraryProjectAdapter extends BaseAdapter {
         // set value
         holder.name.setText(getItem(i).getTitle());
         holder.downloadedImage.setVisibility(View.INVISIBLE);
+
+        // display available languages if searching
+        if(mSearching) {
+            holder.languagesText.setVisibility(View.VISIBLE);
+            String languagesTextList = getItem(i).getSourceLanguage(0).getName();
+            for(int j = 1; j < getItem(i).getSourceLanguages().size(); j ++) {
+                languagesTextList += ", " + getItem(i).getSourceLanguage(j).getName();;
+            }
+            holder.languagesText.setText(languagesTextList);
+        } else {
+            holder.languagesText.setVisibility(View.GONE);
+        }
 
         // indicated selected
         if(i == mSelectedIndex) {
@@ -138,6 +154,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
         public RelativeLayout container;
         public ProgressBar progressBar;
         public ImageView downloadedImage;
+        public TextView languagesText;
     }
 
     public void setSelected(int index) {
@@ -165,14 +182,30 @@ public class LibraryProjectAdapter extends BaseAdapter {
             FilterResults results = new FilterResults();
             if(charSequence == null || charSequence.length() == 0) {
                 // no filter
+                mSearching = false;
                 results.values = mOriginalProjects;
                 results.count = mOriginalProjects.size();
             } else {
+                mSearching = true;
                 // perform filter
                 List<Project> filteredProjects = new ArrayList<>();
-                for(Project p:mProjects) {
-                    // TODO: allow searching by language name as well
-                    if(p.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase()) || p.getTitle().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                for(Project p:mOriginalProjects) {
+                    // match the project id
+                    boolean match = p.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    if(!match) {
+                        for (SourceLanguage l : p.getSourceLanguages()) {
+                            if (p.getTitle(l).toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                                // match the project title in any language
+                                match = true;
+                                break;
+                            } else if (l.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase()) || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                                // match the language id or name
+                                match = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(match) {
                         filteredProjects.add(p);
                     }
                 }
@@ -184,11 +217,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            if(filterResults.count == 0) {
-                notifyDataSetInvalidated();
-            } else {
-                mProjects = (List<Project>)filterResults.values;
-                notifyDataSetChanged();
-            }
+            mProjects = (List<Project>)filterResults.values;
+            notifyDataSetChanged();
         }
     }}
