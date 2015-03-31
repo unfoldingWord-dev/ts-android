@@ -35,8 +35,6 @@ public class Project implements Model {
     private ListMap<Chapter> mChapters = new ListMap<>();
     private ListMap<SourceLanguage> mSourceLanguages = new ListMap<>();
     private ListMap<SourceLanguage> mSourceLanguageDrafts = new ListMap<>();
-//    private List<SourceLanguage> mSourceLanguages = new ArrayList<SourceLanguage>();
-//    private Map<String,SourceLanguage> mSourceLanguageMap = new HashMap<String, SourceLanguage>();
     private List<Language> mTargetLanguages = new ArrayList<Language>();
     private Map<String,Language> mTargetLanguageMap = new HashMap<String, Language>();
     private ListMap<Term> mTerms = new ListMap<>();
@@ -63,6 +61,7 @@ public class Project implements Model {
     private String mSortKey;
     private Uri mLanguageCatalogUri;
     private int mSourceLanguagesDateModified = 0;
+    private boolean mAutosave = true;
 
     /**
      * Creates a new project
@@ -105,10 +104,15 @@ public class Project implements Model {
         mDefaultTitle = title;
         mSlug = slug;
         mDefaultDescription = description;
-        // load the selected language
-        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
-        mSelectedSourceLanguageId = settings.getString("selected_source_language_"+mSlug, null);
-        mSelectedTargetLanguageId = settings.getString("selected_target_language_"+mSlug, null);
+        init();
+    }
+
+    /**
+     * Sets whether the project should automatically save changes. e.g. selected languages.
+     * @param autosave
+     */
+    public void setAutosave(boolean autosave) {
+        mAutosave = autosave;
     }
 
     /**
@@ -684,7 +688,9 @@ public class Project implements Model {
         Language l = getSourceLanguage(id);
         if(l != null) {
             mSelectedSourceLanguageId = l.getId();
-            storeSelectedSourceLanguage(mSelectedSourceLanguageId);
+            if(mAutosave) {
+                storeSelectedSourceLanguage(mSelectedSourceLanguageId);
+            }
         }
         return l != null;
     }
@@ -698,7 +704,9 @@ public class Project implements Model {
         Language l = getSourceLanguage(index);
         if(l != null) {
             mSelectedSourceLanguageId = l.getId();
-            storeSelectedSourceLanguage(mSelectedSourceLanguageId);
+            if(mAutosave) {
+                storeSelectedSourceLanguage(mSelectedSourceLanguageId);
+            }
         }
         return l != null;
     }
@@ -733,11 +741,6 @@ public class Project implements Model {
      */
     public SourceLanguage getSourceLanguage(String id) {
         return mSourceLanguages.get(id);
-//        if(mSourceLanguageMap.containsKey(id)) {
-//            return mSourceLanguageMap.get(id);
-//        } else {
-//            return null;
-//        }
     }
 
     /**
@@ -870,18 +873,18 @@ public class Project implements Model {
      * @param lang
      * @return
      */
-    public String getRemotePath(Language lang) {
-        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
-        return server + ":tS/" + AppContext.udid() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
-    }
+//    public String getRemotePath(Language lang) {
+//        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+//        return server + ":tS/" + AppContext.udid() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
+//    }
 
-    /**
-     * Generates the remote path for a local repo from the currently selected target language
-     * @return
-     */
-    public String getRemotePath() {
-        return getRemotePath(getSelectedTargetLanguage());
-    }
+//    /**
+//     * Generates the remote path for a local repo from the currently selected target language
+//     * @return
+//     */
+//    public String getRemotePath() {
+//        return getRemotePath(getSelectedTargetLanguage());
+//    }
 
     /**
      * Returns the chapters in this project

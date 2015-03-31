@@ -62,6 +62,8 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 final ProgressDialog dialog = new ProgressDialog(LanguageSelectorActivity.this);
                 dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
                 if(willShowSourceLanguages) {
                     AppContext.projectManager().getSelectedProject().setSelectedSourceLanguage(adapter.getItem(i).getId());

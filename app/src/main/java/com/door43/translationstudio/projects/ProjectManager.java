@@ -544,6 +544,7 @@ public class ProjectManager {
                 JSONObject jsonProj = json.getJSONObject(i);
                 Project p = Project.generate(jsonProj);
                 if(p != null) {
+                    p.setAutosave(false);
                     projects.add(p);
                 }
             } catch (JSONException e) {
@@ -1585,6 +1586,8 @@ public class ProjectManager {
                 continue;
             }
         }
+
+
     }
 
     public interface OnProgressCallback {
