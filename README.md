@@ -31,7 +31,7 @@ Write some code, add a *USEFUL* but short and sweet commit message, repeat. If y
 
 ###Submiting Your [Beautiful] Code
 ####Important! Your code will **NOT** be accepted if it does not follow the [Code Style Guidelines].
-Please become familure with the [Code Style Guidelines]. The repository is guarded by a band of crazed-coding-style-obsessed-monkeys who will not hesitate to deny your pull request if you so much as have an extra space at the end of a line.
+Please become familiar with the [Code Style Guidelines]. The repository is guarded by a band of crazed-coding-style-obsessed-monkeys who will not hesitate to deny your pull request if you so much as have an extra space at the end of a line.
 
 Once you are ready to share you code (meaning it works and is written beautifully) send us a pull request. You can do so from your repository page in GitHub.
 
