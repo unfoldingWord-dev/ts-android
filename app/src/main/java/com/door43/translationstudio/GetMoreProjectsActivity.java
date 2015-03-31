@@ -75,7 +75,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
-                                intent.putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, true);
+                                intent.putExtra(ProjectLibraryListActivity.ARG_SHOW_NEW, true);
                                 startActivity(intent);
                             }
                         })
@@ -94,7 +94,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
-                                intent.putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, true);
+                                intent.putExtra(ProjectLibraryListActivity.ARG_SHOW_UPDATES, true);
                                 startActivity(intent);
                             }
                         })

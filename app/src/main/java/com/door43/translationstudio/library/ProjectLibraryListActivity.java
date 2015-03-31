@@ -35,8 +35,8 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  */
 public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTabFragment.Callbacks, LibraryCallbacks {
 
-    public static final String ARG_ONLY_SHOW_UPDATES = "only_show_updates";
-    public static final String ARG_ONLY_SHOW_NEW = "only_show_new";
+    public static final String ARG_SHOW_UPDATES = "only_show_updates";
+    public static final String ARG_SHOW_NEW = "only_show_new";
     private AlertDialog mConfirmDialog;
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -81,7 +81,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
     public void onResume() {
         super.onResume();
-        reload();
+        reload(false);
     }
 
     /**
@@ -194,12 +194,12 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             case R.id.action_show_new:
                 LibraryTempData.setShowProjectUpdates(false);
                 LibraryTempData.setShowNewProjects(true);
-                reload();
+                reload(true);
                 return true;
             case R.id.action_show_updates:
                 LibraryTempData.setShowProjectUpdates(true);
                 LibraryTempData.setShowNewProjects(false);
-                reload();
+                reload(true);
                 return true;
             case R.id.action_update_all:
                 mConfirmDialog = new AlertDialog.Builder(this)
@@ -231,11 +231,11 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 return true;
             case R.id.action_edit_projects:
                 LibraryTempData.setEnableEditing(true);
-                reload();
+                reload(false);
                 return true;
             case R.id.action_cancel_edit_projects:
                 LibraryTempData.setEnableEditing(false);
-                reload();
+                reload(false);
                 return true;
             case R.id.action_search:
                 return true;
@@ -244,7 +244,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         }
     }
 
-    private void reload() {
+    private void reload(boolean scrollToTop) {
         invalidateOptionsMenu();
         if(mTwoPane) {
             // remove details
@@ -254,7 +254,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         }
         // reload list
         ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
-        listFragment.reload();
+        listFragment.reload(scrollToTop);
     }
 
     public void onDestroy() {
@@ -291,6 +291,6 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
     @Override
     public void refreshUI() {
-        reload();
+        reload(false);
     }
 }

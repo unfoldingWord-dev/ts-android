@@ -183,11 +183,13 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     /**
      * Reloads the view according to the latest configuration
      */
-    public void reload() {
-        getActivity().getIntent().putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, LibraryTempData.getShowNewProjects());
-        getActivity().getIntent().putExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, LibraryTempData.getShowProjectUpdates());
+    public void reload(boolean scrollToTop) {
+        getActivity().getIntent().putExtra(ProjectLibraryListActivity.ARG_SHOW_NEW, LibraryTempData.getShowNewProjects());
+        getActivity().getIntent().putExtra(ProjectLibraryListActivity.ARG_SHOW_UPDATES, LibraryTempData.getShowProjectUpdates());
 
-        getListView().smoothScrollToPosition(0);
+        if(scrollToTop) {
+            getListView().smoothScrollToPosition(0);
+        }
         mAdapter.changeDataSet(getProjectList(), LibraryTempData.getShowNewProjects());
     }
 
@@ -197,8 +199,8 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
 
         if(getActivity() != null && savedInstanceState == null) {
             // we only set the display arguments when first loading
-            LibraryTempData.setShowNewProjects(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_NEW, false));
-            LibraryTempData.setShowProjectUpdates(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_ONLY_SHOW_UPDATES, false));
+            LibraryTempData.setShowNewProjects(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_SHOW_NEW, false));
+            LibraryTempData.setShowProjectUpdates(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_SHOW_UPDATES, false));
         }
 
         // Restore the previously serialized information
