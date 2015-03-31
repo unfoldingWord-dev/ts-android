@@ -647,7 +647,6 @@ public class Sharing {
         SourceLanguage[] sourceLanguages = p.getSourceLanguages().toArray(new SourceLanguage[p.getSourceLanguages().size()]);
 
         // compile source languages to include
-        // TODO: we could probably place this in a different method.
         if(sourceLanguages.length > 0) {
             try {
                 DataStore ds = AppContext.projectManager().getDataStore();
