@@ -2,10 +2,12 @@ package com.door43.translationstudio.util;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 

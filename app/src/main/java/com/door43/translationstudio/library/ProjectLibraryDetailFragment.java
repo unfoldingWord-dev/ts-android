@@ -198,7 +198,9 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
      * Removes the drafts tab
      */
     public void hideDraftsTab() {
-        mTabs.remove(1);
+        if(mTabs.size() > 1) {
+            mTabs.remove(1);
+        }
         mTabbedViewPagerAdapter.notifyDataSetChanged();
     }
 }

@@ -45,6 +45,17 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private boolean mActivityPaused = false;
 
     /**
+     * The fragment's current callback object, which is notified of list item
+     * clicks.
+     */
+    private Callbacks mCallbacks = sDummyCallbacks;
+
+    /**
+     * The current activated item position. Only used on tablets.
+     */
+    private int mActivatedPosition = ListView.INVALID_POSITION;
+
+    /**
      * Called when the task has finished fetching the available projects
      * @param task
      */
@@ -55,6 +66,10 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         mTaskId = -1;
         if(mDialog != null && mDialog.isShowing()) {
             mDialog.dismiss();
+        }
+        if (mActivatedPosition != ListView.INVALID_POSITION) {
+            setActivatedPosition(mActivatedPosition);
+            notifyItemSelected(mActivatedPosition);
         }
     }
 
@@ -83,18 +98,10 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
                 }
             });
         }
+        if(getActivity() != null) {
+            getActivity().invalidateOptionsMenu();
+        }
     }
-
-    /**
-     * The fragment's current callback object, which is notified of list item
-     * clicks.
-     */
-    private Callbacks mCallbacks = sDummyCallbacks;
-
-    /**
-     * The current activated item position. Only used on tablets.
-     */
-    private int mActivatedPosition = ListView.INVALID_POSITION;
 
     @Override
     public void onProgress(ManagedTask task, final double progress, final String message) {
@@ -190,34 +197,33 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         if(scrollToTop) {
             getListView().smoothScrollToPosition(0);
         }
-        mAdapter.changeDataSet(getProjectList(), LibraryTempData.getShowNewProjects());
+        mAdapter.changeDataSet(getProjectList(), LibraryTempData.getShowNewProjects(), mActivatedPosition);
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if(getActivity() != null && savedInstanceState == null) {
             // we only set the display arguments when first loading
             LibraryTempData.setShowNewProjects(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_SHOW_NEW, false));
             LibraryTempData.setShowProjectUpdates(getActivity().getIntent().getBooleanExtra(ProjectLibraryListActivity.ARG_SHOW_UPDATES, false));
         }
+        mActivityPaused = false;
+        mAdapter = new LibraryProjectAdapter(AppContext.context(), getProjectList(), LibraryTempData.getShowNewProjects());
+        setListAdapter(mAdapter);
+    }
 
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         // Restore the previously serialized information
         if (savedInstanceState != null) {
             if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
-                setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
+                mActivatedPosition = savedInstanceState.getInt(STATE_ACTIVATED_POSITION);
             }
             if(savedInstanceState.containsKey(STATE_TASK_ID)) {
                 mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
             }
         }
-        mActivityPaused = false;
-
-        mAdapter = new LibraryProjectAdapter(AppContext.context(), getProjectList(), LibraryTempData.getShowNewProjects());
-
-        setListAdapter(mAdapter);
-
         preparProjectList();
     }
 
@@ -241,23 +247,21 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
 
     /**
      * Fetches a list of available projects
-     * TODO: we should first load all the projects then load each set of languages one at a time so we can update the ui as we receive more projects.
-     * TODO: then we should just display a loading icon at the bottom of the screen.
      */
     private void preparProjectList() {
         if(TaskManager.getTask(mTaskId) != null) {
             // connect to existing task
             DownloadAvailableProjectsTask task = (DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId);
-//            onProgress(task, -1, "");
             task.setOnFinishedListener(this);
             task.setOnProgressListener(this);
         } else if(LibraryTempData.getProjects().size() == 0) {
-//            onProgress(-1, "");
             // start process
             DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask();
             task.setOnFinishedListener(this);
             task.setOnProgressListener(this);
             mTaskId = TaskManager.addTask(task);
+        } else {
+            onFinished(null);
         }
     }
 
@@ -284,10 +288,17 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
+        notifyItemSelected(position);
+    }
 
-        // Notify the active callbacks interface (the activity, if the
-        // fragment is attached to one) that an item has been selected.
+    /**
+     * Notify the active callbacks interface (the activity, if the
+     * fragment is attached to one) that an item has been selected.
+     * @param position
+     */
+    private void notifyItemSelected(int position) {
         mAdapter.setSelected(position);
+        mActivatedPosition = position;
         mAdapter.notifyDataSetChanged();
         mCallbacks.onItemSelected(mAdapter.getItem(position).getId());
     }
@@ -303,7 +314,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             outState.putInt(STATE_TASK_ID, mTaskId);
             // disconnect listeners
             TaskManager.getTask(mTaskId).setOnFinishedListener(null);
-            ((DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId)).setOnProgressListener(null);
+            TaskManager.getTask(mTaskId).setOnProgressListener(null);
         }
         mActivityPaused = true;
     }
@@ -323,8 +334,16 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     private void setActivatedPosition(int position) {
         if (position == ListView.INVALID_POSITION) {
             getListView().setItemChecked(mActivatedPosition, false);
+            if(mAdapter != null) {
+                mAdapter.setSelected(mActivatedPosition);
+                mAdapter.notifyDataSetChanged();
+            }
         } else {
             getListView().setItemChecked(position, true);
+            if(mAdapter != null) {
+                mAdapter.setSelected(position);
+                mAdapter.notifyDataSetChanged();
+            }
         }
 
         mActivatedPosition = position;

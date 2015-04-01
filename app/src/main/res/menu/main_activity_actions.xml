@@ -31,6 +31,10 @@
         android:title="@string/menu_bug"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_update"
+        android:title="@string/menu_update"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_settings"
         android:title="@string/menu_settings"
         app:showAsAction="never" />

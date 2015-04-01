@@ -75,8 +75,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         moreProjectsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent languageIntent = new Intent(getActivity(), GetMoreProjectsActivity.class);
-                startActivity(languageIntent);
+                Intent intent = new Intent(getActivity(), GetMoreProjectsActivity.class);
+                startActivity(intent);
             }
         });
 

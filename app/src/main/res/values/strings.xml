@@ -289,8 +289,8 @@
     <string name="update_projects_description">View and download available updates from the server</string>
     <string name="action_show_updates">View Updates</string>
     <string name="action_show_new">Find More</string>
-    <string name="action_update_all">Update All</string>
-    <string name="action_download_all">Download All</string>
+    <string name="action_update_all_projects">Update all projects</string>
+    <string name="action_download_all">Download all</string>
     <string name="title_activity_project_updates">Project Updates</string>
     <string name="action_edit_projects">Edit Projects</string>
     <string name="download_all_confirmation">You are about to download a potentially large amount of data, continue?</string>
@@ -302,5 +302,6 @@
     <string name="transfer_from_device_description">Projects will be transferred over the network from a nearby device</string>
     <string name="import_from_storage">Import from storage</string>
     <string name="import_from_storage_description">Projects will be imported from the external storage on this device</string>
+    <string name="action_filter">Filter</string>
 
 </resources>

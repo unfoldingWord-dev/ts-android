@@ -44,6 +44,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
      */
     private boolean mTwoPane;
     private Toolbar mToolbar;
+    private String mSelectedItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +82,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
     public void onResume() {
         super.onResume();
-        reload(false);
+//        reload(false);
     }
 
     /**
@@ -90,36 +91,51 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
      */
     @Override
     public void onItemSelected(String id) {
-        if (mTwoPane) {
-            // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
+        mSelectedItem = id;
+        if(id != null) {
+            if (mTwoPane) {
+                // In two-pane mode, show the detail view in this activity by
+                // adding or replacing the detail fragment using a
+                // fragment transaction.
 //            Bundle arguments = new Bundle();
-            Bundle arguments = getIntent().getExtras();
-            arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
-            ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
-            if(arguments != null) {
-                fragment.setArguments(arguments);
-            }
-            getFragmentManager().beginTransaction().replace(R.id.project_detail_container, fragment).commit();
 
-        } else {
-            // In single-pane mode, simply start the detail activity
-            // for the selected item ID.
-            Intent detailIntent = new Intent(this, ProjectLibraryDetailActivity.class);
-            Bundle arguments = getIntent().getExtras();
-            if(arguments != null) {
-                detailIntent.putExtras(arguments);
+
+                Bundle arguments = getIntent().getExtras();
+                if(arguments == null) {
+                    arguments = new Bundle();
+                }
+                arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
+                ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
+                if (arguments != null) {
+                    fragment.setArguments(arguments);
+                }
+                getFragmentManager().beginTransaction().replace(R.id.project_detail_container, fragment).commit();
+
+            } else {
+                // In single-pane mode, simply start the detail activity
+                // for the selected item ID.
+                Intent detailIntent = new Intent(this, ProjectLibraryDetailActivity.class);
+                Bundle arguments = getIntent().getExtras();
+                if(arguments == null) {
+                    arguments = new Bundle();
+                }
+                if (arguments != null) {
+                    detailIntent.putExtras(arguments);
+                }
+                detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
+                startActivity(detailIntent);
             }
-            detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
-            startActivity(detailIntent);
+        } else {
+            reload(false);
         }
     }
 
     @Override
     public void onEmptyDraftsList() {
         ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.project_detail_container);
-        fragment.hideDraftsTab();
+        if(fragment != null) {
+            fragment.hideDraftsTab();
+        }
     }
 
     @Override
@@ -131,16 +147,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if(LibraryTempData.getShowNewProjects()) {
-            menu.findItem(R.id.action_show_new).setVisible(false);
-            menu.findItem(R.id.action_download_all).setVisible(true);
-        } else{
-            menu.findItem(R.id.action_show_new).setVisible(true);
-            menu.findItem(R.id.action_download_all).setVisible(false);
-        }
-        if(LibraryTempData.getShowProjectUpdates()) {
-            menu.findItem(R.id.action_show_updates).setVisible(false);
-            menu.findItem(R.id.action_update_all).setVisible(true);
+        if(LibraryTempData.getUpdatedProjects().size() > 0) {
             if(LibraryTempData.getEnableEditing()) {
                 menu.findItem(R.id.action_edit_projects).setVisible(false);
                 menu.findItem(R.id.action_cancel_edit_projects).setVisible(true);
@@ -149,24 +156,13 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
             }
         } else {
-            menu.findItem(R.id.action_show_updates).setVisible(true);
-            menu.findItem(R.id.action_update_all).setVisible(false);
             menu.findItem(R.id.action_edit_projects).setVisible(false);
             menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
         }
-
         // hook up the search
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
         final MenuItem searchMenuItem = menu.findItem(R.id.action_search);
         final SearchView searchViewAction = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
-//        searchViewAction.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View view, boolean b) {
-//                if(searchViewAction.getQuery().toString().isEmpty()) {
-//                    search("");
-//                }
-//            }
-//        });
         searchViewAction.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -175,11 +171,6 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
             @Override
             public boolean onQueryTextChange(String s) {
-                // clear the search
-//                if(searchMenuItem.isActionViewExpanded() && !TextUtils.isEmpty(s)) {
-//                    search(s);
-//                    return true;
-//                }
                 search(s);
                 return true;
             }
@@ -191,29 +182,9 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_show_new:
-                LibraryTempData.setShowProjectUpdates(false);
-                LibraryTempData.setShowNewProjects(true);
-                reload(true);
-                return true;
-            case R.id.action_show_updates:
-                LibraryTempData.setShowProjectUpdates(true);
-                LibraryTempData.setShowNewProjects(false);
-                reload(true);
-                return true;
-            case R.id.action_update_all:
-                mConfirmDialog = new AlertDialog.Builder(this)
-                        .setTitle(R.string.action_update_all)
-                        .setMessage(R.string.download_all_confirmation)
-                        .setIcon(R.drawable.ic_update_small)
-                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                // TODO: begin update
-                            }
-                        })
-                        .setNegativeButton(R.string.no, null)
-                        .show();
+            case R.id.action_filter:
+                // TODO: display a dialog that will provide filter options. We might want these to be user settings.
+                // e.g. only show projects from a certain language, new projects, updates, etc.
                 return true;
             case R.id.action_download_all:
                 mConfirmDialog = new AlertDialog.Builder(this)
@@ -223,7 +194,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                // TODO: begin download
+                                // TODO: begin download. Download all projects/updates within the filtered list (those filtered out will not be downloaded).
                             }
                         })
                         .setNegativeButton(R.string.no, null)

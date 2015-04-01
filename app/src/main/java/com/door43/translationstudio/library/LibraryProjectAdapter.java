@@ -141,11 +141,11 @@ public class LibraryProjectAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    public void changeDataSet(List<Project> projects, boolean displayAsNewProjects) {
+    public void changeDataSet(List<Project> projects, boolean displayAsNewProjects, int selectedIndex) {
         mProjects = projects;
         mOriginalProjects = projects;
         mDisplayAsNewProjects = displayAsNewProjects;
-        mSelectedIndex = -1;
+        mSelectedIndex = selectedIndex;
         notifyDataSetChanged();
     }
 

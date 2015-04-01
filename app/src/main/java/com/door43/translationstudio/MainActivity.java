@@ -1432,8 +1432,6 @@ public class MainActivity extends TranslatorBaseActivity {
             menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
             menu.findItem(R.id.action_sync).setVisible(projectEnabled);
             menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
-//            Boolean advancedSettingsEnabled = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ADVANCED_SETTINGS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_advanced_settings)));
-//            menu.findItem(R.id.action_info).setVisible(advancedSettingsEnabled);
 
             if(!hasResources) {
                 mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
@@ -1467,6 +1465,10 @@ public class MainActivity extends TranslatorBaseActivity {
                 return true;
             case R.id.action_bug:
                 openBugReporter();
+                return true;
+            case R.id.action_update:
+                Intent intent = new Intent(this, GetMoreProjectsActivity.class);
+                startActivity(intent);
                 return true;
             case R.id.action_library:
                 openLeftDrawer();
