@@ -1,11 +1,14 @@
 package com.door43.translationstudio.spannables;
 
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.util.Xml;
 
 import com.door43.translationstudio.R;
@@ -40,8 +43,8 @@ import javax.xml.transform.stream.StreamResult;
  * Created by joel on 10/28/2014.
  */
 public class NoteSpan extends Span {
-    private final String mNotes;
-    private final String mPassage;
+    private final CharSequence mNotes;
+    private final CharSequence mPassage;
     private final String mCaller;
     private static final String DEFAULT_CALLER = "+";
     private String mStyle;
@@ -58,19 +61,33 @@ public class NoteSpan extends Span {
      */
     public NoteSpan(String style, String caller, List<Char> chars) {
         super();
-        String spanTitle = "";
-        String note = "";
+        CharSequence spanTitle = "";
+        CharSequence note = "";
+        CharSequence quotation = "";
+        CharSequence altQuotation = "";
+        CharSequence passageText = "";
         for(Char c:chars) {
             if(c.style.equals(Char.STYLE_PASSAGE_TEXT)) {
-                spanTitle = c.value;
+                passageText = c.value;
+            } else if(c.style.equals(Char.STYLE_FOOTNOTE_QUOTATION)) {
+                quotation = c.value;
+            } else if(c.style.equals(Char.STYLE_FOOTNOTE_ALT_QUOTATION)) {
+                altQuotation = c.value;
             } else {
                 // TODO: implement better. We may need to format the values
-                note += c.value;
+                note = TextUtils.concat(note, c.value);
             }
         }
-        if(spanTitle.isEmpty()) {
-            // TODO: implement better. e.g lettered notes. If a marker is not defined in the chars we should atomatically create a enw marker.
-            spanTitle = "[note]";
+
+        // set the span title
+        if(!TextUtils.isEmpty(passageText)) {
+            spanTitle = passageText;
+        } else if(!TextUtils.isEmpty(quotation)) {
+            spanTitle = quotation;
+        } else if(!TextUtils.isEmpty(altQuotation)) {
+            spanTitle = altQuotation;
+        } else {
+            spanTitle = "["+note+"]";
         }
 
         init(spanTitle, generateTag(style, caller, spanTitle, chars));
@@ -86,7 +103,8 @@ public class NoteSpan extends Span {
         if(mSpannable == null) {
             mSpannable = super.render();
             // apply custom styles
-            mSpannable.setSpan(new BackgroundColorSpan(Color.YELLOW), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mSpannable.setSpan(new BackgroundColorSpan(AppContext.context().getResources().getColor(R.color.footnote_yellow)), 0, mSpannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mSpannable.setSpan(new StyleSpan(Typeface.ITALIC), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.dark_gray)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return mSpannable;
@@ -100,7 +118,7 @@ public class NoteSpan extends Span {
      * @param chars
      * @return
      */
-    public static String generateTag(String style, String caller, String title, List<Char> chars) {
+    public static CharSequence generateTag(String style, String caller, CharSequence title, List<Char> chars) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db;
         try {
@@ -123,7 +141,7 @@ public class NoteSpan extends Span {
         for(Char c:chars) {
             Element element = document.createElement("char");
             element.setAttribute("style", c.style);
-            element.setTextContent(c.value.replace("\n", "\\n"));
+            element.setTextContent(c.value.toString().replace("\n", "\\n"));
             rootElement.appendChild(element);
         }
         // TRICKY: spannables render incorrectly when there are newlines within the content.
@@ -193,7 +211,7 @@ public class NoteSpan extends Span {
      * Returns the notes regarding the passage
      * @return
      */
-    public String getNotes() {
+    public CharSequence getNotes() {
         return mNotes;
     }
 
@@ -201,7 +219,7 @@ public class NoteSpan extends Span {
      * Returns the text upon which the notes are made
      * @return
      */
-    public String getPassage() {
+    public CharSequence getPassage() {
         return mPassage;
     }
 
@@ -211,7 +229,7 @@ public class NoteSpan extends Span {
      * @param note the note
      * @return
      */
-    public static NoteSpan generateUserNote(String passageText, String note) {
+    public static NoteSpan generateUserNote(CharSequence passageText, CharSequence note) {
         List<Char> chars = new ArrayList<>();
         chars.add(new Char(Char.STYLE_PASSAGE_TEXT, passageText));
         chars.add(new Char(Char.STYLE_FOOTNOTE_TEXT, note));

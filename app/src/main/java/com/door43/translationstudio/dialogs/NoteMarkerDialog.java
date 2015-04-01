@@ -18,8 +18,8 @@ import com.door43.translationstudio.R;
  */
 public class NoteMarkerDialog extends DialogFragment {
     private OnClickListener mListener;
-    private String mPassage;
-    private String mNotes;
+    private CharSequence mPassage;
+    private CharSequence mNotes;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.note_marker);
@@ -33,8 +33,8 @@ public class NoteMarkerDialog extends DialogFragment {
         // load parameters
         Bundle args = getArguments();
         if(args != null) {
-            mPassage = args.getString("passage");
-            mNotes = args.getString("notes");
+            mPassage = args.getCharSequence("passage");
+            mNotes = args.getCharSequence("notes");
         }
 
         // restore state
@@ -94,8 +94,8 @@ public class NoteMarkerDialog extends DialogFragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putString("passage", mPassage);
-        outState.putString("notes", mNotes);
+        outState.putCharSequence("passage", mPassage);
+        outState.putCharSequence("notes", mNotes);
         super.onSaveInstanceState(outState);
     }
 
@@ -109,6 +109,6 @@ public class NoteMarkerDialog extends DialogFragment {
     }
 
     public static interface OnClickListener {
-        public void onClick(String passage, String notes);
+        public void onClick(CharSequence passage, CharSequence notes);
     }
 }

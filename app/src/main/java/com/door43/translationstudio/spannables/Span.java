@@ -12,8 +12,8 @@ import android.widget.TextView;
  * Created by joel on 1/28/2015.
  */
 public abstract class Span {
-    private String mHumanReadable;
-    private String mMachineReadable;
+    private CharSequence mHumanReadable;
+    private CharSequence mMachineReadable;
     private OnClickListener mListener;
 
     /**
@@ -30,7 +30,7 @@ public abstract class Span {
      * @param humanReadable the human readable title of the span
      * @param machineReadable the machine readable definition of the span
      */
-    public Span(String humanReadable, String machineReadable) {
+    public Span(CharSequence humanReadable, CharSequence machineReadable) {
         init(humanReadable, machineReadable);
     }
 
@@ -39,7 +39,7 @@ public abstract class Span {
      * @param humanReadable
      * @param machineReadable
      */
-    protected void init(String humanReadable, String machineReadable) {
+    protected void init(CharSequence humanReadable, CharSequence machineReadable) {
         mHumanReadable = humanReadable;
         mMachineReadable = machineReadable;
     }
@@ -79,7 +79,7 @@ public abstract class Span {
      * Returns the machine readable source of this span
      * @return
      */
-    public String getMachineReadable() {
+    public CharSequence getMachineReadable() {
         return mMachineReadable;
     }
 

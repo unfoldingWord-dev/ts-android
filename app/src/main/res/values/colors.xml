@@ -21,4 +21,5 @@
     <color name="light_gray">#ffdcdcdc</color>
     <color name="lighter_gray">#ffeaeaea</color>
     <color name="scrim">#32000000</color>
+    <color name="footnote_yellow">#7cfffe50</color>
 </resources>

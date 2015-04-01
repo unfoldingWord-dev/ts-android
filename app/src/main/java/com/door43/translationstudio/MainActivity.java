@@ -1,5 +1,7 @@
 package com.door43.translationstudio;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -29,6 +31,7 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -128,6 +131,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private BroadcastReceiver mMessageReceiver;
     private RenderingGroup mSourceRendering;
     private Span.OnClickListener mKeyTermClickListener;
+    private Span.OnClickListener mSourceFootnoteListener;
     private static Toolbar mMainToolbar;
     private boolean mKeyboardIsOpen;
     private RenderingGroup mTranslationRendering;
@@ -135,6 +139,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private Span.OnClickListener mNoteClickListener;
     private boolean mTranslationEditTextIsFocused;
     private TextView mHelpText;
+    private Dialog mFootnoteDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,6 +175,12 @@ public class MainActivity extends TranslatorBaseActivity {
                 showTermDetails(((TermSpan)span).getTermId());
             }
         };
+        mSourceFootnoteListener = new Span.OnClickListener() {
+            @Override
+            public void onClick(View view, Span span, int start, int end) {
+                showSourceFootnote((NoteSpan)span);
+            }
+        };
 
         mActivityIsInitializing = true;
         app().setMainActivity(this);
@@ -201,6 +212,22 @@ public class MainActivity extends TranslatorBaseActivity {
             reloadCenterPane();
         }
         closeKeyboard();
+    }
+
+    /**
+     * Display a footnote found in the source text
+     * @param span
+     */
+    private void showSourceFootnote(NoteSpan span) {
+        if(mFootnoteDialog != null) {
+            if(mFootnoteDialog.isShowing()) {
+                mFootnoteDialog.dismiss();
+            }
+            mFootnoteDialog = null;
+        }
+        mFootnoteDialog = new AlertDialog.Builder(this)
+                .setMessage(span.getNotes())
+                .show();
     }
 
     /**
@@ -802,7 +829,7 @@ public class MainActivity extends TranslatorBaseActivity {
                     mSourceRendering.addEngine(new KeyTermRenderer(mSelectedFrame, mKeyTermClickListener));
                 }
                 if(mSelectedFrame.format == Frame.Format.USX) {
-                    mSourceRendering.addEngine(new USXRenderer());
+                    mSourceRendering.addEngine(new USXRenderer(null, mSourceFootnoteListener));
                 } else {
                     mSourceRendering.addEngine(new DefaultRenderer());
                 }
@@ -1545,7 +1572,7 @@ public class MainActivity extends TranslatorBaseActivity {
         newFragment.setArguments(args);
         newFragment.setOkListener(new NoteMarkerDialog.OnClickListener() {
             @Override
-            public void onClick(String passage, String notes) {
+            public void onClick(CharSequence passage, CharSequence notes) {
                 final NoteSpan note = NoteSpan.generateUserNote(passage, notes);
                 note.setOnClickListener(new Span.OnClickListener() {
                     @Override
@@ -1670,13 +1697,13 @@ public class MainActivity extends TranslatorBaseActivity {
 
         NoteMarkerDialog newFragment = new NoteMarkerDialog();
         Bundle args = new Bundle();
-        args.putString("passage", note.getPassage());
-        args.putString("notes", note.getNotes());
+        args.putCharSequence("passage", note.getPassage());
+        args.putCharSequence("notes", note.getNotes());
         newFragment.setArguments(args);
         newFragment.setOkListener(new NoteMarkerDialog.OnClickListener() {
             @Override
-            public void onClick(final String passage, String notes) {
-                if(!notes.isEmpty()) {
+            public void onClick(final CharSequence passage, CharSequence notes) {
+                if(!TextUtils.isEmpty(notes)) {
                     // update the verse
                     final NoteSpan noteSpan = NoteSpan.generateUserNote(passage, notes);
                     noteSpan.setOnClickListener(new Span.OnClickListener() {

@@ -206,7 +206,6 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                 ListIterator<SourceLanguage> li = mLanguages.listIterator();
                 while(li.hasNext()) {
                     SourceLanguage l = li.next();
-                    // TODO: filter out by checking level
                     tempList.add(l);
                 }
                 mLanguages = tempList;

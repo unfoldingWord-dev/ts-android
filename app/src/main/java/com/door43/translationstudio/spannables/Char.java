@@ -20,9 +20,9 @@ public class Char {
     public static final String STYLE_FOOTNOTE_DEUTEROCANONICAL_APOCRYPHA = "fdc";
 
     public final String style;
-    public final String value;
+    public final CharSequence value;
 
-    public Char(String style, String value) {
+    public Char(String style, CharSequence value) {
         this.style = style.trim().toLowerCase();
         this.value = value;
     }
