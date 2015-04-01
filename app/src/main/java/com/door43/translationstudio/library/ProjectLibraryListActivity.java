@@ -166,6 +166,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             // connect to existing task
             task.setOnProgressListener(this);
             task.setOnFinishedListener(this);
+        } else {
+            onFinished(null);
         }
     }
 
