@@ -97,7 +97,9 @@ public class LibraryProjectAdapter extends BaseAdapter {
             holder.languagesText.setVisibility(View.VISIBLE);
             String languagesTextList = getItem(i).getSourceLanguage(0).getName();
             for(int j = 1; j < getItem(i).getSourceLanguages().size(); j ++) {
-                languagesTextList += ", " + getItem(i).getSourceLanguage(j).getName();;
+                if(getItem(i).getSourceLanguage(j).checkingLevel() >= AppContext.minCheckingLevel()) {
+                    languagesTextList += ", " + getItem(i).getSourceLanguage(j).getName();
+                }
             }
             holder.languagesText.setText(languagesTextList);
         } else {
@@ -147,6 +149,14 @@ public class LibraryProjectAdapter extends BaseAdapter {
         mDisplayAsNewProjects = displayAsNewProjects;
         mSelectedIndex = selectedIndex;
         notifyDataSetChanged();
+    }
+
+    /**
+     * Returns the list of projects that are currently displayed in the list
+     * @return
+     */
+    public List<Project> getFilteredProjects() {
+        return mProjects;
     }
 
     private class ViewHolder {

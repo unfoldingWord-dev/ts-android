@@ -88,7 +88,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         // sliding tabs layout
         PagerSlidingTabStrip slidingTabLayout = (PagerSlidingTabStrip) rootView.findViewById(R.id.projectBrowserTabs);
         slidingTabLayout.setViewPager(mViewPager);
-        slidingTabLayout.setIndicatorColor(getResources().getColor(R.color.dark_green));
+        slidingTabLayout.setIndicatorColor(getResources().getColor(R.color.blue));
         slidingTabLayout.setDividerColor(Color.TRANSPARENT);
 
         selectTab(mDefaultPage);

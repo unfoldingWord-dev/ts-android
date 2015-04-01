@@ -159,6 +159,14 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     }
 
     /**
+     * Returns the list of projects that are currently displayed in the list view
+     * @return
+     */
+    public List<Project> getFilteredProjects() {
+        return mAdapter.getFilteredProjects();
+    }
+
+    /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
      * selections.
@@ -198,6 +206,13 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             getListView().smoothScrollToPosition(0);
         }
         mAdapter.changeDataSet(getProjectList(), LibraryTempData.getShowNewProjects(), mActivatedPosition);
+    }
+
+    /**
+     * Causes the list to refresh
+     */
+    public void refresh() {
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override

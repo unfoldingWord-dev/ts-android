@@ -10,8 +10,9 @@
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@color/light_green"
-        android:id="@+id/linearLayout10">
+        android:background="@color/light_blue"
+        android:id="@+id/linearLayout10"
+        android:baselineAligned="true">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -23,7 +24,7 @@
                 android:layout_width="@dimen/model_list_item_image_width"
                 android:layout_height="@dimen/model_list_item_height"
                 android:id="@+id/modelImage"
-                android:background="@color/dark_green" />
+                android:background="@color/blue" />
 
             <LinearLayout
                 android:id="@+id/bodyLayout"

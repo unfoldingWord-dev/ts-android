@@ -53,7 +53,7 @@ public abstract class ManagedTask implements Runnable {
      * @param progress the progress being made between 1 and 0
      * @param message the progress message
      */
-    protected void onProgress(double progress, String message) {
+    protected void publishProgress(double progress, String message) {
         mProgress = progress;
         mProgressMessage = message;
         if(mProgressListener != null) {
@@ -71,7 +71,7 @@ public abstract class ManagedTask implements Runnable {
      */
     public void setOnProgressListener(OnProgressListener listener) {
         mProgressListener = listener;
-        if(mProgressListener != null) {
+        if(mProgressListener != null && !isFinished()) {
             try {
                 mProgressListener.onProgress(this, mProgress, mProgressMessage);
             } catch (Exception e) {

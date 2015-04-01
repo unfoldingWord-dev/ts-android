@@ -22,7 +22,7 @@ public class ImportTranslationDraftTask extends ManagedTask {
         AppContext.translationManager().importTranslationDraft(mProject, mProject.getSourceLanguageDraft(mProject.getSelectedTargetLanguage().getId()), new TranslationManager.OnProgressListener() {
             @Override
             public void onProgress(double progress, String message) {
-                ImportTranslationDraftTask.this.onProgress(progress, message);
+                ImportTranslationDraftTask.this.publishProgress(progress, message);
             }
         });
     }

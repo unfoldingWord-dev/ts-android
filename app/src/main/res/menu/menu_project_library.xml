@@ -6,11 +6,11 @@
         android:icon="@drawable/ic_search_light"
         android:orderInCategory="100" app:showAsAction="always|collapseActionView"
         app:actionViewClass="android.support.v7.widget.SearchView"/>
-    <item android:id="@+id/action_filter" android:title="@string/action_filter"
-        android:icon="@drawable/ic_filter_light"
-        android:orderInCategory="200" app:showAsAction="ifRoom" />
+    <!--<item android:id="@+id/action_filter" android:title="@string/action_filter"-->
+        <!--android:icon="@drawable/ic_filter_light"-->
+        <!--android:orderInCategory="200" app:showAsAction="ifRoom" />-->
     <item android:id="@+id/action_download_all" android:title="@string/action_download_all"
-        android:orderInCategory="600" app:showAsAction="never" />
+        android:orderInCategory="600" app:showAsAction="ifRoom" />
     <item android:id="@+id/action_edit_projects" android:title="@string/action_edit_projects"
         android:orderInCategory="700" app:showAsAction="never" />
     <item android:id="@+id/action_cancel_edit_projects" android:title="@string/action_cancel_edit_projects"

@@ -1,11 +1,14 @@
 package com.door43.translationstudio.library;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -15,7 +18,13 @@ import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
+import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.tasks.DownloadProjectsTask;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.threads.ManagedTask;
+import com.door43.util.threads.TaskManager;
+
+import java.util.List;
 
 /**
  * An activity representing a list of Projects. This activity
@@ -33,7 +42,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * {@link ProjectLibraryListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTabFragment.Callbacks, LibraryCallbacks {
+public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTabFragment.Callbacks, LibraryCallbacks, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
 
     public static final String ARG_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_SHOW_NEW = "only_show_new";
@@ -45,6 +54,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     private boolean mTwoPane;
     private Toolbar mToolbar;
     private String mSelectedItem;
+    private String TASK_DOWNLOAD_ALL_PROJECTS = "library_download_all_projects";
+    private ProgressDialog mDownloadProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +89,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         handleIntent(getIntent());
 
         // TODO: If exposing deep links into your app, handle intents here.
+        connectDownloaAllTask();
     }
 
     public void onResume() {
@@ -145,6 +157,18 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * Connects to an existing task
+     */
+    public void connectDownloaAllTask() {
+        DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_DOWNLOAD_ALL_PROJECTS);
+        if(task != null) {
+            // connect to existing task
+            task.setOnProgressListener(this);
+            task.setOnFinishedListener(this);
+        }
+    }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         if(LibraryTempData.getUpdatedProjects().size() > 0) {
@@ -159,6 +183,11 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             menu.findItem(R.id.action_edit_projects).setVisible(false);
             menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
         }
+
+        // TODO: editing is disabled for now. Finish implimenting editing.
+        menu.findItem(R.id.action_edit_projects).setVisible(false);
+        menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
+
         // hook up the search
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
         final MenuItem searchMenuItem = menu.findItem(R.id.action_search);
@@ -182,10 +211,10 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_filter:
-                // TODO: display a dialog that will provide filter options. We might want these to be user settings.
-                // e.g. only show projects from a certain language, new projects, updates, etc.
-                return true;
+//            case R.id.action_filter:
+//                // TODO: display a dialog that will provide filter options. We might want these to be user settings.
+//                // e.g. only show projects from a certain language, new projects, updates, etc.
+//                return true;
             case R.id.action_download_all:
                 mConfirmDialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.action_download_all)
@@ -194,7 +223,18 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                // TODO: begin download. Download all projects/updates within the filtered list (those filtered out will not be downloaded).
+                                DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_DOWNLOAD_ALL_PROJECTS);
+                                if(task == null) {
+                                    // connect to existing task
+                                    ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
+                                    List<Project> projects = listFragment.getFilteredProjects();
+                                    task = new DownloadProjectsTask(projects);
+                                    task.setOnProgressListener(ProjectLibraryListActivity.this);
+                                    task.setOnFinishedListener(ProjectLibraryListActivity.this);
+                                    TaskManager.addTask(task, TASK_DOWNLOAD_ALL_PROJECTS);
+                                } else {
+                                    connectDownloaAllTask();
+                                }
                             }
                         })
                         .setNegativeButton(R.string.no, null)
@@ -232,6 +272,14 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         if(mConfirmDialog != null) {
             mConfirmDialog.dismiss();
         }
+        if(mDownloadProgressDialog != null) {
+            mDownloadProgressDialog.dismiss();
+        }
+        DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_DOWNLOAD_ALL_PROJECTS);
+        if(task != null) {
+            task.setOnFinishedListener(null);
+            task.setOnProgressListener(null);
+        }
         super.onDestroy();
     }
 
@@ -263,5 +311,78 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     @Override
     public void refreshUI() {
         reload(false);
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        // TODO: will reload do too much? we just want to reload the list that's it.
+        TaskManager.clearTask(TASK_DOWNLOAD_ALL_PROJECTS);
+
+        // reload list
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
+                listFragment.refresh();
+
+                if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+                    mDownloadProgressDialog.dismiss();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onProgress(final ManagedTask task, final double progress, final String message) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(task.isFinished()) {
+                    // because we start on a new thread we need to make sure the task didn't finish while this thread was starting.
+                    if(mDownloadProgressDialog != null) {
+                        mDownloadProgressDialog.dismiss();
+                    }
+                    return;
+                }
+                if(mDownloadProgressDialog == null){
+                    mDownloadProgressDialog = new ProgressDialog(ProjectLibraryListActivity.this);
+                    mDownloadProgressDialog.setCancelable(true);
+                    mDownloadProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    mDownloadProgressDialog.setCanceledOnTouchOutside(false);
+                    mDownloadProgressDialog.setOnCancelListener(ProjectLibraryListActivity.this);
+                    mDownloadProgressDialog.setMax(100);
+                    mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
+                    mDownloadProgressDialog.setMessage("");
+                }
+                if(!mDownloadProgressDialog.isShowing()) {
+                    mDownloadProgressDialog.show();
+                }
+                if(progress == -1) {
+                    mDownloadProgressDialog.setIndeterminate(true);
+                    mDownloadProgressDialog.setProgress(mDownloadProgressDialog.getMax());
+                } else {
+                    mDownloadProgressDialog.setIndeterminate(false);
+                    mDownloadProgressDialog.setProgress((int) Math.ceil(progress * 100));
+                }
+                if(!message.isEmpty()) {
+                    mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
+                } else {
+                    mDownloadProgressDialog.setMessage("");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialogInterface) {
+        // the download dialog was canceled
+        DownloadProjectsTask task = (DownloadProjectsTask) TaskManager.getTask(TASK_DOWNLOAD_ALL_PROJECTS);
+        if(task != null) {
+            task.setOnFinishedListener(null);
+            task.setOnProgressListener(null);
+            TaskManager.cancelTask(task);
+        }
     }
 }

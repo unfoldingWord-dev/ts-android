@@ -186,4 +186,12 @@ public class AppContext {
     public static float typefaceSize() {
         return Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TYPEFACE_SIZE, AppContext.context().getResources().getString(R.string.pref_default_typeface_size)));
     }
+
+    /**
+     * Returns the minimum checking level required for a translation to be considered a valid source language
+     * @return
+     */
+    public static int minCheckingLevel() {
+        return mContext.getResources().getInteger(R.integer.min_source_lang_checking_level);
+    }
 }

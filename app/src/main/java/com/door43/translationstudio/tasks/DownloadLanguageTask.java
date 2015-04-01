@@ -1,6 +1,5 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
@@ -28,14 +27,15 @@ public class DownloadLanguageTask extends ManagedTask {
         mLanguage = language;
     }
 
+    /**
+     * NOTE: the project, source language, and resources catalogs will have been downloaded when the
+     * user first opens the download manager. So we do not need to download them again here.
+     */
     @Override
     public void start() {
         // download resources
         boolean ignoreCache = false;
-        onProgress(-1, "");
-        // make sure we have the latest project and source language catalogs
-        AppContext.projectManager().downloadProjectList(ignoreCache);
-        AppContext.projectManager().downloadSourceLanguageList(mProject, ignoreCache);
+        publishProgress(-1, "");
 
         // merge the new project and languages catalog
         AppContext.projectManager().mergeProject(mProject.getId());
@@ -45,26 +45,28 @@ public class DownloadLanguageTask extends ManagedTask {
         List<Resource> resources = AppContext.projectManager().downloadResourceList(mProject, mLanguage, ignoreCache);
         for(int i = 0; i < resources.size(); i ++) {
             Resource r = resources.get(i);
-            AppContext.projectManager().mergeResource(mProject.getId(), mLanguage.getId(), r.getId());
-            onProgress(((i+1)/(double)resources.size())*.3, "");
-            AppContext.projectManager().downloadNotes(mProject, mLanguage, r, ignoreCache);
-            AppContext.projectManager().mergeNotes(mProject.getId(), mLanguage.getId(), r);
+            if(r.getCheckingLevel() >= AppContext.minCheckingLevel()) {
+                AppContext.projectManager().mergeResource(mProject.getId(), mLanguage.getId(), r.getId());
+                publishProgress(((i + 1) / (double) resources.size()) * .3, "");
+                AppContext.projectManager().downloadNotes(mProject, mLanguage, r, ignoreCache);
+                AppContext.projectManager().mergeNotes(mProject.getId(), mLanguage.getId(), r);
 
-            onProgress(((i+1)/(double)resources.size())*.6, "");
-            AppContext.projectManager().downloadTerms(mProject, mLanguage, r, ignoreCache);
-            AppContext.projectManager().mergeTerms(mProject.getId(), mLanguage.getId(), r);
+                publishProgress(((i + 1) / (double) resources.size()) * .6, "");
+                AppContext.projectManager().downloadTerms(mProject, mLanguage, r, ignoreCache);
+                AppContext.projectManager().mergeTerms(mProject.getId(), mLanguage.getId(), r);
 
-            onProgress(((i+1)/(double)resources.size())*.9, "");
-            AppContext.projectManager().downloadSource(mProject, mLanguage, r, ignoreCache);
-            AppContext.projectManager().mergeSource(mProject.getId(), mLanguage.getId(), r);
+                publishProgress(((i + 1) / (double) resources.size()) * .9, "");
+                AppContext.projectManager().downloadSource(mProject, mLanguage, r, ignoreCache);
+                AppContext.projectManager().mergeSource(mProject.getId(), mLanguage.getId(), r);
 
-            onProgress((i+1)/(double)resources.size(), "");
-            mLanguage.addResource(r);
+                publishProgress((i + 1) / (double) resources.size(), "");
+                mLanguage.addResource(r);
+            }
         }
-        onProgress(-1, "");
+        publishProgress(-1, "");
         // reload project
         AppContext.projectManager().reloadProject(mProject.getId());
-        onProgress(1, "");
+        publishProgress(1, "");
     }
 
     /**
