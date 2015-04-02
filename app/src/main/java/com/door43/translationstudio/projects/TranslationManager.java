@@ -246,6 +246,7 @@ public class TranslationManager implements TCPClient.TcpListener {
 
         // load the data
         for(int i=0; i<jsonChapters.length(); i++) {
+            if(Thread.currentThread().isInterrupted()) break;
             try {
                 if(listener != null) {
                     listener.onProgress((i+1)/(double)jsonChapters.length(), "");
@@ -274,6 +275,7 @@ public class TranslationManager implements TCPClient.TcpListener {
                     // load frames
                     JSONArray jsonFrames = jsonChapter.getJSONArray("frames");
                     for(int j=0; j<jsonFrames.length(); j++) {
+                        if(Thread.currentThread().isInterrupted()) break;
                         JSONObject jsonFrame = jsonFrames.getJSONObject(j);
                         if(jsonFrame.has("id") && jsonFrame.has("text")) {
                             // parse id

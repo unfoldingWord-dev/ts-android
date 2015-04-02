@@ -202,7 +202,10 @@ public class Project implements Model {
      * @return
      */
     public String getTitle(SourceLanguage l) {
-        Translation t = mTitleTranslations.get(l.getId());
+        Translation t = null;
+        if(l != null) {
+            t = mTitleTranslations.get(l.getId());
+        }
         if(t != null) {
             return t.getText();
         } else {

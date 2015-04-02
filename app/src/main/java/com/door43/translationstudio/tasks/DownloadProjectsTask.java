@@ -33,23 +33,23 @@ public class DownloadProjectsTask extends ManagedTask {
         publishProgress(-1, "");
 
         for(int i = 0; i < mProjects.size(); i ++) {
+            if(interrupted()) return;
             Project p = mProjects.get(i);
-            double pProgress = (i+1)/(double)mProjects.size();
             // import the project
             AppContext.projectManager().mergeProject(p.getId());
 
             List<SourceLanguage> languages = p.getSourceLanguages();
             for(int j = 0; j < languages.size(); j ++) {
+                if(interrupted()) return;
                 SourceLanguage l = languages.get(j);
-                double lProgress = (j+1) / (double)languages.size();
                 if(l.checkingLevel() >= AppContext.minCheckingLevel()) {
                     // import the language
                     AppContext.projectManager().mergeSourceLanguage(p.getId(), l.getId());
 
                     Resource[] resources = l.getResources();
                     for(int k = 0; k < resources.length; k ++) {
+                        if(interrupted()) return;
                         Resource r = resources[k];
-                        double rProgress = (k+1) / (double)resources.length;
                         if(r.getCheckingLevel() >= AppContext.minCheckingLevel()) {
                             // import the resource
                             AppContext.projectManager().mergeResource(p.getId(), l.getId(), r.getId());
@@ -75,6 +75,7 @@ public class DownloadProjectsTask extends ManagedTask {
                 }
             }
             // reload project
+            if(interrupted()) return;
             AppContext.projectManager().reloadProject(p.getId());
         }
         publishProgress(1, "");

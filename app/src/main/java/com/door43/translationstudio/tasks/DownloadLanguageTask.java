@@ -44,6 +44,7 @@ public class DownloadLanguageTask extends ManagedTask {
         // download resources
         List<Resource> resources = AppContext.projectManager().downloadResourceList(mProject, mLanguage, ignoreCache);
         for(int i = 0; i < resources.size(); i ++) {
+            if(interrupted()) return;
             Resource r = resources.get(i);
             if(r.getCheckingLevel() >= AppContext.minCheckingLevel()) {
                 AppContext.projectManager().mergeResource(mProject.getId(), mLanguage.getId(), r.getId());
@@ -65,7 +66,11 @@ public class DownloadLanguageTask extends ManagedTask {
         }
         publishProgress(-1, "");
         // reload project
-        AppContext.projectManager().reloadProject(mProject.getId());
+        if(!interrupted()) {
+            AppContext.projectManager().reloadProject(mProject.getId());
+        } else {
+            return;
+        }
         publishProgress(1, "");
     }
 

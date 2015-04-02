@@ -23,6 +23,7 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
         // download (or load from cache) the source languages
         int i = 0;
         for(Project p:projects) {
+            if(interrupted()) return;
             boolean didUpdateProjectInfo = false;
 
             publishProgress(i / (double) projects.size(), p.getId());
@@ -39,6 +40,7 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
 
             // download (or load from cache) the resources
             for(SourceLanguage l:languages) {
+                if(interrupted()) return;
                 // update the language details
                 if(oldProject != null) {
                     SourceLanguage oldLanguage = oldProject.getSourceLanguage(l.getId());
@@ -50,17 +52,22 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
 
                 List<Resource> resources = AppContext.projectManager().downloadResourceList(p, l, false);
                 for(Resource r:resources) {
+                    if(interrupted()) return;
                     l.addResource(r);
                 }
             }
 
-            // reload the project
-            if(didUpdateProjectInfo) {
-                AppContext.projectManager().reloadProject(p.getId());
-            }
+            if(!interrupted()) {
+                // reload the project
+                if (didUpdateProjectInfo) {
+                    AppContext.projectManager().reloadProject(p.getId());
+                }
 
-            if(languages.size() > 0) {
-                mProjects.add(p);
+                if (languages.size() > 0) {
+                    mProjects.add(p);
+                }
+            } else {
+                return;
             }
             i++;
         }

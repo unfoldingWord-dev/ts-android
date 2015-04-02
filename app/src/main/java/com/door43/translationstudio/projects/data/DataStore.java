@@ -495,9 +495,9 @@ public class DataStore {
             }
             editor.apply();
             if(fileExists) {
-                Logger.i(this.getClass().getName(), "downloaded updated asset from " + uri);
+//                Logger.i(this.getClass().getName(), "downloaded updated asset from " + uri);
             } else {
-                Logger.i(this.getClass().getName(), "downloaded new asset from " + uri);
+//                Logger.i(this.getClass().getName(), "downloaded new asset from " + uri);
             }
             return key;
         } catch (MalformedURLException e) {

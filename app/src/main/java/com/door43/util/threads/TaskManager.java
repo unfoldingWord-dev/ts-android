@@ -15,28 +15,39 @@ import java.util.concurrent.TimeUnit;
  */
 public class TaskManager {
 
-    private static List<ManagedTask> mTaskList = new ArrayList<>();
     private static Map<String, Integer> mTaskKeys = new HashMap<>();
     private static Map<Integer, ManagedTask> mTaskMap = new HashMap<>();
     private static int mCurrentTaskIndex = 0;
-    private static final TaskManager sInstance;
+
     private static final int KEEP_ALIVE_TIME = 1;
-    private static final TimeUnit KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
-    private static final BlockingQueue<Runnable> mWorkQueue = new LinkedBlockingQueue<>();
+    private static final TimeUnit KEEP_ALIVE_TIME_UNIT;
     private static int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
-    private ThreadPoolExecutor mThreadPool = new ThreadPoolExecutor(
-            NUMBER_OF_CORES,       // Initial pool size
-            NUMBER_OF_CORES,       // Max pool size
-            KEEP_ALIVE_TIME,
-            KEEP_ALIVE_TIME_UNIT,
-            mWorkQueue);
+
+    private final BlockingQueue<Runnable> mWorkQueue;
+    private final ThreadPoolExecutor mThreadPool;
+    private static TaskManager sInstance = null;
 
     static {
+        KEEP_ALIVE_TIME_UNIT = TimeUnit.SECONDS;
         sInstance = new TaskManager();
     }
 
     private TaskManager() {
+        mWorkQueue = new LinkedBlockingQueue<>();
+        mThreadPool = new ThreadPoolExecutor(
+                NUMBER_OF_CORES,       // Initial pool size
+                NUMBER_OF_CORES,       // Max pool size
+                KEEP_ALIVE_TIME,
+                KEEP_ALIVE_TIME_UNIT,
+                mWorkQueue);
+    }
 
+    /**
+     * Returns the TaskManager object
+     * @return
+     */
+    public static TaskManager getsInstance() {
+        return sInstance;
     }
 
     /**
@@ -150,9 +161,9 @@ public class TaskManager {
     }
 
     public static void cancelAll() {
-        ManagedTask[] runnableArray = new ManagedTask[mWorkQueue.size()];
+        ManagedTask[] runnableArray = new ManagedTask[sInstance.mWorkQueue.size()];
         // Populates the array with the Runnables in the queue
-        mWorkQueue.toArray(runnableArray);
+        sInstance.mWorkQueue.toArray(runnableArray);
         // Stores the array length in order to iterate over the array
         int len = runnableArray.length;
         /*
@@ -161,7 +172,7 @@ public class TaskManager {
         synchronized (sInstance) {
             for (int runnableIndex = 0; runnableIndex < len; runnableIndex++) {
                 Thread thread = runnableArray[runnableIndex].getThread();
-                if (null != thread) {
+                if (thread != null) {
                     thread.interrupt();
                 }
             }
@@ -181,27 +192,15 @@ public class TaskManager {
      * @param task
      */
     public static void cancelTask(ManagedTask task) {
-        ManagedTask[] runnableArray = new ManagedTask[mWorkQueue.size()];
-        // Populates the array with the Runnables in the queue
-        mWorkQueue.toArray(runnableArray);
-        // Stores the array length in order to iterate over the array
-        int len = runnableArray.length;
-        /*
-         * Iterates over the array of Runnables and interrupts just the one thread
-         */
-        synchronized (sInstance) {
-            for (int runnableIndex = 0; runnableIndex < len; runnableIndex++) {
-                if(runnableArray[runnableIndex].getTaskId().equals(task.getTaskId())) {
-                    // stop the thread
-                    Thread thread = runnableArray[runnableIndex].getThread();
-                    if (null != thread) {
-                        thread.interrupt();
-                    }
-                    // clear the task
-                    clearTask(runnableArray[runnableIndex].getTaskId(), true);
-                    break;
+        if(task != null) {
+            synchronized (sInstance) {
+                Thread thread = task.getThread();
+                if(thread != null) {
+                    thread.interrupt();
                 }
+                task.stop();
             }
+            sInstance.mThreadPool.remove(task);
         }
     }
 }

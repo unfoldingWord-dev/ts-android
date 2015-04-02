@@ -13,14 +13,24 @@ public abstract class ManagedTask implements Runnable {
     private OnProgressListener mProgressListener;
     private double mProgress = -1;
     private String mProgressMessage = "";
+    private boolean mIsStopped = false;
 
     @Override
     public final void run() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
         mThread = Thread.currentThread();
-        if(!mThread.isInterrupted()) {
+        try {
+            if(Thread.interrupted()) {
+                throw new InterruptedException();
+            }
             start();
+        } catch (InterruptedException e) {
+
+        } finally {
+            // clears the thread's interrupt flag
+            Thread.interrupted();
         }
+
         mFinished = true;
         if(mFinishListener != null) {
             try {
@@ -56,7 +66,7 @@ public abstract class ManagedTask implements Runnable {
     protected void publishProgress(double progress, String message) {
         mProgress = progress;
         mProgressMessage = message;
-        if(mProgressListener != null) {
+        if(mProgressListener != null && !isFinished()) {
             try {
                 mProgressListener.onProgress(this, mProgress, mProgressMessage);
             } catch(Exception e) {
@@ -116,6 +126,26 @@ public abstract class ManagedTask implements Runnable {
         return mFinished;
     }
 
+    /**
+     * Checks if the task was canceled
+     * @return
+     */
+    public final boolean isCanceled() {
+        return mIsStopped;
+    }
+
+    public void stop() {
+        mIsStopped = true;
+    }
+
+    /**
+     * Checks if the task has been interrupted.
+     * Interrupting threads is not reliable so we need to set a flag.
+     * @return
+     */
+    public boolean interrupted() {
+        return mThread.isInterrupted() || mIsStopped;
+    }
 
     public static interface OnFinishedListener {
         public void onFinished(ManagedTask task);

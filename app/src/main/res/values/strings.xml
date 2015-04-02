@@ -304,5 +304,6 @@
     <string name="import_from_storage_description">Projects will be imported from the external storage on this device</string>
     <string name="action_filter">Filter</string>
     <string name="footnote">Footnote</string>
+    <string name="download_complete">Download complete</string>
 
 </resources>

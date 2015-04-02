@@ -134,7 +134,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
-                            staticHolder.progressBar.setVisibility(View.GONE);
+                            staticHolder.progressBar.setVisibility(View.INVISIBLE);
                             if(LibraryTempData.getEnableEditing()) {
                                 staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
                             } else {

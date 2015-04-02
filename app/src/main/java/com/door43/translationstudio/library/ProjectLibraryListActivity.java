@@ -12,14 +12,17 @@ import android.os.Looper;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadProjectsTask;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
@@ -316,7 +319,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onFinished(final ManagedTask task) {
         // TODO: will reload do too much? we just want to reload the list that's it.
         TaskManager.clearTask(TASK_DOWNLOAD_ALL_PROJECTS);
 
@@ -331,59 +334,72 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
                     mDownloadProgressDialog.dismiss();
                 }
+
+                if(task != null && !task.isCanceled()) {
+                    AlertDialog dialog = new AlertDialog.Builder(ProjectLibraryListActivity.this)
+                            .setTitle(R.string.success)
+                            .setIcon(R.drawable.ic_check_small)
+                            .setMessage(R.string.download_complete)
+                            .show();
+//                    Toast toast = Toast.makeText(ProjectLibraryListActivity.this, R.string.download_complete, Toast.LENGTH_LONG);
+//                    toast.setGravity(Gravity.BOTTOM, 0, 0);
+//                    toast.show();
+                }
             }
         });
     }
 
     @Override
     public void onProgress(final ManagedTask task, final double progress, final String message) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                if(task.isFinished()) {
-                    // because we start on a new thread we need to make sure the task didn't finish while this thread was starting.
-                    if(mDownloadProgressDialog != null) {
-                        mDownloadProgressDialog.dismiss();
+        if(!task.isFinished()) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (task.isFinished()) {
+                        // because we start on a new thread we need to make sure the task didn't finish while this thread was starting.
+                        if (mDownloadProgressDialog != null) {
+                            mDownloadProgressDialog.dismiss();
+                        }
+                        return;
                     }
-                    return;
+                    if (mDownloadProgressDialog == null) {
+                        mDownloadProgressDialog = new ProgressDialog(ProjectLibraryListActivity.this);
+                        mDownloadProgressDialog.setCancelable(true);
+                        mDownloadProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        mDownloadProgressDialog.setCanceledOnTouchOutside(false);
+                        mDownloadProgressDialog.setOnCancelListener(ProjectLibraryListActivity.this);
+                        mDownloadProgressDialog.setMax(100);
+                        mDownloadProgressDialog.setIcon(R.drawable.ic_download_small);
+                        mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
+                        mDownloadProgressDialog.setMessage("");
+                    }
+                    if (!mDownloadProgressDialog.isShowing()) {
+                        mDownloadProgressDialog.show();
+                    }
+                    if (progress == -1) {
+                        mDownloadProgressDialog.setIndeterminate(true);
+                        mDownloadProgressDialog.setProgress(mDownloadProgressDialog.getMax());
+                    } else {
+                        mDownloadProgressDialog.setIndeterminate(false);
+                        mDownloadProgressDialog.setProgress((int) Math.ceil(progress * 100));
+                    }
+                    if (!message.isEmpty()) {
+                        mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
+                    } else {
+                        mDownloadProgressDialog.setMessage("");
+                    }
                 }
-                if(mDownloadProgressDialog == null){
-                    mDownloadProgressDialog = new ProgressDialog(ProjectLibraryListActivity.this);
-                    mDownloadProgressDialog.setCancelable(true);
-                    mDownloadProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                    mDownloadProgressDialog.setCanceledOnTouchOutside(false);
-                    mDownloadProgressDialog.setOnCancelListener(ProjectLibraryListActivity.this);
-                    mDownloadProgressDialog.setMax(100);
-                    mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
-                    mDownloadProgressDialog.setMessage("");
-                }
-                if(!mDownloadProgressDialog.isShowing()) {
-                    mDownloadProgressDialog.show();
-                }
-                if(progress == -1) {
-                    mDownloadProgressDialog.setIndeterminate(true);
-                    mDownloadProgressDialog.setProgress(mDownloadProgressDialog.getMax());
-                } else {
-                    mDownloadProgressDialog.setIndeterminate(false);
-                    mDownloadProgressDialog.setProgress((int) Math.ceil(progress * 100));
-                }
-                if(!message.isEmpty()) {
-                    mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
-                } else {
-                    mDownloadProgressDialog.setMessage("");
-                }
-            }
-        });
+            });
+        }
     }
 
     @Override
     public void onCancel(DialogInterface dialogInterface) {
         // the download dialog was canceled
+        mDownloadProgressDialog = null;
         DownloadProjectsTask task = (DownloadProjectsTask) TaskManager.getTask(TASK_DOWNLOAD_ALL_PROJECTS);
         if(task != null) {
-            task.setOnFinishedListener(null);
-            task.setOnProgressListener(null);
             TaskManager.cancelTask(task);
         }
     }
