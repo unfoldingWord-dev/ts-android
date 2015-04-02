@@ -39,7 +39,6 @@ public class SharingActivity extends TranslatorBaseActivity {
     private ToolAdapter mAdapter;
     private static int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
     ProgressDialog mProgressDialog;
-//    private static int IMPORT_DOKUWIKI_FROM_SD_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -461,5 +460,10 @@ public class SharingActivity extends TranslatorBaseActivity {
         } catch(Exception e) {
             Logger.e(this.getClass().getName(), "Failed to read file", e);
         }
+    }
+
+    public void onDestroy() {
+        
+        super.onDestroy();
     }
 }

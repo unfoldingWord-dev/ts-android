@@ -76,7 +76,6 @@
             android:name=".SharingActivity"
             android:label="@string/title_activity_sharing"
             android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -121,7 +120,6 @@
             android:name=".device2device.DeviceToDeviceActivity"
             android:label="@string/title_activity_sharing"
             android:parentActivityName=".SharingActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

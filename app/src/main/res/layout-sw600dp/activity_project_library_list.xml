@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"  android:baselineAligned="false"
     android:orientation="vertical"
+    android:background="@color/white"
     tools:context="com.door43.translationstudio.library.ProjectLibraryListActivity">
 
     <android.support.v7.widget.Toolbar
@@ -12,32 +13,33 @@
         android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorPrimary"/>
 
-    <LinearLayout android:layout_width="match_parent"
-        android:layout_height="match_parent"  android:baselineAligned="false"
-        android:divider="?android:attr/dividerHorizontal" android:orientation="horizontal"
-        android:showDividers="middle"
-        android:background="@color/white">
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:stretchColumns="2" >
 
-        <!--
-        This layout is a two-pane layout for the Projects
-        master/detail flow.
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" >
 
-        -->
+            <LinearLayout>
+                <fragment android:id="@+id/project_list"
+                    android:name="com.door43.translationstudio.library.ProjectLibraryListFragment"
+                    android:layout_width="300dp" android:layout_height="match_parent"
+                    tools:layout="@android:layout/list_content" />
+            </LinearLayout>
 
-        <fragment android:id="@+id/project_list"
-            android:name="com.door43.translationstudio.library.ProjectLibraryListFragment"
-            android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="2"
-            tools:layout="@android:layout/list_content" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="2dp"
-            android:layout_height="fill_parent"
-            android:background="@color/blue"></LinearLayout>
-
-        <FrameLayout android:id="@+id/project_detail_container" android:layout_width="0dp"
-            android:layout_height="match_parent" android:layout_weight="3" />
-
-    </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="2dp"
+                android:layout_height="fill_parent"
+                android:background="@color/blue"></LinearLayout>
+            <LinearLayout>
+                <FrameLayout android:id="@+id/project_detail_container" android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+        </TableRow>
+    </TableLayout>
 </LinearLayout>
 

@@ -78,23 +78,21 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private static ProgressDialog mProgressDialog;
     private File mPublicKeyFile;
     private File mPrivateKeyFile;
-    private static Map<String, DialogFragment> mPeerDialogs;
+    private static Map<String, DialogFragment> mPeerDialogs = new HashMap<>();
     private boolean mShuttingDown = true;
+    private static final int PORT_CLIENT_UDP = 9939;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_to_device);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         mPublicKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa.pub");
         mPrivateKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa");
         mPublicKeyFile.getParentFile().mkdirs();
-        if(mPeerDialogs == null) mPeerDialogs = new HashMap<String, DialogFragment>();
-        if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
 
-        // allow state loss on fragments
-//        FragmentTransaction ft = getFragmentManager().beginTransaction();
-//        ft.commitAllowingStateLoss();
+        if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
 
@@ -103,8 +101,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         } else {
             setTitle(R.string.import_from_device);
         }
-
-        final int clientUDPPort = 9939;
 
         // reset things on first load
         if(savedInstanceState == null) {
@@ -118,7 +114,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         if(mService == null || !mService.isRunning()) {
             // set up the threads
             if(mStartAsServer) {
-                mService = new Server(DeviceToDeviceActivity.this, clientUDPPort, new Server.OnServerEventListener() {
+                mService = new Server(DeviceToDeviceActivity.this, PORT_CLIENT_UDP, new Server.OnServerEventListener() {
 
                     @Override
                     public void onBeforeStart(Handler handle) {
@@ -194,7 +190,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     }
                 });
             } else {
-                mService = new Client(DeviceToDeviceActivity.this, clientUDPPort, new Client.OnClientEventListener() {
+                mService = new Client(DeviceToDeviceActivity.this, PORT_CLIENT_UDP, new Client.OnClientEventListener() {
                     @Override
                     public void onBeforeStart(Handler handle) {
                         // generate new session keys
@@ -285,12 +281,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         final Handler handler = new Handler(getMainLooper());
         mLoadingBar = (ProgressBar)findViewById(R.id.loadingBar);
         mLoadingText = (TextView)findViewById(R.id.loadingText);
-//        TextView titleText = (TextView)findViewById(R.id.titleText);
-//        if(mStartAsServer) {
-//            titleText.setText(R.string.export_to_device);
-//        } else {
-//            titleText.setText(R.string.import_from_device);
-//        }
         ListView peerListView = (ListView)findViewById(R.id.peerListView);
         mAdapter = new DevicePeerAdapter(mService.getPeers(), mStartAsServer, this);
         peerListView.setAdapter(mAdapter);
