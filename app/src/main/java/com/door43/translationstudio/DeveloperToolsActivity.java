@@ -8,11 +8,14 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.v4.content.FileProvider;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -260,6 +263,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
 
                 // TODO: this should be placed inside of a task instead.
                 final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
+                    private File output;
                     @Override
                     public void onStop() {
 
@@ -291,7 +295,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                                 return;
                             }
                             if(archiveFile.exists()) {
-                                File output = new File(AppContext.getPublicDownloadsDirectory(), archiveFile.getName());
+                                File internalDestDir = new File(getCacheDir(), "sharing/");
+                                output = new File(internalDestDir, archiveFile.getName());
                                 FileUtils.copyFile(archiveFile, output);
                             }
                         } catch (IOException e) {
@@ -303,11 +308,22 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                     @Override
                     public void onPostExecute() {
                         if(!isInterrupted()) {
-                            AppContext.context().showToastMessage(R.string.success);
                             new AlertDialog.Builder(DeveloperToolsActivity.this)
                                     .setTitle(R.string.success)
                                     .setIcon(R.drawable.ic_check_small)
                                     .setMessage(R.string.source_export_complete)
+                                    .setPositiveButton(R.string.menu_share, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            if (output != null) {
+                                                Uri u = FileProvider.getUriForFile(DeveloperToolsActivity.this, "com.door43.translationstudio.fileprovider", output);
+                                                Intent intent = new Intent(Intent.ACTION_SEND);
+                                                intent.setType("application/zip");
+                                                intent.putExtra(Intent.EXTRA_STREAM, u);
+                                                startActivity(Intent.createChooser(intent, "Email:"));
+                                            }
+                                        }
+                                    })
                                     .show();
                         }
                         dialog.dismiss();
