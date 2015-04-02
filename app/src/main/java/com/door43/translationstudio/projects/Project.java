@@ -4,7 +4,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
@@ -59,7 +58,7 @@ public class Project implements Model {
     private static final String TRANSLATION_READY_TAG = "READY";
     private boolean mHasNotes = false;
     private String mSortKey;
-    private Uri mLanguageCatalogUri;
+    private Uri mSourceLanguageCatalogUri;
     private int mSourceLanguagesDateModified = 0;
     private boolean mAutosave = true;
 
@@ -1051,7 +1050,7 @@ public class Project implements Model {
      */
     public void setSourceLanguageCatalog(String languageCatalogUrl) {
         if(languageCatalogUrl != null) {
-            mLanguageCatalogUri = Uri.parse(languageCatalogUrl);
+            mSourceLanguageCatalogUri = Uri.parse(languageCatalogUrl);
 
             // set the source languges date modified
             Uri uri = Uri.parse(languageCatalogUrl);
@@ -1060,7 +1059,7 @@ public class Project implements Model {
                 mSourceLanguagesDateModified = Integer.parseInt(dateModified);
             }
         } else {
-            mLanguageCatalogUri = null;
+            mSourceLanguageCatalogUri = null;
         }
     }
 
@@ -1068,8 +1067,8 @@ public class Project implements Model {
      * Returns the url to the language catalog
      * @return the url string or null
      */
-    public Uri getLanguageCatalog() {
-        return mLanguageCatalogUri;
+    public Uri getSourceLanguageCatalog() {
+        return mSourceLanguageCatalogUri;
     }
 
     /**

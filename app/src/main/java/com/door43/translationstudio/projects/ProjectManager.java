@@ -1,7 +1,6 @@
 package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.util.Log;
 
 import com.door43.translationstudio.MainApplication;
@@ -703,8 +702,8 @@ public class ProjectManager {
     public List<SourceLanguage> downloadSourceLanguageList(Project p, boolean ignoreCache) {
         String catalog;
         List<SourceLanguage> languages = new ArrayList<>();
-        if(p.getLanguageCatalog() != null) {
-            catalog = mDataStore.fetchTempAsset(p.getLanguageCatalog(), ignoreCache);
+        if(p.getSourceLanguageCatalog() != null) {
+            catalog = mDataStore.fetchTempAsset(p.getSourceLanguageCatalog(), ignoreCache);
         } else {
             catalog = mDataStore.fetchTempAsset(mDataStore.sourceLanguageCatalogUri(p.getId()), ignoreCache);
         }
@@ -790,7 +789,7 @@ public class ProjectManager {
     public List<Resource> downloadResourceList(Project p, SourceLanguage l, boolean ignoreCache) {
         String catalog;
         List<Resource> resources = new ArrayList<>();
-        if(p.getLanguageCatalog() != null) {
+        if(p.getSourceLanguageCatalog() != null) {
             catalog = mDataStore.fetchTempAsset(p.getSourceLanguage(l.getId()).getResourceCatalog(), ignoreCache);
         } else {
             catalog = mDataStore.fetchTempAsset(mDataStore.resourceCatalogUri(p.getId(), l.getId()), ignoreCache);

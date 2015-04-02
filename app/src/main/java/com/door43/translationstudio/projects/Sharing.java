@@ -605,7 +605,11 @@ public class Sharing {
                     projectMetaJson.put(sp.getId());
                 }
                 projectCatalogItemJson.put("meta", projectMetaJson);
-                projectCatalogItemJson.put("lang_catalog", ds.sourceLanguageCatalogUri(projects[i].getId()));
+                if(projects[i].getSourceLanguageCatalog() != null) {
+                    projectCatalogItemJson.put("lang_catalog", projects[i].getSourceLanguageCatalog());
+                } else {
+                    projectCatalogItemJson.put("lang_catalog", ds.sourceLanguageCatalogUri(projects[i].getId()));
+                }
 
                 // prepare source
                 prepareProjectSourceExport(projects[i], sourceDir, dataDir);
@@ -681,7 +685,11 @@ public class Sharing {
 
                     srcLangCatItemJson.put("language", srcLangCatLang);
                     srcLangCatItemJson.put("project", srcLangCatProj);
-                    srcLangCatItemJson.put("res_catalog", ds.resourceCatalogUri(p.getId(), l.getId()));
+                    if(l.getResourceCatalog() != null) {
+                        srcLangCatItemJson.put("res_catalog", l.getResourceCatalog());
+                    } else {
+                        srcLangCatItemJson.put("res_catalog", ds.resourceCatalogUri(p.getId(), l.getId()));
+                    }
 
                     srcLangCatJson.put(srcLangCatItemJson);
 

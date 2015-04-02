@@ -1,5 +1,6 @@
 package com.door43.translationstudio;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -154,114 +155,96 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 dialog.show(ft, "dialog");
             }
         }));
-        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
-            @Override
-            public void run() {
-                final Project[] projects = AppContext.projectManager().getProjects();
-
-                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
-                dialog.setCancelable(true);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.setIndeterminate(true);
-                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                dialog.setMax(projects.length);
-                dialog.setMessage(getResources().getString(R.string.downloading_updates));
-
-                final Handler handle = new Handler(Looper.getMainLooper());
-
-                final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
-
-                    @Override
-                    public void onStop() {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.setMessage("Cancelling...");
-                                dialog.setIndeterminate(true);
-                                dialog.show();
-                            }
-                        });
-
-                        AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
-                    }
-
-                    @Override
-                    public void run() {
-                        // disable screen rotation so we don't break things
-//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
-                        for(int i=0; i<projects.length; i ++) {
-                            if(isInterrupted()) break;
-                            // update progress
-                            final int progress = i;
-                            final String title = String.format(getResources().getString(R.string.downloading_project_updates), projects[i].getId());
-                            handle.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.setIndeterminate(false);
-                                    dialog.setProgress(progress);
-                                    dialog.setMessage(title);
-                                }
-                            });
-
-                            // TODO: use the update all task with flag to ignore the cache
-                            AppContext.context().showToastMessage("Not implimented yet");
-
-//                            AppContext.projectManager().downloadProjectUpdates(projects[i], true, new ProjectManager.OnProgressCallback() {
-//                                @Override
-//                                public void onProgress(final double progress, final String message) {
-//                                    handle.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            dialog.setSecondaryProgress((int)Math.round(dialog.getMax()*progress));
-//                                            dialog.setMessage(title+"\n"+message);
-//                                        }
-//                                    });
-//                                }
+//        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
+//            @Override
+//            public void run() {
+//                final Project[] projects = AppContext.projectManager().getProjects();
 //
-//                                @Override
-//                                public void onSuccess() {
+//                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
+//                dialog.setCancelable(true);
+//                dialog.setCanceledOnTouchOutside(false);
+//                dialog.setIndeterminate(true);
+//                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+//                dialog.setMax(projects.length);
+//                dialog.setMessage(getResources().getString(R.string.downloading_updates));
 //
+//                final Handler handle = new Handler(Looper.getMainLooper());
+//
+//                final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
+//
+//                    @Override
+//                    public void onStop() {
+//                        handle.post(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                dialog.setMessage("Cancelling...");
+//                                dialog.setIndeterminate(true);
+//                                dialog.show();
+//                            }
+//                        });
+//
+//                        AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
+//                    }
+//
+//                    @Override
+//                    public void run() {
+//                        // disable screen rotation so we don't break things
+////                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
+//                        for(int i=0; i<projects.length; i ++) {
+//                            if(isInterrupted()) break;
+//                            // update progress
+//                            final int progress = i;
+//                            final String title = String.format(getResources().getString(R.string.downloading_project_updates), projects[i].getId());
+//                            handle.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    dialog.setIndeterminate(false);
+//                                    dialog.setProgress(progress);
+//                                    dialog.setMessage(title);
 //                                }
 //                            });
-                        }
-
-                        // reload the selected project source
-                        if(AppContext.projectManager().getSelectedProject() != null) {
-                            handle.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
-                                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                                    dialog.setIndeterminate(true);
-                                }
-                            });
-                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
-                        }
-                    }
-
-                    @Override
-                    public void onPostExecute() {
-                        dialog.dismiss();
-                        // re-enable screen rotation
-//                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-                        if(!isInterrupted()) {
-                            AppContext.context().showToastMessage(R.string.success);
-                        }
-                    }
-                };
-
-                // allow the user to cancel the dialog
-                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialogInterface) {
-                        thread.stop();
-                    }
-                });
-                dialog.show();
-
-                thread.start();
-            }
-        }));
+//
+//                            // TODO: use the update all task with flag to ignore the cache
+//                            AppContext.context().showToastMessage("Not implimented yet");
+//                        }
+//
+//                        // reload the selected project source
+//                        if(AppContext.projectManager().getSelectedProject() != null) {
+//                            handle.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+//                                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//                                    dialog.setIndeterminate(true);
+//                                }
+//                            });
+//                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onPostExecute() {
+//                        dialog.dismiss();
+//                        // re-enable screen rotation
+////                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+//                        if(!isInterrupted()) {
+//                            AppContext.context().showToastMessage(R.string.success);
+//                        }
+//                    }
+//                };
+//
+//                // allow the user to cancel the dialog
+//                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//                    @Override
+//                    public void onCancel(DialogInterface dialogInterface) {
+//                        thread.stop();
+//                    }
+//                });
+//                dialog.show();
+//
+//                thread.start();
+//            }
+//        }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
@@ -275,6 +258,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 dialog.setMax(projects.length);
                 dialog.setMessage(getResources().getString(R.string.exporting_source));
 
+                // TODO: this should be placed inside of a task instead.
                 final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
                     @Override
                     public void onStop() {
@@ -320,6 +304,11 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                     public void onPostExecute() {
                         if(!isInterrupted()) {
                             AppContext.context().showToastMessage(R.string.success);
+                            new AlertDialog.Builder(DeveloperToolsActivity.this)
+                                    .setTitle(R.string.success)
+                                    .setIcon(R.drawable.ic_check_small)
+                                    .setMessage(R.string.source_export_complete)
+                                    .show();
                         }
                         dialog.dismiss();
                     }

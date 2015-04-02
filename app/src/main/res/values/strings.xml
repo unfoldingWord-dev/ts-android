@@ -305,5 +305,6 @@
     <string name="action_filter">Filter</string>
     <string name="footnote">Footnote</string>
     <string name="download_complete">Download complete</string>
+    <string name="source_export_complete">Source export complete</string>
 
 </resources>
