@@ -140,6 +140,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private boolean mTranslationEditTextIsFocused;
     private TextView mHelpText;
     private Dialog mFootnoteDialog;
+    private int mPreviousRootViewHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -288,9 +289,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private void onKeyboardChanged(View root) {
         Rect r = new Rect();
         root.getWindowVisibleDisplayFrame(r);
-//        int screenHeight = root.getRootView().getHeight();
-//        int heightDiff = screenHeight - (r.bottom - r.top);
-        if((root.getRootView().getHeight() - (r.bottom - r.top)) > 100) {
+        if(root.getHeight() < mPreviousRootViewHeight) {
             onKeyboardOpen(r);
         } else {
             onKeyboardClose(r);
@@ -448,9 +447,13 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // watch for the soft keyboard open and close
         final View rootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);
+        mPreviousRootViewHeight = 0;
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
+                if(mPreviousRootViewHeight == 0) {
+                    mPreviousRootViewHeight = rootView.getHeight();
+                }
                 onKeyboardChanged(rootView);
             }
         });
@@ -751,7 +754,7 @@ public class MainActivity extends TranslatorBaseActivity {
         });
 
         // get notified when drawers open
-        mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, mMainToolbar, R.string.close, R.string.close) {
+        mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, R.string.close, R.string.close) {
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
                 mTranslationEditText.setEnabled(true);
