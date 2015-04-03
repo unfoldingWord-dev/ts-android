@@ -342,6 +342,12 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 thread.start();
             }
         }));
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.simulate_crash), getResources().getString(R.string.simulate_crash_description), 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                int killme = 1/0;
+            }
+        }));
     }
 
     /**

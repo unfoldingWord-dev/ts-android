@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -88,18 +89,13 @@ public class SettingsActivity extends PreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        setContentView(R.layout.activity_preferences_legacy);
-//
-//        Toolbar actionbar = (Toolbar) findViewById(R.id.actionbar);
-//        actionbar.setTitle("Settings");
-//
-//        actionbar.setNavigationIcon(getResources().getDrawable(R.drawable.ic_ab_back_holo_light_am));
-//        actionbar.setNavigationOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                SettingsActivity.this.finish();
-//            }
-//        });
+        // ensure the projects loaded correctly. This may happen when the app recovers from an crash.
+        if(AppContext.projectManager().getProjects().length == 0) {
+            AppContext.projectManager().reset();
+            Intent intent = new Intent(this, SplashScreenActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     @Override

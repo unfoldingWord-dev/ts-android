@@ -117,49 +117,45 @@ public class TaskManager {
     }
 
     /**
-     * Removes a task from the manager
-     * @param id
-     * @param forced
-     */
-    private static void clearTask(Object id, boolean forced) {
-        if(id instanceof String) {
-            clearTask((String)id, forced);
-        } else if(id instanceof Integer) {
-            clearTask((int)id, forced);
-        }
-    }
-
-    /**
-     * Removes a task from the manager
+     * Removes a completed task from the manager.
+     * If the task has not finished it will not be removed
      * @param id
      */
     public static void clearTask(Object id) {
-        clearTask(id, false);
+        if(id instanceof String) {
+            clearTask((String)id);
+        } else if(id instanceof Integer) {
+            clearTask((int)id);
+        }
     }
 
     /**
      * Removes a task from the manager
      * @param id
-     * @param forced if true the task will be removed even if it is not finished
      */
-    private static void clearTask(int id, boolean forced) {
-        if(mTaskMap.containsKey(id) && (mTaskMap.get(id).isFinished() || forced)) {
+    private static boolean clearTask(int id) {
+        if(mTaskMap.containsKey(id) && (mTaskMap.get(id).isFinished())) {
             mTaskMap.remove(id);
+            return true;
         }
+        return false;
     }
 
     /**
      * Removes a task from the manager
      * @param key
-     * @param forced if true the task will be removed even if it is not finished
      */
-    private static void clearTask(String key, boolean forced) {
+    private static void clearTask(String key) {
         if(mTaskKeys.containsKey(key)) {
-            clearTask(mTaskKeys.get(key), forced);
-            mTaskKeys.remove(key);
+            if(clearTask((int)mTaskKeys.get(key))) {
+                mTaskKeys.remove(key);
+            }
         }
     }
 
+    /**
+     * Cancels and removes all tasks
+     */
     public static void cancelAll() {
         ManagedTask[] runnableArray = new ManagedTask[sInstance.mWorkQueue.size()];
         // Populates the array with the Runnables in the queue
@@ -188,7 +184,7 @@ public class TaskManager {
     }
 
     /**
-     * Cancels and clears out a task
+     * Cancels and removes a task
      * @param task
      */
     public static void cancelTask(ManagedTask task) {
