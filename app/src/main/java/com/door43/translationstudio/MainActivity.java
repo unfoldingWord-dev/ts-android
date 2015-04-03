@@ -31,7 +31,6 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -95,6 +94,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends TranslatorBaseActivity {
+    private static final String STATE_SOURCE_SCROLL_Y = "source_text_scroll_y";
+    private static final String STATE_SOURCE_SCROLL_X = "source_text_scroll_x";
     private final MainActivity me = this;
 
     // content panes
@@ -141,6 +142,8 @@ public class MainActivity extends TranslatorBaseActivity {
     private TextView mHelpText;
     private Dialog mFootnoteDialog;
     private int mPreviousRootViewHeight;
+    private int mSourceScrollY = 0;
+    private int mSourceScrollX = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,6 +152,11 @@ public class MainActivity extends TranslatorBaseActivity {
 
         // just in case something breaks while this is disabled we'll enable it again
 //        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+
+        if(savedInstanceState != null) {
+            mSourceScrollY = savedInstanceState.getInt(STATE_SOURCE_SCROLL_Y, 0);
+            mSourceScrollX = savedInstanceState.getInt(STATE_SOURCE_SCROLL_X, 0);
+        }
 
         // set up toolbars
         mMainToolbar = (Toolbar)findViewById(R.id.toolbar_main);
@@ -875,8 +883,10 @@ public class MainActivity extends TranslatorBaseActivity {
                                         mSourceText.startAnimation(in);
                                         mSourceProgressBar.clearAnimation();
                                         mSourceProgressBar.startAnimation(outProgress);
-                                        // scroll to top
-                                        mSourceText.scrollTo(0, 0);
+                                        // scroll to top (or the last scroll position if screen rotation)
+                                        mSourceText.scrollTo(mSourceScrollX, mSourceScrollY);
+                                        mSourceScrollY = 0;
+                                        mSourceScrollX = 0;
                                         mRightPane.reloadTermsTab();
                                     }
                                 }
@@ -1865,5 +1875,13 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         });
         newFragment.show(ft, "dialog");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // TODO: we might be able to use getLayout().getLineVisibleEnd() for a more accurate scroll position.
+        outState.putInt(STATE_SOURCE_SCROLL_Y, mSourceText.getScrollY());
+        outState.putInt(STATE_SOURCE_SCROLL_X, mSourceText.getScrollX());
     }
 }
