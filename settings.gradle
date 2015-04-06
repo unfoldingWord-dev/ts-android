@@ -1,1 +1,1 @@
-include ':app', ':HtmlSpanner'
+include ':app', ':html-textview'

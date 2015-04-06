@@ -28,6 +28,8 @@ import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
+import org.sufficientlysecure.htmltextview.HtmlTextView;
+
 import java.util.ArrayList;
 
 /**
@@ -35,7 +37,7 @@ import java.util.ArrayList;
   */
  public class TermsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private TextView mTermName;
-    private TextView mTermDescriptionView;
+    private HtmlTextView mTermDescriptionView;
     private TextView mRelatedTerms;
     private TextView mRelatedTermsTitle;
     private TextView mExamplePassagesTitle;
@@ -57,7 +59,7 @@ import java.util.ArrayList;
         mRelatedTermsTitle = (TextView)view.findViewById(R.id.relatedTermsTitleText);
         mExamplePassagesView = (LinearLayout)view.findViewById(R.id.examplePassagesView);
         mExamplePassagesTitle = (TextView)view.findViewById(R.id.examplePassagesTitleText);
-        mTermDescriptionView = (TextView)view.findViewById(R.id.termDescriptionText);
+        mTermDescriptionView = (HtmlTextView)view.findViewById(R.id.termDescriptionText);
         mRelatedTerms = (TextView)view.findViewById(R.id.relatedTermsText);
         mImportantTermsButton = (Button)view.findViewById(R.id.importantTermsButton);
         mTermInfoScroll = (ScrollView)view.findViewById(R.id.termInfoScroll);
@@ -152,7 +154,7 @@ import java.util.ArrayList;
             mRelatedTerms.setText("");
             mExamplePassagesView.removeAllViews();
             mTermName.setText(term.getName());
-            mTermDescriptionView.setText(Html.fromHtml(term.getDefinition()));//Html.fromHtml(term.getDefinition()));
+            mTermDescriptionView.setHtmlFromString(term.getDefinition(), true);//Html.fromHtml(term.getDefinition()));
 //            mTermDescriptionView.reload();
 
             // related terms
@@ -219,8 +221,8 @@ import java.util.ArrayList;
                         }
 
                         // passage
-                        TextView passageText = (TextView) exampleView.findViewById(R.id.examplePassageText);
-                        passageText.setText(Html.fromHtml(example.getText()));
+                        HtmlTextView passageText = (HtmlTextView) exampleView.findViewById(R.id.examplePassageText);
+                        passageText.setHtmlFromString(example.getText(), true);
 
                         mExamplePassagesView.addView(exampleView);
                     } else {

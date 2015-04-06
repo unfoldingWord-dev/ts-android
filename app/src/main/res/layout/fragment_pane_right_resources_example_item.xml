@@ -14,7 +14,7 @@
         android:paddingRight="10dp"
         android:textSize="@dimen/h4" />
 
-    <TextView
+    <org.sufficientlysecure.htmltextview.HtmlTextView
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="New Text\nasdffsd\nsdfsdsd\nsdgfsdf"

@@ -53,5 +53,6 @@ dependencies {
     compile 'com.android.support:support-v4:21.0.3'
     compile 'org.kamranzafar:jtar:2.2'
     compile 'com.jpardogo.materialtabstrip:library:1.0.8'
-//    compile project(':HtmlSpanner')
+    //    compile project(':HtmlSpanner')
+    compile project(':html-textview')
 }
