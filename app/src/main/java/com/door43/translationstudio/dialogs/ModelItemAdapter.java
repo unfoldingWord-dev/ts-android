@@ -139,7 +139,13 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.altDescription.setText(getItem(position).getDescription());
 
         // set graphite fontface
-        Typeface typeface = AppContext.graphiteTypeface(getItem(position).getSelectedSourceLanguage());
+        Typeface typeface;
+        if(getItem(position).getSelectedSourceLanguage() != null) {
+            typeface = AppContext.graphiteTypeface(getItem(position).getSelectedSourceLanguage());
+        } else {
+            // use english as default
+            typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
+        }
         holder.title.setTypeface(typeface, 0);
         holder.altTitle.setTypeface(typeface, 0);
         holder.description.setTypeface(typeface, 0);

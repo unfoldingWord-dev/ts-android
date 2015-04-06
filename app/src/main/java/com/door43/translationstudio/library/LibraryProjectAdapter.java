@@ -81,7 +81,12 @@ public class LibraryProjectAdapter extends BaseAdapter {
         }
 
         // set graphite fontface
-        Typeface typeface = AppContext.graphiteTypeface(getItem(i).getSelectedSourceLanguage());
+        Typeface typeface;
+        if(getItem(i).getSelectedSourceLanguage() != null) {
+            typeface = AppContext.graphiteTypeface(getItem(i).getSelectedSourceLanguage());
+        } else {
+            typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
+        }
         holder.name.setTypeface(typeface, 0);
 
         // set font size

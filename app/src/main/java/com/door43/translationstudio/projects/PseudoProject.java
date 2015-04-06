@@ -194,7 +194,11 @@ public class PseudoProject implements Model {
 
         // just use the first language we find.
         t = getSelectedTranslation();
-        return (SourceLanguage)t.getLanguage();
+        if(t != null) {
+            return (SourceLanguage) t.getLanguage();
+        } else {
+            return null;
+        }
     }
 
     /**
