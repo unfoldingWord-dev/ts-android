@@ -66,14 +66,18 @@
                         android:id="@+id/termName"
                         android:layout_marginTop="10dp"
                         android:textSize="@dimen/h2"
+                        android:textColor="@color/dark_gray"
                         android:paddingBottom="10dp" />
 
-                    <WebView
-                        android:layout_width="fill_parent"
+                    <TextView
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:text="term description"
                         android:id="@+id/termDescriptionText"
-                        android:background="@android:color/transparent"
-                        android:clickable="false" />
+                        android:textColor="@color/dark_gray"
+                        android:paddingTop="20dp"
+                        android:clickable="false"
+                        android:textSize="@dimen/h4" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -81,6 +85,7 @@
                         android:text="@string/related_terms"
                         android:id="@+id/relatedTermsTitleText"
                         android:paddingTop="20dp"
+                        android:textColor="@color/dark_gray"
                         android:textSize="@dimen/h3" />
 
                     <TextView
@@ -88,7 +93,7 @@
                         android:layout_height="wrap_content"
                         android:text="New Text"
                         android:id="@+id/relatedTermsText"
-                        android:textColor="@color/gray"
+                        android:textColor="@color/dark_gray"
                         android:textSize="@dimen/h4" />
 
                     <TextView
@@ -97,6 +102,7 @@
                         android:text="@string/term_examples"
                         android:id="@+id/examplePassagesTitleText"
                         android:paddingTop="20dp"
+                        android:textColor="@color/dark_gray"
                         android:textSize="@dimen/h3" />
 
                     <LinearLayout

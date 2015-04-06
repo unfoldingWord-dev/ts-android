@@ -35,7 +35,7 @@ import java.util.ArrayList;
   */
  public class TermsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private TextView mTermName;
-    private WebView mTermDescriptionWebView;
+    private TextView mTermDescriptionView;
     private TextView mRelatedTerms;
     private TextView mRelatedTermsTitle;
     private TextView mExamplePassagesTitle;
@@ -57,7 +57,7 @@ import java.util.ArrayList;
         mRelatedTermsTitle = (TextView)view.findViewById(R.id.relatedTermsTitleText);
         mExamplePassagesView = (LinearLayout)view.findViewById(R.id.examplePassagesView);
         mExamplePassagesTitle = (TextView)view.findViewById(R.id.examplePassagesTitleText);
-        mTermDescriptionWebView = (WebView)view.findViewById(R.id.termDescriptionText);
+        mTermDescriptionView = (TextView)view.findViewById(R.id.termDescriptionText);
         mRelatedTerms = (TextView)view.findViewById(R.id.relatedTermsText);
         mImportantTermsButton = (Button)view.findViewById(R.id.importantTermsButton);
         mTermInfoScroll = (ScrollView)view.findViewById(R.id.termInfoScroll);
@@ -152,8 +152,8 @@ import java.util.ArrayList;
             mRelatedTerms.setText("");
             mExamplePassagesView.removeAllViews();
             mTermName.setText(term.getName());
-            mTermDescriptionWebView.loadData(term.getDefinition(), "text/html", null);
-            mTermDescriptionWebView.reload();
+            mTermDescriptionView.setText(Html.fromHtml(term.getDefinition()));//Html.fromHtml(term.getDefinition()));
+//            mTermDescriptionView.reload();
 
             // related terms
             int numRelatedTerms = 0;
