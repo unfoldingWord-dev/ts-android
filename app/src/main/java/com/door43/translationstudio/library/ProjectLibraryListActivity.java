@@ -189,7 +189,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
             menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
         }
 
-        // TODO: editing is disabled for now. Finish implimenting editing.
+        // TODO: editing is disabled for now. Finish implementing editing.
         menu.findItem(R.id.action_edit_projects).setVisible(false);
         menu.findItem(R.id.action_cancel_edit_projects).setVisible(false);
 

@@ -108,7 +108,6 @@ public class RightPaneFragment extends TranslatorBaseFragment {
      * Notifies the notes adapter that the dataset has changed
      */
     public void reloadNotesTab() {
-        selectTab(0);
         mNotesTab.NotifyAdapterDataSetChanged();
     }
 

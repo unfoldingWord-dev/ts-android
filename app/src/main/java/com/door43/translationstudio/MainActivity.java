@@ -54,6 +54,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
@@ -1138,7 +1139,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * Updates the center pane with the selected source frame text and any existing translations
      */
     public void reloadCenterPane() {
-        // auto save is disabled to prevent accidently saving into the wrong frame
+        // auto save is disabled to prevent accidentally saving into the wrong frame
         disableAutosave();
         invalidateOptionsMenu();
         // load the text
