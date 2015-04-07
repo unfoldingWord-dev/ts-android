@@ -230,6 +230,8 @@ public class SourceLanguage extends Language {
 
     /**
      * Returns the date the resources catalog was last modified
+     * TRICKY: this is not always reliable because when we check for updates the new languages catalog
+     * is imported giving the wrong date modified.
      * @return
      */
     public int getResourcesDateModified() {

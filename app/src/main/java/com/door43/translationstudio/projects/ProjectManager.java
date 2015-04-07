@@ -6,6 +6,7 @@ import android.util.Log;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 
 import org.apache.commons.io.FileUtils;
@@ -623,9 +624,18 @@ public class ProjectManager {
         Project p = getProject(projectId);
         if(p != null) {
             SourceLanguage currentLanguage = p.getSourceLanguage(latestLanguage.getId());
-            if(currentLanguage != null && latestLanguage.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level) && (latestLanguage.getDateModified() > currentLanguage.getDateModified() || latestLanguage.getResourcesDateModified() > currentLanguage.getResourcesDateModified())) {
-                // there is an update to the language definition or the resources
-                return true;
+            if(currentLanguage != null && latestLanguage.checkingLevel() >= AppContext.minCheckingLevel()) {
+                if(latestLanguage.getDateModified() > currentLanguage.getDateModified()) {
+                    // there is an update in the language
+                    return true;
+                } else {
+                    for(Resource r:latestLanguage.getResources()) {
+                        if(r.getDateModified() > currentLanguage.getResource(r.getId()).getDateModified()) {
+                            // there is an update in the resources
+                            return true;
+                        }
+                    }
+                }
             }
         }
         return false;
@@ -641,8 +651,18 @@ public class ProjectManager {
         Project p = getProject(projectId);
         if(p != null) {
             SourceLanguage currentDraft = p.getSourceLanguageDraft(latestDraft.getId());
-            if(currentDraft != null && latestDraft.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level) && (latestDraft.getDateModified() > currentDraft.getDateModified() || latestDraft.getResourcesDateModified() > currentDraft.getResourcesDateModified())) {
-                return true;
+            if(currentDraft != null && latestDraft.checkingLevel() >= AppContext.minCheckingLevel()) {
+                if(latestDraft.getDateModified() > currentDraft.getDateModified()) {
+                    // there is an update in the language
+                    return true;
+                } else {
+                    for(Resource r:latestDraft.getResources()) {
+                        if(r.getDateModified() > currentDraft.getResource(r.getId()).getDateModified()) {
+                            // there is an update in the resources
+                            return true;
+                        }
+                    }
+                }
             }
         }
         return false;

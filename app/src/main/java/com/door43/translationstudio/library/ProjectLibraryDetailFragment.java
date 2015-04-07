@@ -94,6 +94,8 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         selectTab(mDefaultPage);
 
         // project info
+        TextView dateModifiedText = (TextView)rootView.findViewById(R.id.dateModifiedTextView);
+        dateModifiedText.setText("v. "+mProject.getDateModified());
         TextView projectTitle = (TextView)rootView.findViewById(R.id.modelTitle);
         projectTitle.setText(mProject.getTitle());
         TextView projectDescription = (TextView)rootView.findViewById(R.id.modelDescription);

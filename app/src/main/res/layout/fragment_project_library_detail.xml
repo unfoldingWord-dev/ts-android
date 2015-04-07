@@ -10,21 +10,21 @@
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@color/light_blue"
+        android:background="@color/lighter_gray"
         android:id="@+id/linearLayout10"
         android:baselineAligned="true">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:weightSum="3"
-            android:padding="10dp"
+            android:padding="5dp"
             android:id="@+id/relativeLayout">
 
             <ImageView
                 android:layout_width="@dimen/model_list_item_image_width"
                 android:layout_height="@dimen/model_list_item_height"
                 android:id="@+id/modelImage"
-                android:background="@color/blue" />
+                android:background="@color/gray" />
 
             <LinearLayout
                 android:id="@+id/bodyLayout"
@@ -62,6 +62,16 @@
 
         </RelativeLayout>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="20150407"
+            android:id="@+id/dateModifiedTextView"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/medium_gray"
+            android:padding="5dp"
+            android:gravity="end|right" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -79,6 +89,7 @@
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:background="@color/white"
         android:layout_above="@+id/linearLayout6"
         android:layout_below="@+id/linearLayout10">
 
