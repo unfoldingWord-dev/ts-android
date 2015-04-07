@@ -100,33 +100,42 @@ public class ProfileManager {
      * Pushes the profile to the server
      */
     public static void push() {
-        final String remotePath = getRemotePath();
-        final Repo repo = new Repo(getRepositoryPath());
+        if(getProfile() != null) {
 
-        CommitTask add = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
-            @Override
-            public void success() {
-                PushTask push = new PushTask(repo, remotePath, true, true, new GitSyncAsyncTask.AsyncTaskCallback() {
-                    public boolean doInBackground(Void... params) {
-                        return false;
-                    }
-                    public void onPreExecute() {}
-                    public void onProgressUpdate(String... progress) {}
-                    @Override
-                    public void onPostExecute(Boolean isSuccess) {
-                        if(!isSuccess) {
-                            Logger.e(ProfileManager.class.getName(), "failed to push the profile to the server");
+            final String remotePath = getRemotePath();
+            final Repo repo = new Repo(getRepositoryPath());
+
+
+            CommitTask add = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
+                @Override
+                public void success() {
+                    PushTask push = new PushTask(repo, remotePath, true, true, new GitSyncAsyncTask.AsyncTaskCallback() {
+                        public boolean doInBackground(Void... params) {
+                            return false;
                         }
-                    }
-                });
-                push.executeTask();
-            }
 
-            @Override
-            public void error(Throwable e) {
-                Logger.e(ProfileManager.class.getName(), "failed to commit chnages to the profile repo", e);
-            }
-        });
-        add.executeTask();
+                        public void onPreExecute() {
+                        }
+
+                        public void onProgressUpdate(String... progress) {
+                        }
+
+                        @Override
+                        public void onPostExecute(Boolean isSuccess) {
+                            if (!isSuccess) {
+                                Logger.e(ProfileManager.class.getName(), "failed to push the profile to the server");
+                            }
+                        }
+                    });
+                    push.executeTask();
+                }
+
+                @Override
+                public void error(Throwable e) {
+                    Logger.e(ProfileManager.class.getName(), "failed to commit chnages to the profile repo", e);
+                }
+            });
+            add.executeTask();
+        }
     }
 }

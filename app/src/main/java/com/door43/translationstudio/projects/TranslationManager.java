@@ -29,7 +29,6 @@ import java.io.File;
  * This class handles the storage of translated content.
  */
 public class TranslationManager implements TCPClient.TcpListener {
-    private TranslationManager me = this;
     private MainApplication mContext;
     private final String TAG = "TranslationManager";
     private final String mParentProjectSlug = "uw"; //  NOTE: not sure if this will ever need to be dynamic
@@ -50,7 +49,7 @@ public class TranslationManager implements TCPClient.TcpListener {
             mContext.showProgressDialog(R.string.loading);
             // set up a tcp connection
             if(mTcpClient == null) {
-                mTcpClient = new TCPClient(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, mContext.getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, mContext.getResources().getString(R.string.pref_default_auth_server_port))), me);
+                mTcpClient = new TCPClient(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, mContext.getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, mContext.getResources().getString(R.string.pref_default_auth_server_port))), TranslationManager.this);
             } else {
                 // TODO: update the sever and port if they have changed... Not sure if this task is applicable now
             }
