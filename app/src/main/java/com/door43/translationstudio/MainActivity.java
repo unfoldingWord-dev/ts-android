@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
@@ -50,6 +51,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -145,11 +147,30 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mPreviousRootViewHeight;
     private int mSourceScrollY = 0;
     private int mSourceScrollX = 0;
+    private Button source;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //To view larger sections of Source
+        source=(Button) findViewById(R.id.source);
+
+        source.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+
+                DialogFragment dialogFragment=new DialogFragment();
+                dialogFragment.show(getFragmentManager(),"Source");
+
+                Dialog dialog=new Dialog(MainActivity.this);
+                dialog.setTitle("Welcome");
+
+            }
+        });
 
         // just in case something breaks while this is disabled we'll enable it again
 //        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
