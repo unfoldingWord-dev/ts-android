@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
+<!--<shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <solid android:color="#66000000"/>
     <stroke android:width="2dp" android:color="@android:color/transparent" />
+</shape>-->
+    <selector xmlns:android="http://schemas.android.com/apk/res/android">
+        <item android:state_pressed="true" android:drawable="@color/black" /> <!--pressed -->
+    <item android:state_pressed="true" android:drawable="@color/black" android:alpha="1"/>
+    <item android:drawable="@android:color/holo_red_dark" /> <!-- Normal -->
+    </selector>
 
-</shape>
+
+

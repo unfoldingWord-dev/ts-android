@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sourceText"
+        android:title="Show More Verses"
+        />
+
+    <item
+        android:id="@+id/targetText"
+        android:title="Read Through Translation"
+        />
+
+</menu>
