@@ -102,7 +102,6 @@ public class PushTask extends RepoOpTask {
             }
         } catch (TransportException e) {
             setException(e);
-//            handleAuthError(this);
             return false;
         } catch (Exception e) {
             setException(e);

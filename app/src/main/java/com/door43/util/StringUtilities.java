@@ -1,5 +1,15 @@
 package com.door43.util;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.text.Editable;
+import android.text.SpannedString;
+import android.util.Pair;
+
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.AppContext;
+
 /**
  * Created by joel on 1/14/2015.
  */
@@ -19,5 +29,39 @@ public class StringUtilities {
             pieces = new String[] {string, ""};
         }
         return pieces;
+    }
+
+    /**
+     * Copies the text to the clipboard
+     * @param text
+     */
+    public static void copyToClipboard(Context context, String text) {
+        ClipboardManager clipboard = (ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("simple text", text);
+        clipboard.setPrimaryClip(clip);
+        AppContext.context().showToastMessage(R.string.copied_to_clipboard);
+    }
+
+    /**
+     * Expands a selection to include spans
+     * @param text
+     * @param start
+     * @param end
+     * @return the pair of start and end values
+     */
+    public static Pair<Integer, Integer> expandSelectionForSpans(Editable text, int start, int end) {
+        // make sure we don't cut any spans in half
+        SpannedString[] spans = text.getSpans(start, end, SpannedString.class);
+        for(SpannedString s :  spans) {
+            int spanStart = text.getSpanStart(s);
+            int spanEnd = text.getSpanEnd(s);
+            if(spanStart < start) {
+                start = spanEnd;
+            }
+            if(spanEnd > end) {
+                end = spanEnd;
+            }
+        }
+        return new Pair(start, end);
     }
 }

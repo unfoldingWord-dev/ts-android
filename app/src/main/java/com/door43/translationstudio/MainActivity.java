@@ -31,6 +31,8 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
+import android.util.Pair;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Display;
@@ -74,6 +76,7 @@ import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.Translation;
+import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.KeyTermRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
@@ -87,6 +90,7 @@ import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.StringUtilities;
 import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
@@ -509,11 +513,27 @@ public class MainActivity extends TranslatorBaseActivity {
 
             @Override
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+                int start = mTranslationEditText.getSelectionStart();
+                int end = mTranslationEditText.getSelectionEnd();
                 switch(menuItem.getItemId()) {
                     case R.id.action_notes:
-                        int start = mTranslationEditText.getSelectionStart();
-                        int end = mTranslationEditText.getSelectionEnd();
                         insertNoteMarker(start, end);
+                        return true;
+                    case android.R.id.copy:
+                        Pair copyRange = StringUtilities.expandSelectionForSpans(mTranslationEditText.getText(), start, end);
+                        String copyString = TranslationManager.compileTranslation((Editable) mTranslationEditText.getText().subSequence((int) copyRange.first, (int) copyRange.second));
+                        StringUtilities.copyToClipboard(MainActivity.this, copyString);
+                        AppContext.context().showToastMessage(R.string.copied_to_clipboard);
+                        return true;
+                    case android.R.id.cut:
+                        Pair cutRange = StringUtilities.expandSelectionForSpans(mTranslationEditText.getText(), start, end);
+                        String cutString = TranslationManager.compileTranslation((Editable) mTranslationEditText.getText().subSequence((int) cutRange.first, (int) cutRange.second));
+                        StringUtilities.copyToClipboard(MainActivity.this, cutString);
+                        AppContext.context().showToastMessage(R.string.copied_to_clipboard);
+                        CharSequence preceedingText = mTranslationEditText.getText().subSequence(0, (int)cutRange.first);
+                        CharSequence trailingText = mTranslationEditText.getText().subSequence((int)cutRange.second, mTranslationEditText.getText().length());
+                        mTranslationEditText.setText(TextUtils.concat(preceedingText, trailingText));
+                        mTranslationEditText.setSelection((int)cutRange.first);
                         return true;
                     default:
                         return false;

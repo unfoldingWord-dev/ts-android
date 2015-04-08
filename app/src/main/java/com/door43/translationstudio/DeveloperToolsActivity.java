@@ -26,6 +26,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.StringUtilities;
 import com.door43.util.threads.ThreadableUI;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.ToolAdapter;
@@ -74,19 +75,19 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
         versionText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                copyToClipboard(mVersionName);
+                StringUtilities.copyToClipboard(DeveloperToolsActivity.this, mVersionName);
             }
         });
         buildText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                copyToClipboard(mVersionCode);
+                StringUtilities.copyToClipboard(DeveloperToolsActivity.this, mVersionCode);
             }
         });
         udidText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                copyToClipboard(AppContext.udid());
+                StringUtilities.copyToClipboard(DeveloperToolsActivity.this, AppContext.udid());
             }
         });
 
@@ -348,16 +349,5 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 int killme = 1/0;
             }
         }));
-    }
-
-    /**
-     * Copies the text to the clipboard
-     * @param text
-     */
-    private void copyToClipboard(String text) {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("simple text", text);
-        clipboard.setPrimaryClip(clip);
-        AppContext.context().showToastMessage(R.string.copied_to_clipboard);
     }
 }
