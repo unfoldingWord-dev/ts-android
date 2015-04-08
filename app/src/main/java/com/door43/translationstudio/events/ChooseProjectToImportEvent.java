@@ -7,6 +7,7 @@ import com.door43.translationstudio.projects.Project;
 
 /**
  * Created by joel on 1/8/2015.
+ * @deprecated
  */
 public class ChooseProjectToImportEvent {
     private final Project mProject;

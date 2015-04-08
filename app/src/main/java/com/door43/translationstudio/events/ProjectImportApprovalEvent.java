@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * Created by joel on 1/12/2015.
+ * @deprecated
  */
 public class ProjectImportApprovalEvent {
     private final ProjectImport[] mRequests;

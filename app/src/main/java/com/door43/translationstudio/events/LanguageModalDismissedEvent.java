@@ -4,6 +4,7 @@ import com.door43.translationstudio.projects.Language;
 
 /**
  * Created by joel on 10/7/2014.
+ * @deprecated
  */
 public class LanguageModalDismissedEvent {
     private Language mLanguage;

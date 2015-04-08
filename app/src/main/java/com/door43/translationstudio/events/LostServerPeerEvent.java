@@ -4,6 +4,7 @@ import com.door43.translationstudio.network.Peer;
 
 /**
  * Created by joel on 1/16/2015.
+ * @deprecated
  */
 public class LostServerPeerEvent {
 

@@ -100,6 +100,7 @@ public class ProjectTranslationImportApprovalDialog extends DialogFragment {
     public void setImportRequests(ProjectImport[] requests) {
         mRequests = requests;
     }
+
     /**
      * Sets the listener to be trigered when the form is submitted
      * @param listener

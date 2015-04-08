@@ -81,6 +81,7 @@ public class AppContext {
 
     /**
      * Returns the global event bus
+     * @deprecated please use com.door43.util.threads.TaskManager instead
      * @return
      */
     public static Bus getEventBus() {

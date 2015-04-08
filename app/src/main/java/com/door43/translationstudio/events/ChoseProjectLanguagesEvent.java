@@ -5,6 +5,7 @@ import com.door43.translationstudio.projects.Project;
 
 /**
  * This event is fired when the user choses the languages of a project they wish to import.
+ * @deprecated
  */
 public class ChoseProjectLanguagesEvent {
     private final Project mProject;
