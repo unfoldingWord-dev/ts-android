@@ -779,42 +779,6 @@ public class MainActivity extends TranslatorBaseActivity {
             }
         });
 
-        // automatically save changes to inputText
-//        mTranslationEditText.addTextChangedListener(new TextWatcher() {
-//            @Override
-//            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-//
-//            }
-//
-//            @Override
-//            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-//
-//            }
-//
-//            @Override
-//            public void afterTextChanged(Editable editable) {
-//                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
-//                if (mAutosaveTimer != null) {
-//                    mAutosaveTimer.cancel();
-//                }
-//                if(mAutosaveEnabled) {
-//                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
-//                }
-//                if (saveDelay != -1) {
-//                    mAutosaveTimer = new Timer();
-//                    if (mAutosaveEnabled) {
-//                        mAutosaveTimer.schedule(new TimerTask() {
-//                            @Override
-//                            public void run() {
-//                                // save the changes
-//                                MainActivity.this.save();
-//                            }
-//                        }, saveDelay);
-//                    }
-//                }
-//            }
-//        });
-
         // detect when the translation text has focus
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
