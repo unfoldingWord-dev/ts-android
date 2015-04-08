@@ -132,7 +132,6 @@ public class MainActivity extends TranslatorBaseActivity {
     private ProgressBar mSourceProgressBar;
     private Timer mAutosaveTimer;
     private boolean mAutosaveEnabled;
-    private boolean mProcessingTranslation;
     private Frame mSelectedFrame;
     private BroadcastReceiver mMessageReceiver;
     private RenderingGroup mSourceRendering;
@@ -143,7 +142,6 @@ public class MainActivity extends TranslatorBaseActivity {
     private RenderingGroup mTranslationRendering;
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
-    private boolean mTranslationEditTextIsFocused;
     private TextView mHelpText;
     private Dialog mFootnoteDialog;
     private int mPreviousRootViewHeight;
@@ -155,9 +153,6 @@ public class MainActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // just in case something breaks while this is disabled we'll enable it again
-//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
         if(savedInstanceState != null) {
             mSourceScrollY = savedInstanceState.getInt(STATE_SOURCE_SCROLL_Y, 0);
@@ -179,11 +174,35 @@ public class MainActivity extends TranslatorBaseActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // handle saves
+                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
+                if (mAutosaveTimer != null) {
+                    mAutosaveTimer.cancel();
+                }
+                if(mAutosaveEnabled) {
+                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
+                }
+                if (saveDelay != -1) {
+                    mAutosaveTimer = new Timer();
+                    if (mAutosaveEnabled) {
+                        mAutosaveTimer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                // save the changes
+                                MainActivity.this.save();
+                            }
+                        }, saveDelay);
+                    }
+                }
+
+                // handle rendering
                 // TRICKY: anything worth rendering will need to change by at least two characters
                 // so we don't re-render when the user is typing.
-                int minDeviation = 2;
-                if(Math.abs(count - before) > minDeviation) {
-                    renderTranslationText(s.toString());
+                // <a></a> <-- at least 7 characters are required to create a tag for rendering.
+                int minDeviation = 7;
+                // catch additions greater than the min deviation
+                if(count - before > minDeviation) {
+                    renderTranslationText(TranslationManager.compileTranslation((Editable)s));
                 }
             }
 
@@ -761,40 +780,40 @@ public class MainActivity extends TranslatorBaseActivity {
         });
 
         // automatically save changes to inputText
-        mTranslationEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
-                if (mAutosaveTimer != null) {
-                    mAutosaveTimer.cancel();
-                }
-                if(mAutosaveEnabled) {
-                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
-                }
-                if (saveDelay != -1) {
-                    mAutosaveTimer = new Timer();
-                    if (mAutosaveEnabled) {
-                        mAutosaveTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                // save the changes
-                                MainActivity.this.save();
-                            }
-                        }, saveDelay);
-                    }
-                }
-            }
-        });
+//        mTranslationEditText.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable editable) {
+//                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
+//                if (mAutosaveTimer != null) {
+//                    mAutosaveTimer.cancel();
+//                }
+//                if(mAutosaveEnabled) {
+//                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
+//                }
+//                if (saveDelay != -1) {
+//                    mAutosaveTimer = new Timer();
+//                    if (mAutosaveEnabled) {
+//                        mAutosaveTimer.schedule(new TimerTask() {
+//                            @Override
+//                            public void run() {
+//                                // save the changes
+//                                MainActivity.this.save();
+//                            }
+//                        }, saveDelay);
+//                    }
+//                }
+//            }
+//        });
 
         // detect when the translation text has focus
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -974,8 +993,6 @@ public class MainActivity extends TranslatorBaseActivity {
      */
     private void renderTranslationText(final String text) {
         mTranslationEditText.removeTextChangedListener(mTranslationChangedListener);
-        // disable the view so we don't save it
-        mProcessingTranslation = true;
         if(mHighlightTranslationThread != null) {
             mHighlightTranslationThread.stop();
         }
@@ -1064,17 +1081,21 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void onPostExecute() {
                                     if(!isInterrupted()) {
-                                        disableAutosave();
-                                        mTranslationEditText.setText(output);
-                                        enableAutosave();
+                                        int scrollX = mTranslationEditText.getScrollX();
+                                        int scrollY = mTranslationEditText.getScrollX();
+                                        int selection = mTranslationEditText.getSelectionStart();
+                                        mTranslationEditText.setText(TextUtils.concat(output, "\n\n"));
                                         mTranslationEditText.clearAnimation();
                                         mTranslationEditText.startAnimation(in);
                                         mTranslationProgressBar.clearAnimation();
                                         mTranslationProgressBar.startAnimation(outProgress);
-                                        // scroll to top
-                                        mTranslationEditText.scrollTo(0, 0);
+                                        // preserve selection and scroll
+                                        mTranslationEditText.scrollTo(scrollX, scrollY);
+                                        if(selection > mTranslationEditText.length()) {
+                                            selection = mTranslationEditText.length();
+                                        }
+                                        mTranslationEditText.setSelection(selection);
                                         mTranslationEditText.clearFocus();
-                                        mProcessingTranslation = false;
                                         mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
                                     }
                                 }
@@ -1206,6 +1227,8 @@ public class MainActivity extends TranslatorBaseActivity {
             // target translation
             final Translation translation = mSelectedFrame.getTranslation();
 
+            mTranslationEditText.scrollTo(0, 0);
+            mTranslationEditText.setSelection(0);
             renderTranslationText(translation.getText());
 
             if(chapter.getTitleTranslation().getText().isEmpty()) {
@@ -1344,7 +1367,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * Saves the translation
      */
     public void save() {
-        if (mAutosaveEnabled && !mProcessingTranslation && frameIsSelected() && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
+        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
             disableAutosave();
             AppContext.translationManager().commitTranslation();
             enableAutosave();
