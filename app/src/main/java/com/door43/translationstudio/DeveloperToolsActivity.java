@@ -76,18 +76,24 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
             @Override
             public void onClick(View view) {
                 StringUtilities.copyToClipboard(DeveloperToolsActivity.this, mVersionName);
+
+                AppContext.context().showToastMessage(R.string.copied_to_clipboard);
             }
         });
         buildText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 StringUtilities.copyToClipboard(DeveloperToolsActivity.this, mVersionCode);
+
+                AppContext.context().showToastMessage(R.string.copied_to_clipboard);
             }
         });
         udidText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 StringUtilities.copyToClipboard(DeveloperToolsActivity.this, AppContext.udid());
+
+                AppContext.context().showToastMessage(R.string.copied_to_clipboard);
             }
         });
 

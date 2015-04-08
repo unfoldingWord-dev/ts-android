@@ -39,7 +39,6 @@ public class StringUtilities {
         ClipboardManager clipboard = (ClipboardManager)context.getSystemService(Context.CLIPBOARD_SERVICE);
         ClipData clip = ClipData.newPlainText("simple text", text);
         clipboard.setPrimaryClip(clip);
-        AppContext.context().showToastMessage(R.string.copied_to_clipboard);
     }
 
     /**

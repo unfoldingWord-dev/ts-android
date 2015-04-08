@@ -149,6 +149,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mPreviousRootViewHeight;
     private int mSourceScrollY = 0;
     private int mSourceScrollX = 0;
+    private TextWatcher mTranslationChangedListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,6 +170,28 @@ public class MainActivity extends TranslatorBaseActivity {
         mMainToolbar.setTitle("");
         setSupportActionBar(mMainToolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
+
+        mTranslationChangedListener = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // TRICKY: anything worth rendering will need to change by at least two characters
+                // so we don't re-render when the user is typing.
+                int minDeviation = 2;
+                if(Math.abs(count - before) > minDeviation) {
+                    renderTranslationText(s.toString());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
 
         // listeners for the rendering engines
         mVerseClickListener = new Span.OnClickListener() {
@@ -464,7 +487,7 @@ public class MainActivity extends TranslatorBaseActivity {
         rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                if(mPreviousRootViewHeight == 0) {
+                if (mPreviousRootViewHeight == 0) {
                     mPreviousRootViewHeight = rootView.getHeight();
                 }
                 onKeyboardChanged(rootView);
@@ -515,7 +538,7 @@ public class MainActivity extends TranslatorBaseActivity {
             public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
                 int start = mTranslationEditText.getSelectionStart();
                 int end = mTranslationEditText.getSelectionEnd();
-                switch(menuItem.getItemId()) {
+                switch (menuItem.getItemId()) {
                     case R.id.action_notes:
                         insertNoteMarker(start, end);
                         return true;
@@ -523,17 +546,15 @@ public class MainActivity extends TranslatorBaseActivity {
                         Pair copyRange = StringUtilities.expandSelectionForSpans(mTranslationEditText.getText(), start, end);
                         String copyString = TranslationManager.compileTranslation((Editable) mTranslationEditText.getText().subSequence((int) copyRange.first, (int) copyRange.second));
                         StringUtilities.copyToClipboard(MainActivity.this, copyString);
-                        AppContext.context().showToastMessage(R.string.copied_to_clipboard);
                         return true;
                     case android.R.id.cut:
                         Pair cutRange = StringUtilities.expandSelectionForSpans(mTranslationEditText.getText(), start, end);
                         String cutString = TranslationManager.compileTranslation((Editable) mTranslationEditText.getText().subSequence((int) cutRange.first, (int) cutRange.second));
                         StringUtilities.copyToClipboard(MainActivity.this, cutString);
-                        AppContext.context().showToastMessage(R.string.copied_to_clipboard);
-                        CharSequence preceedingText = mTranslationEditText.getText().subSequence(0, (int)cutRange.first);
-                        CharSequence trailingText = mTranslationEditText.getText().subSequence((int)cutRange.second, mTranslationEditText.getText().length());
+                        CharSequence preceedingText = mTranslationEditText.getText().subSequence(0, (int) cutRange.first);
+                        CharSequence trailingText = mTranslationEditText.getText().subSequence((int) cutRange.second, mTranslationEditText.getText().length());
                         mTranslationEditText.setText(TextUtils.concat(preceedingText, trailingText));
-                        mTranslationEditText.setSelection((int)cutRange.first);
+                        mTranslationEditText.setSelection((int) cutRange.first);
                         return true;
                     default:
                         return false;
@@ -544,6 +565,7 @@ public class MainActivity extends TranslatorBaseActivity {
             public void onDestroyActionMode(ActionMode actionMode) {
             }
         });
+        mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
 
         // set up drawers
         Display display = getWindowManager().getDefaultDisplay();
@@ -951,6 +973,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param text
      */
     private void renderTranslationText(final String text) {
+        mTranslationEditText.removeTextChangedListener(mTranslationChangedListener);
         // disable the view so we don't save it
         mProcessingTranslation = true;
         if(mHighlightTranslationThread != null) {
@@ -965,6 +988,7 @@ public class MainActivity extends TranslatorBaseActivity {
                 if(renderThread != null) {
                     renderThread.stop();
                 }
+                mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
             }
 
             @Override
@@ -1027,6 +1051,7 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void onStop() {
                                     mTranslationRendering.stop();
+                                    mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
                                 }
 
                                 @Override
@@ -1050,6 +1075,7 @@ public class MainActivity extends TranslatorBaseActivity {
                                         mTranslationEditText.scrollTo(0, 0);
                                         mTranslationEditText.clearFocus();
                                         mProcessingTranslation = false;
+                                        mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
                                     }
                                 }
                             };
