@@ -63,6 +63,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -154,61 +155,60 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mPreviousRootViewHeight;
     private int mSourceScrollY = 0;
     private int mSourceScrollX = 0;
-    private Button source;
+    private Button enlarge;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //To view larger sections of Source
-        source=(Button) findViewById(R.id.source);
-        source.getBackground().setAlpha(64);
+        //To enlarge source and translation
+        enlarge=(Button) findViewById(R.id.enlarge);
 
-        source.setOnClickListener(new View.OnClickListener()
-        {
+        enlarge.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
 
                 PopupMenu popup = new PopupMenu(MainActivity.this, v);
                 popup.getMenuInflater().inflate(R.menu.popup, popup.getMenu());
-
 
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
 
-                        if(item.getItemId()==R.id.sourceText){
+                        if (item.getItemId() == R.id.sourceText) {
 
-                            Dialog dialog=new Dialog(MainActivity.this);
+                            Dialog dialog = new Dialog(MainActivity.this);
                             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                             dialog.setContentView(R.layout.dialogfragment);
 
+                            TextView text = (TextView) dialog.findViewById(R.id.dftext);
+                            Frame previousFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getPreviousFrame();
+                            Frame selectedFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+                            Frame nextFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getNextFrame();
 
-                            TextView text = (TextView)dialog.findViewById(R.id.dftext);
-                            Frame a=AppContext.projectManager().getSelectedProject().getSelectedChapter().getPreviousFrame();
-                            Frame b=AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
-                            Frame c=AppContext.projectManager().getSelectedProject().getSelectedChapter().getNextFrame();
-
-                            text.setText(new USXRenderer().render(a.getText()+"\n"+b.getText()+"\n"+c.getText()));
+                            text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText() + "\n" + nextFrame.getText()));
 
                             float typefaceSize = AppContext.typefaceSize();
                             text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
                             dialog.show();
 
-                        }
-
-                       else if(item.getItemId()==R.id.targetText)
-                        {
-                            Dialog dialog=new Dialog(MainActivity.this);
+                        } else if (item.getItemId() == R.id.targetText) {
+                            Dialog dialog = new Dialog(MainActivity.this);
                             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                             dialog.setContentView(R.layout.dialogfragment);
 
-                            TextView text = (TextView)dialog.findViewById(R.id.dftext);
+                            TextView text = (TextView) dialog.findViewById(R.id.dftext);
+                            Frame selectedFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+
+                            Translation a = selectedFrame.getTranslation();
+                            String b=a.getText();
+
                             text.setText(mTranslationEditText.getText());
+
 
                             float typefaceSize = AppContext.typefaceSize();
                             text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
