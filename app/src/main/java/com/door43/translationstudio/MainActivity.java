@@ -563,6 +563,7 @@ public class MainActivity extends TranslatorBaseActivity {
                         return true;
                     case android.R.id.copy:
                         Pair copyRange = StringUtilities.expandSelectionForSpans(mTranslationEditText.getText(), start, end);
+                        mTranslationEditText.setSelection((int)copyRange.first, (int)copyRange.second);
                         String copyString = TranslationManager.compileTranslation((Editable) mTranslationEditText.getText().subSequence((int) copyRange.first, (int) copyRange.second));
                         StringUtilities.copyToClipboard(MainActivity.this, copyString);
                         return true;
@@ -956,7 +957,6 @@ public class MainActivity extends TranslatorBaseActivity {
      * @param text
      */
     private void renderTranslationText(final String text) {
-        mTranslationEditText.removeTextChangedListener(mTranslationChangedListener);
         if(mHighlightTranslationThread != null) {
             mHighlightTranslationThread.stop();
         }
@@ -969,7 +969,6 @@ public class MainActivity extends TranslatorBaseActivity {
                 if(renderThread != null) {
                     renderThread.stop();
                 }
-                mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
             }
 
             @Override
@@ -1032,7 +1031,6 @@ public class MainActivity extends TranslatorBaseActivity {
                                 @Override
                                 public void onStop() {
                                     mTranslationRendering.stop();
-                                    mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
                                 }
 
                                 @Override
@@ -1048,7 +1046,9 @@ public class MainActivity extends TranslatorBaseActivity {
                                         int scrollX = mTranslationEditText.getScrollX();
                                         int scrollY = mTranslationEditText.getScrollX();
                                         int selection = mTranslationEditText.getSelectionStart();
-                                        mTranslationEditText.setText(TextUtils.concat(output, "\n\n"));
+                                        mTranslationEditText.removeTextChangedListener(mTranslationChangedListener);
+                                        mTranslationEditText.setText(TextUtils.concat(output, "\n"));
+                                        mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
                                         mTranslationEditText.clearAnimation();
                                         mTranslationEditText.startAnimation(in);
                                         mTranslationProgressBar.clearAnimation();
@@ -1060,7 +1060,6 @@ public class MainActivity extends TranslatorBaseActivity {
                                         }
                                         mTranslationEditText.setSelection(selection);
                                         mTranslationEditText.clearFocus();
-                                        mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
                                     }
                                 }
                             };

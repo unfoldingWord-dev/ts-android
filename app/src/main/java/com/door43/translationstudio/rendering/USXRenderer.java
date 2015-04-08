@@ -51,6 +51,7 @@ public class USXRenderer extends RenderingEngine {
         out = trimWhitespace(out);
         out = renderSectionHeading(out);
         out = renderLineBreaks(out);
+        // TODO: this will strip out new lines. Eventually we may want to convert these to paragraphs.
         out = renderWhiteSpace(out);
         out = renderParagraph(out);
         out = renderBlankLine(out);

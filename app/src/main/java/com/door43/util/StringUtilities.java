@@ -55,7 +55,7 @@ public class StringUtilities {
             int spanStart = text.getSpanStart(s);
             int spanEnd = text.getSpanEnd(s);
             if(spanStart < start) {
-                start = spanEnd;
+                start = spanStart;
             }
             if(spanEnd > end) {
                 end = spanEnd;
