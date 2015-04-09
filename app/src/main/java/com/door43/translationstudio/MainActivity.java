@@ -179,53 +179,65 @@ public class MainActivity extends TranslatorBaseActivity {
                     public boolean onMenuItemClick(MenuItem item) {
 
                         if (item.getItemId() == R.id.sourceText) {
+                            try {
+                                Dialog dialog = new Dialog(MainActivity.this);
+                                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                                dialog.setContentView(R.layout.dialogfragment);
 
-                            Dialog dialog = new Dialog(MainActivity.this);
-                            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                            dialog.setContentView(R.layout.dialogfragment);
 
-                            TextView text = (TextView) dialog.findViewById(R.id.dftext);
-                            Frame previousFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getPreviousFrame();
-                            Frame selectedFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
-                            Frame nextFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getNextFrame();
+                                TextView text = (TextView) dialog.findViewById(R.id.dftext);
+                                Frame previousFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getPreviousFrame();
+                                Frame selectedFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+                                Frame nextFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getNextFrame();
 
-                            text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText() + "\n" + nextFrame.getText()));
+                                float typefaceSize = AppContext.typefaceSize();
+                                text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
-                            float typefaceSize = AppContext.typefaceSize();
-                            text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
+                                if(nextFrame==null)
+                                {
+                                  text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText()));
+                                }
+                                else if(previousFrame==null)
+                                {
+                                  text.setText(new USXRenderer().render(selectedFrame.getText() + "\n" + nextFrame.getText()));
+                                }
+                                else
+                                {
+                                  text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText() + "\n" + nextFrame.getText()));
+                                }
 
-                            dialog.show();
+                                dialog.show();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
 
                         } else if (item.getItemId() == R.id.targetText) {
-                            Dialog dialog = new Dialog(MainActivity.this);
-                            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                            dialog.setContentView(R.layout.dialogfragment);
+                            try {
+                                Dialog dialog = new Dialog(MainActivity.this);
+                                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                                dialog.setContentView(R.layout.dialogfragment);
 
-                            TextView text = (TextView) dialog.findViewById(R.id.dftext);
-                            Frame selectedFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+                                TextView text = (TextView) dialog.findViewById(R.id.dftext);
+                                text.setText(mTranslationEditText.getText());
 
-                            Translation a = selectedFrame.getTranslation();
-                            String b=a.getText();
+                                float typefaceSize = AppContext.typefaceSize();
+                                text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
 
-                            text.setText(mTranslationEditText.getText());
-
-
-                            float typefaceSize = AppContext.typefaceSize();
-                            text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
-
-                            dialog.show();
+                                dialog.show();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
                         }
                         return true;
                     }
                 });
                 popup.show();
-
             }
         });
 
 
         // just in case something breaks while this is disabled we'll enable it again
-//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+       // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 
         if(savedInstanceState != null) {
             mSourceScrollY = savedInstanceState.getInt(STATE_SOURCE_SCROLL_Y, 0);

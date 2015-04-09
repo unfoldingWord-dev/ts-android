@@ -10,5 +10,4 @@
         android:id="@+id/targetText"
         android:title="Read Through Translation"
         />
-
 </menu>
