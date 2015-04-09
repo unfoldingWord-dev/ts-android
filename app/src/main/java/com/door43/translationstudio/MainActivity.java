@@ -1330,7 +1330,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * Saves the translation
      */
     public void save() {
-        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
+        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
             disableAutosave();
             AppContext.translationManager().commitTranslation();
             enableAutosave();
