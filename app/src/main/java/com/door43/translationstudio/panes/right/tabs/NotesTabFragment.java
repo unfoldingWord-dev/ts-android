@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,6 +36,8 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
     private Boolean mIsLoaded = false;
     private ScrollView mNotesInfoScroll;
     private TextView mNotesMessageText;
+    private Integer mScrollX = 0;
+    private Integer mScrollY = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,7 +67,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
                     // load the notes
                     TranslationNote note = f.getTranslationNotes();
                     mNotesView.removeAllViews();
-                    mNotesInfoScroll.scrollTo(0, 0);
+                    mNotesInfoScroll.scrollTo(mScrollX, mScrollY);
 
                     // notes
                     if(note != null && note.getNotes().size() > 0) {
@@ -160,5 +163,29 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the scroll x and y position of the notes
+     * @return
+     */
+    public Pair<Integer, Integer> getScroll() {
+        if(mNotesInfoScroll != null) {
+            return new Pair<>(mNotesInfoScroll.getScrollX(), mNotesInfoScroll.getScrollY());
+        } else {
+            return new Pair<>(0, 0);
+        }
+    }
+
+    /**
+     * Sets the scroll position of the notes
+     * @param scrollPair
+     */
+    public void setScroll(Pair<Integer, Integer> scrollPair) {
+        mScrollX = scrollPair.first;
+        mScrollY = scrollPair.second;
+        if(mNotesInfoScroll != null) {
+            mNotesInfoScroll.scrollTo(mScrollX, mScrollY);
+        }
     }
 }

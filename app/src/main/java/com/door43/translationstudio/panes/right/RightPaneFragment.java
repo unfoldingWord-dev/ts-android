@@ -3,6 +3,7 @@ package com.door43.translationstudio.panes.right;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +34,22 @@ public class RightPaneFragment extends TranslatorBaseFragment {
     private TermsTabFragment mTermsTab = new TermsTabFragment();
     private int mLayoutWidth = 0;
     private View mRootView;
+    private static final String STATE_NOTES_SCROLL_X = "notes_scroll_x";
+    private static final String STATE_NOTES_SCROLL_Y = "notes_scroll_y";
+    private static final String STATE_SELECTED_TAB = "selected_tab_index";
+    private int mSelectedTab = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         mRootView = inflater.inflate(R.layout.fragment_pane_right, container, false);
+
+        if(savedInstanceState != null) {
+            // restore scroll position
+            mSelectedTab = savedInstanceState.getInt(STATE_SELECTED_TAB, 0);
+            mDefaultPage = mSelectedTab;
+            mNotesTab.setScroll(new Pair<>(savedInstanceState.getInt(STATE_NOTES_SCROLL_X), savedInstanceState.getInt(STATE_NOTES_SCROLL_Y)));
+        }
 
         if(tabs.size() == 0) {
             // Tabs
@@ -82,6 +94,7 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         } else {
             mDefaultPage = i;
         }
+        mSelectedTab = i;
     }
 
     /**
@@ -140,5 +153,13 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         } else {
             mLayoutWidth = width;
         }
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Pair scrollPosition = mNotesTab.getScroll();
+        outState.putInt(STATE_NOTES_SCROLL_X, (int)scrollPosition.first);
+        outState.putInt(STATE_NOTES_SCROLL_Y, (int)scrollPosition.second);
+        outState.putInt(STATE_SELECTED_TAB, mSelectedTab);
     }
 }
