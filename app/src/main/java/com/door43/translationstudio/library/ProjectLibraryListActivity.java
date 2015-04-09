@@ -56,7 +56,6 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
      */
     private boolean mTwoPane;
     private Toolbar mToolbar;
-    private String mSelectedItem;
     private String TASK_DOWNLOAD_ALL_PROJECTS = "library_download_all_projects";
     private ProgressDialog mDownloadProgressDialog;
 
@@ -70,9 +69,6 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         setSupportActionBar(mToolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        // Show the Up button in the action bar.
-//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         if (findViewById(R.id.project_detail_container) != null) {
             // The detail container view will be present only in the
@@ -95,25 +91,17 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         connectDownloaAllTask();
     }
 
-    public void onResume() {
-        super.onResume();
-//        reload(false);
-    }
-
     /**
      * Callback method from {@link ProjectLibraryListFragment.Callbacks}
      * indicating that the item with the given ID was selected.
      */
     @Override
     public void onItemSelected(String id) {
-        mSelectedItem = id;
         if(id != null) {
             if (mTwoPane) {
                 // In two-pane mode, show the detail view in this activity by
                 // adding or replacing the detail fragment using a
                 // fragment transaction.
-//            Bundle arguments = new Bundle();
-
 
                 Bundle arguments = getIntent().getExtras();
                 if(arguments == null) {
@@ -320,7 +308,6 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
     @Override
     public void onFinished(final ManagedTask task) {
-        // TODO: will reload do too much? we just want to reload the list that's it.
         TaskManager.clearTask(TASK_DOWNLOAD_ALL_PROJECTS);
 
         // reload list
@@ -336,14 +323,13 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 }
 
                 if(task != null && !task.isCanceled()) {
-                    AlertDialog dialog = new AlertDialog.Builder(ProjectLibraryListActivity.this)
-                            .setTitle(R.string.success)
-                            .setIcon(R.drawable.ic_check_small)
-                            .setMessage(R.string.download_complete)
-                            .show();
-//                    Toast toast = Toast.makeText(ProjectLibraryListActivity.this, R.string.download_complete, Toast.LENGTH_LONG);
-//                    toast.setGravity(Gravity.BOTTOM, 0, 0);
-//                    toast.show();
+                     new AlertDialog.Builder(ProjectLibraryListActivity.this)
+                             .setTitle(R.string.success)
+                             .setIcon(R.drawable.ic_check_small)
+                             .setMessage(R.string.download_complete)
+                             .setCancelable(false)
+                             .setPositiveButton(R.string.label_ok, null)
+                             .show();
                 }
             }
         });

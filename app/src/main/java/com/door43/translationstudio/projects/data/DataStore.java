@@ -4,6 +4,9 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Resource;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
 import com.door43.util.Security;
@@ -32,6 +35,7 @@ public class DataStore {
     private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";
     private static final String PREFERENCES_TAG = "com.door43.translationstudio.assets";
     private static final String TEMP_ASSET_PREFIX = "temp_";
+    private static final String ASSET_PREFIX = "";
     private SharedPreferences mSettings;
     private static final int API_VERSION = 2;
     // this is used so we can force a cache reset between versions of the app if we make changes to api implimentation
@@ -412,7 +416,7 @@ public class DataStore {
      * @param key
      */
     public File getAsset(String key) {
-        return getLinkedAsset(key, assetsDir(), "");
+        return getLinkedAsset(key, assetsDir(), ASSET_PREFIX);
     }
 
     /**
@@ -429,7 +433,7 @@ public class DataStore {
      * @return
      */
     public static String getKey(Uri uri) {
-        return Security.md5(uri.getHost()+uri.getPath());
+        return Security.md5(uri.getHost() + uri.getPath());
     }
 
     /**
@@ -439,7 +443,7 @@ public class DataStore {
      * @return the asset key
      */
     private String downloadAsset(Uri uri, boolean ignoreCache) {
-        return downloadFile(uri, assetsDir(), "", ignoreCache);
+        return downloadFile(uri, assetsDir(), ASSET_PREFIX, ignoreCache);
     }
 
     /**
@@ -449,6 +453,38 @@ public class DataStore {
      * @return the asset key
      */
     private String downloadTempAsset(Uri uri, boolean ignoreCache) {
+        // check for matching asset first for better download performance
+        if(!ignoreCache) {
+            String key = getKey(uri);
+            File file = getAsset(key);
+            File tempFile = getTempAsset(key);
+            String dateModifiedRaw = uri.getQueryParameter("date_modified");
+            // migrate packaged asset into assets dir
+            if(!file.exists()) {
+                try {
+                    InputStream is = mContext.getAssets().open("data/" + key);
+                    FileUtils.copyInputStreamToFile(is, file);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // check for asset
+            if (!tempFile.exists() && file.exists() && dateModifiedRaw != null) {
+                int dateModified = Integer.parseInt(dateModifiedRaw);
+                try {
+                    int oldDateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
+                    if (dateModified <= oldDateModified) {
+                        // copy into temp assets
+                        FileUtils.copyFile(file, tempFile);
+                        return key;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // continue to download temp asset
         return downloadFile(uri, tempAssetsDir(), TEMP_ASSET_PREFIX, ignoreCache);
     }
 
@@ -466,7 +502,7 @@ public class DataStore {
         String dateModifiedRaw = uri.getQueryParameter("date_modified");
         boolean fileExists = file.exists();
         // identify existing data
-        if(!ignoreCache  && fileExists && dateModifiedRaw != null) {
+        if(!ignoreCache && fileExists && dateModifiedRaw != null) {
             int dateModified = Integer.parseInt(dateModifiedRaw);
             try {
                 int oldDateModified = mSettings.getInt(prefix + key + "_modified", 0);
@@ -512,7 +548,7 @@ public class DataStore {
      * If downloaded this will replace the current project catalog
      * @param checkServer indicates an updated list of projects should be downloaded from the server
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
-     * @return
+     * @return The contents of the project catalog
      */
     public String pullProjectCatalog(boolean checkServer, boolean ignoreCache) {
         String path = projectCatalogPath();
@@ -527,7 +563,7 @@ public class DataStore {
     /**
      * Downloads the project catalog from the server and stores it in the temp cache
      * @param ignoreCache
-     * @return
+     * @return The contents of the project catalog
      */
     public String fetchProjectCatalog(boolean ignoreCache) {
         String key = downloadTempAsset(projectCatalogUri(), ignoreCache);
@@ -541,7 +577,7 @@ public class DataStore {
 
     /**
      * Returns the relative path to the project catalog
-     * @return
+     * @return the relative local path to the project catalog
      */
     public static String projectCatalogPath() {
         return SOURCE_TRANSLATIONS_DIR + "projects_catalog.json";
@@ -549,7 +585,7 @@ public class DataStore {
 
     /**
      * Returns the project catalog uri
-     * @return
+     * @return the uri to the project catalog on the server
      */
     public static Uri projectCatalogUri() {
         return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json");
@@ -621,7 +657,7 @@ public class DataStore {
      * @return
      */
     public Uri sourceLanguageCatalogUri(String projectId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/languages.json");
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/languages.json");
     }
 
     /**
@@ -679,7 +715,7 @@ public class DataStore {
      * @return
      */
     public Uri resourceCatalogUri(String projectId, String languageId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/"+API_VERSION+"/"+projectId+"/"+languageId+"/resources.json");
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/resources.json");
     }
 
     /**
@@ -976,7 +1012,7 @@ public class DataStore {
                 InputStream is = mContext.getAssets().open("data/" + key);
                 return FileUtilities.convertStreamToString(is);
             } catch (IOException e) {
-                Logger.w(this.getClass().getName(), "The linked packaged asset data/"+key+" does not exist for "+path);
+                Logger.w(this.getClass().getName(), "The linked packaged asset data/" + key + " does not exist for " + path);
             }
         }
 
@@ -989,5 +1025,109 @@ public class DataStore {
         }
 
         return null;
+    }
+
+    /**
+     * Updates the cached details of a project
+     * @param p
+     */
+    public void updateCachedDetails(Project p) {
+        if(p != null && p.getSourceLanguageCatalog() != null) {
+            String key = getKey(p.getSourceLanguageCatalog());
+
+            // add missing date modified information for the source language catalog
+            int dateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
+            if(dateModified == 0) {
+                String dateModifiedRaw = p.getSourceLanguageCatalog().getQueryParameter("date_modified");
+                if (dateModifiedRaw != null) {
+                    writeDateModifiedRecord(ASSET_PREFIX, key, Integer.parseInt(dateModifiedRaw));
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the cached details of a source language
+     * @param l
+     */
+    public void updateCachedDetails(SourceLanguage l) {
+        if(l != null && l.getResourceCatalog() != null) {
+            String key = getKey(l.getResourceCatalog());
+
+            // add missing date modified information for the source language catalog
+            int dateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
+            if(dateModified == 0) {
+                String dateModifiedRaw = l.getResourceCatalog().getQueryParameter("date_modified");
+                if (dateModifiedRaw != null) {
+                    writeDateModifiedRecord(ASSET_PREFIX, key, Integer.parseInt(dateModifiedRaw));
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the cached details of a resource
+     * @param r
+     */
+    public void updateCachedDetails(Resource r) {
+        if(r != null) {
+            // notes
+            if(r.getNotesCatalog() != null) {
+                String key = getKey(r.getNotesCatalog());
+
+                // add missing date modified information for the source language catalog
+                int dateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
+                if (dateModified == 0) {
+                    String dateModifiedRaw = r.getNotesCatalog().getQueryParameter("date_modified");
+                    if (dateModifiedRaw != null) {
+                        writeDateModifiedRecord(ASSET_PREFIX, key, Integer.parseInt(dateModifiedRaw));
+                    }
+                }
+            }
+
+            // terms
+            if(r.getTermsCatalog() != null) {
+                String key = getKey(r.getTermsCatalog());
+
+                // add missing date modified information for the source language catalog
+                int dateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
+                if (dateModified == 0) {
+                    String dateModifiedRaw = r.getTermsCatalog().getQueryParameter("date_modified");
+                    if (dateModifiedRaw != null) {
+                        writeDateModifiedRecord(ASSET_PREFIX, key, Integer.parseInt(dateModifiedRaw));
+                    }
+                }
+            }
+
+            // source
+            if(r.getSourceCatalog() != null) {
+                String key = getKey(r.getSourceCatalog());
+
+                // add missing date modified information for the source language catalog
+                int dateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
+                if (dateModified == 0) {
+                    String dateModifiedRaw = r.getSourceCatalog().getQueryParameter("date_modified");
+                    if (dateModifiedRaw != null) {
+                        writeDateModifiedRecord(ASSET_PREFIX, key, Integer.parseInt(dateModifiedRaw));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Writes the date modified record for the key
+     * @param prefix
+     * @param key
+     * @param dateModified
+     */
+    private void writeDateModifiedRecord(String prefix, String key, int dateModified) {
+        SharedPreferences.Editor editor = mSettings.edit();
+        try {
+            editor.putInt(prefix + key + "_modified", dateModified);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "invalid datetime value " + dateModified, e);
+        }
+        editor.apply();
     }
 }

@@ -2,6 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -685,11 +686,13 @@ public class Sharing {
 
                     srcLangCatItemJson.put("language", srcLangCatLang);
                     srcLangCatItemJson.put("project", srcLangCatProj);
+                    Uri resCatalogUri;
                     if(l.getResourceCatalog() != null) {
-                        srcLangCatItemJson.put("res_catalog", l.getResourceCatalog());
+                        resCatalogUri = l.getResourceCatalog();
                     } else {
-                        srcLangCatItemJson.put("res_catalog", ds.resourceCatalogUri(p.getId(), l.getId()));
+                        resCatalogUri = ds.resourceCatalogUri(p.getId(), l.getId());
                     }
+                    srcLangCatItemJson.put("res_catalog", resCatalogUri);
 
                     srcLangCatJson.put(srcLangCatItemJson);
 
@@ -697,7 +700,7 @@ public class Sharing {
                     File languageSourceDir = new File(projectSourceDir, l.getId());
                     languageSourceDir.mkdirs();
                     String resources = ds.pullResourceCatalog(p.getId(), l.getId(), false, false);
-                    String resKey = ds.getKey(ds.resourceCatalogUri(p.getId(), l.getId()));
+                    String resKey = ds.getKey(resCatalogUri);
                     FileUtils.writeStringToFile(new File(dataDir, resKey), resources);
                     FileUtils.writeStringToFile(new File(languageSourceDir, "resources_catalog.link"), resKey);
 
@@ -707,19 +710,34 @@ public class Sharing {
 
                         // terms
                         String terms = ds.pullTerms(p.getId(), l.getId(), r.getId(), false, false);
-                        String termKey = ds.getKey(ds.termsUri(p.getId(), l.getId(), r.getId()));
+                        String termKey;
+                        if(r.getTermsCatalog() != null) {
+                            termKey = ds.getKey(r.getTermsCatalog());
+                        } else {
+                            termKey = ds.getKey(ds.termsUri(p.getId(), l.getId(), r.getId()));
+                        }
                         FileUtils.writeStringToFile(new File(dataDir, termKey), terms);
                         FileUtils.writeStringToFile(new File(resourceDir, "terms.link"), termKey);
 
                         // source
                         String source = ds.pullSource(p.getId(), l.getId(), r.getId(), false, false);
-                        String srcKey = ds.getKey(ds.sourceUri(p.getId(), l.getId(), r.getId()));
+                        String srcKey;
+                        if(r.getSourceCatalog() != null) {
+                            srcKey = ds.getKey(r.getSourceCatalog());
+                        } else {
+                            srcKey = ds.getKey(ds.sourceUri(p.getId(), l.getId(), r.getId()));
+                        }
                         FileUtils.writeStringToFile(new File(dataDir, srcKey), source);
                         FileUtils.writeStringToFile(new File(resourceDir, "source.link"), srcKey);
 
                         // notes
                         String notes = ds.pullNotes(p.getId(), l.getId(), r.getId(), false, false);
-                        String notesKey = ds.getKey(ds.notesUri(p.getId(), l.getId(), r.getId()));
+                        String notesKey;
+                        if(r.getNotesCatalog() != null) {
+                            notesKey = ds.getKey(r.getNotesCatalog());
+                        } else {
+                            notesKey = ds.getKey(ds.notesUri(p.getId(), l.getId(), r.getId()));
+                        }
                         FileUtils.writeStringToFile(new File(dataDir, notesKey), notes);
                         FileUtils.writeStringToFile(new File(resourceDir, "notes.link"), notesKey);
 
@@ -728,7 +746,12 @@ public class Sharing {
                     }
                 }
                 // write languages catalog
-                String langKey = ds.getKey(ds.sourceLanguageCatalogUri(p.getId()));
+                String langKey;
+                if(p.getSourceLanguageCatalog() != null) {
+                    langKey = ds.getKey(p.getSourceLanguageCatalog());
+                } else {
+                    langKey = ds.getKey(ds.sourceLanguageCatalogUri(p.getId()));
+                }
                 FileUtils.writeStringToFile(new File(dataDir, langKey), srcLangCatJson.toString());
                 FileUtils.writeStringToFile(new File(projectSourceDir, "languages_catalog.link"), langKey);
             } catch (JSONException e) {

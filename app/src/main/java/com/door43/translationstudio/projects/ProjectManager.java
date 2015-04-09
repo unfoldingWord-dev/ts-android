@@ -921,6 +921,7 @@ public class ProjectManager {
                 Project p = Project.generate(jsonProj);
 
                 if(p != null) {
+                    mDataStore.updateCachedDetails(p);
                     generateProjectListEntry(p);
 
                     // add project to internal list of projects
@@ -979,6 +980,7 @@ public class ProjectManager {
                 SourceLanguage l = SourceLanguage.generate(jsonLang);
 
                 if(l != null) {
+                    mDataStore.updateCachedDetails(l);
                     loadResourcesCatalog(p, l);
 
                     if(l.checkingLevel() >= mContext.getResources().getInteger(R.integer.min_source_lang_checking_level)) {
@@ -1099,6 +1101,7 @@ public class ProjectManager {
                 JSONObject jsonResource = json.getJSONObject(i);
                 Resource r = Resource.generate(jsonResource);
                 if(r != null) {
+                    mDataStore.updateCachedDetails(r);
                     l.addResource(r);
                     importedResources.add(r);
                 } else {
