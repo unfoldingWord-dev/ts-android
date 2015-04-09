@@ -154,14 +154,17 @@ import java.util.ArrayList;
             mRelatedTerms.setText("");
             mExamplePassagesView.removeAllViews();
             mTermName.setText(term.getName());
-            mTermDescriptionView.setHtmlFromString(term.getDefinition(), true);//Html.fromHtml(term.getDefinition()));
-//            mTermDescriptionView.reload();
+            mTermDescriptionView.setHtmlFromString(term.getDefinition(), true);
 
             // related terms
             int numRelatedTerms = 0;
             for(final String related:term.getRelatedTerms()) {
                 final Term relatedTerm = p.getTerm(related);
                 if(relatedTerm != null) {
+                    if(mRelatedTerms.length() > 0) {
+                        mRelatedTerms.append(", ");
+                    }
+
                     TermSpan span = new TermSpan(relatedTerm.getName(), relatedTerm.getName());
                     span.setOnClickListener(new Span.OnClickListener() {
                         @Override
@@ -171,9 +174,6 @@ import java.util.ArrayList;
                     });
                     mRelatedTerms.append(span.toCharSequence());
                     numRelatedTerms++;
-                    if(numRelatedTerms < term.numRelatedTerms()) {
-                        mRelatedTerms.append(", ");
-                    }
                 } else {
                     Logger.w(this.getClass().getName(), "unknown term "+related);
                 }
