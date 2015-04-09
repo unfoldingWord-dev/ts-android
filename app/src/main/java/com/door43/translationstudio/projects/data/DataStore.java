@@ -476,6 +476,10 @@ public class DataStore {
                     if (dateModified <= oldDateModified) {
                         // copy into temp assets
                         FileUtils.copyFile(file, tempFile);
+                        // copy date modified
+                        SharedPreferences.Editor editor = mSettings.edit();
+                        editor.putInt(TEMP_ASSET_PREFIX + key + "_modified", oldDateModified);
+                        editor.apply();
                         return key;
                     }
                 } catch (Exception e) {
@@ -637,7 +641,7 @@ public class DataStore {
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
-            Logger.w(this.getClass().getName(), "Failed to read the downloaded the temp asset from " + uri.toString(), e);
+            Logger.w(this.getClass().getName(), "Failed to read the downloaded temp asset from " + uri.toString(), e);
             return "";
         }
     }
