@@ -14,6 +14,8 @@ public abstract class ManagedTask implements Runnable {
     private double mProgress = -1;
     private String mProgressMessage = "";
     private boolean mIsStopped = false;
+    private OnStartListener mStartListener;
+    private boolean mIsRunning = false;
 
     @Override
     public final void run() {
@@ -23,6 +25,14 @@ public abstract class ManagedTask implements Runnable {
             if(Thread.interrupted()) {
                 throw new InterruptedException();
             }
+            mIsRunning = true;
+            if(mStartListener != null) {
+                try {
+                    mStartListener.onStart(this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             start();
         } catch (InterruptedException e) {
 
@@ -31,6 +41,7 @@ public abstract class ManagedTask implements Runnable {
             Thread.interrupted();
         }
 
+        mIsRunning = false;
         mFinished = true;
         if(mFinishListener != null) {
             try {
@@ -39,13 +50,15 @@ public abstract class ManagedTask implements Runnable {
                 e.printStackTrace();
             }
         }
+
+        onStop();
     }
 
     /**
      * Sets the task id
      * @param id
      */
-    public void setTaskId(Object id) {
+    public final void setTaskId(Object id) {
         mTaskId = id;
     }
 
@@ -53,7 +66,7 @@ public abstract class ManagedTask implements Runnable {
      * Returns the task id
      * @return
      */
-    public Object getTaskId() {
+    public final Object getTaskId() {
         return mTaskId;
     }
 
@@ -63,7 +76,7 @@ public abstract class ManagedTask implements Runnable {
      * @param progress the progress being made between 1 and 0
      * @param message the progress message
      */
-    protected void publishProgress(double progress, String message) {
+    protected final void publishProgress(double progress, String message) {
         mProgress = progress;
         mProgressMessage = message;
         if(mProgressListener != null && !isFinished()) {
@@ -79,7 +92,7 @@ public abstract class ManagedTask implements Runnable {
      * Sets the listener to be called on progress updates
      * @param listener
      */
-    public void setOnProgressListener(OnProgressListener listener) {
+    public final void setOnProgressListener(OnProgressListener listener) {
         mProgressListener = listener;
         if(mProgressListener != null && !isFinished()) {
             try {
@@ -94,7 +107,7 @@ public abstract class ManagedTask implements Runnable {
      * Sets the listener to be called when the task is finished
      * @param listener
      */
-    public void setOnFinishedListener(OnFinishedListener listener) {
+    public final void setOnFinishedListener(OnFinishedListener listener) {
         mFinishListener = listener;
         if(mFinishListener != null && isFinished()) {
             try {
@@ -103,6 +116,14 @@ public abstract class ManagedTask implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Sets the listener to be called when the task starts
+     * @param listener
+     */
+    public final void setOnStartListener(OnStartListener listener) {
+        mStartListener = listener;
     }
 
     /**
@@ -127,6 +148,14 @@ public abstract class ManagedTask implements Runnable {
     }
 
     /**
+     * Checks if the task is running
+     * @return
+     */
+    public final boolean isRunning() {
+        return mIsRunning;
+    }
+
+    /**
      * Checks if the task was canceled
      * @return
      */
@@ -134,8 +163,16 @@ public abstract class ManagedTask implements Runnable {
         return mIsStopped;
     }
 
-    public void stop() {
+    public final void stop() {
         mIsStopped = true;
+    }
+
+    /**
+     * Called whenever the task stops completely.
+     * This allows tasks to perform any cleanup operations
+     */
+    protected void onStop() {
+
     }
 
     /**
@@ -143,15 +180,19 @@ public abstract class ManagedTask implements Runnable {
      * Interrupting threads is not reliable so we need to set a flag.
      * @return
      */
-    public boolean interrupted() {
+    public final boolean interrupted() {
         return mThread.isInterrupted() || mIsStopped;
     }
 
-    public static interface OnFinishedListener {
-        public void onFinished(ManagedTask task);
+    public interface OnFinishedListener {
+        void onFinished(ManagedTask task);
     }
 
-    public static interface OnProgressListener {
-        public void onProgress(ManagedTask task, double progress, String message);
+    public interface OnProgressListener {
+        void onProgress(ManagedTask task, double progress, String message);
+    }
+
+    public interface OnStartListener {
+        void onStart(ManagedTask task);
     }
 }

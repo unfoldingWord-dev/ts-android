@@ -43,7 +43,7 @@ public class Server extends Service {
         mIsRunning = true;
 
         mHandler = handle;
-        mServerThread = new Thread(new ServerThread(serviceName));
+        mServerThread = new Thread(new ServerRunnable(serviceName));
         mServerThread.start();
     }
 
@@ -93,14 +93,14 @@ public class Server extends Service {
     /**
      * Manage the server instance on it's own thread
      */
-    private class ServerThread implements Runnable {
+    private class ServerRunnable implements Runnable {
         private final String mServiceName;
 
         /**
          * The name of the service that will be broadcast on the network
          * @param serviceName
          */
-        public ServerThread(String serviceName) {
+        public ServerRunnable(String serviceName) {
             mServiceName = serviceName;
         }
 
@@ -146,8 +146,8 @@ public class Server extends Service {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
                     socket = serverSocket.accept();
-                    ClientThread clientThread = new ClientThread(socket);
-                    new Thread(clientThread).start();
+                    ClientRunnable clientRunnable = new ClientRunnable(socket);
+                    new Thread(clientRunnable).start();
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "failed to accept socket", e);
                 }
@@ -163,11 +163,11 @@ public class Server extends Service {
     /**
      * Manages a single client connection on it's own thread
      */
-    private class ClientThread implements Runnable {
+    private class ClientRunnable implements Runnable {
         private Connection mConnection;
         private Peer mClient;
 
-        public ClientThread(Socket clientSocket) {
+        public ClientRunnable(Socket clientSocket) {
             // create a new peer
             mClient = new Peer(clientSocket.getInetAddress().toString().replace("/", ""), clientSocket.getPort());
             if(addPeer(mClient)) {
@@ -211,11 +211,11 @@ public class Server extends Service {
     }
 
     public interface OnServerEventListener {
-        public void onBeforeStart(Handler handle);
-        public void onError(Handler handle, Exception e);
-        public void onFoundClient(Handler handle, Peer client);
-        public void onLostClient(Handler handle, Peer client);
-        public void onMessageReceived(Handler handle, Peer client, String message);
+        void onBeforeStart(Handler handle);
+        void onError(Handler handle, Exception e);
+        void onFoundClient(Handler handle, Peer client);
+        void onLostClient(Handler handle, Peer client);
+        void onMessageReceived(Handler handle, Peer client, String message);
 
         /**
          * Allows you to perform global operations on a message(such as encryption) based on the peer
@@ -223,7 +223,7 @@ public class Server extends Service {
          * @param message
          * @return
          */
-        public String onWriteMessage(Handler handle, Peer client, String message);
+        String onWriteMessage(Handler handle, Peer client, String message);
     }
 
 }

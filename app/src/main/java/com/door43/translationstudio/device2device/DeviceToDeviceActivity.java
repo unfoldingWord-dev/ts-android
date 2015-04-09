@@ -33,12 +33,15 @@ import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.tasks.ClientTask;
+import com.door43.translationstudio.tasks.ServerTask;
 import com.door43.util.ListMap;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.RSAEncryption;
 import com.door43.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.threads.TaskManager;
 import com.squareup.otto.Subscribe;
 import com.tozny.crypto.android.AesCbcWithIntegrity;
 
@@ -79,6 +82,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private File mPublicKeyFile;
     private File mPrivateKeyFile;
     private static Map<String, DialogFragment> mPeerDialogs = new HashMap<>();
+    private static final String TASK_SERVER = "p2p_server_service";
+    private static final String TASK_CLIENT = "p2p_client_service";
     private boolean mShuttingDown = true;
     private static final int PORT_CLIENT_UDP = 9939;
 
@@ -92,8 +97,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         mPrivateKeyFile = new File(getFilesDir(), getResources().getString(R.string.p2p_keys_dir) + "/id_rsa");
         mPublicKeyFile.getParentFile().mkdirs();
 
-        if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
-
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
 
         if(mStartAsServer) {
@@ -101,6 +104,31 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         } else {
             setTitle(R.string.import_from_device);
         }
+
+        // start up the service
+//        ServerTask serverTask = (ServerTask)TaskManager.getTask(TASK_SERVER);
+//        ClientTask clientTask = (ClientTask)TaskManager.getTask(TASK_CLIENT);
+//        if(mStartAsServer) {
+//            // run as server
+//            TaskManager.clearTask(clientTask);
+//            if(serverTask == null) {
+//                serverTask = new ServerTask();
+//                TaskManager.addTask(serverTask);
+//            }
+//            // TODO: set up listeners
+//        } else {
+//            // run as client
+//            TaskManager.clearTask(serverTask);
+//            if(clientTask == null) {
+//                clientTask = new ClientTask();
+//                TaskManager.addTask(clientTask);
+//            }
+//            // TODO: set up listeners
+//        }
+
+
+        if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
+
 
         // reset things on first load
         if(savedInstanceState == null) {
@@ -620,7 +648,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     final File archive = new File(path);
                                     if(archive.exists()) {
                                         // open a socket to send the project
-                                        ServerSocket fileSocket = mService.createSenderSocket(new Service.OnSocketEventListener() {
+                                        ServerSocket fileSocket = mService.generateWriteSocket(new Service.OnSocketEventListener() {
                                             @Override
                                             public void onOpen(Connection connection) {
                                                 // send an archive of the current project to the connection
@@ -631,8 +659,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                                     DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
                                                     byte[] buffer = new byte[8 * 1024];
                                                     int count;
-                                                    while ((count = in.read(buffer)) > 0)
-                                                    {
+                                                    while ((count = in.read(buffer)) > 0) {
                                                         out.write(buffer, 0, count);
                                                     }
                                                     out.close();
@@ -745,7 +772,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                     return;
                 }
                 // the server is sending a project archive
-                mService.createReceiverSocket(server, port, new Service.OnSocketEventListener() {
+                mService.generateReadSocket(server, port, new Service.OnSocketEventListener() {
                     @Override
                     public void onOpen(Connection connection) {
                         connection.setOnCloseListener(new Connection.OnCloseListener() {
@@ -774,7 +801,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             int count;
                             while ((count = in.read(buffer)) > 0) {
                                 totalCount += count;
-                                server.keyStore.add(PeerStatusKeys.PROGRESS, totalCount/((int)size)*100);
+                                server.keyStore.add(PeerStatusKeys.PROGRESS, totalCount / ((int) size) * 100);
                                 handle.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -797,12 +824,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                             ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
                             if (importStatuses.length > 0) {
                                 boolean importWarnings = false;
-                                for(ProjectImport s:importStatuses) {
-                                    if(!s.isApproved()) {
+                                for (ProjectImport s : importStatuses) {
+                                    if (!s.isApproved()) {
                                         importWarnings = true;
                                     }
                                 }
-                                if(importWarnings) {
+                                if (importWarnings) {
                                     // review the import status in a dialog
                                     FragmentTransaction ft = getFragmentManager().beginTransaction();
                                     Fragment prev = getFragmentManager().findFragmentByTag("dialog");
@@ -816,7 +843,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                         @Override
                                         public void onOk(ProjectImport[] requests) {
                                             showProgress(getResources().getString(R.string.loading));
-                                            for(ProjectImport r:requests) {
+                                            for (ProjectImport r : requests) {
                                                 Sharing.importProject(r);
                                             }
                                             Sharing.cleanImport(requests);
@@ -836,7 +863,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
                                     newFragment.setImportRequests(importStatuses);
                                     newFragment.show(ft, "dialog");
                                 } else {
-                                    for(ProjectImport r:importStatuses) {
+                                    for (ProjectImport r : importStatuses) {
                                         Sharing.importProject(r);
                                     }
                                     Sharing.cleanImport(importStatuses);
