@@ -1,7 +1,5 @@
 package com.door43.translationstudio.tasks;
 
-import android.util.Log;
-
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
@@ -16,10 +14,17 @@ import java.util.List;
 public class DownloadProjectsTask extends ManagedTask {
 
     private final List<Project> mProjects;
+    private final boolean ignoreCache;
     private double mProgress = -1;
 
     public DownloadProjectsTask(List<Project> projects) {
         mProjects = projects;
+        this.ignoreCache = false;
+    }
+
+    public DownloadProjectsTask(List<Project> projects, boolean ignoreCache) {
+        mProjects = projects;
+        this.ignoreCache = ignoreCache;
     }
 
     /**
@@ -29,7 +34,6 @@ public class DownloadProjectsTask extends ManagedTask {
     @Override
     public void start() {
         // download projects
-        boolean ignoreCache = false;
         publishProgress(-1, "");
 
         for(int i = 0; i < mProjects.size(); i ++) {

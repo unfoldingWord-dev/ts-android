@@ -4,9 +4,6 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -22,11 +19,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
+import com.door43.translationstudio.library.ProjectLibraryListFragment;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Sharing;
+import com.door43.translationstudio.tasks.DownloadProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.StringUtilities;
+import com.door43.util.threads.ManagedTask;
+import com.door43.util.threads.TaskManager;
 import com.door43.util.threads.ThreadableUI;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.ToolAdapter;
@@ -38,13 +38,17 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-public class DeveloperToolsActivity extends TranslatorBaseActivity {
+public class DeveloperToolsActivity extends TranslatorBaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
     private ArrayList<ToolItem> mDeveloperTools = new ArrayList<>();
     private ToolAdapter mAdapter;
     private String mVersionName;
     private String mVersionCode;
+    private String TASK_FORCE_DOWNLOAD_ALL_PROJECTS = "force_download_all_projects";
+    private ProgressDialog mDownloadProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,96 +169,32 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 dialog.show(ft, "dialog");
             }
         }));
-//        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
-//            @Override
-//            public void run() {
-//                final Project[] projects = AppContext.projectManager().getProjects();
-//
-//                final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
-//                dialog.setCancelable(true);
-//                dialog.setCanceledOnTouchOutside(false);
-//                dialog.setIndeterminate(true);
-//                dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-//                dialog.setMax(projects.length);
-//                dialog.setMessage(getResources().getString(R.string.downloading_updates));
-//
-//                final Handler handle = new Handler(Looper.getMainLooper());
-//
-//                final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
-//
-//                    @Override
-//                    public void onStop() {
-//                        handle.post(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                dialog.setMessage("Cancelling...");
-//                                dialog.setIndeterminate(true);
-//                                dialog.show();
-//                            }
-//                        });
-//
-//                        AppContext.context().showToastMessage(getResources().getString(R.string.download_canceled));
-//                    }
-//
-//                    @Override
-//                    public void run() {
-//                        // disable screen rotation so we don't break things
-////                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
-//                        for(int i=0; i<projects.length; i ++) {
-//                            if(isInterrupted()) break;
-//                            // update progress
-//                            final int progress = i;
-//                            final String title = String.format(getResources().getString(R.string.downloading_project_updates), projects[i].getId());
-//                            handle.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    dialog.setIndeterminate(false);
-//                                    dialog.setProgress(progress);
-//                                    dialog.setMessage(title);
-//                                }
-//                            });
-//
-//                            // TODO: use the update all task with flag to ignore the cache
-//                            AppContext.context().showToastMessage("Not implimented yet");
-//                        }
-//
-//                        // reload the selected project source
-//                        if(AppContext.projectManager().getSelectedProject() != null) {
-//                            handle.post(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
-//                                    dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-//                                    dialog.setIndeterminate(true);
-//                                }
-//                            });
-//                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onPostExecute() {
-//                        dialog.dismiss();
-//                        // re-enable screen rotation
-////                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-//                        if(!isInterrupted()) {
-//                            AppContext.context().showToastMessage(R.string.success);
-//                        }
-//                    }
-//                };
-//
-//                // allow the user to cancel the dialog
-//                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-//                    @Override
-//                    public void onCancel(DialogInterface dialogInterface) {
-//                        thread.stop();
-//                    }
-//                });
-//                dialog.show();
-//
-//                thread.start();
-//            }
-//        }));
+        mDeveloperTools.add(new ToolItem(getResources().getString(R.string.force_update_projects), getResources().getString(R.string.force_update_projects_description), 0, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                new AlertDialog.Builder(DeveloperToolsActivity.this)
+                        .setTitle(R.string.action_download_all)
+                        .setMessage(R.string.download_all_confirmation)
+                        .setIcon(R.drawable.ic_download_small)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                DownloadProjectsTask task = (DownloadProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+                                if(task == null) {
+                                    // connect to existing task
+                                    task = new DownloadProjectsTask(new ArrayList<>(Arrays.asList(AppContext.projectManager().getProjects())), true);
+                                    task.setOnProgressListener(DeveloperToolsActivity.this);
+                                    task.setOnFinishedListener(DeveloperToolsActivity.this);
+                                    TaskManager.addTask(task, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+                                } else {
+                                    connectDownloaAllTask();
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+            }
+        }));
         mDeveloperTools.add(new ToolItem(getResources().getString(R.string.export_source), getResources().getString(R.string.export_source_description), 0, new ToolItem.ToolAction() {
             @Override
             public void run() {
@@ -355,5 +295,102 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity {
                 int killme = 1/0;
             }
         }));
+
+        connectDownloaAllTask();
+    }
+
+    /**
+     * Connects to an existing task
+     */
+    public void connectDownloaAllTask() {
+        DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+        if(task != null) {
+            // connect to existing task
+            task.setOnProgressListener(this);
+            task.setOnFinishedListener(this);
+        } else {
+            onFinished(null);
+        }
+    }
+
+    @Override
+    public void onFinished(final ManagedTask task) {
+        TaskManager.clearTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+
+        // reload list
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+                    mDownloadProgressDialog.dismiss();
+                }
+
+                if(task != null && !task.isCanceled()) {
+                    new AlertDialog.Builder(DeveloperToolsActivity.this)
+                            .setTitle(R.string.success)
+                            .setIcon(R.drawable.ic_check_small)
+                            .setMessage(R.string.download_complete)
+                            .setCancelable(false)
+                            .setPositiveButton(R.string.label_ok, null)
+                            .show();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onProgress(final ManagedTask task, final double progress, final String message) {
+        if(!task.isFinished()) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (task.isFinished()) {
+                        // because we start on a new thread we need to make sure the task didn't finish while this thread was starting.
+                        if (mDownloadProgressDialog != null) {
+                            mDownloadProgressDialog.dismiss();
+                        }
+                        return;
+                    }
+                    if (mDownloadProgressDialog == null) {
+                        mDownloadProgressDialog = new ProgressDialog(DeveloperToolsActivity.this);
+                        mDownloadProgressDialog.setCancelable(true);
+                        mDownloadProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        mDownloadProgressDialog.setCanceledOnTouchOutside(false);
+                        mDownloadProgressDialog.setOnCancelListener(DeveloperToolsActivity.this);
+                        mDownloadProgressDialog.setMax(100);
+                        mDownloadProgressDialog.setIcon(R.drawable.ic_download_small);
+                        mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
+                        mDownloadProgressDialog.setMessage("");
+                    }
+                    if (!mDownloadProgressDialog.isShowing()) {
+                        mDownloadProgressDialog.show();
+                    }
+                    if (progress == -1) {
+                        mDownloadProgressDialog.setIndeterminate(true);
+                        mDownloadProgressDialog.setProgress(mDownloadProgressDialog.getMax());
+                    } else {
+                        mDownloadProgressDialog.setIndeterminate(false);
+                        mDownloadProgressDialog.setProgress((int) Math.ceil(progress * 100));
+                    }
+                    if (!message.isEmpty()) {
+                        mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
+                    } else {
+                        mDownloadProgressDialog.setMessage("");
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialogInterface) {
+        // the download dialog was canceled
+        mDownloadProgressDialog = null;
+        DownloadProjectsTask task = (DownloadProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+        if(task != null) {
+            TaskManager.cancelTask(task);
+        }
     }
 }
