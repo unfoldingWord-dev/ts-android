@@ -84,4 +84,8 @@
         <!--<item name="suggestionRowLayout">...</item>-->
     <!--</style>-->
 
+    <style name="popupMenuStyle" parent="@android:style/Widget.PopupMenu">
+        <item name="android:popupBackground">@color/white</item>
+    </style>
+
 </resources>
