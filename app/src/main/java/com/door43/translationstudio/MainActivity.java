@@ -32,7 +32,7 @@ import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
+
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -53,11 +53,12 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
@@ -149,11 +150,85 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mSourceScrollY = 0;
     private int mSourceScrollX = 0;
     private TextWatcher mTranslationChangedListener;
+    private Button enlarge;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //To enlarge source and translation
+        enlarge=(Button) findViewById(R.id.enlarge);
+
+        enlarge.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                PopupMenu popup = new PopupMenu(MainActivity.this, v);
+                popup.getMenuInflater().inflate(R.menu.popup, popup.getMenu());
+
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+
+                        if (item.getItemId() == R.id.sourceText) {
+                            try {
+                                Dialog dialog = new Dialog(MainActivity.this);
+                                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                                dialog.setContentView(R.layout.dialogfragment);
+
+
+                                TextView text = (TextView) dialog.findViewById(R.id.dftext);
+                                Frame previousFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getPreviousFrame();
+                                Frame selectedFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
+                                Frame nextFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getNextFrame();
+
+                                float typefaceSize = AppContext.typefaceSize();
+                                text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
+
+                                if(nextFrame==null)
+                                {
+                                  text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText()));
+                                }
+                                else if(previousFrame==null)
+                                {
+                                  text.setText(new USXRenderer().render(selectedFrame.getText() + "\n" + nextFrame.getText()));
+                                }
+                                else
+                                {
+                                  text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText() + "\n" + nextFrame.getText()));
+                                }
+
+                                dialog.show();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                        } else if (item.getItemId() == R.id.targetText) {
+                            try {
+                                Dialog dialog = new Dialog(MainActivity.this);
+                                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                                dialog.setContentView(R.layout.dialogfragment);
+
+                                TextView text = (TextView) dialog.findViewById(R.id.dftext);
+                                text.setText(mTranslationEditText.getText());
+
+                                float typefaceSize = AppContext.typefaceSize();
+                                text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
+
+                                dialog.show();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                        }
+                        return true;
+                    }
+                });
+                popup.show();
+            }
+        });
+
 
         if(savedInstanceState != null) {
             mSourceScrollY = savedInstanceState.getInt(STATE_SOURCE_SCROLL_Y, 0);
@@ -270,6 +345,7 @@ public class MainActivity extends TranslatorBaseActivity {
         }
         closeKeyboard();
     }
+
 
     /**
      * Display a footnote found in the source text
