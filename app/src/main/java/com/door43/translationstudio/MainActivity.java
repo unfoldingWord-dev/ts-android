@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -57,10 +58,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.translationstudio.dialogs.FramesListAdapter;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
 import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
@@ -75,6 +78,7 @@ import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.Translation;
@@ -151,6 +155,7 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mSourceScrollX = 0;
     private TextWatcher mTranslationChangedListener;
     private Button enlarge;
+    private FramesListAdapter framesListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,52 +177,51 @@ public class MainActivity extends TranslatorBaseActivity {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
 
+
+                        ListView listView=new ListView(MainActivity.this);
+
                         if (item.getItemId() == R.id.sourceText) {
+
                             try {
+
+                                if(framesListAdapter == null) {
+                                    Project p = AppContext.projectManager().getSelectedProject();
+                                    if(p == null || p.getSelectedChapter() == null ) {
+                                        framesListAdapter = new FramesListAdapter(app(), new Model[]{});
+                                    } else {
+                                        framesListAdapter = new FramesListAdapter(app(), AppContext.projectManager().getSelectedProject().getSelectedChapter().getFrames());
+                                    }
+                                }
+
+                                listView.setAdapter(framesListAdapter);
+
                                 Dialog dialog = new Dialog(MainActivity.this);
                                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                                dialog.setContentView(R.layout.dialogfragment);
-
-
-                                TextView text = (TextView) dialog.findViewById(R.id.dftext);
-                                Frame previousFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getPreviousFrame();
-                                Frame selectedFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
-                                Frame nextFrame = AppContext.projectManager().getSelectedProject().getSelectedChapter().getNextFrame();
-
-                                float typefaceSize = AppContext.typefaceSize();
-                                text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
-
-                                if(nextFrame==null)
-                                {
-                                  text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText()));
-                                }
-                                else if(previousFrame==null)
-                                {
-                                  text.setText(new USXRenderer().render(selectedFrame.getText() + "\n" + nextFrame.getText()));
-                                }
-                                else
-                                {
-                                  text.setText(new USXRenderer().render(previousFrame.getText() + "\n" + selectedFrame.getText() + "\n" + nextFrame.getText()));
-                                }
-
+                                dialog.setContentView(listView);
                                 dialog.show();
+
+
+
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
 
                         } else if (item.getItemId() == R.id.targetText) {
                             try {
+
                                 Dialog dialog = new Dialog(MainActivity.this);
                                 dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
                                 dialog.setContentView(R.layout.dialogfragment);
 
-                                TextView text = (TextView) dialog.findViewById(R.id.dftext);
-                                text.setText(mTranslationEditText.getText());
-
+                                TextView text = (TextView)dialog.findViewById(R.id.ttext);
                                 float typefaceSize = AppContext.typefaceSize();
                                 text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
+                                text.setTextColor(Color.BLACK);
+                                text.setBackgroundColor(Color.WHITE);
+                                text.setText(mTranslationEditText.getText());
 
                                 dialog.show();
+
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -228,7 +232,6 @@ public class MainActivity extends TranslatorBaseActivity {
                 popup.show();
             }
         });
-
 
         if(savedInstanceState != null) {
             mSourceScrollY = savedInstanceState.getInt(STATE_SOURCE_SCROLL_Y, 0);
@@ -865,8 +868,44 @@ public class MainActivity extends TranslatorBaseActivity {
         mSourceText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mSourceText.getText().length() == 0) {
+                if (mSourceText.getText().length() == 0) {
                     openLeftDrawer();
+                }
+            }
+        });
+
+        // automatically save changes to inputText
+        mTranslationEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
+                if (mAutosaveTimer != null) {
+                    mAutosaveTimer.cancel();
+                }
+                if (mAutosaveEnabled) {
+                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
+                }
+                if (saveDelay != -1) {
+                    mAutosaveTimer = new Timer();
+                    if (mAutosaveEnabled) {
+                        mAutosaveTimer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                // save the changes
+                                MainActivity.this.save();
+                            }
+                        }, saveDelay);
+                    }
                 }
             }
         });
