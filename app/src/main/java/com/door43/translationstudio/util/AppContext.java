@@ -44,7 +44,7 @@ public class AppContext {
     public AppContext(MainApplication context) {
         if(mContext == null) {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-//                Graphite.loadGraphite();
+                Graphite.loadGraphite();
             }
             mContext = context;
             mTranslationManager = new TranslationManager(context);
@@ -172,21 +172,20 @@ public class AppContext {
         String typeFace = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getResources().getString(R.string.pref_default_translation_typeface));
         File font = AppContext.context().getAssetAsFile("fonts/" + typeFace);
         if (font != null) {
-            // Graphite support is disabled for now until we can get the builds working with the emulators.
-//            TTFAnalyzer analyzer = new TTFAnalyzer();
-//            String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
-//            if (fontname != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-//                // assets container, font asset, font name, rtl, language, feats (what's this for????)
-//                int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
-//                try {
-//                    return (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                    return Typeface.createFromFile(font);
-//                }
-//            } else {
+            TTFAnalyzer analyzer = new TTFAnalyzer();
+            String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
+            if (fontname != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                // assets container, font asset, font name, rtl, language, feats (what's this for????)
+                int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
+                try {
+                    return (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Typeface.createFromFile(font);
+                }
+            } else {
                 return Typeface.createFromFile(font);
-//            }
+            }
         } else {
             Logger.w(AppContext.class.getName(), "Could not load the typeface " + typeFace);
             return Typeface.DEFAULT;
