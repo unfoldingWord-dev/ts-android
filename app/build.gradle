@@ -1,9 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+    }
     compileSdkVersion 21
     buildToolsVersion '21.1.2'
-
     defaultConfig {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
@@ -55,7 +56,6 @@ android {
 //        }
 //        fat
 //    }
-
 // or this way (which is cleaner)
 //    splits {
 //        abi {
