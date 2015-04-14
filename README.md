@@ -35,6 +35,8 @@ Please become familiar with the [Code Style Guidelines]. The repository is guard
 
 Once you are ready to share you code (meaning it works and is written beautifully) send us a pull request. You can do so from your repository page in GitHub.
 
+###Testing
+translationStudio relies on several native libraries. Therefore when debugging on a device or emulator you must be sure to choose the correct build varient when running or debugging the app. In Android Studio you can change the build varients by clicking on the `Build Variants` tab in the lower left corner of the IDE window. This will display an embeded window in which you can choose the correct build variant for the `app` module.
 
 ###Additional Info
 Please check out the wiki for additional documentation to help you get started in the development.
