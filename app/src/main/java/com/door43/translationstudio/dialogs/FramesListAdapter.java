@@ -1,6 +1,5 @@
 package com.door43.translationstudio.dialogs;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -15,34 +14,30 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Model;
-import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.rendering.USXRenderer;
-import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
-
-import java.util.List;
 
 /**
  * Created by jaicksninan on 4/10/15.
  */
 public class FramesListAdapter  extends BaseAdapter {
 
+    private final DisplayOption mDisplayOption;
     private MainApplication mContext;
-    private int id;
-    private List<String> items ;
-    private  float mImageWidth;
     private  boolean mIndicateSelected;
-    private  boolean mIndicateStatus;
     private Model[] mModels;
-    private Activity aContext;
 
+    public enum DisplayOption {
+        SOURCE_TRANSLATION,
+        TARGET_TRANSLATION,
+        DRAFT_TRANSLATION
+    }
 
-    public FramesListAdapter(MainApplication c, Model[] models) {
+    public FramesListAdapter(MainApplication c, Model[] models, DisplayOption option) {
         mContext = c;
         mModels = models;
-        mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
         mIndicateSelected = true;
-        mIndicateStatus = true;
+        mDisplayOption = option;
     }
 
     @Override
@@ -51,8 +46,8 @@ public class FramesListAdapter  extends BaseAdapter {
     }
 
     @Override
-    public Model getItem(int i) {
-        return mModels[i];
+    public Frame getItem(int i) {
+        return (Frame)mModels[i];
     }
 
     @Override
@@ -65,30 +60,28 @@ public class FramesListAdapter  extends BaseAdapter {
         View v = convertView;
         ViewHolder holder = new ViewHolder();
 
-
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.dialogfragment, null);
-            // layout
-            holder.bodyLayout = (RelativeLayout)v.findViewById(R.id.layoutBody);
-            holder.description = (TextView)v.findViewById(R.id.frameDescription);
-
-            // alternate layout
-            holder.altBodyLayout = (RelativeLayout)v.findViewById(R.id.layoutBodyAlt);
-            holder.altDescription = (TextView)v.findViewById(R.id.frameDescriptionAlt);
-
-
+            v = inflater.inflate(R.layout.fragment_frame_reader_list_item, null);
+            holder.text = (TextView)v.findViewById(R.id.text);
             v.setTag(holder);
         } else {
             holder = (ViewHolder)v.getTag();
         }
 
-        holder.bodyLayout.clearAnimation();
-
-        Frame f=AppContext.projectManager().getSelectedProject().getSelectedChapter().getFrame(position);
-
-        holder.description.setText(new USXRenderer().render(f.getText()));
-        holder.altDescription.setText(new USXRenderer().render(f.getText()));
+        // load correct frame text
+        switch(mDisplayOption) {
+            case TARGET_TRANSLATION:
+                holder.text.setText(new USXRenderer().render(getItem(position).getTranslation().getText()));
+                break;
+            case DRAFT_TRANSLATION:
+                // TODO: we need to finish implementing how drafts are loaded from the file system
+                holder.text.setText("not implemented yet");
+                break;
+            case SOURCE_TRANSLATION:
+            default:
+                holder.text.setText(new USXRenderer().render(getItem(position).getText()));
+        }
 
         // set graphite fontface
         Typeface typeface;
@@ -98,40 +91,20 @@ public class FramesListAdapter  extends BaseAdapter {
             // use english as default
             typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
         }
-
-        holder.description.setTypeface(typeface, 0);
-        holder.altDescription.setTypeface(typeface, 0);
-
-        // use selected project language in pseudo project description fontface
-        if(mIndicateSelected && getItem(position).getClass().getName().equals(PseudoProject.class.getName())) {
-            if(getItem(position).isSelected() && AppContext.projectManager().getSelectedProject() != null) {
-                holder.altDescription.setTypeface(AppContext.graphiteTypeface(AppContext.projectManager().getSelectedProject().getSelectedSourceLanguage()), 0);
-            }
-        }
+        holder.text.setTypeface(typeface, 0);
 
         // set font size
         float fontsize = AppContext.typefaceSize();
+        holder.text.setTextSize((fontsize));
 
-        holder.description.setTextSize((fontsize));
-        holder.altDescription.setTextSize((fontsize));
-
-        // highlight selected item
-        boolean isSelected = false;
+        // color selection
         if(getItem(position).isSelected() && mIndicateSelected) {
-            isSelected = true;
             v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
-
-            holder.description.setTextColor(Color.WHITE);
-            holder.altDescription.setTextColor(Color.WHITE);
-
+            holder.text.setTextColor(Color.WHITE);
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
-            holder.description.setTextColor(mContext.getResources().getColor(R.color.black));
-            holder.altDescription.setTextColor(mContext.getResources().getColor(R.color.black));
-
+            holder.text.setTextColor(mContext.getResources().getColor(R.color.black));
         }
-
-
         return v;
     }
 
@@ -144,13 +117,10 @@ public class FramesListAdapter  extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-
+    /**
+     * Provides better list performance
+     */
     private static class ViewHolder {
-
-        public RelativeLayout bodyLayout;
-        public TextView description;
-        public RelativeLayout altBodyLayout;
-        public TextView altDescription;
-
+        public TextView text;
     }
 }

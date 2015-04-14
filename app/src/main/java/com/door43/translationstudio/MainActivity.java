@@ -64,6 +64,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.FramesListAdapter;
+import com.door43.translationstudio.dialogs.FramesReaderDialog;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
 import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
@@ -155,7 +156,6 @@ public class MainActivity extends TranslatorBaseActivity {
     private int mSourceScrollX = 0;
     private TextWatcher mTranslationChangedListener;
     private Button enlarge;
-    private FramesListAdapter framesListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,55 +176,41 @@ public class MainActivity extends TranslatorBaseActivity {
 
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
+                        Project p = AppContext.projectManager().getSelectedProject();
+                        if(p != null && p.getSelectedChapter() != null)  {
+                            // save the current translation
+                            save();
 
+                            // move other dialogs to backstack
+                            FragmentTransaction ft = getFragmentManager().beginTransaction();
+                            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                            if (prev != null) {
+                                ft.remove(prev);
+                            }
+                            ft.addToBackStack(null);
 
-                        ListView listView=new ListView(MainActivity.this);
+                            // Create the dialog
+                            FramesReaderDialog newFragment = new FramesReaderDialog();
+                            Bundle args = new Bundle();
+                            args.putString(FramesReaderDialog.ARG_PROJECT_ID, p.getId());
+                            args.putString(FramesReaderDialog.ARG_CHAPTER_ID, p.getSelectedChapter().getId());
 
-                        if (item.getItemId() == R.id.sourceText) {
-
-                            try {
-
-                                if(framesListAdapter == null) {
-                                    Project p = AppContext.projectManager().getSelectedProject();
-                                    if(p == null || p.getSelectedChapter() == null ) {
-                                        framesListAdapter = new FramesListAdapter(app(), new Model[]{});
-                                    } else {
-                                        framesListAdapter = new FramesListAdapter(app(), AppContext.projectManager().getSelectedProject().getSelectedChapter().getFrames());
-                                    }
-                                }
-
-                                listView.setAdapter(framesListAdapter);
-
-                                Dialog dialog = new Dialog(MainActivity.this);
-                                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                                dialog.setContentView(listView);
-                                dialog.show();
-
-
-
-                            }catch (Exception e){
-                                e.printStackTrace();
+                            // configure display option
+                            switch(item.getItemId()) {
+                                case R.id.targetText:
+                                    args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, FramesListAdapter.DisplayOption.TARGET_TRANSLATION.ordinal());
+                                    break;
+                                case R.id.sourceText:
+                                default:
+                                    args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, FramesListAdapter.DisplayOption.SOURCE_TRANSLATION.ordinal());
                             }
 
-                        } else if (item.getItemId() == R.id.targetText) {
-                            try {
-
-                                Dialog dialog = new Dialog(MainActivity.this);
-                                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-                                dialog.setContentView(R.layout.dialogfragment);
-
-                                TextView text = (TextView)dialog.findViewById(R.id.ttext);
-                                float typefaceSize = AppContext.typefaceSize();
-                                text.setTextSize(TypedValue.COMPLEX_UNIT_SP, typefaceSize);
-                                text.setTextColor(Color.BLACK);
-                                text.setBackgroundColor(Color.WHITE);
-                                text.setText(mTranslationEditText.getText());
-
-                                dialog.show();
-
-                            }catch (Exception e){
-                                e.printStackTrace();
-                            }
+                            // display dialog
+                            newFragment.setArguments(args);
+                            newFragment.show(ft, "dialog");
+                        } else {
+                            // the chapter is not selected
+                            return false;
                         }
                         return true;
                     }
