@@ -37,7 +37,7 @@
                     style="?android:attr/buttonStyleSmall"
                     android:layout_width="50dp"
                     android:layout_height="50dp"
-                    android:id="@+id/enlarge"
+                    android:id="@+id/contextual_menu_btn"
                     android:layout_alignBottom="@+id/readSourceTranslation"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"

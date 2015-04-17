@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
@@ -115,6 +116,8 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_default_translator, container, false);
+
+        setHasOptionsMenu(true);
 
         mSourceText = (SourceTextView)rootView.findViewById(R.id.readSourceTranslation);
         mSourceTitleText = (TextView)rootView.findViewById(R.id.sourceTitleText);
@@ -1456,16 +1459,46 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                 }
             }
 
-            menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
-            menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
-            menu.findItem(R.id.action_sync).setVisible(projectEnabled);
-            menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
+            if(menu.findItem(R.id.action_chapter_settings) != null) {
+                menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
+            }
+            if(menu.findItem(R.id.action_project_settings) != null) {
+                menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
+            }
+            if(menu.findItem(R.id.action_sync) != null) {
+                menu.findItem(R.id.action_sync).setVisible(projectEnabled);
+            }
+            if(menu.findItem(R.id.action_resources) != null) {
+                menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
+            }
 
 //            if(!hasResources) {
 //                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
 //            } else {
 //                mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.END);
 //            }
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu items for use in the action bar
+        if(((TranslatorActivityInterface)mActivity).keyboardIsOpen()) {
+            inflater.inflate(R.menu.translation_actions, menu);
+        } else {
+            inflater.inflate(R.menu.main_activity_actions, menu);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_verse_marker:
+                insertVerseMarker( mTranslationEditText.getSelectionStart());
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 

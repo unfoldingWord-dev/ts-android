@@ -11,4 +11,5 @@ public interface TranslatorActivityInterface {
     void showProjectSettingsMenu();
     void refreshResourcesDrawer();
     boolean keyboardIsOpen();
+    void closeKeyboard();
 }
