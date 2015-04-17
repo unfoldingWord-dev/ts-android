@@ -53,7 +53,7 @@
             <com.door43.translationstudio.rendering.SourceTextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/sourceText"
+                android:id="@+id/readSourceTranslation"
                 android:maxLines="9999"
                 android:scrollbars="vertical"
                 android:textColor="@color/dark_gray"

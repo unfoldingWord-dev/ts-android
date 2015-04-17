@@ -11,7 +11,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -58,7 +57,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -79,7 +77,6 @@ import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.Translation;
@@ -181,33 +178,18 @@ public class MainActivity extends TranslatorBaseActivity {
                             // save the current translation
                             save();
 
-                            // move other dialogs to backstack
-                            FragmentTransaction ft = getFragmentManager().beginTransaction();
-                            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-                            if (prev != null) {
-                                ft.remove(prev);
-                            }
-                            ft.addToBackStack(null);
-
-                            // Create the dialog
-                            FramesReaderDialog newFragment = new FramesReaderDialog();
-                            Bundle args = new Bundle();
-                            args.putString(FramesReaderDialog.ARG_PROJECT_ID, p.getId());
-                            args.putString(FramesReaderDialog.ARG_CHAPTER_ID, p.getSelectedChapter().getId());
-
                             // configure display option
                             switch(item.getItemId()) {
-                                case R.id.targetText:
-                                    args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, FramesListAdapter.DisplayOption.TARGET_TRANSLATION.ordinal());
+                                case R.id.blindDraftMode:
+                                    // TODO: enable/disable blind draft mode.
                                     break;
-                                case R.id.sourceText:
+                                case R.id.readTargetTranslation:
+                                    showFrameReaderDialog(p, FramesListAdapter.DisplayOption.TARGET_TRANSLATION);
+                                    break;
+                                case R.id.readSourceTranslation:
                                 default:
-                                    args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, FramesListAdapter.DisplayOption.SOURCE_TRANSLATION.ordinal());
+                                    showFrameReaderDialog(p, FramesListAdapter.DisplayOption.SOURCE_TRANSLATION);
                             }
-
-                            // display dialog
-                            newFragment.setArguments(args);
-                            newFragment.show(ft, "dialog");
                         } else {
                             // the chapter is not selected
                             return false;
@@ -335,6 +317,34 @@ public class MainActivity extends TranslatorBaseActivity {
         closeKeyboard();
     }
 
+    /**
+     * Displays the frame reader dialog
+     * @param p
+     */
+    private void showFrameReaderDialog(Project p, FramesListAdapter.DisplayOption option) {
+        if(p != null && p.getSelectedChapter() != null) {
+            // move other dialogs to backstack
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
+
+            // Create the dialog
+            FramesReaderDialog newFragment = new FramesReaderDialog();
+            Bundle args = new Bundle();
+            args.putString(FramesReaderDialog.ARG_PROJECT_ID, p.getId());
+            args.putString(FramesReaderDialog.ARG_CHAPTER_ID, p.getSelectedChapter().getId());
+
+            // configure display option
+            args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, option.ordinal());
+
+            // display dialog
+            newFragment.setArguments(args);
+            newFragment.show(ft, "dialog");
+        }
+    }
 
     /**
      * Display a footnote found in the source text
@@ -500,7 +510,7 @@ public class MainActivity extends TranslatorBaseActivity {
      * set up the content panes
      */
     private void initPanes() {
-        mSourceText = (SourceTextView)mCenterPane.findViewById(R.id.sourceText);
+        mSourceText = (SourceTextView)mCenterPane.findViewById(R.id.readSourceTranslation);
         mSourceTitleText = (TextView)mCenterPane.findViewById(R.id.sourceTitleText);
         mSourceFrameNumText = (TextView)mCenterPane.findViewById(R.id.sourceFrameNumText);
         mTranslationTitleText = (TextView)mCenterPane.findViewById(R.id.translationTitleText);

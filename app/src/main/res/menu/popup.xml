@@ -2,12 +2,14 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/sourceText"
-        android:title="Show More Verses"
-        />
+        android:id="@+id/readSourceTranslation"
+        android:title="@string/read_chapter_menu"/>
 
     <item
-        android:id="@+id/targetText"
-        android:title="Read Through Translation"
-        />
+        android:id="@+id/readTargetTranslation"
+        android:title="@string/preview_chapter_translation"/>
+
+    <item
+        android:id="@+id/blindDraftMode"
+        android:title="@string/blind_draft_mode"/>
 </menu>
