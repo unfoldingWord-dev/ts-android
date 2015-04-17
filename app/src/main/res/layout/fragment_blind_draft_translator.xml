@@ -1,0 +1,95 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/hasPreviousFrameImageView"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/chevron_left"
+            android:layout_marginLeft="10dp"
+            android:alpha=".07" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/imageView"
+            android:adjustViewBounds="false" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/hasNextFrameImageView"
+            android:layout_gravity="center_vertical|right"
+            android:background="@drawable/chevron_right"
+            android:layout_marginRight="10dp"
+            android:alpha=".09"
+            android:adjustViewBounds="false" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/translationProgressBar"
+            android:layout_gravity="center"
+            android:visibility="invisible" />
+
+        <RelativeLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="2dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Language: Chapter"
+                android:id="@+id/translationTitleText"
+                android:gravity="center"
+                android:textColor="@color/gray"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/language_resources_empty"
+                android:layout_marginLeft="2dp"
+                android:layout_marginRight="2dp" />
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/inputText"
+                android:enabled="true"
+                android:scrollbars="vertical"
+                android:gravity="top"
+                android:textColor="@color/dark_gray"
+                android:textDirection="rtl"
+                android:imeOptions="flagNoExtractUi"
+                android:paddingTop="0dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="5dp"
+                android:background="#00ffffff"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:nextFocusUp="@id/inputText"
+                android:nextFocusLeft="@id/inputText"
+                android:inputType="textNoSuggestions|text|textMultiLine"
+                android:fontFamily="GentiumPlus"
+                android:layout_below="@+id/translationTitleText" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Page 0 of 0"
+                android:id="@+id/sourceFrameNumText"
+                android:gravity="center"
+                android:layout_alignParentBottom="true"
+                android:textColor="@color/gray"
+                android:paddingTop="5dp" />
+        </RelativeLayout>
+
+
+    </FrameLayout>
+</LinearLayout>
