@@ -309,7 +309,7 @@
     <string name="simulate_crash">Simulate crash</string>
     <string name="simulate_crash_description">Simulates the app encountering an unrecoverable error and crashing</string>
     <string name="exit_confirmation">Are you sure you want to exit?</string>
-    <string name="read_chapter_menu">Read Chapter</string>
-    <string name="preview_chapter_translation">Preview Chapter Translation</string>
-    <string name="blind_draft_mode">Blind Draft Mode</string>
+    <string name="read_chapter_menu">Read chapter</string>
+    <string name="preview_chapter_translation">Preview translation</string>
+    <string name="toggle_blind_draft_mode">Toggle blind draft</string>
 </resources>

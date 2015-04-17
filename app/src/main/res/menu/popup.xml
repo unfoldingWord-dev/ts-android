@@ -11,5 +11,5 @@
 
     <item
         android:id="@+id/blindDraftMode"
-        android:title="@string/blind_draft_mode"/>
+        android:title="@string/toggle_blind_draft_mode"/>
 </menu>

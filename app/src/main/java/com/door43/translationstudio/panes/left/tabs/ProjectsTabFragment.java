@@ -101,7 +101,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             Project previousProject = AppContext.projectManager().getSelectedProject();
             if (previousProject == null || !previousProject.getId().equals(p.getId())) {
                 // reload the center pane so we don't accidently overwrite a frame
-                ((MainActivity) getActivity()).reloadCenterPane();
+                ((MainActivity) getActivity()).reloadContent();
 
                 AppContext.projectManager().setSelectedProject(p.getId());
 
@@ -134,7 +134,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                     public void onPostExecute() {
                         if(getActivity() != null) {
                             // populate the center pane
-                            ((MainActivity) getActivity()).reloadCenterPane();
+                            ((MainActivity) getActivity()).reloadContent();
                             // open up the chapters tab
                             ((MainActivity) getActivity()).getLeftPane().selectTab(1);
                             // reload the frames tab so we don't see frames from the previous project
@@ -152,7 +152,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 // select the project
                 AppContext.projectManager().setSelectedProject(p.getId());
                 // reload the center pane so we don't accidently overwrite a frame
-                ((MainActivity) getActivity()).reloadCenterPane();
+                ((MainActivity) getActivity()).reloadContent();
                 // open up the chapters tab
                 ((MainActivity) getActivity()).getLeftPane().selectTab(1);
                 // let the adapter redraw itself so the selected project is corectly highlighted

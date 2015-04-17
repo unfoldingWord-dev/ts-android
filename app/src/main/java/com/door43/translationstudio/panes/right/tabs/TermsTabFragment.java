@@ -200,7 +200,7 @@ import java.util.ArrayList;
                             public void onClick(View view, Span span, int start, int end) {
                                 p.setSelectedChapter(example.getChapterId());
                                 p.getSelectedChapter().setSelectedFrame(example.getFrameId());
-                                ((MainActivity) getActivity()).reloadCenterPane();
+                                ((MainActivity) getActivity()).reloadContent();
                                 ((MainActivity) getActivity()).closeDrawers();
                                 Chapter c = p.getChapter(example.getChapterId());
                                 if (c != null) {
