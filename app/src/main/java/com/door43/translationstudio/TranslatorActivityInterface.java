@@ -1,5 +1,7 @@
 package com.door43.translationstudio;
 
+import com.door43.translationstudio.projects.Term;
+
 /**
  * Created by joel on 4/17/2015.
  */
@@ -12,4 +14,10 @@ public interface TranslatorActivityInterface {
     void refreshResourcesDrawer();
     boolean keyboardIsOpen();
     void closeKeyboard();
+    void openKeyboard();
+    void closeDrawers();
+    void disableResourcesDrawer();
+    void enableResourcesDrawer();
+    void setContextualMenu(int menuRes);
+    void openKeyTerm(Term term);
 }

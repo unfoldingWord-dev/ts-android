@@ -1,13 +1,11 @@
 package com.door43.translationstudio.panes.right.tabs;
 
 import android.os.Bundle;
-import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -200,7 +198,7 @@ import java.util.ArrayList;
                             public void onClick(View view, Span span, int start, int end) {
                                 p.setSelectedChapter(example.getChapterId());
                                 p.getSelectedChapter().setSelectedFrame(example.getFrameId());
-                                ((MainActivity) getActivity()).reloadContent();
+                                ((MainActivity) getActivity()).reload();
                                 ((MainActivity) getActivity()).closeDrawers();
                                 Chapter c = p.getChapter(example.getChapterId());
                                 if (c != null) {

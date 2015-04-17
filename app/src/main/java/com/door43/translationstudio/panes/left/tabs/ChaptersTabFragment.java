@@ -49,9 +49,9 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
                     // select the chapter
                     AppContext.projectManager().getSelectedProject().setSelectedChapter(i);
                     // reload the center pane so we don't accidently overwrite a frame
-                    ((MainActivity) getActivity()).reloadContent();
+                    ((MainActivity) getActivity()).reload();
                     // open up the frames tab
-                    ((MainActivity) getActivity()).getLeftPane().selectTab(2);
+                    ((MainActivity) getActivity()).openFramesTab();
                     // let the adapter redraw itself so the selected chapter is corectly highlighted
                     NotifyAdapterDataSetChanged();
                 } else{

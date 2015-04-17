@@ -19,8 +19,6 @@ import android.support.v7.widget.Toolbar;
 
 import android.view.Display;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,12 +40,11 @@ import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
-
-import java.util.Timer;
 
 public class MainActivity extends TranslatorBaseActivity implements TranslatorActivityInterface {
     private final MainActivity me = this;
@@ -56,14 +53,10 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     private LeftPaneFragment mLeftPane;
     private RightPaneFragment mRightPane;
     private DrawerLayout mDrawerLayout;
-    private boolean mActivityIsInitializing;
-    private Timer mAutosaveTimer;
-    private boolean mAutosaveEnabled;
     private BroadcastReceiver mMessageReceiver;
     private static Toolbar mMainToolbar;
     private boolean mKeyboardIsOpen;
     private int mPreviousRootViewHeight;
-    private Button contextualMenuBtn;
     private TranslatorFragmentInterface mTranslatorFragment;
 
     @Override
@@ -81,51 +74,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
             mTranslatorFragment = (TranslatorFragmentInterface)getFragmentManager().findFragmentById(R.id.translator_container);
         }
 
-        // contextual menu
-        contextualMenuBtn =(Button) findViewById(R.id.contextual_menu_btn);
-        contextualMenuBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                PopupMenu popup = new PopupMenu(MainActivity.this, v);
-                popup.getMenuInflater().inflate(R.menu.popup, popup.getMenu());
-                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        Project p = AppContext.projectManager().getSelectedProject();
-                        if (p != null && p.getSelectedChapter() != null) {
-                            // save the current translation
-                            save();
-
-                            // configure display option
-                            switch (item.getItemId()) {
-                                case R.id.blindDraftMode:
-                                    SharedPreferences settings = AppContext.context().getSharedPreferences(AppContext.context().PREFERENCES_TAG, MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = settings.edit();
-                                    boolean enableBlindDraft = !settings.getBoolean("enable_blind_draft_mode", false);
-                                    editor.putBoolean("enable_blind_draft_mode", enableBlindDraft);
-                                    editor.apply();
-                                    // TODO: enable/disable blind draft mode.
-                                    break;
-                                case R.id.readTargetTranslation:
-                                    showFrameReaderDialog(p, FramesListAdapter.DisplayOption.TARGET_TRANSLATION);
-                                    break;
-                                case R.id.readSourceTranslation:
-                                default:
-                                    showFrameReaderDialog(p, FramesListAdapter.DisplayOption.SOURCE_TRANSLATION);
-                            }
-                        } else {
-                            // the chapter is not selected
-                            return false;
-                        }
-                        return true;
-                    }
-                });
-                popup.show();
-            }
-        });
-
         // set up toolbars
         mMainToolbar = (Toolbar)findViewById(R.id.toolbar_main);
         mMainToolbar.setVisibility(View.VISIBLE);
@@ -133,203 +81,11 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         setSupportActionBar(mMainToolbar);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        mActivityIsInitializing = true;
-        app().setMainActivity(this);
+        AppContext.context().setMainActivity(this);
 
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         mDrawerLayout.setScrimColor(getResources().getColor(R.color.scrim));
 
-        initPanes();
-
-        if(AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
-            // the project contains no chapters for the current language
-            Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
-            languageIntent.putExtra("sourceLanguages", true);
-            startActivity(languageIntent);
-        }
-
-        if(app().shouldShowWelcome()) {
-            // perform any welcoming tasks here. This happens when the user first opens the app.
-            app().setShouldShowWelcome(false);
-            openLeftDrawer();
-        } else {
-            // open the drawer if the remembered chapter does not exist
-            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-                if(AppContext.projectManager().getSelectedProject() == null || AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
-                    openLeftDrawer();
-                }
-            }
-            // TODO: send command to fragment
-//            reloadCenterPane();
-        }
-        closeKeyboard();
-    }
-
-    public void reloadContent() {
-        mTranslatorFragment.reload();
-    }
-
-    /**
-     * Displays the frame reader dialog
-     * @param p
-     */
-    private void showFrameReaderDialog(Project p, FramesListAdapter.DisplayOption option) {
-        if(p != null && p.getSelectedChapter() != null) {
-            // move other dialogs to backstack
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-            if (prev != null) {
-                ft.remove(prev);
-            }
-            ft.addToBackStack(null);
-
-            // Create the dialog
-            FramesReaderDialog newFragment = new FramesReaderDialog();
-            Bundle args = new Bundle();
-            args.putString(FramesReaderDialog.ARG_PROJECT_ID, p.getId());
-            args.putString(FramesReaderDialog.ARG_CHAPTER_ID, p.getSelectedChapter().getId());
-
-            // configure display option
-            args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, option.ordinal());
-
-            // display dialog
-            newFragment.setArguments(args);
-            newFragment.show(ft, "dialog");
-        }
-    }
-
-    /**
-     * Enables autosave
-     */
-    private void enableAutosave() {
-        // cancel pending saves that got trapped after we disabled auto save
-        AppContext.translationManager().stageTranslation(null, null);
-        mAutosaveEnabled = true;
-    }
-
-    /**
-     * Disables autosave and cancels any pending timers
-     */
-    private void disableAutosave() {
-        mAutosaveEnabled = false;
-        if(mAutosaveTimer != null) {
-            mAutosaveTimer.cancel();
-            mAutosaveTimer = null;
-        }
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // save any changes to the frame
-        save();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(!mActivityIsInitializing) {
-//            reloadCenterPane();
-            mTranslatorFragment.reload();
-            mLeftPane.reloadFramesTab();
-            mLeftPane.reloadChaptersTab();
-            mLeftPane.reloadProjectsTab();
-        } else {
-            // don't reload the center pane the first time the app starts.
-            mActivityIsInitializing = false;
-        }
-//        initFonts();
-    }
-
-    /**
-     * Returns the left pane fragment
-     * @return
-     */
-    public LeftPaneFragment getLeftPane() {
-        return mLeftPane;
-    }
-
-    private void onKeyboardChanged(View root) {
-        Rect r = new Rect();
-        root.getWindowVisibleDisplayFrame(r);
-        if(root.getHeight() < mPreviousRootViewHeight) {
-            onKeyboardOpen(r);
-        } else {
-            onKeyboardClose(r);
-        }
-    }
-
-    /**
-     * Triggered when the keyboard opens
-     * @param r the dimensions of the visible area
-     */
-    private void onKeyboardOpen(Rect r) {
-        if(!mKeyboardIsOpen) {
-            mKeyboardIsOpen = true;
-            resizeRootView(r);
-
-            // display the translation menu
-            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.light_blue));
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            invalidateOptionsMenu();
-        }
-    }
-
-    /**
-     * Triggered when the keyboard closes
-     * @param r the dimensions of the visible area
-     */
-    private void onKeyboardClose(Rect r) {
-        if(mKeyboardIsOpen) {
-            mKeyboardIsOpen = false;
-//            mTranslationEditText.clearFocus();
-            resizeRootView(r);
-
-            // display the main menu
-            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.green));
-            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            invalidateOptionsMenu();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        new AlertDialog.Builder(this)
-                .setMessage(R.string.exit_confirmation)
-                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        MainActivity.super.onBackPressed();
-                    }
-                })
-                .setNegativeButton(R.string.no, null)
-                .show();
-    }
-
-    /**
-     * Redraws the ui.
-     * @param r
-     */
-    private void resizeRootView(Rect r) {
-        ViewGroup.LayoutParams params = mDrawerLayout.getLayoutParams();
-        int newHeight = r.bottom - getStatusBarHeight();
-        if(newHeight != params.height) {
-            params.height = newHeight;
-            mDrawerLayout.setLayoutParams(params);
-        }
-    }
-
-    /**
-     * set up the content panes
-     */
-    private void initPanes() {
-
-        // TODO: this stays in the activity
         // watch for the soft keyboard open and close
         final View rootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);
         mPreviousRootViewHeight = 0;
@@ -343,7 +99,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
             }
         });
 
-        // TODO: this stays in the activity
         // Register a listener for when the input method changes (e.g. the keyboard)
         IntentFilter filter = new IntentFilter(Intent.ACTION_INPUT_METHOD_CHANGED);
         mMessageReceiver = new BroadcastReceiver() {
@@ -373,16 +128,130 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, R.string.close, R.string.close) {
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-//                mTranslationEditText.setEnabled(true);
-                // TODO: perhaps we could save the keyboard state and reopen it here.
             }
 
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-//                mTranslationEditText.setEnabled(false);
                 closeKeyboard();
             }
         });
+
+        if(AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
+            // the project contains no chapters for the current language
+            Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
+            languageIntent.putExtra("sourceLanguages", true);
+            startActivity(languageIntent);
+        }
+
+        if(AppContext.context().shouldShowWelcome()) {
+            // perform any welcoming tasks here. This happens when the user first opens the app.
+            AppContext.context().setShouldShowWelcome(false);
+            openLibraryDrawer();
+        } else {
+            // open the drawer if the remembered chapter does not exist
+            if(AppContext.context().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
+                if(AppContext.projectManager().getSelectedProject() == null || AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
+                    openLibraryDrawer();
+                }
+            }
+        }
+        closeKeyboard();
+    }
+
+    /**
+     * Notifies the translator fragment to reload it's content
+     */
+    public void reload() {
+        mTranslatorFragment.reload();
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+    }
+
+    public void openChaptersTab() {
+        mLeftPane.selectTab(1);
+        // TODO: make sure the drawer is open
+    }
+
+    public void openFramesTab() {
+        mLeftPane.selectTab(2);
+        // TODO: make sure the drawer is open
+    }
+
+    public void reloadFramesTab() {
+        mLeftPane.reloadFramesTab();
+    }
+
+    private void onKeyboardChanged(View root) {
+        Rect r = new Rect();
+        root.getWindowVisibleDisplayFrame(r);
+        if(root.getHeight() < mPreviousRootViewHeight) {
+            onKeyboardOpen(r);
+        } else {
+            onKeyboardClose(r);
+        }
+    }
+
+    /**
+     * Triggered when the keyboard opens
+     * @param r the dimensions of the visible area
+     */
+    private void onKeyboardOpen(Rect r) {
+        if(!mKeyboardIsOpen) {
+            mKeyboardIsOpen = true;
+            resizeRootView(r);
+
+            // apply contextual menu styles
+            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.light_blue));
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            invalidateOptionsMenu();
+        }
+    }
+
+    /**
+     * Triggered when the keyboard closes
+     * @param r the dimensions of the visible area
+     */
+    private void onKeyboardClose(Rect r) {
+        if(mKeyboardIsOpen) {
+            mKeyboardIsOpen = false;
+            resizeRootView(r);
+
+            // apply main menu styles
+            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.green));
+            getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            invalidateOptionsMenu();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // display confirmation before closing the app
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.exit_confirmation)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        MainActivity.super.onBackPressed();
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    /**
+     * Redraws the ui to fit within the viewport correctly
+     * @param r
+     */
+    private void resizeRootView(Rect r) {
+        ViewGroup.LayoutParams params = mDrawerLayout.getLayoutParams();
+        int newHeight = r.bottom - getStatusBarHeight();
+        if(newHeight != params.height) {
+            params.height = newHeight;
+            mDrawerLayout.setLayoutParams(params);
+        }
     }
 
     public int getStatusBarHeight() {
@@ -392,9 +261,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         return r.top;
     }
 
-    /**
-     * closes the keyboard
-     */
+    @Override
     public void closeKeyboard() {
         if(getCurrentFocus() != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -404,56 +271,76 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         }
     }
 
-    /**
-     * opens the keyboard
-     */
-    public void openKeyboard() {
-        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+    @Override
+    public void disableResourcesDrawer() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
+    }
 
-//        if(getCurrentFocus() != null) {
-//            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
-//        } else {
-//            MainActivity.this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-//        }
+    @Override
+    public void enableResourcesDrawer() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.END);
+    }
+
+    @Override
+    public void setContextualMenu(final int menuRes) {
+        Button button = (Button) findViewById(R.id.contextual_menu_btn);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                PopupMenu contextualMenu = new PopupMenu(MainActivity.this, v);
+                contextualMenu.getMenuInflater().inflate(menuRes, contextualMenu.getMenu());
+                contextualMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        return mTranslatorFragment.onContextualMenuItemClick(item);
+                    }
+                });
+                contextualMenu.show();
+            }
+        });
+    }
+
+    @Override
+    public void openKeyTerm(Term term) {
+        mRightPane.showTerm(term);
+        openResourcesDrawer();
     }
 
     /**
-     * Closes all the navigation drawers
+     * opens the keyboard
      */
+    @Override
+    public void openKeyboard() {
+        ((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+    }
+
+    /**
+     * Closes both of the drawers
+     */
+    @Override
     public void closeDrawers() {
         mDrawerLayout.closeDrawers();
     }
 
-    public void openLeftDrawer() {
+    @Override
+    public void openLibraryDrawer() {
         mDrawerLayout.closeDrawer(Gravity.RIGHT);
         mDrawerLayout.openDrawer(Gravity.LEFT);
     }
 
-    public void openRightDrawer() {
-        mDrawerLayout.closeDrawer(Gravity.LEFT);
-        mDrawerLayout.openDrawer(Gravity.RIGHT);
-    }
-
-    @Override
-    public void openLibraryDrawer() {
-        openLeftDrawer();
-    }
-
     @Override
     public void openResourcesDrawer() {
-        openRightDrawer();
+        mDrawerLayout.closeDrawer(Gravity.LEFT);
+        mDrawerLayout.openDrawer(Gravity.RIGHT);
     }
 
     /**
      * Saves the translation
      */
+    @Override
     public void save() {
-        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
-            disableAutosave();
-            AppContext.translationManager().commitTranslation();
-            enableAutosave();
-        }
+        mTranslatorFragment.save();
     }
 
     @Override
@@ -475,11 +362,11 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
      * Begins syncing the selected project
      */
     public void openSyncing() {
-        if(app().isNetworkAvailable()) {
+        if(AppContext.context().isNetworkAvailable()) {
             Intent intent = new Intent(this, UploadWizardActivity.class);
             startActivity(intent);
         } else {
-            app().showToastMessage(R.string.internet_not_available);
+            AppContext.context().showToastMessage(R.string.internet_not_available);
         }
     }
 
@@ -510,6 +397,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     /**
      * Displays the project settings
      */
+    @Override
     public void showProjectSettingsMenu() {
         Intent intent = new Intent(me, ProjectSettingsActivity.class);
         startActivity(intent);
@@ -532,16 +420,77 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         super.onDestroy();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                closeKeyboard();
+                return true;
+            case R.id.action_share:
+                openSharing();
+                return true;
+            case R.id.action_sync:
+                if(AppContext.projectManager().getSelectedProject() != null) {
+                    openSyncing();
+                } else {
+                    AppContext.context().showToastMessage(R.string.choose_a_project);
+                }
+                return true;
+            case R.id.action_settings:
+                openSettings();
+                return true;
+            case R.id.action_bug:
+                openBugReporter();
+                return true;
+            case R.id.action_update:
+                Intent intent = new Intent(this, GetMoreProjectsActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.action_library:
+                openLibraryDrawer();
+                return true;
+            case R.id.action_resources:
+                if(AppContext.projectManager().getSelectedProject() != null) {
+                    openResourcesDrawer();
+                } else {
+                    AppContext.context().showToastMessage(R.string.choose_a_project);
+                }
+                return true;
+            case R.id.action_chapter_settings:
+                if(AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().getSelectedChapter() != null) {
+                    showChapterSettingsMenu();
+                } else if(AppContext.projectManager().getSelectedProject() == null) {
+                    AppContext.context().showToastMessage(R.string.choose_a_project);
+                } else {
+                    AppContext.context().showToastMessage(R.string.choose_a_chapter);
+                }
+                return true;
+            case R.id.action_project_settings:
+                if(AppContext.projectManager().getSelectedProject() != null) {
+                    showProjectSettingsMenu();
+                } else {
+                    AppContext.context().showToastMessage(R.string.choose_a_project);
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /**
+     * TODO: all of these methods are deprecated.
+     */
+
     /**
      * Triggered by the translation manager after the security keys have been successfully submitted to the server
      * @param event
      */
     @Subscribe
     public void securityKeysSubmitted(SecurityKeysSubmittedEvent event) {
-        if(app().isNetworkAvailable()) {
+        if(AppContext.context().isNetworkAvailable()) {
             AppContext.translationManager().syncSelectedProject();
         } else {
-            app().showToastMessage(R.string.internet_not_available);
+            AppContext.context().showToastMessage(R.string.internet_not_available);
         }
     }
 
@@ -591,63 +540,4 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         mLeftPane.reloadFramesTab();
         mTranslatorFragment.reload();
     }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                closeKeyboard();
-                return true;
-            case R.id.action_share:
-                openSharing();
-                return true;
-            case R.id.action_sync:
-                if(AppContext.projectManager().getSelectedProject() != null) {
-                    openSyncing();
-                } else {
-                    app().showToastMessage(R.string.choose_a_project);
-                }
-                return true;
-            case R.id.action_settings:
-                openSettings();
-                return true;
-            case R.id.action_bug:
-                openBugReporter();
-                return true;
-            case R.id.action_update:
-                Intent intent = new Intent(this, GetMoreProjectsActivity.class);
-                startActivity(intent);
-                return true;
-            case R.id.action_library:
-                openLeftDrawer();
-                return true;
-            case R.id.action_resources:
-                if(AppContext.projectManager().getSelectedProject() != null) {
-                    openRightDrawer();
-                } else {
-                    app().showToastMessage(R.string.choose_a_project);
-                }
-                return true;
-            case R.id.action_chapter_settings:
-                if(AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().getSelectedChapter() != null) {
-                    showChapterSettingsMenu();
-                } else if(AppContext.projectManager().getSelectedProject() == null) {
-                    app().showToastMessage(R.string.choose_a_project);
-                } else {
-                    app().showToastMessage(R.string.choose_a_chapter);
-                }
-                return true;
-            case R.id.action_project_settings:
-                if(AppContext.projectManager().getSelectedProject() != null) {
-                    showProjectSettingsMenu();
-                } else {
-                    app().showToastMessage(R.string.choose_a_project);
-                }
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
 }
