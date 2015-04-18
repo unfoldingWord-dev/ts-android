@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.translator;
 
 import android.view.MenuItem;
 

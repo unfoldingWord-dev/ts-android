@@ -1,6 +1,5 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.translator;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -42,6 +41,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.dialogs.FramesListAdapter;
 import com.door43.translationstudio.dialogs.FramesReaderDialog;
 import com.door43.translationstudio.dialogs.LanguageResourceDialog;
@@ -65,7 +66,6 @@ import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.Logger;
 import com.door43.util.StringUtilities;
 import com.door43.util.threads.ThreadableUI;
@@ -76,7 +76,7 @@ import java.util.TimerTask;
 /**
  * Created by joel on 4/17/2015.
  */
-public class DefaultTranslatorFragment extends TranslatorBaseFragment implements TranslatorFragmentInterface {
+public class DefaultTranslatorFragment extends TranslatorFragment {
 
     private static final int TEXT_FADE_SPEED = 100;
     private static final String STATE_SOURCE_SCROLL_Y = "source_text_scroll_y";
@@ -101,7 +101,6 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
     private int mTranslationTextMotionDownX = 0;
     private int mTranslationTextMotionDownY = 0;
     private Frame mSelectedFrame;
-    private Activity mActivity;
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
     private Span.OnClickListener mKeyTermClickListener;
@@ -116,8 +115,8 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_default_translator, container, false);
-
         setHasOptionsMenu(true);
+        ((TranslatorActivityInterface)getActivity()).setContextualMenu(R.menu.contextual_translator_menu);
 
         mSourceText = (SourceTextView)rootView.findViewById(R.id.readSourceTranslation);
         mSourceTitleText = (TextView)rootView.findViewById(R.id.sourceTitleText);
@@ -173,7 +172,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
             @Override
             public void onClick(View view) {
                 if (mSourceText.getText().length() == 0) {
-                    ((TranslatorActivityInterface) mActivity).openLibraryDrawer();
+                    ((TranslatorActivityInterface) getActivity()).openLibraryDrawer();
                 }
             }
         });
@@ -181,7 +180,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                mActivity.invalidateOptionsMenu();
+                getActivity().invalidateOptionsMenu();
             }
         });
 
@@ -212,10 +211,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         };
         initFonts();
 
-        reloadCenterPane();
-
-        // set up the contextual menu
-        ((TranslatorActivityInterface)mActivity).setContextualMenu(R.menu.contextual_translator_menu);
+        reload();
 
         return rootView;
     }
@@ -226,7 +222,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
      */
     public void showTermDetails(String term) {
         if(AppContext.projectManager().getSelectedProject() != null) {
-            ((TranslatorActivityInterface)mActivity).openKeyTerm(AppContext.projectManager().getSelectedProject().getTerm(term));
+            ((TranslatorActivityInterface)getActivity()).openKeyTerm(AppContext.projectManager().getSelectedProject().getTerm(term));
         }
     }
 
@@ -249,16 +245,6 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         }
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if(activity instanceof TranslatorActivityInterface) {
-            mActivity = activity;
-        } else {
-            throw new ClassCastException("The activity must implement the TranslatorActivityInterface interface");
-        }
-    }
-
     /**
      * Display a footnote found in the source text
      * @param span
@@ -270,7 +256,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
             }
             mFootnoteDialog = null;
         }
-        mFootnoteDialog = new AlertDialog.Builder(mActivity)
+        mFootnoteDialog = new AlertDialog.Builder(getActivity())
                 .setMessage(span.getNotes())
                 .show();
     }
@@ -517,12 +503,12 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                         Pair copyRange = StringUtilities.expandSelectionForSpans(mTranslationEditText.getText(), start, end);
                         mTranslationEditText.setSelection((int) copyRange.first, (int) copyRange.second);
                         String copyString = TranslationManager.compileTranslation((Editable) mTranslationEditText.getText().subSequence((int) copyRange.first, (int) copyRange.second));
-                        StringUtilities.copyToClipboard(mActivity, copyString);
+                        StringUtilities.copyToClipboard(getActivity(), copyString);
                         return true;
                     case android.R.id.cut:
                         Pair cutRange = StringUtilities.expandSelectionForSpans(mTranslationEditText.getText(), start, end);
                         String cutString = TranslationManager.compileTranslation((Editable) mTranslationEditText.getText().subSequence((int) cutRange.first, (int) cutRange.second));
-                        StringUtilities.copyToClipboard(mActivity, cutString);
+                        StringUtilities.copyToClipboard(getActivity(), cutString);
                         CharSequence preceedingText = mTranslationEditText.getText().subSequence(0, (int) cutRange.first);
                         CharSequence trailingText = mTranslationEditText.getText().subSequence((int) cutRange.second, mTranslationEditText.getText().length());
                         mTranslationEditText.setText(TextUtils.concat(preceedingText, trailingText));
@@ -566,13 +552,13 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                         @Override
                         public void onChoose(Resource resource) {
                             if (p == null) return;
-                            final ProgressDialog dialog = new ProgressDialog(mActivity);
+                            final ProgressDialog dialog = new ProgressDialog(getActivity());
                             dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
                             dialog.setCancelable(false);
                             dialog.setCanceledOnTouchOutside(false);
                             dialog.show();
                             p.getSelectedSourceLanguage().setSelectedResource(resource.getId());
-                            new ThreadableUI(mActivity) {
+                            new ThreadableUI(getActivity()) {
 
                                 @Override
                                 public void onStop() {
@@ -591,8 +577,8 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                                 public void onPostExecute() {
                                     // refresh the ui
                                     dialog.dismiss();
-                                    reloadCenterPane();
-                                    ((TranslatorActivityInterface) mActivity).refreshLibraryDrawer();
+                                    reload();
+                                    ((TranslatorActivityInterface) getActivity()).refreshLibraryDrawer();
                                 }
                             }.start();
                         }
@@ -612,7 +598,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         }
 
         // this thread handles the fading animations
-        mHighlightSourceThread = new ThreadableUI(mActivity) {
+        mHighlightSourceThread = new ThreadableUI(getActivity()) {
             ThreadableUI renderThread;
             @Override
             public void onStop() {
@@ -680,7 +666,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                     public void onAnimationEnd(Animation animation) {
                         if(!isInterrupted()) {
                             mSourceText.setVisibility(View.INVISIBLE);
-                            renderThread = new ThreadableUI(mActivity) {
+                            renderThread = new ThreadableUI(getActivity()) {
                                 CharSequence output;
                                 @Override
                                 public void onStop() {
@@ -706,7 +692,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                                         mSourceText.scrollTo(mSourceScrollX, mSourceScrollY);
                                         mSourceScrollY = 0;
                                         mSourceScrollX = 0;
-                                        ((TranslatorActivityInterface)mActivity).refreshResourcesDrawer();
+                                        ((TranslatorActivityInterface)getActivity()).refreshResourcesDrawer();
 //                                        mRightPane.reloadTermsTab();
                                     }
                                 }
@@ -754,7 +740,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         if(mHighlightTranslationThread != null) {
             mHighlightTranslationThread.stop();
         }
-        mHighlightTranslationThread = new ThreadableUI(mActivity) {
+        mHighlightTranslationThread = new ThreadableUI(getActivity()) {
             ThreadableUI renderThread;
             @Override
             public void onStop() {
@@ -820,7 +806,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                         if(!isInterrupted()) {
 //                            mTranslationEditText.setText("");
                             mTranslationEditText.setVisibility(View.INVISIBLE);
-                            renderThread = new ThreadableUI(mActivity) {
+                            renderThread = new ThreadableUI(getActivity()) {
                                 CharSequence output;
                                 @Override
                                 public void onStop() {
@@ -927,7 +913,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                 p.getSelectedChapter().setSelectedFrame(f.getId());
 //                mLeftPane.selectTab(mLeftPane.getSelectedTabIndex());
             }
-            reloadCenterPane();
+            reload();
             return true;
         } else {
             return false;
@@ -942,35 +928,6 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
             disableAutosave();
             AppContext.translationManager().commitTranslation();
             enableAutosave();
-        }
-    }
-
-    /**
-     * Displays the frame reader dialog
-     * @param p
-     */
-    private void showFrameReaderDialog(Project p, FramesListAdapter.DisplayOption option) {
-        if(p != null && p.getSelectedChapter() != null) {
-            // move other dialogs to backstack
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-            if (prev != null) {
-                ft.remove(prev);
-            }
-            ft.addToBackStack(null);
-
-            // Create the dialog
-            FramesReaderDialog newFragment = new FramesReaderDialog();
-            Bundle args = new Bundle();
-            args.putString(FramesReaderDialog.ARG_PROJECT_ID, p.getId());
-            args.putString(FramesReaderDialog.ARG_CHAPTER_ID, p.getSelectedChapter().getId());
-
-            // configure display option
-            args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, option.ordinal());
-
-            // display dialog
-            newFragment.setArguments(args);
-            newFragment.show(ft, "dialog");
         }
     }
 
@@ -989,7 +946,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
                     boolean enableBlindDraft = !settings.getBoolean("enable_blind_draft_mode", false);
                     editor.putBoolean("enable_blind_draft_mode", enableBlindDraft);
                     editor.apply();
-                    // TODO: enable/disable blind draft mode.
+                    ((TranslatorActivityInterface)getActivity()).reloadTranslatorFragment();
                     break;
                 case R.id.readTargetTranslation:
                     showFrameReaderDialog(p, FramesListAdapter.DisplayOption.TARGET_TRANSLATION);
@@ -1003,145 +960,6 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
             return false;
         }
         return true;
-    }
-
-    /**
-     * Updates the center pane with the selected source frame text and any existing translations
-     */
-    public void reloadCenterPane() {
-        // auto save is disabled to prevent accidentally saving into the wrong frame
-        disableAutosave();
-        mActivity.invalidateOptionsMenu();
-        // load the text
-        final Project p = AppContext.projectManager().getSelectedProject();
-        if(frameIsSelected()) {
-            ((TranslatorActivityInterface)mActivity).refreshResourcesDrawer();
-//            mRightPane.reloadNotesTab();
-
-            mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
-            mTranslationEditText.setEnabled(true);
-            final int frameIndex = p.getSelectedChapter().getFrameIndex(mSelectedFrame);
-            final Chapter chapter = p.getSelectedChapter();
-
-            // get the target language
-            if(!p.hasChosenTargetLanguage()) {
-                ((TranslatorActivityInterface)mActivity).showProjectSettingsMenu();
-            }
-
-            // target translation
-            final Translation translation = mSelectedFrame.getTranslation();
-
-            mTranslationEditText.scrollTo(0, 0);
-            mTranslationEditText.setSelection(0);
-            renderTranslationText(translation.getText());
-
-            if(chapter.getTitleTranslation().getText().isEmpty()) {
-                // display non-translated title
-                AnimationUtilities.fadeOutIn(mTranslationTitleText, new Handler.Callback() {
-                    @Override
-                    public boolean handleMessage(Message message) {
-                        mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
-                        return false;
-                    }
-                });
-            } else {
-                // display translated title
-                AnimationUtilities.fadeOutIn(mTranslationTitleText, new Handler.Callback() {
-                    @Override
-                    public boolean handleMessage(Message message) {
-                        mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
-                        return false;
-                    }
-                });
-            }
-
-            // source translation
-            AnimationUtilities.fadeOutIn(mSourceTitleText, new Handler.Callback() {
-                @Override
-                public boolean handleMessage(Message message) {
-                    if(p.getSelectedSourceLanguage().getResources().length > 1) {
-                        String languageName = p.getSelectedSourceLanguage().getName() + " - ";
-                        String resourceName = p.getSelectedSourceLanguage().getSelectedResource().getName();
-                        String chapterName = ": " + chapter.getTitle();
-                        SpannableStringBuilder span = new SpannableStringBuilder(languageName + resourceName + chapterName);
-                        span.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.blue)), languageName.length(), languageName.length() + resourceName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        mSourceTitleText.setText(span);
-                    } else {
-                        mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + chapter.getTitle());
-                    }
-                    return false;
-                }
-            });
-            AnimationUtilities.fadeOutIn(mSourceFrameNumText, new Handler.Callback() {
-                @Override
-                public boolean handleMessage(Message message) {
-                    mSourceFrameNumText.setText(String.format(getResources().getString(R.string.currently_viewed_frame_index), (frameIndex + 1), chapter.numFrames()));
-                    return false;
-                }
-            });
-
-            if(mSelectedFrame.getText().length() > 0) {
-                mHelpText.setVisibility(View.GONE);
-            } else {
-                mHelpText.setVisibility(View.VISIBLE);
-            }
-
-            // render the source text
-            renderSourceText();
-
-            // set correct text direction
-            Language.Direction sourceDirection = p.getSelectedSourceLanguage().getDirection();
-            if(sourceDirection == Language.Direction.RightToLeft) {
-                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    mSourceText.setTextDirection(View.TEXT_DIRECTION_RTL);
-                    mTranslationEditText.setTextDirection(View.TEXT_DIRECTION_RTL);
-                } else {
-                    mSourceText.setGravity(Gravity.RIGHT);
-                    mTranslationEditText.setGravity(Gravity.RIGHT);
-                }
-            } else {
-                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    mSourceText.setTextDirection(View.TEXT_DIRECTION_LTR);
-                    mTranslationEditText.setTextDirection(View.TEXT_DIRECTION_LTR);
-                } else {
-                    mSourceText.setGravity(Gravity.LEFT);
-                    mTranslationEditText.setGravity(Gravity.LEFT);
-                }
-            }
-
-            // navigation indicators
-            if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
-                mNextFrameView.setVisibility(View.VISIBLE);
-            } else {
-                mNextFrameView.setVisibility(View.INVISIBLE);
-            }
-            if(0 < frameIndex) {
-                mPreviousFrameView.setVisibility(View.VISIBLE);
-            } else {
-                mPreviousFrameView.setVisibility(View.INVISIBLE);
-            }
-        } else {
-            // stop all text processing and clear everything out.
-            if(mHighlightSourceThread != null) {
-                mHighlightSourceThread.stop();
-            }
-            if(mHighlightTranslationThread != null) {
-                mHighlightTranslationThread.stop();
-            }
-            mSelectedFrame = null;
-            mTranslationEditText.setText("");
-            mTranslationEditText.setEnabled(false);
-            mTranslationTitleText.setText("");
-            mSourceTitleText.setText("");
-            mSourceText.setText("");
-            mSourceFrameNumText.setText("");
-            mNextFrameView.setVisibility(View.INVISIBLE);
-            mPreviousFrameView.setVisibility(View.INVISIBLE);
-
-            // nothing was selected so open the project selector
-            ((TranslatorActivityInterface)mActivity).openLibraryDrawer();
-        }
-        enableAutosave();
     }
 
     /**
@@ -1164,7 +982,10 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         }
     }
 
-    // Checks if a frame has been selected in the app
+    /**
+     * Checks if a frame has been selected in the app
+     * @return
+     */
     public boolean frameIsSelected() {
         Project selectedProject = AppContext.projectManager().getSelectedProject();
         return selectedProject != null && selectedProject.getSelectedChapter() != null && selectedProject.getSelectedChapter().getSelectedFrame() != null;
@@ -1246,7 +1067,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         }
         final int minVerseNumber = defaultVerseNumber;
         final int maxVerseNumber = endingVerse;
-        new ThreadableUI(mActivity) {
+        new ThreadableUI(getActivity()) {
             private int mSuggestedVerse = minVerseNumber;
 
             @Override
@@ -1505,7 +1326,139 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
 
     @Override
     public void reload() {
-        reloadCenterPane();
+        // auto save is disabled to prevent accidentally saving into the wrong frame
+        disableAutosave();
+        getActivity().invalidateOptionsMenu();
+        // load the text
+        final Project p = AppContext.projectManager().getSelectedProject();
+        if(frameIsSelected()) {
+            ((TranslatorActivityInterface)getActivity()).refreshResourcesDrawer();
+//            mRightPane.reloadNotesTab();
+
+            mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
+            mTranslationEditText.setEnabled(true);
+            final int frameIndex = p.getSelectedChapter().getFrameIndex(mSelectedFrame);
+            final Chapter chapter = p.getSelectedChapter();
+
+            // get the target language
+            if(!p.hasChosenTargetLanguage()) {
+                ((TranslatorActivityInterface)getActivity()).showProjectSettingsMenu();
+            }
+
+            // target translation
+            final Translation translation = mSelectedFrame.getTranslation();
+
+            mTranslationEditText.scrollTo(0, 0);
+            mTranslationEditText.setSelection(0);
+            renderTranslationText(translation.getText());
+
+            if(chapter.getTitleTranslation().getText().isEmpty()) {
+                // display non-translated title
+                AnimationUtilities.fadeOutIn(mTranslationTitleText, new Handler.Callback() {
+                    @Override
+                    public boolean handleMessage(Message message) {
+                        mTranslationTitleText.setText(translation.getLanguage().getName() + ": [" + chapter.getTitle() + "]");
+                        return false;
+                    }
+                });
+            } else {
+                // display translated title
+                AnimationUtilities.fadeOutIn(mTranslationTitleText, new Handler.Callback() {
+                    @Override
+                    public boolean handleMessage(Message message) {
+                        mTranslationTitleText.setText(translation.getLanguage().getName() + ": " + chapter.getTitleTranslation().getText());
+                        return false;
+                    }
+                });
+            }
+
+            // source translation
+            AnimationUtilities.fadeOutIn(mSourceTitleText, new Handler.Callback() {
+                @Override
+                public boolean handleMessage(Message message) {
+                    if(p.getSelectedSourceLanguage().getResources().length > 1) {
+                        String languageName = p.getSelectedSourceLanguage().getName() + " - ";
+                        String resourceName = p.getSelectedSourceLanguage().getSelectedResource().getName();
+                        String chapterName = ": " + chapter.getTitle();
+                        SpannableStringBuilder span = new SpannableStringBuilder(languageName + resourceName + chapterName);
+                        span.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.blue)), languageName.length(), languageName.length() + resourceName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        mSourceTitleText.setText(span);
+                    } else {
+                        mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + chapter.getTitle());
+                    }
+                    return false;
+                }
+            });
+            AnimationUtilities.fadeOutIn(mSourceFrameNumText, new Handler.Callback() {
+                @Override
+                public boolean handleMessage(Message message) {
+                    mSourceFrameNumText.setText(String.format(getResources().getString(R.string.currently_viewed_frame_index), (frameIndex + 1), chapter.numFrames()));
+                    return false;
+                }
+            });
+
+            if(mSelectedFrame.getText().length() > 0) {
+                mHelpText.setVisibility(View.GONE);
+            } else {
+                mHelpText.setVisibility(View.VISIBLE);
+            }
+
+            // render the source text
+            renderSourceText();
+
+            // set correct text direction
+            Language.Direction sourceDirection = p.getSelectedSourceLanguage().getDirection();
+            if(sourceDirection == Language.Direction.RightToLeft) {
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    mSourceText.setTextDirection(View.TEXT_DIRECTION_RTL);
+                    mTranslationEditText.setTextDirection(View.TEXT_DIRECTION_RTL);
+                } else {
+                    mSourceText.setGravity(Gravity.RIGHT);
+                    mTranslationEditText.setGravity(Gravity.RIGHT);
+                }
+            } else {
+                if(Build.VERSION.SDK_INT == Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    mSourceText.setTextDirection(View.TEXT_DIRECTION_LTR);
+                    mTranslationEditText.setTextDirection(View.TEXT_DIRECTION_LTR);
+                } else {
+                    mSourceText.setGravity(Gravity.LEFT);
+                    mTranslationEditText.setGravity(Gravity.LEFT);
+                }
+            }
+
+            // navigation indicators
+            if(p.getSelectedChapter().numFrames() > frameIndex + 1) {
+                mNextFrameView.setVisibility(View.VISIBLE);
+            } else {
+                mNextFrameView.setVisibility(View.INVISIBLE);
+            }
+            if(0 < frameIndex) {
+                mPreviousFrameView.setVisibility(View.VISIBLE);
+            } else {
+                mPreviousFrameView.setVisibility(View.INVISIBLE);
+            }
+        } else {
+            // stop all text processing and clear everything out.
+            if(mHighlightSourceThread != null) {
+                mHighlightSourceThread.stop();
+            }
+            if(mHighlightTranslationThread != null) {
+                mHighlightTranslationThread.stop();
+            }
+            mSelectedFrame = null;
+            mTranslationEditText.setText("");
+            mTranslationEditText.setEnabled(false);
+            mTranslationTitleText.setText("");
+            mSourceTitleText.setText("");
+            mSourceText.setText("");
+            mSourceFrameNumText.setText("");
+            mNextFrameView.setVisibility(View.INVISIBLE);
+            mPreviousFrameView.setVisibility(View.INVISIBLE);
+
+            // nothing was selected so open the project selector
+            ((TranslatorActivityInterface)getActivity()).openLibraryDrawer();
+        }
+        enableAutosave();
     }
 
     @Override
@@ -1519,7 +1472,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
         super.onPrepareOptionsMenu(menu);
         Project p = AppContext.projectManager().getSelectedProject();
         Boolean projectEnabled = p != null;
-        if(((TranslatorActivityInterface)mActivity).keyboardIsOpen()) {
+        if(((TranslatorActivityInterface)getActivity()).keyboardIsOpen()) {
             // translation menu
             boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
             menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
@@ -1552,9 +1505,9 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
             }
 
             if(!hasResources) {
-                ((TranslatorActivityInterface)mActivity).disableResourcesDrawer();
+                ((TranslatorActivityInterface)getActivity()).disableResourcesDrawer();
             } else {
-                ((TranslatorActivityInterface)mActivity).enableResourcesDrawer();
+                ((TranslatorActivityInterface)getActivity()).enableResourcesDrawer();
             }
         }
     }
@@ -1562,7 +1515,7 @@ public class DefaultTranslatorFragment extends TranslatorBaseFragment implements
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu items for use in the action bar
-        if(((TranslatorActivityInterface)mActivity).keyboardIsOpen()) {
+        if(((TranslatorActivityInterface)getActivity()).keyboardIsOpen()) {
 
             inflater.inflate(R.menu.translation_actions, menu);
         } else {

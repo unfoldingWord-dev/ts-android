@@ -1,4 +1,4 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.translator;
 
 import com.door43.translationstudio.projects.Term;
 
@@ -20,4 +20,6 @@ public interface TranslatorActivityInterface {
     void enableResourcesDrawer();
     void setContextualMenu(int menuRes);
     void openKeyTerm(Term term);
+
+    void reloadTranslatorFragment();
 }

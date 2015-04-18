@@ -2,7 +2,6 @@ package com.door43.translationstudio;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -29,8 +28,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.PopupMenu;
 
-import com.door43.translationstudio.dialogs.FramesListAdapter;
-import com.door43.translationstudio.dialogs.FramesReaderDialog;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.OpenedChapterEvent;
@@ -39,8 +36,11 @@ import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
+import com.door43.translationstudio.translator.BlindDraftTranslatorFragment;
+import com.door43.translationstudio.translator.DefaultTranslatorFragment;
+import com.door43.translationstudio.translator.TranslatorActivityInterface;
+import com.door43.translationstudio.translator.TranslatorFragmentInterface;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -66,10 +66,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
         // insert translator fragment
         if(savedInstanceState == null) {
-            // TODO: insert the correct fragment
-            mTranslatorFragment = new DefaultTranslatorFragment();
-            ((Fragment)mTranslatorFragment).setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().replace(R.id.translator_container, (Fragment)mTranslatorFragment).commit();
+            reloadTranslatorFragment();
         } else {
             mTranslatorFragment = (TranslatorFragmentInterface)getFragmentManager().findFragmentById(R.id.translator_container);
         }
@@ -284,6 +281,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     @Override
     public void setContextualMenu(final int menuRes) {
         Button button = (Button) findViewById(R.id.contextual_menu_btn);
+        button.setVisibility(View.VISIBLE);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -301,10 +299,30 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         });
     }
 
+    public void hideContextualMenu() {
+        Button button = (Button) findViewById(R.id.contextual_menu_btn);
+        button.setVisibility(View.GONE);
+    }
+
     @Override
     public void openKeyTerm(Term term) {
         mRightPane.showTerm(term);
         openResourcesDrawer();
+    }
+
+    @Override
+    public void reloadTranslatorFragment() {
+        hideContextualMenu();
+        SharedPreferences settings = AppContext.context().getSharedPreferences(AppContext.context().PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
+        TranslatorFragmentInterface fragment;
+        if(settings.getBoolean("enable_blind_draft_mode", false)) {
+            fragment = new BlindDraftTranslatorFragment();
+        } else {
+            fragment = new DefaultTranslatorFragment();
+        }
+        ((Fragment) fragment).setArguments(getIntent().getExtras());
+        getFragmentManager().beginTransaction().replace(R.id.translator_container, (Fragment) fragment).commit();
+        mTranslatorFragment = fragment;
     }
 
     /**
