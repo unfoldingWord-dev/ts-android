@@ -183,7 +183,6 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                 getActivity().invalidateOptionsMenu();
             }
         });
-
         // listeners for the rendering engines
         mVerseClickListener = new Span.OnClickListener() {
             @Override
@@ -692,7 +691,9 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                                         mSourceText.scrollTo(mSourceScrollX, mSourceScrollY);
                                         mSourceScrollY = 0;
                                         mSourceScrollX = 0;
-                                        ((TranslatorActivityInterface)getActivity()).refreshResourcesDrawer();
+                                        if(getActivity() != null) {
+                                            ((TranslatorActivityInterface) getActivity()).refreshResourcesDrawer();
+                                        }
 //                                        mRightPane.reloadTermsTab();
                                     }
                                 }
@@ -923,6 +924,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
     /**
      * Saves the translation
      */
+    @Override
     public void save() {
         if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
             disableAutosave();
@@ -946,7 +948,9 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                     boolean enableBlindDraft = !settings.getBoolean("enable_blind_draft_mode", false);
                     editor.putBoolean("enable_blind_draft_mode", enableBlindDraft);
                     editor.apply();
-                    ((TranslatorActivityInterface)getActivity()).reloadTranslatorFragment();
+                    if(getActivity() != null) {
+                        ((TranslatorActivityInterface) getActivity()).reloadTranslatorFragment();
+                    }
                     break;
                 case R.id.readTargetTranslation:
                     showFrameReaderDialog(p, FramesListAdapter.DisplayOption.TARGET_TRANSLATION);
@@ -1333,7 +1337,6 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         final Project p = AppContext.projectManager().getSelectedProject();
         if(frameIsSelected()) {
             ((TranslatorActivityInterface)getActivity()).refreshResourcesDrawer();
-//            mRightPane.reloadNotesTab();
 
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
             mTranslationEditText.setEnabled(true);
@@ -1470,44 +1473,46 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        Project p = AppContext.projectManager().getSelectedProject();
-        Boolean projectEnabled = p != null;
-        if(((TranslatorActivityInterface)getActivity()).keyboardIsOpen()) {
-            // translation menu
-            boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
-            menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
-        } else {
-            // main menu
-            boolean hasChapterSettings = false;
-            boolean hasResources = false;
-            if(projectEnabled) {
-                Chapter c = p.getSelectedChapter();
-                hasChapterSettings = c != null && c.hasChapterSettings();
-                if(c != null) {
-                    Frame f = c.getSelectedFrame();
-                    if(f != null) {
-                        hasResources = f.getImportantTerms().size() > 0 || f.getTranslationNotes() != null;
+        if(getActivity() != null) {
+            Project p = AppContext.projectManager().getSelectedProject();
+            Boolean projectEnabled = p != null;
+            if (((TranslatorActivityInterface) getActivity()).keyboardIsOpen()) {
+                // translation menu
+                boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
+                menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
+            } else {
+                // main menu
+                boolean hasChapterSettings = false;
+                boolean hasResources = false;
+                if (projectEnabled) {
+                    Chapter c = p.getSelectedChapter();
+                    hasChapterSettings = c != null && c.hasChapterSettings();
+                    if (c != null) {
+                        Frame f = c.getSelectedFrame();
+                        if (f != null) {
+                            hasResources = f.getImportantTerms().size() > 0 || f.getTranslationNotes() != null;
+                        }
                     }
                 }
-            }
 
-            if(menu.findItem(R.id.action_chapter_settings) != null) {
-                menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
-            }
-            if(menu.findItem(R.id.action_project_settings) != null) {
-                menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
-            }
-            if(menu.findItem(R.id.action_sync) != null) {
-                menu.findItem(R.id.action_sync).setVisible(projectEnabled);
-            }
-            if(menu.findItem(R.id.action_resources) != null) {
-                menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
-            }
+                if (menu.findItem(R.id.action_chapter_settings) != null) {
+                    menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
+                }
+                if (menu.findItem(R.id.action_project_settings) != null) {
+                    menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
+                }
+                if (menu.findItem(R.id.action_sync) != null) {
+                    menu.findItem(R.id.action_sync).setVisible(projectEnabled);
+                }
+                if (menu.findItem(R.id.action_resources) != null) {
+                    menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
+                }
 
-            if(!hasResources) {
-                ((TranslatorActivityInterface)getActivity()).disableResourcesDrawer();
-            } else {
-                ((TranslatorActivityInterface)getActivity()).enableResourcesDrawer();
+                if (!hasResources) {
+                    ((TranslatorActivityInterface) getActivity()).disableResourcesDrawer();
+                } else {
+                    ((TranslatorActivityInterface) getActivity()).enableResourcesDrawer();
+                }
             }
         }
     }
@@ -1515,8 +1520,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu items for use in the action bar
-        if(((TranslatorActivityInterface)getActivity()).keyboardIsOpen()) {
-
+        if(getActivity() == null || ((TranslatorActivityInterface)getActivity()).keyboardIsOpen()) {
             inflater.inflate(R.menu.translation_actions, menu);
         } else {
             inflater.inflate(R.menu.main_activity_actions, menu);
@@ -1541,5 +1545,16 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         // TODO: we might be able to use getLayout().getLineVisibleEnd() for a more accurate scroll position.
         outState.putInt(STATE_SOURCE_SCROLL_Y, mSourceText.getScrollY());
         outState.putInt(STATE_SOURCE_SCROLL_X, mSourceText.getScrollX());
+    }
+
+    @Override
+    public void onDestroy() {
+        if(mHighlightTranslationThread != null) {
+            mHighlightTranslationThread.stop();
+        }
+        if(mHighlightSourceThread != null) {
+            mHighlightSourceThread.stop();
+        }
+        super.onDestroy();
     }
 }

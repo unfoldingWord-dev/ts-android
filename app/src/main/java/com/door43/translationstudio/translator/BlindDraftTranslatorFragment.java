@@ -72,8 +72,6 @@ import java.util.TimerTask;
 public class BlindDraftTranslatorFragment extends TranslatorFragment {
 
     private static final int TEXT_FADE_SPEED = 100;
-    private static final String STATE_SOURCE_SCROLL_Y = "source_text_scroll_y";
-    private static final String STATE_SOURCE_SCROLL_X = "source_text_scroll_x";
     private EditText mTranslationEditText;
     private ProgressBar mTranslationProgressBar;
     private TextView mTranslationTitleText;
@@ -84,12 +82,8 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
     private Frame mSelectedFrame;
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
-    private Span.OnClickListener mSourceFootnoteListener;
-    private Span.OnClickListener mKeyTermClickListener;
     private TextWatcher mTranslationChangedListener;
     private GestureDetector mTranslationGestureDetector;
-    private int mSourceTextMotionDownX = 0;
-    private int mSourceTextMotionDownY = 0;
     private int mTranslationTextMotionDownX = 0;
     private int mTranslationTextMotionDownY = 0;
     private Timer mAutosaveTimer;
@@ -338,6 +332,9 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
                                         }
                                         mTranslationEditText.setSelection(selection);
                                         mTranslationEditText.clearFocus();
+                                        if(getActivity() != null) {
+                                            ((TranslatorActivityInterface) getActivity()).refreshResourcesDrawer();
+                                        }
                                     }
                                 }
                             };
@@ -718,7 +715,6 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         final Project p = AppContext.projectManager().getSelectedProject();
         if(frameIsSelected()) {
             ((TranslatorActivityInterface)getActivity()).refreshResourcesDrawer();
-//            mRightPane.reloadNotesTab();
 
             mSelectedFrame = p.getSelectedChapter().getSelectedFrame();
             mTranslationEditText.setEnabled(true);
@@ -831,52 +827,61 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         }
     }
 
+    /**
+     * Save the translation
+     */
     @Override
     public void save() {
-        // TODO: save the content
+        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
+            disableAutosave();
+            AppContext.translationManager().commitTranslation();
+            enableAutosave();
+        }
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        Project p = AppContext.projectManager().getSelectedProject();
-        Boolean projectEnabled = p != null;
-        if(((TranslatorActivityInterface)getActivity()).keyboardIsOpen()) {
-            // translation menu
-            boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
-            menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
-        } else {
-            // main menu
-            boolean hasChapterSettings = false;
-            boolean hasResources = false;
-            if(projectEnabled) {
-                Chapter c = p.getSelectedChapter();
-                hasChapterSettings = c != null && c.hasChapterSettings();
-                if(c != null) {
-                    Frame f = c.getSelectedFrame();
-                    if(f != null) {
-                        hasResources = f.getImportantTerms().size() > 0 || f.getTranslationNotes() != null;
+        if(getActivity() != null) {
+            Project p = AppContext.projectManager().getSelectedProject();
+            Boolean projectEnabled = p != null;
+            if (((TranslatorActivityInterface) getActivity()).keyboardIsOpen()) {
+                // translation menu
+                boolean showUSXTools = mSelectedFrame != null && mSelectedFrame.format == Frame.Format.USX;
+                menu.findItem(R.id.action_verse_marker).setVisible(showUSXTools);
+            } else {
+                // main menu
+                boolean hasChapterSettings = false;
+                boolean hasResources = false;
+                if (projectEnabled) {
+                    Chapter c = p.getSelectedChapter();
+                    hasChapterSettings = c != null && c.hasChapterSettings();
+                    if (c != null) {
+                        Frame f = c.getSelectedFrame();
+                        if (f != null) {
+                            hasResources = f.getImportantTerms().size() > 0 || f.getTranslationNotes() != null;
+                        }
                     }
                 }
-            }
 
-            if(menu.findItem(R.id.action_chapter_settings) != null) {
-                menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
-            }
-            if(menu.findItem(R.id.action_project_settings) != null) {
-                menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
-            }
-            if(menu.findItem(R.id.action_sync) != null) {
-                menu.findItem(R.id.action_sync).setVisible(projectEnabled);
-            }
-            if(menu.findItem(R.id.action_resources) != null) {
-                menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
-            }
+                if (menu.findItem(R.id.action_chapter_settings) != null) {
+                    menu.findItem(R.id.action_chapter_settings).setVisible(projectEnabled && hasChapterSettings);
+                }
+                if (menu.findItem(R.id.action_project_settings) != null) {
+                    menu.findItem(R.id.action_project_settings).setVisible(projectEnabled);
+                }
+                if (menu.findItem(R.id.action_sync) != null) {
+                    menu.findItem(R.id.action_sync).setVisible(projectEnabled);
+                }
+                if (menu.findItem(R.id.action_resources) != null) {
+                    menu.findItem(R.id.action_resources).setVisible(projectEnabled && hasResources);
+                }
 
-            if(!hasResources) {
-                ((TranslatorActivityInterface)getActivity()).disableResourcesDrawer();
-            } else {
-                ((TranslatorActivityInterface)getActivity()).enableResourcesDrawer();
+                if (!hasResources) {
+                    ((TranslatorActivityInterface) getActivity()).disableResourcesDrawer();
+                } else {
+                    ((TranslatorActivityInterface) getActivity()).enableResourcesDrawer();
+                }
             }
         }
     }
@@ -884,8 +889,7 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         // Inflate the menu items for use in the action bar
-        if(((TranslatorActivityInterface)getActivity()).keyboardIsOpen()) {
-
+        if (getActivity() == null || ((TranslatorActivityInterface) getActivity()).keyboardIsOpen()) {
             inflater.inflate(R.menu.translation_actions, menu);
         } else {
             inflater.inflate(R.menu.main_activity_actions, menu);
@@ -919,7 +923,9 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
                     boolean enableBlindDraft = !settings.getBoolean("enable_blind_draft_mode", false);
                     editor.putBoolean("enable_blind_draft_mode", enableBlindDraft);
                     editor.apply();
-                    ((TranslatorActivityInterface)getActivity()).reloadTranslatorFragment();
+                    if(getActivity() != null) {
+                        ((TranslatorActivityInterface) getActivity()).reloadTranslatorFragment();
+                    }
                     break;
                 case R.id.readTargetTranslation:
                     showFrameReaderDialog(p, FramesListAdapter.DisplayOption.TARGET_TRANSLATION);
@@ -1128,5 +1134,13 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
     public boolean frameIsSelected() {
         Project selectedProject = AppContext.projectManager().getSelectedProject();
         return selectedProject != null && selectedProject.getSelectedChapter() != null && selectedProject.getSelectedChapter().getSelectedFrame() != null;
+    }
+
+    @Override
+    public void onDestroy() {
+        if(mHighlightTranslationThread != null) {
+            mHighlightTranslationThread.stop();
+        }
+        super.onDestroy();
     }
 }
