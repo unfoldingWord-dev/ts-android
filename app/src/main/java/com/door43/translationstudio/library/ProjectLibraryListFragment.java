@@ -271,7 +271,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             task.setOnProgressListener(this);
         } else if(LibraryTempData.getProjects().size() == 0) {
             // start process
-            DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask();
+            DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask(false);
             task.setOnFinishedListener(this);
             task.setOnProgressListener(this);
             mTaskId = TaskManager.addTask(task);

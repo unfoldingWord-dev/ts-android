@@ -426,10 +426,20 @@ public class Project implements Model {
         if(mSourceLanguages.get(l.getId()) == null) {
             l.setProject(this);
             mSourceLanguages.add(l.getId(), l);
-//        if(!mSourceLanguageMap.containsKey(l.getId())) {
-//            l.setProject(this);
-//            mSourceLanguageMap.put(l.getId(), l);
-//            mSourceLanguages.add(l);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Adds a source language draft to the project
+     * @param l
+     */
+    public boolean addSourceLanguageDraft(SourceLanguage l) {
+        if(mSourceLanguageDrafts.get(l.getId()) == null) {
+            l.setProject(this);
+            mSourceLanguageDrafts.add(l.getId(), l);
             return true;
         } else {
             return false;
@@ -1077,20 +1087,6 @@ public class Project implements Model {
      */
     public int getSourceLanguagesDateModified() {
         return mSourceLanguagesDateModified;
-    }
-
-    /**
-     * Adds a source language draft to the project
-     * @param l
-     */
-    public boolean addSourceLanguageDraft(SourceLanguage l) {
-        if(mSourceLanguageDrafts.get(l.getId()) == null) {
-            l.setProject(this);
-            mSourceLanguageDrafts.add(l.getId(), l);
-            return true;
-        } else {
-            return false;
-        }
     }
 
     public interface OnCommitComplete {

@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.xml.transform.Source;
+
 /**
  * This class handles all the features for importing and exporting projects.
  * TODO: we need to pull all of the existing import and export code into this class.
@@ -649,7 +651,9 @@ public class Sharing {
      * @return the path to the staging directory for this project's source
      */
     private static void prepareProjectSourceExport(Project p, File sourceDir, File dataDir) throws IOException {
-        SourceLanguage[] sourceLanguages = p.getSourceLanguages().toArray(new SourceLanguage[p.getSourceLanguages().size()]);
+        List<SourceLanguage> languages = p.getSourceLanguages();
+        languages.addAll(p.getSourceLanguageDrafts());
+        SourceLanguage[] sourceLanguages = languages.toArray(new SourceLanguage[languages.size()]);
 
         // compile source languages to include
         if(sourceLanguages.length > 0) {
@@ -705,6 +709,9 @@ public class Sharing {
                     FileUtils.writeStringToFile(new File(languageSourceDir, "resources_catalog.link"), resKey);
 
                     for(Resource r:l.getResources()) {
+                        // Do not include draft content
+                        if(r.getCheckingLevel() < AppContext.minCheckingLevel()) continue;
+
                         File resourceDir = new File(languageSourceDir, r.getId());
                         resourceDir.mkdirs();
 

@@ -244,6 +244,7 @@ public class SourceLanguage extends Language {
      * @return
      */
     public int checkingLevel() {
+        // TODO: it would be faster to update the checking level when we add a resource.
         if(mCheckingLevel == -1) {
             int maxCheckingLevel = -1;
             for(Resource r:mResources) {

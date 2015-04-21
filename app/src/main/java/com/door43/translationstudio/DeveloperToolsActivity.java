@@ -19,9 +19,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
-import com.door43.translationstudio.library.ProjectLibraryListFragment;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
+import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
 import com.door43.translationstudio.tasks.DownloadProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.StringUtilities;
@@ -39,10 +39,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class DeveloperToolsActivity extends TranslatorBaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
+    private static final String TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS = "prep_force_download_all_projects";
     private ArrayList<ToolItem> mDeveloperTools = new ArrayList<>();
     private ToolAdapter mAdapter;
     private String mVersionName;
@@ -179,15 +179,16 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
+                                DownloadAvailableProjectsTask prepTask = (DownloadAvailableProjectsTask) TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
                                 DownloadProjectsTask task = (DownloadProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-                                if(task == null) {
-                                    // connect to existing task
-                                    task = new DownloadProjectsTask(new ArrayList<>(Arrays.asList(AppContext.projectManager().getProjects())), true);
-                                    task.setOnProgressListener(DeveloperToolsActivity.this);
-                                    task.setOnFinishedListener(DeveloperToolsActivity.this);
-                                    TaskManager.addTask(task, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+                                if(task == null && prepTask == null) {
+                                    // create new prep task
+                                    prepTask = new DownloadAvailableProjectsTask(true);
+                                    prepTask.setOnProgressListener(DeveloperToolsActivity.this);
+                                    prepTask.setOnFinishedListener(DeveloperToolsActivity.this);
+                                    TaskManager.addTask(prepTask, TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
                                 } else {
-                                    connectDownloaAllTask();
+                                    connectDownloadAllTask();
                                 }
                             }
                         })
@@ -296,15 +297,20 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
             }
         }));
 
-        connectDownloaAllTask();
+        connectDownloadAllTask();
     }
 
     /**
      * Connects to an existing task
      */
-    public void connectDownloaAllTask() {
+    public void connectDownloadAllTask() {
+        DownloadAvailableProjectsTask prepTask = (DownloadAvailableProjectsTask)TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
         DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-        if(task != null) {
+        if(prepTask != null) {
+            // connect to existing task
+            prepTask.setOnProgressListener(this);
+            prepTask.setOnFinishedListener(this);
+        } else if(task != null) {
             // connect to existing task
             task.setOnProgressListener(this);
             task.setOnFinishedListener(this);
@@ -315,28 +321,53 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
 
     @Override
     public void onFinished(final ManagedTask task) {
-        TaskManager.clearTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-
-        // reload list
         Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                if(mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
-                    mDownloadProgressDialog.dismiss();
-                }
+        if(task != null) {
+            TaskManager.clearTask(task.getTaskId());
 
-                if(task != null && !task.isCanceled()) {
-                    new AlertDialog.Builder(DeveloperToolsActivity.this)
-                            .setTitle(R.string.success)
-                            .setIcon(R.drawable.ic_check_small)
-                            .setMessage(R.string.download_complete)
-                            .setCancelable(false)
-                            .setPositiveButton(R.string.label_ok, null)
-                            .show();
+            // display success
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+                        mDownloadProgressDialog.dismiss();
+                        mDownloadProgressDialog = null;
+                    }
+
+                    if(!task.isCanceled()) {
+                        if (task instanceof DownloadAvailableProjectsTask) {
+                            // start task to download projects
+                            DownloadProjectsTask downloadTask = new DownloadProjectsTask(new ArrayList<>(Arrays.asList(AppContext.projectManager().getProjects())), true);
+                            downloadTask.setOnProgressListener(DeveloperToolsActivity.this);
+                            downloadTask.setOnFinishedListener(DeveloperToolsActivity.this);
+                            TaskManager.addTask(downloadTask, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+                        } else {
+                            // the download is complete
+                            new AlertDialog.Builder(DeveloperToolsActivity.this)
+                                    .setTitle(R.string.success)
+                                    .setIcon(R.drawable.ic_check_small)
+                                    .setMessage(R.string.download_complete)
+                                    .setCancelable(false)
+                                    .setPositiveButton(R.string.label_ok, null)
+                                    .show();
+                        }
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            // dismiss everything
+            TaskManager.clearTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
+            TaskManager.clearTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
+                        mDownloadProgressDialog.dismiss();
+                        mDownloadProgressDialog = null;
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -361,7 +392,11 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         mDownloadProgressDialog.setOnCancelListener(DeveloperToolsActivity.this);
                         mDownloadProgressDialog.setMax(100);
                         mDownloadProgressDialog.setIcon(R.drawable.ic_download_small);
-                        mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
+                        if(task instanceof DownloadAvailableProjectsTask) {
+                            mDownloadProgressDialog.setTitle(getResources().getString(R.string.loading));
+                        } else {
+                            mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
+                        }
                         mDownloadProgressDialog.setMessage("");
                     }
                     if (!mDownloadProgressDialog.isShowing()) {
@@ -375,7 +410,11 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         mDownloadProgressDialog.setProgress((int) Math.ceil(progress * 100));
                     }
                     if (!message.isEmpty()) {
-                        mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
+                        if(task instanceof DownloadAvailableProjectsTask) {
+                            mDownloadProgressDialog.setMessage(message);
+                        } else {
+                            mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
+                        }
                     } else {
                         mDownloadProgressDialog.setMessage("");
                     }

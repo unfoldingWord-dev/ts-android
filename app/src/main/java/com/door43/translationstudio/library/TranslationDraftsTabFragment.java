@@ -90,7 +90,7 @@ public class TranslationDraftsTabFragment extends TranslatorBaseFragment impleme
             @Override
             public void run() {
                 if(mProject != null) {
-                    for(SourceLanguage l: mProject.getSourceLanguages()) {
+                    for(SourceLanguage l: mProject.getSourceLanguageDrafts()) {
                         if(l.checkingLevel() < AppContext.context().getResources().getInteger(R.integer.min_source_lang_checking_level)) {
                             languages.add(l);
                         }

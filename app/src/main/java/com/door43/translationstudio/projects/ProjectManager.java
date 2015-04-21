@@ -201,11 +201,11 @@ public class ProjectManager {
             public int compare(Model model, Model model2) {
                 try {
                     // sort children
-                    if(model.getClass().getName().equals(PseudoProject.class.getName())) {
-                        ((PseudoProject)model).sortChildren();
+                    if (model.getClass().getName().equals(PseudoProject.class.getName())) {
+                        ((PseudoProject) model).sortChildren();
                     }
-                    if(model2.getClass().getName().equals(PseudoProject.class.getName())) {
-                        ((PseudoProject)model2).sortChildren();
+                    if (model2.getClass().getName().equals(PseudoProject.class.getName())) {
+                        ((PseudoProject) model2).sortChildren();
                     }
                     // sort models
                     int i = Integer.parseInt(model.getSortKey());
@@ -238,7 +238,7 @@ public class ProjectManager {
      */
     private void addListableProject(PseudoProject p) {
         if(!mListableProjectMap.containsKey("m-"+p.getId())) {
-            mListableProjectMap.put("m-"+p.getId(), p);
+            mListableProjectMap.put("m-" + p.getId(), p);
             mListableProjects.add(p);
         }
     }
@@ -712,7 +712,6 @@ public class ProjectManager {
 
     /**
      * Returns a list of project source languages that are available on the server
-     * These are just the plain languages without any resources.
      * The downloaded data is stored temporarily and does not affect the currently loaded source languages
      * The languages are also loaded into the project
      * @param p
@@ -745,6 +744,9 @@ public class ProjectManager {
                 JSONObject jsonProj = jsonLang.getJSONObject("project");
                 SourceLanguage l = SourceLanguage.generate(jsonLang);
                 if(l != null) {
+                    // TODO: we may want to fetch the resources here so we can place the language in the correct category. (draft or otherwise)
+                    downloadResourceList(p, l, ignoreCache);
+
                     // default title and description
                     if(i == 0) {
                         p.setDefaultTitle(jsonProj.getString("name"));
@@ -776,7 +778,11 @@ public class ProjectManager {
                     }
 
                     // load into project
-                    p.addSourceLanguage(l);
+                    if(l.checkingLevel() >= AppContext.minCheckingLevel()) {
+                        p.addSourceLanguage(l);
+                    } else {
+                        p.addSourceLanguageDraft(l);
+                    }
 
                     languages.add(l);
                 }
@@ -810,7 +816,7 @@ public class ProjectManager {
         String catalog;
         List<Resource> resources = new ArrayList<>();
         if(p.getSourceLanguageCatalog() != null) {
-            catalog = mDataStore.fetchTempAsset(p.getSourceLanguage(l.getId()).getResourceCatalog(), ignoreCache);
+            catalog = mDataStore.fetchTempAsset(l.getResourceCatalog(), ignoreCache);
         } else {
             catalog = mDataStore.fetchTempAsset(mDataStore.resourceCatalogUri(p.getId(), l.getId()), ignoreCache);
         }
@@ -831,6 +837,7 @@ public class ProjectManager {
                 JSONObject jsonRes = json.getJSONObject(i);
                 Resource r = Resource.generate(jsonRes);
                 if(r != null) {
+                    l.addResource(r);
                     resources.add(r);
                 }
             } catch (JSONException e) {
