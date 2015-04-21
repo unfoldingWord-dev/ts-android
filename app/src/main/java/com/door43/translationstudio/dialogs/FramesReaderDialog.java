@@ -40,7 +40,11 @@ public class FramesReaderDialog extends DialogFragment {
             if(p != null) {
                 Chapter c = p.getChapter(chapterId);
                 if(c != null) {
-                    frames = c.getFrames();
+                    if(displayOrdinal == FramesListAdapter.DisplayOption.DRAFT_TRANSLATION.ordinal()) {
+                        // TODO: need to provide support to load the drafts here.
+                    } else {
+                        frames = c.getFrames();
+                    }
                 }
             }
             list.setAdapter(new FramesListAdapter(AppContext.context(), frames, FramesListAdapter.DisplayOption.values()[displayOrdinal]));

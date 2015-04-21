@@ -139,6 +139,15 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         return rootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // show draft view
+        if(AppContext.args.getBoolean(ARGS_VIEW_TRANSLATION_DRAFT, false)) {
+            showFrameReaderDialog(AppContext.projectManager().getSelectedProject(), FramesListAdapter.DisplayOption.DRAFT_TRANSLATION);
+        }
+    }
+
     private void initAutoSave() {
         mTranslationEditText.addTextChangedListener(new TextWatcher() {
             @Override

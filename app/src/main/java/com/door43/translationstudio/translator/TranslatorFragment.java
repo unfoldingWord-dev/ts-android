@@ -14,6 +14,8 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
  * Created by joel on 4/17/2015.
  */
 public abstract class TranslatorFragment extends TranslatorBaseFragment implements TranslatorFragmentInterface {
+    public static final String ARGS_VIEW_TRANSLATION_DRAFT = "view_translation_draft";
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);

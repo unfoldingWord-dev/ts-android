@@ -215,6 +215,15 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         return rootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // show draft view
+        if(AppContext.args.getBoolean(ARGS_VIEW_TRANSLATION_DRAFT, false)) {
+            showFrameReaderDialog(AppContext.projectManager().getSelectedProject(), FramesListAdapter.DisplayOption.DRAFT_TRANSLATION);
+        }
+    }
+
     /**
      * Opens the resources panel and displays the term details
      * @param term

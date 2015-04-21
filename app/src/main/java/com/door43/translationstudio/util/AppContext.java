@@ -2,6 +2,7 @@ package com.door43.translationstudio.util;
 
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 
@@ -34,6 +35,7 @@ public class AppContext {
     private static Navigator mNavigator;
     private static ProjectManager mProjectManager;
     private static TranslationManager mTranslationManager;
+    public static final Bundle args = new Bundle();
 
     /**
      * Initializes the basic functions context.

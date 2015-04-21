@@ -16,6 +16,7 @@ import android.widget.LinearLayout;
 
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.ImportTranslationDraftTask;
+import com.door43.translationstudio.translator.TranslatorFragment;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.threads.ManagedTask;
@@ -84,8 +85,11 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
         viewDraftButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: load the draft in read only mode
-                AppContext.context().showToastMessage("Not implemented yet");
+                AppContext.args.putBoolean(TranslatorFragment.ARGS_VIEW_TRANSLATION_DRAFT, true);
+                if(!mProject.hasChosenTargetLanguage()) {
+                    mProject.setSelectedTargetLanguage(mProject.getSelectedTargetLanguage().getId());
+                }
+                finish();
             }
         });
 
