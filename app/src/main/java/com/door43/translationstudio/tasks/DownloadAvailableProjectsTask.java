@@ -47,13 +47,6 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
             for(SourceLanguage l:languages) {
                 if(interrupted()) return;
 
-                // load resources
-//                List<Resource> resources = AppContext.projectManager().downloadResourceList(p, l, false);
-//                for(Resource r:resources) {
-//                    if(interrupted()) return;
-//                    l.addResource(r);
-//                }
-
                 if(l.checkingLevel() >= AppContext.minCheckingLevel()) {
                     // update the language details
                     if (oldProject != null) {

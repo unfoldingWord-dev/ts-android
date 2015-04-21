@@ -224,6 +224,7 @@ public class TranslationManager implements TCPClient.TcpListener {
     /**
      * Imports a translation draft into a project.
      * This will replace any current translation
+     * TODO: right now this will import the selected (default) resource in the draft. We may need to provide support for choosing a resource later.
      * @param p the project to which the draft will be imported
      * @param draft the draft that will be imported
      */
