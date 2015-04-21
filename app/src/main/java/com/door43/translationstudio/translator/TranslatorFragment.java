@@ -41,6 +41,7 @@ public abstract class TranslatorFragment extends TranslatorBaseFragment implemen
             Bundle args = new Bundle();
             args.putString(FramesReaderDialog.ARG_PROJECT_ID, p.getId());
             args.putString(FramesReaderDialog.ARG_CHAPTER_ID, p.getSelectedChapter().getId());
+            args.putInt(FramesReaderDialog.ARG_SELECTED_FRAME_INDEX, p.getSelectedChapter().getFrameIndex(p.getSelectedChapter().getSelectedFrame()));
 
             // configure display option
             args.putInt(FramesReaderDialog.ARG_DISPLAY_OPTION_ORDINAL, option.ordinal());

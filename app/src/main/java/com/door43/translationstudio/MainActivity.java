@@ -285,7 +285,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 PopupMenu contextualMenu = new PopupMenu(MainActivity.this, v);
                 contextualMenu.getMenuInflater().inflate(menuRes, contextualMenu.getMenu());
                 contextualMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {

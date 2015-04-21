@@ -44,6 +44,7 @@
                     android:background="@drawable/round_button"
                     android:focusable="true"
                     android:clickable="true"
+                    android:visibility="gone"
                     android:layout_margin="10dp"
                     android:layout_alignParentBottom="true" />
 

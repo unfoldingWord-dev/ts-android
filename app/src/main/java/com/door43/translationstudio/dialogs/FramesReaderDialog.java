@@ -22,10 +22,11 @@ public class FramesReaderDialog extends DialogFragment {
     public static final String ARG_PROJECT_ID = "project_id";
     public static final String ARG_CHAPTER_ID = "chapter_id";
     public static final String ARG_DISPLAY_OPTION_ORDINAL = "display_option";
+    public static final String ARG_SELECTED_FRAME_INDEX = "selected_frame_index";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View v = inflater.inflate(R.layout.dialog_translation_reader, container, false);
+        View v = inflater.inflate(R.layout.dialog_frame_reader, container, false);
 
         ListView list = (ListView)v.findViewById(R.id.listView);
         Bundle args = getArguments();
@@ -33,6 +34,7 @@ public class FramesReaderDialog extends DialogFragment {
         if(args != null) {
             String projectId = args.getString(ARG_PROJECT_ID, "-1");
             String chapterId = args.getString(ARG_CHAPTER_ID, "-1");
+            int frameIndex = args.getInt(ARG_SELECTED_FRAME_INDEX, 0);
             int displayOrdinal = args.getInt(ARG_DISPLAY_OPTION_ORDINAL, FramesListAdapter.DisplayOption.SOURCE_TRANSLATION.ordinal());
             Project p = AppContext.projectManager().getProject(projectId);
             if(p != null) {
