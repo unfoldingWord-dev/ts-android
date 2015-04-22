@@ -11,8 +11,10 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.threads.TaskManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -79,6 +81,9 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         finish();
     }
 
+    /**
+     * TODO: this needs to be migrated over to the new task manager
+     */
     private class LoadAppTask extends AsyncTask<Void, String, Void> {
         private int mProgress = 0;
 
@@ -142,6 +147,11 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                     }
                 }
             });
+
+            // TODO: we may not place the indexing task here. This is just for testing.
+            IndexProjectsTask task = new IndexProjectsTask(AppContext.projectManager().getProjects());
+            TaskManager.addTask(task, "test_index_project_task");
+
             return null;
         }
 

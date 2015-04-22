@@ -41,7 +41,7 @@ public class FramesReaderDialog extends DialogFragment {
                 Chapter c = p.getChapter(chapterId);
                 if(c != null) {
                     if(displayOrdinal == FramesListAdapter.DisplayOption.DRAFT_TRANSLATION.ordinal()) {
-                        // TODO: need to provide support to load the drafts here.
+                        // TODO: need to provide support to load the drafts here. We are waiting for the projects to be indexed so we don't have to load everything in memory.
                     } else {
                         frames = c.getFrames();
                     }
