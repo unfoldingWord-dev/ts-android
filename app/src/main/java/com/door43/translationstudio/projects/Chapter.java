@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 /**
  * Chapters encapsulate a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation
@@ -500,7 +501,11 @@ public class Chapter implements Model {
 
     @Override
     public JSONObject serialize() throws JSONException {
-        return null;
+        JSONObject json = new JSONObject();
+        json.put("number", mId);
+        json.put("ref", mReference);
+        json.put("title", mTitle);
+        return json;
     }
 
     /**

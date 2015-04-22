@@ -1,5 +1,9 @@
 package com.door43.translationstudio.projects;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +24,24 @@ public class TranslationNote {
      */
     public List<Note> getNotes() {
         return mNotes;
+    }
+
+    /**
+     * Serializes the notes
+     * @return
+     */
+    public JSONObject serialize() throws JSONException {
+        JSONObject json = new JSONObject();
+        JSONArray notesJson = new JSONArray();
+        for(Note n:mNotes) {
+            JSONObject note = new JSONObject();
+            note.put("ref", n.getRef());
+            note.put("text", n.getText());
+            notesJson.put(note);
+        }
+        json.put("tn", notesJson);
+        // NOTE: the id of the note must be inserted by the frame
+        return json;
     }
 
     /**

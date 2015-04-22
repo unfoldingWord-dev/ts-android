@@ -150,7 +150,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
             // TODO: we may not place the indexing task here. This is just for testing.
             IndexProjectsTask task = new IndexProjectsTask(AppContext.projectManager().getProjects());
-            TaskManager.addTask(task, "test_index_project_task");
+            TaskManager.addTask(task, IndexProjectsTask.TASK_INDEX);
 
             return null;
         }

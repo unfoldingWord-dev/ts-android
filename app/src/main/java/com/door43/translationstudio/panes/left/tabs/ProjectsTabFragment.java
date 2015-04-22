@@ -7,6 +7,8 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +26,13 @@ import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
+import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.util.TaskBarView;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.util.threads.ManagedTask;
+import com.door43.util.threads.TaskManager;
 import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.squareup.otto.Subscribe;
@@ -34,8 +40,9 @@ import com.squareup.otto.Subscribe;
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
+public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener {
     private ModelItemAdapter mModelItemAdapter;
+    private TaskBarView mTaskBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,6 +53,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         // create adapter
         if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects());
 
+        mTaskBar = (TaskBarView)view.findViewById(R.id.projectProcessesLayout);
+
         // connectAsync adapter
         listView.setAdapter(mModelItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -53,7 +62,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // TRICKY: the project list may contain meta projects as well as normal projects.
 
-                if(getActivity() != null) {
+                if (getActivity() != null) {
                     // save changes to the current frame first
                     ((MainActivity) getActivity()).save();
                     Model m = mModelItemAdapter.getItem(i);
@@ -81,6 +90,31 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         });
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        connectToProcesses();
+    }
+
+    public void onPause() {
+        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_INDEX);
+        if(task != null) {
+            task.setOnFinishedListener(null);
+            task.setOnProgressListener(null);
+        }
+        super.onPause();
+    }
+
+    private void connectToProcesses() {
+        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_INDEX);
+        if(task != null) {
+            mTaskBar.setVisibility(View.VISIBLE);
+            mTaskBar.publishProgress(R.string.indexing_projects, -1);
+            task.setOnProgressListener(this);
+            task.setOnFinishedListener(this);
+        }
     }
 
     @Override
@@ -204,5 +238,33 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         } else {
             Logger.e(this.getClass().getName(), "onSelectedProjectFromMeta the activity is null");
         }
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        TaskManager.clearTask(task.getTaskId());
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                mTaskBar.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    @Override
+    public void onProgress(ManagedTask task, final double progress, final String message) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                mTaskBar.publishProgress(message, progress);
+                if(progress < 0) {
+                    mTaskBar.hideProgress();
+                } else {
+                    mTaskBar.showProgress();
+                }
+            }
+        });
     }
 }

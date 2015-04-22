@@ -41,8 +41,16 @@ public class Frame implements Model {
      * The format of the resource
      */
     public static enum Format {
-        DEFAULT,
-        USX
+        DEFAULT("default"),
+        USX("usx");
+
+        private final String mName;
+        Format(String s) {
+            mName = s;
+        }
+        public String toString() {
+            return mName;
+        }
     }
 
     /**
@@ -429,6 +437,18 @@ public class Frame implements Model {
 
     @Override
     public JSONObject serialize() throws JSONException {
-        return null;
+        JSONObject json = new JSONObject();
+        json.put("format", format);
+        json.put("id", mChapterFrameId);
+        // TODO: right now we are only using the english images for all projects. This will change later (probably). Then we'll want to use getImagePath()
+        json.put("img", getDefaultImagePath());
+        json.put("text", mText);
+        return json;
+    }
+
+    public JSONObject serializeTranslationNote() throws JSONException {
+        JSONObject json = mNotes.serialize();
+        json.put("id", mChapterFrameId);
+        return json;
     }
 }

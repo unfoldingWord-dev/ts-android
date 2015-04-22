@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Source;
+
 /**
  * Projects encapsulate the source text for a specific translation effort regardless of language.
  * This source text is subdivided into Chapters and Frames.
@@ -1127,6 +1129,38 @@ public class Project implements Model {
         pJson.put("meta", meta);
         json.put("project", pJson);
         return json;
+    }
+
+    /**
+     * This creates a new copy of this project without the chapters and terms.
+     * @return
+     */
+    public Project softClone() {
+        Project p = new Project(getId(), getDateModified());
+        for(SourceLanguage l:mSourceLanguages.getAll()) {
+            p.addSourceLanguage(l);
+        }
+        for(SourceLanguage l:mSourceLanguageDrafts.getAll()) {
+            p.addSourceLanguageDraft(l);
+        }
+        for(Language l:mTargetLanguages) {
+            p.addTargetLanguage(l);
+        }
+        for(PseudoProject sp:mPseudoProjects) {
+            p.addSudoProject(sp);
+        }
+        for(Translation t:mTitleTranslations.getAll()) {
+            p.setTitle(t.getText(), (SourceLanguage) t.getLanguage());
+        }
+        for(Translation t:mDescriptionTranslations.getAll()) {
+            p.setDescription(t.getText(), (SourceLanguage)t.getLanguage());
+        }
+        p.setDefaultTitle(mDefaultTitle);
+        p.setDefaultDescription(mDefaultDescription);
+        p.setSortKey(mSortKey);
+        p.setSourceLanguageCatalog(mSourceLanguageCatalogUri.toString());
+        p.setAutosave(mAutosave);
+        return p;
     }
 
     public interface OnCommitComplete {
