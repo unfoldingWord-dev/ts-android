@@ -22,6 +22,7 @@ public class TaskBarView extends LinearLayout {
     private LinearLayout altLayout;
     private ProgressBar altProgressBar;
     private TextView altTextView;
+    private static final int MAX_PROGRESS = 1000;
 
     public TaskBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -32,11 +33,13 @@ public class TaskBarView extends LinearLayout {
         // default layout
         layout = (LinearLayout)findViewById(R.id.taskBarLayout);
         progressBar = (ProgressBar)findViewById(R.id.taskProgressBar);
+        progressBar.setMax(MAX_PROGRESS);
         textView = (TextView)findViewById(R.id.taskProgressMessage);
 
         // alternate layout
         altLayout = (LinearLayout)findViewById(R.id.altTaskBarLayout);
         altProgressBar = (ProgressBar)findViewById(R.id.altTaskProgressBar);
+        altProgressBar.setMax(MAX_PROGRESS);
         altTextView = (TextView)findViewById(R.id.altTaskProgressMessage);
     }
 
@@ -96,8 +99,8 @@ public class TaskBarView extends LinearLayout {
             progressBar.setIndeterminate(false);
             altProgressBar.setIndeterminate(false);
         }
-        progressBar.setProgress((int) Math.round(100*progress));
-        altProgressBar.setProgress((int) Math.round(100*progress));
+        progressBar.setProgress((int) Math.round(MAX_PROGRESS*progress));
+        altProgressBar.setProgress((int) Math.round(MAX_PROGRESS*progress));
     }
 
     /**

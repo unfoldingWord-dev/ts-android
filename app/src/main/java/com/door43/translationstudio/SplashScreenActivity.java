@@ -10,6 +10,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.util.AppContext;
@@ -18,6 +19,7 @@ import com.door43.util.threads.TaskManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 
 /**
  * Created by joel on 9/29/2014.
@@ -149,7 +151,10 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
             });
 
             // TODO: we may not place the indexing task here. This is just for testing.
-            IndexProjectsTask task = new IndexProjectsTask(AppContext.projectManager().getProjects());
+            Project[] test = new Project[1];
+            test[0] =AppContext.projectManager().getProject("obs");
+
+            IndexProjectsTask task = new IndexProjectsTask(test); //AppContext.projectManager().getProjects());
             TaskManager.addTask(task, IndexProjectsTask.TASK_INDEX);
 
             return null;

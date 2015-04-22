@@ -109,14 +109,25 @@ public class ProjectManager {
 
     /**
      * Loads the source for a single project.
+     * This should be called from within a thread.
+     * @param p
+     * @param displayNotice
+     */
+    public void fetchProjectSource(Project p, Boolean displayNotice) {
+        if(p == null || p.getSelectedSourceLanguage() == null || p.getSelectedSourceLanguage().getSelectedResource() == null) return;
+        fetchProjectSource(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource(), displayNotice);
+    }
+
+    /**
+     * Loads the source for a single project.
      * This should be called from within a thread
      * @param p the project that will be loaded
      * @param displayNotice you dispaly a loading notice to the user
      */
-    public void fetchProjectSource(Project p, Boolean displayNotice) {
-        if(p == null || p.getSelectedSourceLanguage() == null) return;
+    public void fetchProjectSource(Project p, SourceLanguage l, Resource r, Boolean displayNotice) {
+        if(p == null || l == null || r == null) return;
 
-        String source = mDataStore.pullSource(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
+        String source = mDataStore.pullSource(p.getId(), l.getId(), r.getId(), false, false);
         p.flush();
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
@@ -125,7 +136,7 @@ public class ProjectManager {
             }
         }
         loadProjectSource(source, p);
-        String terms = mDataStore.pullTerms(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
+        String terms = mDataStore.pullTerms(p.getId(), l.getId(), r.getId(), false, false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             if(mInitProgressCallback != null) {
@@ -133,7 +144,7 @@ public class ProjectManager {
             }
         }
         loadTerms(terms, p);
-        String notes = mDataStore.pullNotes(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
+        String notes = mDataStore.pullNotes(p.getId(), l.getId(), r.getId(), false, false);
         if(!displayNotice) {
             mProgress += PERCENT_PROJECT_SOURCE/3;
             if(mInitProgressCallback != null) {
