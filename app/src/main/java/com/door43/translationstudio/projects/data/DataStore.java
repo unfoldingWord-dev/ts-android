@@ -36,7 +36,7 @@ public class DataStore {
     private static final String PREFERENCES_TAG = "com.door43.translationstudio.assets";
     private static final String TEMP_ASSET_PREFIX = "temp_";
     private static final String ASSET_PREFIX = "";
-    private SharedPreferences mSettings;
+    private static SharedPreferences mSettings;
     private static final int API_VERSION = 2;
     // this is used so we can force a cache reset between versions of the app if we make changes to api implimentation
     private static final int API_VERSION_INTERNAL = 9;
@@ -50,7 +50,7 @@ public class DataStore {
      * Adds a project entry into the project catalog
      * @param newProjectString
      */
-    public void importProject(String newProjectString) {
+    public static void importProject(String newProjectString) {
         String path = projectCatalogPath();
         String key = getKey(projectCatalogUri());
         File file = getAsset(key);
@@ -80,7 +80,7 @@ public class DataStore {
             FileUtils.writeStringToFile(file, json.toString());
             linkAsset(key, path);
         } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "failed to add the project to the catalog", e);
+            Logger.e(DataStore.class.getName(), "failed to add the project to the catalog", e);
         }
     }
 
@@ -247,7 +247,7 @@ public class DataStore {
      * when the count reaches 0 the asset is removed
      * @param key
      */
-    private void decrementAssetLink(String key) {
+    private static void decrementAssetLink(String key) {
         int numLinks = mSettings.getInt(key, 0) - 1;
         SharedPreferences.Editor editor = mSettings.edit();
         if(numLinks <=0 ) {
@@ -281,7 +281,7 @@ public class DataStore {
      * @param newKey key to new asset
      * @param oldKey key to old (deleted) asset
      */
-    private void aliasAsset(String newKey, String oldKey) {
+    private static void aliasAsset(String newKey, String oldKey) {
         SharedPreferences.Editor editor = mSettings.edit();
         editor.putString(oldKey + "_alias", newKey);
         editor.apply();
@@ -293,7 +293,7 @@ public class DataStore {
      * @param file
      * @return the key to the linked asset
      */
-    private String resolveLink(File file) {
+    private static String resolveLink(File file) {
         if(file != null) {
             // ensure the file extension is correct
             String linkPath = FilenameUtils.removeExtension(file.getAbsolutePath()) + ".link";
@@ -319,11 +319,11 @@ public class DataStore {
 
                     return key;
                 } catch (IOException e) {
-                    Logger.e(this.getClass().getName(), "failed to read the key from the asset link " + link.getAbsolutePath(), e);
+                    Logger.e(DataStore.class.getName(), "failed to read the key from the asset link " + link.getAbsolutePath(), e);
                 }
             }
         } else {
-            Logger.e(this.getClass().getName(), "received a null asset link");
+            Logger.e(DataStore.class.getName(), "received a null asset link");
         }
         return null;
     }
@@ -335,7 +335,7 @@ public class DataStore {
      * @param link
      * @return the key to the linked asset
      */
-    private String resolvePackagedLink(String link) {
+    private static String resolvePackagedLink(String link) {
         if(link != null) {
             try {
                 // resolve key
@@ -347,7 +347,7 @@ public class DataStore {
                 // This is common. The file was not found
             }
         } else {
-            Logger.e(this.getClass().getName(), "received a null packaged asset link");
+            Logger.e(DataStore.class.getName(), "received a null packaged asset link");
         }
         return null;
     }
@@ -357,7 +357,7 @@ public class DataStore {
      * @param key the asset key
      * @param path relative path to the link file
      */
-    private void linkAsset(String key, String path) {
+    private static void linkAsset(String key, String path) {
         File link = new File(assetsDir(), path);
         linkAsset(key, link);
     }
@@ -367,7 +367,7 @@ public class DataStore {
      * @param key the aset key
      * @param link the link file
      */
-    private void linkAsset(String key, File link) {
+    private static void linkAsset(String key, File link) {
         if(!FilenameUtils.getExtension(link.getName()).equals("link")) {
             // convert path to a link
             link = new File(link.getParentFile(), FilenameUtils.removeExtension(link.getName()) + ".link");
@@ -390,7 +390,7 @@ public class DataStore {
                     }
                 }
             } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to read link file "+link.getAbsolutePath(), e);
+                Logger.e(DataStore.class.getName(), "failed to read link file "+link.getAbsolutePath(), e);
             }
         }
 
@@ -398,7 +398,7 @@ public class DataStore {
         try {
             FileUtils.writeStringToFile(link, key);
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "failed to link the asset "+key+ " to "+link.getAbsolutePath(), e);
+            Logger.e(DataStore.class.getName(), "failed to link the asset "+key+ " to "+link.getAbsolutePath(), e);
         }
     }
 
@@ -407,7 +407,7 @@ public class DataStore {
      * @param key
      * @return
      */
-    public File getTempAsset(String key) {
+    public static File getTempAsset(String key) {
         return getLinkedAsset(key, tempAssetsDir(), TEMP_ASSET_PREFIX);
     }
 
@@ -415,7 +415,7 @@ public class DataStore {
      * returns the file to an asset
      * @param key
      */
-    public File getAsset(String key) {
+    public static File getAsset(String key) {
         return getLinkedAsset(key, assetsDir(), ASSET_PREFIX);
     }
 
@@ -423,7 +423,7 @@ public class DataStore {
      * returns the file to an asset
      * @param key
      */
-    private File getLinkedAsset(String key, File dir, String prefix) {
+    private static File getLinkedAsset(String key, File dir, String prefix) {
         return new File(dir, prefix + "data/" + key);
     }
 
@@ -442,7 +442,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
-    private String downloadAsset(Uri uri, boolean ignoreCache) {
+    private static String downloadAsset(Uri uri, boolean ignoreCache) {
         return downloadFile(uri, assetsDir(), ASSET_PREFIX, ignoreCache);
     }
 
@@ -452,7 +452,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
-    private String downloadTempAsset(Uri uri, boolean ignoreCache) {
+    private static String downloadTempAsset(Uri uri, boolean ignoreCache) {
         // check for matching asset first for better download performance
         if(!ignoreCache) {
             String key = getKey(uri);
@@ -499,7 +499,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return the asset key
      */
-    private String downloadFile(Uri uri, File directory, String prefix, boolean ignoreCache) {
+    private static String downloadFile(Uri uri, File directory, String prefix, boolean ignoreCache) {
         SharedPreferences.Editor editor = mSettings.edit();
         String key = getKey(uri);
         File file = new File(directory, prefix + "data/" + key);
@@ -515,7 +515,7 @@ public class DataStore {
                     return key;
                 }
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "invalid datetime value " +dateModifiedRaw, e);
+                Logger.e(DataStore.class.getName(), "invalid datetime value " +dateModifiedRaw, e);
             }
         }
 
@@ -528,7 +528,7 @@ public class DataStore {
                 try {
                     editor.putInt(prefix + key + "_modified", Integer.parseInt(dateModifiedRaw));
                 } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "invalid datetime value " +dateModifiedRaw, e);
+                    Logger.e(DataStore.class.getName(), "invalid datetime value " +dateModifiedRaw, e);
                 }
             } else {
                 editor.remove(prefix + key+"_modified");
@@ -541,7 +541,7 @@ public class DataStore {
             }
             return key;
         } catch (MalformedURLException e) {
-            Logger.e(this.getClass().getName(), "malformed url", e);
+            Logger.e(DataStore.class.getName(), "malformed url", e);
         }
         return null;
     }
@@ -554,7 +554,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return The contents of the project catalog
      */
-    public String pullProjectCatalog(boolean checkServer, boolean ignoreCache) {
+    public static String pullProjectCatalog(boolean checkServer, boolean ignoreCache) {
         String path = projectCatalogPath();
 
         if(checkServer) {
@@ -569,12 +569,12 @@ public class DataStore {
      * @param ignoreCache
      * @return The contents of the project catalog
      */
-    public String fetchProjectCatalog(boolean ignoreCache) {
+    public static String fetchProjectCatalog(boolean ignoreCache) {
         String key = downloadTempAsset(projectCatalogUri(), ignoreCache);
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to read the downloaded project catalog", e);
+            Logger.e(DataStore.class.getName(), "Failed to read the downloaded project catalog", e);
             return "";
         }
     }
@@ -604,7 +604,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullSourceLanguageCatalog(String projectId, boolean checkServer, boolean ignoreCache) {
+    public static String pullSourceLanguageCatalog(String projectId, boolean checkServer, boolean ignoreCache) {
         String path = sourceLanguageCatalogPath(projectId);
 
         if(checkServer) {
@@ -620,12 +620,12 @@ public class DataStore {
      * @param ignoreCache
      * @return
      */
-    public String fetchSourceLanguageCatalog(String projectId, boolean ignoreCache) {
+    public static String fetchSourceLanguageCatalog(String projectId, boolean ignoreCache) {
         String key = downloadTempAsset(sourceLanguageCatalogUri(projectId), ignoreCache);
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "Failed to read the downloaded source language catalog", e);
+            Logger.e(DataStore.class.getName(), "Failed to read the downloaded source language catalog", e);
             return "";
         }
     }
@@ -636,12 +636,12 @@ public class DataStore {
      * @param ignoreCache If set to true the asset will be downloaded every time
      * @return
      */
-    public String fetchTempAsset(Uri uri, boolean ignoreCache) {
+    public static String fetchTempAsset(Uri uri, boolean ignoreCache) {
         String key = downloadTempAsset(uri, ignoreCache);
         try {
             return FileUtils.readFileToString(getTempAsset(key));
         } catch (IOException e) {
-            Logger.w(this.getClass().getName(), "Failed to read the downloaded temp asset from " + uri.toString(), e);
+            Logger.w(DataStore.class.getName(), "Failed to read the downloaded temp asset from " + uri.toString(), e);
             return "";
         }
     }
@@ -660,7 +660,7 @@ public class DataStore {
      * @param projectId
      * @return
      */
-    public Uri sourceLanguageCatalogUri(String projectId) {
+    public static Uri sourceLanguageCatalogUri(String projectId) {
         return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/languages.json");
     }
 
@@ -674,7 +674,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullResourceCatalog(String projectId, String languageId, boolean checkServer, boolean ignoreCache) {
+    public static String pullResourceCatalog(String projectId, String languageId, boolean checkServer, boolean ignoreCache) {
         String path = resourceCatalogPath(projectId, languageId);
 
         if(checkServer) {
@@ -694,7 +694,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullResourceCatalog(String projectId, String languageId, Uri uri, boolean ignoreCache) {
+    public static String pullResourceCatalog(String projectId, String languageId, Uri uri, boolean ignoreCache) {
         String path = resourceCatalogPath(projectId, languageId);
         String key = downloadAsset(uri, ignoreCache);
         linkAsset(key, path);
@@ -718,14 +718,14 @@ public class DataStore {
      * @param languageId
      * @return
      */
-    public Uri resourceCatalogUri(String projectId, String languageId) {
+    public static Uri resourceCatalogUri(String projectId, String languageId) {
         return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/resources.json");
     }
 
     /**
      * Returns the target languages
      */
-    public String pullTargetLanguageCatalog() {
+    public static String pullTargetLanguageCatalog() {
         // TODO: check for updates on the server
         // http://td.unfoldingword.org/exports/langnames.json
         String path = "target_languages.json";
@@ -742,7 +742,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullTerms(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
+    public static String pullTerms(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = termsPath(projectId, languageId, resourceId);
 
         if(checkServer) {
@@ -764,7 +764,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullTerms(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
+    public static String pullTerms(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
         String path = termsPath(projectId, languageId, resourceId);
 
         String key = downloadAsset(uri, ignoreCache);
@@ -780,7 +780,7 @@ public class DataStore {
      * @param resourceId
      * @return
      */
-    public String termsPath(String projectId, String languageId, String resourceId) {
+    public static String termsPath(String projectId, String languageId, String resourceId) {
         return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/terms.json";
     }
 
@@ -805,7 +805,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullNotes(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
+    public static String pullNotes(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = notesPath(projectId, languageId, resourceId);
 
         if(checkServer) {
@@ -827,7 +827,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullNotes(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
+    public static String pullNotes(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
         String path = notesPath(projectId, languageId, resourceId);
 
         String key = downloadAsset(uri, ignoreCache);
@@ -843,7 +843,7 @@ public class DataStore {
      * @param resourceId
      * @return
      */
-    public String notesPath(String projectId, String languageId, String resourceId) {
+    public static String notesPath(String projectId, String languageId, String resourceId) {
         return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/notes.json";
     }
 
@@ -854,7 +854,7 @@ public class DataStore {
      * @param resourceId
      * @return
      */
-    public Uri notesUri(String projectId, String languageId, String resourceId) {
+    public static Uri notesUri(String projectId, String languageId, String resourceId) {
         return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json");
     }
 
@@ -868,7 +868,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullSource(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
+    public static String pullSource(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
         String path = sourcePath(projectId, languageId, resourceId);
 
         if(checkServer) {
@@ -890,7 +890,7 @@ public class DataStore {
      * @param ignoreCache indicates that the cache should be ignored when determining whether or not to download
      * @return
      */
-    public String pullSource(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
+    public static String pullSource(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
         String path = sourcePath(projectId, languageId, resourceId);
 
         String key = downloadAsset(uri, ignoreCache);
@@ -906,7 +906,7 @@ public class DataStore {
      * @param resourceId
      * @return
      */
-    public String sourcePath(String projectId, String languageId, String resourceId) {
+    public static String sourcePath(String projectId, String languageId, String resourceId) {
         return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/source.json";
     }
 
@@ -917,7 +917,7 @@ public class DataStore {
      * @param resourceId
      * @return
      */
-    public Uri sourceUri(String projectId, String languageId, String resourceId) {
+    public static Uri sourceUri(String projectId, String languageId, String resourceId) {
         return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json");
     }
 
@@ -940,7 +940,7 @@ public class DataStore {
     /**
      * Validates the asset cache version
      */
-    private void validateAssetCache() {
+    private static void validateAssetCache() {
         // verify the cached assets match the expected server api level
         File cacheVersionFile = new File(assetsDir(), ".cache_api_version");
         if(cacheVersionFile.exists() && cacheVersionFile.isFile()) {
@@ -951,12 +951,12 @@ public class DataStore {
                     cacheVersionFile.delete();
                 }
             } catch (Exception e) {
-                Logger.w(this.getClass().getName(), "failed to read the cached assets api version", e);
+                Logger.w(DataStore.class.getName(), "failed to read the cached assets api version", e);
                 cacheVersionFile.delete();
             }
         }
         if(!cacheVersionFile.exists() || !cacheVersionFile.isFile()) {
-            Logger.i(this.getClass().getName(), "clearing the asset cache to support api version "+API_VERSION+"."+API_VERSION_INTERNAL);
+            Logger.i(DataStore.class.getName(), "clearing the asset cache to support api version "+API_VERSION+"."+API_VERSION_INTERNAL);
             FileUtilities.deleteRecursive(assetsDir());
             FileUtilities.deleteRecursive(tempAssetsDir());
             // record cache version
@@ -966,7 +966,7 @@ public class DataStore {
                 cacheVersionFile.createNewFile();
                 FileUtils.write(cacheVersionFile, API_VERSION+"."+API_VERSION_INTERNAL);
             } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to create the asset version file", e);
+                Logger.e(DataStore.class.getName(), "failed to create the asset version file", e);
             }
         }
     }
@@ -976,7 +976,7 @@ public class DataStore {
      * @param path path to the json file within the assets directory
      * @return the string contents of the json file
      */
-    private String loadJSONAsset(String path) {
+    private static String loadJSONAsset(String path) {
         validateAssetCache();
 
         File cachedAsset = new File(assetsDir(), path);
@@ -992,7 +992,7 @@ public class DataStore {
             try {
                 return FileUtilities.getStringFromFile(cachedAsset);
             } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "failed to load cached asset", e);
+                Logger.e(DataStore.class.getName(), "failed to load cached asset", e);
             }
         }
 
@@ -1005,7 +1005,7 @@ public class DataStore {
      * @param path
      * @return
      */
-    private String loadPackagedJSONAsset(String path) {
+    private static String loadPackagedJSONAsset(String path) {
         String linkPath = FilenameUtils.removeExtension(path) + ".link";
 
         // resolve links in the packaged assets
@@ -1016,7 +1016,7 @@ public class DataStore {
                 InputStream is = mContext.getAssets().open("data/" + key);
                 return FileUtilities.convertStreamToString(is);
             } catch (IOException e) {
-                Logger.w(this.getClass().getName(), "The linked packaged asset data/" + key + " does not exist for " + path);
+                Logger.w(DataStore.class.getName(), "The linked packaged asset data/" + key + " does not exist for " + path);
             }
         }
 
@@ -1025,7 +1025,7 @@ public class DataStore {
             InputStream is = mContext.getAssets().open(path);
             return FileUtilities.convertStreamToString(is);
         } catch (IOException e) {
-            Logger.i(this.getClass().getName(), "The packaged asset does not exist "+path);
+            Logger.i(DataStore.class.getName(), "The packaged asset does not exist "+path);
         }
 
         return null;
@@ -1035,7 +1035,7 @@ public class DataStore {
      * Updates the cached details of a project
      * @param p
      */
-    public void updateCachedDetails(Project p) {
+    public static void updateCachedDetails(Project p) {
         if(p != null && p.getSourceLanguageCatalog() != null) {
             String key = getKey(p.getSourceLanguageCatalog());
 
@@ -1054,7 +1054,7 @@ public class DataStore {
      * Updates the cached details of a source language
      * @param l
      */
-    public void updateCachedDetails(SourceLanguage l) {
+    public static void updateCachedDetails(SourceLanguage l) {
         if(l != null && l.getResourceCatalog() != null) {
             String key = getKey(l.getResourceCatalog());
 
@@ -1073,7 +1073,7 @@ public class DataStore {
      * Updates the cached details of a resource
      * @param r
      */
-    public void updateCachedDetails(Resource r) {
+    public static void updateCachedDetails(Resource r) {
         if(r != null) {
             // notes
             if(r.getNotesCatalog() != null) {
@@ -1125,12 +1125,12 @@ public class DataStore {
      * @param key
      * @param dateModified
      */
-    private void writeDateModifiedRecord(String prefix, String key, int dateModified) {
+    private static void writeDateModifiedRecord(String prefix, String key, int dateModified) {
         SharedPreferences.Editor editor = mSettings.edit();
         try {
             editor.putInt(prefix + key + "_modified", dateModified);
         } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "invalid datetime value " + dateModified, e);
+            Logger.e(DataStore.class.getName(), "invalid datetime value " + dateModified, e);
         }
         editor.apply();
     }

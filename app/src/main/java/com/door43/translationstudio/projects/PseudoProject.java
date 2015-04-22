@@ -4,6 +4,9 @@ import com.door43.util.ListMap;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -269,6 +272,11 @@ public class PseudoProject implements Model {
             }
         }
         return false;
+    }
+
+    @Override
+    public JSONObject serialize() throws JSONException {
+        return null;
     }
 
     /**

@@ -9,6 +9,9 @@ import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
 import com.door43.util.ListMap;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -493,6 +496,11 @@ public class Chapter implements Model {
         Chapter c = p.getSelectedChapter();
         if(c == null) return false;
         return p.getId().equals(getProject().getId()) && c.getId().equals(getId());
+    }
+
+    @Override
+    public JSONObject serialize() throws JSONException {
+        return null;
     }
 
     /**

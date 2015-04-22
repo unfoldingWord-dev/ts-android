@@ -9,6 +9,9 @@ import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -422,5 +425,10 @@ public class Frame implements Model {
         Frame f = c.getSelectedFrame();
         if(f == null) return false;
         return p.getId().equals(getChapter().getProject().getId()) && c.getId().equals(getChapter().getId()) && f.getId().equals(getId());
+    }
+
+    @Override
+    public JSONObject serialize() throws JSONException {
+        return null;
     }
 }

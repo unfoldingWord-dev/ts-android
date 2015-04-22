@@ -5,6 +5,7 @@ import android.net.Uri;
 
 import com.door43.translationstudio.util.AppContext;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -255,5 +256,22 @@ public class SourceLanguage extends Language {
             mCheckingLevel = maxCheckingLevel;
         }
         return mCheckingLevel;
+    }
+
+    /**
+     * Serializes the language
+     * @return
+     */
+    public JSONObject serialize() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("res_catalog",getResourceCatalog().toString());
+        JSONObject lJson = new JSONObject();
+        lJson.put("slug", getId());
+        lJson.put("date_modified", mDateModified);
+        lJson.put("direction", getDirectionName());
+        lJson.put("name", getName());
+        json.put("language", lJson);
+        // NOTE: the project info can be injected later by the project
+        return json;
     }
 }

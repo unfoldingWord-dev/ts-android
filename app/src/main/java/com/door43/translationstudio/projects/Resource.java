@@ -2,6 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.net.Uri;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -157,5 +158,23 @@ public class Resource {
      */
     public Uri getSourceCatalog() {
         return mSourceUri;
+    }
+
+    /**
+     * Serializes the resource
+     * @return
+     */
+    public JSONObject serialize() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("date_modified", mDateModified);
+        json.put("name", mName);
+        json.put("notes", mNotesUri.toString());
+        json.put("slug", mSlug);
+        json.put("source", mSourceUri.toString());
+        json.put("terms", mTermsUri.toString());
+        JSONObject status = new JSONObject();
+        status.put("checking_level", mCheckingLevel);
+        json.put("status", status);
+        return json;
     }
 }

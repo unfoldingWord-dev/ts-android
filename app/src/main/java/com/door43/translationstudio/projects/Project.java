@@ -1089,8 +1089,48 @@ public class Project implements Model {
         return mSourceLanguagesDateModified;
     }
 
+    /**
+     * Serializes the project info
+     * This does not include any languages or chapters
+     * @return
+     */
+    @Override
+    public JSONObject serialize() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("slug", mSlug);
+        json.put("lang_catalog", mSourceLanguageCatalogUri.toString());
+        json.put("date_modified", mDateModified);
+        json.put("sort", mSortKey);
+        JSONArray meta = new JSONArray();
+        for(PseudoProject sp:mPseudoProjects) {
+            meta.put(sp.getId());
+        }
+        json.put("meta", meta);
+        return json;
+    }
+
+    /**
+     * Serializes the source language.
+     * This will inject the project translation into the serialization
+     * @param l
+     * @return
+     */
+    public JSONObject serializeSourceLanguage(SourceLanguage l) throws JSONException {
+        JSONObject json = l.serialize();
+        JSONObject pJson = new JSONObject();
+        pJson.put("desc", getDescription(l));
+        pJson.put("name", getTitle(l));
+        JSONArray meta = new JSONArray();
+        for(PseudoProject sp:mPseudoProjects) {
+            meta.put(sp.getTitle(l));
+        }
+        pJson.put("meta", meta);
+        json.put("project", pJson);
+        return json;
+    }
+
     public interface OnCommitComplete {
-        public void success();
-        public void error(Throwable e);
+        void success();
+        void error(Throwable e);
     }
 }
