@@ -17,6 +17,7 @@ import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This task indexes a project so we don't have to load the entire thing into memory.
@@ -58,7 +59,9 @@ public class IndexProjectsTask extends ManagedTask {
             }
 
             int lIndex = -1;
-            for(SourceLanguage l:proj.getSourceLanguages()) {
+            List<SourceLanguage> languages = proj.getSourceLanguages();
+            languages.addAll(proj.getSourceLanguageDrafts());
+            for(SourceLanguage l:languages) {
                 lIndex ++;
                 if(interrupted()) return;
                 File languageDir = new File(projectDir, l.getId());
@@ -131,7 +134,7 @@ public class IndexProjectsTask extends ManagedTask {
                             File sourceFrameInfo = new File(sourceChaptersDir, f.getId() + ".json");
                             File notesFrameInfo = new File(notesChaptersDir, f.getId() + ".json");
 
-                            publishProgress((pIndex + (lIndex + (rIndex + (cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) p.getChapters().length) / (double) l.getResources().length) / (double) p.getSourceLanguages().size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.indexing_projects) + " " + p.getId() + "." + l.getId() + "." + c.getId());
+                            publishProgress((pIndex + (lIndex + (rIndex + (cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) p.getChapters().length) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.indexing_projects) + " " + p.getId() + "." + l.getId() + "." + c.getId());
 
 
                             if(!sourceFrameInfo.exists()) {

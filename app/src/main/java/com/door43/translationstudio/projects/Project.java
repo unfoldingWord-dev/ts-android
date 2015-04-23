@@ -1153,7 +1153,7 @@ public class Project implements Model {
             p.setTitle(t.getText(), (SourceLanguage) t.getLanguage());
         }
         for(Translation t:mDescriptionTranslations.getAll()) {
-            p.setDescription(t.getText(), (SourceLanguage)t.getLanguage());
+            p.setDescription(t.getText(), (SourceLanguage) t.getLanguage());
         }
         p.setDefaultTitle(mDefaultTitle);
         p.setDefaultDescription(mDefaultDescription);
@@ -1166,5 +1166,16 @@ public class Project implements Model {
     public interface OnCommitComplete {
         void success();
         void error(Throwable e);
+    }
+
+    /**
+     * Checks if the project is indexed
+     * @return
+     */
+    public boolean isIndexed() {
+        File indexDir = new File(AppContext.context().getCacheDir(), "index");
+        File projectDir = new File(indexDir, getId());
+        File projectReadyFile = new File(projectDir, "ready.index");
+        return projectReadyFile.exists();
     }
 }

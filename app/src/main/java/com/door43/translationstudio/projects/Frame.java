@@ -451,4 +451,25 @@ public class Frame implements Model {
         json.put("id", mChapterFrameId);
         return json;
     }
+
+    /**
+     * Generates a new from from some json
+     * @param json
+     * @return
+     */
+    public static Frame generate(JSONObject json) {
+        try {
+            String format = "";
+            if(json.has("format")) {
+                format = json.getString("format");
+            }
+            String img = "";
+            if(json.has("img")) {
+                img = json.get("img").toString();
+            }
+            return new Frame(json.getString("id"), img, json.getString("text"), format);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
 }

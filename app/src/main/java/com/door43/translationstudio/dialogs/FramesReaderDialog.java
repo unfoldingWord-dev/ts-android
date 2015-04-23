@@ -12,6 +12,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 
@@ -41,6 +43,13 @@ public class FramesReaderDialog extends DialogFragment {
                 Chapter c = p.getChapter(chapterId);
                 if(c != null) {
                     if(displayOrdinal == FramesListAdapter.DisplayOption.DRAFT_TRANSLATION.ordinal()) {
+                        if(IndexStore.hasIndex(p)) {
+                            SourceLanguage draft = p.getSourceLanguageDraft(p.getSelectedTargetLanguage().getId());
+                            // TODO: users should be able to choose what resource they want to view. For now we will likely only have one resource.
+                            frames = IndexStore.getFrames(p, draft, draft.getSelectedResource(), c);
+                        } else {
+                            // the project has not been indexed yet
+                        }
                         // TODO: need to provide support to load the drafts here. We are waiting for the projects to be indexed so we don't have to load everything in memory.
                     } else {
                         frames = c.getFrames();
