@@ -652,6 +652,8 @@ public class Sharing {
      */
     private static void prepareProjectSourceExport(Project p, File sourceDir, File dataDir) throws IOException {
         List<SourceLanguage> languages = p.getSourceLanguages();
+        // TRICKY: if we don't include the source language drafts we need to exclude the date_modified from the catalog url in the projects catalog.
+        // otherwise when users try to browse updates they won't see the drafts until the next update in the api.
         languages.addAll(p.getSourceLanguageDrafts());
         SourceLanguage[] sourceLanguages = languages.toArray(new SourceLanguage[languages.size()]);
 

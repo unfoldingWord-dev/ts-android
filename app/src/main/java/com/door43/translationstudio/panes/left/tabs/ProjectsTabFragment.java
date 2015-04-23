@@ -26,6 +26,7 @@ import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
+import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TaskBarView;
@@ -142,6 +143,14 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 // clear out the previous project so we don't waste memory
                 if(previousProject != null) {
                     previousProject.flush();
+                }
+
+                // load the project
+                if(!IndexStore.hasIndex(p)) {
+                    // TODO: index the project
+                } else {
+                    // TODO: load the already indexed project
+
                 }
 
                 // load the project source

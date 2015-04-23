@@ -337,7 +337,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                     if(!task.isCanceled()) {
                         if (task instanceof DownloadAvailableProjectsTask) {
                             // start task to download projects
-                            DownloadProjectsTask downloadTask = new DownloadProjectsTask(new ArrayList<>(Arrays.asList(AppContext.projectManager().getProjects())), true);
+                            DownloadProjectsTask downloadTask = new DownloadProjectsTask(((DownloadAvailableProjectsTask) task).getProjects(), true);
                             downloadTask.setOnProgressListener(DeveloperToolsActivity.this);
                             downloadTask.setOnFinishedListener(DeveloperToolsActivity.this);
                             TaskManager.addTask(downloadTask, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
