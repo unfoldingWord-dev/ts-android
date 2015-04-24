@@ -88,7 +88,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/label_cancel"
+            android:text="@string/title_cancel"
             android:id="@+id/buttonCancel"
             android:layout_weight="1"
             style="@style/Widget.Button.Secondary"/>

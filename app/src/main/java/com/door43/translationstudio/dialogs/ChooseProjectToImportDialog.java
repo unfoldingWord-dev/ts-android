@@ -26,7 +26,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
     private Peer mPeer;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle(R.string.projects);
+        getDialog().setTitle(R.string.title_projects);
         View v = inflater.inflate(R.layout.dialog_choose_project, container, false);
 
         ListView listView = (ListView)v.findViewById(R.id.listView);

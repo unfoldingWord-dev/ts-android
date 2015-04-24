@@ -246,7 +246,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             }
         }, externalMediaAvailable, exportToSDMessage));
 
-        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_sd), "", R.drawable.ic_icon_import_sd, new ToolItem.ToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_storage), "", R.drawable.ic_icon_import_sd, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 if(AppContext.isExternalMediaAvailable()) {

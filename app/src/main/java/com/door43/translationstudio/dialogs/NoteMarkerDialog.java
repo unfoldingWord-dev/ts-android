@@ -22,7 +22,7 @@ public class NoteMarkerDialog extends DialogFragment {
     private CharSequence mNotes;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle(R.string.note_marker);
+        getDialog().setTitle(R.string.title_note);
         View v = inflater.inflate(R.layout.dialog_note_marker, container, false);
         EditText passageText = (EditText)v.findViewById(R.id.passageText);
         EditText noteText = (EditText)v.findViewById(R.id.noteText);

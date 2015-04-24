@@ -3,7 +3,6 @@ package com.door43.translationstudio.panes.left;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,9 +42,9 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
 
         if(tabs.size() == 0) {
             // Tabs
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.projects), mProjectsTab));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.chapters), mChaptersTab));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.frames), mFramesTab));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.title_projects), mProjectsTab));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.title_chapters), mChaptersTab));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.title_frames), mFramesTab));
         }
 
 //        ViewPager

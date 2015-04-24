@@ -3,7 +3,6 @@ package com.door43.translationstudio;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
-import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,9 +10,7 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
 import android.view.Gravity;
 import android.widget.Toast;
 
@@ -248,11 +245,11 @@ public class MainApplication extends Application {
     }
 
     public void showMessageDialog(int title, int msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
-        showMessageDialog(title, getString(msg), positiveBtn, R.string.label_cancel, positiveListenerr, new DummyDialogListener());
+        showMessageDialog(title, getString(msg), positiveBtn, R.string.title_cancel, positiveListenerr, new DummyDialogListener());
     }
 
     public void showMessageDialog(int title, String msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
-        showMessageDialog(title, msg, positiveBtn, R.string.label_cancel, positiveListenerr, new DummyDialogListener());
+        showMessageDialog(title, msg, positiveBtn, R.string.title_cancel, positiveListenerr, new DummyDialogListener());
     }
 
     /**

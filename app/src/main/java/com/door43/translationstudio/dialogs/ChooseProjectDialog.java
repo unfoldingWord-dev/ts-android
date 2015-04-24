@@ -3,8 +3,6 @@ package com.door43.translationstudio.dialogs;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +30,7 @@ public class ChooseProjectDialog extends DialogFragment {
     private String mMetaId;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle(R.string.projects);
+        getDialog().setTitle(R.string.title_projects);
         View v = inflater.inflate(R.layout.dialog_choose_project, container, false);
 
         ListView listView = (ListView)v.findViewById(R.id.listView);

@@ -168,8 +168,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
                     @Override
                     public void run() {
-                        // disable screen rotation so we don't break things
-//                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
                         AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
                     }
 
@@ -186,8 +184,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                             Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
                         }
                         dialog.dismiss();
-                        // re-enable screen rotation
-//                        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
                         NotifyAdapterDataSetChanged();
                     }
                 }.start();

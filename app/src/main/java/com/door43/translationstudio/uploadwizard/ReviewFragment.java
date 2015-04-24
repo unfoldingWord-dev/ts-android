@@ -73,7 +73,7 @@ public class ReviewFragment extends WizardFragment {
                     };
                     builder.setTitle(R.string.dialog_validation_warnings).setMessage(R.string.validation_warnings)
                             .setPositiveButton(R.string.label_continue, ok)
-                            .setNegativeButton(R.string.label_cancel, cancel).show();
+                            .setNegativeButton(R.string.title_cancel, cancel).show();
                 } else {
                     onContinue();
                 }
@@ -148,10 +148,10 @@ public class ReviewFragment extends WizardFragment {
             Project p = AppContext.projectManager().getSelectedProject();
             if(p.getSelectedSourceLanguage().equals(p.getSelectedTargetLanguage())) {
                 // source and target language should not be the same
-                publishProgress(new UploadValidationItem(getResources().getString(R.string.label_project_settings), getResources().getString(R.string.error_target_and_source_are_same), UploadValidationItem.Status.ERROR));
+                publishProgress(new UploadValidationItem(getResources().getString(R.string.title_project_settings), getResources().getString(R.string.error_target_and_source_are_same), UploadValidationItem.Status.ERROR));
                 mHasErrors = true;
             } else {
-                publishProgress(new UploadValidationItem(getResources().getString(R.string.label_project_settings), UploadValidationItem.Status.SUCCESS));
+                publishProgress(new UploadValidationItem(getResources().getString(R.string.title_project_settings), UploadValidationItem.Status.SUCCESS));
             }
 
             // make sure all the chapter titles and references have been set
@@ -200,7 +200,7 @@ public class ReviewFragment extends WizardFragment {
 
             // ensure at least one chapter has been translated
             if(numChaptersTranslated == 0) {
-                publishProgress(new UploadValidationItem(getResources().getString(R.string.label_chapters), getResources().getString(R.string.no_translated_chapters), UploadValidationItem.Status.ERROR));
+                publishProgress(new UploadValidationItem(getResources().getString(R.string.title_chapters), getResources().getString(R.string.no_translated_chapters), UploadValidationItem.Status.ERROR));
                 mHasErrors = true;
             }
             return null;

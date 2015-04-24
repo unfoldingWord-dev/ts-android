@@ -1,26 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
-
+    <!-- The app name -->
     <string name="app_name" translatable="false">translationStudio</string>
-    <string name="projects">Projects</string>
-    <!-- TODO: this is a duplicate of label_chapters -->
-    <string name="chapters">Chapters</string>
-    <string name="frames">Frames</string>
+    <string name="title_projects">Projects</string>
+    <string name="title_frames">Frames</string>
+    <!-- Acknowlogment or an affirmative statement -->
     <string name="label_ok">OK</string>
-    <string name="label_cancel">Cancel</string>
+    <!-- Close or reject an action -->
+    <string name="title_cancel">Cancel</string>
+    <!-- The application is already executing a different task -->
     <string name="error_task_running" translatable="false">A task is already running</string>
+    <!-- Theapplication is out of memory -->
     <string name="error_out_of_memory" translatable="false">Out of memory</string>
+    <!-- The remote git repository could not be found -->
     <string name="error_repository_not_found" translatable="false">Repository Not Found</string>
+    <!-- Local changes are being uploaded to the server -->
     <string name="push_msg_init">Sending to server</string>
+    <!-- The repository could not be created-->
     <string name="error_could_not_create_repository" translatable="false">Could not create repository</string>
+    <!-- The terms that users must agree with in order to use the app -->
     <string name="terms_title">Terms of Use</string>
     <string name="terms">In order to use this app, you must agree to release your work under the terms of the Creative Commons Attribution-ShareAlike 4.0 International License</string>
-    <string name="advanced_settings" translatable="false">Advanced Settings</string>
+    <!-- Re-create the ssh keys for the git repositories -->
     <string name="regenerate_keys" translatable="false">Regenerate SSH Keys</string>
-    <string name="close">Close</string>
+    <!-- stub needed for the drawer open and close listener -->
+    <string name="title_close_drawer" translatable="false">close</string>
     <string name="chapter_title_field">Chapter Title</string>
     <string name="chapter_reference_field">Chapter Reference</string>
+    <!-- The language from which a project is being translated -->
     <string name="source_language_field">Source Language</string>
+    <!-- The langage to which a project is being translated -->
     <string name="target_language_field">Target Language</string>
     <string name="title_activity_chapter_setting">Chapter Settings</string>
     <string name="title_activity_language_selector">Language</string>
@@ -34,18 +43,22 @@
     <!-- Notifies the user that the project was successfully saved to a location on the phone -->
     <string name="project_exported_to">Project saved to <xliff:g id="file_path" example="/storage/sdcard1/">%1$s</xliff:g></string>
     <string name="project_share_exception" translatable="false">The project cannot be shared</string>
+    <!-- The file browser -->
     <string name="title_activity_file_explorer">File Explorer</string>
     <string name="missing_file" translatable="false">The file does not exist</string>
+    <!-- Export a project to another app on the device -->
     <string name="export_to_app">Export to app</string>
+    <!-- Export a project to the sd card -->
     <string name="export_to_sd">Export to SD Card</string>
-    <!-- TODO: this is deprecated we should use import_from_storage instead -->
-    <string name="import_from_sd">Import from SD Card</string>
-    <string name="export_as_project" translatable="false">translationStudio</string>
+    <string name="export_as_project" translatable="false">@string/app_name</string>
     <string name="export_as_dokuwiki" translatable="false">DokuWiki</string>
+    <!-- The translation package is not formatted correctly -->
     <string name="malformed_translation_archive">Malformed translation archive</string>
+    <!-- The translation could not be imported -->
     <string name="translation_import_failed">Failed to import the translation</string>
     <string name="internet_not_available">You do not have an active internet connection.</string>
-    <string name="title_activity_upload_wizard">Translation Upload</string>
+    <!-- Backup and/or publish a project translation-->
+    <string name="title_activity_upload_wizard">Backup and Publish</string>
     <string name="upload_wizard_intro">You are about to upload your translation.</string>
     <string name="label_continue">Continue</string>
     <string name="upload_wizard_overview">Upload Review</string>
@@ -53,12 +66,13 @@
     <!-- Indicates how the project is being translated. e.g. Open Bible Stories is being translated from the English language into the Deutsch language -->
     <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> is being translated from the <xliff:g id="source_language" example="English">\"%2$s\"</xliff:g> language into the <xliff:g id="target_language" example="Deutsch">\"%3$s\"</xliff:g> language.</string>
     <string name="click_for_details">Click for details</string>
-    <string name="label_project_settings">Project Settings</string>
+    <string name="title_project_settings">Project Settings</string>
     <string name="error_target_and_source_are_same">The source and target languages are the same</string>
     <string name="error_chapter_title_missing">The chapter title is missing</string>
     <string name="error_chapter_reference_missing">The chapter reference is missing</string>
     <string name="label_chapter_title_detailed">Chapter <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
     <string name="label_frame_title_detailed">Frame: <xliff:g id="frame" example="1">%1$s</xliff:g></string>
+    <!-- Errors were encountered while validating the translation -->
     <string name="dialog_validation_errors">Validation Errors</string>
     <string name="validation_errors">There are unresolved errors in the translation. Please correct these then try again.</string>
     <!-- Indicates that a number of frames have not been translated. e.g. 3 frames have not been translated -->
@@ -66,7 +80,7 @@
     <string name="dialog_validation_warnings">Validation Warnings</string>
     <string name="validation_warnings">There are unresolved warnings. Are you sure you want to upload this translation?</string>
     <string name="no_translated_chapters">Nothing has been translated yet.</string>
-    <string name="label_chapters">Chapters</string>
+    <string name="title_chapters">Chapters</string>
     <!-- Notifies the user that they are viewing a frame within a chapter. e.g. Viewing frame 01 in chapter 1. The Creation -->
     <string name="now_viewing_frame">Viewing frame <xliff:g id="number" example="1">%1$s</xliff:g> in chapter <xliff:g id="chapter" example="1. The Creation">%2$s</xliff:g>.</string>
     <string name="missing_chapter" translatable="false">Missing chapter</string>
@@ -74,7 +88,9 @@
     <string name="error_term_missing" translatable="false">The term could not be found</string>
     <string name="label_passage_note">Passage note:</string>
     <string name="label_delete">Delete</string>
+    <!-- Explaination of what a source language is -->
     <string name="source_language_instructions">Source languages are completed translations.</string>
+    <!-- Explaination of what a target language is -->
     <string name="target_language_instructions">Target languages have not been translated or are works in progress.</string>
     <string name="translation_notes_title">Translation Notes:</string>
     <string name="translation_notes_important_terms_title">Important Terms:</string>
@@ -102,6 +118,7 @@
     <!-- Indicates the project that is being loaded. e.g. Loading project: Open Bible Stories -->
     <string name="loading_project">Loading project: <xliff:g id="project" example="Open Bible Stories">%1$s</xliff:g></string>
     <string name="error_git_stage" translatable="false">Changes could not be staged</string>
+    <!-- Uploading the device public ssh key to the server -->
     <string name="submitting_security_keys">Transferring security keys</string>
     <string name="error_missing_ssh_keys" translatable="false">The ssh keys have not been generated</string>
     <string name="choose_file">Choose your file</string>
@@ -218,6 +235,7 @@
     <!-- Indicates the peer has connected to the server -->
     <string name="connected" translatable="false">Connected</string>
     <string name="share_to_all" translatable="false">Share to all</string>
+
     <string name="searching_for_devices" translatable="false">Searching for devices</string>
     <string name="language_resources">Versions</string>
     <string name="import_project">Import Project</string>
@@ -231,8 +249,8 @@
     <string name="bug_report">Describe the problem you are experiencing with this app.</string>
     <string name="terms_additional">And you must agree to the statement of faith and translation guidelines.</string>
     <string name="project_library">Project Library</string>
-    <string name="verse_marker">Verse</string>
-    <string name="note_marker">Note</string>
+    <string name="title_verse">Verse</string>
+    <string name="title_note">Note</string>
     <string name="dialog_contact_form">Contact Form</string>
     <string name="label_name">Name</string>
     <string name="label_email">Email</string>
@@ -313,4 +331,5 @@
     <string name="preview_chapter_translation">Preview translation</string>
     <string name="toggle_blind_draft_mode">Toggle blind draft</string>
     <string name="indexing_projects">Indexing projects</string>
+    <string name="title_upload">Upload</string>
 </resources>

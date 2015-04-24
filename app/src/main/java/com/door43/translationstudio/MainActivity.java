@@ -122,7 +122,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
 
         // get notified when drawers open
-        mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, R.string.close, R.string.close) {
+        mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, R.string.title_close_drawer, R.string.title_close_drawer) {
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
             }

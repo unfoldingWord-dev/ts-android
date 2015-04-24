@@ -25,7 +25,7 @@ public class VerseMarkerDialog extends DialogFragment {
     private int mMinVerse;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle(R.string.verse_marker);
+        getDialog().setTitle(R.string.title_verse);
         View v = inflater.inflate(R.layout.dialog_verse_marker, container, false);
         final EditText verseText = (EditText)v.findViewById(R.id.verseNumberText);
         Button okButton = (Button)v.findViewById(R.id.okButton);

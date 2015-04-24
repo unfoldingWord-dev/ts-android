@@ -4,6 +4,6 @@
     tools:context="com.door43.translationstudio.LanguageSelectorActivity" >
     <item
         android:id="@+id/action_dismiss_language_search"
-        android:title="@string/label_cancel"
+        android:title="@string/title_cancel"
         app:showAsAction="always" />
 </menu>
