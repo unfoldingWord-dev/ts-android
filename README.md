@@ -5,6 +5,9 @@ unfoldingWord translationStudio is an Android app for translating biblical conte
 
 [![Crowdin](https://d322cqt584bo4o.cloudfront.net/translation-studio/localized.png)](https://crowdin.com/project/translation-studio)
 
+## Requirements Specification
+The official requirements are available at [tS Requirements](https://github.com/unfoldingWord-dev/ts-requirements).
+
 ###Contributing
 Below are the technical specifications regarding this Android app and instructions for setting up your development environment.
 
