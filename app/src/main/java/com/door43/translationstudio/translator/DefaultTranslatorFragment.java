@@ -94,8 +94,6 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
     private ProgressBar mSourceProgressBar;
     private TextView mHelpText;
     private TextWatcher mTranslationChangedListener;
-    private Timer mAutosaveTimer;
-    private boolean mAutosaveEnabled;
     private GestureDetector mSourceGestureDetector;
     private GestureDetector mTranslationGestureDetector;
     private int mSourceTextMotionDownX = 0;
@@ -270,28 +268,6 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         mFootnoteDialog = new AlertDialog.Builder(getActivity())
                 .setMessage(span.getNotes())
                 .show();
-    }
-
-    /**
-     * @deprecated see initTranslationChangedWatcher() instead
-     */
-    private void initAutoSave() {
-        mTranslationEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                TranslationManager.autosave(mSelectedFrame, mTranslationEditText.getText());
-            }
-        });
     }
 
     /**
@@ -897,19 +873,6 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         } else {
             return false;
         }
-    }
-
-    /**
-     * Saves the translation
-     * @deprecated
-     */
-    @Override
-    public void save() {
-//        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
-//            disableAutosave();
-//            AppContext.translationManager().commitTranslation();
-//            enableAutosave();
-//        }
     }
 
     @Override

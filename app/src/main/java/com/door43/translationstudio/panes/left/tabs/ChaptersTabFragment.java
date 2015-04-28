@@ -11,6 +11,7 @@ import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.projects.Model;
+import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
@@ -45,7 +46,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(getActivity() != null) {
                     // save changes to the current frame first
-                    ((MainActivity) getActivity()).save();
+                    TranslationManager.save();
                     // select the chapter
                     AppContext.projectManager().getSelectedProject().setSelectedChapter(i);
                     // reload the center pane so we don't accidently overwrite a frame

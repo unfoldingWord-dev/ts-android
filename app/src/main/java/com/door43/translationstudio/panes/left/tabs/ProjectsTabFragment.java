@@ -26,6 +26,7 @@ import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
+import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.util.AppContext;
@@ -63,7 +64,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if (getActivity() != null) {
                     // save changes to the current frame first
-                    ((MainActivity) getActivity()).save();
+                    TranslationManager.save();
                     Model m = mModelItemAdapter.getItem(i);
                     boolean isProject = m.getClass().equals(Project.class);
 

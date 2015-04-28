@@ -359,14 +359,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         mDrawerLayout.openDrawer(Gravity.RIGHT);
     }
 
-    /**
-     * Saves the translation
-     */
-    @Override
-    public void save() {
-        mTranslatorFragment.save();
-    }
-
     @Override
     public void refreshLibraryDrawer() {
         mLeftPane.reloadProjectsTab();

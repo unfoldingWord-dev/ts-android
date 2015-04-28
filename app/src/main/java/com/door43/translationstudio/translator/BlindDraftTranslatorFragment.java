@@ -79,7 +79,6 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
     private ImageView mNextFrameView;
     private ImageView mPreviousFrameView;
     private TextView mSourceFrameNumText;
-    private boolean mAutosaveEnabled;
     private Frame mSelectedFrame;
     private Span.OnClickListener mVerseClickListener;
     private Span.OnClickListener mNoteClickListener;
@@ -87,7 +86,6 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
     private GestureDetector mTranslationGestureDetector;
     private int mTranslationTextMotionDownX = 0;
     private int mTranslationTextMotionDownY = 0;
-    private Timer mAutosaveTimer;
     private ThreadableUI mHighlightTranslationThread;
     private RenderingGroup mTranslationRendering;
 
@@ -113,7 +111,6 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         nextFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
         previousFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
         initLinks();
-//        initAutoSave();
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
@@ -148,28 +145,6 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
             AppContext.args.remove(ARGS_VIEW_TRANSLATION_DRAFT);
             showFrameReaderDialog(AppContext.projectManager().getSelectedProject(), FramesListAdapter.DisplayOption.DRAFT_TRANSLATION);
         }
-    }
-
-    /**
-     * @deprecated see initTranslationChangedWatcher() instead
-     */
-    private void initAutoSave() {
-        mTranslationEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                TranslationManager.autosave(mSelectedFrame, mTranslationEditText.getText());
-            }
-        });
     }
 
     private void initTranslationChangedWatcher() {
@@ -497,7 +472,7 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         Project p = AppContext.projectManager().getSelectedProject();
         if(flingAngle <= maxFlingAngle && Math.abs(distanceX) >= minFlingDistance && Math.abs(velocityX) >= minFlingVelocity && p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
             // automatically save changes if the auto save did not have time to save
-            save();
+            TranslationManager.save();
             Frame f;
             if(distanceX > 0) {
                 f = p.getSelectedChapter().getPreviousFrame();
@@ -783,15 +758,6 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         TranslationManager.enableAutosave();
     }
 
-    /**
-     * Save the translation
-     * @deprecated
-     */
-    @Override
-    public void save() {
-
-    }
-
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
@@ -866,7 +832,7 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         Project p = AppContext.projectManager().getSelectedProject();
         if (p != null && p.getSelectedChapter() != null) {
             // save the current translation
-            save();
+            TranslationManager.save();
 
             // configure display option
             switch (item.getItemId()) {

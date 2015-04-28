@@ -12,6 +12,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
@@ -46,7 +47,7 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(getActivity() != null) {
                     // save changes to the current frame first
-                    ((MainActivity) getActivity()).save();
+                    TranslationManager.save();
                     // select the new frame
                     AppContext.projectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
                     ((MainActivity) getActivity()).reload();

@@ -8,7 +8,6 @@ import com.door43.translationstudio.projects.Term;
 public interface TranslatorActivityInterface {
     void openLibraryDrawer();
     void openResourcesDrawer();
-    void save();
     void refreshLibraryDrawer();
     void showProjectSettingsMenu();
     void refreshResourcesDrawer();
