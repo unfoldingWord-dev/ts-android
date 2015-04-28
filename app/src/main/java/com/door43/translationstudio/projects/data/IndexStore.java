@@ -9,6 +9,7 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
+import com.door43.util.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
@@ -57,7 +58,7 @@ public class IndexStore {
      * @return
      */
     public static Model[] getFrames(Project p, SourceLanguage l, Resource r, final Chapter c) {
-        File chapterDir = new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/source/" + c.getId() + "/");
+        File chapterDir = getSourceChapterDir(p, l, r, c);
         final List<Frame> frames = new ArrayList<>();
         chapterDir.listFiles(new FilenameFilter() {
             @Override
@@ -85,9 +86,129 @@ public class IndexStore {
      * @param p
      */
     public static void deleteIndex(Project p) {
-        File projectDir = new File(sInstance.sIndexDir, p.getId());
+        File projectDir = getProjectDir(p);
         if(projectDir.isDirectory()) {
             FileUtilities.deleteRecursive(projectDir);
+        }
+    }
+
+    /**
+     * Returns the directory for the project index
+     * @param p
+     * @return
+     */
+    public static File getProjectDir(Project p) {
+        return new File(sInstance.sIndexDir, p.getId());
+    }
+
+    /**
+     * Returns the directory for the language index
+     * @param p
+     * @param l
+     * @return
+     */
+    public static File getLanguageDir(Project p, SourceLanguage l) {
+        return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId());
+    }
+
+    /**
+     * Returns the directory for the resource index
+     * @param p
+     * @param l
+     * @param r
+     * @return
+     */
+    public static File getResourceDir(Project p, SourceLanguage l, Resource r) {
+        return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId());
+    }
+
+
+
+    /**
+     * Returns the directory for the chapter index
+     * @param p
+     * @param l
+     * @param r
+     * @param c
+     * @return
+     */
+    public static File getSourceChapterDir(Project p, SourceLanguage l, Resource r, Chapter c) {
+        return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/source/" + c.getId());
+    }
+
+    /**
+     * Returns the directory for the chapter index
+     * @param p
+     * @param l
+     * @param r
+     * @param c
+     * @return
+     */
+    public static File getNotesChapterDir(Project p, SourceLanguage l, Resource r, Chapter c) {
+        return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/notes/" + c.getId());
+    }
+
+    /**
+     * Generates a chapter index
+     * @param c
+     */
+    public static void index(Chapter c) {
+        Project p = c.getProject();
+        if(p != null && c.getSelectedSourceLanguage() != null && c.getSelectedSourceLanguage().getSelectedResource() != null) {
+            SourceLanguage l = c.getSelectedSourceLanguage();
+            Resource r = l.getSelectedResource();
+            File dir = getSourceChapterDir(p, l, r, c);
+            dir.mkdirs();
+            File datFile = new File(dir, DATA_FILE);
+            if (!datFile.exists()) {
+                try {
+                    FileUtils.write(datFile, c.serialize().toString());
+                } catch (Exception e) {
+                    Logger.e(IndexStore.class.getName(), "Failed to index chapter info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId(), e);
+                }
+            } else {
+                // TODO: make sure we have a good expiration system set up for indexes.
+            }
+        } else {
+            Logger.e(IndexStore.class.getName(), "Chapter is missing required objects");
+        }
+    }
+
+    /**
+     * Generates a frame index
+     * @param f
+     */
+    public static void index(Frame f) {
+        Chapter c = f.getChapter();
+        if(c != null && c.getProject() != null) {
+            Project p = c.getProject();
+            SourceLanguage l = c.getProject().getSelectedSourceLanguage();
+            if(l != null && l.getSelectedResource() != null) {
+                Resource r = l.getSelectedResource();
+
+                File sourceFrameInfo = new File(getSourceChapterDir(p, l, r, c), f.getId() + ".json");
+                sourceFrameInfo.getParentFile().mkdirs();
+                File notesFrameInfo = new File(getNotesChapterDir(p, l, r, c), f.getId() + ".json");
+                notesFrameInfo.getParentFile().mkdirs();
+
+                if(!sourceFrameInfo.exists()) {
+                    try {
+                        FileUtils.write(sourceFrameInfo, f.serialize().toString());
+                    } catch (Exception e) {
+                        Logger.e(IndexStore.class.getName(), "Failed to index source frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
+                    }
+                }
+
+                if(!notesFrameInfo.exists()) {
+                    try {
+                        if(f.getTranslationNotes() != null) {
+                            FileUtils.write(notesFrameInfo, f.serializeTranslationNote().toString());
+                        }
+                    } catch (Exception e) {
+                        Logger.e(IndexStore.class.getName(), "Failed to index notes frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
+                    }
+                }
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
@@ -41,12 +42,11 @@ public class IndexProjectsTask extends ManagedTask {
     public void start() {
         publishProgress(-1, "");
 
-        File indexDir = new File(AppContext.context().getCacheDir(), "index");
         int pIndex = -1;
         for(Project proj:mProjects) {
             pIndex ++;
             if(interrupted()) return;
-            File projectDir = new File(indexDir, proj.getId());
+            File projectDir = IndexStore.getProjectDir(proj);
             File projectReadyFile = new File(projectDir, "ready.index");
             if(projectReadyFile.exists()) {
                 continue;
@@ -94,6 +94,8 @@ public class IndexProjectsTask extends ManagedTask {
                     File resourceDir = new File(languageDir, r.getId());
                     resourceDir.mkdirs();
 
+                    publishProgress((pIndex + (lIndex + (rIndex + 1) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.indexing_projects));
+
                     // index resource
                     File rInfo = new File(resourceDir, "data.json");
                     if(!rInfo.exists()) {
@@ -105,66 +107,32 @@ public class IndexProjectsTask extends ManagedTask {
                         }
                     }
 
-                    // load the source
-                    AppContext.projectManager().fetchProjectSource(p, l, r, false);
-                    File sourceDir = new File(resourceDir, "source");
-                    File notesDir = new File(resourceDir, "notes");
-
-                    int cIndex = -1;
-                    for(Chapter c:p.getChapters()) {
-                        cIndex ++;
-                        if(interrupted()) return;
-                        File sourceChaptersDir = new File(sourceDir, c.getId());
-                        sourceChaptersDir.mkdirs();
-                        File notesChaptersDir = new File(notesDir, c.getId());
-                        notesChaptersDir.mkdirs();
-
-                        // index chapter
-                        File cInfo = new File(sourceChaptersDir, "data.json");
-                        if(!cInfo.exists()) {
-                            try {
-                                FileUtils.write(cInfo, c.serialize().toString());
-                            } catch (Exception e) {
-                                Logger.e(this.getClass().getName(), "Failed to index chapter info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId(), e);
-                                continue;
-                            }
-                        }
-
-                        // index frames
-                        int fIndex = -1;
-                        for(Model m:c.getFrames()) {
-                            fIndex ++;
-                            if(interrupted()) return;
-
-                            Frame f = (Frame)m;
-                            File sourceFrameInfo = new File(sourceChaptersDir, f.getId() + ".json");
-                            File notesFrameInfo = new File(notesChaptersDir, f.getId() + ".json");
-
-                            publishProgress((pIndex + (lIndex + (rIndex + (cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) p.getChapters().length) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.indexing_projects) + " " + p.getId() + "." + l.getId() + "." + c.getId());
-
-
-                            if(!sourceFrameInfo.exists()) {
-                                try {
-                                    FileUtils.write(sourceFrameInfo, f.serialize().toString());
-                                } catch (Exception e) {
-                                    Logger.e(this.getClass().getName(), "Failed to index source frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
-                                }
-                            }
-
-                            if(!notesFrameInfo.exists()) {
-                                try {
-                                    if(f.getTranslationNotes() != null) {
-                                        FileUtils.write(notesFrameInfo, f.serializeTranslationNote().toString());
-                                    }
-                                } catch (Exception e) {
-                                    Logger.e(this.getClass().getName(), "Failed to index notes frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
-                                }
-                            }
-                        }
-                    }
+//                    // load the source
+//                    AppContext.projectManager().fetchProjectSource(p, l, r, false);
+//
+//                    int cIndex = -1;
+//                    for(Chapter c:p.getChapters()) {
+//                        cIndex ++;
+//                        if(interrupted()) return;
+//
+//                        IndexStore.index(c);
+//
+//                        // index frames
+//                        int fIndex = -1;
+//                        for(Model m:c.getFrames()) {
+//                            fIndex ++;
+//                            if(interrupted()) return;
+//
+//                            Frame f = (Frame)m;
+//
+//                            publishProgress((pIndex + (lIndex + (rIndex + (cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) p.getChapters().length) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.indexing_projects) + " " + p.getId() + "." + l.getId() + "." + c.getId());
+//
+//                            IndexStore.index(f);
+//                        }
+//                    }
 
                     // empty the source
-                    p.flush();
+//                    p.flush();
                 }
             }
 

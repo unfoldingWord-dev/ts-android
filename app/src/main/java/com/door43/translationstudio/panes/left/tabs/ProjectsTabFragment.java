@@ -144,9 +144,10 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
                 // load the project
                 if(!IndexStore.hasIndex(p)) {
-                    // TODO: index the project
+                    // TODO: index the project ()
+
                 } else {
-                    // TODO: load the already indexed project
+                    // TODO: load the already indexed project (not the resources)
 
                 }
 
