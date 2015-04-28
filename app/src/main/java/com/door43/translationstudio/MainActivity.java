@@ -155,6 +155,11 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         closeKeyboard();
     }
 
+    public void onResume() {
+        super.onResume();
+        mTranslatorFragment.reload();
+    }
+
     /**
      * Notifies the translator fragment to reload it's content
      */
@@ -293,6 +298,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
                         return mTranslatorFragment.onContextualMenuItemClick(item);
                     }
                 });
+                mTranslatorFragment.onPrepareContextualMenu(contextualMenu.getMenu());
                 contextualMenu.show();
             }
         });

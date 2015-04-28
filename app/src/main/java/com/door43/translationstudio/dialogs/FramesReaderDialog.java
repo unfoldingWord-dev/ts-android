@@ -45,8 +45,10 @@ public class FramesReaderDialog extends DialogFragment {
                     if(displayOrdinal == FramesListAdapter.DisplayOption.DRAFT_TRANSLATION.ordinal()) {
                         if(IndexStore.hasIndex(p)) {
                             SourceLanguage draft = p.getSourceLanguageDraft(p.getSelectedTargetLanguage().getId());
-                            // TODO: users should be able to choose what resource they want to view. For now we will likely only have one resource.
-                            frames = IndexStore.getFrames(p, draft, draft.getSelectedResource(), c);
+                            if(draft != null) {
+                                // TODO: users should be able to choose what resource they want to view. For now we will likely only have one resource.
+                                frames = IndexStore.getFrames(p, draft, draft.getSelectedResource(), c);
+                            }
                         } else {
                             // the project has not been indexed yet
                         }

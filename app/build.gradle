@@ -92,4 +92,5 @@ dependencies {
     compile 'com.jpardogo.materialtabstrip:library:1.0.8'
     //    compile project(':HtmlSpanner')
     compile project(':html-textview')
+    compile 'com.google.guava:guava:18.0'
 }

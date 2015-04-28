@@ -56,7 +56,9 @@ public class Frame implements Model {
     /**
      * Creates a new frame.
      * @param chapterFrameId This is a combination of the chapter id and frame id. e.g. 01-02 for chapter 1 frame 2.
-     * @param text a short description of the frame
+     * @param image the frame image
+     * @param text The frame source translation
+     * @param format the text format
      */
     public Frame(String chapterFrameId, String image, String text, String format) {
         // parse id

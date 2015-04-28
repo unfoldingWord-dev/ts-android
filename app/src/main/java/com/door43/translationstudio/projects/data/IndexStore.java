@@ -8,6 +8,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.FileUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
@@ -48,13 +49,14 @@ public class IndexStore {
 
     /**
      * Returns the indexed frames
+     * The project, source language, resource and chapter should all be connected together.
      * @param p
      * @param l
      * @param r
      * @param c
      * @return
      */
-    public static Model[] getFrames(Project p, SourceLanguage l, Resource r, Chapter c) {
+    public static Model[] getFrames(Project p, SourceLanguage l, Resource r, final Chapter c) {
         File chapterDir = new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/source/" + c.getId() + "/");
         final List<Frame> frames = new ArrayList<>();
         chapterDir.listFiles(new FilenameFilter() {
@@ -65,6 +67,7 @@ public class IndexStore {
                         String data = FileUtils.readFileToString(new File(dir, filename));
                         Frame f = Frame.generate(new JSONObject(data));
                         if(f != null) {
+                            f.setChapter(c);
                             frames.add(f);
                         }
                     } catch (Exception e) {
@@ -75,5 +78,16 @@ public class IndexStore {
             }
         });
         return frames.toArray(new Model[frames.size()]);
+    }
+
+    /**
+     * Deletes an indexed project
+     * @param p
+     */
+    public static void deleteIndex(Project p) {
+        File projectDir = new File(sInstance.sIndexDir, p.getId());
+        if(projectDir.isDirectory()) {
+            FileUtilities.deleteRecursive(projectDir);
+        }
     }
 }

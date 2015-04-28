@@ -48,6 +48,7 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -144,6 +145,7 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         super.onResume();
         // show draft view
         if(AppContext.args.getBoolean(ARGS_VIEW_TRANSLATION_DRAFT, false)) {
+            AppContext.args.remove(ARGS_VIEW_TRANSLATION_DRAFT);
             showFrameReaderDialog(AppContext.projectManager().getSelectedProject(), FramesListAdapter.DisplayOption.DRAFT_TRANSLATION);
         }
     }
@@ -939,6 +941,9 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
                 case R.id.readTargetTranslation:
                     showFrameReaderDialog(p, FramesListAdapter.DisplayOption.TARGET_TRANSLATION);
                     break;
+                case R.id.readTargetTranslationDraft:
+                    showFrameReaderDialog(p, FramesListAdapter.DisplayOption.DRAFT_TRANSLATION);
+                    break;
                 case R.id.readSourceTranslation:
                 default:
                     showFrameReaderDialog(p, FramesListAdapter.DisplayOption.SOURCE_TRANSLATION);
@@ -948,6 +953,21 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void onPrepareContextualMenu(Menu menu) {
+        if(getActivity() != null) {
+            Project p = AppContext.projectManager().getSelectedProject();
+            if(p != null && p.getSelectedTargetLanguage() != null) {
+                SourceLanguage draft = p.getSourceLanguageDraft(p.getSelectedTargetLanguage().getId());
+                if(draft != null) {
+                    menu.findItem(R.id.readTargetTranslationDraft).setVisible(true);
+                } else {
+                    menu.findItem(R.id.readTargetTranslationDraft).setVisible(false);
+                }
+            }
+        }
     }
 
 

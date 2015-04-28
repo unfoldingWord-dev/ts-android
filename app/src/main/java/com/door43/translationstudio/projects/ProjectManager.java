@@ -755,7 +755,6 @@ public class ProjectManager {
                 JSONObject jsonProj = jsonLang.getJSONObject("project");
                 SourceLanguage l = SourceLanguage.generate(jsonLang);
                 if(l != null) {
-                    // TODO: we may want to fetch the resources here so we can place the language in the correct category. (draft or otherwise)
                     downloadResourceList(p, l, ignoreCache);
 
                     // default title and description

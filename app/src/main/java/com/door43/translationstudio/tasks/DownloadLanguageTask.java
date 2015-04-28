@@ -3,6 +3,7 @@ package com.door43.translationstudio.tasks;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.threads.ManagedTask;
 
@@ -69,6 +70,8 @@ public class DownloadLanguageTask extends ManagedTask {
             return;
         }
         publishProgress(1, "");
+        // TODO: only delete the index if there were changes
+        IndexStore.deleteIndex(mProject);
     }
 
     /**

@@ -3,6 +3,7 @@ package com.door43.translationstudio.tasks;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.threads.ManagedTask;
 
@@ -80,6 +81,8 @@ public class DownloadProjectsTask extends ManagedTask {
             }
             // reload project
             if(interrupted()) return;
+            // TODO: only delete the index if there were changes
+            IndexStore.deleteIndex(p);
             AppContext.projectManager().reloadProject(p.getId());
         }
         publishProgress(1, "");

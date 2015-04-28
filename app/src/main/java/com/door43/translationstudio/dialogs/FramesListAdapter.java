@@ -75,8 +75,7 @@ public class FramesListAdapter  extends BaseAdapter {
                 holder.text.setText(new USXRenderer().render(getItem(position).getTranslation().getText()));
                 break;
             case DRAFT_TRANSLATION:
-                // TODO: we need to finish implementing how drafts are loaded from the file system
-                holder.text.setText("not implemented yet");
+                holder.text.setText(new USXRenderer().render(getItem(position).getText()));
                 break;
             case SOURCE_TRANSLATION:
             default:

@@ -7,15 +7,21 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.util.threads.ManagedTask;
+import com.google.common.io.CharSink;
+import com.google.common.io.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
