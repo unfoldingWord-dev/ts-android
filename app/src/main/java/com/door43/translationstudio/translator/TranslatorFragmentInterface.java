@@ -9,6 +9,10 @@ import android.widget.PopupMenu;
  */
 public interface TranslatorFragmentInterface {
     void reload();
+
+    /**
+     * @deprecated we are using the method from TranslationManager instead
+     */
     void save();
     boolean onContextualMenuItemClick(MenuItem item);
     void onPrepareContextualMenu(Menu menu);

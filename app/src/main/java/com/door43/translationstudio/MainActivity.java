@@ -37,6 +37,7 @@ import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Term;
+import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.translator.BlindDraftTranslatorFragment;
 import com.door43.translationstudio.translator.DefaultTranslatorFragment;
 import com.door43.translationstudio.translator.TranslatorActivityInterface;
@@ -511,7 +512,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     @Subscribe
     public void securityKeysSubmitted(SecurityKeysSubmittedEvent event) {
         if(AppContext.context().isNetworkAvailable()) {
-            AppContext.translationManager().syncSelectedProject();
+            TranslationManager.syncSelectedProject();
         } else {
             AppContext.context().showToastMessage(R.string.internet_not_available);
         }

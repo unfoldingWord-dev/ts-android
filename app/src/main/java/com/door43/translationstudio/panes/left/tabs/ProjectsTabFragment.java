@@ -61,8 +61,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // TRICKY: the project list may contain meta projects as well as normal projects.
-
                 if (getActivity() != null) {
                     // save changes to the current frame first
                     ((MainActivity) getActivity()).save();
@@ -76,8 +74,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                         // this is a meta project
                         handleMetaSelection((PseudoProject) m);
                     }
-                } else {
-                    Logger.e(this.getClass().getName(), "onItemClickListener the activity is null");
                 }
             }
         });

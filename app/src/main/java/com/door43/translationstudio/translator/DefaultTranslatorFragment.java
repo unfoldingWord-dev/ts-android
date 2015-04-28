@@ -178,7 +178,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                 }
             }
         });
-        initAutoSave();
+//        initAutoSave();
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
@@ -272,6 +272,9 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                 .show();
     }
 
+    /**
+     * @deprecated see initTranslationChangedWatcher() instead
+     */
     private void initAutoSave() {
         mTranslationEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -286,25 +289,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
-                if (mAutosaveTimer != null) {
-                    mAutosaveTimer.cancel();
-                }
-                if (mAutosaveEnabled) {
-                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
-                }
-                if (saveDelay != -1) {
-                    mAutosaveTimer = new Timer();
-                    if (mAutosaveEnabled) {
-                        mAutosaveTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                // save the changes
-                                save();
-                            }
-                        }, saveDelay);
-                    }
-                }
+                TranslationManager.autosave(mSelectedFrame, mTranslationEditText.getText());
             }
         });
     }
@@ -434,26 +419,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // handle saves
-                int saveDelay = Integer.parseInt(app().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, getResources().getString(R.string.pref_default_autosave)));
-                if (mAutosaveTimer != null) {
-                    mAutosaveTimer.cancel();
-                }
-                if(mAutosaveEnabled) {
-                    AppContext.translationManager().stageTranslation(mSelectedFrame, mTranslationEditText.getText());
-                }
-                if (saveDelay != -1) {
-                    mAutosaveTimer = new Timer();
-                    if (mAutosaveEnabled) {
-                        mAutosaveTimer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                // save the changes
-                                save();
-                            }
-                        }, saveDelay);
-                    }
-                }
+                TranslationManager.autosave(mSelectedFrame, mTranslationEditText.getText());
 
                 // handle rendering
                 // TRICKY: anything worth rendering will need to change by at least two characters
@@ -553,7 +519,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
                     app().closeToastMessage();
 
-                    save();
+                    TranslationManager.save();
 
                     LanguageResourceDialog newFragment = new LanguageResourceDialog();
                     Bundle args = new Bundle();
@@ -915,7 +881,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         Project p = AppContext.projectManager().getSelectedProject();
         if(flingAngle <= maxFlingAngle && Math.abs(distanceX) >= minFlingDistance && Math.abs(velocityX) >= minFlingVelocity && p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null) {
             // automatically save changes if the auto save did not have time to save
-            save();
+            TranslationManager.save();
             Frame f;
             if(distanceX > 0) {
                 f = p.getSelectedChapter().getPreviousFrame();
@@ -935,14 +901,15 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
     /**
      * Saves the translation
+     * @deprecated
      */
     @Override
     public void save() {
-        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
-            disableAutosave();
-            AppContext.translationManager().commitTranslation();
-            enableAutosave();
-        }
+//        if (mAutosaveEnabled && AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().hasChosenTargetLanguage()) {
+//            disableAutosave();
+//            AppContext.translationManager().commitTranslation();
+//            enableAutosave();
+//        }
     }
 
     @Override
@@ -950,7 +917,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         Project p = AppContext.projectManager().getSelectedProject();
         if (p != null && p.getSelectedChapter() != null) {
             // save the current translation
-            save();
+            TranslationManager.save();
 
             // configure display option
             switch (item.getItemId()) {
@@ -993,26 +960,6 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                     menu.findItem(R.id.readTargetTranslationDraft).setVisible(false);
                 }
             }
-        }
-    }
-
-    /**
-     * Enables autosave
-     */
-    private void enableAutosave() {
-        // cancel pending saves that got trapped after we disabled auto save
-        AppContext.translationManager().stageTranslation(null, null);
-        mAutosaveEnabled = true;
-    }
-
-    /**
-     * Disables autosave and cancels any pending timers
-     */
-    private void disableAutosave() {
-        mAutosaveEnabled = false;
-        if(mAutosaveTimer != null) {
-            mAutosaveTimer.cancel();
-            mAutosaveTimer = null;
         }
     }
 
@@ -1361,7 +1308,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
     @Override
     public void reload() {
         // auto save is disabled to prevent accidentally saving into the wrong frame
-        disableAutosave();
+        TranslationManager.disableAutosave();
         getActivity().invalidateOptionsMenu();
         // load the text
         final Project p = AppContext.projectManager().getSelectedProject();
@@ -1491,13 +1438,13 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
             // nothing was selected so open the project selector
             ((TranslatorActivityInterface)getActivity()).openLibraryDrawer();
         }
-        enableAutosave();
+        TranslationManager.enableAutosave();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        save();
+        TranslationManager.save();
     }
 
     @Override

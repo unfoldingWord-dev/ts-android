@@ -34,7 +34,6 @@ public class AppContext {
     private static MainApplication mContext;
     private static Navigator mNavigator;
     private static ProjectManager mProjectManager;
-    private static TranslationManager mTranslationManager;
     public static final Bundle args = new Bundle();
 
     /**
@@ -49,7 +48,6 @@ public class AppContext {
                 Graphite.loadGraphite();
             }
             mContext = context;
-            mTranslationManager = new TranslationManager(context);
             mProjectManager = new ProjectManager(context);
             mNavigator = new Navigator(context, mProjectManager, getEventBus());
             new Logger(context);
@@ -104,14 +102,6 @@ public class AppContext {
      */
     public static ProjectManager projectManager() {
         return mProjectManager;
-    }
-
-    /**
-     * Returns the global translation manager
-     * @return
-     */
-    public static TranslationManager translationManager() {
-        return mTranslationManager;
     }
 
     /**

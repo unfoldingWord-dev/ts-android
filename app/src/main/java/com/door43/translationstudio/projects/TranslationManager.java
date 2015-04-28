@@ -25,32 +25,43 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * This class handles the storage of translated content.
  */
 public class TranslationManager implements TCPClient.TcpListener {
-    private MainApplication mContext;
-    private final String TAG = "TranslationManager";
-    private final String mParentProjectSlug = "uw"; //  NOTE: not sure if this will ever need to be dynamic
-    private TCPClient mTcpClient;
-    private Frame mFrame;
-    private Editable mText;
+//    private MainApplication mContext;
+    private static final String TAG = "TranslationManager";
+    private static final String mParentProjectSlug = "uw"; //  NOTE: not sure if this will ever need to be dynamic
+    private static TCPClient mTcpClient;
+    private static Frame mFrame;
+    private static Editable mText;
+    private static boolean mAutosaveEnabled = true;
+    private static Timer mAutosaveTimer;
+    private final int sAutosaveDelay;
 
-    public TranslationManager(MainApplication context) {
-        mContext = context;
+    private static final TranslationManager sInstance;
+
+    static {
+        sInstance = new TranslationManager();
+    }
+
+    private TranslationManager() {
+        sAutosaveDelay = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, AppContext.context().getResources().getString(R.string.pref_default_autosave)));
     }
 
     /**
      * Initiates a git sync with the server. This will forcebly push all local changes to the server
      * and discard any discrepencies.
      */
-    public void syncSelectedProject() {
-        if(!mContext.hasRegisteredKeys()) {
-            mContext.showProgressDialog(R.string.loading);
+    public static void syncSelectedProject() {
+        if(!AppContext.context().hasRegisteredKeys()) {
+            AppContext.context().showProgressDialog(R.string.loading);
             // set up a tcp connection
             if(mTcpClient == null) {
-                mTcpClient = new TCPClient(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, mContext.getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, mContext.getResources().getString(R.string.pref_default_auth_server_port))), TranslationManager.this);
+                mTcpClient = new TCPClient(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, AppContext.context().getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_auth_server_port))), sInstance);
             } else {
                 // TODO: update the sever and port if they have changed... Not sure if this task is applicable now
             }
@@ -62,13 +73,68 @@ public class TranslationManager implements TCPClient.TcpListener {
     }
 
     /**
+     * Disables the translation autosave
+     */
+    public static void disableAutosave() {
+        mAutosaveEnabled = false;
+        if(mAutosaveTimer != null) {
+            mAutosaveTimer.cancel();
+            mAutosaveTimer = null;
+        }
+    }
+
+    /**
+     * Enables the translation autosave
+     */
+    public static void enableAutosave() {
+        stageTranslation(null, null);
+        mAutosaveEnabled = true;
+    }
+
+    /**
+     * Schedules translation to be automatically saved to a frame
+     * @param f the frame that will receive the translation
+     * @param text the translation that will be saved
+     */
+    public static void autosave(Frame f, Editable text) {
+        if(mAutosaveTimer != null) {
+            mAutosaveTimer.cancel();
+        }
+        if(mAutosaveEnabled) {
+            stageTranslation(f, text);
+        }
+        if(sInstance.sAutosaveDelay != -1) {
+            mAutosaveTimer = new Timer();
+            if(mAutosaveEnabled) {
+                mAutosaveTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        save();
+                    }
+                }, sInstance.sAutosaveDelay);
+            }
+        }
+    }
+
+    /**
+     * Saves the pending translation
+     */
+    public static void save() {
+        if(mAutosaveEnabled) {
+            disableAutosave();
+            commitTranslation();
+            enableAutosave();
+        }
+    }
+
+    /**
      * Stages a new translation to be saved. This is usually called whenever the translation in a frame changes
      * @param frame the frame for which the translation changed
      * @param text the raw translation input
      */
-    public void stageTranslation(Frame frame, Editable text) {
-        this.mFrame = frame;
-        this.mText = text;
+    private static void stageTranslation(Frame frame, Editable text) {
+        mFrame = frame;
+        mText = text;
     }
 
     /**
@@ -103,11 +169,13 @@ public class TranslationManager implements TCPClient.TcpListener {
     /**
      * Saves the staged translation
      */
-    public void commitTranslation() {
+    private static void commitTranslation() {
         if(mFrame != null && mText != null) {
             String compiled = compileTranslation(mText);
-            mFrame.setTranslation(compiled);
-            mFrame.save();
+            if(mFrame.getChapter() != null && mFrame.getChapter().getProject() != null && mFrame.getChapter().getProject().hasChosenTargetLanguage()) {
+                mFrame.setTranslation(compiled);
+                mFrame.save();
+            }
             mFrame = null;
             mText = null;
         }
@@ -116,11 +184,11 @@ public class TranslationManager implements TCPClient.TcpListener {
     /**
      * Pushes the currently selected project+language repo to the server
      */
-    private void pushSelectedProjectRepo() {
+    private static void pushSelectedProjectRepo() {
         Project p = AppContext.projectManager().getSelectedProject();
 
         if(p.translationIsReady()) {
-            Logger.i(this.getClass().getName(), "Publishing project " + p.getId() + " to the server");
+            Logger.i(TranslationManager.class.getName(), "Publishing project " + p.getId() + " to the server");
         }
 
         final String remotePath = getRemotePath(p, p.getSelectedTargetLanguage());
@@ -136,7 +204,7 @@ public class TranslationManager implements TCPClient.TcpListener {
 
             @Override
             public void error(Throwable e) {
-                mContext.showException(e, R.string.error_git_stage);
+                AppContext.context().showException(e, R.string.error_git_stage);
             }
         });
         add.executeTask();
@@ -151,34 +219,34 @@ public class TranslationManager implements TCPClient.TcpListener {
      * @param lang
      * @return
      */
-    private String getRemotePath(Project project, Language lang) {
-        String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, mContext.getResources().getString(R.string.pref_default_git_server));
+    private static String getRemotePath(Project project, Language lang) {
+        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
         return server + ":tS/" + AppContext.udid() + "/" + mParentProjectSlug + "-" + project.getId() + "-" + lang.getId();
     }
 
     /**
      * Submits the client public ssh key to the server so we can push updates
      */
-    private void registerSSHKeys() {
-        if(mContext.hasKeys()) {
+    private static void registerSSHKeys() {
+        if(AppContext.context().hasKeys()) {
             JSONObject json = new JSONObject();
             try {
-                String key = FileUtilities.getStringFromFile(mContext.getPublicKey().getAbsolutePath()).trim();
+                String key = FileUtilities.getStringFromFile(AppContext.context().getPublicKey().getAbsolutePath()).trim();
                 json.put("key", key);
                 json.put("udid", AppContext.udid());
                 // TODO: provide support for using user names
 //                json.put("username", "");
                 Log.d(TAG, json.toString());
-                mContext.showProgressDialog(R.string.submitting_security_keys);
+                AppContext.context().showProgressDialog(R.string.submitting_security_keys);
                 mTcpClient.sendMessage(json.toString());
             } catch (JSONException e) {
-                mContext.showException(e);
+                AppContext.context().showException(e);
             } catch (Exception e) {
-                mContext.showException(e);
+                AppContext.context().showException(e);
             }
         } else {
-            mContext.closeProgressDialog();
-            mContext.showException(new Throwable(mContext.getResources().getString(R.string.error_missing_ssh_keys)));
+            AppContext.context().closeProgressDialog();
+            AppContext.context().showException(new Throwable(AppContext.context().getResources().getString(R.string.error_missing_ssh_keys)));
         }
     }
 
@@ -191,24 +259,24 @@ public class TranslationManager implements TCPClient.TcpListener {
     @Override
     public void onMessageReceived(String message) {
         // check if we get an ok message from sending ssh keys to the server
-        mContext.closeProgressDialog();
+        AppContext.context().closeProgressDialog();
         try {
             JSONObject json = new JSONObject(message);
             if(json.has("ok")) {
-                mContext.setHasRegisteredKeys(true);
+                AppContext.context().setHasRegisteredKeys(true);
                 AppContext.getEventBus().post(new SecurityKeysSubmittedEvent());
             } else {
-                mContext.showException(new Throwable(json.getString("error")));
+                AppContext.context().showException(new Throwable(json.getString("error")));
             }
         } catch (JSONException e) {
-            mContext.showException(e);
+            AppContext.context().showException(e);
         }
         mTcpClient.stop();
     }
 
     @Override
     public void onError(Throwable t) {
-        mContext.showException(t);
+        AppContext.context().showException(t);
     }
 
     /**
@@ -217,7 +285,7 @@ public class TranslationManager implements TCPClient.TcpListener {
      * @param p the project to which the draft will be imported
      * @param draft the draft that will be imported
      */
-    public void importTranslationDraft(Project p, SourceLanguage draft) {
+    public static void importTranslationDraft(Project p, SourceLanguage draft) {
         importTranslationDraft(p, draft, null);
     }
 
@@ -228,7 +296,7 @@ public class TranslationManager implements TCPClient.TcpListener {
      * @param p the project to which the draft will be imported
      * @param draft the draft that will be imported
      */
-    public void importTranslationDraft(Project p, SourceLanguage draft, OnProgressListener listener) {
+    public static void importTranslationDraft(Project p, SourceLanguage draft, OnProgressListener listener) {
         String source = AppContext.projectManager().getDataStore().pullSource(p.getId(), draft.getId(), draft.getSelectedResource().getId(), false, false);
 
         if(listener != null) {
@@ -238,14 +306,14 @@ public class TranslationManager implements TCPClient.TcpListener {
         // load source
         JSONArray jsonChapters;
         if(source == null) {
-            Logger.e(this.getClass().getName(), "The draft source was not found for "+p.getId());
+            Logger.e(TranslationManager.class.getName(), "The draft source was not found for "+p.getId());
             return;
         }
         try {
             JSONObject json = new JSONObject(source);
             jsonChapters = json.getJSONArray("chapters");
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "malformed draft source", e);
+            Logger.e(TranslationManager.class.getName(), "malformed draft source", e);
             return;
         }
 
@@ -268,7 +336,7 @@ public class TranslationManager implements TCPClient.TcpListener {
                     }
                     Chapter c = p.getChapter(chapterNumber);
                     if(c == null) {
-                        Logger.e(this.getClass().getName(), "Unknown chapter ("+chapterNumber+") in translation draft "+draft.getId());
+                        Logger.e(TranslationManager.class.getName(), "Unknown chapter ("+chapterNumber+") in translation draft "+draft.getId());
                         continue;
                     }
 
@@ -292,17 +360,17 @@ public class TranslationManager implements TCPClient.TcpListener {
                                 f.setTranslation(jsonFrame.getString("text"));
                                 f.save();
                             } else{
-                                Logger.e(this.getClass().getName(), "Unknown frame ("+chapterNumber+":"+jsonFrame.getString("id")+") in translation draft "+draft.getId());
+                                Logger.e(TranslationManager.class.getName(), "Unknown frame ("+chapterNumber+":"+jsonFrame.getString("id")+") in translation draft "+draft.getId());
                             }
                         } else {
-                            Logger.w(this.getClass().getName(), "missing required parameters in source frame at index "+i+":"+j);
+                            Logger.w(TranslationManager.class.getName(), "missing required parameters in source frame at index "+i+":"+j);
                         }
                     }
                 } else {
-                    Logger.w(this.getClass().getName(), "missing required parameters in source chapter at index " + i);
+                    Logger.w(TranslationManager.class.getName(), "missing required parameters in source chapter at index " + i);
                 }
             } catch (JSONException e) {
-                Logger.e(this.getClass().getName(), "Failed to load project source", e);
+                Logger.e(TranslationManager.class.getName(), "Failed to load project source", e);
                 continue;
             }
         }
@@ -312,8 +380,8 @@ public class TranslationManager implements TCPClient.TcpListener {
      * Imports the source from the given directory
      * @param dir
      */
-    public void importSource(File dir) {
-        Logger.i(this.getClass().getName(), "importing source files from "+ dir.getName());
+    public static void importSource(File dir) {
+        Logger.i(TranslationManager.class.getName(), "importing source files from "+ dir.getName());
         if(dir.exists() && dir.isDirectory()) {
             File projectsCatalogFile = new File(dir, "projects_catalog.json");
             if(projectsCatalogFile.exists()) {
@@ -388,28 +456,28 @@ public class TranslationManager implements TCPClient.TcpListener {
                                                                             }
                                                                         }
                                                                     } else {
-                                                                        Logger.w(this.getClass().getName(), "invalid resource definition found while importing");
+                                                                        Logger.w(TranslationManager.class.getName(), "invalid resource definition found while importing");
                                                                     }
                                                                 } catch (Exception e) {
-                                                                    Logger.e(this.getClass().getName(), "failed to import the resource", e);
+                                                                    Logger.e(TranslationManager.class.getName(), "failed to import the resource", e);
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
                                             } catch (Exception e) {
-                                                Logger.e(this.getClass().getName(), "failed to import the source language", e);
+                                                Logger.e(TranslationManager.class.getName(), "failed to import the source language", e);
                                             }
                                         }
                                     }
                                 }
                             }
                         } catch (Exception e) {
-                            Logger.e(this.getClass().getName(), "failed to import the source project", e);
+                            Logger.e(TranslationManager.class.getName(), "failed to import the source project", e);
                         }
                     }
                 } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "failed to import the source files", e);
+                    Logger.e(TranslationManager.class.getName(), "failed to import the source files", e);
                 }
                 // reload the projects
                 AppContext.projectManager().initProjects();
@@ -418,6 +486,6 @@ public class TranslationManager implements TCPClient.TcpListener {
     }
 
     public interface OnProgressListener {
-        public void onProgress(double progress, String message);
+        void onProgress(double progress, String message);
     }
 }

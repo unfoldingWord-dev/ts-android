@@ -7,6 +7,7 @@ import android.os.Bundle;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ContactFormDialog;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
@@ -87,14 +88,14 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
         AppContext.projectManager().getSelectedProject().commit(new Project.OnCommitComplete() {
             @Override
             public void success() {
-                AppContext.translationManager().syncSelectedProject();
+                TranslationManager.syncSelectedProject();
                 finish();
             }
 
             @Override
             public void error(Throwable e) {
                 // We don't care. Worst case is the server won't know that the translation is ready.
-                AppContext.translationManager().syncSelectedProject();
+                TranslationManager.syncSelectedProject();
                 finish();
             }
         });

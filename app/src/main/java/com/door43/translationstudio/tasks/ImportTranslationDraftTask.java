@@ -23,7 +23,7 @@ public class ImportTranslationDraftTask extends ManagedTask {
         // right now we are only loading the first one
         SourceLanguage draft = mProject.getSourceLanguageDraft(mProject.getSelectedTargetLanguage().getId());
         if(draft != null) {
-            AppContext.translationManager().importTranslationDraft(mProject, draft, new TranslationManager.OnProgressListener() {
+            TranslationManager.importTranslationDraft(mProject, draft, new TranslationManager.OnProgressListener() {
                 @Override
                 public void onProgress(double progress, String message) {
                     ImportTranslationDraftTask.this.publishProgress(progress, message);
