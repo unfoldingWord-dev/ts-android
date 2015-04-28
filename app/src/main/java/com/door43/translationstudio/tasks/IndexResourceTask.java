@@ -33,7 +33,6 @@ public class IndexResourceTask extends ManagedTask {
 
     @Override
     public void start() {
-        publishProgress(-1, "");
         File resourceDir = IndexStore.getResourceDir(mProject, mLanguage, mResource);
         resourceDir.mkdirs();
 

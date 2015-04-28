@@ -102,21 +102,20 @@ public class LibraryLanguageAdapter extends BaseAdapter {
 
         // connect download task
         if(holder.downloadTask != null) {
-            holder.downloadTask.setOnProgressListener(null);
-            holder.downloadTask.setOnFinishedListener(null);
+            holder.downloadTask.destroy();
         }
         holder.downloadTask = (DownloadLanguageTask)TaskManager.getTask(mTaskIdPrefix+mProjectId+"-"+getItem(i).getId());
         if(holder.downloadTask != null) {
             holder.downloadedImage.setVisibility(View.VISIBLE);
             holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_download_small));
-            holder.downloadTask.setOnProgressListener(new ManagedTask.OnProgressListener() {
+            holder.downloadTask.addOnProgressListener(new ManagedTask.OnProgressListener() {
                 @Override
                 public void onProgress(ManagedTask task, final double progress, String message) {
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
                             staticHolder.progressBar.setVisibility(View.VISIBLE);
-                            if(progress == -1) {
+                            if (progress == -1) {
                                 staticHolder.progressBar.setIndeterminate(true);
                                 staticHolder.progressBar.setProgress(staticHolder.progressBar.getMax());
                             } else {
@@ -127,7 +126,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                     });
                 }
             });
-            holder.downloadTask.setOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            holder.downloadTask.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
                 @Override
                 public void onFinished(ManagedTask task) {
                     TaskManager.clearTask(task.getTaskId());
@@ -135,7 +134,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                         @Override
                         public void run() {
                             staticHolder.progressBar.setVisibility(View.INVISIBLE);
-                            if(LibraryTempData.getEnableEditing()) {
+                            if (LibraryTempData.getEnableEditing()) {
                                 staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
                             } else {
                                 staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));

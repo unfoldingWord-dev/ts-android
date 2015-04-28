@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -129,8 +128,8 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
         ImportTranslationDraftTask task = (ImportTranslationDraftTask)TaskManager.getTask(mImportDraftTaskId);
         if(task != null) {
             // connect to existing task
-            task.setOnFinishedListener(this);
-            task.setOnProgressListener(this);
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
             createLoadingDialog();
         }
     }
@@ -143,8 +142,8 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
         if(task == null && mProject != null) {
             // create new task
             task = new ImportTranslationDraftTask(mProject);
-            task.setOnFinishedListener(this);
-            task.setOnProgressListener(this);
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
             mImportDraftTaskId = TaskManager.addTask(task);
             createLoadingDialog();
         }
@@ -196,7 +195,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
         ImportTranslationDraftTask task = (ImportTranslationDraftTask)TaskManager.getTask(mImportDraftTaskId);
         if(task != null) {
             outState.putInt(STATE_IMPORT_TASK_ID, mImportDraftTaskId);
-            task.setOnFinishedListener(null);
+            task.removeOnFinishedListener(this);
         }
     }
 
@@ -240,7 +239,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
     public void onCancel(DialogInterface dialogInterface) {
         ImportTranslationDraftTask task = (ImportTranslationDraftTask)TaskManager.getTask(mImportDraftTaskId);
         if(task != null) {
-            task.setOnFinishedListener(null);
+            task.removeOnFinishedListener(this);
             TaskManager.cancelTask(task);
             mImportDraftTaskId = -1;
         }

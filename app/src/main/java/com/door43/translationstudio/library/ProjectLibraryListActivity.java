@@ -12,17 +12,14 @@ import android.os.Looper;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadProjectsTask;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
@@ -155,8 +152,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_DOWNLOAD_ALL_PROJECTS);
         if(task != null) {
             // connect to existing task
-            task.setOnProgressListener(this);
-            task.setOnFinishedListener(this);
+            task.addOnProgressListener(this);
+            task.addOnFinishedListener(this);
         } else {
             onFinished(null);
         }
@@ -222,8 +219,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                                     ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
                                     List<Project> projects = listFragment.getFilteredProjects();
                                     task = new DownloadProjectsTask(projects);
-                                    task.setOnProgressListener(ProjectLibraryListActivity.this);
-                                    task.setOnFinishedListener(ProjectLibraryListActivity.this);
+                                    task.addOnProgressListener(ProjectLibraryListActivity.this);
+                                    task.addOnFinishedListener(ProjectLibraryListActivity.this);
                                     TaskManager.addTask(task, TASK_DOWNLOAD_ALL_PROJECTS);
                                 } else {
                                     connectDownloaAllTask();
@@ -270,8 +267,8 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         }
         DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_DOWNLOAD_ALL_PROJECTS);
         if(task != null) {
-            task.setOnFinishedListener(null);
-            task.setOnProgressListener(null);
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
         }
         super.onDestroy();
     }

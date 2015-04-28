@@ -99,8 +99,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public void onPause() {
         IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_INDEX);
         if(task != null) {
-            task.setOnFinishedListener(null);
-            task.setOnProgressListener(null);
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
         }
         super.onPause();
     }
@@ -110,8 +110,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         if(task != null) {
             mTaskBar.setVisibility(View.VISIBLE);
             mTaskBar.publishProgress(R.string.indexing_projects, -1);
-            task.setOnProgressListener(this);
-            task.setOnFinishedListener(this);
+            task.addOnProgressListener(this);
+            task.addOnFinishedListener(this);
         }
     }
 

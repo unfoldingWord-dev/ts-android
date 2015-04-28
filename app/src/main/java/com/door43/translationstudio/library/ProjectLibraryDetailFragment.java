@@ -137,11 +137,11 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
             if (TaskManager.getTask(mTaskId) != null) {
                 // connect to existing task
                 DownloadProjectImageTask task = (DownloadProjectImageTask) TaskManager.getTask(IMAGE_TASK_PREFIX+mProject.getId());
-                task.setOnFinishedListener(this);
+                task.addOnFinishedListener(this);
             } else {
                 // begin downloading the image
                 DownloadProjectImageTask task = new DownloadProjectImageTask(mProject);
-                task.setOnFinishedListener(this);
+                task.addOnFinishedListener(this);
                 TaskManager.addTask(task, IMAGE_TASK_PREFIX+mProject.getId());
             }
         } else {

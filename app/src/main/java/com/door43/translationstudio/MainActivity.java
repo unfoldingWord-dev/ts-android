@@ -36,8 +36,11 @@ import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.TranslationManager;
+import com.door43.translationstudio.projects.data.IndexStore;
+import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.translator.BlindDraftTranslatorFragment;
 import com.door43.translationstudio.translator.DefaultTranslatorFragment;
 import com.door43.translationstudio.translator.TranslatorActivityInterface;
@@ -45,9 +48,11 @@ import com.door43.translationstudio.translator.TranslatorFragmentInterface;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.threads.ManagedTask;
+import com.door43.util.threads.TaskManager;
 import com.squareup.otto.Subscribe;
 
-public class MainActivity extends TranslatorBaseActivity implements TranslatorActivityInterface {
+public class MainActivity extends TranslatorBaseActivity implements TranslatorActivityInterface, ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener {
     private final MainActivity me = this;
 
     // content panes
@@ -158,7 +163,20 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
     public void onResume() {
         super.onResume();
-        mTranslatorFragment.reload();
+
+        // rebuild the index if it was destroyed
+        Project p = AppContext.projectManager().getSelectedProject();
+        if(p != null && IndexStore.hasIndex(p)) {
+            IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_INDEX);
+            if(task == null) {
+                task = new IndexProjectsTask(AppContext.projectManager().getProjects());
+                task.addOnProgressListener(this);
+                task.addOnFinishedListener(this);
+                TaskManager.addTask(task, IndexProjectsTask.TASK_INDEX);
+            }
+        } else {
+            mTranslatorFragment.reload();
+        }
     }
 
     /**
@@ -555,5 +573,15 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     public void onOpenedFrame(OpenedFrameEvent event) {
         mLeftPane.reloadFramesTab();
         mTranslatorFragment.reload();
+    }
+
+    @Override
+    public void onProgress(ManagedTask task, double progress, String message) {
+        // TODO: display dialog
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        // TODO: close dialog and start indexing the source if nessesary.
     }
 }

@@ -150,14 +150,9 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                 }
             });
 
-            // TODO: we may not place the indexing task here. This is just for testing.
-//            Project[] test = new Project[1];
-//            test[0] =AppContext.projectManager().getProject("obs");
-
             // index all the projects
             IndexProjectsTask task = new IndexProjectsTask(AppContext.projectManager().getProjects());
             TaskManager.addTask(task, IndexProjectsTask.TASK_INDEX);
-
             return null;
         }
 

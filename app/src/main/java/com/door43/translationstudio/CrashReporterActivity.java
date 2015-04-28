@@ -43,7 +43,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
                 mLoadingDialog.show();
 
                 UploadCrashReportTask task = new UploadCrashReportTask(mCrashReportText.getText().toString().trim());
-                task.setOnFinishedListener(CrashReporterActivity.this);
+                task.addOnFinishedListener(CrashReporterActivity.this);
                 TaskManager.addTask(task, TASK_UPLOAD_CRASH_REPORT);
             }
         });
@@ -55,7 +55,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
                 mLoadingDialog.show();
 
                 ArchiveCrashReportTask task = new ArchiveCrashReportTask();
-                task.setOnFinishedListener(CrashReporterActivity.this);
+                task.addOnFinishedListener(CrashReporterActivity.this);
                 TaskManager.addTask(task, TASK_ARCHIVE_CRASH_REPORT);
             }
         });
@@ -67,11 +67,11 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
         if(uploadTask != null) {
             mLoadingDialog.setMessage(getResources().getString(R.string.push_msg_init));
             mLoadingDialog.show();
-            uploadTask.setOnFinishedListener(this);
+            uploadTask.addOnFinishedListener(this);
         } else if(archiveTask != null) {
             mLoadingDialog.setMessage(getResources().getString(R.string.loading));
             mLoadingDialog.show();
-            archiveTask.setOnFinishedListener(this);
+            archiveTask.addOnFinishedListener(this);
         }
     }
 
@@ -100,11 +100,11 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
         // disconnect listeners
         UploadCrashReportTask uploadTask = (UploadCrashReportTask)TaskManager.getTask(TASK_UPLOAD_CRASH_REPORT);
         if(uploadTask != null) {
-            uploadTask.setOnFinishedListener(null);
+            uploadTask.removeOnFinishedListener(this);
         }
         ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(TASK_ARCHIVE_CRASH_REPORT);
         if(archiveTask != null) {
-            archiveTask.setOnFinishedListener(null);
+            archiveTask.removeOnFinishedListener(this);
         }
         super.onDestroy();
     }

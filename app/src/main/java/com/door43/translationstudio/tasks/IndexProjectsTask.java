@@ -40,8 +40,6 @@ public class IndexProjectsTask extends ManagedTask {
 
     @Override
     public void start() {
-        publishProgress(-1, "");
-
         int pIndex = -1;
         for(Project proj:mProjects) {
             pIndex ++;

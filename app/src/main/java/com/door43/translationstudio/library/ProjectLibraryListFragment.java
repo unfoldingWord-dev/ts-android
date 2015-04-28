@@ -145,8 +145,8 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     public void onCancel(DialogInterface dialogInterface) {
         if(TaskManager.getTask(mTaskId) != null) {
             DownloadAvailableProjectsTask task = (DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId);
-            task.setOnFinishedListener(null);
-            task.setOnProgressListener(null);
+            task.removeOnFinishedListener(this);
+            task.removeOnProgressListener(this);
             TaskManager.cancelTask(task);
             mTaskId = -1;
         }
@@ -267,13 +267,13 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         if(TaskManager.getTask(mTaskId) != null) {
             // connect to existing task
             DownloadAvailableProjectsTask task = (DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId);
-            task.setOnFinishedListener(this);
-            task.setOnProgressListener(this);
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
         } else if(LibraryTempData.getProjects().size() == 0) {
             // start process
             DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask(false);
-            task.setOnFinishedListener(this);
-            task.setOnProgressListener(this);
+            task.addOnFinishedListener(this);
+            task.addOnProgressListener(this);
             mTaskId = TaskManager.addTask(task);
         } else {
             onFinished(null);
@@ -328,8 +328,8 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
         if(mTaskId != -1) {
             outState.putInt(STATE_TASK_ID, mTaskId);
             // disconnect listeners
-            TaskManager.getTask(mTaskId).setOnFinishedListener(null);
-            TaskManager.getTask(mTaskId).setOnProgressListener(null);
+            TaskManager.getTask(mTaskId).removeOnFinishedListener(this);
+            TaskManager.getTask(mTaskId).removeOnProgressListener(this);
         }
         mActivityPaused = true;
     }

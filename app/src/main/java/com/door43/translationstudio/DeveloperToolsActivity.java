@@ -38,7 +38,6 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class DeveloperToolsActivity extends TranslatorBaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
@@ -184,8 +183,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                                 if(task == null && prepTask == null) {
                                     // create new prep task
                                     prepTask = new DownloadAvailableProjectsTask(true);
-                                    prepTask.setOnProgressListener(DeveloperToolsActivity.this);
-                                    prepTask.setOnFinishedListener(DeveloperToolsActivity.this);
+                                    prepTask.addOnProgressListener(DeveloperToolsActivity.this);
+                                    prepTask.addOnFinishedListener(DeveloperToolsActivity.this);
                                     TaskManager.addTask(prepTask, TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
                                 } else {
                                     connectDownloadAllTask();
@@ -308,12 +307,12 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
         DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
         if(prepTask != null) {
             // connect to existing task
-            prepTask.setOnProgressListener(this);
-            prepTask.setOnFinishedListener(this);
+            prepTask.addOnProgressListener(this);
+            prepTask.addOnFinishedListener(this);
         } else if(task != null) {
             // connect to existing task
-            task.setOnProgressListener(this);
-            task.setOnFinishedListener(this);
+            task.addOnProgressListener(this);
+            task.addOnFinishedListener(this);
         } else {
             onFinished(null);
         }
@@ -338,8 +337,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         if (task instanceof DownloadAvailableProjectsTask) {
                             // start task to download projects
                             DownloadProjectsTask downloadTask = new DownloadProjectsTask(((DownloadAvailableProjectsTask) task).getProjects(), true);
-                            downloadTask.setOnProgressListener(DeveloperToolsActivity.this);
-                            downloadTask.setOnFinishedListener(DeveloperToolsActivity.this);
+                            downloadTask.addOnProgressListener(DeveloperToolsActivity.this);
+                            downloadTask.addOnFinishedListener(DeveloperToolsActivity.this);
                             TaskManager.addTask(downloadTask, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
                         } else {
                             // the download is complete
