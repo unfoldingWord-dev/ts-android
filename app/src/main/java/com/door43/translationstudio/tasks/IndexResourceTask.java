@@ -9,9 +9,13 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.Logger;
 import com.door43.util.threads.ManagedTask;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Indexes the the the notes, terms, and source of a resource.
@@ -19,7 +23,7 @@ import java.io.File;
  */
 public class IndexResourceTask extends ManagedTask {
 
-    public static final String TASK_INDEX = "index_resource";
+    public static final String TASK_ID = "index_resource";
     private final Resource mResource;
     private final SourceLanguage mLanguage;
     private final Project mProject;
@@ -33,7 +37,10 @@ public class IndexResourceTask extends ManagedTask {
 
     @Override
     public void start() {
+        publishProgress(-1, "");
         File resourceDir = IndexStore.getResourceDir(mProject, mLanguage, mResource);
+        File resourceReadyFile = new File(resourceDir, IndexStore.READY_FILE);
+        if(resourceReadyFile.exists()) return;
         resourceDir.mkdirs();
 
         // load the source
@@ -52,11 +59,20 @@ public class IndexResourceTask extends ManagedTask {
                 if(interrupted()) return;
 
                 Frame f = (Frame)m;
-                publishProgress((cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) mProject.getChapters().length, AppContext.context().getResources().getString(R.string.indexing_projects));
+                publishProgress((cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) mProject.getChapters().length, AppContext.context().getResources().getString(R.string.title_resources));
                 IndexStore.index(f);
             }
         }
 
         mProject.flush();
+
+        // mark the index as complete
+        if(!interrupted()) {
+            try {
+                FileUtils.write(resourceReadyFile, mResource.getDateModified() + "");
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Failed to create the ready.index file", e);
+            }
+        }
     }
 }

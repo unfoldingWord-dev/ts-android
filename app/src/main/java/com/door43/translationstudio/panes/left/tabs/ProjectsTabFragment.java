@@ -42,7 +42,7 @@ import com.squareup.otto.Subscribe;
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener {
+public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
     private ModelItemAdapter mModelItemAdapter;
     private TaskBarView mTaskBar;
 
@@ -55,7 +55,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         // create adapter
         if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects());
 
-        mTaskBar = (TaskBarView)view.findViewById(R.id.projectProcessesLayout);
+//        mTaskBar = (TaskBarView)view.findViewById(R.id.projectProcessesLayout);
 
         // connectAsync adapter
         listView.setAdapter(mModelItemAdapter);
@@ -90,30 +90,30 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        connectToProcesses();
-    }
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        connectToProcesses();
+//    }
 
-    public void onPause() {
-        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_INDEX);
-        if(task != null) {
-            task.removeOnFinishedListener(this);
-            task.removeOnProgressListener(this);
-        }
-        super.onPause();
-    }
+//    public void onPause() {
+//        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
+//        if(task != null) {
+//            task.removeOnFinishedListener(this);
+//            task.removeOnProgressListener(this);
+//        }
+//        super.onPause();
+//    }
 
-    private void connectToProcesses() {
-        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_INDEX);
-        if(task != null) {
-            mTaskBar.setVisibility(View.VISIBLE);
-            mTaskBar.publishProgress(R.string.indexing_projects, -1);
-            task.addOnProgressListener(this);
-            task.addOnFinishedListener(this);
-        }
-    }
+//    private void connectToProcesses() {
+//        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
+//        if(task != null) {
+//            mTaskBar.setVisibility(View.VISIBLE);
+//            mTaskBar.publishProgress(R.string.indexing, -1);
+//            task.addOnProgressListener(this);
+//            task.addOnFinishedListener(this);
+//        }
+//    }
 
     @Override
     public void NotifyAdapterDataSetChanged() {
@@ -242,32 +242,32 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             Logger.e(this.getClass().getName(), "onSelectedProjectFromMeta the activity is null");
         }
     }
+//
+//    @Override
+//    public void onFinished(ManagedTask task) {
+//        TaskManager.clearTask(task.getTaskId());
+//        Handler hand = new Handler(Looper.getMainLooper());
+//        hand.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                mTaskBar.setVisibility(View.GONE);
+//            }
+//        });
+//    }
 
-    @Override
-    public void onFinished(ManagedTask task) {
-        TaskManager.clearTask(task.getTaskId());
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                mTaskBar.setVisibility(View.GONE);
-            }
-        });
-    }
-
-    @Override
-    public void onProgress(ManagedTask task, final double progress, final String message) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                mTaskBar.publishProgress(message, progress);
-                if(progress < 0) {
-                    mTaskBar.hideProgress();
-                } else {
-                    mTaskBar.showProgress();
-                }
-            }
-        });
-    }
+//    @Override
+//    public void onProgress(ManagedTask task, final double progress, final String message) {
+//        Handler hand = new Handler(Looper.getMainLooper());
+//        hand.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                mTaskBar.publishProgress(message, progress);
+//                if(progress < 0) {
+//                    mTaskBar.hideProgress();
+//                } else {
+//                    mTaskBar.showProgress();
+//                }
+//            }
+//        });
+//    }
 }

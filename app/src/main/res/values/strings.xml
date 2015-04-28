@@ -330,7 +330,7 @@
     <string name="read_chapter_menu">Read chapter</string>
     <string name="preview_chapter_translation">Preview translation</string>
     <string name="toggle_blind_draft_mode">Toggle blind draft</string>
-    <string name="indexing_projects">Indexing projects</string>
+    <string name="indexing">Indexing</string>
     <string name="title_upload">Upload</string>
     <string name="preview_chapter_translation_draft">Preview draft</string>
 </resources>

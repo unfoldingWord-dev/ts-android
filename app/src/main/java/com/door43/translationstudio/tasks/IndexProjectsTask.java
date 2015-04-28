@@ -1,29 +1,18 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.Chapter;
-import com.door43.translationstudio.projects.Frame;
-import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.translationstudio.rendering.DefaultRenderer;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.util.threads.ManagedTask;
-import com.google.common.io.CharSink;
-import com.google.common.io.Files;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +20,7 @@ import java.util.List;
  */
 public class IndexProjectsTask extends ManagedTask {
 
-    public static final String TASK_INDEX = "index_projects";
+    public static final String TASK_ID = "index_projects";
     private final Project[] mProjects;
 
     public IndexProjectsTask(Project[] projects) {
@@ -45,7 +34,7 @@ public class IndexProjectsTask extends ManagedTask {
             pIndex ++;
             if(interrupted()) return;
             File projectDir = IndexStore.getProjectDir(proj);
-            File projectReadyFile = new File(projectDir, "ready.index");
+            File projectReadyFile = new File(projectDir, IndexStore.READY_FILE);
             if(projectReadyFile.exists()) {
                 continue;
             }
@@ -92,7 +81,7 @@ public class IndexProjectsTask extends ManagedTask {
                     File resourceDir = new File(languageDir, r.getId());
                     resourceDir.mkdirs();
 
-                    publishProgress((pIndex + (lIndex + (rIndex + 1) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.indexing_projects));
+                    publishProgress((pIndex + (lIndex + (rIndex + 1) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.title_projects));
 
                     // index resource
                     File rInfo = new File(resourceDir, "data.json");
@@ -104,33 +93,6 @@ public class IndexProjectsTask extends ManagedTask {
                             continue;
                         }
                     }
-
-//                    // load the source
-//                    AppContext.projectManager().fetchProjectSource(p, l, r, false);
-//
-//                    int cIndex = -1;
-//                    for(Chapter c:p.getChapters()) {
-//                        cIndex ++;
-//                        if(interrupted()) return;
-//
-//                        IndexStore.index(c);
-//
-//                        // index frames
-//                        int fIndex = -1;
-//                        for(Model m:c.getFrames()) {
-//                            fIndex ++;
-//                            if(interrupted()) return;
-//
-//                            Frame f = (Frame)m;
-//
-//                            publishProgress((pIndex + (lIndex + (rIndex + (cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) p.getChapters().length) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.indexing_projects) + " " + p.getId() + "." + l.getId() + "." + c.getId());
-//
-//                            IndexStore.index(f);
-//                        }
-//                    }
-
-                    // empty the source
-//                    p.flush();
                 }
             }
 

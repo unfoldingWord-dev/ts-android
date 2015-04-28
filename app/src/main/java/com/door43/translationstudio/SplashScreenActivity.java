@@ -10,7 +10,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.util.AppContext;
@@ -19,7 +18,6 @@ import com.door43.util.threads.TaskManager;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
 
 /**
  * Created by joel on 9/29/2014.
@@ -152,7 +150,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
             // index all the projects
             IndexProjectsTask task = new IndexProjectsTask(AppContext.projectManager().getProjects());
-            TaskManager.addTask(task, IndexProjectsTask.TASK_INDEX);
+            TaskManager.addTask(task, IndexProjectsTask.TASK_ID);
             return null;
         }
 

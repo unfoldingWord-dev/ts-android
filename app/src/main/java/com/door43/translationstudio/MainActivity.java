@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,6 +13,8 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
@@ -41,6 +44,7 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
+import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.translator.BlindDraftTranslatorFragment;
 import com.door43.translationstudio.translator.DefaultTranslatorFragment;
 import com.door43.translationstudio.translator.TranslatorActivityInterface;
@@ -64,6 +68,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     private boolean mKeyboardIsOpen;
     private int mPreviousRootViewHeight;
     private TranslatorFragmentInterface mTranslatorFragment;
+    private ProgressDialog mIndexProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,17 +169,28 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     public void onResume() {
         super.onResume();
 
+        // connect to tasks
+        IndexProjectsTask indexProjectsTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
+        IndexProjectsTask indexResourcesTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
+        if(indexProjectsTask != null) {
+            indexProjectsTask.addOnProgressListener(this);
+            indexProjectsTask.addOnFinishedListener(this);
+        } else if(indexResourcesTask != null) {
+            indexResourcesTask.addOnProgressListener(this);
+            indexResourcesTask.addOnFinishedListener(this);
+        }
+
         // rebuild the index if it was destroyed
         Project p = AppContext.projectManager().getSelectedProject();
-        if(p != null && IndexStore.hasIndex(p)) {
-            IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_INDEX);
-            if(task == null) {
-                task = new IndexProjectsTask(AppContext.projectManager().getProjects());
-                task.addOnProgressListener(this);
-                task.addOnFinishedListener(this);
-                TaskManager.addTask(task, IndexProjectsTask.TASK_INDEX);
-            }
-        } else {
+        if(p != null && !IndexStore.hasIndex(p) && indexProjectsTask == null) {
+            indexProjectsTask = new IndexProjectsTask(AppContext.projectManager().getProjects());
+            indexProjectsTask.addOnProgressListener(this);
+            indexProjectsTask.addOnFinishedListener(this);
+            TaskManager.addTask(indexProjectsTask, IndexProjectsTask.TASK_ID);
+        }
+
+        // reload the translations
+        if(indexProjectsTask == null && indexResourcesTask == null) {
             mTranslatorFragment.reload();
         }
     }
@@ -576,12 +592,71 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     }
 
     @Override
-    public void onProgress(ManagedTask task, double progress, String message) {
-        // TODO: display dialog
+    public void onProgress(final ManagedTask task, final double progress, final String message) {
+        if(!task.isFinished()) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(task.isFinished()) {
+                        if(mIndexProgressDialog != null) {
+                            mIndexProgressDialog.dismiss();
+                        }
+                        return;
+                    }
+                    if(mIndexProgressDialog == null) {
+                        mIndexProgressDialog = new ProgressDialog(MainActivity.this);
+                        mIndexProgressDialog.setCancelable(false);
+                        mIndexProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        mIndexProgressDialog.setCanceledOnTouchOutside(false);
+                        mIndexProgressDialog.setMax(100);
+                        mIndexProgressDialog.setIcon(R.drawable.ic_index_small);
+                        mIndexProgressDialog.setTitle(getResources().getString(R.string.indexing));
+                        mIndexProgressDialog.setMessage("");
+                    }
+                    if(!mIndexProgressDialog.isShowing()) {
+                        mIndexProgressDialog.show();
+                    }
+                    if(progress == -1) {
+                        mIndexProgressDialog.setIndeterminate(true);
+                        mIndexProgressDialog.setProgress(mIndexProgressDialog.getMax());
+                    } else {
+                        mIndexProgressDialog.setIndeterminate(false);
+                        mIndexProgressDialog.setProgress((int) Math.ceil(progress * 100));
+                    }
+                    if(!message.isEmpty()) {
+                        mIndexProgressDialog.setMessage(message);
+                    } else {
+                        mIndexProgressDialog.setMessage("");
+                    }
+                }
+            });
+        }
     }
 
     @Override
-    public void onFinished(ManagedTask task) {
+    public void onFinished(final ManagedTask task) {
         // TODO: close dialog and start indexing the source if nessesary.
+        TaskManager.clearTask(task.getTaskId());
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mIndexProgressDialog != null && mIndexProgressDialog.isShowing()) {
+                    mIndexProgressDialog.dismiss();
+                }
+
+                Project p = AppContext.projectManager().getSelectedProject();
+                if (task instanceof IndexProjectsTask && p != null && !IndexStore.hasResourceIndex(p)) {
+                    IndexResourceTask newTask = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                    newTask.addOnProgressListener(MainActivity.this);
+                    newTask.addOnFinishedListener(MainActivity.this);
+                    TaskManager.addTask(newTask, IndexResourceTask.TASK_ID);
+                } else if (task instanceof IndexResourceTask) {
+                    mTranslatorFragment.reload();
+                }
+            }
+        });
     }
 }

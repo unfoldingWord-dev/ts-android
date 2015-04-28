@@ -4,17 +4,11 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.door43.translationstudio.util.TaskBarView
-        android:id="@+id/projectProcessesLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/projects_list_view"
-        android:layout_above="@+id/moreProjectsButton"
-        android:layout_below="@+id/projectProcessesLayout" />
+        android:layout_above="@+id/moreProjectsButton" />
 
     <Button
         android:layout_width="match_parent"

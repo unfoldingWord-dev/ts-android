@@ -2,7 +2,6 @@ package com.door43.translationstudio.projects.data;
 
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
-import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
@@ -16,7 +15,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +25,8 @@ public class IndexStore {
     private final File sIndexDir;
 
     private static IndexStore sInstance = null;
-    private static final String READY_INDEX = "ready.index";
-    private static final String DATA_FILE = "data.json";
+    public static final String READY_FILE = "ready.index";
+    public static final String DATA_FILE = "data.json";
 
     static {
         sInstance = new IndexStore();
@@ -44,7 +42,7 @@ public class IndexStore {
      * @return
      */
     public static boolean hasIndex(Project p) {
-        File indexReadyFile = new File(sInstance.sIndexDir, p.getId() + "/" + READY_INDEX);
+        File indexReadyFile = new File(sInstance.sIndexDir, p.getId() + "/" + READY_FILE);
         return indexReadyFile.exists();
     }
 
@@ -210,5 +208,16 @@ public class IndexStore {
                 }
             }
         }
+    }
+
+    /**
+     * Checks if the currently selected resource on the project is indexed
+     * @param p
+     * @return
+     */
+    public static boolean hasResourceIndex(Project p) {
+        File dir = getResourceDir(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+        File readyFile = new File(dir, READY_FILE);
+        return readyFile.exists();
     }
 }

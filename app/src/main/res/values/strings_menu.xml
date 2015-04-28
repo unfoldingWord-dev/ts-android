@@ -14,7 +14,7 @@
     <!-- Open the project settings-->
     <string name="menu_project_settings" translatable="false">@string/title_project_settings</string>
     <!-- Open the translation resources -->
-    <string name="menu_resources">Resources</string>
+    <string name="menu_resources" translatable="false">@string/title_resources</string>
     <!-- Open the project library -->
     <string name="menu_library">Library</string>
     <!-- Save changes  -->
@@ -27,4 +27,5 @@
     <string name="menu_update">Update</string>
     <!-- Insert verse marker -->
     <string name="menu_verse_marker" translatable="false">@string/title_verse</string>
+    <string name="title_resources">Resources</string>
 </resources>
