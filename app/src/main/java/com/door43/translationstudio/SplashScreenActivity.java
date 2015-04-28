@@ -176,11 +176,6 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
                     // load the saved project without displaying a notice to the user
                     AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject(), false);
                 }
-            } else {
-                // load the default project without display a notice to the user
-                if(AppContext.projectManager().getSelectedProject() != null) {
-                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject(), false);
-                }
             }
         }
     }
