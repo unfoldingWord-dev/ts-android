@@ -471,6 +471,7 @@ public class Frame implements Model {
             }
             return new Frame(json.getString("id"), img, json.getString("text"), format);
         } catch (JSONException e) {
+            e.printStackTrace();
             return null;
         }
     }

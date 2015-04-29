@@ -191,6 +191,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
         // reload the translations
         if(indexProjectsTask == null && indexResourcesTask == null) {
+            // TODO: load the chapters and the frames for the selected chapter
             mTranslatorFragment.reload();
         }
     }

@@ -80,6 +80,35 @@ public class IndexStore {
     }
 
     /**
+     * Loads the chapters into the project
+     * @param p
+     * @param l
+     * @param r
+     * @return
+     */
+    public static void loadChapters(final Project p, SourceLanguage l, Resource r) {
+        final File sourceDir = getSourceDir(p, l, r);
+        sourceDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                File dataFile = new File(sourceDir, filename + "/" + DATA_FILE);
+                if(dataFile.exists()) {
+                    try {
+                        String data = FileUtils.readFileToString(dataFile);
+                        Chapter c = Chapter.generate(new JSONObject(data));
+                        if(c != null) {
+                            p.addChapter(c);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    /**
      * Deletes an indexed project
      * @param p
      */
@@ -135,6 +164,17 @@ public class IndexStore {
     }
 
     /**
+     * Returns the directory for the source
+     * @param p
+     * @param l
+     * @param r
+     * @return
+     */
+    public static File getSourceDir(Project p, SourceLanguage l, Resource r) {
+        return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/source/");
+    }
+
+    /**
      * Returns the directory for the chapter index
      * @param p
      * @param l
@@ -144,6 +184,17 @@ public class IndexStore {
      */
     public static File getNotesChapterDir(Project p, SourceLanguage l, Resource r, Chapter c) {
         return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/notes/" + c.getId());
+    }
+
+    /**
+     * Returns the directory for the notes
+     * @param p
+     * @param l
+     * @param r
+     * @return
+     */
+    public static File getNotesDir(Project p, SourceLanguage l, Resource r) {
+        return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/notes/");
     }
 
     /**

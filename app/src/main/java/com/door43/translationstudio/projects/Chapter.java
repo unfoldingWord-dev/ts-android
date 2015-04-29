@@ -524,4 +524,26 @@ public class Chapter implements Model {
         // let the project know the translation has been saved
         mProject.onChapterSaved(this);
     }
+
+    /**
+     * Generates a new chapter instance from json
+     * @param json
+     * @return
+     */
+    public static Chapter generate(JSONObject json) {
+        try {
+            String ref = "";
+            if(json.has("ref")) {
+                ref = json.getString("ref");
+            }
+            String title = "";
+            if(json.has("title")) {
+                title = json.getString("title");
+            }
+            return new Chapter(json.getString("number"), title, ref);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
