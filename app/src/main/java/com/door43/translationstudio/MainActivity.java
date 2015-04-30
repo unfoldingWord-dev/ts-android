@@ -2,7 +2,6 @@ package com.door43.translationstudio;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,8 +12,6 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
@@ -69,7 +66,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     private boolean mKeyboardIsOpen;
     private int mPreviousRootViewHeight;
     private TranslatorFragmentInterface mTranslatorFragment;
-    private GenericTaskWatcher mTaskWatcher;
+    private GenericTaskWatcher mIndexTaskWatcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,8 +81,8 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         }
 
         // set up task watcher
-        mTaskWatcher = new GenericTaskWatcher(this, R.string.indexing, R.drawable.ic_index_small);
-        mTaskWatcher.setOnFinishedListener(this);
+        mIndexTaskWatcher = new GenericTaskWatcher(this, R.string.indexing, R.drawable.ic_index_small);
+        mIndexTaskWatcher.setOnFinishedListener(this);
 
         // set up toolbars
         mMainToolbar = (Toolbar)findViewById(R.id.toolbar_main);
@@ -178,16 +175,16 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         IndexProjectsTask indexProjectsTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
         IndexProjectsTask indexResourcesTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
         if(indexProjectsTask != null) {
-            mTaskWatcher.watch(indexProjectsTask);
+            mIndexTaskWatcher.watch(indexProjectsTask);
         } else if(indexResourcesTask != null) {
-            mTaskWatcher.watch(indexResourcesTask);
+            mIndexTaskWatcher.watch(indexResourcesTask);
         }
 
         // rebuild the index if it was destroyed
         Project p = AppContext.projectManager().getSelectedProject();
         if(p != null && !IndexStore.hasIndex(p) && indexProjectsTask == null) {
             indexProjectsTask = new IndexProjectsTask(AppContext.projectManager().getProjects());
-            mTaskWatcher.watch(indexProjectsTask);
+            mIndexTaskWatcher.watch(indexProjectsTask);
             TaskManager.addTask(indexProjectsTask, IndexProjectsTask.TASK_ID);
         }
 
@@ -470,7 +467,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     @Override
     public void onDestroy() {
         unregisterReceiver(mMessageReceiver);
-        mTaskWatcher.stop();
+        mIndexTaskWatcher.stop();
         super.onDestroy();
     }
 
@@ -597,13 +594,11 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
     @Override
     public void onFinished(final ManagedTask task) {
-        mTaskWatcher.stop();
+        mIndexTaskWatcher.stop();
         Project p = AppContext.projectManager().getSelectedProject();
         if (task instanceof IndexProjectsTask && p != null && !IndexStore.hasResourceIndex(p)) {
             IndexResourceTask newTask = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-            mTaskWatcher.watch(newTask);
-//            newTask.addOnProgressListener(this);
-//            newTask.addOnFinishedListener(MainActivity.this);
+            mIndexTaskWatcher.watch(newTask);
             TaskManager.addTask(newTask, IndexResourceTask.TASK_ID);
         } else if (task instanceof IndexResourceTask) {
             mTranslatorFragment.reload();

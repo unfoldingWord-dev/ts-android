@@ -17,6 +17,7 @@ public class LoadChaptersTask extends ManagedTask {
     private final SourceLanguage mLanguage;
     private final Resource mResource;
     private int mMaxProgress = 100;
+    public String TASK_ID = "load_chapters";
 
     public LoadChaptersTask(Project p, SourceLanguage l, Resource r) {
         mProject = p;

@@ -28,7 +28,9 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
+import com.door43.translationstudio.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
+import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TaskBarView;
 import com.door43.util.Logger;
@@ -42,15 +44,19 @@ import com.squareup.otto.Subscribe;
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
+public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener {
     private ModelItemAdapter mModelItemAdapter;
-    private TaskBarView mTaskBar;
+    private GenericTaskWatcher mTaskWatcher;
+//    private TaskBarView mTaskBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pane_left_projects, container, false);
         ListView listView = (ListView)view.findViewById(R.id.projects_list_view);
         Button moreProjectsButton = (Button)view.findViewById(R.id.moreProjectsButton);
+
+        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        mTaskWatcher.setOnFinishedListener(this);
 
         // create adapter
         if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects());
@@ -142,11 +148,14 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
                 // load the project
                 if(!IndexStore.hasIndex(p)) {
-                    // TODO: index the project () then load the chapters
-
+                    // TODO: index the project and the resources then load the chapters
                 } else {
                     // load chapters
-
+                    if(p.getSelectedSourceLanguage() != null) {
+                        LoadChaptersTask task = new LoadChaptersTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                        mTaskWatcher.watch(task);
+                        TaskManager.addTask(task, task.TASK_ID);
+                    }
                 }
 
                 // load the project source
@@ -266,4 +275,29 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 //            }
 //        });
 //    }
+
+    public void onDestroy() {
+        mTaskWatcher.stop();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        if(task instanceof LoadChaptersTask) {
+            if(getActivity() != null) {
+                // populate the center pane
+                // TODO: clear the center pane
+//                ((MainActivity) getActivity()).reload();
+                // open up the chapters tab
+                // TODO: the chapter tab should not auto select
+                ((MainActivity) getActivity()).openChaptersTab();
+                // reload the frames tab so we don't see frames from the previous project
+                // TODO: clear the frames tab until we click on the chapter
+//                ((MainActivity) getActivity()).reloadFramesTab();
+            } else {
+                Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
+            }
+            NotifyAdapterDataSetChanged();
+        }
+    }
 }
