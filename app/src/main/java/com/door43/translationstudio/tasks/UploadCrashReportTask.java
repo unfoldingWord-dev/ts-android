@@ -30,6 +30,7 @@ import java.util.List;
 public class UploadCrashReportTask extends ManagedTask {
 
     private final String mMessage;
+    private int mMaxProgress = 100;
 
     public UploadCrashReportTask(String message) {
         mMessage = message;
@@ -123,5 +124,10 @@ public class UploadCrashReportTask extends ManagedTask {
                 }
             }
         }
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }

@@ -90,12 +90,22 @@ public class TaskManager {
         return mTaskMap.get(id).isFinished();
     }
 
+    static public ManagedTask getTask(Object id) {
+        if(id instanceof String) {
+            return getTask((String)id);
+        } else if(id instanceof Integer) {
+            return getTask((int)id);
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Returns the task by it's id
      * @param id
      * @return
      */
-    static public ManagedTask getTask(int id) {
+    static private ManagedTask getTask(int id) {
         if(mTaskMap.containsKey(id)) {
             return mTaskMap.get(id);
         } else {
@@ -108,7 +118,7 @@ public class TaskManager {
      * @param key
      * @return
      */
-    static public ManagedTask getTask(String key) {
+    static private ManagedTask getTask(String key) {
         if(mTaskKeys.containsKey(key)) {
             return getTask(mTaskKeys.get(key));
         } else {
@@ -119,13 +129,24 @@ public class TaskManager {
     /**
      * Removes a completed task from the manager.
      * If the task has not finished it will not be removed
-     * @param id
+     * @param id the id of the task to be removed. Can be either a string or an int
      */
     public static void clearTask(Object id) {
         if(id instanceof String) {
             clearTask((String)id);
         } else if(id instanceof Integer) {
             clearTask((int)id);
+        }
+    }
+
+    /**
+     * Removes a completed task from the manager.
+     * If the task has not finished it will not be removed.
+     * @param task the task to be removed
+     */
+    public static void clearTask(ManagedTask task) {
+        if(task != null) {
+            clearTask(task.getTaskId());
         }
     }
 

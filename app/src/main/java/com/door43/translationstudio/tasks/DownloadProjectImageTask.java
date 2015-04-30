@@ -17,7 +17,13 @@ public class DownloadProjectImageTask extends ManagedTask {
 
     @Override
     public void start() {
+        publishProgress(-1, "");
         mImagPath = AppContext.projectManager().downloadProjectImage(mProject, false);
+    }
+
+    @Override
+    public int maxProgress() {
+        return 1;
     }
 
     /**

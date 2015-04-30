@@ -17,6 +17,7 @@ public class DownloadProjectsTask extends ManagedTask {
     private final List<Project> mProjects;
     private final boolean ignoreCache;
     private double mProgress = -1;
+    private int mMaxProgress = 100;
 
     public DownloadProjectsTask(List<Project> projects) {
         mProjects = projects;
@@ -86,5 +87,10 @@ public class DownloadProjectsTask extends ManagedTask {
             AppContext.projectManager().reloadProject(p.getId());
         }
         publishProgress(1, "");
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }

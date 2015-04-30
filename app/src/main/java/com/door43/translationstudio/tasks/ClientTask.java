@@ -10,4 +10,9 @@ public class ClientTask extends ManagedTask {
     public void start() {
 
     }
+
+    @Override
+    public int maxProgress() {
+        return 0;
+    }
 }

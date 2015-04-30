@@ -16,6 +16,7 @@ public class DownloadLanguageTask extends ManagedTask {
 
     private final Project mProject;
     private final SourceLanguage mLanguage;
+    private int mMaxProgress = 1;
 
     /**
      * Creates a new task to download a source language
@@ -43,6 +44,7 @@ public class DownloadLanguageTask extends ManagedTask {
 
         // download resources
         List<Resource> resources = AppContext.projectManager().downloadResourceList(mProject, mLanguage, ignoreCache);
+        mMaxProgress = resources.size();
         for(int i = 0; i < resources.size(); i ++) {
             if(interrupted()) return;
             Resource r = resources.get(i);
@@ -72,6 +74,11 @@ public class DownloadLanguageTask extends ManagedTask {
         publishProgress(1, "");
         // TODO: only delete the index if there were changes
         IndexStore.deleteIndex(mProject);
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 
     /**

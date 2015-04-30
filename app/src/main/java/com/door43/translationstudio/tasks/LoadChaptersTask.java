@@ -16,6 +16,7 @@ public class LoadChaptersTask extends ManagedTask {
     private final Project mProject;
     private final SourceLanguage mLanguage;
     private final Resource mResource;
+    private int mMaxProgress = 100;
 
     public LoadChaptersTask(Project p, SourceLanguage l, Resource r) {
         mProject = p;
@@ -27,5 +28,10 @@ public class LoadChaptersTask extends ManagedTask {
     public void start() {
         publishProgress(-1, AppContext.context().getResources().getString(R.string.title_chapters));
         IndexStore.loadChapters(mProject, mLanguage, mResource);
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }

@@ -22,6 +22,7 @@ public class IndexProjectsTask extends ManagedTask {
 
     public static final String TASK_ID = "index_projects";
     private final Project[] mProjects;
+    private int mMaxProgress = 100;
 
     public IndexProjectsTask(Project[] projects) {
         mProjects = projects;
@@ -105,5 +106,10 @@ public class IndexProjectsTask extends ManagedTask {
                 }
             }
         }
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }

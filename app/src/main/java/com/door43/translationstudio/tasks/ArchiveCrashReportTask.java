@@ -12,6 +12,8 @@ import java.io.FilenameFilter;
  */
 public class ArchiveCrashReportTask extends ManagedTask {
 
+    private int mMaxProgress = 1;
+
     @Override
     public void start() {
         File dir = new File(AppContext.context().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
@@ -34,5 +36,10 @@ public class ArchiveCrashReportTask extends ManagedTask {
                 }
             }
         }
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }

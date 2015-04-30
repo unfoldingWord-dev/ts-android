@@ -15,6 +15,7 @@ import java.util.List;
 public class DownloadAvailableProjectsTask extends ManagedTask {
     private final boolean mIgnoreCache;
     private List<Project> mProjects = new ArrayList<>();
+    private int mMaxProgress = 100;
 
     public DownloadAvailableProjectsTask(boolean ignoreCache) {
         mIgnoreCache = ignoreCache;
@@ -73,6 +74,11 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
             }
             i++;
         }
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 
     /**

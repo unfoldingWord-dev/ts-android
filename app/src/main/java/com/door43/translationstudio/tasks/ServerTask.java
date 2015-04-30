@@ -112,6 +112,11 @@ public class ServerTask extends NetworkServiceTask {
         }
     }
 
+    @Override
+    public int maxProgress() {
+        return 1;
+    }
+
     private void onError(Exception e) {
         if(mListener != null) {
             mListener.onError(e);

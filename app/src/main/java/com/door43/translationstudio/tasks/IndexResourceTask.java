@@ -27,6 +27,7 @@ public class IndexResourceTask extends ManagedTask {
     private final Resource mResource;
     private final SourceLanguage mLanguage;
     private final Project mProject;
+    private int mMaxProgress = 100;
 
     public IndexResourceTask(Project p, SourceLanguage l, Resource r) {
         // TRICKY: we create a new project so we don't override anything the user is working on.
@@ -74,5 +75,10 @@ public class IndexResourceTask extends ManagedTask {
                 Logger.e(this.getClass().getName(), "Failed to create the ready.index file", e);
             }
         }
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }

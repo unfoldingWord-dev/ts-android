@@ -132,9 +132,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             // this is a normal project
             Project previousProject = AppContext.projectManager().getSelectedProject();
             if (previousProject == null || !previousProject.getId().equals(p.getId())) {
-                // reload the center pane so we don't accidently overwrite a frame
                 ((MainActivity) getActivity()).reload();
-
                 AppContext.projectManager().setSelectedProject(p.getId());
 
                 // clear out the previous project so we don't waste memory
@@ -144,47 +142,47 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
                 // load the project
                 if(!IndexStore.hasIndex(p)) {
-                    // TODO: index the project ()
+                    // TODO: index the project () then load the chapters
 
                 } else {
-                    // TODO: load the already indexed project (not the resources)
+                    // load chapters
 
                 }
 
                 // load the project source
-                final ProgressDialog dialog = new ProgressDialog(getActivity());
-                dialog.setCancelable(false);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
-                dialog.show();
-                new ThreadableUI(this.getActivity()) {
-
-                    @Override
-                    public void onStop() {
-
-                    }
-
-                    @Override
-                    public void run() {
-                        AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
-                    }
-
-                    @Override
-                    public void onPostExecute() {
-                        if(getActivity() != null) {
-                            // populate the center pane
-                            ((MainActivity) getActivity()).reload();
-                            // open up the chapters tab
-                            ((MainActivity) getActivity()).openChaptersTab();
-                            // reload the frames tab so we don't see frames from the previous project
-                            ((MainActivity) getActivity()).reloadFramesTab();
-                        } else {
-                            Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
-                        }
-                        dialog.dismiss();
-                        NotifyAdapterDataSetChanged();
-                    }
-                }.start();
+//                final ProgressDialog dialog = new ProgressDialog(getActivity());
+//                dialog.setCancelable(false);
+//                dialog.setCanceledOnTouchOutside(false);
+//                dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
+//                dialog.show();
+//                new ThreadableUI(this.getActivity()) {
+//
+//                    @Override
+//                    public void onStop() {
+//
+//                    }
+//
+//                    @Override
+//                    public void run() {
+//                        AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+//                    }
+//
+//                    @Override
+//                    public void onPostExecute() {
+//                        if(getActivity() != null) {
+//                            // populate the center pane
+//                            ((MainActivity) getActivity()).reload();
+//                            // open up the chapters tab
+//                            ((MainActivity) getActivity()).openChaptersTab();
+//                            // reload the frames tab so we don't see frames from the previous project
+//                            ((MainActivity) getActivity()).reloadFramesTab();
+//                        } else {
+//                            Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
+//                        }
+//                        dialog.dismiss();
+//                        NotifyAdapterDataSetChanged();
+//                    }
+//                }.start();
             } else {
                 // select the project
                 AppContext.projectManager().setSelectedProject(p.getId());
@@ -195,8 +193,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 // let the adapter redraw itself so the selected project is corectly highlighted
                 NotifyAdapterDataSetChanged();
             }
-        } else {
-            Logger.e(this.getClass().getName(), "handleProjectSelection the activity is null");
         }
     }
 

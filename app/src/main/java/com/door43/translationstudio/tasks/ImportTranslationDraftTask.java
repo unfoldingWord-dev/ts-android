@@ -13,6 +13,8 @@ import com.door43.util.threads.ManagedTask;
 public class ImportTranslationDraftTask extends ManagedTask {
 
     private final Project mProject;
+    private int mMaxProgress = 1;
+
     public ImportTranslationDraftTask(Project p) {
         mProject = p;
     }
@@ -32,5 +34,10 @@ public class ImportTranslationDraftTask extends ManagedTask {
         } else {
             Logger.w(this.getClass().getName(), "The translation draft resources could not be found. Project: "+mProject.getId() + " Language: " + mProject.getSelectedTargetLanguage().getId());
         }
+    }
+
+    @Override
+    public int maxProgress() {
+        return mMaxProgress;
     }
 }

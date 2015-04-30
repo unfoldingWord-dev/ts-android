@@ -19,6 +19,7 @@ public abstract class ManagedTask implements Runnable {
     private boolean mIsStopped = false;
     private List<OnStartListener> mStartListeners = new ArrayList<>();
     private boolean mIsRunning = false;
+    private List<OnIdChangedListener> mOnIdChangedListeners = new ArrayList<>();
 
     @Override
     public final void run() {
@@ -79,6 +80,13 @@ public abstract class ManagedTask implements Runnable {
      */
     public final void setTaskId(Object id) {
         mTaskId = id;
+        for(OnIdChangedListener listener:mOnIdChangedListeners) {
+            try {
+                listener.onChanged(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -124,6 +132,31 @@ public abstract class ManagedTask implements Runnable {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the listener to be called when the task's id changes
+     * This is useful when you need to begin working with a task object before it has been
+     * loaded into the task manager
+     * @param listener
+     */
+    public final void addOnIdChangedListener(OnIdChangedListener listener) {
+        if(!mOnIdChangedListeners.contains(listener) && listener != null) {
+            mOnIdChangedListeners.add(listener);
+            try {
+                listener.onChanged(this);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Removes the on id changed listener
+     * @param listener
+     */
+    public final void removeOnIdChangedListener(OnIdChangedListener listener) {
+        mOnIdChangedListeners.remove(listener);
     }
 
     /**
@@ -181,6 +214,13 @@ public abstract class ManagedTask implements Runnable {
      * Perform any threadable tasks here
      */
     public abstract void start();
+
+    /**
+     * Returns the maximum progress threshold
+     * Useful for setting up progress bars
+     * @return
+     */
+    public abstract int maxProgress();
 
     /**
      * Returns the thread on which this runnable is being executed
@@ -257,5 +297,9 @@ public abstract class ManagedTask implements Runnable {
 
     public interface OnStartListener {
         void onStart(ManagedTask task);
+    }
+
+    public interface OnIdChangedListener {
+        void onChanged(ManagedTask task);
     }
 }
