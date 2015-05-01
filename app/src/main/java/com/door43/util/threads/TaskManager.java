@@ -182,10 +182,14 @@ public class TaskManager {
      * @param id the id of the task to be removed. Can be either a string or an int
      */
     public static void clearTask(Object id) {
-        if(id instanceof String) {
-            clearTask((String)id);
-        } else if(id instanceof Integer) {
-            clearTask((int)id);
+        if(id != null) {
+            synchronized (sInstance) {
+                if (id instanceof String) {
+                    clearTask((String) id);
+                } else if (id instanceof Integer) {
+                    clearTask((int) id);
+                }
+            }
         }
     }
 
@@ -309,10 +313,12 @@ public class TaskManager {
      * @param group
      */
     public static void killGroup(String group) {
-        List<ManagedTask> tasks = getGroupedTasks(group);
-        for(ManagedTask t:tasks) {
-            cancelTask(t);
-            clearTask(t);
+        synchronized (sInstance) {
+            List<ManagedTask> tasks = getGroupedTasks(group);
+            for (ManagedTask t : tasks) {
+                cancelTask(t);
+                clearTask(t);
+            }
         }
     }
 }
