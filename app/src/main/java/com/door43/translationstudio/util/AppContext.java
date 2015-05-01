@@ -35,7 +35,7 @@ public class AppContext {
     private static Navigator mNavigator;
     private static ProjectManager mProjectManager;
     public static final Bundle args = new Bundle();
-    private static boolean sEnableGraphite = false;
+    private static boolean sEnableGraphite = true;
 
     /**
      * Initializes the basic functions context.
