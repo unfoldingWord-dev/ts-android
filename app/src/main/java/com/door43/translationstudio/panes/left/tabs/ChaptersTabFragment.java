@@ -62,15 +62,28 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
                     p.setSelectedChapter(i);
 
                     // load frames
-                    LoadFramesTask task = new LoadFramesTask(p, l, l.getSelectedResource(), p.getSelectedChapter());
-                    mTaskWatcher.watch(task);
-                    TaskManager.addTask(task, task.TASK_ID);
+                    if(p.getSelectedChapter().getFrames().length == 0) {
+                        LoadFramesTask task = new LoadFramesTask(p, l, l.getSelectedResource(), p.getSelectedChapter());
+                        mTaskWatcher.watch(task);
+                        TaskManager.addTask(task, task.TASK_ID);
+                    } else {
+                        openFramesTab();
+                    }
                 } else{
                     Logger.e(this.getClass().getName(), "onItemClickListener the activity is null");
                 }
             }
         });
         return view;
+    }
+
+    /**
+     * reloads and opens the frames tab
+     */
+    private void openFramesTab() {
+        ((MainActivity) getActivity()).reload();
+        ((MainActivity) getActivity()).openFramesTab();
+        NotifyAdapterDataSetChanged();
     }
 
     @Override
@@ -89,9 +102,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
          if(task instanceof LoadFramesTask) {
-             ((MainActivity) getActivity()).reload();
-             ((MainActivity) getActivity()).openFramesTab();
-             NotifyAdapterDataSetChanged();
+             openFramesTab();
          }
     }
 
