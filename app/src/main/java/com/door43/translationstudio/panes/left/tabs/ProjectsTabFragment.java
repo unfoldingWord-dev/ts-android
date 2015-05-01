@@ -31,6 +31,7 @@ import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
+import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TaskBarView;
@@ -159,8 +160,11 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                             mTaskWatcher.watch(task);
                             TaskManager.addTask(task, task.TASK_ID);
                         } else {
-                            // TODO: index chapters
+                            // index chapters
                             Log.d(null, "need to index the chapters");
+                            IndexResourceTask task = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                            mTaskWatcher.watch(task);
+                            TaskManager.addTask(task, task.TASK_ID);
                         }
                     }
                 }
@@ -290,8 +294,9 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
     @Override
     public void onFinished(ManagedTask task) {
+        mTaskWatcher.stop();
         if(task instanceof LoadChaptersTask) {
-            if(getActivity() != null) {
+//            if(getActivity() != null) {
                 // populate the center pane
                 // TODO: clear the center pane
 //                ((MainActivity) getActivity()).reload();
@@ -301,10 +306,15 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 // reload the frames tab so we don't see frames from the previous project
                 // TODO: clear the frames tab until we click on the chapter
 //                ((MainActivity) getActivity()).reloadFramesTab();
-            } else {
-                Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
-            }
+//            } else {
+//                Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
+//            }
             NotifyAdapterDataSetChanged();
+        } else if(task instanceof IndexResourceTask) {
+            // load the chapters
+            LoadChaptersTask newTask = new LoadChaptersTask(((IndexResourceTask) task).getProject(), ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
+            mTaskWatcher.watch(newTask);
+            TaskManager.addTask(newTask, newTask.TASK_ID);
         }
     }
 }

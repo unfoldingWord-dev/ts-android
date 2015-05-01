@@ -1,5 +1,7 @@
 package com.door43.util.threads;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,13 +93,15 @@ public class TaskManager {
      * @return
      */
     static public boolean groupTask(ManagedTask task, String group) {
-        if(task.getTaskId() instanceof String) {
-            if(mTaskKeys.containsKey(task.getTaskId())) {
-                setGroup(mTaskKeys.get(task.getTaskId()), group);
-            }
-        } else if(task.getTaskId() instanceof Integer) {
-            if(mTaskMap.containsKey(task.getTaskId())) {
-                setGroup((int)task.getTaskId(), group);
+        if(task != null && task.getTaskId() != null) {
+            if (task.getTaskId() instanceof String) {
+                if (mTaskKeys.containsKey(task.getTaskId())) {
+                    setGroup(mTaskKeys.get(task.getTaskId()), group);
+                }
+            } else if (task.getTaskId() instanceof Integer) {
+                if (mTaskMap.containsKey(task.getTaskId())) {
+                    setGroup((int) task.getTaskId(), group);
+                }
             }
         }
         return false;
@@ -220,20 +224,22 @@ public class TaskManager {
      * @param id
      */
     private static boolean clearTask(Integer id) {
-        if(mTaskMap.containsKey(id) && (mTaskMap.get(id).isFinished())) {
-            mTaskMap.remove(id);
-            // clear group mapping
-            List<String> groups = mTaskGroupsMap.get(id);
-            if(groups != null) {
-                for(String group:groups) {
-                    mGroupTasksMap.get(group).remove(id);
-                    if(mGroupTasksMap.get(group).size() == 0) {
-                        mGroupTasksMap.remove(group);
+        if(id != null) {
+            if (mTaskMap.containsKey(id) && (mTaskMap.get(id).isFinished())) {
+                mTaskMap.remove(id);
+                // clear group mapping
+                List<String> groups = mTaskGroupsMap.get(id);
+                if (groups != null) {
+                    for (String group : groups) {
+                        mGroupTasksMap.get(group).remove(id);
+                        if (mGroupTasksMap.get(group).size() == 0) {
+                            mGroupTasksMap.remove(group);
+                        }
                     }
+                    mTaskGroupsMap.remove(id);
                 }
-                mTaskGroupsMap.remove(id);
+                return true;
             }
-            return true;
         }
         return false;
     }

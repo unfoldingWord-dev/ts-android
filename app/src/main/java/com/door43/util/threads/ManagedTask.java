@@ -60,7 +60,7 @@ public abstract class ManagedTask implements Runnable {
 
     /**
      * Causes the task to sleep
-     * @param time
+     * @param time The time to sleep in milliseconds.
      * @throws InterruptedException
      */
     protected final void sleep(long time) {

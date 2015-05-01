@@ -178,12 +178,10 @@ public class ModelItemAdapter extends BaseAdapter {
         if(holder.fontTaskId != null) {
             LoadModelFontTask oldTask = (LoadModelFontTask)TaskManager.getTask(holder.fontTaskId);
             if(oldTask != null) {
-                Log.d(null, "killing font task: " + oldTask.getTaskId());
                 TaskManager.cancelTask(oldTask);
                 TaskManager.clearTask(oldTask);
             }
         }
-
         LoadModelFontTask task = new LoadModelFontTask(getItem(position), mIndicateSelected);
         task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
             @Override
@@ -208,50 +206,6 @@ public class ModelItemAdapter extends BaseAdapter {
             TaskManager.groupTask(task, mGroupTaskId);
         }
         holder.fontTaskId = task.getTaskId();
-
-//        if(holder.fontThread != null) {
-//            holder.fontThread.stop();
-//        }
-//        holder.fontThread = new ThreadableUI(mContext) {
-//            private Typeface typeface;
-//            private Typeface descriptionTypeface;
-//
-//            @Override
-//            public void onStop() {
-//
-//            }
-//
-//            @Override
-//            public void run() {
-//                if(staticModel.getSelectedSourceLanguage() != null) {
-//                    typeface = AppContext.graphiteTypeface(staticModel.getSelectedSourceLanguage());
-//                } else {
-//                    // use english as default
-//                    typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
-//                }
-//                descriptionTypeface = typeface;
-//
-//                if(!isInterrupted()) {
-//                    // use selected project language in pseudo project description fontface
-//                    if (mIndicateSelected && staticModel.getClass().getName().equals(PseudoProject.class.getName())) {
-//                        if (staticModel.isSelected() && AppContext.projectManager().getSelectedProject() != null) {
-//                            descriptionTypeface = AppContext.graphiteTypeface(AppContext.projectManager().getSelectedProject().getSelectedSourceLanguage());
-//                        }
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onPostExecute() {
-//                if(!isInterrupted()) {
-//                    staticHolder.title.setTypeface(typeface, 0);
-//                    staticHolder.altTitle.setTypeface(typeface, 0);
-//                    staticHolder.description.setTypeface(typeface, 0);
-//                    staticHolder.altDescription.setTypeface(descriptionTypeface, 0);
-//                }
-//            }
-//        };
-//        holder.fontThread.start();
 
         // set font size
         float fontsize = AppContext.typefaceSize();

@@ -17,6 +17,8 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
+import javax.xml.transform.Source;
+
 /**
  * Indexes the the the notes, terms, and source of a resource.
  * NOTE: this does not index the resource object, just the raw sources
@@ -34,6 +36,18 @@ public class IndexResourceTask extends ManagedTask {
         mProject = p.softClone();
         mLanguage = l;
         mResource = r;
+    }
+
+    public Project getProject() {
+        return mProject;
+    }
+
+    public SourceLanguage getSourceLanguage() {
+        return mLanguage;
+    }
+
+    public Resource getResource() {
+        return mResource;
     }
 
     @Override

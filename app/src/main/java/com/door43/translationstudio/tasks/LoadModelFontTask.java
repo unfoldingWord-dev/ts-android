@@ -26,6 +26,9 @@ public class LoadModelFontTask extends ManagedTask {
 
     @Override
     public void start() {
+        // don't flood the ui with updates
+        sleep(100);
+        if(interrupted()) return;
         if(mModel.getSelectedSourceLanguage() != null) {
             typeface = AppContext.graphiteTypeface(mModel.getSelectedSourceLanguage());
         } else {
@@ -34,12 +37,11 @@ public class LoadModelFontTask extends ManagedTask {
         }
         descriptionTypeface = typeface;
 
-        if(!interrupted()) {
-            // use selected project language in pseudo project description fontface
-            if (mIndicateSelected && mModel.getClass().getName().equals(PseudoProject.class.getName())) {
-                if (mModel.isSelected() && AppContext.projectManager().getSelectedProject() != null) {
-                    descriptionTypeface = AppContext.graphiteTypeface(AppContext.projectManager().getSelectedProject().getSelectedSourceLanguage());
-                }
+        if(interrupted()) return;
+        // use selected project language in pseudo project description fontface
+        if (mIndicateSelected && mModel.getClass().getName().equals(PseudoProject.class.getName())) {
+            if (mModel.isSelected() && AppContext.projectManager().getSelectedProject() != null) {
+                descriptionTypeface = AppContext.graphiteTypeface(AppContext.projectManager().getSelectedProject().getSelectedSourceLanguage());
             }
         }
     }
