@@ -104,7 +104,7 @@ public class ModelItemAdapter extends BaseAdapter {
     public View getView(final int position, View convertView, final ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = new ViewHolder();
-        String imageUri;
+        final String imageUri;
 
         if(AppContext.assetExists(getItem(position).getImagePath())) {
             imageUri = "assets://"+ getItem(position).getImagePath();
@@ -175,37 +175,42 @@ public class ModelItemAdapter extends BaseAdapter {
         final boolean staticIsSelected = isSelected;
 
         // set fontface
-        if(holder.fontTaskId != null) {
-            LoadModelFontTask oldTask = (LoadModelFontTask)TaskManager.getTask(holder.fontTaskId);
-            if(oldTask != null) {
-                TaskManager.cancelTask(oldTask);
-                TaskManager.clearTask(oldTask);
-            }
-        }
-        LoadModelFontTask task = new LoadModelFontTask(getItem(position), mIndicateSelected);
-        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-            @Override
-            public void onFinished(final ManagedTask task) {
-                TaskManager.clearTask(task);
-                if(!task.isCanceled()) {
-                    Handler hand = new Handler(Looper.getMainLooper());
-                    hand.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            staticHolder.title.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-                            staticHolder.altTitle.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-                            staticHolder.description.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-                            staticHolder.altDescription.setTypeface(((LoadModelFontTask) task).getDescriptionTypeface(), 0);
-                        }
-                    });
+        if(!holder.hasFont) {
+            // NOTE: this only runs once for each holder to improve performance
+            if (holder.fontTaskId != null) {
+                LoadModelFontTask oldTask = (LoadModelFontTask) TaskManager.getTask(holder.fontTaskId);
+                if (oldTask != null) {
+                    TaskManager.cancelTask(oldTask);
+                    TaskManager.clearTask(oldTask);
                 }
+                holder.fontTaskId = null;
             }
-        });
-        TaskManager.addTask(task);
-        if(mGroupTaskId != null) {
-            TaskManager.groupTask(task, mGroupTaskId);
+            LoadModelFontTask task = new LoadModelFontTask(getItem(position), mIndicateSelected);
+            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+                @Override
+                public void onFinished(final ManagedTask task) {
+                    TaskManager.clearTask(task);
+                    if (!task.isCanceled()) {
+                        Handler hand = new Handler(Looper.getMainLooper());
+                        hand.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                staticHolder.hasFont = true;
+                                staticHolder.title.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+                                staticHolder.description.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+                                staticHolder.altTitle.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+                                staticHolder.altDescription.setTypeface(((LoadModelFontTask) task).getDescriptionTypeface(), 0);
+                            }
+                        });
+                    }
+                }
+            });
+            TaskManager.addTask(task);
+            if (mGroupTaskId != null) {
+                TaskManager.groupTask(task, mGroupTaskId);
+            }
+            holder.fontTaskId = task.getTaskId();
         }
-        holder.fontTaskId = task.getTaskId();
 
         // set font size
         float fontsize = AppContext.typefaceSize();
@@ -321,7 +326,7 @@ public class ModelItemAdapter extends BaseAdapter {
         public LinearLayout iconGroup;
 
         public ThreadableUI statusThread;
-        public ThreadableUI fontThread;
         public Object fontTaskId;
+        public boolean hasFont;
     }
 }

@@ -26,8 +26,6 @@ public class LoadModelFontTask extends ManagedTask {
 
     @Override
     public void start() {
-        // don't flood the ui with updates
-        sleep(100);
         if(interrupted()) return;
         if(mModel.getSelectedSourceLanguage() != null) {
             typeface = AppContext.graphiteTypeface(mModel.getSelectedSourceLanguage());

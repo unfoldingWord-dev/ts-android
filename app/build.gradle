@@ -20,6 +20,7 @@ android {
     }
     lintOptions {
         disable 'MissingTranslation'
+        disable 'ExtraTranslation'
     }
     // we could build platform specific apks this way
     productFlavors {
