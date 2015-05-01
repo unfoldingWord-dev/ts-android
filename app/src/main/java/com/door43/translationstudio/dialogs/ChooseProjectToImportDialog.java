@@ -15,6 +15,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.threads.TaskManager;
 
 /**
  * This is basically the same as the ChooseProjectDialog but with some alterations for importing projects.
@@ -23,6 +24,7 @@ import com.door43.translationstudio.util.AppContext;
 public class ChooseProjectToImportDialog extends DialogFragment {
     private ModelItemAdapter mModelItemAdapter;
     private Model[] mModelList = null;
+    private static final String GROUP_TASK_ID = "import_project_list_group";
     private Peer mPeer;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -32,7 +34,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         if(mModelList != null) {
-            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), mModelList, false);
+            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), mModelList, false, GROUP_TASK_ID);
             // connect adapter
             listView.setAdapter(mModelItemAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -51,7 +53,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
                 }
             });
         } else {
-            listView.setAdapter(new ModelItemAdapter(AppContext.context(), new Model[]{},false));
+            listView.setAdapter(new ModelItemAdapter(AppContext.context(), new Model[]{}, false, GROUP_TASK_ID));
             dismiss();
         }
 
@@ -69,6 +71,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
 
     @Override
     public void onDestroyView() {
+        TaskManager.killGroup(GROUP_TASK_ID);
         if (getDialog() != null && getRetainInstance()) {
             getDialog().setDismissMessage(null);
         }

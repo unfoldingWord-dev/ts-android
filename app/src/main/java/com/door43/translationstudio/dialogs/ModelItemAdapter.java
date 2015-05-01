@@ -4,6 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +20,11 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.PseudoProject;
+import com.door43.translationstudio.tasks.LoadModelFontTask;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.threads.ManagedTask;
+import com.door43.util.threads.TaskManager;
 import com.door43.util.threads.ThreadableUI;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
@@ -31,6 +37,7 @@ public class ModelItemAdapter extends BaseAdapter {
     private final float mImageWidth;
     private final boolean mIndicateSelected;
     private final boolean mIndicateStatus;
+    private final String mGroupTaskId;
     private Model[] mModels;
 
     /**
@@ -38,12 +45,13 @@ public class ModelItemAdapter extends BaseAdapter {
      * @param c
      * @param models
      */
-    public ModelItemAdapter(MainApplication c, Model[] models) {
+    public ModelItemAdapter(MainApplication c, Model[] models, String groupTaskId) {
         mContext = c;
         mModels = models;
         mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
         mIndicateSelected = true;
         mIndicateStatus = true;
+        mGroupTaskId = groupTaskId;
     }
 
     /**
@@ -52,12 +60,13 @@ public class ModelItemAdapter extends BaseAdapter {
      * @param models
      * @param indicatSelection highlight selected project
      */
-    public ModelItemAdapter(MainApplication c, Model[] models, boolean indicatSelection) {
+    public ModelItemAdapter(MainApplication c, Model[] models, boolean indicatSelection, String groupTaskId) {
         mContext = c;
         mModels = models;
         mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
         mIndicateSelected = indicatSelection;
         mIndicateStatus = true;
+        mGroupTaskId = groupTaskId;
     }
 
     /**
@@ -67,12 +76,13 @@ public class ModelItemAdapter extends BaseAdapter {
      * @param indicatSelection highlight selected project
      * @param indicateStatus display project status
      */
-    public ModelItemAdapter(MainApplication c, Model[] models, boolean indicatSelection, boolean indicateStatus) {
+    public ModelItemAdapter(MainApplication c, Model[] models, boolean indicatSelection, boolean indicateStatus, String groupTaskId) {
         mContext = c;
         mModels = models;
         mImageWidth = mContext.getResources().getDimension(R.dimen.model_list_item_image_width);
         mIndicateSelected = indicatSelection;
         mIndicateStatus = indicateStatus;
+        mGroupTaskId = groupTaskId;
     }
 
     @Override
@@ -91,7 +101,7 @@ public class ModelItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, final ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = new ViewHolder();
         String imageUri;
@@ -138,50 +148,6 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.description.setText(getItem(position).getDescription());
         holder.altDescription.setText(getItem(position).getDescription());
 
-        // set graphite fontface
-        Typeface typeface;
-        if(getItem(position).getSelectedSourceLanguage() != null) {
-            typeface = AppContext.graphiteTypeface(getItem(position).getSelectedSourceLanguage());
-        } else {
-            // use english as default
-            typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
-        }
-        holder.title.setTypeface(typeface, 0);
-        holder.altTitle.setTypeface(typeface, 0);
-        holder.description.setTypeface(typeface, 0);
-        holder.altDescription.setTypeface(typeface, 0);
-
-        // use selected project language in pseudo project description fontface
-        if(mIndicateSelected && getItem(position).getClass().getName().equals(PseudoProject.class.getName())) {
-            if(getItem(position).isSelected() && AppContext.projectManager().getSelectedProject() != null) {
-                holder.altDescription.setTypeface(AppContext.graphiteTypeface(AppContext.projectManager().getSelectedProject().getSelectedSourceLanguage()), 0);
-            }
-        }
-
-        // set font size
-        float fontsize = AppContext.typefaceSize();
-        holder.title.setTextSize(fontsize);
-        holder.altTitle.setTextSize(fontsize);
-        holder.description.setTextSize((float)(fontsize*0.7));
-        holder.altDescription.setTextSize((float)(fontsize*0.7));
-
-        // display the correct layout
-        if(imageUri != null) {
-            // default layout
-            holder.bodyLayout.setVisibility(View.VISIBLE);
-            holder.altBodyLayout.setVisibility(View.GONE);
-        } else {
-            // alternate layout
-            holder.bodyLayout.setVisibility(View.GONE);
-            holder.altBodyLayout.setVisibility(View.VISIBLE);
-        }
-
-        // icons
-        holder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
-        holder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
-        holder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
-        holder.iconGroup.setVisibility(View.INVISIBLE);
-
         // highlight selected item
         boolean isSelected = false;
         if(getItem(position).isSelected() && mIndicateSelected) {
@@ -208,6 +174,108 @@ public class ModelItemAdapter extends BaseAdapter {
         final Model staticModel = getItem(position);
         final boolean staticIsSelected = isSelected;
 
+        // set fontface
+        if(holder.fontTaskId != null) {
+            LoadModelFontTask oldTask = (LoadModelFontTask)TaskManager.getTask(holder.fontTaskId);
+            if(oldTask != null) {
+                Log.d(null, "killing font task: " + oldTask.getTaskId());
+                TaskManager.cancelTask(oldTask);
+                TaskManager.clearTask(oldTask);
+            }
+        }
+
+        LoadModelFontTask task = new LoadModelFontTask(getItem(position), mIndicateSelected);
+        task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onFinished(final ManagedTask task) {
+                TaskManager.clearTask(task);
+                if(!task.isCanceled()) {
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            staticHolder.title.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+                            staticHolder.altTitle.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+                            staticHolder.description.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+                            staticHolder.altDescription.setTypeface(((LoadModelFontTask) task).getDescriptionTypeface(), 0);
+                        }
+                    });
+                }
+            }
+        });
+        TaskManager.addTask(task);
+        if(mGroupTaskId != null) {
+            TaskManager.groupTask(task, mGroupTaskId);
+        }
+        holder.fontTaskId = task.getTaskId();
+
+//        if(holder.fontThread != null) {
+//            holder.fontThread.stop();
+//        }
+//        holder.fontThread = new ThreadableUI(mContext) {
+//            private Typeface typeface;
+//            private Typeface descriptionTypeface;
+//
+//            @Override
+//            public void onStop() {
+//
+//            }
+//
+//            @Override
+//            public void run() {
+//                if(staticModel.getSelectedSourceLanguage() != null) {
+//                    typeface = AppContext.graphiteTypeface(staticModel.getSelectedSourceLanguage());
+//                } else {
+//                    // use english as default
+//                    typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
+//                }
+//                descriptionTypeface = typeface;
+//
+//                if(!isInterrupted()) {
+//                    // use selected project language in pseudo project description fontface
+//                    if (mIndicateSelected && staticModel.getClass().getName().equals(PseudoProject.class.getName())) {
+//                        if (staticModel.isSelected() && AppContext.projectManager().getSelectedProject() != null) {
+//                            descriptionTypeface = AppContext.graphiteTypeface(AppContext.projectManager().getSelectedProject().getSelectedSourceLanguage());
+//                        }
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onPostExecute() {
+//                if(!isInterrupted()) {
+//                    staticHolder.title.setTypeface(typeface, 0);
+//                    staticHolder.altTitle.setTypeface(typeface, 0);
+//                    staticHolder.description.setTypeface(typeface, 0);
+//                    staticHolder.altDescription.setTypeface(descriptionTypeface, 0);
+//                }
+//            }
+//        };
+//        holder.fontThread.start();
+
+        // set font size
+        float fontsize = AppContext.typefaceSize();
+        holder.title.setTextSize(fontsize);
+        holder.altTitle.setTextSize(fontsize);
+        holder.description.setTextSize((float)(fontsize*0.7));
+        holder.altDescription.setTextSize((float)(fontsize*0.7));
+
+        // display the correct layout
+        if(imageUri != null) {
+            // default layout
+            holder.bodyLayout.setVisibility(View.VISIBLE);
+            holder.altBodyLayout.setVisibility(View.GONE);
+        } else {
+            // alternate layout
+            holder.bodyLayout.setVisibility(View.GONE);
+            holder.altBodyLayout.setVisibility(View.VISIBLE);
+        }
+
+        // icons
+        holder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+        holder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+        holder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+        holder.iconGroup.setVisibility(View.INVISIBLE);
 
         // load image
         if(imageUri != null) {
@@ -299,5 +367,7 @@ public class ModelItemAdapter extends BaseAdapter {
         public LinearLayout iconGroup;
 
         public ThreadableUI statusThread;
+        public ThreadableUI fontThread;
+        public Object fontTaskId;
     }
 }

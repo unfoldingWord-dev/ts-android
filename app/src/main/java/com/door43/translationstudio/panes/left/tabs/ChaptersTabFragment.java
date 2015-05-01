@@ -33,9 +33,9 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         // create adapter
         if(mModelItemAdapter == null) {
             if(AppContext.projectManager().getSelectedProject() == null) {
-                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{});
+                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{}, "");
             } else {
-                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getChapters());
+                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getChapters(), "");
             }
         }
         // connectAsync adapter

@@ -17,6 +17,8 @@ public class TaskManager {
 
     private static Map<String, Integer> mTaskKeys = new HashMap<>();
     private static Map<Integer, ManagedTask> mTaskMap = new HashMap<>();
+    private static Map<String, List<Integer>> mGroupTasksMap = new HashMap<>();
+    private static Map<Integer, List<String>> mTaskGroupsMap = new HashMap<>();
     private static int mCurrentTaskIndex = 0;
 
     private static final int KEEP_ALIVE_TIME = 1;
@@ -82,6 +84,50 @@ public class TaskManager {
     }
 
     /**
+     * Group a task with others.
+     * The task must be added to the task manager before calling this method
+     * @param task
+     * @param group
+     * @return
+     */
+    static public boolean groupTask(ManagedTask task, String group) {
+        if(task.getTaskId() instanceof String) {
+            if(mTaskKeys.containsKey(task.getTaskId())) {
+                setGroup(mTaskKeys.get(task.getTaskId()), group);
+            }
+        } else if(task.getTaskId() instanceof Integer) {
+            if(mTaskMap.containsKey(task.getTaskId())) {
+                setGroup((int)task.getTaskId(), group);
+            }
+        }
+        return false;
+    }
+
+    static private void setGroup(int id, String group) {
+        // group to task access
+        if(mGroupTasksMap.containsKey(group)) {
+            if(!mGroupTasksMap.get(group).contains(id)) {
+                mGroupTasksMap.get(group).add(id);
+            }
+        } else {
+            List<Integer> l = new ArrayList<>();
+            l.add(id);
+            mGroupTasksMap.put(group, l);
+        }
+
+        // task to group access
+        if(mTaskGroupsMap.containsKey(id)) {
+            if(!mTaskGroupsMap.get(id).contains(group)) {
+                mTaskGroupsMap.get(id).add(group);
+            }
+        } else {
+            List<String> l = new ArrayList<>();
+            l.add(group);
+            mTaskGroupsMap.put(id, l);
+        }
+    }
+
+    /**
      * Checks if a task has finished
      * @param id
      * @return
@@ -92,7 +138,7 @@ public class TaskManager {
 
     static public ManagedTask getTask(Object id) {
         if(id instanceof String) {
-            return getTask((String)id);
+            return getTask((String) id);
         } else if(id instanceof Integer) {
             return getTask((int)id);
         } else {
@@ -151,12 +197,42 @@ public class TaskManager {
     }
 
     /**
+     * Returns a group of tasks
+     * @param group
+     * @return
+     */
+    public static List<ManagedTask> getGroupedTasks(String group) {
+        List<ManagedTask> tasks = new ArrayList<>();
+        List<Integer> ids = mGroupTasksMap.get(group);
+        if(ids != null) {
+            for(Integer id:ids) {
+                ManagedTask t = getTask(id);
+                if(t != null) {
+                    tasks.add(t);
+                }
+            }
+        }
+        return tasks;
+    }
+
+    /**
      * Removes a task from the manager
      * @param id
      */
-    private static boolean clearTask(int id) {
+    private static boolean clearTask(Integer id) {
         if(mTaskMap.containsKey(id) && (mTaskMap.get(id).isFinished())) {
             mTaskMap.remove(id);
+            // clear group mapping
+            List<String> groups = mTaskGroupsMap.get(id);
+            if(groups != null) {
+                for(String group:groups) {
+                    mGroupTasksMap.get(group).remove(id);
+                    if(mGroupTasksMap.get(group).size() == 0) {
+                        mGroupTasksMap.remove(group);
+                    }
+                }
+                mTaskGroupsMap.remove(id);
+            }
             return true;
         }
         return false;
@@ -168,7 +244,7 @@ public class TaskManager {
      */
     private static void clearTask(String key) {
         if(mTaskKeys.containsKey(key)) {
-            if(clearTask((int)mTaskKeys.get(key))) {
+            if(clearTask(mTaskKeys.get(key))) {
                 mTaskKeys.remove(key);
             }
         }
@@ -205,7 +281,8 @@ public class TaskManager {
     }
 
     /**
-     * Cancels and removes a task
+     * Cancels a task and removes it from the queue.
+     * The task will however, remain in the list until cleared
      * @param task
      */
     public static void cancelTask(ManagedTask task) {
@@ -218,6 +295,18 @@ public class TaskManager {
                 task.stop();
             }
             sInstance.mThreadPool.remove(task);
+        }
+    }
+
+    /**
+     * Cancels and clears all the tasks in a group
+     * @param group
+     */
+    public static void killGroup(String group) {
+        List<ManagedTask> tasks = getGroupedTasks(group);
+        for(ManagedTask t:tasks) {
+            cancelTask(t);
+            clearTask(t);
         }
     }
 }

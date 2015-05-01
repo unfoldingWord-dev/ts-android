@@ -36,7 +36,7 @@ public class ProjectLibraryDialog extends DialogFragment {
 
 
 
-        if(mAdapter == null) mAdapter = new ModelItemAdapter(AppContext.context(), new Model[0]);
+        if(mAdapter == null) mAdapter = new ModelItemAdapter(AppContext.context(), new Model[0], "");
 
 
 //        else {

@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,7 +60,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         mTaskWatcher.setOnFinishedListener(this);
 
         // create adapter
-        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects());
+        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects(), null);
 
 //        mTaskBar = (TaskBarView)view.findViewById(R.id.projectProcessesLayout);
 
@@ -149,12 +150,18 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 // load the project
                 if(!IndexStore.hasIndex(p)) {
                     // TODO: index the project and the resources then load the chapters
+                    Log.d(null, "need to index the project");
                 } else {
-                    // load chapters
                     if(p.getSelectedSourceLanguage() != null) {
-                        LoadChaptersTask task = new LoadChaptersTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-                        mTaskWatcher.watch(task);
-                        TaskManager.addTask(task, task.TASK_ID);
+                        if(IndexStore.hasResourceIndex(p)) {
+                            // load chapters
+                            LoadChaptersTask task = new LoadChaptersTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                            mTaskWatcher.watch(task);
+                            TaskManager.addTask(task, task.TASK_ID);
+                        } else {
+                            // TODO: index chapters
+                            Log.d(null, "need to index the chapters");
+                        }
                     }
                 }
 

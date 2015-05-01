@@ -35,9 +35,9 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         if(mModelItemAdapter == null) {
             Project p = AppContext.projectManager().getSelectedProject();
             if(p == null || p.getSelectedChapter() == null ) {
-                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{});
+                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{}, "");
             } else {
-                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getSelectedChapter().getFrames());
+                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getSelectedChapter().getFrames(), "");
             }
         }
 

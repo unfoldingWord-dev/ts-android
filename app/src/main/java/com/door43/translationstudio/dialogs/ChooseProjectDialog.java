@@ -15,6 +15,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.threads.TaskManager;
 import com.door43.util.threads.ThreadableUI;
 
 /**
@@ -28,6 +29,7 @@ public class ChooseProjectDialog extends DialogFragment {
     private ModelItemAdapter mModelItemAdapter;
     private DialogInterface.OnDismissListener mDismissListener;
     private String mMetaId;
+    private static final String GROUP_TASK_ID = "select_project_list_group";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.title_projects);
@@ -38,7 +40,7 @@ public class ChooseProjectDialog extends DialogFragment {
         Bundle args = getArguments();
         mMetaId = args.getString("metaId");
 
-        mModelItemAdapter = new ModelItemAdapter(AppContext.context(), new Model[]{});
+        mModelItemAdapter = new ModelItemAdapter(AppContext.context(), new Model[]{}, GROUP_TASK_ID);
 
         if(mMetaId != null) {
             // connect adapter
@@ -96,6 +98,7 @@ public class ChooseProjectDialog extends DialogFragment {
     }
 
     public void onDismiss(DialogInterface dialog) {
+        TaskManager.killGroup(GROUP_TASK_ID);
         if(mDismissListener != null) {
             mDismissListener.onDismiss(dialog);
         }
