@@ -49,6 +49,7 @@ public class IndexStore {
     /**
      * Returns the indexed frames
      * The project, source language, resource and chapter should all be connected together.
+     * This will not add the frames into the chapter
      * @param p
      * @param l
      * @param r
@@ -77,6 +78,34 @@ public class IndexStore {
             }
         });
         return frames.toArray(new Model[frames.size()]);
+    }
+
+    /**
+     * Loads the frames into a chapter
+     * @param p
+     * @param l
+     * @param r
+     * @param c
+     */
+    public static void loadFrames(Project p, SourceLanguage l, Resource r, final Chapter c) {
+        File chapterDir = getSourceChapterDir(p, l, r, c);
+        chapterDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                if(!filename.equals(DATA_FILE)) {
+                    try {
+                        String data = FileUtils.readFileToString(new File(dir, filename));
+                        Frame f = Frame.generate(new JSONObject(data));
+                        if(f != null)  {
+                            c.addFrame(f);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     /**

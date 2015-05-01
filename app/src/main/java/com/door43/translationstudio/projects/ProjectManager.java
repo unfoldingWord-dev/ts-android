@@ -804,11 +804,18 @@ public class ProjectManager {
 
         // Attempt to select a more accurate default language for the project title and description
         String deviceLocale = Locale.getDefault().getLanguage();
-        if (p.getSourceLanguage(deviceLocale) != null) {
-            p.setSelectedSourceLanguage(deviceLocale);
-        } else if (p.getSourceLanguage("en") != null) {
-            p.setSelectedSourceLanguage("en");
+        SourceLanguage l;
+        if(p.getSourceLanguage(deviceLocale) != null) {
+            l = p.getSourceLanguage(deviceLocale);
+        } else if(p.getSourceLanguage("en") != null) {
+            l = p.getSourceLanguage("en");
+        } else {
+            // default to first available language
+            l = p.getSelectedSourceLanguage();
         }
+
+        p.setDefaultTitle(p.getTitle(l));
+        p.setDefaultDescription(p.getDescription(l));
 
         return languages;
     }
@@ -1053,18 +1060,37 @@ public class ProjectManager {
 
         // Attempt to select a more accurate default language for the project title and description
         String deviceLocale = Locale.getDefault().getLanguage();
-        // don't change the source language if already selecteed
-        if(!p.hasSelectedSourceLanguage()) {
-            if (p.getSourceLanguage(deviceLocale) != null) {
-                p.setSelectedSourceLanguage(deviceLocale);
-            } else if (p.getSourceLanguage("en") != null) {
-                p.setSelectedSourceLanguage("en");
-            }
+        SourceLanguage l;
+        if(p.hasSelectedSourceLanguage()) {
+            l = p.getSelectedSourceLanguage();
+        } else if(p.getSourceLanguage(deviceLocale) != null) {
+            l = p.getSourceLanguage(deviceLocale);
+        } else if(p.getSourceLanguage("en") != null) {
+            l = p.getSourceLanguage("en");
+        } else {
+            // default to first available language
+            l = p.getSelectedSourceLanguage();
         }
 
+        p.setDefaultTitle(p.getTitle(l));
+        p.setDefaultDescription(p.getDescription(l));
+
+//        if(!p.hasSelectedSourceLanguage()) {
+//            if (p.getSourceLanguage(deviceLocale) != null) {
+//                SourceLanguage \ = p.getSourceLanguage(deviceLocale);
+//                p.setDefaultTitle(jsonProj.getString("name"));
+//                p.setDefaultDescription(jsonProj.getString("desc"));
+////                p.setSelectedSourceLanguage(deviceLocale);
+//            } else if (p.getSourceLanguage("en") != null) {
+//                p.setDefaultTitle(jsonProj.getString("name"));
+//                p.setDefaultDescription(jsonProj.getString("desc"));
+////                p.setSelectedSourceLanguage("en");
+//            }
+//        }
+
         // load the correct title and description
-        p.setDefaultTitle(p.getTitle(p.getSelectedSourceLanguage()));
-        p.setDefaultDescription(p.getDescription(p.getSelectedSourceLanguage()));
+//        p.setDefaultTitle(p.getTitle(p.getSelectedSourceLanguage()));
+//        p.setDefaultDescription(p.getDescription(p.getSelectedSourceLanguage()));
         return importedLanguages;
     }
 

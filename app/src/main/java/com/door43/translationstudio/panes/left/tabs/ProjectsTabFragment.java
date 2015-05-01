@@ -3,12 +3,9 @@ package com.door43.translationstudio.panes.left.tabs;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +16,7 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.door43.translationstudio.GetMoreProjectsActivity;
+import com.door43.translationstudio.LanguageSelectorActivity;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectDialog;
@@ -27,19 +25,18 @@ import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
+import com.door43.translationstudio.projects.Resource;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.GenericTaskWatcher;
-import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TaskBarView;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
-import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.squareup.otto.Subscribe;
 
@@ -47,6 +44,7 @@ import com.squareup.otto.Subscribe;
  * Created by joel on 8/29/2014.
  */
 public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener {
+    private static final int SOURCE_LANGUAGE_REQUEST = 0;
     private ModelItemAdapter mModelItemAdapter;
     private GenericTaskWatcher mTaskWatcher;
 
@@ -62,7 +60,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         // create adapter
         if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects(), null);
 
-        // connectAsync adapter
+        // connect adapter
         listView.setAdapter(mModelItemAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -111,48 +109,85 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         if(getActivity() != null) {
             // this is a normal project
             Project previousProject = AppContext.projectManager().getSelectedProject();
-
-            AppContext.projectManager().setSelectedProject(p.getId());
-            ((MainActivity) getActivity()).reload();
             if (previousProject == null || !previousProject.getId().equals(p.getId())) {
-                // clear out the previous project so we don't waste memory
+                AppContext.projectManager().setSelectedProject(p.getId());
+
+                // free memory
                 if(previousProject != null) {
                     previousProject.flush();
                 }
 
                 // load the project
                 if(!IndexStore.hasIndex(p)) {
-                    // TODO: index the project and the resources then load the chapters
+                    // TODO: index the project then choose language then index the resources then load the chapters
                     Log.d(null, "need to index the project");
                 } else {
-                    if(p.getSelectedSourceLanguage() != null) {
+                    if(p.hasSelectedSourceLanguage()) {
                         if(IndexStore.hasResourceIndex(p)) {
-                            // load chapters
-                            LoadChaptersTask task = new LoadChaptersTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-                            mTaskWatcher.watch(task);
-                            TaskManager.addTask(task, task.TASK_ID);
+                            loadChapters(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
                         } else {
-                            // index chapters
-                            IndexResourceTask task = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-                            mTaskWatcher.watch(task);
-                            TaskManager.addTask(task, task.TASK_ID);
+                            indexResources(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
                         }
                     } else {
-                        // TODO: ask the user to choose a source language
+                        requestSourceLanguage();
                     }
                 }
             } else {
-                // select the project
-                if(p.getChapters().length == 0) {
-                    LoadChaptersTask task = new LoadChaptersTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-                    mTaskWatcher.watch(task);
-                    TaskManager.addTask(task, task.TASK_ID);
+                // open current project
+                if(p.hasSelectedSourceLanguage()) {
+                    if (p.getChapters().length == 0) {
+                        loadChapters(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                    } else {
+                        openChaptersTab();
+                    }
                 } else {
-                    ((MainActivity) getActivity()).openChaptersTab();
-                    NotifyAdapterDataSetChanged();
+                    requestSourceLanguage();
                 }
             }
         }
+    }
+
+    /**
+     * Starts up a task to index the resources
+     * @param p
+     * @param l
+     * @param r
+     */
+    private void indexResources(Project p, SourceLanguage l, Resource r) {
+        IndexResourceTask task = new IndexResourceTask(p, l, r);
+        mTaskWatcher.watch(task);
+        TaskManager.addTask(task, task.TASK_ID);
+    }
+
+    /**
+     * Opens the source language selection dialog
+     */
+    private void requestSourceLanguage() {
+        Intent languageIntent = new Intent(getActivity(), LanguageSelectorActivity.class);
+        languageIntent.putExtra("sourceLanguages", true);
+        startActivityForResult(languageIntent, SOURCE_LANGUAGE_REQUEST);
+    }
+
+    /**
+     * Reloads and opens the chapters tab
+     */
+    private void openChaptersTab() {
+        ((MainActivity) getActivity()).reload();
+        ((MainActivity) getActivity()).openChaptersTab();
+        // TODO: clear the frames tab
+        NotifyAdapterDataSetChanged();
+    }
+
+    /**
+     * Starts up a task to load the chapters
+     * @param p
+     * @param l
+     * @param r
+     */
+    private void loadChapters(Project p, SourceLanguage l, Resource r) {
+        LoadChaptersTask task = new LoadChaptersTask(p, l, r);
+        mTaskWatcher.watch(task);
+        TaskManager.addTask(task, task.TASK_ID);
     }
 
     /**
@@ -177,7 +212,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
                 Activity activity = getActivity();
-                if(activity != null) {
+                if (activity != null) {
                     activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
                 } else {
                     Logger.e(this.getClass().getName(), "handleMetaSelection the activity is null");
@@ -207,16 +242,24 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
         if(task instanceof LoadChaptersTask) {
-            ((MainActivity) getActivity()).reload();
-            ((MainActivity) getActivity()).openChaptersTab();
-            // TODO: clear the frames tab
-            NotifyAdapterDataSetChanged();
+            ((MainActivity)getActivity()).reloadFramesTab();
+            openChaptersTab();
         } else if(task instanceof IndexResourceTask) {
             // load the chapters
             Project p = AppContext.projectManager().getProject(((IndexResourceTask) task).getProject().getId());
-            LoadChaptersTask newTask = new LoadChaptersTask(p, ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
-            mTaskWatcher.watch(newTask);
-            TaskManager.addTask(newTask, newTask.TASK_ID);
+            loadChapters(p, ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == SOURCE_LANGUAGE_REQUEST) {
+            if(resultCode == getActivity().RESULT_OK) {
+                String id = data.getExtras().getString(LanguageSelectorActivity.EXTRA_LANGUAGE);
+                Project p = AppContext.projectManager().getSelectedProject();
+                p.setSelectedSourceLanguage(id);
+                indexResources(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+            }
         }
     }
 }

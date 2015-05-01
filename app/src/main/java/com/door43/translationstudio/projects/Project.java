@@ -621,9 +621,9 @@ public class Project implements Model {
     public SourceLanguage getSelectedSourceLanguage() {
         SourceLanguage selectedLanguage = getSourceLanguage(mSelectedSourceLanguageId);
         if(selectedLanguage == null) {
-            // auto select the first chapter if no other chapter has been selected
+            // auto select the first language if no other chapter has been selected
             int defaultLanguageIndex = 0;
-            setSelectedSourceLanguage(defaultLanguageIndex);
+//            setSelectedSourceLanguage(defaultLanguageIndex);
             return getSourceLanguage(defaultLanguageIndex);
         } else {
             return selectedLanguage;

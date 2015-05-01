@@ -24,7 +24,12 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import java.util.List;
 
 
+/**
+ * This activity allows users to choose a language from the list.
+ */
 public class LanguageSelectorActivity extends TranslatorBaseActivity {
+
+    public static final String EXTRA_LANGUAGE = "language_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +41,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
 
         Project p = AppContext.projectManager().getSelectedProject();
         if(p == null) {
+            setResult(RESULT_CANCELED, null);
             finish();
         }
 
@@ -60,37 +66,10 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final ProgressDialog dialog = new ProgressDialog(LanguageSelectorActivity.this);
-                dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
-                dialog.setCancelable(false);
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
-                if(willShowSourceLanguages) {
-                    AppContext.projectManager().getSelectedProject().setSelectedSourceLanguage(adapter.getItem(i).getId());
-                    new ThreadableUI(LanguageSelectorActivity.this) {
-
-                        @Override
-                        public void onStop() {
-
-                        }
-
-                        @Override
-                        public void run() {
-                            AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
-                        }
-
-                        @Override
-                        public void onPostExecute() {
-                            dialog.dismiss();
-                            finish();
-                        }
-                    }.start();
-
-                } else {
-                    AppContext.projectManager().getSelectedProject().setSelectedTargetLanguage(adapter.getItem(i).getId());
-                    dialog.dismiss();
-                    finish();
-                }
+                Intent intent = getIntent();
+                intent.putExtra(EXTRA_LANGUAGE, adapter.getItem(i).getId());
+                setResult(RESULT_OK, intent);
+                finish();
             }
         });
         list.setTextFilterEnabled(true);
@@ -137,6 +116,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_dismiss_language_search:
+                setResult(RESULT_CANCELED, null);
                 finish();
                 return true;
             default:
