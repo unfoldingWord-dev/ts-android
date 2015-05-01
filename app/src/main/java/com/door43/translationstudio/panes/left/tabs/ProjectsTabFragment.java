@@ -49,7 +49,6 @@ import com.squareup.otto.Subscribe;
 public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener {
     private ModelItemAdapter mModelItemAdapter;
     private GenericTaskWatcher mTaskWatcher;
-//    private TaskBarView mTaskBar;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -62,8 +61,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
         // create adapter
         if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects(), null);
-
-//        mTaskBar = (TaskBarView)view.findViewById(R.id.projectProcessesLayout);
 
         // connectAsync adapter
         listView.setAdapter(mModelItemAdapter);
@@ -98,31 +95,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         return view;
     }
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        connectToProcesses();
-//    }
-
-//    public void onPause() {
-//        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
-//        if(task != null) {
-//            task.removeOnFinishedListener(this);
-//            task.removeOnProgressListener(this);
-//        }
-//        super.onPause();
-//    }
-
-//    private void connectToProcesses() {
-//        IndexProjectsTask task = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
-//        if(task != null) {
-//            mTaskBar.setVisibility(View.VISIBLE);
-//            mTaskBar.publishProgress(R.string.indexing, -1);
-//            task.addOnProgressListener(this);
-//            task.addOnFinishedListener(this);
-//        }
-//    }
-
     @Override
     public void NotifyAdapterDataSetChanged() {
         if(mModelItemAdapter != null && app() != null && AppContext.projectManager() != null) {
@@ -139,10 +111,10 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         if(getActivity() != null) {
             // this is a normal project
             Project previousProject = AppContext.projectManager().getSelectedProject();
-            if (previousProject == null || !previousProject.getId().equals(p.getId())) {
-                ((MainActivity) getActivity()).reload();
-                AppContext.projectManager().setSelectedProject(p.getId());
 
+            AppContext.projectManager().setSelectedProject(p.getId());
+            ((MainActivity) getActivity()).reload();
+            if (previousProject == null || !previousProject.getId().equals(p.getId())) {
                 // clear out the previous project so we don't waste memory
                 if(previousProject != null) {
                     previousProject.flush();
@@ -161,57 +133,24 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                             TaskManager.addTask(task, task.TASK_ID);
                         } else {
                             // index chapters
-                            Log.d(null, "need to index the chapters");
                             IndexResourceTask task = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
                             mTaskWatcher.watch(task);
                             TaskManager.addTask(task, task.TASK_ID);
                         }
+                    } else {
+                        // TODO: ask the user to choose a source language
                     }
                 }
-
-                // load the project source
-//                final ProgressDialog dialog = new ProgressDialog(getActivity());
-//                dialog.setCancelable(false);
-//                dialog.setCanceledOnTouchOutside(false);
-//                dialog.setMessage(getResources().getString(R.string.loading_project_chapters));
-//                dialog.show();
-//                new ThreadableUI(this.getActivity()) {
-//
-//                    @Override
-//                    public void onStop() {
-//
-//                    }
-//
-//                    @Override
-//                    public void run() {
-//                        AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
-//                    }
-//
-//                    @Override
-//                    public void onPostExecute() {
-//                        if(getActivity() != null) {
-//                            // populate the center pane
-//                            ((MainActivity) getActivity()).reload();
-//                            // open up the chapters tab
-//                            ((MainActivity) getActivity()).openChaptersTab();
-//                            // reload the frames tab so we don't see frames from the previous project
-//                            ((MainActivity) getActivity()).reloadFramesTab();
-//                        } else {
-//                            Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
-//                        }
-//                        dialog.dismiss();
-//                        NotifyAdapterDataSetChanged();
-//                    }
-//                }.start();
             } else {
                 // select the project
-                AppContext.projectManager().setSelectedProject(p.getId());
-                // reload the center pane so we don't accidently overwrite a frame
-                ((MainActivity) getActivity()).reload();
-                // open up the chapters tab
-                ((MainActivity) getActivity()).openChaptersTab();
-                // let the adapter redraw itself so the selected project is corectly highlighted
-                NotifyAdapterDataSetChanged();
+                if(p.getChapters().length == 0) {
+                    LoadChaptersTask task = new LoadChaptersTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                    mTaskWatcher.watch(task);
+                    TaskManager.addTask(task, task.TASK_ID);
+                } else {
+                    ((MainActivity) getActivity()).openChaptersTab();
+                    NotifyAdapterDataSetChanged();
+                }
             }
         }
     }
@@ -258,34 +197,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             Logger.e(this.getClass().getName(), "onSelectedProjectFromMeta the activity is null");
         }
     }
-//
-//    @Override
-//    public void onFinished(ManagedTask task) {
-//        TaskManager.clearTask(task.getTaskId());
-//        Handler hand = new Handler(Looper.getMainLooper());
-//        hand.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                mTaskBar.setVisibility(View.GONE);
-//            }
-//        });
-//    }
-
-//    @Override
-//    public void onProgress(ManagedTask task, final double progress, final String message) {
-//        Handler hand = new Handler(Looper.getMainLooper());
-//        hand.post(new Runnable() {
-//            @Override
-//            public void run() {
-//                mTaskBar.publishProgress(message, progress);
-//                if(progress < 0) {
-//                    mTaskBar.hideProgress();
-//                } else {
-//                    mTaskBar.showProgress();
-//                }
-//            }
-//        });
-//    }
 
     public void onDestroy() {
         mTaskWatcher.stop();
@@ -296,23 +207,14 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
         if(task instanceof LoadChaptersTask) {
-//            if(getActivity() != null) {
-                // populate the center pane
-                // TODO: clear the center pane
-//                ((MainActivity) getActivity()).reload();
-                // open up the chapters tab
-                // TODO: the chapter tab should not auto select
-                ((MainActivity) getActivity()).openChaptersTab();
-                // reload the frames tab so we don't see frames from the previous project
-                // TODO: clear the frames tab until we click on the chapter
-//                ((MainActivity) getActivity()).reloadFramesTab();
-//            } else {
-//                Logger.e(ProjectsTabFragment.class.getName(), "onPostExecute the activity is null");
-//            }
+            ((MainActivity) getActivity()).reload();
+            ((MainActivity) getActivity()).openChaptersTab();
+            // TODO: clear the frames tab
             NotifyAdapterDataSetChanged();
         } else if(task instanceof IndexResourceTask) {
             // load the chapters
-            LoadChaptersTask newTask = new LoadChaptersTask(((IndexResourceTask) task).getProject(), ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
+            Project p = AppContext.projectManager().getProject(((IndexResourceTask) task).getProject().getId());
+            LoadChaptersTask newTask = new LoadChaptersTask(p, ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
             mTaskWatcher.watch(newTask);
             TaskManager.addTask(newTask, newTask.TASK_ID);
         }
