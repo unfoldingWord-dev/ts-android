@@ -6,14 +6,20 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
+import com.door43.translationstudio.tasks.LoadProjectsTask;
+import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
+import com.door43.translationstudio.tasks.UpdateAppTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 
 import java.io.File;
@@ -22,10 +28,9 @@ import java.io.FilenameFilter;
 /**
  * Created by joel on 9/29/2014.
  */
-public class SplashScreenActivity extends TranslatorBaseActivity {
+public class SplashScreenActivity extends TranslatorBaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, ManagedTask.OnStartListener {
     private TextView mProgressTextView;
     private ProgressBar mProgressBar;
-    private static LoadAppTask mLoadingTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,11 +39,17 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
 
         mProgressTextView = (TextView)findViewById(R.id.loadingText);
         mProgressBar = (ProgressBar)findViewById(R.id.loadingBar);
-        // we need a high precision bar because we are loading a ton of things
-        mProgressBar.setMax(10000);
+        mProgressBar.setMax(100);
         mProgressBar.setIndeterminate(true);
         if(savedInstanceState != null) {
-            mProgressBar.setProgress(savedInstanceState.getInt("progress"));
+            int savedProgress = savedInstanceState.getInt("progress");
+            if(savedProgress == -1) {
+                mProgressBar.setIndeterminate(true);
+                mProgressBar.setMax(mProgressBar.getMax());
+            } else {
+                mProgressBar.setIndeterminate(false);
+                mProgressBar.setProgress(savedProgress);
+            }
             mProgressTextView.setText(savedInstanceState.getString("message"));
         } else {
             mProgressBar.setProgress(0);
@@ -61,123 +72,155 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
             }
         }
 
-        // these checks allow the app to rotate without restarting the loading task
-        if(mLoadingTask == null && !AppContext.projectManager().isLoaded()) {
-            mLoadingTask = new LoadAppTask();
-            mLoadingTask.execute();
-        } else if(mLoadingTask == null && AppContext.projectManager().isLoaded()) {
-            // go ahead and start the main activity if the project manager has been loaded.
-            startMainActivity();
+        if(!AppContext.isLoaded()) {
+            boolean isWorking = false;
+            isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true: isWorking;
+            isWorking = connectToTask(LoadProjectsTask.TASK_ID) ? true: isWorking;
+            isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true: isWorking;
+            isWorking = connectToTask(IndexProjectsTask.TASK_ID) ? true: isWorking;
+
+            // start new task
+            if(!isWorking) {
+                LoadTargetLanguagesTask langTask = new LoadTargetLanguagesTask();
+                langTask.addOnProgressListener(this);
+                langTask.addOnFinishedListener(this);
+                langTask.addOnStartListener(this);
+                TaskManager.addTask(langTask, langTask.TASK_ID);
+            }
+        } else {
+            // index projects
+            indexProjects();
         }
     }
 
     /**
-     * Starts the main activity
+     * Connect to an existing task
+     * @param id
+     * @return true if the task exists
      */
-    public void startMainActivity() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        mLoadingTask = null;
-        finish();
+    private boolean connectToTask(String id) {
+        ManagedTask t = TaskManager.getTask(id);
+        if(t != null) {
+            t.addOnProgressListener(this);
+            t.addOnFinishedListener(this);
+            t.addOnStartListener(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
-     * TODO: this needs to be migrated over to the new task manager
+     * Disconnects this activity from a task
+     * @param t
      */
-    private class LoadAppTask extends AsyncTask<Void, String, Void> {
-        private int mProgress = 0;
+    private void disconnectTask(ManagedTask t) {
+        if(t != null) {
+            t.removeOnProgressListener(this);
+            t.removeOnStartListener(this);
+            t.removeOnFinishedListener(this);
+        }
+    }
 
-        @Override
-        protected Void doInBackground(Void... voids) {
+    /**
+     * Disconnects this activity from a task
+     * @param id
+     */
+    private void disconnectTask(String id) {
+        ManagedTask t = TaskManager.getTask(id);
+        disconnectTask(t);
+    }
 
-            // begin loading app resources
-            AppContext.projectManager().init(new ProjectManager.OnProgressCallback() {
+    @Override
+    public void onProgress(final ManagedTask task, final double progress, final String message) {
+        if(!task.isFinished()) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
                 @Override
-                public void onProgress(double progress, String message) {
-                    mProgress = (int)(progress * 100); // project manager returns 100 based percent values not 10,000
-                    publishProgress(message);
-                }
-
-                @Override
-                public void onSuccess() {
-                    // Generate the ssh keys
-                    if(!AppContext.context().hasKeys()) {
-                        AppContext.context().generateKeys();
+                public void run() {
+                    mProgressBar.setMax(task.maxProgress());
+                    if (progress == -1) {
+                        mProgressBar.setIndeterminate(true);
+                        mProgressBar.setProgress(task.maxProgress());
+                    } else {
+                        mProgressBar.setIndeterminate(false);
+                        mProgressBar.setProgress((int) Math.ceil(progress * task.maxProgress()));
                     }
-
-                    // handle app version changes
-                    SharedPreferences settings = getSharedPreferences(MainApplication.PREFERENCES_TAG, MODE_PRIVATE);
-                    SharedPreferences.Editor editor = settings.edit();
-                    int lastVersionCode = settings.getInt("last_version_code", 0);
-                    PackageInfo pInfo = null;
-                    try {
-                        pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                        editor.putInt("last_version_code", pInfo.versionCode);
-                        editor.apply();
-                        if(pInfo.versionCode > lastVersionCode) {
-                            // update!
-                            mProgress = 0;
-                            publishProgress("Performing updates");
-                            UpdateManager updater = new UpdateManager(lastVersionCode, pInfo.versionCode);
-                            updater.run(new UpdateManager.OnProgressCallback() {
-                                @Override
-                                public void onProgress(double progress, String message) {
-                                    mProgress = (int)(progress * 100); // update manager returns 100 based percent values not 10,000
-                                    publishProgress(message);
-                                }
-
-                                @Override
-                                public void onSuccess() {
-                                    // load after the migration
-                                    loadSelectedProject();
-                                }
-
-                                @Override
-                                public void onError(String message) {
-                                    // TODO: display an error message to the user.
-                                }
-                            });
-                        } else {
-                            // load the app by default
-                            loadSelectedProject();
-                        }
-                    } catch (PackageManager.NameNotFoundException e) {
-                        // just load the app by default
-                        loadSelectedProject();
-                    }
+                    mProgressTextView.setText(message);
                 }
             });
-
-            // index all the projects
-            IndexProjectsTask task = new IndexProjectsTask(AppContext.projectManager().getProjects());
-            TaskManager.addTask(task, IndexProjectsTask.TASK_ID);
-            return null;
         }
+    }
 
-        protected void onProgressUpdate(String... items) {
-            mProgressBar.setIndeterminate(false);
-            mProgressBar.setProgress(mProgress);
-            mProgressTextView.setText(items[0]);
-        }
+    /**
+     * Builds an index of all the projects
+     */
+    private void indexProjects() {
+        IndexProjectsTask newTask = new IndexProjectsTask(AppContext.projectManager().getProjects());
+        newTask.addOnFinishedListener(this);
+        newTask.addOnStartListener(this);
+        newTask.addOnProgressListener(this);
+        TaskManager.addTask(newTask, newTask.TASK_ID);
+    }
 
-        protected void onPostExecute(Void item) {
-            mProgressBar.setProgress(mProgressBar.getMax());
-            mProgressBar.setIndeterminate(true);
-            mProgressTextView.setText(getResources().getString(R.string.launching_translator));
-            startMainActivity();
-        }
+    @Override
+    public void onFinished(final ManagedTask task) {
+        TaskManager.clearTask(task);
+        disconnectTask(task);
 
-        private void loadSelectedProject() {
-            // load previously viewed frame
-            publishProgress(getResources().getString(R.string.loading_preferences));
-            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-
-                if(AppContext.projectManager().getSelectedProject() != null) {
-                    // load the saved project without displaying a notice to the user
-                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject(), false);
-                }
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                mProgressBar.setIndeterminate(true);
+                mProgressBar.setProgress(task.maxProgress());
             }
+        });
+
+        if(task instanceof LoadTargetLanguagesTask) {
+            LoadProjectsTask newTask = new LoadProjectsTask();
+            newTask.addOnFinishedListener(this);
+            newTask.addOnProgressListener(this);
+            newTask.addOnStartListener(this);
+            TaskManager.addTask(newTask, newTask.TASK_ID);
+        } else if(task instanceof LoadProjectsTask) {
+            // Generate the ssh keys
+            if(!AppContext.context().hasKeys()) {
+                AppContext.context().generateKeys();
+            }
+
+            // run updates
+            UpdateAppTask newTask = new UpdateAppTask();
+            newTask.addOnFinishedListener(this);
+            newTask.addOnProgressListener(this);
+            newTask.addOnStartListener(this);
+            TaskManager.addTask(newTask, newTask.TASK_ID);
+        } else if(task instanceof UpdateAppTask) {
+            if(((UpdateAppTask) task).error() != null) {
+                // TODO: display an error to the user
+            } else {
+                indexProjects();
+            }
+        } else if(task instanceof IndexProjectsTask) {
+
+//            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
+
+//                if(AppContext.projectManager().getSelectedProject() != null) {
+//                    // load the saved project without displaying a notice to the user
+//                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject(), false);
+//                }
+//            }
+
+            // open the main activity
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
         }
+    }
+
+    @Override
+    public void onStart(ManagedTask task) {
+
     }
 
     @Override
@@ -185,5 +228,14 @@ public class SplashScreenActivity extends TranslatorBaseActivity {
         outState.putString("message", mProgressTextView.getText().toString());
         outState.putInt("progress", mProgressBar.getProgress());
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDestroy() {
+        disconnectTask(LoadTargetLanguagesTask.TASK_ID);
+        disconnectTask(LoadProjectsTask.TASK_ID);
+        disconnectTask(UpdateAppTask.TASK_ID);
+        disconnectTask(IndexProjectsTask.TASK_ID);
+        super.onDestroy();
     }
 }

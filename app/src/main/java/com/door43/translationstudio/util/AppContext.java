@@ -36,6 +36,7 @@ public class AppContext {
     private static ProjectManager mProjectManager;
     public static final Bundle args = new Bundle();
     private static boolean sEnableGraphite = true;
+    private static boolean loaded = false;
 
     /**
      * Initializes the basic functions context.
@@ -204,5 +205,21 @@ public class AppContext {
      */
     public static int minCheckingLevel() {
         return mContext.getResources().getInteger(R.integer.min_source_lang_checking_level);
+    }
+
+    /**
+     * Checks if the app has finished loading
+     * @return
+     */
+    public static boolean isLoaded() {
+        return loaded;
+    }
+
+    /**
+     * Sets if the app has finished loading
+     * @param loaded
+     */
+    public static void setLoaded(boolean loaded) {
+        AppContext.loaded = loaded;
     }
 }

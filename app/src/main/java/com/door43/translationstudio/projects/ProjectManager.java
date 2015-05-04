@@ -56,7 +56,7 @@ public class ProjectManager {
 
     private static String mSelectedProjectId;
     private static MainApplication mContext;
-    private OnProgressCallback mInitProgressCallback;
+    private OnProgressListener mInitProgressCallback;
     private static boolean mHasLoaded = false;
 
     public ProjectManager(MainApplication context) {
@@ -73,6 +73,7 @@ public class ProjectManager {
 
     /**
      * Checks if the project manager has been loaded
+     * @deprecated use the method on the main context instead
      * @return
      */
     public boolean isLoaded() {
@@ -82,13 +83,13 @@ public class ProjectManager {
     /**
      * loads the source projects
      */
-    public void init(OnProgressCallback callback) {
+    public void init(OnProgressListener callback) {
         // make sure we only call this once.
         if(!mHasLoaded) {
             mHasLoaded = true;
             mInitProgressCallback = callback;
             // begin loading target languages
-            initTargetLanguages();
+            loadTargetLanguages();
             // begin loading projects
             initProjects();
         }
@@ -272,7 +273,7 @@ public class ProjectManager {
      */
     private void deleteListableProject(PseudoProject p) {
         if(mListableProjectMap.containsKey("m-"+p.getId())) {
-            mListableProjects.remove(mListableProjectMap.get("m-"+p.getId()));
+            mListableProjects.remove(mListableProjectMap.get("m-" + p.getId()));
             mListableProjectMap.remove("m-" + p.getId());
         }
     }
@@ -491,8 +492,55 @@ public class ProjectManager {
 
     /**
      * Loads a list of target languages from the disk
+     * @param listener
      */
-    private void initTargetLanguages() {
+    public void loadTargetLanguages(OnProgressListener listener) {
+        String catalog = mDataStore.pullTargetLanguageCatalog();
+        // parse target languages
+        JSONArray json;
+        try {
+            json = new JSONArray(catalog);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "malformed project source", e);
+            return;
+        }
+
+        // load the data
+        int numLanguages = json.length();
+        for(int i=0; i<numLanguages; i++) {
+            try {
+                JSONObject jsonLanguage = json.getJSONObject(i);
+                if(jsonLanguage.has("lc") && jsonLanguage.has("ln")) {
+                    // publish updates every 100 languages to ease up on the ui
+                    if(i % 100 == 0) {
+                        if(listener != null) {
+                            listener.onProgress((double)i / (double)numLanguages, String.format(mContext.getResources().getString(R.string.loading_target_language), jsonLanguage.get("lc").toString()));
+                        }
+                    }
+                    Language.Direction langDirection = Language.Direction.LeftToRight;
+                    if(jsonLanguage.has("ld")) {
+                        if(jsonLanguage.get("ld").equals("rtl")) {
+                            langDirection = Language.Direction.RightToLeft;
+                        } else {
+                            langDirection = Language.Direction.LeftToRight;
+                        }
+                    }
+                    Language l = new Language(jsonLanguage.get("lc").toString(), jsonLanguage.get("ln").toString(), langDirection);
+                    addLanguage(l);
+                } else {
+                    Logger.w(this.getClass().getName(),"missing required parameters in the target language catalog. "+jsonLanguage.toString());
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "failed to load target language catalog", e);
+                continue;
+            }
+        }
+    }
+
+    /**
+     * Loads a list of target languages from the disk
+     */
+    public void loadTargetLanguages() {
         String catalog = mDataStore.pullTargetLanguageCatalog();
         // parse target languages
         JSONArray json;
@@ -912,6 +960,65 @@ public class ProjectManager {
         } else {
             mDataStore.fetchTempAsset(mDataStore.sourceUri(p.getId(), l.getId(), r.getId()), ignoreCache);
         }
+    }
+
+    /**
+     * Loads a list of projects from the disk
+     * @param listener
+     */
+    public void loadProjects(OnProgressListener listener) {
+        String catalog = mDataStore.pullProjectCatalog(false, false);
+
+        List<Project> importedProjects = new ArrayList<>();
+        // load projects
+        JSONArray json;
+        try {
+            json = new JSONArray(catalog);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "malformed projects catalog", e);
+            return;
+        }
+
+        // load the data
+        int numProjects = json.length();
+        for(int i=0; i<numProjects; i++) {
+            try {
+                JSONObject jsonProj = json.getJSONObject(i);
+                // update the progress
+                if(listener != null) {
+                    listener.onProgress((double)i/(double)numProjects, String.format(mContext.getResources().getString(R.string.loading_project), jsonProj.get("slug").toString()));
+                }
+
+                // generate project
+                Project p = Project.generate(jsonProj);
+
+                if(p != null) {
+                    mDataStore.updateCachedDetails(p);
+                    generateProjectListEntry(p);
+
+                    // add project to internal list of projects
+                    if(addProject(p)) {
+                        importedProjects.add(p);
+                    }
+
+                    // loads the source languages into the project
+                    List<SourceLanguage> languages = loadSourceLanguageCatalog(p);
+                    // validate project has languages
+                    if(languages.size() == 0) {
+                        Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
+                        importedProjects.remove(p);
+                        deleteProject(p);
+                        removeProjectListEntry(p);
+                    }
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "failed to load projects catalog", e);
+                continue;
+            }
+        }
+
+        // sort the listable projects
+        sortListableProjects();
     }
 
     /**
@@ -1655,7 +1762,7 @@ public class ProjectManager {
 
     }
 
-    public interface OnProgressCallback {
+    public interface OnProgressListener {
         void onProgress(double progress, String message);
         void onSuccess();
     }
