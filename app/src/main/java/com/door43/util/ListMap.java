@@ -101,7 +101,11 @@ public class ListMap<E> {
      * @return
      */
     public int indexOf(E object) {
-        return mObjects.indexOf(object);
+        if(object != null) {
+            return mObjects.indexOf(object);
+        } else {
+            return -1;
+        }
     }
 
     /**

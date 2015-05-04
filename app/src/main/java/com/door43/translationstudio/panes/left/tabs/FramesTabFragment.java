@@ -45,9 +45,8 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                TranslationManager.save();
                 if(getActivity() != null) {
-                    // save changes to the current frame first
-                    TranslationManager.save();
                     // select the new frame
                     AppContext.projectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
                     ((MainActivity) getActivity()).reload();

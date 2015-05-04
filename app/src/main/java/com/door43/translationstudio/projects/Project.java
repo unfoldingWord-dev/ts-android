@@ -351,20 +351,13 @@ public class Project implements Model {
      * @return
      */
     public Chapter getSelectedChapter() {
-        if(AppContext.context().rememberLastPosition()) {
+        if(mSelectedChapterId == null && AppContext.context().rememberLastPosition()) {
             SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
             mSelectedChapterId = settings.getString("selected_chapter_" + mSlug, null);
         }
 
         Chapter selectedChapter = getChapter(mSelectedChapterId);
-        if(selectedChapter == null) {
-            // auto select the first chapter if no other chapter has been selected
-            int defaultChapterIndex = 0;
-            setSelectedChapter(defaultChapterIndex);
-            return getChapter(defaultChapterIndex);
-        } else {
-            return selectedChapter;
-        }
+        return selectedChapter;
     }
 
     /**

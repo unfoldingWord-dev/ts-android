@@ -178,6 +178,7 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
 
     /**
      * Begins or restarts parsing the note tags
+     * TODO: this needs to be broken up into a generic animator and a managed task
      * @param text
      */
     private void renderTranslationText(final String text) {

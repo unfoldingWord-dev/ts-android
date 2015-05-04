@@ -27,7 +27,6 @@ import com.door43.util.threads.TaskManager;
  * Created by joel on 8/29/2014.
  */
 public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener {
-    private ChaptersTabFragment me = this;
     private ModelItemAdapter mModelItemAdapter;
     private ListView mListView;
     private GenericTaskWatcher mTaskWatcher;
@@ -54,11 +53,10 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long lo) {
+                TranslationManager.save();
                 if(getActivity() != null) {
                     Project p = AppContext.projectManager().getSelectedProject();
                     SourceLanguage l = p.getSelectedSourceLanguage();
-                    // save changes to the current frame first
-                    TranslationManager.save();
                     p.setSelectedChapter(i);
 
                     // load frames

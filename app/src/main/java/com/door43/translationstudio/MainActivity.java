@@ -117,7 +117,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
                 onKeyboardChanged(rootView);
             }
         };
-        // TRICKY: we need to unregister this when the activity is destroyed
         registerReceiver(mMessageReceiver, filter);
 
         // set up drawers

@@ -544,6 +544,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
     /**
      * Parses the source text for key terms and generates clickable links.
+     * TODO: this needs to be broken up into a generic animator and a managed task
      */
     private void renderSourceText() {
         if(mHighlightSourceThread != null) {
@@ -689,6 +690,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
     /**
      * Begins or restarts parsing the note tags
+     * TODO: this needs to be broken up into a generic animator and a managed task
      * @param text
      */
     private void renderTranslationText(final String text) {

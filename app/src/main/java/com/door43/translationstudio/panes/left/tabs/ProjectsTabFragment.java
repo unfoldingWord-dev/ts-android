@@ -32,6 +32,7 @@ import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
+import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
@@ -65,9 +66,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                TranslationManager.save();
                 if (getActivity() != null) {
-                    // save changes to the current frame first
-                    TranslationManager.save();
                     Model m = mModelItemAdapter.getItem(i);
                     boolean isProject = m.getClass().equals(Project.class);
 
@@ -242,12 +242,23 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
         if(task instanceof LoadChaptersTask) {
-            ((MainActivity)getActivity()).reloadFramesTab();
-            openChaptersTab();
+            Project p = AppContext.projectManager().getSelectedProject();
+            if(p.getSelectedChapter() != null && p.getSelectedChapter().getFrames().length == 0) {
+                // load frames
+                LoadFramesTask newTask = new LoadFramesTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource(), p.getSelectedChapter());
+                mTaskWatcher.watch(newTask);
+                TaskManager.addTask(newTask, newTask.TASK_ID);
+            } else {
+                ((MainActivity) getActivity()).reloadFramesTab();
+                openChaptersTab();
+            }
         } else if(task instanceof IndexResourceTask) {
             // load the chapters
             Project p = AppContext.projectManager().getProject(((IndexResourceTask) task).getProject().getId());
             loadChapters(p, ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
+        } else if(task instanceof LoadFramesTask) {
+            ((MainActivity) getActivity()).reloadFramesTab();
+            openChaptersTab();
         }
     }
 

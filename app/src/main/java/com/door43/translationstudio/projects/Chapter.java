@@ -289,20 +289,13 @@ public class Chapter implements Model {
      * @return
      */
     public Frame getSelectedFrame() {
-        if(AppContext.context().rememberLastPosition()) {
+        if(mSelectedFrameId == null && AppContext.context().rememberLastPosition()) {
             SharedPreferences settings = AppContext.context().getSharedPreferences(Project.PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
             mSelectedFrameId = settings.getString("selected_frame_" + getProject().getId(), null);
         }
 
         Frame selectedFrame = getFrame(mSelectedFrameId);
-        if(selectedFrame == null) {
-            // auto select the first frame if no other frame has been selected
-            int defaultFrameIndex = 0;
-            setSelectedFrame(defaultFrameIndex);
-            return getFrame(defaultFrameIndex);
-        } else {
-            return selectedFrame;
-        }
+        return selectedFrame;
     }
 
     /**

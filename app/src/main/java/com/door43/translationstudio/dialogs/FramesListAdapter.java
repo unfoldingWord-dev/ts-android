@@ -15,6 +15,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.rendering.USXRenderer;
+import com.door43.translationstudio.tasks.LoadModelFontTask;
 import com.door43.translationstudio.util.AppContext;
 
 /**
@@ -82,15 +83,20 @@ public class FramesListAdapter  extends BaseAdapter {
                 holder.text.setText(new USXRenderer().render(getItem(position).getText()));
         }
 
-        // set graphite fontface
-        Typeface typeface;
-        if(getItem(position).getSelectedSourceLanguage() != null) {
-            typeface = AppContext.graphiteTypeface(getItem(position).getSelectedSourceLanguage());
-        } else {
-            // use english as default
-            typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
+        // set fontface
+        if(!holder.hasFont) {
+            // NOTE: this only runs once for each holder to improve performance
+            // TODO: we should place the font loading in a new managed task
+            holder.hasFont = true;
+            Typeface typeface;
+            if (getItem(position).getSelectedSourceLanguage() != null) {
+                typeface = AppContext.graphiteTypeface(getItem(position).getSelectedSourceLanguage());
+            } else {
+                // use english as default
+                typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
+            }
+            holder.text.setTypeface(typeface, 0);
         }
-        holder.text.setTypeface(typeface, 0);
 
         // set font size
         float fontsize = AppContext.typefaceSize();
@@ -121,5 +127,6 @@ public class FramesListAdapter  extends BaseAdapter {
      */
     private static class ViewHolder {
         public TextView text;
+        public boolean hasFont = false;
     }
 }
