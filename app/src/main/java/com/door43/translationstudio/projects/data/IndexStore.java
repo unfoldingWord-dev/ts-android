@@ -6,6 +6,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
@@ -56,7 +57,7 @@ public class IndexStore {
      * @param c
      * @return
      */
-    public static Model[] getFrames(Project p, SourceLanguage l, Resource r, final Chapter c) {
+    public static Model[] getFrames(final Project p, final SourceLanguage l, final Resource r, final Chapter c) {
         File chapterDir = getSourceChapterDir(p, l, r, c);
         final List<Frame> frames = new ArrayList<>();
         chapterDir.listFiles(new FilenameFilter() {
@@ -67,6 +68,8 @@ public class IndexStore {
                         String data = FileUtils.readFileToString(new File(dir, filename));
                         Frame f = Frame.generate(new JSONObject(data));
                         if(f != null) {
+                            TranslationNote note = getTranslationNote(p, l, r, c, f);
+                            f.setTranslationNotes(note);
                             f.setChapter(c);
                             frames.add(f);
                         }
@@ -82,12 +85,13 @@ public class IndexStore {
 
     /**
      * Loads the frames into a chapter
+     * TODO: we need to load the notes and terms as well
      * @param p
      * @param l
      * @param r
      * @param c
      */
-    public static void loadFrames(Project p, SourceLanguage l, Resource r, final Chapter c) {
+    public static void loadFrames(final Project p, final SourceLanguage l, final Resource r, final Chapter c) {
         File chapterDir = getSourceChapterDir(p, l, r, c);
         chapterDir.listFiles(new FilenameFilter() {
             @Override
@@ -97,6 +101,8 @@ public class IndexStore {
                         String data = FileUtils.readFileToString(new File(dir, filename));
                         Frame f = Frame.generate(new JSONObject(data));
                         if(f != null)  {
+                            TranslationNote note = getTranslationNote(p, l, r, c, f);
+                            f.setTranslationNotes(note);
                             c.addFrame(f);
                         }
                     } catch (Exception e) {
@@ -106,6 +112,31 @@ public class IndexStore {
                 return false;
             }
         });
+    }
+
+    /**
+     * Loads a translation note from the index.
+     * @param p
+     * @param l
+     * @param r
+     * @param c
+     * @param f
+     * @return
+     */
+    public static TranslationNote getTranslationNote(Project p, SourceLanguage l, Resource r, Chapter c, Frame f) {
+        File noteFile = new File(getNotesChapterDir(p, l, r, c), f.getId() + ".json");
+        if(noteFile.exists()) {
+            try {
+                String data = FileUtils.readFileToString(noteFile);
+                TranslationNote note = TranslationNote.generate(new JSONObject(data));
+                if(note != null) {
+                    return note;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 
     /**
@@ -300,4 +331,5 @@ public class IndexStore {
         File readyFile = new File(dir, READY_FILE);
         return readyFile.exists();
     }
+
 }

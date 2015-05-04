@@ -45,6 +45,27 @@ public class TranslationNote {
     }
 
     /**
+     * Generates a new translation note instance
+     * @param json
+     * @return
+     */
+    public static TranslationNote generate(JSONObject json) {
+        try {
+            JSONArray notesJson = json.getJSONArray("tn");
+            List<Note> notes = new ArrayList<>();
+            for(int i = 0; i < notesJson.length(); i ++) {
+                JSONObject noteJson = notesJson.getJSONObject(i);
+                Note n = new Note(noteJson.getString("ref"), noteJson.getString("text"));
+                notes.add(n);
+            }
+            return new TranslationNote(notes);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
      * stores an individual note
      */
     public static class Note {

@@ -1,21 +1,19 @@
 package com.door43.translationstudio;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.door43.translationstudio.migration.UpdateManager;
-import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
+import com.door43.translationstudio.tasks.LoadChaptersTask;
+import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.tasks.LoadProjectsTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
+import com.door43.translationstudio.tasks.LoadTermsTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -26,7 +24,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 /**
- * Created by joel on 9/29/2014.
+ * This activity initializes the app
  */
 public class SplashScreenActivity extends TranslatorBaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, ManagedTask.OnStartListener {
     private TextView mProgressTextView;
@@ -72,12 +70,16 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
             }
         }
 
+        // begin loading things
         if(!AppContext.isLoaded()) {
             boolean isWorking = false;
             isWorking = connectToTask(LoadTargetLanguagesTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(LoadProjectsTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(IndexProjectsTask.TASK_ID) ? true: isWorking;
+            isWorking = connectToTask(LoadTermsTask.TASK_ID) ? true: isWorking;
+            isWorking = connectToTask(LoadChaptersTask.TASK_ID) ? true: isWorking;
+            isWorking = connectToTask(LoadFramesTask.TASK_ID) ? true: isWorking;
 
             // start new task
             if(!isWorking) {
@@ -202,20 +204,48 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
                 indexProjects();
             }
         } else if(task instanceof IndexProjectsTask) {
-
-//            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-
-//                if(AppContext.projectManager().getSelectedProject() != null) {
-//                    // load the saved project without displaying a notice to the user
-//                    AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject(), false);
-//                }
-//            }
-
-            // open the main activity
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
+                Project p = AppContext.projectManager().getSelectedProject();
+                if(p != null && p.hasSelectedSourceLanguage()) {
+                    // load terms
+                    LoadTermsTask newTask = new LoadTermsTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                    newTask.addOnProgressListener(this);
+                    newTask.addOnStartListener(this);
+                    newTask.addOnFinishedListener(this);
+                    TaskManager.addTask(newTask, LoadTermsTask.TASK_ID);
+                    return;
+                }
+            }
+            openMainActivity();
+        } else if(task instanceof LoadTermsTask) {
+            // load chapters
+            Project p = AppContext.projectManager().getSelectedProject();
+            LoadChaptersTask newTask = new LoadChaptersTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+            newTask.addOnProgressListener(this);
+            newTask.addOnStartListener(this);
+            newTask.addOnFinishedListener(this);
+            TaskManager.addTask(newTask, LoadChaptersTask.TASK_ID);
+        } else if(task instanceof LoadChaptersTask) {
+            // load frames
+            Project p = AppContext.projectManager().getSelectedProject();
+            if(p.getSelectedChapter() != null) {
+                LoadFramesTask newTask  = new LoadFramesTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource(), p.getSelectedChapter());
+                newTask.addOnProgressListener(this);
+                newTask.addOnStartListener(this);
+                newTask.addOnFinishedListener(this);
+                TaskManager.addTask(newTask, LoadFramesTask.TASK_ID);
+            } else {
+                openMainActivity();
+            }
+        } else if(task instanceof LoadFramesTask) {
+            openMainActivity();
         }
+    }
+
+    private void openMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -236,6 +266,9 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
         disconnectTask(LoadProjectsTask.TASK_ID);
         disconnectTask(UpdateAppTask.TASK_ID);
         disconnectTask(IndexProjectsTask.TASK_ID);
+        disconnectTask(LoadTermsTask.TASK_ID);
+        disconnectTask(LoadChaptersTask.TASK_ID);
+        disconnectTask(LoadFramesTask.TASK_ID);
         super.onDestroy();
     }
 }

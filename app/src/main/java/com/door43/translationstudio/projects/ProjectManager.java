@@ -82,6 +82,7 @@ public class ProjectManager {
 
     /**
      * loads the source projects
+     * @deprecated
      */
     public void init(OnProgressListener callback) {
         // make sure we only call this once.
@@ -1335,7 +1336,7 @@ public class ProjectManager {
      * @param jsonString
      * @param p
      */
-    private void loadTerms(String jsonString, Project p) {
+    public void loadTerms(String jsonString, Project p) {
         if(p == null) return;
 
         // load source

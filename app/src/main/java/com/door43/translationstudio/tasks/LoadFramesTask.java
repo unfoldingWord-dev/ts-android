@@ -19,7 +19,7 @@ public class LoadFramesTask extends ManagedTask {
     private final Resource mResource;
     private Chapter mChapter;
     private int mMaxProgress = 100;
-    public String TASK_ID = "load_frames";
+    public static final String TASK_ID = "load_frames";
 
     public LoadFramesTask(Project p, SourceLanguage l, Resource r, Chapter c) {
         mProject = p;
