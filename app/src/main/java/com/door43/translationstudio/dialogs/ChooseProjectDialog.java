@@ -28,8 +28,10 @@ import com.door43.util.threads.ThreadableUI;
 public class ChooseProjectDialog extends DialogFragment {
     private ModelItemAdapter mModelItemAdapter;
     private DialogInterface.OnDismissListener mDismissListener;
+    public static final String ARG_META_ID = "metaId";
     private String mMetaId;
     private static final String GROUP_TASK_ID = "select_project_list_group";
+    private OnSuccessListener mSuccessListener;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.title_projects);
@@ -38,7 +40,7 @@ public class ChooseProjectDialog extends DialogFragment {
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         Bundle args = getArguments();
-        mMetaId = args.getString("metaId");
+        mMetaId = args.getString(ARG_META_ID);
 
         mModelItemAdapter = new ModelItemAdapter(AppContext.context(), new Model[]{}, GROUP_TASK_ID);
 
@@ -55,8 +57,14 @@ public class ChooseProjectDialog extends DialogFragment {
                     } else {
                         // return the selected project.
                         Project p = (Project)m;
-                        AppContext.getEventBus().post(new ChoseProjectEvent(p, ChooseProjectDialog.this));
-                        // NOTE: the caller should close this dialog
+                        if(mSuccessListener != null) {
+                            try {
+                                mSuccessListener.onSuccess(ChooseProjectDialog.this.getDialog(), p);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        dismiss();
                     }
                 }
             });
@@ -65,7 +73,6 @@ public class ChooseProjectDialog extends DialogFragment {
         }
 
         populateList();
-
         return v;
     }
 
@@ -105,9 +112,23 @@ public class ChooseProjectDialog extends DialogFragment {
         super.onDismiss(dialog);
     }
 
+    /**
+     * Sets the listener to be called when the dialog is dismissed
+     * @param listener
+     */
     public void setOnDismissListener(DialogInterface.OnDismissListener listener) {
         mDismissListener = listener;
     }
 
+    /**
+     * Sets the listener to be called when a project is selected
+     * @param listener
+     */
+    public void setOnSuccessListener(OnSuccessListener listener) {
+        mSuccessListener = listener;
+    }
 
+    public interface OnSuccessListener {
+        void onSuccess(DialogInterface dialog, Project project);
+    }
 }

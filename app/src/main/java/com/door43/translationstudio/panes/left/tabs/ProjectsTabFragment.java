@@ -21,10 +21,8 @@ import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectDialog;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
-import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
@@ -39,16 +37,16 @@ import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.squareup.otto.Subscribe;
 
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener {
+public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener, ChooseProjectDialog.OnSuccessListener {
     private static final int SOURCE_LANGUAGE_REQUEST = 0;
     private static final int TARGET_LANGUAGE_REQUEST = 1;
     private ModelItemAdapter mModelItemAdapter;
     private GenericTaskWatcher mTaskWatcher;
+    private ChooseProjectDialog mProjectSelectorDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,7 +75,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                         handleProjectSelection((Project) m);
                     } else {
                         // this is a meta project
-                        handleMetaSelection((PseudoProject) m);
+                        handleMetaSelection(m.getId());
                     }
                 }
             }
@@ -90,6 +88,13 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 startActivity(intent);
             }
         });
+
+        if(savedInstanceState != null) {
+            String metaId = savedInstanceState.getString(ChooseProjectDialog.ARG_META_ID, null);
+            if(metaId != null) {
+                handleMetaSelection(metaId);
+            }
+        }
 
         return view;
     }
@@ -203,9 +208,9 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
     /**
      * Handles the selection of a meta project
-     * @param p
+     * @param pseudoProjectId
      */
-    private void handleMetaSelection(PseudoProject p) {
+    private void handleMetaSelection(String pseudoProjectId) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
         if (prev != null) {
@@ -215,33 +220,31 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
 
         app().closeToastMessage();
         // Create and show the dialog.
-        ChooseProjectDialog newFragment = new ChooseProjectDialog();
+        if(mProjectSelectorDialog != null) {
+            mProjectSelectorDialog.dismiss();
+        }
+        mProjectSelectorDialog = new ChooseProjectDialog();
         Bundle args = new Bundle();
-        args.putString("metaId", p.getId());
-        newFragment.setArguments(args);
-        newFragment.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        args.putString(ChooseProjectDialog.ARG_META_ID, pseudoProjectId);
+        mProjectSelectorDialog.setArguments(args);
+        mProjectSelectorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                Activity activity = getActivity();
-                if (activity != null) {
-                    activity.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-                } else {
-                    Logger.e(this.getClass().getName(), "handleMetaSelection the activity is null");
-                }
+                ((MainActivity)getActivity()).closeKeyboard();
             }
         });
-        newFragment.show(ft, "dialog");
+        mProjectSelectorDialog.setOnSuccessListener(this);
+        mProjectSelectorDialog.show(ft, "dialog");
     }
 
-    @Subscribe
-    public void onSelectedProjectFromMeta(ChoseProjectEvent event) {
-        handleProjectSelection(event.getProject());
-        event.getDialog().dismiss();
-        if(getActivity() != null) {
-            getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        } else {
-            Logger.e(this.getClass().getName(), "onSelectedProjectFromMeta the activity is null");
+    public void onSaveInstanceState(Bundle outState) {
+        if(mProjectSelectorDialog != null && mProjectSelectorDialog.isVisible()) {
+            if(mProjectSelectorDialog.getArguments() != null) {
+                outState.putString(ChooseProjectDialog.ARG_META_ID, mProjectSelectorDialog.getArguments().getString(ChooseProjectDialog.ARG_META_ID));
+            }
+            mProjectSelectorDialog.dismiss();
         }
+        super.onSaveInstanceState(outState);
     }
 
     public void onDestroy() {
@@ -290,5 +293,16 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 openChaptersTab();
             }
         }
+    }
+
+    /**
+     * A project has been chosen from a Pseudo Project category
+     * @param dialog
+     * @param project
+     */
+    @Override
+    public void onSuccess(DialogInterface dialog, Project project) {
+        handleProjectSelection(project);
+        ((MainActivity)getActivity()).closeKeyboard();
     }
 }

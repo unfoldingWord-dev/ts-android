@@ -174,6 +174,8 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     public void onResume() {
         super.onResume();
 
+        closeKeyboard();
+
         // connect to tasks
         IndexProjectsTask indexProjectsTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
         IndexProjectsTask indexResourcesTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);

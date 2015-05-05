@@ -57,6 +57,8 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
                         // only display the chapter settings if the title and reference are not null
                         if (AppContext.projectManager().getSelectedProject().getSelectedChapter().hasChapterSettings()) {
                             ((MainActivity) getActivity()).showChapterSettingsMenu();
+                        } else {
+                            ((MainActivity) getActivity()).reload();
                         }
                     } else {
                         ((MainActivity) getActivity()).reload();
