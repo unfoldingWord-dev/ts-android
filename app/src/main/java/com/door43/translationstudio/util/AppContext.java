@@ -36,7 +36,7 @@ public class AppContext {
     private static ProjectManager mProjectManager;
     public static final Bundle args = new Bundle();
     private static boolean sEnableGraphite = true;
-    private static boolean loaded = false;
+    private static boolean loaded;
 
     /**
      * Initializes the basic functions context.
@@ -166,23 +166,30 @@ public class AppContext {
         String typeFace = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getResources().getString(R.string.pref_default_translation_typeface));
         File font = AppContext.context().getAssetAsFile("fonts/" + typeFace);
         if (font != null) {
-            if(sEnableGraphite) {
-                TTFAnalyzer analyzer = new TTFAnalyzer();
-                String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
-                if (fontname != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-                    // assets container, font asset, font name, rtl, language, feats (what's this for????)
-                    int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
-                    try {
-                        return (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        return Typeface.createFromFile(font);
+            try {
+                Typeface customTypeface;
+                if (sEnableGraphite) {
+                    TTFAnalyzer analyzer = new TTFAnalyzer();
+                    String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
+                    if (fontname != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                        // assets container, font asset, font name, rtl, language, feats (what's this for????)
+                        int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
+                        try {
+                            customTypeface = (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            customTypeface = Typeface.createFromFile(font);
+                        }
+                    } else {
+                        customTypeface = Typeface.createFromFile(font);
                     }
                 } else {
-                    return Typeface.createFromFile(font);
+                    customTypeface = Typeface.createFromFile(font);
                 }
-            } else {
-                return Typeface.createFromFile(font);
+                return customTypeface;
+            } catch (Exception e) {
+                Logger.e(AppContext.class.getName(), "Could not load the typeface " + typeFace, e);
+                return Typeface.DEFAULT;
             }
         } else {
             Logger.w(AppContext.class.getName(), "Could not load the typeface " + typeFace);
@@ -208,17 +215,13 @@ public class AppContext {
     }
 
     /**
-     * Checks if the app has finished loading
+     * Checks if the app
      * @return
      */
     public static boolean isLoaded() {
         return loaded;
     }
 
-    /**
-     * Sets if the app has finished loading
-     * @param loaded
-     */
     public static void setLoaded(boolean loaded) {
         AppContext.loaded = loaded;
     }

@@ -192,17 +192,18 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
             }
 
             // run updates
-            UpdateAppTask newTask = new UpdateAppTask();
-            newTask.addOnFinishedListener(this);
-            newTask.addOnProgressListener(this);
-            newTask.addOnStartListener(this);
-            TaskManager.addTask(newTask, newTask.TASK_ID);
-        } else if(task instanceof UpdateAppTask) {
-            if(((UpdateAppTask) task).error() != null) {
-                // TODO: display an error to the user
-            } else {
+            // NOTE: the updater task is deprecated
+//            UpdateAppTask newTask = new UpdateAppTask();
+//            newTask.addOnFinishedListener(this);
+//            newTask.addOnProgressListener(this);
+//            newTask.addOnStartListener(this);
+//            TaskManager.addTask(newTask, newTask.TASK_ID);
+//        } else if(task instanceof UpdateAppTask) {
+//            if(((UpdateAppTask) task).error() != null) {
+//                // TODO: display an error to the user
+//            } else {
                 indexProjects();
-            }
+//            }
         } else if(task instanceof IndexProjectsTask) {
             if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
                 Project p = AppContext.projectManager().getSelectedProject();
