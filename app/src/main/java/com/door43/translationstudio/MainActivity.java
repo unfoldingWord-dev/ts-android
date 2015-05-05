@@ -73,6 +73,12 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // ensure the languages have been chosen
+        Project p = AppContext.projectManager().getSelectedProject();
+        if(p != null && (!p.hasSelectedSourceLanguage() || !p.hasSelectedTargetLanguage())) {
+            AppContext.projectManager().setSelectedProject(null);
+        }
+
         // insert translator fragment
         if(savedInstanceState == null) {
             reloadTranslatorFragment();
@@ -144,13 +150,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
                 closeKeyboard();
             }
         });
-
-        if(AppContext.projectManager().getSelectedProject() != null && AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
-            // the project contains no chapters for the current language
-            Intent languageIntent = new Intent(me, LanguageSelectorActivity.class);
-            languageIntent.putExtra("sourceLanguages", true);
-            startActivity(languageIntent);
-        }
 
         if(AppContext.context().shouldShowWelcome()) {
             // perform any welcoming tasks here. This happens when the user first opens the app.

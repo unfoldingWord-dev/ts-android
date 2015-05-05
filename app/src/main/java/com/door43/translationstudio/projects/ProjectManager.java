@@ -426,7 +426,8 @@ public class ProjectManager {
     }
 
     /**
-     * Sets the selected project in the app by id
+     * Sets the selected project in the app by id.
+     * You may deselect a project by passing in null
      * @param id the project id
      * @return true if the project exists
      */
@@ -435,6 +436,8 @@ public class ProjectManager {
         if(p != null) {
             mSelectedProjectId = p.getId();
             storeSelectedProject(p.getId());
+        } else {
+            mSelectedProjectId = null;
         }
         return p != null;
     }

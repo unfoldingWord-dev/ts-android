@@ -8,7 +8,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
+import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.tasks.LoadProjectsTask;
@@ -148,7 +150,11 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
                         mProgressBar.setIndeterminate(false);
                         mProgressBar.setProgress((int) Math.ceil(progress * task.maxProgress()));
                     }
-                    mProgressTextView.setText(message);
+                    if(task instanceof IndexProjectsTask || task instanceof IndexResourceTask) {
+                        mProgressTextView.setText(R.string.indexing);
+                    } else {
+                        mProgressTextView.setText(message);
+                    }
                 }
             });
         }
@@ -163,6 +169,18 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
         newTask.addOnStartListener(this);
         newTask.addOnProgressListener(this);
         TaskManager.addTask(newTask, newTask.TASK_ID);
+    }
+
+    /**
+     * Loads the project terms
+     * @param p
+     */
+    private void loadTerms(Project p) {
+        LoadTermsTask newTask = new LoadTermsTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+        newTask.addOnProgressListener(this);
+        newTask.addOnStartListener(this);
+        newTask.addOnFinishedListener(this);
+        TaskManager.addTask(newTask, LoadTermsTask.TASK_ID);
     }
 
     @Override
@@ -205,19 +223,26 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
                 indexProjects();
 //            }
         } else if(task instanceof IndexProjectsTask) {
-            if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
+            // load the selected project if enabled
+            if (app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
                 Project p = AppContext.projectManager().getSelectedProject();
-                if(p != null && p.hasSelectedSourceLanguage()) {
-                    // load terms
-                    LoadTermsTask newTask = new LoadTermsTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-                    newTask.addOnProgressListener(this);
-                    newTask.addOnStartListener(this);
-                    newTask.addOnFinishedListener(this);
-                    TaskManager.addTask(newTask, LoadTermsTask.TASK_ID);
+                if (p != null && p.hasSelectedSourceLanguage()) {
+                    if (!IndexStore.hasIndex(p)) {
+                        // index the resources
+                        IndexResourceTask newTask = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                        newTask.addOnProgressListener(this);
+                        newTask.addOnStartListener(this);
+                        newTask.addOnFinishedListener(this);
+                        TaskManager.addTask(newTask, IndexResourceTask.TASK_ID);
+                    } else {
+                        loadTerms(p);
+                    }
                     return;
                 }
             }
             openMainActivity();
+        } else if(task instanceof IndexResourceTask) {
+            loadTerms(AppContext.projectManager().getSelectedProject());
         } else if(task instanceof LoadTermsTask) {
             // load chapters
             Project p = AppContext.projectManager().getSelectedProject();

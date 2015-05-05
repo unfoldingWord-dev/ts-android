@@ -85,7 +85,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
             @Override
             public void onClick(View view) {
                 AppContext.args.putBoolean(TranslatorFragment.ARGS_VIEW_TRANSLATION_DRAFT, true);
-                if(!mProject.hasChosenTargetLanguage()) {
+                if(!mProject.hasSelectedTargetLanguage()) {
                     mProject.setSelectedTargetLanguage(mProject.getSelectedTargetLanguage().getId());
                 }
                 finish();
@@ -203,7 +203,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements M
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_dismiss_project_settings:
-                if(!mProject.hasChosenTargetLanguage()) {
+                if(!mProject.hasSelectedTargetLanguage()) {
                     mProject.setSelectedTargetLanguage(mProject.getSelectedTargetLanguage().getId());
                 }
                 finish();

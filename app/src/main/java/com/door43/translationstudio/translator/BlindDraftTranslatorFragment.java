@@ -12,13 +12,11 @@ import android.os.Message;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ClickableSpan;
-import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -39,9 +37,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.dialogs.FramesListAdapter;
-import com.door43.translationstudio.dialogs.FramesReaderDialog;
 import com.door43.translationstudio.dialogs.NoteMarkerDialog;
 import com.door43.translationstudio.dialogs.VerseMarkerDialog;
 import com.door43.translationstudio.projects.Chapter;
@@ -56,16 +52,12 @@ import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.util.StringUtilities;
 import com.door43.util.threads.ThreadableUI;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by joel on 4/17/2015.
@@ -675,7 +667,7 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
             final Chapter chapter = p.getSelectedChapter();
 
             // get the target language
-            if(!p.hasChosenTargetLanguage()) {
+            if(!p.hasSelectedTargetLanguage()) {
                 ((TranslatorActivityInterface)getActivity()).showProjectSettingsMenu();
             }
 

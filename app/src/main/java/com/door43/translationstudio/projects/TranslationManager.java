@@ -2,10 +2,8 @@ package com.door43.translationstudio.projects;
 
 import android.text.Editable;
 import android.text.SpannedString;
-import android.text.TextUtils;
 import android.util.Log;
 
-import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
@@ -172,7 +170,7 @@ public class TranslationManager implements TCPClient.TcpListener {
     private static void commitTranslation() {
         if(mFrame != null && mText != null) {
             String compiled = compileTranslation(mText);
-            if(mFrame.getChapter() != null && mFrame.getChapter().getProject() != null && mFrame.getChapter().getProject().hasChosenTargetLanguage()) {
+            if(mFrame.getChapter() != null && mFrame.getChapter().getProject() != null && mFrame.getChapter().getProject().hasSelectedTargetLanguage()) {
                 mFrame.setTranslation(compiled);
                 mFrame.save();
             }

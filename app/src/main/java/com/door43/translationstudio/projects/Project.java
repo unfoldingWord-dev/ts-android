@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.Source;
-
 /**
  * Projects encapsulate the source text for a specific translation effort regardless of language.
  * This source text is subdivided into Chapters and Frames.
@@ -553,7 +551,7 @@ public class Project implements Model {
      * @return
      */
     public boolean isTranslating() {
-        if(hasChosenTargetLanguage()) {
+        if(hasSelectedTargetLanguage()) {
             return isTranslating(getId(), getSelectedTargetLanguage().getId());
         } else {
             return false;
@@ -682,7 +680,7 @@ public class Project implements Model {
      * Checks if the user has chosen a target language for this project yet.
      * @return
      */
-    public boolean hasChosenTargetLanguage() {
+    public boolean hasSelectedTargetLanguage() {
         return mSelectedTargetLanguageId != null;
     }
 
