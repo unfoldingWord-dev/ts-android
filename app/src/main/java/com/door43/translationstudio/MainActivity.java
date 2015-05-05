@@ -152,17 +152,22 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         });
 
         if(AppContext.context().shouldShowWelcome()) {
-            // perform any welcoming tasks here. This happens when the user first opens the app.
+            // TODO: perform any welcoming tasks here. This happens when the user first opens the app.
             AppContext.context().setShouldShowWelcome(false);
-            openLibraryDrawer();
-        } else {
-            // open the drawer if the remembered chapter does not exist
-            if(AppContext.context().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_REMEMBER_POSITION, Boolean.parseBoolean(getResources().getString(R.string.pref_default_remember_position)))) {
-                if(AppContext.projectManager().getSelectedProject() == null || AppContext.projectManager().getSelectedProject().getSelectedChapter() == null) {
-                    openLibraryDrawer();
-                }
-            }
         }
+
+        // open the drawer if no frame is selected
+        if(!frameIsSelected()) {
+            if(chapterIsSelected()) {
+                openFramesTab();
+            } else if(AppContext.projectManager().getSelectedProject() != null) {
+                openChaptersTab();
+            } else {
+                openProjectsTab();
+            }
+            openLibraryDrawer();
+        }
+
         closeKeyboard();
     }
 
@@ -194,6 +199,23 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     }
 
     /**
+     * Checks if a chapter is selected
+     * @return
+     */
+    private boolean chapterIsSelected() {
+        Project p = AppContext.projectManager().getSelectedProject();
+        return p != null && p.getSelectedChapter() != null;
+    }
+
+    /**
+     * Checks if a frame is selected
+     */
+    private boolean frameIsSelected() {
+        Project p = AppContext.projectManager().getSelectedProject();
+        return p != null && p.getSelectedChapter() != null && p.getSelectedChapter().getSelectedFrame() != null;
+    }
+
+    /**
      * Notifies the translator fragment to reload it's content
      */
     public void reload() {
@@ -205,14 +227,16 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         super.onPostCreate(savedInstanceState);
     }
 
+    public void openProjectsTab() {
+        mLeftPane.selectTab(0);
+    }
+
     public void openChaptersTab() {
         mLeftPane.selectTab(1);
-        // TODO: make sure the drawer is open
     }
 
     public void openFramesTab() {
         mLeftPane.selectTab(2);
-        // TODO: make sure the drawer is open
     }
 
     public void reloadFramesTab() {
@@ -377,6 +401,24 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     @Override
     public void closeDrawers() {
         mDrawerLayout.closeDrawers();
+    }
+
+    /**
+     * Allows the user to change the drawer state
+     */
+    public void unlockLibraryDrawer() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.LEFT);
+    }
+
+    /**
+     * Prevents the user from changing the drawer state
+     */
+    public void lockLibraryDrawer() {
+        if(mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_OPEN, Gravity.LEFT);
+        } else {
+            mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.LEFT);
+        }
     }
 
     @Override

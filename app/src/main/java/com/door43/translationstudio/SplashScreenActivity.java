@@ -79,6 +79,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
             isWorking = connectToTask(LoadProjectsTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(UpdateAppTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(IndexProjectsTask.TASK_ID) ? true: isWorking;
+            isWorking = connectToTask(IndexResourceTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(LoadTermsTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(LoadChaptersTask.TASK_ID) ? true: isWorking;
             isWorking = connectToTask(LoadFramesTask.TASK_ID) ? true: isWorking;
@@ -292,6 +293,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
         disconnectTask(LoadProjectsTask.TASK_ID);
         disconnectTask(UpdateAppTask.TASK_ID);
         disconnectTask(IndexProjectsTask.TASK_ID);
+        disconnectTask(IndexResourceTask.TASK_ID);
         disconnectTask(LoadTermsTask.TASK_ID);
         disconnectTask(LoadChaptersTask.TASK_ID);
         disconnectTask(LoadFramesTask.TASK_ID);

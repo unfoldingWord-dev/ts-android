@@ -46,6 +46,7 @@ import com.squareup.otto.Subscribe;
  */
 public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener {
     private static final int SOURCE_LANGUAGE_REQUEST = 0;
+    private static final int TARGET_LANGUAGE_REQUEST = 1;
     private ModelItemAdapter mModelItemAdapter;
     private GenericTaskWatcher mTaskWatcher;
 
@@ -168,14 +169,24 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         startActivityForResult(languageIntent, SOURCE_LANGUAGE_REQUEST);
     }
 
+    private void requestTargetLanguage() {
+        Intent languageIntent = new Intent(getActivity(), LanguageSelectorActivity.class);
+        languageIntent.putExtra("sourceLanguages", false);
+        startActivityForResult(languageIntent, TARGET_LANGUAGE_REQUEST);
+    }
+
     /**
      * Reloads and opens the chapters tab
      */
     private void openChaptersTab() {
-        ((MainActivity) getActivity()).reload();
-        ((MainActivity) getActivity()).openChaptersTab();
-        // TODO: clear the frames tab
-        NotifyAdapterDataSetChanged();
+        if(AppContext.projectManager().getSelectedProject().hasSelectedTargetLanguage()) {
+            ((MainActivity) getActivity()).reload();
+            ((MainActivity) getActivity()).openChaptersTab();
+            // TODO: clear the frames tab
+            NotifyAdapterDataSetChanged();
+        } else {
+            requestTargetLanguage();
+        }
     }
 
     /**
@@ -270,6 +281,13 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 Project p = AppContext.projectManager().getSelectedProject();
                 p.setSelectedSourceLanguage(id);
                 indexResources(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+            }
+        } else if(requestCode == TARGET_LANGUAGE_REQUEST) {
+            if(resultCode == getActivity().RESULT_OK) {
+                String id = data.getExtras().getString(LanguageSelectorActivity.EXTRA_LANGUAGE);
+                Project p = AppContext.projectManager().getSelectedProject();
+                p.setSelectedTargetLanguage(id);
+                openChaptersTab();
             }
         }
     }

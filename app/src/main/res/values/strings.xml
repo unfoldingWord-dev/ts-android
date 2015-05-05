@@ -66,7 +66,7 @@
     <!-- Indicates how the project is being translated. e.g. Open Bible Stories is being translated from the English language into the Deutsch language -->
     <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> is being translated from the <xliff:g id="source_language" example="English">\"%2$s\"</xliff:g> language into the <xliff:g id="target_language" example="Deutsch">\"%3$s\"</xliff:g> language.</string>
     <string name="click_for_details">Click for details</string>
-    <string name="title_project_settings">Project Settings</string>
+    <string name="title_project_settings">Project Languages</string>
     <string name="error_target_and_source_are_same">The source and target languages are the same</string>
     <string name="error_chapter_title_missing">The chapter title is missing</string>
     <string name="error_chapter_reference_missing">The chapter reference is missing</string>
@@ -137,7 +137,7 @@
     <string name="related_terms">See Also:</string>
     <string name="term_examples">Examples:</string>
     <string name="git_push_success">Project was successfully uploaded</string>
-    <string name="choose_frame_to_start">Choose some source text from the left tab to get started</string>
+    <string name="choose_frame_to_start">Open a project to start translating</string>
     <string name="return_to_important_terms">Return to Important Terms</string>
     <string name="no_translation_notes">There are no translation notes</string>
     <string name="label_important_terms">Important Terms</string>
