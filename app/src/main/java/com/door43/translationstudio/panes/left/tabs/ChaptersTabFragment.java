@@ -58,6 +58,7 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
                     Project p = AppContext.projectManager().getSelectedProject();
                     SourceLanguage l = p.getSelectedSourceLanguage();
                     p.setSelectedChapter(i);
+                    ((MainActivity)getActivity()).reload();
 
                     // load frames
                     if(p.getSelectedChapter().getFrames().length == 0) {

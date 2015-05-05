@@ -49,10 +49,7 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
                 if(getActivity() != null) {
                     // select the new frame
                     AppContext.projectManager().getSelectedProject().getSelectedChapter().setSelectedFrame(i);
-                    ((MainActivity) getActivity()).reload();
-                    // we're ready to begin translating. close the left pane
                     ((MainActivity) getActivity()).closeDrawers();
-                    // let the adapter redraw itself so the selected frame is corectly highlighted
                     NotifyAdapterDataSetChanged();
 
                     // Display chapter translation dialog if translating a new chapter
@@ -61,6 +58,8 @@ public class FramesTabFragment extends TranslatorBaseFragment implements TabsFra
                         if (AppContext.projectManager().getSelectedProject().getSelectedChapter().hasChapterSettings()) {
                             ((MainActivity) getActivity()).showChapterSettingsMenu();
                         }
+                    } else {
+                        ((MainActivity) getActivity()).reload();
                     }
                 } else {
                     Logger.e(this.getClass().getName(), "onItemClickListener the activity is null");

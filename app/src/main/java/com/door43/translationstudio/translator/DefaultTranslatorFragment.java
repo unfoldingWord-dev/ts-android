@@ -1337,11 +1337,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                 }
             });
 
-            if(mSelectedFrame.getText().length() > 0) {
-                mHelpText.setVisibility(View.GONE);
-            } else {
-                mHelpText.setVisibility(View.VISIBLE);
-            }
+            mHelpText.setVisibility(View.GONE);
 
             // render the source text
             renderSourceText();
@@ -1378,6 +1374,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                 mPreviousFrameView.setVisibility(View.INVISIBLE);
             }
         } else {
+            mHelpText.setVisibility(View.VISIBLE);
             // stop all text processing and clear everything out.
             if(mHighlightSourceThread != null) {
                 mHighlightSourceThread.stop();

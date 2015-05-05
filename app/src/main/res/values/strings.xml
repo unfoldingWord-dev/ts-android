@@ -31,7 +31,7 @@
     <string name="source_language_field">Source Language</string>
     <!-- The langage to which a project is being translated -->
     <string name="target_language_field">Target Language</string>
-    <string name="title_activity_chapter_setting">Chapter Settings</string>
+    <string name="title_activity_chapter_setting">Chapter Translation</string>
     <string name="title_activity_language_selector">Language</string>
     <string name="loading_project_chapters">Loading chapters</string>
     <string name="success">Success</string>
