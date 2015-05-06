@@ -1,6 +1,5 @@
 package com.door43.translationstudio;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -16,9 +15,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.dialogs.LanguageAdapter;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ThreadableUI;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
 import java.util.List;

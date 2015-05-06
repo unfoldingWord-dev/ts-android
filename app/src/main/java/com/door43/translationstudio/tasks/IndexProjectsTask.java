@@ -28,6 +28,11 @@ public class IndexProjectsTask extends ManagedTask {
         mProjects = projects;
     }
 
+    public IndexProjectsTask(Project project) {
+        mProjects = new Project[1];
+        mProjects[0] = project;
+    }
+
     @Override
     public void start() {
         int pIndex = -1;

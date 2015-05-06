@@ -30,17 +30,8 @@ public class ChapterSettingActivity extends TranslatorBaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mProject = AppContext.projectManager().getSelectedProject();
-        if(mProject == null || mProject.getSelectedChapter() == null) {
-            if(mProject != null && mProject.getSelectedChapter() == null) {
-                // there are no chapters in the selected source language
-                Intent languageIntent = new Intent(this, LanguageSelectorActivity.class);
-                languageIntent.putExtra("sourceLanguages", true);
-                startActivity(languageIntent);
-                finish();
-            } else if(mProject == null) {
-                Logger.w(this.getClass().getName(), "Cannot display the chapter settings without a project");
-                finish();
-            }
+        if(mProject == null) {
+            finish();
         }
 
         // expand view fields

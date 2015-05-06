@@ -14,6 +14,7 @@ public class ImportTranslationDraftTask extends ManagedTask {
 
     private final Project mProject;
     private int mMaxProgress = 1;
+    public static final String TASK_ID = "import_translation_draft";
 
     public ImportTranslationDraftTask(Project p) {
         mProject = p;
@@ -21,7 +22,7 @@ public class ImportTranslationDraftTask extends ManagedTask {
 
     @Override
     public void start() {
-        // TODO: we need to determine what happens when there are multiple resources in an a draft.
+        // TODO: we need to determine what happens when there are multiple resources in a draft.
         // right now we are only loading the first one
         SourceLanguage draft = mProject.getSourceLanguageDraft(mProject.getSelectedTargetLanguage().getId());
         if(draft != null) {
