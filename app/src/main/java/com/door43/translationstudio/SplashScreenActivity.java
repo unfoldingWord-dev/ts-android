@@ -270,6 +270,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
     }
 
     private void openMainActivity() {
+        AppContext.setLoaded(true);
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
         finish();
