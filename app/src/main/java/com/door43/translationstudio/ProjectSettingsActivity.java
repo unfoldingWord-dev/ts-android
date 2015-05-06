@@ -99,7 +99,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
                 public void onClick(View view) {
                     Intent languageIntent = new Intent(ProjectSettingsActivity.this, LanguageSelectorActivity.class);
                     languageIntent.putExtra("sourceLanguages", false);
-                    startActivityForResult(languageIntent, SOURCE_LANGUAGE_REQUEST);
+                    startActivityForResult(languageIntent, TARGET_LANGUAGE_REQUEST);
                 }
             });
             sourceLanguageBtn.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +107,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
                 public void onClick(View view) {
                     Intent languageIntent = new Intent(ProjectSettingsActivity.this, LanguageSelectorActivity.class);
                     languageIntent.putExtra("sourceLanguages", true);
-                    startActivityForResult(languageIntent, TARGET_LANGUAGE_REQUEST);
+                    startActivityForResult(languageIntent, SOURCE_LANGUAGE_REQUEST);
                 }
             });
         }
@@ -204,6 +204,8 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
             ImportTranslationDraftTask task = new ImportTranslationDraftTask(mProject);
             mTaskWatcher.watch(task);
             TaskManager.addTask(task, LoadFramesTask.TASK_ID);
+        } else {
+            finish();
         }
     }
 
