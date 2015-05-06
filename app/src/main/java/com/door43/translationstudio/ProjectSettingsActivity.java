@@ -18,6 +18,7 @@ import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.tasks.LoadFramesTask;
+import com.door43.translationstudio.translator.TranslatorFragment;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.threads.ManagedTask;
@@ -89,6 +90,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
             viewDraftButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    AppContext.args.putBoolean(TranslatorFragment.ARGS_VIEW_TRANSLATION_DRAFT, true);
                     save();
                 }
             });
@@ -203,7 +205,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
             // import the draft
             ImportTranslationDraftTask task = new ImportTranslationDraftTask(mProject);
             mTaskWatcher.watch(task);
-            TaskManager.addTask(task, LoadFramesTask.TASK_ID);
+            TaskManager.addTask(task, ImportTranslationDraftTask.TASK_ID);
         } else {
             finish();
         }

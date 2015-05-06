@@ -13,7 +13,7 @@ import com.door43.util.threads.ManagedTask;
 public class ImportTranslationDraftTask extends ManagedTask {
 
     private final Project mProject;
-    private int mMaxProgress = 1;
+    private int mMaxProgress = 100;
     public static final String TASK_ID = "import_translation_draft";
 
     public ImportTranslationDraftTask(Project p) {

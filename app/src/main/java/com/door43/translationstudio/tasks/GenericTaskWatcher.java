@@ -188,7 +188,7 @@ public class GenericTaskWatcher implements ManagedTask.OnFinishedListener, Manag
                         mProgressDialog.setProgress(mProgressDialog.getMax());
                     } else {
                         mProgressDialog.setIndeterminate(false);
-                        mProgressDialog.setProgress((int)Math.ceil(progress * 100));
+                        mProgressDialog.setProgress((int)Math.ceil(progress * mProgressDialog.getMax()));
                     }
                     if(!message.isEmpty()) {
                         mProgressDialog.setMessage(message);
