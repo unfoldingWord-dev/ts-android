@@ -81,13 +81,16 @@ public class LibraryProjectAdapter extends BaseAdapter {
         }
 
         // set graphite fontface
-        Typeface typeface;
-        if(getItem(i).getSelectedSourceLanguage() != null) {
-            typeface = AppContext.graphiteTypeface(getItem(i).getSelectedSourceLanguage());
-        } else {
-            typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
+        if(!holder.hasFont) {
+            holder.hasFont = true;
+            Typeface typeface;
+            if (getItem(i).getSelectedSourceLanguage() != null) {
+                typeface = AppContext.graphiteTypeface(getItem(i).getSelectedSourceLanguage());
+            } else {
+                typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
+            }
+            holder.name.setTypeface(typeface, 0);
         }
-        holder.name.setTypeface(typeface, 0);
 
         // set font size
         float fontsize = AppContext.typefaceSize();
@@ -170,6 +173,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
         public ProgressBar progressBar;
         public ImageView downloadedImage;
         public TextView languagesText;
+        public boolean hasFont;
     }
 
     public void setSelected(int index) {

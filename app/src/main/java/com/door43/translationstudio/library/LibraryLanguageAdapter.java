@@ -87,8 +87,11 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         }
 
         // set graphite fontface
-        Typeface typeface = AppContext.graphiteTypeface(getItem(i));
-        holder.name.setTypeface(typeface, 0);
+        if(!holder.hasFont) {
+            holder.hasFont = true;
+            Typeface typeface = AppContext.graphiteTypeface(getItem(i));
+            holder.name.setTypeface(typeface, 0);
+        }
 
         // set font size
         float fontsize = AppContext.typefaceSize();
@@ -223,5 +226,6 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         public ProgressBar progressBar;
         public ImageView downloadedImage;
         public ImageView deleteImage;
+        public boolean hasFont;
     }
 }
