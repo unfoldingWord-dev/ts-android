@@ -55,7 +55,6 @@ public class IndexResourceTask extends ManagedTask {
     public void start() {
         publishProgress(-1, "");
         File resourceDir = IndexStore.getResourceDir(mProject, mLanguage, mResource);
-        File resourceReadyFile = new File(resourceDir, IndexStore.READY_FILE);
         if(IndexStore.hasResourceIndex(mProject, mLanguage, mResource)) return;
         resourceDir.mkdirs();
 

@@ -6,6 +6,7 @@ import android.util.Log;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.data.DataStore;
+import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 
@@ -1749,8 +1750,11 @@ public class ProjectManager {
                         }
 
                         // reload the selected project source
-                        if(getSelectedProject() != null && getSelectedProject().getId().equals(p.getId())) {
-                            fetchProjectSource(p, false);
+                        if(getSelectedProject() != null && getSelectedProject().getId().equals(p.getId()) && getSelectedProject().hasSelectedSourceLanguage()) {
+                            IndexStore.loadChapters(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                            if(p.getSelectedChapter() != null) {
+                                IndexStore.loadFrames(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource(), p.getSelectedChapter());
+                            }
                         }
                     }
 

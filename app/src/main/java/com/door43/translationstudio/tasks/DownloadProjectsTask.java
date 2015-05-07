@@ -85,7 +85,6 @@ public class DownloadProjectsTask extends ManagedTask {
             if(interrupted()) return;
             // TODO: only delete the index if there were changes
             publishProgress(-1, AppContext.context().getResources().getString(R.string.indexing));
-            AppContext.projectManager().reloadProject(p.getId());
             IndexStore.destroy(p);
             delegate(new IndexProjectsTask(p));
             Project currentProject = AppContext.projectManager().getSelectedProject();
@@ -93,6 +92,7 @@ public class DownloadProjectsTask extends ManagedTask {
             if(currentProject != null && currentProject.getId().equals(p.getId()) && currentProject.hasSelectedSourceLanguage()) {
                 delegate(new IndexResourceTask(currentProject, currentProject.getSelectedSourceLanguage(), currentProject.getSelectedSourceLanguage().getSelectedResource()));
             }
+            AppContext.projectManager().reloadProject(p.getId());
         }
         publishProgress(1, "");
     }
