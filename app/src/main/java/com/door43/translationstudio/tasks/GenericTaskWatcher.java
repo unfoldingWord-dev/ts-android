@@ -68,6 +68,7 @@ public class GenericTaskWatcher implements ManagedTask.OnFinishedListener, Manag
     /**
      * Begin watching a task.
      * If you want to begin watching another task you should call disconnect() first
+     * WARNING: this method expects the task with the given id to have already been added to the task manager
      * @param taskId
      */
     public void watch(Object taskId) {
