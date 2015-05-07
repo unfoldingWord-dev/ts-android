@@ -75,7 +75,7 @@ public class DownloadLanguageTask extends ManagedTask {
         delegate(new IndexProjectsTask(mProject));
         Project currentProject = AppContext.projectManager().getSelectedProject();
         // index resources of current project
-        if(currentProject != null && currentProject.getId().equals(mProject.getId())) {
+        if(currentProject != null && currentProject.getId().equals(mProject.getId()) && currentProject.hasSelectedSourceLanguage() && currentProject.getSelectedSourceLanguage().getId().equals(mLanguage.getId())) {
             delegate(new IndexResourceTask(currentProject, currentProject.getSelectedSourceLanguage(), currentProject.getSelectedSourceLanguage().getSelectedResource()));
         }
     }

@@ -88,6 +88,11 @@ public class DownloadProjectsTask extends ManagedTask {
             AppContext.projectManager().reloadProject(p.getId());
             IndexStore.destroy(p);
             delegate(new IndexProjectsTask(p));
+            Project currentProject = AppContext.projectManager().getSelectedProject();
+            // index resources of current project
+            if(currentProject != null && currentProject.getId().equals(p.getId()) && currentProject.hasSelectedSourceLanguage()) {
+                delegate(new IndexResourceTask(currentProject, currentProject.getSelectedSourceLanguage(), currentProject.getSelectedSourceLanguage().getSelectedResource()));
+            }
         }
         publishProgress(1, "");
     }
