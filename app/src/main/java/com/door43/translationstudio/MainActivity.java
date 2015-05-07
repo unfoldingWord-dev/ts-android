@@ -67,6 +67,8 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     private int mPreviousRootViewHeight;
     private TranslatorFragmentInterface mTranslatorFragment;
     private GenericTaskWatcher mIndexTaskWatcher;
+    private Button mContextualButton;
+    private boolean mContextualButtonEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +80,8 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         if(p != null && (!p.hasSelectedSourceLanguage() || !p.hasSelectedTargetLanguage())) {
             AppContext.projectManager().setSelectedProject(null);
         }
+
+        mContextualButton = (Button) findViewById(R.id.contextual_menu_btn);
 
         // insert translator fragment
         if(savedInstanceState == null) {
@@ -196,7 +200,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         // reload the translations
         if(indexProjectsTask == null && indexResourcesTask == null) {
             // TODO: load the chapters and the frames for the selected chapter
-            mTranslatorFragment.reload();
+            reload();
         }
     }
 
@@ -221,6 +225,11 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
      * Notifies the translator fragment to reload it's content
      */
     public void reload() {
+        if(mContextualButtonEnabled && frameIsSelected()) {
+            mContextualButton.setVisibility(View.VISIBLE);
+        } else {
+            mContextualButton.setVisibility(View.GONE);
+        }
         mTranslatorFragment.reload();
     }
 
@@ -344,23 +353,25 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
     @Override
     public void setContextualMenu(final int menuRes) {
-        Button button = (Button) findViewById(R.id.contextual_menu_btn);
-        button.setVisibility(View.VISIBLE);
-        button.setOnClickListener(new View.OnClickListener() {
+        mContextualButtonEnabled = true;
+        if(frameIsSelected()) {
+            mContextualButton.setVisibility(View.VISIBLE);
+        } else {
+            mContextualButton.setVisibility(View.GONE);
+        }
+        mContextualButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(frameIsSelected()) {
-                    PopupMenu contextualMenu = new PopupMenu(MainActivity.this, v);
-                    contextualMenu.getMenuInflater().inflate(menuRes, contextualMenu.getMenu());
-                    contextualMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            return mTranslatorFragment.onContextualMenuItemClick(item);
-                        }
-                    });
-                    mTranslatorFragment.onPrepareContextualMenu(contextualMenu.getMenu());
-                    contextualMenu.show();
-                }
+                PopupMenu contextualMenu = new PopupMenu(MainActivity.this, v);
+                contextualMenu.getMenuInflater().inflate(menuRes, contextualMenu.getMenu());
+                contextualMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        return mTranslatorFragment.onContextualMenuItemClick(item);
+                    }
+                });
+                mTranslatorFragment.onPrepareContextualMenu(contextualMenu.getMenu());
+                contextualMenu.show();
             }
         });
     }
@@ -633,7 +644,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     @Subscribe
     public void onOpenedFrame(OpenedFrameEvent event) {
         mLeftPane.reloadFramesTab();
-        mTranslatorFragment.reload();
+        reload();
     }
 
     @Override
@@ -645,7 +656,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
             mIndexTaskWatcher.watch(newTask);
             TaskManager.addTask(newTask, IndexResourceTask.TASK_ID);
         } else if (task instanceof IndexResourceTask) {
-            mTranslatorFragment.reload();
+            reload();
         }
     }
 }
