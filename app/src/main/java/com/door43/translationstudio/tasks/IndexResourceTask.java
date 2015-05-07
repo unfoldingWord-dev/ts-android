@@ -22,6 +22,7 @@ import javax.xml.transform.Source;
 /**
  * Indexes the the the notes, terms, and source of a resource.
  * NOTE: this does not index the resource object, just the raw sources
+ * TODO: most of this should be placed inside the IndexStore
  */
 public class IndexResourceTask extends ManagedTask {
 
@@ -55,7 +56,7 @@ public class IndexResourceTask extends ManagedTask {
         publishProgress(-1, "");
         File resourceDir = IndexStore.getResourceDir(mProject, mLanguage, mResource);
         File resourceReadyFile = new File(resourceDir, IndexStore.READY_FILE);
-        if(resourceReadyFile.exists()) return;
+        if(IndexStore.hasResourceIndex(mProject, mLanguage, mResource)) return;
         resourceDir.mkdirs();
 
         // load the source
@@ -83,11 +84,7 @@ public class IndexResourceTask extends ManagedTask {
 
         // mark the index as complete
         if(!interrupted()) {
-            try {
-                FileUtils.write(resourceReadyFile, mResource.getDateModified() + "");
-            } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "Failed to create the ready.index file", e);
-            }
+            IndexStore.finalizeResourceIndex(mProject, mLanguage, mResource);
         }
     }
 

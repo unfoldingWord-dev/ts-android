@@ -638,7 +638,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     public void onFinished(final ManagedTask task) {
         mIndexTaskWatcher.stop();
         Project p = AppContext.projectManager().getSelectedProject();
-        if (task instanceof IndexProjectsTask && p != null && !IndexStore.hasResourceIndex(p)) {
+        if (task instanceof IndexProjectsTask && p != null && !IndexStore.hasResourceIndex(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource())) {
             IndexResourceTask newTask = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
             mIndexTaskWatcher.watch(newTask);
             TaskManager.addTask(newTask, IndexResourceTask.TASK_ID);

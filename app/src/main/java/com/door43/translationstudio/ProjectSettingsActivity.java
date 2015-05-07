@@ -186,7 +186,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
             IndexProjectsTask task = new IndexProjectsTask(mProject);
             mTaskWatcher.watch(task);
             TaskManager.addTask(task, IndexProjectsTask.TASK_ID);
-        } else if(!IndexStore.hasResourceIndex(mProject)) {
+        } else if(!IndexStore.hasResourceIndex(mProject, mProject.getSelectedSourceLanguage(), mProject.getSelectedSourceLanguage().getSelectedResource())) {
             // index the resources
             IndexResourceTask task = new IndexResourceTask(mProject, mProject.getSelectedSourceLanguage(), mProject.getSelectedSourceLanguage().getSelectedResource());
             mTaskWatcher.watch(task);

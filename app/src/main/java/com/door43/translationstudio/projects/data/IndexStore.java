@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,13 +39,89 @@ public class IndexStore {
     }
 
     /**
+     * This will reverse the effect of finalizing the index.
+     * The index is not destroyed, but running an indexing task again
+     * will check each part of the index for completeness
+     * @param p
+     */
+    public static void dirtyIndex(Project p) {
+        File dir = getProjectDir(p);
+        File readyFile = new File(dir, READY_FILE);
+        readyFile.delete();
+    }
+
+    /**
+     * This will reverse the effect of finalizing the index.
+     * The index is not destroyed, but running an indexing task again
+     * will check each part of the index for completeness
+     * @param p
+     * @param l
+     * @param r
+     */
+    public static void dirtyResourceIndex(Project p, SourceLanguage l, Resource r) {
+        File dir = getResourceDir(p, l, r);
+        File readyFile = new File(dir, READY_FILE);
+        readyFile.delete();
+    }
+
+    /**
+     * This will delete the entire index
+     * @param p
+     */
+    public static void destroy(Project p) {
+        File dir = getProjectDir(p);
+        FileUtilities.deleteRecursive(dir);
+    }
+
+    /**
      * Checks if the project is indexed
      * @param p
      * @return
      */
     public static boolean hasIndex(Project p) {
-        File indexReadyFile = new File(sInstance.sIndexDir, p.getId() + "/" + READY_FILE);
-        return indexReadyFile.exists();
+        File dir = getProjectDir(p);
+        File readyFile = new File(dir, READY_FILE);
+        return readyFile.exists();
+    }
+
+
+    /**
+     * Checks if the currently selected resource on the project is indexed
+     * @param p
+     * @return
+     */
+    public static boolean hasResourceIndex(Project p, SourceLanguage l, Resource r) {
+        File dir = getResourceDir(p, l, r);
+        File readyFile = new File(dir, READY_FILE);
+        return readyFile.exists();
+    }
+
+    /**
+     * Marks the index as being ready. e.g. hasIndex() will return true;
+     * @param p
+     */
+    public static void finalizeIndex(Project p) {
+        File dir = getProjectDir(p);
+        File readyFile = new File(dir, READY_FILE);
+        try {
+            FileUtils.write(readyFile, p.getDateModified() + "");
+        } catch (IOException e) {
+            Logger.e(IndexStore.class.getName(), "Failed to create the ready.index file", e);
+        }
+    }
+
+    /**
+     * Marks the index as being ready. e.g. hasResourceIndex() will return true;
+     * @param p
+     */
+    public static void finalizeResourceIndex(Project p, SourceLanguage l, Resource r) {
+        File dir = getResourceDir(p, l, r);
+        File readyFile = new File(dir, READY_FILE);
+        try {
+            FileUtils.write(readyFile, r.getDateModified() + "");
+        } catch (IOException e) {
+            Logger.e(IndexStore.class.getName(), "Failed to create the ready.index file", e);
+        }
     }
 
     /**
@@ -169,17 +246,6 @@ public class IndexStore {
     }
 
     /**
-     * Deletes an indexed project
-     * @param p
-     */
-    public static void deleteIndex(Project p) {
-        File projectDir = getProjectDir(p);
-        if(projectDir.isDirectory()) {
-            FileUtilities.deleteRecursive(projectDir);
-        }
-    }
-
-    /**
      * Returns the directory for the project index
      * @param p
      * @return
@@ -258,6 +324,76 @@ public class IndexStore {
     }
 
     /**
+     * Generates a project index
+     * @param p
+     */
+    public static void index(Project p) {
+        File dir = getProjectDir(p);
+        dir.mkdirs();
+        File dataFile = new File(dir, DATA_FILE);
+        if(!dataFile.exists()) {
+            try {
+                FileUtils.write(dataFile, p.serialize().toString());
+            } catch (Exception e) {
+                Logger.e(IndexStore.class.getName(), "Failed to index the project info. Project: " + p.getId(), e);
+            }
+        } else {
+            // TODO: make sure we have a good expiration system set up for indexes.
+        }
+    }
+
+    /**
+     * Deletes a source language index
+     * @param p
+     * @param l
+     */
+    public static void destroy(Project p, SourceLanguage l) {
+        dirtyIndex(p);
+        File dir  = getLanguageDir(p, l);
+        FileUtilities.deleteRecursive(dir);
+    }
+
+    /**
+     * Generates a source language index
+     * @param l
+     */
+    public static void index(Project p, SourceLanguage l) {
+        File dir = getLanguageDir(p, l);
+        dir.mkdirs();
+        File dataFile = new File(dir, DATA_FILE);
+        if(!dataFile.exists()) {
+            try {
+                FileUtils.write(dataFile, p.serializeSourceLanguage(l).toString());
+            } catch (Exception e) {
+                Logger.e(IndexStore.class.getName(), "Failed to index the source language. Project: "+p.getId()+" Language: "+l.getId(), e);
+            }
+        } else {
+            // TODO: make sure we have a good expiration system set up for indexes.
+        }
+    }
+
+    /**
+     * Generates a resource index
+     * @param p
+     * @param l
+     * @param r
+     */
+    public static void index(Project p, SourceLanguage l, Resource r) {
+        File dir = getResourceDir(p, l, r);
+        dir.mkdirs();
+        File dataFile = new File(dir, DATA_FILE);
+        if(!dataFile.exists()) {
+            try {
+                FileUtils.write(dataFile, r.serialize().toString());
+            } catch (Exception e) {
+                Logger.e(IndexStore.class.getName(), "Failed to index resource info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId(), e);
+            }
+        } else {
+            // TODO: make sure we have a good expiration system set up for indexes.
+        }
+    }
+
+    /**
      * Generates a chapter index
      * @param c
      */
@@ -268,10 +404,10 @@ public class IndexStore {
             Resource r = l.getSelectedResource();
             File dir = getSourceChapterDir(p, l, r, c);
             dir.mkdirs();
-            File datFile = new File(dir, DATA_FILE);
-            if (!datFile.exists()) {
+            File dataFile = new File(dir, DATA_FILE);
+            if (!dataFile.exists()) {
                 try {
-                    FileUtils.write(datFile, c.serialize().toString());
+                    FileUtils.write(dataFile, c.serialize().toString());
                 } catch (Exception e) {
                     Logger.e(IndexStore.class.getName(), "Failed to index chapter info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId(), e);
                 }
@@ -320,16 +456,4 @@ public class IndexStore {
             }
         }
     }
-
-    /**
-     * Checks if the currently selected resource on the project is indexed
-     * @param p
-     * @return
-     */
-    public static boolean hasResourceIndex(Project p) {
-        File dir = getResourceDir(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-        File readyFile = new File(dir, READY_FILE);
-        return readyFile.exists();
-    }
-
 }

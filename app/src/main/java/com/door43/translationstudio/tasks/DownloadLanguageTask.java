@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
@@ -66,14 +67,17 @@ public class DownloadLanguageTask extends ManagedTask {
         }
         publishProgress(-1, "");
         // reload project
-        if(!interrupted()) {
-            AppContext.projectManager().reloadProject(mProject.getId());
-        } else {
-            return;
-        }
-        publishProgress(1, "");
+        if(interrupted()) return;
         // TODO: only delete the index if there were changes
-        IndexStore.deleteIndex(mProject);
+        publishProgress(-1, AppContext.context().getResources().getString(R.string.indexing));
+        AppContext.projectManager().reloadProject(mProject.getId());
+        IndexStore.destroy(mProject, mLanguage);
+        delegate(new IndexProjectsTask(mProject));
+        Project currentProject = AppContext.projectManager().getSelectedProject();
+        // index resources of current project
+        if(currentProject != null && currentProject.getId().equals(mProject.getId())) {
+            delegate(new IndexResourceTask(currentProject, currentProject.getSelectedSourceLanguage(), currentProject.getSelectedSourceLanguage().getSelectedResource()));
+        }
     }
 
     @Override

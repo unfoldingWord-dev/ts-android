@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
@@ -83,8 +84,10 @@ public class DownloadProjectsTask extends ManagedTask {
             // reload project
             if(interrupted()) return;
             // TODO: only delete the index if there were changes
-            IndexStore.deleteIndex(p);
+            publishProgress(-1, AppContext.context().getResources().getString(R.string.indexing));
             AppContext.projectManager().reloadProject(p.getId());
+            IndexStore.destroy(p);
+            delegate(new IndexProjectsTask(p));
         }
         publishProgress(1, "");
     }

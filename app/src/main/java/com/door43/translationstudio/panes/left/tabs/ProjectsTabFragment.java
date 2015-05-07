@@ -128,7 +128,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                     Log.d(null, "need to index the project");
                 } else {
                     if(p.hasSelectedSourceLanguage()) {
-                        if(IndexStore.hasResourceIndex(p)) {
+                        if(IndexStore.hasResourceIndex(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource())) {
                             loadChapters(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
                         } else {
                             indexResources(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());

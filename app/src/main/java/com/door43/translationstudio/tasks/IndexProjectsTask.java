@@ -17,6 +17,7 @@ import java.util.List;
 
 /**
  * This task indexes a project so we don't have to load the entire thing into memory.
+ * TODO: most of this should be placed inside the IndexStore
  */
 public class IndexProjectsTask extends ManagedTask {
 
@@ -36,79 +37,82 @@ public class IndexProjectsTask extends ManagedTask {
     @Override
     public void start() {
         int pIndex = -1;
-        for(Project proj:mProjects) {
+        for(Project p:mProjects) {
             pIndex ++;
             if(interrupted()) return;
-            File projectDir = IndexStore.getProjectDir(proj);
-            File projectReadyFile = new File(projectDir, IndexStore.READY_FILE);
-            if(projectReadyFile.exists()) {
-                continue;
-            }
-            projectDir.mkdirs();
+            if(IndexStore.hasIndex(p)) continue;
+            IndexStore.index(p);
+
+//            File projectDir = IndexStore.getProjectDir(proj);
+//            File projectReadyFile = new File(projectDir, IndexStore.READY_FILE);
+//            if(projectReadyFile.exists()) {
+//                continue;
+//            }
+//            projectDir.mkdirs();
 
             // index project
-            File pInfo = new File(projectDir, "data.json");
-            if(!pInfo.exists()) {
-                try {
-                    FileUtils.write(pInfo, proj.serialize().toString());
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to index project info. Project: " + proj.getId(), e);
-                    continue;
-                }
-            }
+//            File pInfo = new File(projectDir, "data.json");
+//            if(!pInfo.exists()) {
+//                try {
+//                    FileUtils.write(pInfo, proj.serialize().toString());
+//                } catch (Exception e) {
+//                    Logger.e(this.getClass().getName(), "Failed to index project info. Project: " + proj.getId(), e);
+//                    continue;
+//                }
+//            }
 
             int lIndex = -1;
-            List<SourceLanguage> languages = proj.getSourceLanguages();
-            languages.addAll(proj.getSourceLanguageDrafts());
+            List<SourceLanguage> languages = p.getSourceLanguages();
+            languages.addAll(p.getSourceLanguageDrafts());
             for(SourceLanguage l:languages) {
                 lIndex ++;
                 if(interrupted()) return;
-                File languageDir = new File(projectDir, l.getId());
-                languageDir.mkdirs();
+                IndexStore.index(p, l);
+//                File languageDir = new File(projectDir, l.getId());
+//                languageDir.mkdirs();
 
                 // TRICKY: we create a new project so we don't override anything the user is working on.
-                Project p = proj.softClone();
+//                Project p = proj.softClone();
 
                 // index language
-                File lInfo = new File(languageDir, "data.json");
-                if(!lInfo.exists()) {
-                    try {
-                        FileUtils.write(lInfo, p.serializeSourceLanguage(l).toString());
-                    } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Failed to index language info. Project: " + p.getId() + " Language: " + l.getId(), e);
-                        continue;
-                    }
-                }
+//                File lInfo = new File(languageDir, "data.json");
+//                if(!lInfo.exists()) {
+//                    try {
+//                        FileUtils.write(lInfo, p.serializeSourceLanguage(l).toString());
+//                    } catch (Exception e) {
+//                        Logger.e(this.getClass().getName(), "Failed to index language info. Project: " + p.getId() + " Language: " + l.getId(), e);
+//                        continue;
+//                    }
+//                }
 
                 int rIndex = -1;
                 for(Resource r:l.getResources()) {
                     rIndex ++;
                     if(interrupted()) return;
-                    File resourceDir = new File(languageDir, r.getId());
-                    resourceDir.mkdirs();
+
+//                    File resourceDir = new File(languageDir, r.getId());
+//                    resourceDir.mkdirs();
 
                     publishProgress((pIndex + (lIndex + (rIndex + 1) / (double) l.getResources().length) / (double) languages.size()) / (double) mProjects.length, AppContext.context().getResources().getString(R.string.title_projects));
 
+                    IndexStore.index(p, l, r);
+
                     // index resource
-                    File rInfo = new File(resourceDir, "data.json");
-                    if(!rInfo.exists()) {
-                        try {
-                            FileUtils.write(rInfo, r.serialize().toString());
-                        } catch (Exception e) {
-                            Logger.e(this.getClass().getName(), "Failed to index resource info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId(), e);
-                            continue;
-                        }
-                    }
+//                    File rInfo = new File(resourceDir, "data.json");
+//                    if(!rInfo.exists()) {
+//                        try {
+//                            FileUtils.write(rInfo, r.serialize().toString());
+//                        } catch (Exception e) {
+//                            Logger.e(this.getClass().getName(), "Failed to index resource info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId(), e);
+//                            continue;
+//                        }
+//                    }
                 }
             }
 
             // mark the index as complete
             if(!interrupted()) {
-                try {
-                    FileUtils.write(projectReadyFile, proj.getDateModified() + "");
-                } catch (IOException e) {
-                    Logger.e(this.getClass().getName(), "Failed to create the ready.index file", e);
-                }
+                IndexStore.finalizeIndex(p);
             }
         }
     }

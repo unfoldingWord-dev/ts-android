@@ -1,6 +1,10 @@
 package com.door43.util.threads;
 
+import com.door43.translationstudio.projects.ProjectManager;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -11,15 +15,15 @@ import java.util.List;
 public abstract class ManagedTask implements Runnable {
     private Thread mThread;
     private boolean mFinished;
-    private List<OnFinishedListener> mFinishListeners = new ArrayList<>();
+    private List mFinishListeners = Collections.synchronizedList(new ArrayList<>());
     private Object mTaskId;
-    private List<OnProgressListener> mProgressListeners = new ArrayList<>();
+    private List mProgressListeners = Collections.synchronizedList(new ArrayList<>());
     private double mProgress = -1;
     private String mProgressMessage = "";
     private boolean mIsStopped = false;
-    private List<OnStartListener> mStartListeners = new ArrayList<>();
+    private List mStartListeners = Collections.synchronizedList(new ArrayList<>());
     private boolean mIsRunning = false;
-    private List<OnIdChangedListener> mOnIdChangedListeners = new ArrayList<>();
+    private List mOnIdChangedListeners = Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public final void run() {
@@ -30,11 +34,14 @@ public abstract class ManagedTask implements Runnable {
                 throw new InterruptedException();
             }
             mIsRunning = true;
-            for(OnStartListener listener:mStartListeners) {
-                try {
-                    listener.onStart(this);
-                } catch (Exception e) {
-                    e.printStackTrace();
+            synchronized (mStartListeners) {
+                Iterator<OnStartListener> it = mStartListeners.iterator();
+                while(it.hasNext()) {
+                    try {
+                        it.next().onStart(this);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             start();
@@ -47,15 +54,23 @@ public abstract class ManagedTask implements Runnable {
 
         mIsRunning = false;
         mFinished = true;
-        for(OnFinishedListener listener:mFinishListeners) {
-            try {
-                listener.onFinished(this);
-            } catch (Exception e) {
-                e.printStackTrace();
+        synchronized (mFinishListeners) {
+            Iterator<OnFinishedListener> it = mFinishListeners.iterator();
+            while(it.hasNext()) {
+                try {
+                    it.next().onFinished(this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         onStop();
+    }
+
+    public final void run(Thread thread) {
+        mThread = thread;
+        start();
     }
 
     /**
@@ -75,16 +90,33 @@ public abstract class ManagedTask implements Runnable {
     }
 
     /**
+     * Executes another task on the same thread
+     * @param task
+     */
+    protected final void delegate(ManagedTask task) {
+        synchronized (mProgressListeners) {
+            Iterator<OnProgressListener> it = mProgressListeners.iterator();
+            while(it.hasNext()) {
+                task.addOnProgressListener(it.next());
+            }
+        }
+        task.run(mThread);
+    }
+
+    /**
      * Sets the task id
      * @param id
      */
     public final void setTaskId(Object id) {
         mTaskId = id;
-        for(OnIdChangedListener listener:mOnIdChangedListeners) {
-            try {
-                listener.onChanged(this);
-            } catch (Exception e) {
-                e.printStackTrace();
+        synchronized (mOnIdChangedListeners) {
+            Iterator<OnIdChangedListener> it = mOnIdChangedListeners.iterator();
+            while(it.hasNext()) {
+                try {
+                    it.next().onChanged(this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -107,11 +139,14 @@ public abstract class ManagedTask implements Runnable {
         mProgress = progress;
         mProgressMessage = message;
         if(!isFinished()) {
-            for(OnProgressListener listener:mProgressListeners) {
-                try {
-                    listener.onProgress(this, mProgress, mProgressMessage);
-                } catch (Exception e) {
-                    e.printStackTrace();
+            synchronized (mProgressListeners) {
+                Iterator<OnProgressListener> it = mProgressListeners.iterator();
+                while(it.hasNext()) {
+                    try {
+                        it.next().onProgress(this, mProgress, mProgressMessage);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -265,6 +300,7 @@ public abstract class ManagedTask implements Runnable {
      * Same as stop except it also removes all of the listeners
      */
     public final void destroy() {
+        mIsStopped = true;
         mStartListeners.clear();
         mFinishListeners.clear();
         mProgressListeners.clear();
