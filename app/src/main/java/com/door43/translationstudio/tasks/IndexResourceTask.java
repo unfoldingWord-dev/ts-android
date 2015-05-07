@@ -66,7 +66,7 @@ public class IndexResourceTask extends ManagedTask {
             cIndex ++;
             if(interrupted()) return;
 
-            IndexStore.index(c);
+            IndexStore.index(mProject, mLanguage, mResource, c);
 
             int fIndex = -1;
             for(Model m:c.getFrames()) {
@@ -75,7 +75,7 @@ public class IndexResourceTask extends ManagedTask {
 
                 Frame f = (Frame)m;
                 publishProgress((cIndex + (fIndex + 1) / (double) c.getFrames().length) / (double) mProject.getChapters().length, AppContext.context().getResources().getString(R.string.title_resources));
-                IndexStore.index(f);
+                IndexStore.index(mProject, mLanguage, mResource, c, f);
             }
         }
 

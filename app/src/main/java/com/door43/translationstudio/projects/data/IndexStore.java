@@ -397,25 +397,18 @@ public class IndexStore {
      * Generates a chapter index
      * @param c
      */
-    public static void index(Chapter c) {
-        Project p = c.getProject();
-        if(p != null && c.getSelectedSourceLanguage() != null && c.getSelectedSourceLanguage().getSelectedResource() != null) {
-            SourceLanguage l = c.getSelectedSourceLanguage();
-            Resource r = l.getSelectedResource();
-            File dir = getSourceChapterDir(p, l, r, c);
-            dir.mkdirs();
-            File dataFile = new File(dir, DATA_FILE);
-            if (!dataFile.exists()) {
-                try {
-                    FileUtils.write(dataFile, c.serialize().toString());
-                } catch (Exception e) {
-                    Logger.e(IndexStore.class.getName(), "Failed to index chapter info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId(), e);
-                }
-            } else {
-                // TODO: make sure we have a good expiration system set up for indexes.
+    public static void index(Project p, SourceLanguage l, Resource r, Chapter c) {
+        File dir = getSourceChapterDir(p, l, r, c);
+        dir.mkdirs();
+        File dataFile = new File(dir, DATA_FILE);
+        if (!dataFile.exists()) {
+            try {
+                FileUtils.write(dataFile, c.serialize().toString());
+            } catch (Exception e) {
+                Logger.e(IndexStore.class.getName(), "Failed to index chapter info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId(), e);
             }
         } else {
-            Logger.e(IndexStore.class.getName(), "Chapter is missing required objects");
+            // TODO: make sure we have a good expiration system set up for indexes.
         }
     }
 
@@ -423,36 +416,27 @@ public class IndexStore {
      * Generates a frame index
      * @param f
      */
-    public static void index(Frame f) {
-        Chapter c = f.getChapter();
-        if(c != null && c.getProject() != null) {
-            Project p = c.getProject();
-            SourceLanguage l = c.getProject().getSelectedSourceLanguage();
-            if(l != null && l.getSelectedResource() != null) {
-                Resource r = l.getSelectedResource();
+    public static void index(Project p, SourceLanguage l, Resource r, Chapter c, Frame f) {
+        File sourceFrameInfo = new File(getSourceChapterDir(p, l, r, c), f.getId() + ".json");
+        sourceFrameInfo.getParentFile().mkdirs();
+        File notesFrameInfo = new File(getNotesChapterDir(p, l, r, c), f.getId() + ".json");
+        notesFrameInfo.getParentFile().mkdirs();
 
-                File sourceFrameInfo = new File(getSourceChapterDir(p, l, r, c), f.getId() + ".json");
-                sourceFrameInfo.getParentFile().mkdirs();
-                File notesFrameInfo = new File(getNotesChapterDir(p, l, r, c), f.getId() + ".json");
-                notesFrameInfo.getParentFile().mkdirs();
+        if(!sourceFrameInfo.exists()) {
+            try {
+                FileUtils.write(sourceFrameInfo, f.serialize().toString());
+            } catch (Exception e) {
+                Logger.e(IndexStore.class.getName(), "Failed to index source frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
+            }
+        }
 
-                if(!sourceFrameInfo.exists()) {
-                    try {
-                        FileUtils.write(sourceFrameInfo, f.serialize().toString());
-                    } catch (Exception e) {
-                        Logger.e(IndexStore.class.getName(), "Failed to index source frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
-                    }
+        if(!notesFrameInfo.exists()) {
+            try {
+                if(f.getTranslationNotes() != null) {
+                    FileUtils.write(notesFrameInfo, f.serializeTranslationNote().toString());
                 }
-
-                if(!notesFrameInfo.exists()) {
-                    try {
-                        if(f.getTranslationNotes() != null) {
-                            FileUtils.write(notesFrameInfo, f.serializeTranslationNote().toString());
-                        }
-                    } catch (Exception e) {
-                        Logger.e(IndexStore.class.getName(), "Failed to index notes frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
-                    }
-                }
+            } catch (Exception e) {
+                Logger.e(IndexStore.class.getName(), "Failed to index notes frame info. Project: " + p.getId() + " Language: " + l.getId() + " Resource: " + r.getId() + " Chapter: " + c.getId() + " Frame: " + f.getId(), e);
             }
         }
     }
