@@ -29,24 +29,23 @@
                     android:id="@+id/translator_container"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
-
-                    <!--<include layout="@layout/fragment_default_translator" />-->
                 </LinearLayout>
 
                 <Button
                     style="?android:attr/buttonStyleSmall"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
                     android:id="@+id/contextual_menu_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_alignBottom="@+id/readSourceTranslation"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
-                    android:background="@drawable/round_button"
+                    android:background="@drawable/ic_menu_small"
                     android:focusable="true"
                     android:clickable="true"
-                    android:visibility="gone"
-                    android:layout_margin="10dp"
-                    android:layout_alignParentBottom="true" />
+                    android:visibility="visible"
+                    android:layout_margin="5dp"
+                    android:layout_alignParentBottom="true"
+                    android:alpha=".7" />
 
             </RelativeLayout>
         </LinearLayout>

@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -13,21 +14,48 @@
         android:textStyle="bold"
         android:textColor="@color/light_gray"
         android:gravity="center"
+        android:visibility="gone"
         android:id="@+id/notesMessageText"
         android:background="@color/gray"/>
 
-    <ScrollView
-        android:visibility="gone"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/notesInfoScroll">
+        android:visibility="visible"
+        android:id="@+id/notesDisplay">
 
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:padding="10dp"
-            android:id="@+id/notesView"></LinearLayout>
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/notesListView" />
 
-    </ScrollView>
+        <!--<ScrollView-->
+            <!--android:visibility="gone"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:id="@+id/notesInfoScroll">-->
+
+            <!--<LinearLayout-->
+                <!--android:orientation="vertical"-->
+                <!--android:layout_width="fill_parent"-->
+                <!--android:layout_height="fill_parent"-->
+                <!--android:padding="10dp"-->
+                <!--android:id="@+id/notesView"></LinearLayout>-->
+
+        <!--</ScrollView>-->
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/translateNotesBtn"
+            android:background="@drawable/ic_new_pencil_small"
+            android:focusable="true"
+            android:clickable="true"
+            android:layout_margin="5dp"
+            android:alpha=".7"
+            android:layout_gravity="bottom|right" />
+
+    </FrameLayout>
+
 </LinearLayout>
