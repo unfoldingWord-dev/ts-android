@@ -26,6 +26,7 @@ tools:context="com.door43.translationstudio.LanguageSelectorActivity" >
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:hint="@string/search_language"
+        android:background="@drawable/form_input"
         android:inputType="textVisiblePassword"/>
 </LinearLayout>
 

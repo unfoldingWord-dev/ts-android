@@ -39,8 +39,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/nameText"
+            android:textSize="@dimen/h4"
             android:layout_below="@+id/passageIsFootnoteSwitch"
-            android:background="@color/lighter_gray" />
+            android:background="@drawable/form_input" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -54,8 +55,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/emailText"
+            android:textSize="@dimen/h4"
             android:layout_below="@+id/passageIsFootnoteSwitch"
-            android:background="@color/lighter_gray" />
+            android:background="@drawable/form_input" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -68,8 +70,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/phoneText"
+            android:textSize="@dimen/h4"
             android:layout_below="@+id/passageIsFootnoteSwitch"
-            android:background="@color/lighter_gray" />
+            android:background="@drawable/form_input" />
 
     </LinearLayout>
 

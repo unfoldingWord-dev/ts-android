@@ -83,11 +83,10 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/targetLanguageChapterTitleEditText"
-                android:hint="Chapter Title"
+                android:hint="@string/chapter_title_field"
                 android:singleLine="true"
-                android:padding="2dp"
                 android:textSize="@dimen/h5"
-                android:background="@color/lighter_gray" />
+                android:background="@drawable/form_input" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -104,10 +103,9 @@
                 android:hint="Chapter Reference"
                 android:singleLine="false"
                 android:gravity="top"
-                android:padding="2dp"
                 android:lines="3"
                 android:textSize="@dimen/h5"
-                android:background="@color/lighter_gray" />
+                android:background="@drawable/form_input" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

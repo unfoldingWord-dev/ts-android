@@ -7,7 +7,7 @@
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp">
+        android:padding="5dp">
 
         <EditText
             android:layout_width="wrap_content"
@@ -17,6 +17,7 @@
             android:selectAllOnFocus="true"
             android:id="@+id/verseNumberText"
             android:layout_gravity="center_horizontal"
+            android:background="@drawable/form_input"
             android:text="12"
             android:gravity="center" />
     </LinearLayout>
@@ -24,8 +25,7 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="10dp">
+        android:layout_height="wrap_content">
 
         <Button
             android:layout_width="wrap_content"

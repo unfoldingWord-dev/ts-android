@@ -2,13 +2,13 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:padding="5dp"
         android:layout_above="@+id/linearLayout">
 
         <Switch
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/passageEditText"
             android:layout_below="@+id/passageIsFootnoteSwitch"
-            android:background="@color/lighter_gray" />
+            android:background="@drawable/form_input" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -52,7 +52,7 @@
             android:layout_above="@+id/linearLayout"
             android:layout_below="@+id/passageEditText"
             android:gravity="top"
-            android:background="@color/lighter_gray" />
+            android:background="@drawable/form_input" />
     </LinearLayout>
 
     <LinearLayout

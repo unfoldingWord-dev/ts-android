@@ -7,9 +7,9 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:paddingTop="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp"
         android:layout_above="@+id/linearLayout4">
 
         <!-- TODO: display an info icon that users can click to display this message -->
@@ -36,10 +36,9 @@
             android:textColor="@color/dark_gray"
             android:inputType="text|textMultiLine"
             android:id="@+id/crashDescriptioneditText"
-            android:background="@color/lighter_gray"
+            android:background="@drawable/form_input"
             android:hint="@string/crash_details"
-            android:imeOptions="actionDone"
-            android:padding="5dp" />
+            android:imeOptions="actionDone" />
     </LinearLayout>
 
     <LinearLayout
