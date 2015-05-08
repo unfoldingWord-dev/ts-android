@@ -103,7 +103,8 @@
                 android:hint="Chapter Reference"
                 android:singleLine="false"
                 android:gravity="top"
-                android:lines="3"
+                android:minLines="4"
+                android:inputType="textNoSuggestions|text|textMultiLine"
                 android:textSize="@dimen/h5"
                 android:background="@drawable/form_input" />
         </LinearLayout>
