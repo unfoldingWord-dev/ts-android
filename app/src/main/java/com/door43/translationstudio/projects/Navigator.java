@@ -156,6 +156,7 @@ public class Navigator {
 
     /**
      * Opens the project
+     * TODO: outdated. this does not work with indexes
      * @param p
      * @param listener
      */
@@ -192,6 +193,7 @@ public class Navigator {
 
     /**
      * Opens the chapter if it exists within the current project.
+     * TODO: outdated. this does not work with indexes
      * @param c
      */
     public void open(Chapter c) {
@@ -210,6 +212,7 @@ public class Navigator {
 
     /**
      * Opens the frame if it exists within the current chapter
+     * TODO: outdated. this does not work with indexes
      * @param f
      */
     public void open(final Frame f) {

@@ -77,6 +77,7 @@ public class NotesAdapter extends BaseAdapter {
         holder.title.setText(getItem(position).getRef());
 
         // render links
+        // TODO: this should be placed in a task
         LinkRenderer renderingEngine = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
             @Override
             public boolean onPreprocess(PassageLinkSpan span) {
@@ -109,6 +110,7 @@ public class NotesAdapter extends BaseAdapter {
             }
         });
         CharSequence text = renderingEngine.render(Html.fromHtml(getItem(position).getText()));
+        // TODO: we might want to use an HtmlTextView instead
         holder.text.setText(text);
 
         // make links clickable
@@ -126,6 +128,7 @@ public class NotesAdapter extends BaseAdapter {
 
     /**
      * Returns the link endpoint
+     * @deprecated
      * @param link
      * @return
      */

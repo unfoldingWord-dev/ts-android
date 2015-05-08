@@ -25,6 +25,10 @@ public abstract class ManagedTask implements Runnable {
     private boolean mIsRunning = false;
     private List mOnIdChangedListeners = Collections.synchronizedList(new ArrayList<>());
 
+    public ManagedTask ManagedTask() {
+        return this;
+    }
+
     @Override
     public final void run() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
@@ -90,7 +94,17 @@ public abstract class ManagedTask implements Runnable {
     }
 
     /**
-     * Executes another task on the same thread
+     * Utility method to chain several tasks together
+     * @param task
+     */
+    public ManagedTask then(ManagedTask task) {
+        delegate(task);
+        return task;
+    }
+
+    /**
+     * Executes another task on the same thread.
+     * Progress listeners are inherited from the delegating task
      * @param task
      */
     protected final void delegate(ManagedTask task) {
