@@ -15,6 +15,20 @@
         android:textSize="@dimen/h4"
         android:textStyle="bold|italic" />
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/translationNoteReferenceEditText"
+        android:visibility="gone"
+        android:inputType="textNoSuggestions|text"
+        android:imeOptions="flagNoExtractUi"
+        android:background="@drawable/form_input"
+        android:textCursorDrawable="@null"
+        android:cursorVisible="true"
+        android:textSize="@dimen/h4"
+        android:hint="New Text"
+        android:textStyle="bold|italic" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -22,4 +36,18 @@
         android:textSize="@dimen/h4"
         android:text="New Text\nasdffsd\nsdfsdsd\nsdgfsdf"
         android:id="@+id/translationNoteText" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:imeOptions="flagNoExtractUi"
+        android:inputType="textNoSuggestions|text|textMultiLine"
+        android:textCursorDrawable="@null"
+        android:cursorVisible="true"
+        android:visibility="gone"
+        android:textSize="@dimen/h4"
+        android:id="@+id/translationNoteEditText"
+        android:background="@drawable/form_input"
+        android:hint="New Text\nasdffsd\nsdfsdsd\nsdgfsdf" />
 </LinearLayout>

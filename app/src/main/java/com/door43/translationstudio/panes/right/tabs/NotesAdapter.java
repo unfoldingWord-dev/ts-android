@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainActivity;
@@ -23,6 +24,8 @@ import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.util.AppContext;
 
+import org.eclipse.jgit.diff.Edit;
+
 /**
  * Created by joel on 5/7/2015.
  */
@@ -30,6 +33,7 @@ public class NotesAdapter extends BaseAdapter {
 
     private final Context mContext;
     private TranslationNote mTranslationNote;
+    private boolean mRenderTranslations = false;
 
     public NotesAdapter(Context context) {
         mContext = context;
@@ -69,12 +73,27 @@ public class NotesAdapter extends BaseAdapter {
             v = inflater.inflate(R.layout.fragment_pane_right_resources_note_item, null);
             holder.title = (TextView) v.findViewById(R.id.translationNoteReferenceText);
             holder.text = (TextView) v.findViewById(R.id.translationNoteText);
+            holder.titleTranslation = (EditText) v.findViewById(R.id.translationNoteReferenceEditText);
+            holder.textTranslation = (EditText) v.findViewById(R.id.translationNoteEditText);
             v.setTag(holder);
         } else {
             holder = (ViewHolder)v.getTag();
         }
 
+        if(mRenderTranslations) {
+            holder.title.setVisibility(View.GONE);
+            holder.text.setVisibility(View.GONE);
+            holder.titleTranslation.setVisibility(View.VISIBLE);
+            holder.textTranslation.setVisibility(View.VISIBLE);
+        } else {
+            holder.title.setVisibility(View.VISIBLE);
+            holder.text.setVisibility(View.VISIBLE);
+            holder.titleTranslation.setVisibility(View.GONE);
+            holder.textTranslation.setVisibility(View.GONE);
+        }
+
         holder.title.setText(getItem(position).getRef());
+        holder.titleTranslation.setHint(getItem(position).getRef());
 
         // render links
         // TODO: this should be placed in a task
@@ -112,6 +131,7 @@ public class NotesAdapter extends BaseAdapter {
         CharSequence text = renderingEngine.render(Html.fromHtml(getItem(position).getText()));
         // TODO: we might want to use an HtmlTextView instead
         holder.text.setText(text);
+        holder.textTranslation.setHint(text);
 
         // make links clickable
         MovementMethod mmNotes = holder.text.getMovementMethod();
@@ -120,7 +140,12 @@ public class NotesAdapter extends BaseAdapter {
                 holder.text.setMovementMethod(LinkMovementMethod.getInstance());
             }
         }
-
+        MovementMethod mmNotesTranslation = holder.textTranslation.getMovementMethod();
+        if ((mmNotes == null) || !(mmNotes instanceof LinkMovementMethod)) {
+            if (holder.textTranslation.getLinksClickable()) {
+                holder.textTranslation.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+        }
         // TODO: apply the correct font
 
         return v;
@@ -143,9 +168,28 @@ public class NotesAdapter extends BaseAdapter {
         return null;
     }
 
+    /**
+     * Returns how the notes are rendered
+     * @return
+     */
+    public boolean getRenderTranslations() {
+        return mRenderTranslations;
+    }
+
+    /**
+     * Sets whether the notes or their translations should be rendered
+     * @param renderTranslations
+     */
+    public void setRenderTranslations(boolean renderTranslations) {
+        mRenderTranslations = renderTranslations;
+        notifyDataSetChanged();
+    }
+
     private class ViewHolder {
 
         public TextView title;
         public TextView text;
+        public EditText titleTranslation;
+        public EditText textTranslation;
     }
 }
