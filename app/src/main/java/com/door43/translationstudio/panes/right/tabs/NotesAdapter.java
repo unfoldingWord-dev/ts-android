@@ -2,9 +2,12 @@ package com.door43.translationstudio.panes.right.tabs;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.text.Editable;
 import android.text.Html;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +26,7 @@ import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.ClearableEditText;
 
 import org.eclipse.jgit.diff.Edit;
 
@@ -64,7 +68,7 @@ public class NotesAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         View v = convertView;
         ViewHolder holder = new ViewHolder();
 
@@ -73,8 +77,8 @@ public class NotesAdapter extends BaseAdapter {
             v = inflater.inflate(R.layout.fragment_pane_right_resources_note_item, null);
             holder.title = (TextView) v.findViewById(R.id.translationNoteReferenceText);
             holder.text = (TextView) v.findViewById(R.id.translationNoteText);
-            holder.titleTranslation = (EditText) v.findViewById(R.id.translationNoteReferenceEditText);
-            holder.textTranslation = (EditText) v.findViewById(R.id.translationNoteEditText);
+            holder.titleTranslation = (ClearableEditText) v.findViewById(R.id.translationNoteReferenceEditText);
+            holder.textTranslation = (ClearableEditText) v.findViewById(R.id.translationNoteEditText);
             v.setTag(holder);
         } else {
             holder = (ViewHolder)v.getTag();
@@ -148,6 +152,46 @@ public class NotesAdapter extends BaseAdapter {
         }
         // TODO: apply the correct font
 
+
+        // set up change listeners
+        holder.textTranslation.clearTextChangedListeners();
+        holder.textTranslation.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // TODO: save the changes
+                Log.d(null, "save changes to " + getItem(position).getId());
+                Log.d(null, s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+        holder.titleTranslation.clearTextChangedListeners();
+        holder.titleTranslation.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // TODO: save the changes
+                Log.d(null, s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
         return v;
     }
 
@@ -189,7 +233,7 @@ public class NotesAdapter extends BaseAdapter {
 
         public TextView title;
         public TextView text;
-        public EditText titleTranslation;
-        public EditText textTranslation;
+        public ClearableEditText titleTranslation;
+        public ClearableEditText textTranslation;
     }
 }

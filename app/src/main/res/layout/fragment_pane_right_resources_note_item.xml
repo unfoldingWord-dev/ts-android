@@ -15,7 +15,7 @@
         android:textSize="@dimen/h4"
         android:textStyle="bold|italic" />
 
-    <EditText
+    <com.door43.util.ClearableEditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/translationNoteReferenceEditText"
@@ -37,7 +37,7 @@
         android:text="New Text\nasdffsd\nsdfsdsd\nsdgfsdf"
         android:id="@+id/translationNoteText" />
 
-    <EditText
+    <com.door43.util.ClearableEditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="top"
