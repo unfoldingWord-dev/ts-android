@@ -1,9 +1,18 @@
 package com.door43.translationstudio.projects;
 
+import android.util.Log;
+
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.AppContext;
+import com.door43.util.Logger;
+import com.door43.util.Security;
+
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,9 +22,40 @@ import java.util.List;
  */
 public class TranslationNote {
     private List<Note> mNotes = new ArrayList<Note>();
+    private Frame mFrame;
 
-    public TranslationNote(List<Note> notes) {
+    protected TranslationNote(List<Note> notes) {
         mNotes = notes;
+        for(Note n:notes) {
+            n.setNote(this);
+        }
+    }
+
+    /**
+     * Returns the path to the notes repository
+     * @param language
+     * @return
+     */
+    public String getRepositoryPath(Language language) {
+        return getRepositoryPath(mFrame.getChapter().getProject().getId(), language.getId());
+    }
+
+    /**
+     * Returns the path to the notes repository
+     * @param projectId
+     * @param languageId
+     * @return
+     */
+    public String getRepositoryPath(String projectId, String languageId) {
+        return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + projectId + "-" + languageId + "-notes/";
+    }
+
+    /**
+     * Returns the path to this translation note
+     * @return
+     */
+    public String getTranslationNotePath() {
+        return getRepositoryPath(mFrame.getChapter().getProject().getSelectedTargetLanguage()) + "/" + mFrame.getChapter().getId() + "/" + mFrame.getId() + "/";
     }
 
     /**
@@ -49,7 +89,7 @@ public class TranslationNote {
      * @param json
      * @return
      */
-    public static TranslationNote generate(JSONObject json) {
+    public static TranslationNote Generate(JSONObject json) {
         try {
             JSONArray notesJson = json.getJSONArray("tn");
             List<Note> notes = new ArrayList<>();
@@ -66,15 +106,42 @@ public class TranslationNote {
     }
 
     /**
+     * Returns the frame to which the translation note belongs
+     * @return
+     */
+    private Frame getFrame() {
+        return mFrame;
+    }
+
+    /**
+     * Attaches the translation note to a frame
+     * @param frame
+     */
+    public void setFrame(Frame frame) {
+        mFrame = frame;
+    }
+
+    /**
      * stores an individual note
      */
     public static class Note {
         private String mRef;
         private String mText;
+        private TranslationNote mTranslationNote;
+        private Translation mDefinitionTranslation;
+        private Translation mReferenceTranslation;
 
         public Note(String ref, String text) {
             mRef = ref;
             mText = text;
+        }
+
+        /**
+         * Attaches the note to a translation note
+         * @param n
+         */
+        public void setNote(TranslationNote n) {
+            mTranslationNote = n;
         }
 
         public String getRef() {
@@ -83,6 +150,119 @@ public class TranslationNote {
 
         public String getText() {
             return mText;
+        }
+
+        /**
+         * Sets the translation of the definition
+         * @param translation
+         */
+        public void setDefinitionTranslation(String translation) {
+            if(mTranslationNote.getFrame() != null) {
+                mDefinitionTranslation = new Translation(mTranslationNote.getFrame().getChapter().getProject().getSelectedTargetLanguage(), translation);
+            }
+        }
+
+        /**
+         * Sets the translation of the reference
+         * @param translation
+         */
+        public void setReferenceTranslation(String translation) {
+            if(mTranslationNote.getFrame() != null) {
+                mReferenceTranslation = new Translation(mTranslationNote.getFrame().getChapter().getProject().getSelectedTargetLanguage(), translation);
+            }
+        }
+
+        /**
+         * Returns the translation of the referernce
+         * @return
+         */
+        public Translation getRefTranslation() {
+            if(mReferenceTranslation == null || !mReferenceTranslation.isLanguage(mTranslationNote.getFrame().getChapter().getProject().getSelectedTargetLanguage())) {
+                if(mReferenceTranslation != null) {
+                    save();
+                }
+                // load from disk
+                try {
+                    String text = FileUtils.readFileToString(new File(getReferencePath()));
+                    setReferenceTranslation(text);
+                    mReferenceTranslation.isSaved(true);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "failed to load the note reference translation from disk", e);
+                }
+            }
+            return mReferenceTranslation;
+        }
+
+        /**
+         * Returns the translation of the definition
+         * @return
+         */
+        public Translation getTextTranslation() {
+            if(mDefinitionTranslation == null || !mDefinitionTranslation.isLanguage(mTranslationNote.getFrame().getChapter().getProject().getSelectedTargetLanguage())) {
+                if(mDefinitionTranslation != null) {
+                    save();
+                }
+                // load from disk
+                try {
+                    String text = FileUtils.readFileToString(new File(getDefinitionPath()));
+                    setDefinitionTranslation(text);
+                    mDefinitionTranslation.isSaved(true);
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "failed to load the note definition translation from disk", e);
+                }
+            }
+            return mDefinitionTranslation;
+        }
+
+        public String getReferencePath() {
+            return mTranslationNote.getTranslationNotePath() + getId() + "/ref.txt";
+        }
+
+        public String getDefinitionPath() {
+            return mTranslationNote.getTranslationNotePath() + getId() + "/def.txt";
+        }
+
+        /**
+         * Saves the translation note
+         * TODO: we need to notify the project that changes need to be uploaded
+         */
+        public void save() {
+            if(mReferenceTranslation != null && !mReferenceTranslation.isSaved()) {
+                mReferenceTranslation.isSaved(true);
+                File file = new File(getReferencePath());
+                if(mReferenceTranslation.getText().isEmpty()) {
+                    file.delete();
+                } else {
+                    file.getParentFile().mkdirs();
+                    try {
+                        FileUtils.write(file, mReferenceTranslation.getText());
+                    } catch (Exception e) {
+                        Logger.e(this.getClass().getName(), "Failed to save the translation note reference", e);
+                    }
+                }
+            }
+            if(mDefinitionTranslation != null) {
+                mDefinitionTranslation.isSaved(true);
+                File file = new File(getDefinitionPath());
+                if(mDefinitionTranslation.getText().isEmpty()) {
+                    file.delete();
+                } else {
+                    file.getParentFile().mkdirs();
+                    try {
+                        FileUtils.write(file, mDefinitionTranslation.getText());
+                    } catch (Exception e) {
+                        Logger.e(this.getClass().getName(), "Failed to save the translation note definition", e);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the generated id of the note
+         * @return
+         */
+        public String getId() {
+            return Security.md5(mTranslationNote + mRef);
         }
     }
 }

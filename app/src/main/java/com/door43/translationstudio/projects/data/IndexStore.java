@@ -205,8 +205,9 @@ public class IndexStore {
         if(noteFile.exists()) {
             try {
                 String data = FileUtils.readFileToString(noteFile);
-                TranslationNote note = TranslationNote.generate(new JSONObject(data));
+                TranslationNote note = TranslationNote.Generate(new JSONObject(data));
                 if(note != null) {
+                    note.setFrame(f);
                     return note;
                 }
             } catch (Exception e) {

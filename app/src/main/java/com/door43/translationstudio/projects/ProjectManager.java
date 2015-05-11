@@ -1306,16 +1306,9 @@ public class ProjectManager {
                     String chapterId = chapterFrameId[0];
 
                     // load notes
-                    List<TranslationNote.Note> notes = new ArrayList<TranslationNote.Note>();
-                    JSONArray jsonNoteItems = jsonNote.getJSONArray("tn");
-                    for (int j = 0; j < jsonNoteItems.length(); j++) {
-                        JSONObject jsonNoteItem = jsonNoteItems.getJSONObject(j);
-                        notes.add(new TranslationNote.Note(jsonNoteItem.getString("ref").toString(), jsonNoteItem.getString("text").toString()));
-                    }
-
-                    // add translation notes to the frame
+                    TranslationNote note = TranslationNote.Generate(jsonNote);
                     if(p.getChapter(chapterId) != null && p.getChapter(chapterId).getFrame(frameId) != null) {
-                        p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(new TranslationNote(notes));
+                        p.getChapter(chapterId).getFrame(frameId).setTranslationNotes(note);
                         numNotes ++;
                     } else {
                         Logger.w(this.getClass().getName(), "no chapter or frame exists for that note "+p.getId()+":"+chapterId+":"+frameId);

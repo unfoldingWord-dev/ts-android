@@ -21,6 +21,7 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
@@ -84,21 +85,6 @@ public class NotesAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        if(mRenderTranslations) {
-            holder.title.setVisibility(View.GONE);
-            holder.text.setVisibility(View.GONE);
-            holder.titleTranslation.setVisibility(View.VISIBLE);
-            holder.textTranslation.setVisibility(View.VISIBLE);
-        } else {
-            holder.title.setVisibility(View.VISIBLE);
-            holder.text.setVisibility(View.VISIBLE);
-            holder.titleTranslation.setVisibility(View.GONE);
-            holder.textTranslation.setVisibility(View.GONE);
-        }
-
-        holder.title.setText(getItem(position).getRef());
-        holder.titleTranslation.setHint(getItem(position).getRef());
-
         // render links
         // TODO: this should be placed in a task
         LinkRenderer renderingEngine = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
@@ -132,8 +118,34 @@ public class NotesAdapter extends BaseAdapter {
                 }
             }
         });
-        CharSequence text = renderingEngine.render(Html.fromHtml(getItem(position).getText()));
+
+        if(mRenderTranslations) {
+            holder.title.setVisibility(View.GONE);
+            holder.text.setVisibility(View.GONE);
+            holder.titleTranslation.setVisibility(View.VISIBLE);
+            holder.textTranslation.setVisibility(View.VISIBLE);
+
+            if(getItem(position).getRefTranslation() != null) {
+                holder.titleTranslation.setText(getItem(position).getRefTranslation().getText());
+            }
+            if(getItem(position).getTextTranslation() != null) {
+                CharSequence translationText = renderingEngine.render(Html.fromHtml(getItem(position).getTextTranslation().getText()));
+                holder.textTranslation.setText(translationText);
+            }
+        } else {
+            holder.title.setVisibility(View.VISIBLE);
+            holder.text.setVisibility(View.VISIBLE);
+            holder.titleTranslation.setVisibility(View.GONE);
+            holder.textTranslation.setVisibility(View.GONE);
+        }
+
+        // title
+        holder.title.setText(getItem(position).getRef());
+        holder.titleTranslation.setHint(getItem(position).getRef());
+
+        // definition
         // TODO: we might want to use an HtmlTextView instead
+        CharSequence text = renderingEngine.render(Html.fromHtml(getItem(position).getText()));
         holder.text.setText(text);
         holder.textTranslation.setHint(text);
 
@@ -163,9 +175,8 @@ public class NotesAdapter extends BaseAdapter {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // TODO: save the changes
-                Log.d(null, "save changes to " + getItem(position).getId());
-                Log.d(null, s.toString());
+                getItem(position).setDefinitionTranslation(s.toString());
+                getItem(position).save();
             }
 
             @Override
@@ -182,8 +193,8 @@ public class NotesAdapter extends BaseAdapter {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // TODO: save the changes
-                Log.d(null, s.toString());
+                getItem(position).setReferenceTranslation(s.toString());
+                getItem(position).save();
             }
 
             @Override
@@ -230,7 +241,6 @@ public class NotesAdapter extends BaseAdapter {
     }
 
     private class ViewHolder {
-
         public TextView title;
         public TextView text;
         public ClearableEditText titleTranslation;
