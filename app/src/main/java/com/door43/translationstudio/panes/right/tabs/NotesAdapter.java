@@ -118,6 +118,11 @@ public class NotesAdapter extends BaseAdapter {
                 }
             }
         });
+        holder.textTranslation.clearTextChangedListeners();
+        holder.titleTranslation.clearTextChangedListeners();
+
+        holder.titleTranslation.setText("");
+        holder.textTranslation.setText("");
 
         if(mRenderTranslations) {
             holder.title.setVisibility(View.GONE);
@@ -166,7 +171,6 @@ public class NotesAdapter extends BaseAdapter {
 
 
         // set up change listeners
-        holder.textTranslation.clearTextChangedListeners();
         holder.textTranslation.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -184,7 +188,6 @@ public class NotesAdapter extends BaseAdapter {
 
             }
         });
-        holder.titleTranslation.clearTextChangedListeners();
         holder.titleTranslation.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {

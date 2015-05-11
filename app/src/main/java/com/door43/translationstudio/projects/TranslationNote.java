@@ -55,7 +55,7 @@ public class TranslationNote {
      * @return
      */
     public String getTranslationNotePath() {
-        return getRepositoryPath(mFrame.getChapter().getProject().getSelectedTargetLanguage()) + "/" + mFrame.getChapter().getId() + "/" + mFrame.getId() + "/";
+        return getRepositoryPath(mFrame.getChapter().getProject().getSelectedTargetLanguage()) + mFrame.getChapter().getId() + "/" + mFrame.getId() + "/";
     }
 
     /**
@@ -183,9 +183,15 @@ public class TranslationNote {
                 }
                 // load from disk
                 try {
-                    String text = FileUtils.readFileToString(new File(getReferencePath()));
-                    setReferenceTranslation(text);
-                    mReferenceTranslation.isSaved(true);
+                    File refFile = new File(getReferencePath());
+                    if(refFile.exists()) {
+                        String text = FileUtils.readFileToString(refFile);
+                        setReferenceTranslation(text);
+                        mReferenceTranslation.isSaved(true);
+                    } else {
+                        setReferenceTranslation("");
+                        mReferenceTranslation.isSaved(true);
+                    }
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "failed to load the note reference translation from disk", e);
                 }
@@ -204,9 +210,15 @@ public class TranslationNote {
                 }
                 // load from disk
                 try {
-                    String text = FileUtils.readFileToString(new File(getDefinitionPath()));
-                    setDefinitionTranslation(text);
-                    mDefinitionTranslation.isSaved(true);
+                    File definitionFile = new File(getDefinitionPath());
+                    if(definitionFile.exists()) {
+                        String text = FileUtils.readFileToString(definitionFile);
+                        setDefinitionTranslation(text);
+                        mDefinitionTranslation.isSaved(true);
+                    } else {
+                        setDefinitionTranslation("");
+                        mDefinitionTranslation.isSaved(true);
+                    }
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "failed to load the note definition translation from disk", e);
                 }
@@ -262,7 +274,7 @@ public class TranslationNote {
          * @return
          */
         public String getId() {
-            return Security.md5(mTranslationNote + mRef);
+            return Security.md5(mTranslationNote.getFrame().getChapterFrameId() + mRef);
         }
     }
 }
