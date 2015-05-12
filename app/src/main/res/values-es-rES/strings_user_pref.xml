@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Tipo de letra Traducción Tamaño</string>
   <string-array name="pref_typeface_size_titles">
     <item>pequeño</item>
+    <item>normal</item>
     <item>medio</item>
     <item>grande</item>
   </string-array>
-  <string name="pref_header_synchronization">Subir</string>
   <string name="pref_title_autosave_delay">Auto Guardar Los Cambios</string>
   <string-array name="pref_autosave_titles">
     <item>Inmediato</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Datos Del Servidor</string>
   <string name="pref_title_git_server_port">Datos De Puerto Del Servidor</string>
   <string name="pref_title_media_server">Servidor Multimedia</string>
-  <string name="pref_header_sharing">Compartir</string>
   <string name="pref_title_export_format">Formato De Exportación</string>
   <string name="pref_header_advanced">Avanzado</string>
-  <string name="pref_title_advanced_settings">Habilitar la configuración avanzada</string>
-  <string name="pref_description_advanced_settings">Mostrar el botón Configuración avanzada en la barra de navegación</string>
+  <string name="pref_title_developer_tools">Herramientas De Desarrollo</string>
+  <string name="pref_description_developer_tools">Abre las herramientas para desarrolladores</string>
+  <string name="pref_title_logging_level">Nivel de registro</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Información</item>
+    <item>Advertencias</item>
+    <item>Errores</item>
+  </string-array>
 </resources>

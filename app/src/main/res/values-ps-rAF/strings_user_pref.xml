@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">د ژباړې typeface غټ تياگانو </string>
   <string-array name="pref_typeface_size_titles">
     <item>کُشنئی</item>
+    <item>normal</item>
     <item>منځ گوړي</item>
     <item>لوئے زڑے</item>
   </string-array>
-  <string name="pref_header_synchronization">ورلېښې</string>
   <string name="pref_title_autosave_delay">ځان گاډي خوندي بدلونونه</string>
   <string-array name="pref_autosave_titles">
     <item>دم در حل </item>
@@ -26,9 +26,6 @@
   <string name="pref_title_git_server">د اومتوك پالنگر </string>
   <string name="pref_title_git_server_port">د اومتوك پالنگر شيرخان بندر </string>
   <string name="pref_title_media_server">د رسنيو د پالنگر </string>
-  <string name="pref_header_sharing">ونډوله</string>
   <string name="pref_title_export_format">بهر لېږلو جوړښت </string>
   <string name="pref_header_advanced">پرمخ تللو</string>
-  <string name="pref_title_advanced_settings">وړتيا و اېچ ټي اېم اېل</string>
-  <string name="pref_description_advanced_settings">ترقي ور د اېچ ټي اېم اېل تڼئ باندې د سمندر والي په پټه </string>
 </resources>

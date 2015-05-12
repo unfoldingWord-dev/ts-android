@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">ទំហំនៃលក្ខណៈអក្សរបកប្រែ</string>
   <string-array name="pref_typeface_size_titles">
     <item>តូច</item>
+    <item>ធម្មតា</item>
     <item>មធ្យម</item>
     <item>ធំ</item>
   </string-array>
-  <string name="pref_header_synchronization">អាប់ឡូដ (បង្ហោះ)</string>
   <string name="pref_title_autosave_delay">ស្វ័យរក្សាទុកកំណែ</string>
   <string-array name="pref_autosave_titles">
     <item>ភ្លាមៗ</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">ម៉ាស៊ីនមេសម្រាប់ទិន្នន័យ</string>
   <string name="pref_title_git_server_port">ច្រកនៃម៉ាស៊ីនមេសម្រាប់ទិន្នន័យ</string>
   <string name="pref_title_media_server">ម៉ាស៊ីនមេសម្រាប់មេឌៀ</string>
-  <string name="pref_header_sharing">កំពុងចែករំលែក</string>
   <string name="pref_title_export_format">ទម្រង់ឯកសារនាំចេញ</string>
   <string name="pref_header_advanced">កម្រិតខ្ពស់</string>
-  <string name="pref_title_advanced_settings">បើកកំណត់កម្រិតខ្ពស់</string>
-  <string name="pref_description_advanced_settings">បង្ហាញប៊ូតុងកំណត់កម្រិតខ្ពស់នៅលើរបាររុករក</string>
+  <string name="pref_title_developer_tools">អភិវឌ្ឍន៍​ឧបករណ៍</string>
+  <string name="pref_description_developer_tools">បើក​ឧបករណ៍​អភិវឌ្ឍន៍</string>
+  <string name="pref_title_logging_level">កម្រិត​ការ​កាប់​ឈើ</string>
+  <string-array name="pref_logging_level_titles">
+    <item>ព​ត៌​មាន</item>
+    <item>ការ​ព្រមាន</item>
+    <item>កំហុស</item>
+  </string-array>
 </resources>

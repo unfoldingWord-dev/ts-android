@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">ترجمہ رسم الخط سائز</string>
   <string-array name="pref_typeface_size_titles">
     <item>چھوٹے</item>
+    <item>معمول</item>
     <item>درمیانے درجے کے</item>
     <item>بڑے</item>
   </string-array>
-  <string name="pref_header_synchronization">اپ لوڈ کریں</string>
   <string name="pref_title_autosave_delay">خود تبدیلیاں محفوظ کریں</string>
   <string-array name="pref_autosave_titles">
     <item>فوری طور پر</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">کوائف پیش کار</string>
   <string name="pref_title_git_server_port">کوائف پیش کار دہانہ</string>
   <string name="pref_title_media_server">میڈیا پیش کار</string>
-  <string name="pref_header_sharing">حصہ داری</string>
   <string name="pref_title_export_format">برآمد کریں وضع کریں</string>
   <string name="pref_header_advanced">اعلی درجے کی</string>
-  <string name="pref_title_advanced_settings">اعلی درجے کی ترتیبات کو فعال کریں</string>
-  <string name="pref_description_advanced_settings">نیویگیشن بار میں اعلی درجے کی ترتیبات بٹن پر ظاہر</string>
+  <string name="pref_title_developer_tools">ڈیولپر کے اوزار</string>
+  <string name="pref_description_developer_tools">ڈویلپر کے اوزار کھولتا ہے</string>
+  <string name="pref_title_logging_level">سطح لاگ ان</string>
+  <string-array name="pref_logging_level_titles">
+    <item>معلومات کے</item>
+    <item>انتباہات</item>
+    <item>غلطیاں</item>
+  </string-array>
 </resources>

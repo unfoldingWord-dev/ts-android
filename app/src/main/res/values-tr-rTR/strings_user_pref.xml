@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Çeviri Yazı Boyutu</string>
   <string-array name="pref_typeface_size_titles">
     <item>küçük</item>
+    <item>normal</item>
     <item>orta</item>
     <item>büyük</item>
   </string-array>
-  <string name="pref_header_synchronization">Yükleme</string>
   <string name="pref_title_autosave_delay">Otomatik Değişiklikleri Kaydet</string>
   <string-array name="pref_autosave_titles">
     <item>Hemen</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Veri Server</string>
   <string name="pref_title_git_server_port">Veri Server Port</string>
   <string name="pref_title_media_server">Media Server</string>
-  <string name="pref_header_sharing">Paylaşım</string>
   <string name="pref_title_export_format">Verme Biçimi</string>
   <string name="pref_header_advanced">Gelişmiş</string>
-  <string name="pref_title_advanced_settings">Gelişmiş ayarları etkinleştirin</string>
-  <string name="pref_description_advanced_settings">Gezinme çubuğunda gelişmiş ayarlar düğmesi Ekran</string>
+  <string name="pref_title_developer_tools">Geliştirici Araçları</string>
+  <string name="pref_description_developer_tools">Geliştirici araçları açar</string>
+  <string name="pref_title_logging_level">Günlüğü Düzeyi</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Bilgi</item>
+    <item>Uyarılar</item>
+    <item>Hatalar</item>
+  </string-array>
 </resources>

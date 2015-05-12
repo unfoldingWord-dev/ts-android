@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Dịch Typeface Kích</string>
   <string-array name="pref_typeface_size_titles">
     <item>nhỏ</item>
+    <item>bình thường</item>
     <item>trung bình</item>
     <item>lớn</item>
   </string-array>
-  <string name="pref_header_synchronization">Tải lên</string>
   <string name="pref_title_autosave_delay">Tự động lưu thay đổi</string>
   <string-array name="pref_autosave_titles">
     <item>Ngay lập tức</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Dữ liệu máy chủ</string>
   <string name="pref_title_git_server_port">Dữ liệu máy chủ cổng</string>
   <string name="pref_title_media_server">Phương tiện truyền thông máy chủ</string>
-  <string name="pref_header_sharing">Chia sẻ</string>
   <string name="pref_title_export_format">Xuất khẩu định dạng</string>
   <string name="pref_header_advanced">Nâng cao</string>
-  <string name="pref_title_advanced_settings">Cho phép cài đặt nâng cao</string>
-  <string name="pref_description_advanced_settings">Hiển thị các nút cài đặt nâng cao trong thanh điều hướng</string>
+  <string name="pref_title_developer_tools">Công cụ phát triển</string>
+  <string name="pref_description_developer_tools">Mở các công cụ phát triển</string>
+  <string name="pref_title_logging_level">Logging Cấp</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Thông tin</item>
+    <item>Cảnh báo</item>
+    <item>Lỗi</item>
+  </string-array>
 </resources>

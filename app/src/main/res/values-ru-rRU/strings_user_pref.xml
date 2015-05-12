@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Перевод Шрифт Размер</string>
   <string-array name="pref_typeface_size_titles">
     <item>небольшой</item>
+    <item>нормальный</item>
     <item>среда</item>
     <item>большой</item>
   </string-array>
-  <string name="pref_header_synchronization">Загрузить</string>
   <string name="pref_title_autosave_delay">Auto Save Changes</string>
   <string-array name="pref_autosave_titles">
     <item>Сразу</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Сервер Данных</string>
   <string name="pref_title_git_server_port">Данные Порт Сервера</string>
   <string name="pref_title_media_server">Медиа-Сервер</string>
-  <string name="pref_header_sharing">Обмен</string>
   <string name="pref_title_export_format">Формат Экспорта</string>
   <string name="pref_header_advanced">Продвинутый</string>
-  <string name="pref_title_advanced_settings">Включить дополнительные настройки</string>
-  <string name="pref_description_advanced_settings">Дисплей кнопку Расширенные настройки в панели навигации</string>
+  <string name="pref_title_developer_tools">Инструменты Разработчика</string>
+  <string name="pref_description_developer_tools">Открывает средства разработки</string>
+  <string name="pref_title_logging_level">Уровень ведения протоколов</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Информация</item>
+    <item>Предупреждения</item>
+    <item>Ошибки</item>
+  </string-array>
 </resources>

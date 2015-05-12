@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Sukat ng Typeface Translation</string>
   <string-array name="pref_typeface_size_titles">
     <item>maliit</item>
+    <item>normal</item>
     <item>katamtaman</item>
     <item>malaki</item>
   </string-array>
-  <string name="pref_header_synchronization">I-upload</string>
   <string name="pref_title_autosave_delay">Auto-Save ng mga Pagbabago</string>
   <string-array name="pref_autosave_titles">
     <item>Agad</item>
@@ -26,9 +26,6 @@
   <string name="pref_title_git_server">Server ng Data</string>
   <string name="pref_title_git_server_port">Data sa Server Port</string>
   <string name="pref_title_media_server">Server ng Medya</string>
-  <string name="pref_header_sharing">Pagbabahagi</string>
   <string name="pref_title_export_format">I-export ang Ayos</string>
   <string name="pref_header_advanced">Pauna</string>
-  <string name="pref_title_advanced_settings">Paganahin ang mga advanced na settings</string>
-  <string name="pref_description_advanced_settings">Ipakita ang button ng mga pauna na setting sa navigation bar</string>
 </resources>

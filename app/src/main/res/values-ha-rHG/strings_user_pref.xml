@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Ma\'aunin girman fassara</string>
   <string-array name="pref_typeface_size_titles">
     <item>Karami</item>
+    <item>al\'ada</item>
     <item>Matsakaici</item>
     <item>Babba</item>
   </string-array>
-  <string name="pref_header_synchronization">Dora aiki</string>
   <string name="pref_title_autosave_delay">Ajiye canje-canje</string>
   <string-array name="pref_autosave_titles">
     <item>Nan take</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Curin bayani a ma\'adinin bayanai na yanar gizo</string>
   <string name="pref_title_git_server_port">Ma\'dinin bayanai na yanar gizo</string>
   <string name="pref_title_media_server">Ma\'adanin ajiyar bayanai da ke kan yanar gizo na kafar watsa labarai</string>
-  <string name="pref_header_sharing">Rarrabawa</string>
   <string name="pref_title_export_format">Tura Tsari:</string>
   <string name="pref_header_advanced">Bunkasassa</string>
-  <string name="pref_title_advanced_settings">Bada damar mashahurin saiti</string>
-  <string name="pref_description_advanced_settings">Dora maballin mashahurin saiti kan layin matuki</string>
+  <string name="pref_title_developer_tools">Developer kallo</string>
+  <string name="pref_description_developer_tools">Yana buɗewa da developer kayayyakin aiki,</string>
+  <string name="pref_title_logging_level">Sa-hannun Level</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Bayanai</item>
+    <item>Gargadi</item>
+    <item>Kurakurai</item>
+  </string-array>
 </resources>

@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Vertaling Letterbeeld Size</string>
   <string-array name="pref_typeface_size_titles">
     <item>klein</item>
+    <item>normaal</item>
     <item>medium</item>
     <item>groot</item>
   </string-array>
-  <string name="pref_header_synchronization">Upload</string>
   <string name="pref_title_autosave_delay">Automatisch Opslaan Van Wijzigingen</string>
   <string-array name="pref_autosave_titles">
     <item>Onmiddellijk</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">De Gegevens-Server</string>
   <string name="pref_title_git_server_port">Data-Server-Poort</string>
   <string name="pref_title_media_server">Media Server</string>
-  <string name="pref_header_sharing">Delen</string>
   <string name="pref_title_export_format">Formaat</string>
   <string name="pref_header_advanced">Gevorderd</string>
-  <string name="pref_title_advanced_settings">Schakel geavanceerde instellingen</string>
-  <string name="pref_description_advanced_settings">Weer te geven op de knop Geavanceerde instellingen in de navigatiebalk</string>
+  <string name="pref_title_developer_tools">Developer Tools</string>
+  <string name="pref_description_developer_tools">Opent de developer tools</string>
+  <string name="pref_title_logging_level">Logging Niveau</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Informatie</item>
+    <item>Waarschuwingen</item>
+    <item>Fouten</item>
+  </string-array>
 </resources>

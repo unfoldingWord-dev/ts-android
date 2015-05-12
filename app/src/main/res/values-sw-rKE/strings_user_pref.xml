@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Tafsiri typeface Size</string>
   <string-array name="pref_typeface_size_titles">
     <item>ndogo</item>
+    <item>kawaida</item>
     <item>kati</item>
     <item>kubwa</item>
   </string-array>
-  <string name="pref_header_synchronization">Kupakia</string>
   <string name="pref_title_autosave_delay">Auto Save Mabadiliko</string>
   <string-array name="pref_autosave_titles">
     <item>Mara</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Data Server</string>
   <string name="pref_title_git_server_port">Data Server Port</string>
   <string name="pref_title_media_server">Vyombo vya habari Server</string>
-  <string name="pref_header_sharing">Kugawana</string>
   <string name="pref_title_export_format">Export Format</string>
   <string name="pref_header_advanced">Advanced</string>
-  <string name="pref_title_advanced_settings">Kuwawezesha mazingira ya juu</string>
-  <string name="pref_description_advanced_settings">Kuonyesha kifungo mazingira ya juu katika bar urambazaji</string>
+  <string name="pref_title_developer_tools">Developer Tools</string>
+  <string name="pref_description_developer_tools">Kufungua zana developer</string>
+  <string name="pref_title_logging_level">Magogo Level</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Habari</item>
+    <item>Maonyo</item>
+    <item>Makosa</item>
+  </string-array>
 </resources>

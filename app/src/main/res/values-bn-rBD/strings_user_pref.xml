@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">অনুবাদ টাইপফেস আকার</string>
   <string-array name="pref_typeface_size_titles">
     <item>ছোট</item>
+    <item>সাধারণ</item>
     <item>মাঝারি</item>
     <item>বড়</item>
   </string-array>
-  <string name="pref_header_synchronization">আপলোড</string>
   <string name="pref_title_autosave_delay">অটো পরিবর্তনগুলি সঞ্চয় করুন</string>
   <string-array name="pref_autosave_titles">
     <item>অবিলম্বে</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">ডেটা সার্ভার</string>
   <string name="pref_title_git_server_port">ডেটা সার্ভার পোর্ট</string>
   <string name="pref_title_media_server">মিডিয়া সার্ভার</string>
-  <string name="pref_header_sharing">ভাগ</string>
   <string name="pref_title_export_format">রপ্তানি বিন্যাস</string>
   <string name="pref_header_advanced">অগ্রসর</string>
-  <string name="pref_title_advanced_settings">উন্নত সেটিংস সক্রিয়</string>
-  <string name="pref_description_advanced_settings">ন্যাভিগেশন বারের মধ্যে উন্নত সেটিংস বাটন প্রদর্শন</string>
+  <string name="pref_title_developer_tools">ডেভেলপার টুলস</string>
+  <string name="pref_description_developer_tools">বিকাশকারী সরঞ্জাম খোলে</string>
+  <string name="pref_title_logging_level">লগিং শ্রেনী</string>
+  <string-array name="pref_logging_level_titles">
+    <item>তথ্য</item>
+    <item>সতর্কতা</item>
+    <item>ত্রুটি</item>
+  </string-array>
 </resources>

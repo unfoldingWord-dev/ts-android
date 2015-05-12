@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">ಅನುವಾದ ಅಕ್ಷರಶೈಲಿಯ ಗಾತ್ರ</string>
   <string-array name="pref_typeface_size_titles">
     <item>ಸಣ್ಣ</item>
+    <item>ಸಾಮಾನ್ಯ</item>
     <item>ಮಧ್ಯಮ</item>
     <item>ದೊಡ್ಡ</item>
   </string-array>
-  <string name="pref_header_synchronization">ಅಪ್ಲೋಡ್</string>
   <string name="pref_title_autosave_delay">ಆಟೋ ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ</string>
   <string-array name="pref_autosave_titles">
     <item>ತಕ್ಷಣ</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">ದತ್ತ ಸರ್ವರ್</string>
   <string name="pref_title_git_server_port">ದತ್ತ ಸರ್ವರ್ ಪೋರ್ಟ್</string>
   <string name="pref_title_media_server">ಮೀಡಿಯಾ ಸರ್ವರ್</string>
-  <string name="pref_header_sharing">ಹಂಚಿಕೆ</string>
   <string name="pref_title_export_format">ರಫ್ತು ಸ್ವರೂಪ</string>
   <string name="pref_header_advanced">ಸುಧಾರಿತ</string>
-  <string name="pref_title_advanced_settings">ಮುಂದುವರಿದ ಸೆಟ್ಟಿಂಗ್ಗಳು</string>
-  <string name="pref_description_advanced_settings">ಸಂಚರಣೆ ಬಾರ್ನಲ್ಲಿ ಸುಧಾರಿತ ಸೆಟ್ಟಿಂಗ್ಗಳು ಬಟನ್ ಪ್ರದರ್ಶಿಸಿ</string>
+  <string name="pref_title_developer_tools">ಡೆವಲಪರ್ ಟೂಲ್ಸ್</string>
+  <string name="pref_description_developer_tools">ಡೆವಲಪರ್ ಸಾಧನಗಳು ತೆರೆಯುತ್ತದೆ</string>
+  <string name="pref_title_logging_level">ಮಟ್ಟವಾಗಿದೆ</string>
+  <string-array name="pref_logging_level_titles">
+    <item>ಮಾಹಿತಿ</item>
+    <item>ಎಚ್ಚರಿಕೆಗಳು</item>
+    <item>ದೋಷಗಳು</item>
+  </string-array>
 </resources>

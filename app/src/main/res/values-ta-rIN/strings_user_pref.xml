@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">மொழிபெயர்ப்பு எழுத்துவடிவம்மூலம் அளவு</string>
   <string-array name="pref_typeface_size_titles">
     <item>சிறு</item>
+    <item>சாதாரண</item>
     <item>நடுத்தர</item>
     <item>பெரிய</item>
   </string-array>
-  <string name="pref_header_synchronization">பதிவேற்றம்</string>
   <string name="pref_title_autosave_delay">ஆட்டோ சேமி</string>
   <string-array name="pref_autosave_titles">
     <item>உடனடியாக</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">டேட்டா சர்வர்</string>
   <string name="pref_title_git_server_port">டேட்டா சர்வர் போர்த்</string>
   <string name="pref_title_media_server">மீடியா சர்வர்</string>
-  <string name="pref_header_sharing">பகிர்தல்</string>
   <string name="pref_title_export_format">ஏற்றுமதி வடிவமைப்பு</string>
   <string name="pref_header_advanced">மேம்பட்ட</string>
-  <string name="pref_title_advanced_settings">மேம்பட்ட அமைப்புகள்</string>
-  <string name="pref_description_advanced_settings">திசை பட்டையில் மேம்பட்ட அமைப்புகள் பொத்தானை காண்பிக்க</string>
+  <string name="pref_title_developer_tools">டெவலப்பர் கருவிகள்</string>
+  <string name="pref_description_developer_tools">டெவலப்பர் கருவிகள் திறக்கிறது</string>
+  <string name="pref_title_logging_level">பதிவு நிலை</string>
+  <string-array name="pref_logging_level_titles">
+    <item>தகவல்</item>
+    <item>எச்சரிக்கைகள்</item>
+    <item>பிழைகள்</item>
+  </string-array>
 </resources>

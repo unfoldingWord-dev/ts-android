@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">అనువాద టైప్ఫేస్రూపొందించినవారు సైజు</string>
   <string-array name="pref_typeface_size_titles">
     <item>చిన్న</item>
+    <item>సాధారణ</item>
     <item>మీడియం</item>
     <item>పెద్ద</item>
   </string-array>
-  <string name="pref_header_synchronization">అప్లోడ్</string>
   <string name="pref_title_autosave_delay">ఆటో సేవ్ మార్పులు</string>
   <string-array name="pref_autosave_titles">
     <item>వెంటనే</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">డేటా సర్వర్</string>
   <string name="pref_title_git_server_port">డేటా సర్వర్ పోర్ట్</string>
   <string name="pref_title_media_server">మీడియా సర్వర్</string>
-  <string name="pref_header_sharing">భాగస్వామ్యం</string>
   <string name="pref_title_export_format">ఎగుమతి ఫార్మాట్</string>
   <string name="pref_header_advanced">అధునాతన</string>
-  <string name="pref_title_advanced_settings">అధునాతన సెట్టింగ్లు</string>
-  <string name="pref_description_advanced_settings">పేజీకి సంబంధించిన లింకులు బార్ లో ఆధునిక సెట్టింగులు బటన్ ప్రదర్శించు</string>
+  <string name="pref_title_developer_tools">డెవలపర్ ఉపకరణాలు</string>
+  <string name="pref_description_developer_tools">డెవలపర్ ఉపకరణాలు తెరుచుకుంటుంది</string>
+  <string name="pref_title_logging_level">లాగింగ్ స్థాయి</string>
+  <string-array name="pref_logging_level_titles">
+    <item>సమాచారం</item>
+    <item>హెచ్చరికలు</item>
+    <item>లోపాలు</item>
+  </string-array>
 </resources>

@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">अनुवाद टाइपफ़ेस आकार</string>
   <string-array name="pref_typeface_size_titles">
     <item>छोटा</item>
+    <item>साधारण</item>
     <item>मध्यम</item>
-    <item>बडा</item>
+    <item>बड़ा</item>
   </string-array>
-  <string name="pref_header_synchronization">अपलोड करें</string>
   <string name="pref_title_autosave_delay">ऑटो परिवर्तन सहेजें</string>
   <string-array name="pref_autosave_titles">
     <item>तुरंत</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">डेटा सर्वर</string>
   <string name="pref_title_git_server_port">डेटा सर्वर पोर्ट</string>
   <string name="pref_title_media_server">मीडिया सर्वर</string>
-  <string name="pref_header_sharing">साझा करना</string>
   <string name="pref_title_export_format">निर्यात स्वरूप</string>
   <string name="pref_header_advanced">उन्नत</string>
-  <string name="pref_title_advanced_settings">उन्नत सेटिंग्स सक्षम करें</string>
-  <string name="pref_description_advanced_settings">नेविगेशन पट्टी में उन्नत सेटिंग्स बटन प्रदर्शित</string>
+  <string name="pref_title_developer_tools">डेवलपर उपकरण</string>
+  <string name="pref_description_developer_tools">डेवलपर उपकरण खोलता है</string>
+  <string name="pref_title_logging_level">लॉगिंग स्तर</string>
+  <string-array name="pref_logging_level_titles">
+    <item>सूचना</item>
+    <item>चेतावनी</item>
+    <item>त्रुटियाँ</item>
+  </string-array>
 </resources>

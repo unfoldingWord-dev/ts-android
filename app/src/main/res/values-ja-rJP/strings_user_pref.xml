@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">翻訳書体サイズ</string>
   <string-array name="pref_typeface_size_titles">
     <item>小さな</item>
+    <item>通常の</item>
     <item>メディア</item>
     <item>大</item>
   </string-array>
-  <string name="pref_header_synchronization">アップロード</string>
   <string name="pref_title_autosave_delay">自動変更の保存</string>
   <string-array name="pref_autosave_titles">
     <item>すぐに</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">データ サーバー</string>
   <string name="pref_title_git_server_port">データ サーバー ポート</string>
   <string name="pref_title_media_server">メディア サーバー</string>
-  <string name="pref_header_sharing">共有</string>
   <string name="pref_title_export_format">エクスポートの形式</string>
   <string name="pref_header_advanced">高度な</string>
-  <string name="pref_title_advanced_settings">高度な設定を有効にする</string>
-  <string name="pref_description_advanced_settings">ナビゲーションバーの[詳細設定]ボタンを表示</string>
+  <string name="pref_title_developer_tools">開発者ツール</string>
+  <string name="pref_description_developer_tools">開発者向けツールをオープンします</string>
+  <string name="pref_title_logging_level">ログレベル</string>
+  <string-array name="pref_logging_level_titles">
+    <item>情報</item>
+    <item>警告</item>
+    <item>エラー</item>
+  </string-array>
 </resources>

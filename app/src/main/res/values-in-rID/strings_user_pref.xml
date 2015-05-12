@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Terjemahan jenis huruf Ukuran</string>
   <string-array name="pref_typeface_size_titles">
     <item>kecil</item>
+    <item>normal</item>
     <item>medium</item>
     <item>besar</item>
   </string-array>
-  <string name="pref_header_synchronization">Meng-upload</string>
   <string name="pref_title_autosave_delay">Auto Simpan perubahan</string>
   <string-array name="pref_autosave_titles">
     <item>Segera</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Data Server</string>
   <string name="pref_title_git_server_port">Data Server Port</string>
   <string name="pref_title_media_server">Media Server</string>
-  <string name="pref_header_sharing">Berbagi</string>
   <string name="pref_title_export_format">Format ekspor</string>
   <string name="pref_header_advanced">Maju</string>
-  <string name="pref_title_advanced_settings">Aktifkan pengaturan lanjutan</string>
-  <string name="pref_description_advanced_settings">Menampilkan tombol pengaturan lanjutan di bar navigasi</string>
+  <string name="pref_title_developer_tools">Developer Tools</string>
+  <string name="pref_description_developer_tools">Membuka alat pengembang</string>
+  <string name="pref_title_logging_level">Logging Tingkat</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Informasi</item>
+    <item>Peringatan</item>
+    <item>Kesalahan</item>
+  </string-array>
 </resources>

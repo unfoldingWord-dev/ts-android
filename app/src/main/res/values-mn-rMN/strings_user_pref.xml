@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">Орчуулгын хэвлэх хэмжээ</string>
   <string-array name="pref_typeface_size_titles">
     <item>жижиг</item>
+    <item>Хэвийн</item>
     <item>дунд</item>
     <item>том</item>
   </string-array>
-  <string name="pref_header_synchronization">Байршуулах</string>
   <string name="pref_title_autosave_delay">Автомат хадгалалтын өөрчлөлт</string>
   <string-array name="pref_autosave_titles">
     <item>Нэн даруй</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">Өгөгдлийн Сервер</string>
   <string name="pref_title_git_server_port">Мэдээллийн серверийн оролт</string>
   <string name="pref_title_media_server">Төхөөрөмжийн сервер</string>
-  <string name="pref_header_sharing">Хуваалцах</string>
   <string name="pref_title_export_format">Экспортлох формат</string>
   <string name="pref_header_advanced">Нарийвчилсан</string>
-  <string name="pref_title_advanced_settings">Нарийвчилсан тохиргоог идэвхжүүлэх</string>
-  <string name="pref_description_advanced_settings">Чиглүүлэх талбар дахь нэмэлт тохиргооны товчийг харуулах</string>
+  <string name="pref_title_developer_tools">Developer Tools</string>
+  <string name="pref_description_developer_tools">Хөгжүүлэгч хэрэгсэл нээлтээ хийлээ</string>
+  <string name="pref_title_logging_level">Мод бэлтгэл түвшин</string>
+  <string-array name="pref_logging_level_titles">
+    <item>Мэдээлэл</item>
+    <item>Анхааруулга</item>
+    <item>Алдаа</item>
+  </string-array>
 </resources>

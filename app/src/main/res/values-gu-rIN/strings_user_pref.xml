@@ -10,10 +10,10 @@
   <string name="pref_title_typeface_size">અનુવાદ ટાઇપફેસ કદ</string>
   <string-array name="pref_typeface_size_titles">
     <item>નાના</item>
+    <item>સામાન્ય</item>
     <item>મધ્યમ</item>
     <item>મોટા</item>
   </string-array>
-  <string name="pref_header_synchronization">અપલોડ કરો</string>
   <string name="pref_title_autosave_delay">ઓટો ફેરફારો સાચવો</string>
   <string-array name="pref_autosave_titles">
     <item>તરત જ</item>
@@ -26,9 +26,14 @@
   <string name="pref_title_git_server">ડેટા સર્વર</string>
   <string name="pref_title_git_server_port">ડેટા સર્વર પોર્ટ</string>
   <string name="pref_title_media_server">મીડિયા સર્વર</string>
-  <string name="pref_header_sharing">શેરિંગ</string>
   <string name="pref_title_export_format">નિકાસ ફોર્મેટ</string>
   <string name="pref_header_advanced">અદ્યતન</string>
-  <string name="pref_title_advanced_settings">વિગતવાર સેટિંગ્સ સક્રિય</string>
-  <string name="pref_description_advanced_settings">આ સંશોધક પટ્ટીમાં અદ્યતન સેટિંગ્સ બટન પ્રદર્શિત</string>
+  <string name="pref_title_developer_tools">વિકાસકર્તા સાધનો</string>
+  <string name="pref_description_developer_tools">વિકાસકર્તા સાધનો ખોલે</string>
+  <string name="pref_title_logging_level">લોગીંગ સ્તર</string>
+  <string-array name="pref_logging_level_titles">
+    <item>જાણકારી</item>
+    <item>ચેતવણી</item>
+    <item>ભૂલો</item>
+  </string-array>
 </resources>
