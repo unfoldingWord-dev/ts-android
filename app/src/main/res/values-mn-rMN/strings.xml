@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Буруу орчуулгын архив</string>
   <string name="translation_import_failed">Орчуулгыг импортлож чадсангүй</string>
   <string name="internet_not_available">Таньд идэвхтэй интернэт холболт байхгүй байна.</string>
-  <string name="title_activity_upload_wizard">Орчуулга оруулах</string>
+  <string name="backup_and_publish">Орчуулга оруулах</string>
   <string name="upload_wizard_intro">Та орчуулга байршуулах гэж байна.</string>
   <string name="label_continue">Үргэлжлүүлэх</string>
   <string name="upload_wizard_overview">Тоймыг байршуулах</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Эхлэхийн тулд зүүн табнаас эх бичвэрийг сонгох</string>
   <string name="return_to_important_terms">Чухал нөхцөл рүү буцах</string>
   <string name="no_translation_notes">Ямар ч орчуулгын тэмдэглэл байхгүй байна</string>
-  <string name="label_important_terms">Чухал нэр томъёонууд</string>
+  <string name="key_terms">Чухал нэр томъёонууд</string>
   <string name="translation_check_notice">Бид одоо таны орчуулга бэлэн болсон эсэхийг магадлахын тулд бага зэрэг шалгалт хийнэ.</string>
   <string name="translation_complete">Орчуулга дууссан байна</string>
   <string name="preparing_upload">Төслийг байршуулахад бэлдэх</string>

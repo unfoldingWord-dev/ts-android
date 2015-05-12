@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">កំហូចទម្រង់នៃប័ណ្ណសារបកប្រែឯកសារ</string>
   <string name="translation_import_failed">ការនាំចូលឯកសារបកប្រែមិនបានសម្រេច</string>
   <string name="internet_not_available">អ្នកមិនមានការភ្ជាប់ប្រព័ន្ធអ៊ីនធឺណិតដែលកំពុងដំណើរការ។</string>
-  <string name="title_activity_upload_wizard">អាប់ឡូដ (បង្ហោះ) ឯកសារបកប្រែ</string>
+  <string name="backup_and_publish">អាប់ឡូដ (បង្ហោះ) ឯកសារបកប្រែ</string>
   <string name="upload_wizard_intro">អ្នកកំពុងតែអាប់ឡូដ (បង្ហោះ) ឯកសារបកប្រែអ្នកហើយ។ </string>
   <string name="label_continue">បន្ត</string>
   <string name="upload_wizard_overview">ពិនិត្យមើលឯកសារអាប់ឡូដ (បង្ហោះ) ឡើងវិញ</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">ជ្រើសយកអត្ថបទប្រភពដើមមួយចំនួយចេញពីថេបខាងឆ្វេងដើម្បីចាប់ផ្ដើម</string>
   <string name="return_to_important_terms">ត្រឡប់ទៅកម្រងពាក្យសំខាន់ៗ</string>
   <string name="no_translation_notes">មិនមានកំណត់សម្គាល់សម្រាប់ការបកប្រែនេះទេ</string>
-  <string name="label_important_terms">កម្រងពាក្យសំខាន់ៗ:</string>
+  <string name="key_terms">កម្រងពាក្យសំខាន់ៗ:</string>
   <string name="translation_check_notice">ឥឡូវនេះ យើងនឹងអនុវត្តការពិនិត្យអក្ខរាវិរុទ្ធពីរបីពាក្យប្រយោជន៍ធានាឲ្យបានថា ការបកប្រែរបស់អ្នកមានលក្ខណៈស្រេចបាច់ហើយ។</string>
   <string name="translation_complete">ការបកប្រែបានចប់សព្វគ្រប់</string>
   <string name="preparing_upload">កំពុងរៀបចំគម្រោងសម្រាប់អាប់ឡូដ (បង្ហោះ)</string>

@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Rumbun fassara marar inganci</string>
   <string name="translation_import_failed">An kasa dauko abun da aka fassara</string>
   <string name="internet_not_available">Layinka na sadarwar yanar gizo baya aiki</string>
-  <string name="title_activity_upload_wizard">Dora aikin da aka fassara</string>
+  <string name="backup_and_publish">Dora aikin da aka fassara</string>
   <string name="upload_wizard_intro">Kana gaf da dora fassarar da kayi</string>
   <string name="label_continue">Cigaba</string>
   <string name="upload_wizard_overview">Duba aikin da ake dorawa</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Zabi wasu matanan asali daga bangaren hagu don farawa.</string>
   <string name="return_to_important_terms">Dawo kan sharudda</string>
   <string name="no_translation_notes">Babu bayanan fassara</string>
-  <string name="label_important_terms">Kayyadaddun Sharudda</string>
+  <string name="key_terms">Kayyadaddun Sharudda</string>
   <string name="translation_check_notice">Yanzu za mu danyi gwaji don a tabbatar in fassararka/ki ta kammala.</string>
   <string name="translation_complete">Fassara ta kammala</string>
   <string name="preparing_upload">Har-hada aiki don dorawa</string>

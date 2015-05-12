@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">വൈകല്യം സംഭവിച്ച ട്രാന്‍സ്ലേഷന്‍ ആര്‍ക്കൈവ്</string>
   <string name="translation_import_failed">പരിഭാഷ ഇംപോര്‍ട്ട് ചെയ്യുവാന്‍ സാധിച്ചില്ല</string>
   <string name="internet_not_available">നിങ്ങള്‍ക്ക് സജീവമായുള്ള ഇന്‍റര്‍നെറ്റ് കണക്ഷന്‍ ഇല്ല</string>
-  <string name="title_activity_upload_wizard">പരിഭാഷ അപ്‍ലോഡ് ചെയ്യുക</string>
+  <string name="backup_and_publish">പരിഭാഷ അപ്‍ലോഡ് ചെയ്യുക</string>
   <string name="upload_wizard_intro">നിങ്ങള്‍ തര്‍ജ്ജമ അപ്‍ലോഡ് ചെയ്യാന്‍ പോകുകയാണ്
 
 </string>
@@ -87,7 +87,7 @@
   <string name="choose_frame_to_start">തുടങ്ങുവാനായി ഇടതു ടാബില്‍ നിന്നും കുറച്ച്  സോഴ്സ് ടെക്സ്റ്റ് തിരഞ്ഞെടുക്കുക</string>
   <string name="return_to_important_terms">പ്രധാന വ്യവസ്ഥയിലക്ക് മടങ്ങുക</string>
   <string name="no_translation_notes">തര്‍ജ്ജമയുടെ അറിയിപ്പുകള്‍ ഒന്നും ഇല്ല</string>
-  <string name="label_important_terms">പ്രധാന വ്യവസ്ഥകള്‍</string>
+  <string name="key_terms">പ്രധാന വ്യവസ്ഥകള്‍</string>
   <string name="translation_check_notice">നിങ്ങളുടെ തര്‍ജ്ജമ തയ്യാറാണോ എന്ന് ഉറപ്പാക്കാന്‍ ഞങ്ങള്‍ ചില പരിശോനകള്‍ നടത്തുന്നതാണ്.</string>
   <string name="translation_complete">തര്‍ജ്ജമ പൂര്‍ത്തിയായി</string>
   <string name="preparing_upload">പ്രൊജക്ട് അപ്‍ലോഡ് ചെയ്യാന്‍ തയ്യാറെടുക്കുന്നു</string>

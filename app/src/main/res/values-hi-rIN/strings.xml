@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">विकृत अनुवाद पुरालेख</string>
   <string name="translation_import_failed">अनुवाद आयात करने में विफल रहा</string>
   <string name="internet_not_available">आप एक सक्रिय इंटरनेट कनेक्शन नहीं है।</string>
-  <string name="title_activity_upload_wizard">अनुवाद अपलोड</string>
+  <string name="backup_and_publish">अनुवाद अपलोड</string>
   <string name="upload_wizard_intro">आप अपने अनुवाद अपलोड करने के बारे में हैं।</string>
   <string name="label_continue">जारी रखें</string>
   <string name="upload_wizard_overview">समीक्षा अपलोड करें</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">बाएँ टैब से कुछ स्रोत पाठ चुनें आरंभ करने के लिए</string>
   <string name="return_to_important_terms">महत्वपूर्ण पदों पर लौटें</string>
   <string name="no_translation_notes">कोई अनुवाद नोट नहीं हैं</string>
-  <string name="label_important_terms">महत्वपूर्ण पदों</string>
+  <string name="key_terms">महत्वपूर्ण पदों</string>
   <string name="translation_check_notice">अब हम अपने अनुवाद के लिए तैयार है सुनिश्चित करने के लिए कुछ चेक प्रदर्शन करेंगे।</string>
   <string name="translation_complete">अनुवाद पूरा हो गया है</string>
   <string name="preparing_upload">अपलोड करने के लिए परियोजना तैयार कर रहा है</string>

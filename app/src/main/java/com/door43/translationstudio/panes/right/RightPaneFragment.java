@@ -54,7 +54,7 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         if(tabs.size() == 0) {
             // Tabs
             tabs.add(new StringFragmentKeySet(getResources().getString(R.string.label_translation_notes), mNotesTab));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.label_important_terms), mTermsTab));
+            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.key_terms), mTermsTab));
         }
 
         // ViewPager

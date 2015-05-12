@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">آرشیو ترجمه ناقص</string>
   <string name="translation_import_failed">واردات ترجمه نشد</string>
   <string name="internet_not_available">یک اتصال اینترنتی فعال ندارند.</string>
-  <string name="title_activity_upload_wizard">ارسال ترجمه</string>
+  <string name="backup_and_publish">ارسال ترجمه</string>
   <string name="upload_wizard_intro">شما در حال آپلود ترجمه شما هستند.</string>
   <string name="label_continue">ادامه</string>
   <string name="upload_wizard_overview">آپلود فایل را نقد کنید</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">متن منبع از تب سمت چپ را انتخاب کنید برای شروع</string>
   <string name="return_to_important_terms">بازگشت به شرایط مهم</string>
   <string name="no_translation_notes">یادداشت ها ترجمه وجود دارد</string>
-  <string name="label_important_terms">شرایط مهم</string>
+  <string name="key_terms">شرایط مهم</string>
   <string name="translation_check_notice">ما در حال حاضر انجام چند چک برای اطمینان از ترجمه شما آماده است.</string>
   <string name="translation_complete">ترجمه کامل است</string>
   <string name="preparing_upload">آماده سازی پروژه برای آپلود</string>

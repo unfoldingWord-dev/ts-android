@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Hatalı çeviri arşivi</string>
   <string name="translation_import_failed">Çeviri almak için başarısız oldu </string>
   <string name="internet_not_available">Etkin bir internet bağlantısı gerekmez.</string>
-  <string name="title_activity_upload_wizard">Çeviri Yükle</string>
+  <string name="backup_and_publish">Çeviri Yükle</string>
   <string name="upload_wizard_intro">Sen çeviri yüklemek üzeresiniz.</string>
   <string name="label_continue">Devam</string>
   <string name="upload_wizard_overview">Upload İnceleme</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Sol sekmesinden bazı kaynak metni seçin Başlamak için</string>
   <string name="return_to_important_terms">Önemli Şartlar dön</string>
   <string name="no_translation_notes">Hiçbir çeviri notları vardır</string>
-  <string name="label_important_terms">Önemli Terimler</string>
+  <string name="key_terms">Önemli Terimler</string>
   <string name="translation_check_notice">Biz şimdi çeviri hazır olduğundan emin olmak için bir kaç kontrollerini yapacaktır.</string>
   <string name="translation_complete">Tercüme tamamlandı</string>
   <string name="preparing_upload">Yükleme için proje hazırlanması</string>

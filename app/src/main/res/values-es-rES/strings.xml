@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Formato incorrecto de la traducción de archivo</string>
   <string name="translation_import_failed">No se pudo importar la traducción</string>
   <string name="internet_not_available">Usted no tiene una conexión activa a internet.</string>
-  <string name="title_activity_upload_wizard">Traducción De Carga</string>
+  <string name="backup_and_publish">Traducción De Carga</string>
   <string name="upload_wizard_intro">Vas a subir su traducción.</string>
   <string name="label_continue">Continuar</string>
   <string name="upload_wizard_overview">Subir Revisión</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Elegir un texto de origen en la ficha de la izquierda para empezar</string>
   <string name="return_to_important_terms">Regreso a términos importantes</string>
   <string name="no_translation_notes">No hay notas de traducción</string>
-  <string name="label_important_terms">Términos Importantes</string>
+  <string name="key_terms">Términos Importantes</string>
   <string name="translation_check_notice">Ahora vamos a realizar algunas verificaciones para asegurar que su traducción está lista.</string>
   <string name="translation_complete">La traducción es completa</string>
   <string name="preparing_upload">Preparación del proyecto para la carga</string>

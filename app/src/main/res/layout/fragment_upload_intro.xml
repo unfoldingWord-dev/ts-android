@@ -18,7 +18,7 @@
             android:padding="5dp">
 
             <TextView
-                android:text="@string/title_activity_upload_wizard"
+                android:text="@string/backup_and_publish"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="@dimen/h3"

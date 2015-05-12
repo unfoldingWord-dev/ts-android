@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">不正な形式の翻訳アーカイブ</string>
   <string name="translation_import_failed">翻訳のインポートに失敗しました</string>
   <string name="internet_not_available">アクティブなインターネット接続がありません。</string>
-  <string name="title_activity_upload_wizard">翻訳のアップロード</string>
+  <string name="backup_and_publish">翻訳のアップロード</string>
   <string name="upload_wizard_intro">あなたの翻訳をアップロードしようとしています。</string>
   <string name="label_continue">続行</string>
   <string name="upload_wizard_overview">レビューをアップロードします。</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">始めるために、左のタブからいくつかのソーステキストを選択してください</string>
   <string name="return_to_important_terms">重要な用語に戻る</string>
   <string name="no_translation_notes">全く翻訳ノートはありません</string>
-  <string name="label_important_terms">重要な用語</string>
+  <string name="key_terms">重要な用語</string>
   <string name="translation_check_notice">私たちは今、あなたの翻訳が準備ができていることを確認するために、いくつかのチェックを実行します。</string>
   <string name="translation_complete">翻訳が完了しました</string>
   <string name="preparing_upload">アップロードのためのプロジェクトの準備</string>

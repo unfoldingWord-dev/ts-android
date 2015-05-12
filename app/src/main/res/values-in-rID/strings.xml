@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Kecacatan terjemahan Arsip</string>
   <string name="translation_import_failed">Gagal untuk mengimpor terjemahan</string>
   <string name="internet_not_available">Anda tidak memiliki sambungan internet aktif.</string>
-  <string name="title_activity_upload_wizard">Terjemahan Upload</string>
+  <string name="backup_and_publish">Terjemahan Upload</string>
   <string name="upload_wizard_intro">Anda akan meng-upload terjemahan Anda.</string>
   <string name="label_continue">Lanjutkan</string>
   <string name="upload_wizard_overview">Meng-upload Review</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Pilih beberapa teks sumber dari tab kiri untuk memulai</string>
   <string name="return_to_important_terms">Kembali Syarat Penting</string>
   <string name="no_translation_notes">Tidak ada catatan terjemahan</string>
-  <string name="label_important_terms">Syarat penting</string>
+  <string name="key_terms">Syarat penting</string>
   <string name="translation_check_notice">Sekarang kita akan melakukan beberapa pemeriksaan untuk memastikan terjemahan Anda siap.</string>
   <string name="translation_complete">Terjemahan selesai</string>
   <string name="preparing_upload">Mempersiapkan proyek untuk meng-upload</string>

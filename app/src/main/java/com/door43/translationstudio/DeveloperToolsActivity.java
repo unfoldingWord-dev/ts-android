@@ -206,7 +206,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                 dialog.setIndeterminate(true);
                 dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 dialog.setMax(projects.length);
-                dialog.setMessage(getResources().getString(R.string.exporting_source));
+                dialog.setMessage(getResources().getString(R.string.exporting));
 
                 // TODO: this should be placed inside of a task instead.
                 final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {

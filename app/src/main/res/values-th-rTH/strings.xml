@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">แปลมีถาวร</string>
   <string name="translation_import_failed">ล้มเหลวในการนำเข้าการแปล</string>
   <string name="internet_not_available">คุณไม่ได้เชื่อมต่ออินเทอร์เน็ตอยู่</string>
-  <string name="title_activity_upload_wizard">อัปโหลดคำแปล</string>
+  <string name="backup_and_publish">อัปโหลดคำแปล</string>
   <string name="upload_wizard_intro">คุณกำลังจะอัปโหลดการแปลของคุณ</string>
   <string name="label_continue">ดำเนินการต่อไป</string>
   <string name="upload_wizard_overview">ตรวจสอบการอัปโหลด</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">เลือกข้อความที่มาจากแท็บด้านซ้ายเพื่อเริ่มต้น</string>
   <string name="return_to_important_terms">ย้อนกลับไปยังข้อตกลงและเงื่อนไขที่สำคัญ</string>
   <string name="no_translation_notes">มีบันทึกการแปลไม่มี</string>
-  <string name="label_important_terms">ข้อกำหนดที่สำคัญ</string>
+  <string name="key_terms">ข้อกำหนดที่สำคัญ</string>
   <string name="translation_check_notice">ตอนนี้เราจะดำเนินการตรวจสอบเพื่อให้แน่ใจว่าไม่กี่แปลของคุณพร้อม</string>
   <string name="translation_complete">แปลเสร็จสมบูรณ์</string>
   <string name="preparing_upload">โครงการเตรียมความพร้อมสำหรับการอัปโหลด</string>

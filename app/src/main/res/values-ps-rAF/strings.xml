@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">malformed آرشيف د ژباړې خدمتونه</string>
   <string name="translation_import_failed">قصو ور كړلو وارد کړي د ژباړې </string>
   <string name="internet_not_available">نه لري چې يوه فعاله انټرنېټ څخه دي.</string>
-  <string name="title_activity_upload_wizard">د ژباړې ورلېښي </string>
+  <string name="backup_and_publish">د ژباړې ورلېښي </string>
   <string name="upload_wizard_intro">چې تاسو ته ستاسو د ژباړې كړئ.</string>
   <string name="label_continue">دوام </string>
   <string name="upload_wizard_overview">ورلېښئ کتنه وکړي</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">يو شمېر غوره سرچينې له متن د ټکۍ ته پيل شوې ده</string>
   <string name="return_to_important_terms">په يوه مهمه برخه ده</string>
   <string name="no_translation_notes">نه شته، چې د ژباړې نوټونه دي</string>
-  <string name="label_important_terms">مهم شرايط</string>
+  <string name="key_terms">مهم شرايط</string>
   <string name="translation_check_notice">اوس موږ به يو څو چکونه ترسره شي ستاسو د ژباړې خدمتونه چمتو دی. </string>
   <string name="translation_complete">د ژباړې بشپړ شوی دی</string>
   <string name="preparing_upload">د تيارولو لپاره د پروژې ورلېښې </string>

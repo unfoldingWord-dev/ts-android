@@ -129,7 +129,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                mProgressDialog.setMessage(getResources().getString(R.string.exporting_project));
+                mProgressDialog.setMessage(getResources().getString(R.string.exporting));
                 mProgressDialog.show();
                 new ThreadableUI(SharingActivity.this) {
 

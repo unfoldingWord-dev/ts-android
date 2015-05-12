@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Onjuiste vertaling archief</string>
   <string name="translation_import_failed">Mislukt het importeren van de vertaling</string>
   <string name="internet_not_available">U niet over een actieve internetverbinding.</string>
-  <string name="title_activity_upload_wizard">Vertaling Uploaden</string>
+  <string name="backup_and_publish">Vertaling Uploaden</string>
   <string name="upload_wizard_intro">U staat op het punt om uw vertaling te uploaden.</string>
   <string name="label_continue">Doorgaan</string>
   <string name="upload_wizard_overview">Upload Review</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Kies een aantal brontekst van het linker tabblad aan de slag</string>
   <string name="return_to_important_terms">Keer terug naar Belangrijke Voorwaarden</string>
   <string name="no_translation_notes">Er zijn geen vertaling notities</string>
-  <string name="label_important_terms">Belangrijke voorwaarden</string>
+  <string name="key_terms">Belangrijke voorwaarden</string>
   <string name="translation_check_notice">We zullen nu het uitvoeren van een paar controles om ervoor te zorgen uw vertaling is klaar.</string>
   <string name="translation_complete">Vertaling is voltooid</string>
   <string name="preparing_upload">De voorbereiding van het project voor het uploaden</string>

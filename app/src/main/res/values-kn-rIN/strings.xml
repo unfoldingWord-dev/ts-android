@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">ವಿರೂಪಗೊಳಿಸಿದ ಅನುವಾದ ಆರ್ಕೈವ್</string>
   <string name="translation_import_failed">ಅನುವಾದ ಆಮದು ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</string>
   <string name="internet_not_available">ನೀವು ಸಕ್ರಿಯ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಹೊಂದಿಲ್ಲ.</string>
-  <string name="title_activity_upload_wizard">ಅನುವಾದ ಅಪ್ಲೋಡ್</string>
+  <string name="backup_and_publish">ಅನುವಾದ ಅಪ್ಲೋಡ್</string>
   <string name="upload_wizard_intro">ನಿಮ್ಮ ಅನುವಾದ ಅಪ್ಲೋಡ್ ತಿಳಿದಿರುವಿರಿ.</string>
   <string name="label_continue">ಮುಂದುವರಿಸಿ</string>
   <string name="upload_wizard_overview">ಅಪ್ಲೋಡ್ ರಿವ್ಯೂ</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">ಎಡ ಟ್ಯಾಬ್ ಕೆಲವು ಮೂಲ ಪಠ್ಯ ಆಯ್ಕೆ ಪ್ರಾರಂಭಿಸಲು</string>
   <string name="return_to_important_terms">ಪ್ರಮುಖ ನಿಯಮಗಳ ಹಿಂತಿರುಗಿ</string>
   <string name="no_translation_notes">ಯಾವುದೇ ಅನುವಾದ ಟಿಪ್ಪಣಿಗಳು ಇವೆ</string>
-  <string name="label_important_terms">ಪ್ರಮುಖ ನಿಯಮಗಳ</string>
+  <string name="key_terms">ಪ್ರಮುಖ ನಿಯಮಗಳ</string>
   <string name="translation_check_notice">ನಾವು ಈಗ ನಿಮ್ಮ ಅನುವಾದ ಸಿದ್ಧವಾಗಿದೆ ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಲು ಕೆಲವು ಚೆಕ್ ನಿರ್ವಹಿಸುತ್ತವೆ.</string>
   <string name="translation_complete">ಅನುವಾದ ಪೂರ್ಣಗೊಂಡ</string>
   <string name="preparing_upload">ಅಪ್ಲೋಡ್ ಯೋಜನೆಯ ಸಿದ್ಧತೆ</string>

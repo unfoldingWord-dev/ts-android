@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">ကြဲလြဲသည့္ ဘာသာျပန္ျခင္း ေမာ္ကြန္းတိုက္</string>
   <string name="translation_import_failed">ဘာသာျပန္ျခင္းကို တင္သြင္းရန္ မေအာင္ျမင္ပါ</string>
   <string name="internet_not_available">သင့္တြင္ ဖြင့္ထားသည့္ အင္တာနက္ မရွိပါ။</string>
-  <string name="title_activity_upload_wizard">ဘာသာျပန္ျခင္း တင္သည္</string>
+  <string name="backup_and_publish">ဘာသာျပန္ျခင္း တင္သည္</string>
   <string name="upload_wizard_intro">သင္၏ ဘာသာျပန္ဆိုမူကို သင္က အပ္လုပ္တင္ေတာ့မည္။</string>
   <string name="label_continue">ဆက္ပါ</string>
   <string name="upload_wizard_overview">ျပန္ၾကည့္ပါကို တင္ပါ</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">စတင္ရန္ ဘယ္ဘက္အျပားမွ ရင္းျမစ္စာသားအခ်ိဳ႔ကို ေရြးပါ</string>
   <string name="return_to_important_terms">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ားသို႔ ျပန္သြားပါ</string>
   <string name="no_translation_notes">ဘာသာျပန္ဆိုမူ မွတ္စုမ်ားမရွိပါ</string>
-  <string name="label_important_terms">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ား</string>
+  <string name="key_terms">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ား</string>
   <string name="translation_check_notice">သင့္ဘာသာျပန္ဆိုမူက အဆင့္သင့္ျဖစ္တာေသခ်ာေစရန္ စစ္ေဆးမူ ကၽြႏု္ပ္တို႔က အနည္းငယ္ျပဳလုပ္မည္။</string>
   <string name="translation_complete">ဘာသာျပန္ဆိုမူ ျပီးဆံုးျပီ</string>
   <string name="preparing_upload">ပေရာဂ်က္အား အပ္လုပ္တင္ရန္ ျပင္ဆင္ေနသည္</string>

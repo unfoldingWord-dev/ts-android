@@ -4,20 +4,20 @@
     <!-- Section heading for general settings -->
     <string name="pref_header_general">General</string>
     <!-- Keep a record of the last page (frame) that was opened when the user closes the app -->
-    <string name="pref_title_remember_position">Remember last page</string>
+    <string name="pref_title_remember_position">Remember my place</string>
     <!-- description of remember last page settings entry -->
     <string name="pref_description_remember_position">Display the last viewed page when starting the app</string>
     <!-- Highlight key terms in the source text -->
     <string name="pref_title_highlight_key_terms">Highlight key terms</string>
     <!-- Description of highlight key terms settings menu entry -->
-    <string name="pref_description_highlight_key_terms">Display key terms as clickable links in the source text</string>
+    <string name="pref_description_highlight_key_terms">Make key terms clickable in the source text</string>
     <!-- Title for the typefaced used in the app -->
-    <string name="pref_title_translation_typeface">Translation Typeface</string>
+    <string name="pref_title_translation_typeface">Font</string>
     <string-array name="pref_translation_typeface_titles" translatable="false">
         <item>Gentium Plus</item>
     </string-array>
     <!-- The font size of the translation typeface -->
-    <string name="pref_title_typeface_size">Translation Typeface Size</string>
+    <string name="pref_title_typeface_size">Font Size</string>
     <string-array name="pref_typeface_size_titles">
         <item>small</item>
         <item>normal</item>
@@ -49,7 +49,7 @@
     <string name="pref_title_media_server">Media Server</string>
 
     <!-- Section heading for Sharing settings -->
-    <string name="pref_header_sharing">Sharing</string>
+    <string name="pref_header_sharing" translatable="false">@string/title_activity_sharing</string>
     <!-- The format to which projects will be exported from the app -->
     <string name="pref_title_export_format">Export Format</string>
     <string-array name="pref_export_format_titles"  translatable="false">

@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Malformado tradução arquivo</string>
   <string name="translation_import_failed">Falha ao importar a tradução</string>
   <string name="internet_not_available">Você não tem uma conexão ativa com a internet.</string>
-  <string name="title_activity_upload_wizard">Tradução Upload</string>
+  <string name="backup_and_publish">Tradução Upload</string>
   <string name="upload_wizard_intro">Você está prestes a fazer upload de sua tradução.</string>
   <string name="label_continue">Continuar</string>
   <string name="upload_wizard_overview">Upload De Revisão</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Escolha algum texto de origem a partir da guia esquerda para começar</string>
   <string name="return_to_important_terms">Retornar ao Termos importantes</string>
   <string name="no_translation_notes">Não há notas de tradução</string>
-  <string name="label_important_terms">Termos importantes</string>
+  <string name="key_terms">Termos importantes</string>
   <string name="translation_check_notice">Vamos agora executar algumas verificações para garantir a sua tradução está pronto.</string>
   <string name="translation_complete">A tradução está completa</string>
   <string name="preparing_upload">Preparando o projeto para fazer o upload</string>

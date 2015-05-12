@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">తప్పుడు అనువాద ఆర్కైవ్</string>
   <string name="translation_import_failed">అనువాదం దిగుమతి విఫలమైంది</string>
   <string name="internet_not_available">మీరు ఆక్టివ్ ఇంటర్నెట్ కనెక్షన్ లేదు.</string>
-  <string name="title_activity_upload_wizard">అనువాద చేర్చండి</string>
+  <string name="backup_and_publish">అనువాద చేర్చండి</string>
   <string name="upload_wizard_intro">మీరు మీ అనువాదం అప్లోడ్ చేయబోతున్నారు.</string>
   <string name="label_continue">కొనసాగించు</string>
   <string name="upload_wizard_overview">అప్లోడ్ రివ్యూ</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">ఎడమ టాబ్ నుండి కొన్ని మూల వచనం ఎంచుకోండి ప్రారంభించడానికి</string>
   <string name="return_to_important_terms">ముఖ్యమైన నిబంధనల కు తిరిగి</string>
   <string name="no_translation_notes">ఏ అనువాద గమనికలు ఉన్నాయి</string>
-  <string name="label_important_terms">ముఖ్యమైన నిబంధనలు</string>
+  <string name="key_terms">ముఖ్యమైన నిబంధనలు</string>
   <string name="translation_check_notice">మేము ఇప్పుడు మీ అనువాదం సిద్ధంగా ఉంది నిర్ధారించడానికి కొన్ని తనిఖీలు చేస్తారు.</string>
   <string name="translation_complete">అనువాద పూర్తయింది</string>
   <string name="preparing_upload">అప్లోడ్ ప్రాజెక్ట్ సిద్ధమౌతోంది</string>

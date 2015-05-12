@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">मालफॉर्मॅटेड भाषांतर अर्काईव्ह</string>
   <string name="translation_import_failed">भाषांतर इंपोर्ट करणे असफल</string>
   <string name="internet_not_available">तुमच्याकडे सक्रीय इंटरनेट जोडणी नाही.</string>
-  <string name="title_activity_upload_wizard">भाषांतर अपलोड</string>
+  <string name="backup_and_publish">भाषांतर अपलोड</string>
   <string name="upload_wizard_intro">तुम्ही तुमचे भाषांतर अपलोड करणार आहात.</string>
   <string name="label_continue">सुरू ठेवा</string>
   <string name="upload_wizard_overview">अपलोड रिव्ह्यू</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">सुरुवात करण्यासाठी डावीकडील टॅबमधून काही स्त्रोत मजकूर निवडा</string>
   <string name="return_to_important_terms">महत्वाच्या संज्ञांकडे परता</string>
   <string name="no_translation_notes">कोणत्याही भाषांतर नोंदी नाहीत</string>
-  <string name="label_important_terms">महत्वाच्या संज्ञा</string>
+  <string name="key_terms">महत्वाच्या संज्ञा</string>
   <string name="translation_check_notice">तुमचे भाषांतर अपलोड करण्यासाठी तयार असल्याची खातरजमा करण्यासाठी आम्ही आता काही तपासण्या करू.</string>
   <string name="translation_complete">भाषांतर पूर्ण आहे.</string>
   <string name="preparing_upload">प्रोजेक्ट अपलोड करण्यासाठी तयार करत आहे</string>

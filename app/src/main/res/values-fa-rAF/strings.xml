@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">آرشیف ترجمه ناقص</string>
   <string name="translation_import_failed">تورید ترجمه ناموفق بود</string>
   <string name="internet_not_available">اتصال اینترنت شما فعال نیست.</string>
-  <string name="title_activity_upload_wizard">ترجمه بارگذاری شد</string>
+  <string name="backup_and_publish">ترجمه بارگذاری شد</string>
   <string name="upload_wizard_intro">شما در حال ارسال ترجمه خود هستید.</string>
   <string name="label_continue">ادامه دادن</string>
   <string name="upload_wizard_overview">بارگذاری مرور</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">متن منبع را از بند چپ برای شروع را انتخاب کنید</string>
   <string name="return_to_important_terms">بازگشت به لحاظ مهم</string>
   <string name="no_translation_notes">یادداشت ترجمه بدون وجود دارد</string>
-  <string name="label_important_terms">شرایط مهم</string>
+  <string name="key_terms">شرایط مهم</string>
   <string name="translation_check_notice">ما هم اکنون انجام چند چک برای اطمینان از ترجمه شما آماده است.</string>
   <string name="translation_complete">ترجمه کامل است</string>
   <string name="preparing_upload">پروژه آماده برای آپلود</string>

@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Некорректный перевод архива</string>
   <string name="translation_import_failed">Не удалось импортировать перевод</string>
   <string name="internet_not_available">У вас нет активного интернет-соединения.</string>
-  <string name="title_activity_upload_wizard">Перевод Загрузить</string>
+  <string name="backup_and_publish">Перевод Загрузить</string>
   <string name="upload_wizard_intro">Вы собираетесь загрузить ваш перевод.</string>
   <string name="label_continue">Продолжить</string>
   <string name="upload_wizard_overview">Загрузить Обзор</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Выберем некоторый исходный текст из левой вкладки, чтобы начать</string>
   <string name="return_to_important_terms">Вернуться в Важные Правила</string>
   <string name="no_translation_notes">Там нет заметок перевод</string>
-  <string name="label_important_terms">Важные термины</string>
+  <string name="key_terms">Важные термины</string>
   <string name="translation_check_notice">Теперь выполним несколько проверок, чтобы убедиться, что ваш перевод будет готов.</string>
   <string name="translation_complete">Перевод является полным</string>
   <string name="preparing_upload">Подготовка проекта для загрузки</string>

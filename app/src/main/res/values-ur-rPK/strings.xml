@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">ناقص ترجمہ کیجیے</string>
   <string name="translation_import_failed">ترجمہ درآمد کرنے میں ناکام رہے</string>
   <string name="internet_not_available">آپ کو ایک فعال انٹرنیٹ کنکشن نہیں ہے ۔</string>
-  <string name="title_activity_upload_wizard">ترجمہ اپ لوڈ کریں</string>
+  <string name="backup_and_publish">ترجمہ اپ لوڈ کریں</string>
   <string name="upload_wizard_intro">آپ کو آپ ترجمہ کو اپ لوڈ کرنے والے ہیں.</string>
   <string name="label_continue">جاری رکھیں</string>
   <string name="upload_wizard_overview">کا جائزہ لیں اپ لوڈ کریں</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">بائیں کے ٹیب سے بعض متون کا انتخاب کریں شروع کرنے کے لئے</string>
   <string name="return_to_important_terms">اہم شرائط پر واپس جائیں</string>
   <string name="no_translation_notes">کوئی ترجمہ نوٹ ہیں</string>
-  <string name="label_important_terms">اہم شرائط</string>
+  <string name="key_terms">اہم شرائط</string>
   <string name="translation_check_notice">اب ہم آپ کے ترجمہ کے لئے تیار ہے کو یقینی بنانے کے لئے چند چیک انجام دے گا.</string>
   <string name="translation_complete">ترجمہ مکمل ہو گیا ہے</string>
   <string name="preparing_upload">اپ لوڈ کے لئے منصوبے تیار کر رہا ہے</string>

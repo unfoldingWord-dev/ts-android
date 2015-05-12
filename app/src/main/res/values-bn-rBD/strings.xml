@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">বিকৃত অনুবাদ আর্কাইভ</string>
   <string name="translation_import_failed">অনুবাদ আমদানি করতে ব্যর্থ</string>
   <string name="internet_not_available">আপনি একটি সক্রিয় ইন্টারনেট সংযোগ না.</string>
-  <string name="title_activity_upload_wizard">অনুবাদ আপলোড</string>
+  <string name="backup_and_publish">অনুবাদ আপলোড</string>
   <string name="upload_wizard_intro">আপনি আপনার অনুবাদ আপলোড করতে চলেছেন.</string>
   <string name="label_continue">চালিয়ে</string>
   <string name="upload_wizard_overview">আপলোড পর্যালোচনা</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">বাম ট্যাব থেকে কিছু সোর্স টেক্সট চয়ন করুন শুরু</string>
   <string name="return_to_important_terms">গুরুত্বপূর্ণ শর্তাবলী ফিরে যান</string>
   <string name="no_translation_notes">কোন অনুবাদ নোট আছে</string>
-  <string name="label_important_terms">গুরুত্বপূর্ণ শর্তাবলী</string>
+  <string name="key_terms">গুরুত্বপূর্ণ শর্তাবলী</string>
   <string name="translation_check_notice">আমরা এখন আপনার অনুবাদ প্রস্তুত নিশ্চিত করার জন্য একটি কয়েক চেক সঞ্চালন করা হবে.</string>
   <string name="translation_complete">অনুবাদ সম্পূর্ণ</string>
   <string name="preparing_upload">আপলোড করার জন্য প্রকল্প প্রস্তুতি</string>

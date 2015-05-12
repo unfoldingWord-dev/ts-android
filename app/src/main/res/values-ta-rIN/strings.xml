@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">தவறான மொழிபெயர்ப்பு காப்பகத்தை</string>
   <string name="translation_import_failed">மொழிபெயர்ப்பு இறக்குமதி செய்வதில் தோல்வி</string>
   <string name="internet_not_available">நீங்கள் ஒரு செயலில் இணைய இணைப்பு இல்லை.</string>
-  <string name="title_activity_upload_wizard">மொழிபெயர்ப்பு பதிவேற்றம்</string>
+  <string name="backup_and_publish">மொழிபெயர்ப்பு பதிவேற்றம்</string>
   <string name="upload_wizard_intro">நீங்கள் உங்கள் மொழிபெயர்ப்பு பதிவேற்ற உள்ளீர்கள்.</string>
   <string name="label_continue">தொடர்க</string>
   <string name="upload_wizard_overview">பதிவேற்றம் விமர்சனம்</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">இடது தாவலில் இருந்து சில மூல உரை தேர்வுசெய்க</string>
   <string name="return_to_important_terms">முக்கியமான விதிகள் திரும்ப</string>
   <string name="no_translation_notes">எந்த மொழிபெயர்ப்பு குறிப்புகள் உள்ளன</string>
-  <string name="label_important_terms">முக்கியமான விதிகள்</string>
+  <string name="key_terms">முக்கியமான விதிகள்</string>
   <string name="translation_check_notice">நாம் இப்போது உங்கள் மொழிபெயர்ப்பு தயாராக உள்ளது என்பதை உறுதி செய்ய ஒரு சில காசோலைகளை செய்ய வேண்டும்.</string>
   <string name="translation_complete">மொழிபெயர்ப்பு முழுமையான ஆகிறது</string>
   <string name="preparing_upload">பதிவேற்றம் செய்ய, திட்ட தயாராகிறது</string>

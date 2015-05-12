@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">أرشيف الترجمة تالف</string>
   <string name="translation_import_failed">فشل في استيراد الترجمة</string>
   <string name="internet_not_available">لم يكن لديك اتصال إنترنت نشط.</string>
-  <string name="title_activity_upload_wizard">تحميل الترجمة</string>
+  <string name="backup_and_publish">تحميل الترجمة</string>
   <string name="upload_wizard_intro">أنت على وشك تحميل الترجمة.</string>
   <string name="label_continue">استمر</string>
   <string name="upload_wizard_overview">تحميل مراجعة</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">اختيار بعض النص المصدر من علامة التبويب الأيسر للبدء</string>
   <string name="return_to_important_terms">العودة إلى شروط هامة</string>
   <string name="no_translation_notes">لا توجد ملاحظات الترجمة</string>
-  <string name="label_important_terms">شروط هامة</string>
+  <string name="key_terms">شروط هامة</string>
   <string name="translation_check_notice">ونحن الآن في إجراء بعض الفحوصات للتأكد من ترجمتك جاهزة.</string>
   <string name="translation_complete">ترجمة كاملة</string>
   <string name="preparing_upload">إعداد مشروع للتحميل</string>

@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">La malformation de la traduction de l\'archive</string>
   <string name="translation_import_failed">Échec de l\'importation de la traduction</string>
   <string name="internet_not_available">Vous ne disposez pas d\'une connexion internet active.</string>
-  <string name="title_activity_upload_wizard">Traduction De Téléchargement</string>
+  <string name="backup_and_publish">Traduction De Téléchargement</string>
   <string name="upload_wizard_intro">Vous êtes sur le point de télécharger votre traduction.</string>
   <string name="label_continue">Continuer</string>
   <string name="upload_wizard_overview">Télécharger Examen</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Choisissez un texte source à partir de l\'onglet de gauche pour commencer</string>
   <string name="return_to_important_terms">Retour à Termes importants</string>
   <string name="no_translation_notes">Il n\'y a pas de notes de traduction</string>
-  <string name="label_important_terms">Termes importants</string>
+  <string name="key_terms">Termes importants</string>
   <string name="translation_check_notice">Nous allons maintenant effectuer quelques vérifications pour se assurer votre traduction est prêt.</string>
   <string name="translation_complete">La traduction est complète</string>
   <string name="preparing_upload">La préparation du projet pour le téléchargement</string>

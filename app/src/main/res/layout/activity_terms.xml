@@ -22,7 +22,7 @@
         android:id="@+id/scrollView"
         android:layout_above="@+id/linearLayout"
         android:layout_below="@+id/examplePassageLinkText"
-        android:padding="20dp">
+        android:padding="5dp">
 
         <LinearLayout
             android:orientation="vertical"
@@ -37,20 +37,13 @@
                 android:textSize="@dimen/h5"
                 android:gravity="center" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/terms_additional"
-                android:textColor="@color/dark_gray"
-                android:textSize="@dimen/h5"
-                android:gravity="center" />
-
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:padding="20dp">
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
 
                 <Button
                     android:layout_width="fill_parent"

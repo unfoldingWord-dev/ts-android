@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">Sirang archive sa pagsasalin</string>
   <string name="translation_import_failed">Nabigong i-import ang pagsasalin</string>
   <string name="internet_not_available">Wala kang aktibong koneksyon sa internet.</string>
-  <string name="title_activity_upload_wizard">Mag-upload ng Pagsasalin</string>
+  <string name="backup_and_publish">Mag-upload ng Pagsasalin</string>
   <string name="upload_wizard_intro">Ikaw ay mag-upload ng iyong pagsasalin.</string>
   <string name="label_continue">Magpatuloy</string>
   <string name="upload_wizard_overview">Mag-upload ng Review</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">Pumili ng ilang pinagmulang teksto mula sa kaliwang tab upang makapagsimula</string>
   <string name="return_to_important_terms">Bumalik sa Mahalagang Mga Tuntunin</string>
   <string name="no_translation_notes">Walang mga tala sa pagsasalin</string>
-  <string name="label_important_terms">Mahalagang Mga Tuntunin</string>
+  <string name="key_terms">Mahalagang Mga Tuntunin</string>
   <string name="translation_check_notice">Susubukan naming magsagawa ngayon ng ilang mga pagsusuri upang matiyak na ang iyong pagsasalin ay handa na.</string>
   <string name="translation_complete">Ang pagsasalin ay kumpleto na</string>
   <string name="preparing_upload">Inihahanda ang mga proyekto para sa pag-upload</string>

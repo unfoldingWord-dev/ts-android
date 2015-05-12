@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">የትርጉም ማከማቻው አይሠራም</string>
   <string name="translation_import_failed">ትርጉሙን ለማስገባት አልቻለም</string>
   <string name="internet_not_available">የሚሠራ ኢንተርኔት ሊኖርዎት አይጠበቅም።</string>
-  <string name="title_activity_upload_wizard">የትርጉም ሥራዎን መጫን</string>
+  <string name="backup_and_publish">የትርጉም ሥራዎን መጫን</string>
   <string name="upload_wizard_intro">አሁን የተረጎሙትን ሊያስገቡ ተቃርበዋል።</string>
   <string name="label_continue">ቀጥል</string>
   <string name="upload_wizard_overview">የተከለሰውን ገጽ መጫን</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">ለመጀመሪ ከምንጩ ምንባብ ከግራ ጠርዝ ላይ ይምረጡ</string>
   <string name="return_to_important_terms">አስፈላጊ ወደሆነው ደንቦች መመለስ</string>
   <string name="no_translation_notes">ምንም ዓይነት የትርጉም ማስታወሻዎች የሉም።</string>
-  <string name="label_important_terms">አስፈላጊ ደንቦች</string>
+  <string name="key_terms">አስፈላጊ ደንቦች</string>
   <string name="translation_check_notice">የተረጎሙት ዝግጁ መሆኑን ለማረጋገጥ አሁን ትንሽ የፍተሻ ሥራዎችን እናከናውናለን።</string>
   <string name="translation_complete">ትርጉሙ አልቆአል።</string>
   <string name="preparing_upload">ፕሮጄክቱን ለማስገባት ማዘጋጀት</string>

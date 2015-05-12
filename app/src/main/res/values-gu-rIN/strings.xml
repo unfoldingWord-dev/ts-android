@@ -31,7 +31,7 @@
   <string name="malformed_translation_archive">દૂષિત અનુવાદ આર્કાઇવ</string>
   <string name="translation_import_failed">અનુવાદ આયાત કરવામાં નિષ્ફળ</string>
   <string name="internet_not_available">તમે સક્રિય ઇન્ટરનેટ કનેક્શન જરૂર નથી.</string>
-  <string name="title_activity_upload_wizard">અનુવાદ અપલોડ કરો</string>
+  <string name="backup_and_publish">અનુવાદ અપલોડ કરો</string>
   <string name="upload_wizard_intro">તમે તમારા અનુવાદ અપલોડ વિશે છે.</string>
   <string name="label_continue">ચાલુ રાખો</string>
   <string name="upload_wizard_overview">અપલોડ કરો સમીક્ષા</string>
@@ -84,7 +84,7 @@
   <string name="choose_frame_to_start">ડાબી ટેબમાંથી કેટલાક સ્ત્રોત લખાણ પસંદ પ્રારંભ કરવા માટે</string>
   <string name="return_to_important_terms">મહત્વનું શરતો પર પાછા</string>
   <string name="no_translation_notes">કોઈ અનુવાદ નોંધો ત્યાં</string>
-  <string name="label_important_terms">મહત્વની શરતો</string>
+  <string name="key_terms">મહત્વની શરતો</string>
   <string name="translation_check_notice">આપણે હવે તમારી અનુવાદ તૈયાર છે તેની ખાતરી કરવા માટે થોડા તપાસમાં કરવા આવશે.</string>
   <string name="translation_complete">અનુવાદ પૂર્ણ થયું છે</string>
   <string name="preparing_upload">અપલોડ માટે આ પ્રોજેક્ટ તૈયાર કરી રહ્યા</string>

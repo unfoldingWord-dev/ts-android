@@ -92,7 +92,7 @@
         </activity>
         <activity
             android:name=".uploadwizard.UploadWizardActivity"
-            android:label="@string/title_activity_upload_wizard"
+            android:label="@string/backup_and_publish"
             android:theme="@style/Theme.Titled" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
