@@ -409,8 +409,25 @@ public class Frame implements Model {
      * Check if the frame is currently being translated
      * @return
      */
+    @Override
     public boolean isTranslating() {
         return !getTranslation().getText().isEmpty();
+    }
+
+    /**
+     * Checks if the frame translation notes are being translated
+     * @return
+     */
+    @Override
+    public boolean isTranslatingNotes() {
+        File dir = new File(TranslationNote.getRepositoryPath(mChapter.getProject().getId(), mChapter.getProject().getSelectedTargetLanguage().getId()), mChapterId + "/" + getId());
+        String[] files = dir.list();
+        return files != null && files.length > 0;
+    }
+
+    @Override
+    public boolean isTranslatingNotesGlobal() {
+        return false;
     }
 
     @Override

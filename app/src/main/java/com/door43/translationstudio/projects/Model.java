@@ -42,10 +42,21 @@ public interface Model {
     boolean isTranslating();
 
     /**
-     * Check if there are any translations in progress for this model except for the currently selected language
+     * Checks if the translation notes are being translated for this currently seelcted language for this model
+     * @return
+     */
+    boolean isTranslatingNotes();
+
+    /**
+     * Check if there are any translations in progress for this model except for the currently selected target language
      * @return
      */
     boolean isTranslatingGlobal();
+
+    /**
+     * Checks if any trnalsation notes are being translated in this project for any except the currently selected target language
+     */
+    boolean isTranslatingNotesGlobal();
 
     /**
      * Returns the type of model this is

@@ -462,15 +462,43 @@ public class Chapter implements Model {
     }
 
     /**
+     * Checks if the chapter translation notes are being translated
+     * @param projectId
+     * @param languageId
+     * @param chapterId
+     * @return
+     */
+    public static boolean isTranslatingNotes(String projectId, String languageId, String chapterId) {
+        File dir = new File(TranslationNote.getRepositoryPath(projectId, languageId), chapterId);
+        String[] files = dir.list();
+        return files != null && files.length > 0;
+    }
+
+    /**
      * Check if the chapter is currently being translated
      * @return
      */
+    @Override
     public boolean isTranslating() {
         return isTranslating(mProject.getId(), mProject.getSelectedTargetLanguage().getId(), getId());
     }
 
+    /**
+     * Checks if the notes in this chapter are being translated
+     * @return
+     */
+    @Override
+    public boolean isTranslatingNotes() {
+        return isTranslatingNotes(mProject.getId(), mProject.getSelectedTargetLanguage().getId(), getId());
+    }
+
     @Override
     public boolean isTranslatingGlobal() {
+        return false;
+    }
+
+    @Override
+    public boolean isTranslatingNotesGlobal() {
         return false;
     }
 

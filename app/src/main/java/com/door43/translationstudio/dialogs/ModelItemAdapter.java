@@ -132,6 +132,7 @@ public class ModelItemAdapter extends BaseAdapter {
             holder.audioIcon = (ImageView)v.findViewById(R.id.audioIcon);
             holder.languagesIcon = (ImageView)v.findViewById(R.id.languagesIcon);
             holder.translationIcon = (ImageView)v.findViewById(R.id.translationIcon);
+            holder.translationNotesIcon = (ImageView)v.findViewById(R.id.translationNotesIcon);
             holder.iconGroup = (LinearLayout)v.findViewById(R.id.iconGroupLayout);
             holder.iconGroup.setVisibility(View.INVISIBLE);
             v.setTag(holder);
@@ -231,6 +232,7 @@ public class ModelItemAdapter extends BaseAdapter {
         }
 
         // icons
+        holder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
         holder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
         holder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
         holder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
@@ -256,6 +258,7 @@ public class ModelItemAdapter extends BaseAdapter {
             holder.statusThread.stop();
         }
         holder.statusThread = new ThreadableUI(mContext) {
+            public boolean isTranslatingNotes;
             private boolean isTranslating;
             private boolean isTranslatingGlobal;
             private boolean hasAudio;
@@ -268,7 +271,8 @@ public class ModelItemAdapter extends BaseAdapter {
             @Override
             public void run() {
                 isTranslating = staticModel.isTranslating();
-                isTranslatingGlobal = staticModel.isTranslatingGlobal();
+                isTranslatingNotes = staticModel.isTranslatingNotes();
+                isTranslatingGlobal = staticModel.isTranslatingGlobal() || staticModel.isTranslatingNotesGlobal();
                 hasAudio = false;
             }
 
@@ -278,12 +282,14 @@ public class ModelItemAdapter extends BaseAdapter {
                     if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_translating);
                     if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global);
                     if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio);
+                    if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes);
                 } else {
                     if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_translating_light);
                     if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global_light);
                     if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio_light);
+                    if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes_light);
                 }
-                if(isTranslating || isTranslatingGlobal || hasAudio) {
+                if(isTranslating || isTranslatingGlobal || hasAudio || isTranslatingNotes) {
                     staticHolder.iconGroup.setVisibility(View.VISIBLE);
                     AnimationUtilities.fadeIn(staticHolder.iconGroup, 100);
                 } else {
@@ -328,5 +334,6 @@ public class ModelItemAdapter extends BaseAdapter {
         public ThreadableUI statusThread;
         public Object fontTaskId;
         public boolean hasFont;
+        public ImageView translationNotesIcon;
     }
 }

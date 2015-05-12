@@ -48,7 +48,7 @@ public class TranslationNote {
      * @param languageId
      * @return
      */
-    public String getRepositoryPath(String projectId, String languageId) {
+    public static String getRepositoryPath(String projectId, String languageId) {
         return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + projectId + "-" + languageId + "-notes/";
     }
 

@@ -524,22 +524,52 @@ public class Project implements Model {
      * Checks if the project is being translated in the given language.
      * If no targetlanguage is selected this will always return false, but isTranslatingGlobal may still return true.
      * @param projectId the project to check
-     * @param languageId the language to check
+     * @param languageId the target language to check
      * @return
      */
     public static boolean isTranslating(String projectId, String languageId) {
-        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
-        String selectedTargetLanguage = settings.getString("selected_target_language_"+projectId, null);
+//        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
+//        String selectedTargetLanguage = settings.getString("selected_target_language_"+projectId, null);
 
-        if(selectedTargetLanguage != null) {
-            File dir = new File(Project.getRepositoryPath(projectId, languageId));
-            String[] files = dir.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return !s.equals(".git") && new File(file, s).isDirectory();
-                }
-            });
-            return files != null && files.length > 0;
+//        if(selectedTargetLanguage != null) {
+        File dir = new File(Project.getRepositoryPath(projectId, languageId));
+        String[] files = dir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return !s.equals(".git") && new File(file, s).isDirectory();
+            }
+        });
+        return files != null && files.length > 0;
+//        } else {
+//            return false;
+//        }
+    }
+
+    /**
+     * Checks if any translation notes are being translated in this project.
+     * @param projectId
+     * @param langaugeId
+     * @return
+     */
+    public static boolean isTranslatingNotes(String projectId, String langaugeId) {
+        File dir = new File(TranslationNote.getRepositoryPath(projectId, langaugeId));
+        String[] files = dir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return !s.equals(".git") && new File(file, s).isDirectory();
+            }
+        });
+        return files != null && files.length > 0;
+    }
+
+    /**
+     * Checks if the translation notes are being translated
+     * @return
+     */
+    @Override
+    public boolean isTranslatingNotes() {
+        if(hasSelectedTargetLanguage()) {
+            return isTranslatingNotes(getId(), getSelectedTargetLanguage().getId());
         } else {
             return false;
         }
@@ -550,6 +580,7 @@ public class Project implements Model {
      * If no target language is selected this will always return false, but isTranslatingGlobal may still return true.
      * @return
      */
+    @Override
     public boolean isTranslating() {
         if(hasSelectedTargetLanguage()) {
             return isTranslating(getId(), getSelectedTargetLanguage().getId());
@@ -578,13 +609,48 @@ public class Project implements Model {
      * Checks to see if this project is currently being translated in any language other than the currently selected one
      * @return
      */
+    @Override
     public boolean isTranslatingGlobal() {
         File dir = new File(Project.getProjectsPath());
         String[] files = dir.list(new FilenameFilter() {
             @Override
             public boolean accept(File file, String name) {
                 String[] pieces = name.split("-");
-                if(pieces.length == 3) {
+                // uw-[proj]-[lang]
+                if (pieces.length == 3) {
+                    // make sure the dir is not empty
+                    String[] contents = new File(file, name).list(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File file, String s) {
+                            return !s.equals(".git") && new File(file, s).isDirectory();
+                        }
+                    });
+                    if (contents != null && contents.length > 0) {
+                        return pieces[0].equals(GLOBAL_PROJECT_SLUG) && pieces[1].equals(getId()) && !pieces[2].equals(mSelectedTargetLanguageId);
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+        });
+        return files != null && files.length > 0;
+    }
+
+    /**
+     * Checks if the project translation notes are being translated in any language other than the currently selected one
+     * @return
+     */
+    @Override
+    public boolean isTranslatingNotesGlobal() {
+        File dir = new File(Project.getProjectsPath());
+        String[] files = dir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String name) {
+                String[] pieces = name.split("-");
+                // uw-[proj]-[lang]-notes
+                if(pieces.length == 4 && pieces[3].equals("notes")) {
                     // make sure the dir is not empty
                     String[] contents = new File(file, name).list(new FilenameFilter() {
                         @Override
@@ -609,6 +675,7 @@ public class Project implements Model {
      * Returns the currently selected source language
      * TODO: in some cases it would be nice not to have the language automatically selected. However, this would require some work to migrate all the code to support this.
      */
+    @Override
     public SourceLanguage getSelectedSourceLanguage() {
         SourceLanguage selectedLanguage = getSourceLanguage(mSelectedSourceLanguageId);
         if(selectedLanguage == null) {
@@ -762,7 +829,7 @@ public class Project implements Model {
     }
 
     /**
-     * Returns the absolute repository path for the given language
+     * Returns the absolute repository path for the given target language
      * @param projectId
      * @param languageId
      * @return

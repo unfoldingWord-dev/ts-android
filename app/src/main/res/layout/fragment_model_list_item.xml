@@ -129,6 +129,12 @@
             android:layout_height="wrap_content"
             android:id="@+id/translationIcon"
             android:background="@drawable/ic_project_status_translating_light" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/translationNotesIcon"
+            android:background="@drawable/ic_project_status_translating_notes_light" />
     </LinearLayout>
 
 </LinearLayout>

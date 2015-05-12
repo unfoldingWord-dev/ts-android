@@ -241,6 +241,30 @@ public class PseudoProject implements Model {
     }
 
     @Override
+    public boolean isTranslatingNotes() {
+        for(Model m:mChildren.values()) {
+            if(!m.isTranslatingNotes()) {
+                continue;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isTranslatingNotesGlobal() {
+        for(Model m:mChildren.values()) {
+            if(!m.isTranslatingNotesGlobal()) {
+                continue;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean isTranslatingGlobal() {
         for(Model m:mChildren.values()) {
             if(!m.isTranslatingGlobal()) {
