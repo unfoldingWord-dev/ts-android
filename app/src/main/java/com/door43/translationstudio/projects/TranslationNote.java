@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
 import com.door43.util.Security;
 
@@ -13,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -236,36 +238,71 @@ public class TranslationNote {
 
         /**
          * Saves the translation note
-         * TODO: we need to notify the project that changes need to be uploaded
          */
         public void save() {
-            if(mReferenceTranslation != null && !mReferenceTranslation.isSaved()) {
-                mReferenceTranslation.isSaved(true);
-                File file = new File(getReferencePath());
-                if(mReferenceTranslation.getText().isEmpty()) {
-                    file.delete();
-                } else {
-                    file.getParentFile().mkdirs();
-                    try {
-                        FileUtils.write(file, mReferenceTranslation.getText());
-                    } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Failed to save the translation note reference", e);
+            synchronized (this) {
+                if (mReferenceTranslation != null && !mReferenceTranslation.isSaved()) {
+                    mReferenceTranslation.isSaved(true);
+                    File file = new File(getReferencePath());
+                    if (mReferenceTranslation.getText().isEmpty()) {
+                        cleanDiretory(file);
+                    } else {
+                        file.getParentFile().mkdirs();
+                        try {
+                            FileUtils.write(file, mReferenceTranslation.getText());
+                        } catch (Exception e) {
+                            Logger.e(this.getClass().getName(), "Failed to save the translation note reference", e);
+                        }
+                    }
+                }
+                if (mDefinitionTranslation != null) {
+                    mDefinitionTranslation.isSaved(true);
+                    File file = new File(getDefinitionPath());
+                    if (mDefinitionTranslation.getText().isEmpty()) {
+                        cleanDiretory(file);
+                    } else {
+                        file.getParentFile().mkdirs();
+                        try {
+                            FileUtils.write(file, mDefinitionTranslation.getText());
+                        } catch (Exception e) {
+                            Logger.e(this.getClass().getName(), "Failed to save the translation note definition", e);
+                        }
                     }
                 }
             }
-            if(mDefinitionTranslation != null) {
-                mDefinitionTranslation.isSaved(true);
-                File file = new File(getDefinitionPath());
-                if(mDefinitionTranslation.getText().isEmpty()) {
-                    file.delete();
-                } else {
-                    file.getParentFile().mkdirs();
-                    try {
-                        FileUtils.write(file, mDefinitionTranslation.getText());
-                    } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Failed to save the translation note definition", e);
-                    }
+        }
+
+        /**
+         * Deletes a note file and removes the directory if there are no more files
+         * @param file
+         */
+        private void cleanDiretory(File file) {
+            file.delete();
+
+            // remove note directory
+            deleteEmptyDir(file.getParentFile());
+            // remove frame directory
+            deleteEmptyDir(file.getParentFile().getParentFile());
+            // remove chapter directory
+            deleteEmptyDir(file.getParentFile().getParentFile().getParentFile());
+            // remove project directory
+            deleteEmptyDir(file.getParentFile().getParentFile().getParentFile().getParentFile());
+        }
+
+        /**
+         * Deletes a directory if it is empty
+         * @param dir
+         */
+        private void deleteEmptyDir(File dir) {
+            String[] fileNames = dir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String filename) {
+                    return !filename.equals(".") && !filename.equals("..");
                 }
+            });
+            // remove frame directory
+            if(fileNames == null || fileNames.length == 0) {
+                FileUtilities.deleteRecursive(dir);
             }
         }
 
