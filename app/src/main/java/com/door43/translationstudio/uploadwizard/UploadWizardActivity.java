@@ -17,7 +17,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import java.util.ArrayList;
 
 
-public class UploadWizardActivity extends TranslatorBaseActivity implements IntroFragment.OnFragmentInteractionListener {
+public class UploadWizardActivity extends TranslatorBaseActivity implements OverviewFragment.OnFragmentInteractionListener {
     private ArrayList<WizardFragment> mFragments = new ArrayList<WizardFragment>();
     private int mCurrentFragmentIndex = -1;
     
@@ -26,9 +26,13 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload_wizard);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        
-        mFragments.add(new IntroFragment());
+
+        // TODO: choose project to backup/publish
+        mFragments.add(new OverviewFragment());
         mFragments.add(new ReviewFragment());
+        // TODO: questions
+        // TODO: contact information (instead of dialog)
+        // TODO: confirm
 
         // restore state
         if(savedInstanceState != null) {
@@ -36,6 +40,19 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
         }
 
         loadNextFragment();
+    }
+
+    private void loadPreviousFragment() {
+        if(mCurrentFragmentIndex > 0) {
+            // TODO: implement this
+//            mCurrentFragmentIndex--;
+//            if (mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
+//                getFragmentManager().beginTransaction().replace(R.id.upload_wizard_content, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
+//            } else {
+//                Logger.w(this.getClass().getName(), "invalid fragment index");
+//                finish();
+//            }
+        }
     }
 
     public void loadNextFragment() {
@@ -109,6 +126,11 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Intr
     @Override
     public void onCancel() {
         finish();
+    }
+
+    @Override
+    public void onPrevious() {
+        loadPreviousFragment();
     }
 
     @Override

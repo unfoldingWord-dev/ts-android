@@ -8,6 +8,12 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 public class WizardFragment extends TranslatorBaseFragment {
     private OnFragmentInteractionListener mListener;
 
+    public void onPrevious() {
+        if(mListener != null) {
+            mListener.onPrevious();
+        }
+    }
+
     public void onContinue() {
         if (mListener != null) {
             mListener.onContinue();
@@ -47,8 +53,9 @@ public class WizardFragment extends TranslatorBaseFragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        public void onContinue();
-        public void onCancel();
+        void onContinue();
+        void onCancel();
+        void onPrevious();
     }
 
 }

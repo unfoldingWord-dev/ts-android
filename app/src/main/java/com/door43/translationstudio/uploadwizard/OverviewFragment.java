@@ -15,7 +15,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
 
-public class IntroFragment extends WizardFragment {
+public class OverviewFragment extends WizardFragment {
 
 
     @Override

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context="com.door43.translationstudio.uploadwizard.IntroFragment">
+    tools:context="com.door43.translationstudio.uploadwizard.OverviewFragment">
 
     <LinearLayout
         android:orientation="vertical"

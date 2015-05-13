@@ -57,6 +57,7 @@
     <string name="backup_and_publish">Backup and Publish</string>
     <string name="upload_wizard_intro">You are about to upload your translation.</string>
     <string name="label_continue">Continue</string>
+    <string name="next">Next</string>
     <string name="upload_wizard_overview">Upload Review</string>
     <string name="label_project_details">Project details</string>
     <!-- Indicates how the project is being translated. e.g. Open Bible Stories is being translated from the English language into the Deutsch language -->
