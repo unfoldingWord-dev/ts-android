@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:background="@color/white"
     android:layout_height="match_parent"
-    tools:context="com.door43.translationstudio.uploadwizard.ReviewFragment">
+    tools:context="com.door43.translationstudio.uploadwizard.old.ReviewFragment">
 
     <TextView
         android:text="@string/upload_wizard_overview"

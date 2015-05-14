@@ -8,71 +8,52 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ContactFormDialog;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.TranslationManager;
+import com.door43.translationstudio.uploadwizard.steps.ContactInfoFragment;
+import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
+import com.door43.translationstudio.uploadwizard.steps.PreviewFragment;
+import com.door43.translationstudio.uploadwizard.steps.ProjectChooserFragment;
+import com.door43.translationstudio.uploadwizard.steps.ReviewFragment;
+import com.door43.translationstudio.uploadwizard.steps.VerifyFragment;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
-
-import java.util.ArrayList;
+import com.door43.util.wizard.WizardActivity;
 
 
-public class UploadWizardActivity extends TranslatorBaseActivity implements OverviewFragment.OnFragmentInteractionListener {
-    private ArrayList<WizardFragment> mFragments = new ArrayList<WizardFragment>();
-    private int mCurrentFragmentIndex = -1;
-    
+public class UploadWizardActivity extends WizardActivity {
+
+    private boolean mFinished = false;
+    private final static String STATE_FINISHED = "finished";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_upload_wizard);
+        setReplacementContainerViewId(R.id.upload_wizard_content);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // TODO: choose project to backup/publish
-        mFragments.add(new OverviewFragment());
-        mFragments.add(new ReviewFragment());
-        // TODO: questions
-        // TODO: contact information (instead of dialog)
-        // TODO: confirm
-
-        // restore state
         if(savedInstanceState != null) {
-            mCurrentFragmentIndex = savedInstanceState.getInt("frameIndex") - 1;
+            mFinished = savedInstanceState.getBoolean(STATE_FINISHED);
         }
 
-        loadNextFragment();
-    }
+        addStep(new OverviewFragment());
+        addStep(new ProjectChooserFragment());
+        addStep(new VerifyFragment());
+        addStep(new ReviewFragment());
+        addStep(new ContactInfoFragment());
+        addStep(new PreviewFragment());
 
-    private void loadPreviousFragment() {
-        if(mCurrentFragmentIndex > 0) {
-            // TODO: implement this
-//            mCurrentFragmentIndex--;
-//            if (mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
-//                getFragmentManager().beginTransaction().replace(R.id.upload_wizard_content, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
-//            } else {
-//                Logger.w(this.getClass().getName(), "invalid fragment index");
-//                finish();
-//            }
+        onNext();
+
+        if(mFinished) {
+            // TODO: attach to tasks
         }
     }
 
-    public void loadNextFragment() {
-        mCurrentFragmentIndex ++;
-        if(mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
-            getFragmentManager().beginTransaction().replace(R.id.upload_wizard_content, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
-        } else if(mCurrentFragmentIndex >= mFragments.size()) {
-            // we are done
-            startUpload();
-        } else {
-            Logger.w(this.getClass().getName(), "invalid fragment index");
-            finish();
-        }
-    }
-
-    /**
-     * Begins uploading the translation
-     */
-    public void startUpload() {
-        // get user info if publishing translation
+    @Override
+    protected void onFinish() {
+        mFinished = true;
+        // TODO: place all of this in a task
         if(AppContext.projectManager().getSelectedProject().translationIsReady() && ProfileManager.getProfile() == null) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
@@ -100,8 +81,9 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Over
      * Initiates the actual upload
      */
     private void upload() {
+        // TODO: place all of this in a task
         // prepare upload
-        app().showProgressDialog(R.string.preparing_upload);
+        AppContext.context().showProgressDialog(R.string.preparing_upload);
         AppContext.projectManager().getSelectedProject().commit(new Project.OnCommitComplete() {
             @Override
             public void success() {
@@ -117,25 +99,10 @@ public class UploadWizardActivity extends TranslatorBaseActivity implements Over
             }
         });
     }
-
-    @Override
-    public void onContinue() {
-        loadNextFragment();
-    }
-
-    @Override
-    public void onCancel() {
-        finish();
-    }
-
-    @Override
-    public void onPrevious() {
-        loadPreviousFragment();
-    }
-
+    
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putInt("frameIndex", mCurrentFragmentIndex);
+        outState.putBoolean(STATE_FINISHED, mFinished);
         super.onSaveInstanceState(outState);
     }
 }

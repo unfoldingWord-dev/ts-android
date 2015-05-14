@@ -1,4 +1,4 @@
-package com.door43.translationstudio.uploadwizard;
+package com.door43.translationstudio.uploadwizard.old;
 
 
 import android.app.AlertDialog;
@@ -17,6 +17,9 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.uploadwizard.UploadValidationAdapter;
+import com.door43.translationstudio.uploadwizard.UploadValidationItem;
+import com.door43.util.wizard.WizardFragment;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
@@ -68,14 +71,14 @@ public class ReviewFragment extends WizardFragment {
                     DialogInterface.OnClickListener ok = new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            onContinue();
+                            onNext();
                         }
                     };
                     builder.setTitle(R.string.dialog_validation_warnings).setMessage(R.string.validation_warnings)
                             .setPositiveButton(R.string.label_continue, ok)
                             .setNegativeButton(R.string.title_cancel, cancel).show();
                 } else {
-                    onContinue();
+                    onNext();
                 }
             }
         });

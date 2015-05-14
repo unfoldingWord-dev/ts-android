@@ -1,11 +1,12 @@
-package com.door43.translationstudio.uploadwizard;
+package com.door43.util.wizard;
 
 import android.app.Activity;
+import android.app.Fragment;
 
-import com.door43.translationstudio.util.TranslatorBaseFragment;
-
-
-public class WizardFragment extends TranslatorBaseFragment {
+/**
+ * This abstract class provides a simple mechanism for creating multiple steps within a wizard.
+ */
+public abstract class WizardFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     public void onPrevious() {
@@ -14,9 +15,9 @@ public class WizardFragment extends TranslatorBaseFragment {
         }
     }
 
-    public void onContinue() {
+    public void onNext() {
         if (mListener != null) {
-            mListener.onContinue();
+            mListener.onNext();
         }
     }
 
@@ -53,7 +54,7 @@ public class WizardFragment extends TranslatorBaseFragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        void onContinue();
+        void onNext();
         void onCancel();
         void onPrevious();
     }
