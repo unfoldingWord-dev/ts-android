@@ -291,7 +291,7 @@
     <string name="source_export_complete">Export complete</string>
     <string name="simulate_crash" translatable="false">Simulate crash</string>
     <string name="simulate_crash_description" translatable="false">Simulates the app encountering an unrecoverable error and crashing</string>
-    <string name="exit_confirmation">Exit translationStudio?</string>
+    <string name="exit_confirmation">Exit <xliff:g id="app_name">translationStudio</xliff:g>?</string>
     <string name="read_chapter_menu">Read chapter</string>
     <string name="preview_chapter_translation">Preview translation</string>
     <string name="toggle_blind_draft_mode">Toggle blind draft</string>
