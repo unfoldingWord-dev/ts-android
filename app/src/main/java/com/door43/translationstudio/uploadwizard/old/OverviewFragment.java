@@ -17,6 +17,7 @@ import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.util.wizard.WizardFragment;
 import com.door43.translationstudio.util.AppContext;
 
+@Deprecated
 public class OverviewFragment extends WizardFragment {
 
 
@@ -43,7 +44,7 @@ public class OverviewFragment extends WizardFragment {
                     onNext();
                 } else {
                     // just upload a.k.a. backup
-                    ((UploadWizardActivity)getActivity()).startUpload();
+//                    ((UploadWizardActivity)getActivity()).startUpload();
                 }
             }
         });

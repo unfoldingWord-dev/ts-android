@@ -29,12 +29,14 @@
             android:text="Open Bible Stories"
             android:clickable="true"
             android:textSize="@dimen/h2"
+            android:id="@+id/projectTitle"
             android:textColor="@color/white" />
 
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:gravity="center"
+            android:id="@+id/languageInfoLayout"
             android:layout_height="match_parent">
 
             <TextView

@@ -44,7 +44,7 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
     /**
      * Called when the user reaches the end of the wizard
      */
-    protected abstract void onFinish();
+    public abstract void onFinish();
 
     /**
      * Navigates to the next step if one exists
@@ -91,6 +91,16 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
                 finish();
             }
         }
+    }
+
+    /**
+     * Navigates to the next step if one exists after skipping the number of steps.
+     * @param numSteps The number of steps to be skipped. Positive numbers will skip forward. Negative numbers will skip backwards.
+     */
+    @Override
+    public void onSkip(int numSteps) {
+        mCurrentFragmentIndex += numSteps;
+        onNext();
     }
 
     @Override

@@ -21,6 +21,18 @@ public abstract class WizardFragment extends Fragment {
         }
     }
 
+    public void onSkip(int numSteps) {
+        if(mListener != null) {
+            mListener.onSkip(numSteps);
+        }
+    }
+
+    public void onFinish() {
+        if(mListener != null) {
+            mListener.onFinish();
+        }
+    }
+
     public void onCancel() {
         if (mListener != null) {
             mListener.onCancel();
@@ -57,6 +69,8 @@ public abstract class WizardFragment extends Fragment {
         void onNext();
         void onCancel();
         void onPrevious();
+        void onSkip(int numSteps);
+        void onFinish();
     }
 
 }

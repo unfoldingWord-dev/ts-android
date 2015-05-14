@@ -3,10 +3,13 @@ package com.door43.translationstudio.uploadwizard;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ContactFormDialog;
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.uploadwizard.steps.ContactInfoFragment;
 import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
@@ -17,6 +20,7 @@ import com.door43.translationstudio.uploadwizard.steps.VerifyFragment;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.Logger;
 import com.door43.util.wizard.WizardActivity;
 
 
@@ -24,6 +28,10 @@ public class UploadWizardActivity extends WizardActivity {
 
     private boolean mFinished = false;
     private final static String STATE_FINISHED = "finished";
+    // project to upload
+    private static Project mProject;
+    private static SourceLanguage mSource;
+    private static Language mTarget;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +42,11 @@ public class UploadWizardActivity extends WizardActivity {
 
         if(savedInstanceState != null) {
             mFinished = savedInstanceState.getBoolean(STATE_FINISHED);
+        } else {
+            // initialize things for the upload wizard
+            mProject = null;
+            mSource = null;
+            mTarget = null;
         }
 
         addStep(new OverviewFragment());
@@ -50,8 +63,66 @@ public class UploadWizardActivity extends WizardActivity {
         }
     }
 
+    /**
+     * Sets the translation that will be uploaded
+     * @param project
+     * @param source
+     * @param target
+     */
+    public void setTranslationToUpload(Project project, SourceLanguage source, Language target) {
+        mProject = project;
+        mSource = source;
+        mTarget = target;
+    }
+
+    /**
+     * Returns the source language of the translation that will be uploaded
+     * @return
+     */
+    public SourceLanguage getTranslationSource() {
+        return mSource;
+    }
+
+    /**
+     * Returns the target language for the translation that will be uploaded
+     * @return
+     */
+    public Language getTranslationTarget() {
+        return mTarget;
+    }
+
+    /**
+     * Returns the project that will be uploaded
+     * @return will return null if no project is selected
+     */
+    public Project getTranslationProject() {
+        if(mProject == null) {
+            mSource = null;
+            mTarget = null;
+            mProject = AppContext.projectManager().getSelectedProject();
+            if(mProject != null && mProject.isTranslatingGlobal()) {
+                mSource = mProject.getSelectedSourceLanguage();
+                if(mProject.isTranslating()) {
+                    mTarget = mProject.getSelectedTargetLanguage();
+                } else {
+                    // get the first available translation from this project
+                    Language[] targets = mProject.getActiveTargetLanguages();
+                    if(targets.length > 0) {
+                        mTarget = targets[0];
+                    } else {
+                        // this should never happen
+                        Logger.e(null, "expecting an active target language but found none.");
+                    }
+                }
+            } else {
+                mProject = null;
+            }
+        }
+        return mProject;
+    }
+
     @Override
-    protected void onFinish() {
+    public void onFinish() {
         mFinished = true;
         // TODO: place all of this in a task
         if(AppContext.projectManager().getSelectedProject().translationIsReady() && ProfileManager.getProfile() == null) {
@@ -99,7 +170,7 @@ public class UploadWizardActivity extends WizardActivity {
             }
         });
     }
-    
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(STATE_FINISHED, mFinished);

@@ -28,6 +28,7 @@ import java.util.ArrayList;
  * A simple {@link Fragment} subclass.
  *
  */
+@Deprecated
 public class ReviewFragment extends WizardFragment {
     private Button mContinueBtn;
     private ValidateUploadTask mValidator;
@@ -59,7 +60,7 @@ public class ReviewFragment extends WizardFragment {
             @Override
             public void onClick(View view) {
                 if(mHasErrors) {
-                    app().showMessageDialog(R.string.dialog_validation_errors, R.string.validation_errors);
+//                    app().showMessageDialog(R.string.dialog_validation_errors, R.string.validation_errors);
                 } else if(mHasWarnings) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     DialogInterface.OnClickListener cancel = new DialogInterface.OnClickListener() {
@@ -91,7 +92,7 @@ public class ReviewFragment extends WizardFragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 UploadValidationItem item = mAdapter.getItem(i);
                 if(!item.getDescription().isEmpty()) {
-                    app().showMessageDialog(item.getTitle(), item.getDescription());
+//                    app().showMessageDialog(item.getTitle(), item.getDescription());
                 }
             }
         });
