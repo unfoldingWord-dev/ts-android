@@ -1,0 +1,55 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:layout_height="match_parent"
+    tools:context="com.door43.translationstudio.uploadwizard.ReviewFragment">
+
+    <TextView
+        android:text="@string/upload_wizard_overview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/h3"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignParentTop="true"
+        android:id="@+id/validationName"
+        android:padding="5dp" />
+
+
+    <ListView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/validationListView"
+        android:layout_above="@+id/linearLayout"
+        android:layout_below="@+id/validationName" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentRight="false"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentLeft="false"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_cancel"
+            android:id="@+id/upload_wizard_cancel_btn"
+            android:layout_weight="1"
+            style="@style/Widget.Button.Secondary"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/next"
+            android:id="@+id/upload_wizard_continue_btn"
+            android:layout_weight="1"
+            style="@style/Widget.Button.Primary"/>
+    </LinearLayout>
+</RelativeLayout>

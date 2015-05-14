@@ -298,4 +298,7 @@
     <string name="indexing">Indexing</string>
     <string name="title_upload">Upload</string>
     <string name="preview_chapter_translation_draft">Preview draft</string>
+    <string name="choose_project_to_upload">Choose project to upload</string>
+    <string name="verify">Verify</string>
+    <string name="review">Review</string>
 </resources>

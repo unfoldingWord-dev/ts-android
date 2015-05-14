@@ -1,55 +1,96 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:background="@color/white"
-    android:layout_height="match_parent"
-    tools:context="com.door43.translationstudio.uploadwizard.ReviewFragment">
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <TextView
-        android:text="@string/upload_wizard_overview"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/h3"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="center_horizontal"
-        android:layout_alignParentTop="true"
-        android:id="@+id/validationName"
-        android:padding="5dp" />
+        android:padding="10dp"
+        android:gravity="center"
+        android:textColor="@color/dark_gray"
+        android:textSize="@dimen/h4"
+        android:text="@string/choose_project_to_upload"/>
 
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.Button.Primary"
+        android:id="@+id/chooseProjectButton"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:padding="10dp">
 
-    <ListView
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Open Bible Stories"
+            android:clickable="true"
+            android:textSize="@dimen/h2"
+            android:textColor="@color/white" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="English"
+                android:textColor="@color/white"
+                android:textSize="@dimen/h5"
+                android:id="@+id/sourceLanguageTextView" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_arrow_right_dark"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:id="@+id/imageView2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Afaraf"
+                android:textColor="@color/white"
+                android:textSize="@dimen/h5"
+                android:id="@+id/targetLanguageTextView" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <android.support.v7.widget.SwitchCompat
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/validationListView"
-        android:layout_above="@+id/linearLayout"
-        android:layout_below="@+id/validationName" />
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:text="@string/translation_complete"
+        android:id="@+id/publishTranslationSwitch" />
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_alignParentEnd="false"
-        android:layout_alignParentRight="false"
-        android:layout_alignParentStart="false"
-        android:layout_alignParentLeft="false"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/linearLayout">
+        android:layout_width="match_parent"
+        android:gravity="bottom"
+        android:layout_height="match_parent">
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/title_cancel"
-            android:id="@+id/upload_wizard_cancel_btn"
             android:layout_weight="1"
-            style="@style/Widget.Button.Secondary"/>
+            style="@style/Widget.Button.Secondary"
+            android:id="@+id/cancelButton" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            style="@style/Widget.Button.Primary"
             android:text="@string/next"
-            android:id="@+id/upload_wizard_continue_btn"
             android:layout_weight="1"
-            style="@style/Widget.Button.Primary"/>
+            android:id="@+id/nextButton" />
     </LinearLayout>
-</RelativeLayout>
+
+</LinearLayout>

@@ -41,7 +41,7 @@ public class ReviewFragment extends WizardFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        View rootView = inflater.inflate(R.layout.fragment_upload_overview, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_upload_overview_old, container, false);
 
         Button cancelBtn = (Button)rootView.findViewById(R.id.upload_wizard_cancel_btn);
         cancelBtn.setOnClickListener(new View.OnClickListener() {
