@@ -16,6 +16,7 @@ import com.door43.translationstudio.user.Profile;
 /**
  * Created by joel on 2/5/2015.
  */
+@Deprecated
 public class ContactFormDialog extends DialogFragment {
     private OnOkListener mListener;
 

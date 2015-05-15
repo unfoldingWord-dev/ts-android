@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.user.Profile;
+import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.wizard.WizardFragment;
 
 /**
@@ -31,8 +33,13 @@ public class ReviewFragment extends WizardFragment {
             @Override
             public void onClick(View v) {
                 // TODO: check if the user viewed all of the questions
-                // TODO: if the user has already provided contact info we should skip one.
-                onNext();
+                Profile profile = ProfileManager.getProfile();
+                if(profile == null) {
+                    onNext();
+                } else {
+                    // skip the contact form if already collected
+                    onSkip(1);
+                }
             }
         });
 

@@ -95,7 +95,7 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
     /**
      * Inserts the current step fragment into the layout
      */
-    private void loadStep() {
+    protected void loadStep() {
         if (mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
             getFragmentManager().beginTransaction().replace(mContainerViewId, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
         } else {

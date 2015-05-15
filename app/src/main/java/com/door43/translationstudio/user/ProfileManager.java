@@ -30,14 +30,16 @@ public class ProfileManager {
             File profileDir = new File(getRepositoryPath());
             if (profileDir.exists() && profileDir.isDirectory()) {
                 File contactFile = new File(profileDir, "contact.json");
-                try {
-                    JSONObject contactJson = new JSONObject(FileUtils.readFileToString(contactFile));
-                   mProfile = new Profile(contactJson.getString("name"), contactJson.getString("email"));
-                    if (contactJson.has("phone")) {
-                        mProfile.setPhone(contactJson.getString("phone"));
+                if(contactFile.exists()) {
+                    try {
+                        JSONObject contactJson = new JSONObject(FileUtils.readFileToString(contactFile));
+                        mProfile = new Profile(contactJson.getString("name"), contactJson.getString("email"));
+                        if (contactJson.has("phone")) {
+                            mProfile.setPhone(contactJson.getString("phone"));
+                        }
+                    } catch (Exception e) {
+                        Logger.e(ProfileManager.class.getName(), "failed to load the profile details", e);
                     }
-                } catch (Exception e) {
-                    Logger.e(ProfileManager.class.getName(), "failed to load the profile details", e);
                 }
             }
         }

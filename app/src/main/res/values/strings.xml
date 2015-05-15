@@ -301,4 +301,7 @@
     <string name="verify">Verify</string>
     <string name="review">Review</string>
     <string name="publish_translation">Publish translation</string>
+    <string name="notice">Notice</string>
+    <string name="complete_required_fields">Please complete all required fields</string>
+    <string name="required_field"><xliff:g id="marker">*</xliff:g> required</string>
 </resources>

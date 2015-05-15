@@ -2,7 +2,10 @@ package com.door43.translationstudio.uploadwizard;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ContactFormDialog;
@@ -57,6 +60,24 @@ public class UploadWizardActivity extends WizardActivity {
 
         if(mFinished) {
             // TODO: attach to tasks
+        }
+    }
+
+    @Override
+    protected void loadStep() {
+        closeKeyboard();
+        super.loadStep();
+    }
+
+    /**
+     * Closes the keyboard
+     */
+    public void closeKeyboard() {
+        if(getCurrentFocus() != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        } else {
+            this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
     }
 

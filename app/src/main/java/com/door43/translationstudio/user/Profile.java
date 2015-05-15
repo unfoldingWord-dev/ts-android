@@ -19,6 +19,18 @@ public class Profile {
     }
 
     /**
+     * Creates a new user profile
+     * @param name
+     * @param email
+     * @param phone
+     */
+    public Profile(String name, String email, String phone) {
+        mName = name;
+        mEmail = email;
+        mPhone = phone;
+    }
+
+    /**
      * Sets or updates the user's phone number
      * @param phone
      */

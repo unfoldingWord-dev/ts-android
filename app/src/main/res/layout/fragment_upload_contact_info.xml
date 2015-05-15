@@ -26,38 +26,62 @@
                 android:paddingBottom="5dp"
                 android:id="@+id/textView5" />
 
-            <EditText
+            <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Name"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:textColor="@color/dark_gray"
-                android:textSize="@dimen/h4"
-                android:background="@drawable/form_input"
-                android:id="@+id/nameEditText" />
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:paddingTop="10dp"
+                android:background="@drawable/border_top">
 
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Email"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:textColor="@color/dark_gray"
-                android:textSize="@dimen/h4"
-                android:background="@drawable/form_input"
-                android:id="@+id/emailEditText" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/gray"
+                    android:textSize="@dimen/h5"
+                    android:text="@string/required_field" />
 
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Phone"
-                android:textColor="@color/dark_gray"
-                android:textSize="@dimen/h4"
-                android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                android:background="@drawable/form_input"
-                android:id="@+id/phoneEditText" />
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Name"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="@dimen/h4"
+                    android:background="@drawable/form_input"
+                    android:id="@+id/nameEditText" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/gray"
+                    android:textSize="@dimen/h5"
+                    android:text="@string/required_field"/>
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Email"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="@dimen/h4"
+                    android:background="@drawable/form_input"
+                    android:id="@+id/emailEditText" />
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Phone"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="@dimen/h4"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@drawable/form_input"
+                    android:id="@+id/phoneEditText" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
 

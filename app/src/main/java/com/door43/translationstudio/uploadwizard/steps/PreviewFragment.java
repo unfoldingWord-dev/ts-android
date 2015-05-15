@@ -6,8 +6,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.user.Profile;
+import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.wizard.WizardFragment;
 
 /**
@@ -21,6 +24,9 @@ public class PreviewFragment extends WizardFragment {
         Button backBtn = (Button)v.findViewById(R.id.backButton);
         Button uploadBtn = (Button)v.findViewById(R.id.uploadButton);
         LinearLayout contactInfoBtn = (LinearLayout)v.findViewById(R.id.contactInfoButton);
+        TextView nameText = (TextView)v.findViewById(R.id.nameTextView);
+        TextView emailText = (TextView)v.findViewById(R.id.emailTextView);
+        TextView phoneText = (TextView)v.findViewById(R.id.phoneTextView);
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,7 +47,15 @@ public class PreviewFragment extends WizardFragment {
             }
         });
 
-        // TODO: populate the ui
+        Profile profile = ProfileManager.getProfile();
+        if(profile != null) {
+            nameText.setText(profile.getName());
+            emailText.setText(profile.getEmail());
+            phoneText.setText(profile.getPhone());
+        } else {
+            // the profile is missing (should never happen)
+            onPrevious();
+        }
         return v;
     }
 }
