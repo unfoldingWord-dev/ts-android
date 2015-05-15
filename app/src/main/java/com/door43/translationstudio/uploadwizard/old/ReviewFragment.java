@@ -17,8 +17,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.uploadwizard.UploadValidationAdapter;
-import com.door43.translationstudio.uploadwizard.UploadValidationItem;
+import com.door43.translationstudio.uploadwizard.steps.validate.UploadValidationAdapter;
+import com.door43.translationstudio.uploadwizard.steps.validate.UploadValidationItem;
 import com.door43.util.wizard.WizardFragment;
 import com.door43.translationstudio.util.AppContext;
 

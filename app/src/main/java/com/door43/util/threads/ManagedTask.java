@@ -269,7 +269,9 @@ public abstract class ManagedTask implements Runnable {
      * Useful for setting up progress bars
      * @return
      */
-    public abstract int maxProgress();
+    public int maxProgress() {
+        return 100;
+    }
 
     /**
      * Returns the thread on which this runnable is being executed

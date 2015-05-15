@@ -1,4 +1,4 @@
-package com.door43.translationstudio.uploadwizard;
+package com.door43.translationstudio.uploadwizard.steps.validate;
 
 /**
  * Created by joel on 10/24/2014.

@@ -1,117 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:background="@color/white"
     android:layout_height="match_parent">
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="@dimen/h4"
-        android:textColor="@color/dark_gray"
-        android:padding="5dp"
-        android:text="@string/upload_wizard_intro"
-        android:id="@+id/textView6" />
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:padding="5dp"
-        android:background="@drawable/border_top"
-        android:layout_height="wrap_content">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/h3"
-            android:textColor="@color/gray"
-            android:text="@string/title_projects"
-            android:id="@+id/textView7" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="5dp"
-            android:textColor="@color/dark_gray"
-            android:textSize="@dimen/h5"
-            android:text="Open Bible Stories"
-            android:id="@+id/textView9" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/h3"
-            android:textColor="@color/gray"
-            android:text="@string/title_activity_language_selector"
-            android:id="@+id/textView8" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:padding="5dp"
-            android:textColor="@color/dark_gray"
-            android:textSize="@dimen/h5"
-            android:text="Afaraf"
-            android:id="@+id/textViewd9" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/h3"
-            android:textColor="@color/gray"
-            android:text="Translator"
-            android:id="@+id/textView10" />
+        android:layout_height="match_parent"
+        android:id="@+id/scrollView2"
+        android:layout_above="@+id/linearLayout">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:clickable="true"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:layout_margin="5dp"
+                android:textSize="@dimen/h4"
                 android:textColor="@color/dark_gray"
-                android:background="@drawable/form_input"
-                android:textSize="@dimen/h5"
-                android:text="Jon Doe"
-                android:id="@+id/textVidfew9" />
+                android:padding="5dp"
+                android:text="@string/upload_wizard_intro"
+                android:id="@+id/textView6" />
 
-            <TextView
+            <LinearLayout
+                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_margin="5dp"
-                android:textColor="@color/dark_gray"
-                android:background="@drawable/form_input"
-                android:textSize="@dimen/h5"
-                android:text="jondoe@example.com"
-                android:id="@+id/textVidfew9d" />
+                android:padding="5dp"
+                android:background="@drawable/border_top"
+                android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:layout_margin="5dp"
-                android:textColor="@color/dark_gray"
-                android:background="@drawable/form_input"
-                android:textSize="@dimen/h5"
-                android:text="555-555-5555"
-                android:id="@+id/textVidfew49" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/h3"
+                    android:textColor="@color/gray"
+                    android:text="@string/title_projects"
+                    android:id="@+id/textView7" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="@dimen/h5"
+                    android:text="Open Bible Stories"
+                    android:id="@+id/textView9" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/h3"
+                    android:textColor="@color/gray"
+                    android:text="@string/title_activity_language_selector"
+                    android:id="@+id/textView8" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="5dp"
+                    android:textColor="@color/dark_gray"
+                    android:textSize="@dimen/h5"
+                    android:text="Afaraf"
+                    android:id="@+id/textViewd9" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/h3"
+                    android:textColor="@color/gray"
+                    android:text="Translator"
+                    android:id="@+id/textView10" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:clickable="true"
+                    android:id="@+id/contactInfoButton"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:textColor="@color/dark_gray"
+                        android:background="@drawable/form_input"
+                        android:textSize="@dimen/h5"
+                        android:text="Jon Doe"
+                        android:id="@+id/textVidfew9" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:textColor="@color/dark_gray"
+                        android:background="@drawable/form_input"
+                        android:textSize="@dimen/h5"
+                        android:text="jondoe@example.com"
+                        android:id="@+id/textVidfew9d" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:textColor="@color/dark_gray"
+                        android:background="@drawable/form_input"
+                        android:textSize="@dimen/h5"
+                        android:text="555-555-5555"
+                        android:id="@+id/textVidfew49" />
+                </LinearLayout>
+
+            </LinearLayout>
         </LinearLayout>
-
-    </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="bottom"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="false"
         android:layout_alignParentRight="false"
         android:layout_alignParentStart="false"
@@ -135,4 +151,5 @@
             android:layout_weight="1"
             style="@style/Widget.Button.Primary"/>
     </LinearLayout>
-</LinearLayout>
+
+</RelativeLayout>

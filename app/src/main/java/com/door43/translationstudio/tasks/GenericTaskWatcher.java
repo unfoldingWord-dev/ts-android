@@ -207,12 +207,16 @@ public class GenericTaskWatcher implements ManagedTask.OnFinishedListener, Manag
     }
 
     /**
-     * The task has been canceled
+     * The task dialog has been canceled
      * @param dialog
      */
     @Override
     public void onCancel(DialogInterface dialog) {
         ManagedTask task = TaskManager.getTask(mTaskId);
+        if(task != null) {
+            TaskManager.cancelTask(task);
+            TaskManager.clearTask(task);
+        }
         mOnCanceledListener.onCanceled(task);
     }
 

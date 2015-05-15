@@ -1,83 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
     android:background="@color/white"
     android:layout_height="match_parent">
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:gravity="center"
-        android:textColor="@color/dark_gray"
-        android:textSize="@dimen/h4"
-        android:text="@string/choose_project_to_upload"/>
-
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        style="@style/Widget.Button.Primary"
-        android:id="@+id/chooseProjectButton"
-        android:layout_marginBottom="10dp"
-        android:gravity="center"
-        android:padding="10dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Open Bible Stories"
-            android:clickable="true"
-            android:textSize="@dimen/h2"
-            android:id="@+id/projectTitle"
-            android:textColor="@color/white" />
+        android:id="@+id/scrollView3"
+        android:layout_above="@+id/linearLayout12"
+        android:layout_alignParentTop="true">
 
         <LinearLayout
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:gravity="center"
-            android:id="@+id/languageInfoLayout"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="false"
+            android:layout_alignParentTop="false">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="English"
-                android:textColor="@color/white"
-                android:textSize="@dimen/h5"
-                android:id="@+id/sourceLanguageTextView" />
+                android:padding="10dp"
+                android:gravity="center"
+                android:textColor="@color/dark_gray"
+                android:textSize="@dimen/h4"
+                android:text="@string/choose_project_to_upload"/>
 
-            <ImageView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_arrow_right_dark"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:id="@+id/imageView2" />
+                android:layout_margin="5dp"
+                android:clickable="true"
+                style="@style/Widget.Button.Primary"
+                android:id="@+id/chooseProjectButton"
+                android:layout_marginBottom="10dp"
+                android:gravity="center"
+                android:padding="10dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Open Bible Stories"
+                    android:clickable="false"
+                    android:textSize="@dimen/h2"
+                    android:id="@+id/projectTitle"
+                    android:textColor="@color/white" />
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:gravity="center"
+                    android:clickable="false"
+                    android:id="@+id/languageInfoLayout"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="English"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h5"
+                        android:id="@+id/sourceLanguageTextView" />
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ic_arrow_right_dark"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:id="@+id/imageView2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Afaraf"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/h5"
+                        android:id="@+id/targetLanguageTextView" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <CheckBox
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Afaraf"
-                android:textColor="@color/white"
-                android:textSize="@dimen/h5"
-                android:id="@+id/targetLanguageTextView" />
+                android:padding="20dp"
+                android:text="@string/publish_translation"
+                android:id="@+id/publishTranslationCheckBox"/>
+
         </LinearLayout>
-
-    </LinearLayout>
-
-    <android.support.v7.widget.SwitchCompat
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="20dp"
-        android:text="@string/translation_complete"
-        android:id="@+id/publishTranslationSwitch" />
+    </ScrollView>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:gravity="bottom"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout12">
 
         <Button
             android:layout_width="wrap_content"
@@ -96,4 +117,4 @@
             android:id="@+id/nextButton" />
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

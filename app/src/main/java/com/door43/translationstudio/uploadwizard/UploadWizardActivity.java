@@ -3,7 +3,6 @@ package com.door43.translationstudio.uploadwizard;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ContactFormDialog;
@@ -16,7 +15,7 @@ import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.PreviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.ProjectChooserFragment;
 import com.door43.translationstudio.uploadwizard.steps.ReviewFragment;
-import com.door43.translationstudio.uploadwizard.steps.VerifyFragment;
+import com.door43.translationstudio.uploadwizard.steps.validate.VerifyFragment;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
@@ -55,8 +54,6 @@ public class UploadWizardActivity extends WizardActivity {
         addStep(new ReviewFragment());
         addStep(new ContactInfoFragment());
         addStep(new PreviewFragment());
-
-        onNext();
 
         if(mFinished) {
             // TODO: attach to tasks
@@ -100,7 +97,7 @@ public class UploadWizardActivity extends WizardActivity {
             mSource = null;
             mTarget = null;
             mProject = AppContext.projectManager().getSelectedProject();
-            if(mProject != null && mProject.isTranslatingGlobal()) {
+            if(mProject != null && (mProject.isTranslatingGlobal() || mProject.isTranslating())) {
                 mSource = mProject.getSelectedSourceLanguage();
                 if(mProject.isTranslating()) {
                     mTarget = mProject.getSelectedTargetLanguage();

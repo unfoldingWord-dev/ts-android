@@ -1,11 +1,11 @@
 package com.door43.translationstudio.uploadwizard.steps;
 
 import android.os.Bundle;
-import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,17 +26,30 @@ public class OverviewFragment extends WizardFragment {
         TextView sourceTextView = (TextView)v.findViewById(R.id.sourceLanguageTextView);
         TextView targetTextView = (TextView)v.findViewById(R.id.targetLanguageTextView);
         LinearLayout languageLayout = (LinearLayout)v.findViewById(R.id.languageInfoLayout);
-        SwitchCompat publishSwitch = (SwitchCompat)v.findViewById(R.id.publishTranslationSwitch);
+        CheckBox publishCheckBox = (CheckBox)v.findViewById(R.id.publishTranslationCheckBox);
+        LinearLayout chooseProjectBtn = (LinearLayout)v.findViewById(R.id.chooseProjectButton);
 
         final Project p = ((UploadWizardActivity)getActivity()).getTranslationProject();
 
         Button cancelBtn = (Button)v.findViewById(R.id.cancelButton);
         Button nextBtn = (Button)v.findViewById(R.id.nextButton);
 
+        publishCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: mark the project as ready for publication
+            }
+        });
         cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onCancel();
+            }
+        });
+        chooseProjectBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onNext();
             }
         });
         nextBtn.setOnClickListener(new View.OnClickListener() {
@@ -60,11 +73,11 @@ public class OverviewFragment extends WizardFragment {
             // TODO: we will want the user to be able to choose the source language and target language without them being the selected source and target.
             sourceTextView.setText(p.getSelectedSourceLanguage().getName());
             targetTextView.setText(p.getSelectedTargetLanguage().getName());
-            publishSwitch.setVisibility(View.VISIBLE);
+            publishCheckBox.setVisibility(View.VISIBLE);
             languageLayout.setVisibility(View.VISIBLE);
         } else {
             titleTextView.setText(R.string.choose_a_project);
-            publishSwitch.setVisibility(View.GONE);
+            publishCheckBox.setVisibility(View.GONE);
             languageLayout.setVisibility(View.GONE);
         }
 

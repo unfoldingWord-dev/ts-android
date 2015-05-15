@@ -1,4 +1,4 @@
-package com.door43.translationstudio.uploadwizard;
+package com.door43.translationstudio.uploadwizard.steps.validate;
 
 import android.content.Context;
 import android.view.LayoutInflater;

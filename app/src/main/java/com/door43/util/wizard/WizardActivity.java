@@ -11,7 +11,7 @@ import java.util.ArrayList;
  */
 public abstract class WizardActivity extends ActionBarActivity implements WizardFragment.OnFragmentInteractionListener {
     private ArrayList<WizardFragment> mFragments = new ArrayList<>();
-    private int mCurrentFragmentIndex = -1;
+    private int mCurrentFragmentIndex = 0;
     private int mContainerViewId = -1;
     private static final String STATE_INDEX = "fragment_index";
 
@@ -21,8 +21,14 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
 
         // restore state
         if(savedInstanceState != null) {
-            mCurrentFragmentIndex = savedInstanceState.getInt(STATE_INDEX) - 1;
+            mCurrentFragmentIndex = savedInstanceState.getInt(STATE_INDEX, -1);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadStep();
     }
 
     /**
@@ -55,14 +61,12 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
             throw new IllegalArgumentException(toString() + " must call setReplacementContainerViewId before navigating between steps");
         }
         mCurrentFragmentIndex ++;
-        if(mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
-            getFragmentManager().beginTransaction().replace(mContainerViewId, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
-        } else if(mCurrentFragmentIndex >= mFragments.size()) {
+        if(mCurrentFragmentIndex >= mFragments.size()) {
+            mCurrentFragmentIndex = mFragments.size() - 1;
             // we are done
             onFinish();
         } else {
-            Log.w("Step", "Invalid wizard fragment index: " + mCurrentFragmentIndex);
-            finish();
+            loadStep();
         }
     }
 
@@ -84,12 +88,19 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
         }
         if(mCurrentFragmentIndex > 0) {
             mCurrentFragmentIndex--;
-            if (mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
-                getFragmentManager().beginTransaction().replace(mContainerViewId, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
-            } else {
-                Log.w("Step", "Invalid wizard fragment index: " + mCurrentFragmentIndex);
-                finish();
-            }
+            loadStep();
+        }
+    }
+
+    /**
+     * Inserts the current step fragment into the layout
+     */
+    private void loadStep() {
+        if (mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
+            getFragmentManager().beginTransaction().replace(mContainerViewId, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
+        } else {
+            Log.w("Step", "Invalid wizard fragment index: " + mCurrentFragmentIndex);
+            finish();
         }
     }
 
@@ -99,6 +110,10 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
      */
     @Override
     public void onSkip(int numSteps) {
+        if(numSteps < 0) {
+            // onNext adds one so we need to offset it
+            numSteps -= 2;
+        }
         mCurrentFragmentIndex += numSteps;
         onNext();
     }

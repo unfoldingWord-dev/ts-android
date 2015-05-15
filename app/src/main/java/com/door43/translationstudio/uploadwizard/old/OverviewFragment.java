@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.util.wizard.WizardFragment;
 import com.door43.translationstudio.util.AppContext;
 

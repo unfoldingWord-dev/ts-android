@@ -133,7 +133,6 @@
     <string name="no_translation_notes">No notes</string>
     <string name="key_terms">Key Terms</string>
     <string name="translation_check_notice">We will now perform a few checks to ensure your translation is ready.</string>
-    <string name="translation_complete">Translation complete</string>
     <string name="preparing_upload">Preparing upload</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
     <string name="license">
@@ -301,4 +300,5 @@
     <string name="choose_project_to_upload">Choose project to upload</string>
     <string name="verify">Verify</string>
     <string name="review">Review</string>
+    <string name="publish_translation">Publish translation</string>
 </resources>
