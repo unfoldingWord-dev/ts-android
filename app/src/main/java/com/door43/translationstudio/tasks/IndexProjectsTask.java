@@ -6,13 +6,8 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 /**

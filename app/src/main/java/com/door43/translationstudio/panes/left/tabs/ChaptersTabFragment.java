@@ -14,14 +14,14 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
-import com.door43.translationstudio.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 /**
  * Created by joel on 8/29/2014.

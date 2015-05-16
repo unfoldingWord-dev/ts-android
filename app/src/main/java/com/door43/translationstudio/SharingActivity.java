@@ -21,7 +21,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ThreadableUI;
+import com.door43.util.tasks.ThreadableUI;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.TranslatorBaseActivity;

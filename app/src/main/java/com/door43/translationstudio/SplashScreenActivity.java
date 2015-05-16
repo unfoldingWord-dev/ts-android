@@ -19,8 +19,8 @@ import com.door43.translationstudio.tasks.LoadTermsTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 import java.io.File;
 import java.io.FilenameFilter;

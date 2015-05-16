@@ -12,8 +12,8 @@ import android.widget.EditText;
 import com.door43.translationstudio.tasks.ArchiveCrashReportTask;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 public class CrashReporterActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener {
     private Button mOkButton;

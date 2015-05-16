@@ -33,14 +33,12 @@ import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.events.OpenedChapterEvent;
 import com.door43.translationstudio.events.OpenedFrameEvent;
 import com.door43.translationstudio.events.OpenedProjectEvent;
-import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.translationstudio.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.translator.BlindDraftTranslatorFragment;
@@ -50,8 +48,8 @@ import com.door43.translationstudio.translator.TranslatorFragmentInterface;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.squareup.otto.Subscribe;
 
 public class MainActivity extends TranslatorBaseActivity implements TranslatorActivityInterface, GenericTaskWatcher.OnFinishedListener {

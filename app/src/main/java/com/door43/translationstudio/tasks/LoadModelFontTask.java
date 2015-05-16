@@ -5,9 +5,7 @@ import android.graphics.Typeface;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ManagedTask;
-
-import java.lang.reflect.Type;
+import com.door43.util.tasks.ManagedTask;
 
 /**
  * Created by joel on 4/30/2015.

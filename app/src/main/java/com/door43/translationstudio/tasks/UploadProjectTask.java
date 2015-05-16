@@ -12,7 +12,7 @@ import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;

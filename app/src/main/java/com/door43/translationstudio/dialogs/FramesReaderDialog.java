@@ -14,12 +14,12 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.translationstudio.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 /**
  * This class creates a dialog to display a list of frames

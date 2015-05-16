@@ -6,7 +6,7 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 /**
  * Created by joel on 4/28/2015.

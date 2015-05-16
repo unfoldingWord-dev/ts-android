@@ -33,15 +33,12 @@ import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
-import com.door43.translationstudio.tasks.ClientTask;
-import com.door43.translationstudio.tasks.ServerTask;
 import com.door43.util.ListMap;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.RSAEncryption;
 import com.door43.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.door43.util.threads.TaskManager;
 import com.squareup.otto.Subscribe;
 import com.tozny.crypto.android.AesCbcWithIntegrity;
 

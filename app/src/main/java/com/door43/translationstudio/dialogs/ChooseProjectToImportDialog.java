@@ -15,7 +15,7 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.TaskManager;
 
 /**
  * This is basically the same as the ChooseProjectDialog but with some alterations for importing projects.

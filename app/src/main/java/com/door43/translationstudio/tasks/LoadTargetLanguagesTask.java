@@ -2,7 +2,7 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 /**
  * Created by joel on 5/4/2015.

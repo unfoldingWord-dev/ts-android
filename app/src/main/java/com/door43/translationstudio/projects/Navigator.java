@@ -1,15 +1,12 @@
 package com.door43.translationstudio.projects;
 
 import android.content.Context;
-import android.text.Editable;
-import android.text.SpannedString;
 
 import com.door43.translationstudio.events.OpenedChapterEvent;
 import com.door43.translationstudio.events.OpenedFrameEvent;
 import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
-import com.door43.util.threads.ThreadableUI;
+import com.door43.util.tasks.ThreadableUI;
 import com.squareup.otto.Bus;
 
 /**

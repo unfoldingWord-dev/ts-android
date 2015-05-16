@@ -1,15 +1,11 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.DataStore;
-import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ManagedTask;
-
-import javax.xml.transform.Source;
+import com.door43.util.tasks.ManagedTask;
 
 /**
  * Created by joel on 5/4/2015.

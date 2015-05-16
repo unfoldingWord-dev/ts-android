@@ -57,7 +57,7 @@ import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
 import com.door43.util.StringUtilities;
-import com.door43.util.threads.ThreadableUI;
+import com.door43.util.tasks.ThreadableUI;
 
 /**
  * Created by joel on 4/17/2015.

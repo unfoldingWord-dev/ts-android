@@ -9,7 +9,7 @@ import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
 import com.door43.util.ServerUtilities;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.NameValuePair;

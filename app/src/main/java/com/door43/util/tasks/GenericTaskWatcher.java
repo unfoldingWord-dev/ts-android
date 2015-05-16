@@ -1,4 +1,4 @@
-package com.door43.translationstudio.tasks;
+package com.door43.util.tasks;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -6,9 +6,6 @@ import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
 
 /**
  * This class performs a lot of the grunt work for handling managed tasks

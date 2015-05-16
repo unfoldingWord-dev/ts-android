@@ -3,10 +3,8 @@ package com.door43.translationstudio.dialogs;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,13 +17,12 @@ import android.widget.TextView;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Model;
-import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.tasks.LoadModelFontTask;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
-import com.door43.util.threads.ThreadableUI;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
+import com.door43.util.tasks.ThreadableUI;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 /**

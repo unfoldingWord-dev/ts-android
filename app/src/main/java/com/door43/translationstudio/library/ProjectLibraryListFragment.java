@@ -15,8 +15,8 @@ import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 import java.util.ArrayList;
 import java.util.List;

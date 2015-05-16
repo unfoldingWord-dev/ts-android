@@ -1,6 +1,4 @@
-package com.door43.util.threads;
-
-import com.door43.translationstudio.projects.ProjectManager;
+package com.door43.util.tasks;
 
 import java.util.ArrayList;
 import java.util.Collections;

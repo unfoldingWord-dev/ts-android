@@ -9,15 +9,9 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
-import com.door43.util.threads.ManagedTask;
-
-import org.apache.commons.io.FileUtils;
+import com.door43.util.tasks.ManagedTask;
 
 import java.io.File;
-import java.io.IOException;
-
-import javax.xml.transform.Source;
 
 /**
  * Indexes the the the notes, terms, and source of a resource.

@@ -15,8 +15,8 @@ import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.door43.util.threads.TaskManager;
-import com.door43.util.threads.ThreadableUI;
+import com.door43.util.tasks.TaskManager;
+import com.door43.util.tasks.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.List;

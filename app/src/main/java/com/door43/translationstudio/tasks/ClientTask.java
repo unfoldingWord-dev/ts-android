@@ -1,6 +1,6 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 /**
  * Created by joel on 4/8/2015.

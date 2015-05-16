@@ -14,7 +14,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ThreadableUI;
+import com.door43.util.tasks.ThreadableUI;
 
 import java.util.ArrayList;
 import java.util.List;

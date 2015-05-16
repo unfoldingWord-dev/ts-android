@@ -5,7 +5,7 @@ import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 
 import com.door43.translationstudio.network.Peer;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 import java.io.IOException;
 import java.net.Inet4Address;

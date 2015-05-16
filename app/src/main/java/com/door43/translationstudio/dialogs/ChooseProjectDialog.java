@@ -10,13 +10,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.events.ChoseProjectEvent;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.TaskManager;
-import com.door43.util.threads.ThreadableUI;
+import com.door43.util.tasks.TaskManager;
+import com.door43.util.tasks.ThreadableUI;
 
 /**
  * This dialog displays a list view that allows the user to dig down through projects and meta projects.

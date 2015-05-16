@@ -1,6 +1,5 @@
 package com.door43.translationstudio.panes.left.tabs;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
@@ -26,15 +25,14 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.translationstudio.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**

@@ -6,7 +6,7 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.uploadwizard.steps.validate.UploadValidationItem;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 import java.util.ArrayList;
 import java.util.List;

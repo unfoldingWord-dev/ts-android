@@ -11,7 +11,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
-import com.door43.translationstudio.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.UploadProjectTask;
 import com.door43.translationstudio.uploadwizard.steps.ContactInfoFragment;
 import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
@@ -21,8 +21,8 @@ import com.door43.translationstudio.uploadwizard.steps.review.ReviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.validate.VerifyFragment;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
-import com.door43.util.threads.ManagedTask;
-import com.door43.util.threads.TaskManager;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.door43.util.wizard.WizardActivity;
 
 

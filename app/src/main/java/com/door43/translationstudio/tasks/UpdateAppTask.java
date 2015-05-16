@@ -8,7 +8,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.migration.UpdateManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
-import com.door43.util.threads.ManagedTask;
+import com.door43.util.tasks.ManagedTask;
 
 /**
  * Created by joel on 5/4/2015.
