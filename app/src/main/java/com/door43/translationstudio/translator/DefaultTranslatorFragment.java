@@ -735,90 +735,102 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
                 // build rendering engines
                 mTranslationRendering = new RenderingGroup();
-                if(mSelectedFrame.format == Frame.Format.USX) {
-                    mTranslationRendering.addEngine(new USXRenderer(mVerseClickListener, mNoteClickListener));
-                } else {
-                    mTranslationRendering.addEngine(new DefaultRenderer(mNoteClickListener));
-                }
-                mTranslationRendering.init(text);
-
-                in.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-                        mTranslationEditText.setVisibility(View.VISIBLE);
+                if(mSelectedFrame != null) {
+                    if (mSelectedFrame.format == Frame.Format.USX) {
+                        mTranslationRendering.addEngine(new USXRenderer(mVerseClickListener, mNoteClickListener));
+                    } else {
+                        mTranslationRendering.addEngine(new DefaultRenderer(mNoteClickListener));
                     }
-                    public void onAnimationEnd(Animation animation) {}
-                    public void onAnimationRepeat(Animation animation) {}
-                });
-                // execute task after animation
-                out.setAnimationListener(new Animation.AnimationListener() {
-                    public void onAnimationStart(Animation animation) {}
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        if(!isInterrupted()) {
-//                            mTranslationEditText.setText("");
-                            mTranslationEditText.setVisibility(View.INVISIBLE);
-                            renderThread = new ThreadableUI(getActivity()) {
-                                CharSequence output;
-                                @Override
-                                public void onStop() {
-                                    mTranslationRendering.stop();
-                                }
 
-                                @Override
-                                public void run() {
-                                    if(!isInterrupted()) {
-                                        output = mTranslationRendering.start();
-                                    }
-                                }
+                    mTranslationRendering.init(text);
 
-                                @Override
-                                public void onPostExecute() {
-                                    if(!isInterrupted()) {
-                                        int scrollX = mTranslationEditText.getScrollX();
-                                        int scrollY = mTranslationEditText.getScrollX();
-                                        int selection = mTranslationEditText.getSelectionStart();
-                                        mTranslationEditText.removeTextChangedListener(mTranslationChangedListener);
-                                        mTranslationEditText.setText(TextUtils.concat(output, "\n"));
-                                        mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
-                                        mTranslationEditText.clearAnimation();
-                                        mTranslationEditText.startAnimation(in);
-                                        mTranslationProgressBar.clearAnimation();
-                                        mTranslationProgressBar.startAnimation(outProgress);
-                                        // preserve selection and scroll
-                                        mTranslationEditText.scrollTo(scrollX, scrollY);
-                                        if(selection > mTranslationEditText.length()) {
-                                            selection = mTranslationEditText.length();
-                                        }
-                                        mTranslationEditText.setSelection(selection);
-                                        mTranslationEditText.clearFocus();
-                                    }
-                                }
-                            };
-                            renderThread.start();
-                        } else {
-                            mTranslationEditText.setAnimation(in);
-                            mTranslationProgressBar.clearAnimation();
-                            mTranslationProgressBar.setAnimation(outProgress);
-                        }
-                    }
-                    public void onAnimationRepeat(Animation animation) {}
-                });
-
-                if(!isInterrupted()) {
-                    // begin animations
-                    Handler handle = new Handler(Looper.getMainLooper());
-                    handle.post(new Runnable() {
+                    in.setAnimationListener(new Animation.AnimationListener() {
                         @Override
-                        public void run() {
-                            // clear animations in case they haven't finished yet
-                            mTranslationEditText.clearAnimation();
-                            mTranslationProgressBar.clearAnimation();
+                        public void onAnimationStart(Animation animation) {
+                            mTranslationEditText.setVisibility(View.VISIBLE);
+                        }
 
-                            mTranslationEditText.startAnimation(out);
-                            mTranslationProgressBar.startAnimation(inProgress);
+                        public void onAnimationEnd(Animation animation) {
+                        }
+
+                        public void onAnimationRepeat(Animation animation) {
                         }
                     });
+                    // execute task after animation
+                    out.setAnimationListener(new Animation.AnimationListener() {
+                        public void onAnimationStart(Animation animation) {
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animation animation) {
+                            if (!isInterrupted()) {
+//                            mTranslationEditText.setText("");
+                                mTranslationEditText.setVisibility(View.INVISIBLE);
+                                renderThread = new ThreadableUI(getActivity()) {
+                                    CharSequence output;
+
+                                    @Override
+                                    public void onStop() {
+                                        mTranslationRendering.stop();
+                                    }
+
+                                    @Override
+                                    public void run() {
+                                        if (!isInterrupted()) {
+                                            output = mTranslationRendering.start();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onPostExecute() {
+                                        if (!isInterrupted()) {
+                                            int scrollX = mTranslationEditText.getScrollX();
+                                            int scrollY = mTranslationEditText.getScrollX();
+                                            int selection = mTranslationEditText.getSelectionStart();
+                                            mTranslationEditText.removeTextChangedListener(mTranslationChangedListener);
+                                            mTranslationEditText.setText(TextUtils.concat(output, "\n"));
+                                            mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
+                                            mTranslationEditText.clearAnimation();
+                                            mTranslationEditText.startAnimation(in);
+                                            mTranslationProgressBar.clearAnimation();
+                                            mTranslationProgressBar.startAnimation(outProgress);
+                                            // preserve selection and scroll
+                                            mTranslationEditText.scrollTo(scrollX, scrollY);
+                                            if (selection > mTranslationEditText.length()) {
+                                                selection = mTranslationEditText.length();
+                                            }
+                                            mTranslationEditText.setSelection(selection);
+                                            mTranslationEditText.clearFocus();
+                                        }
+                                    }
+                                };
+                                renderThread.start();
+                            } else {
+                                mTranslationEditText.setAnimation(in);
+                                mTranslationProgressBar.clearAnimation();
+                                mTranslationProgressBar.setAnimation(outProgress);
+                            }
+                        }
+
+                        public void onAnimationRepeat(Animation animation) {
+                        }
+                    });
+
+                    if (!isInterrupted()) {
+                        // begin animations
+                        Handler handle = new Handler(Looper.getMainLooper());
+                        handle.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                // clear animations in case they haven't finished yet
+                                mTranslationEditText.clearAnimation();
+                                mTranslationProgressBar.clearAnimation();
+
+                                mTranslationEditText.startAnimation(out);
+                                mTranslationProgressBar.startAnimation(inProgress);
+                            }
+                        });
+                    }
                 }
             }
 

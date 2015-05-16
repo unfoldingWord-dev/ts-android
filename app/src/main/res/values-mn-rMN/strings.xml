@@ -5,7 +5,7 @@
   <string name="title_frames">Хүрээ</string>
   <string name="label_ok">OK</string>
   <string name="title_cancel">Болих</string>
-  <string name="push_msg_init">Сервер рүү илгээж байна ...</string>
+  <string name="uploading">Сервер рүү илгээж байна ...</string>
   <string name="terms_title">Хэрэглэх журам</string>
   <string name="terms">Энэхүү програмыг ашиглан та нар итгэл болон орчуулгын удирдамжийн тайлан хүлээн зөвшөөрөхгүй, та Creative Commons Attribution-ShareAlike 4.0 Олон улсын Лицензийн дагуу ажиллах гаргах.</string>
   <string name="chapter_title_field">Бүлгийн нэр:</string>

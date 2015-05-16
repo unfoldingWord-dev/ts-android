@@ -1,14 +1,28 @@
 package com.door43.translationstudio.tasks;
 
+import android.os.*;
+
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.TransportCallback;
+import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
+import com.door43.util.Logger;
 import com.door43.util.threads.ManagedTask;
 
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,18 +33,23 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Collection;
 
 /**
  * This task will upload the device public ssh key to the server
  */
 public class UploadProjectTask extends ManagedTask {
 
+    public static final String TASK_ID = "push_project_task";
     private final Project mProject;
     private final Language mLanguage;
     private final String mAuthServer;
     private final int mAuthServerPort;
+    private String mErrorMessages = "";
+    private String mResponse = "";
 
     public UploadProjectTask(Project p, Language target) {
+        setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT);
         mProject = p;
         mLanguage = target;
         mAuthServer = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, AppContext.context().getResources().getString(R.string.pref_default_auth_server));
@@ -43,6 +62,7 @@ public class UploadProjectTask extends ManagedTask {
             publishProgress(-1, AppContext.context().getResources().getString(R.string.loading));
             if(!AppContext.context().hasRegisteredKeys()) {
                 if(AppContext.context().hasKeys()) {
+                    publishProgress(-1, AppContext.context().getResources().getString(R.string.submitting_security_keys));
                     // open tcp connection with server
                     try {
                         InetAddress serverAddr = InetAddress.getByName(mAuthServer);
@@ -126,7 +146,30 @@ public class UploadProjectTask extends ManagedTask {
         } else {
             processError(R.string.internet_not_available);
         }
+    }
 
+    /**
+     * Returns the response message
+     * @return
+     */
+    public String getResponse() {
+        return mResponse;
+    }
+
+    /**
+     * Checks if there were any errors
+     * @return
+     */
+    public boolean hasErrors() {
+        return !mErrorMessages.isEmpty();
+    }
+
+    /**
+     * Returns the error messages
+     * @return
+     */
+    public String getErrors() {
+        return mErrorMessages;
     }
 
     /**
@@ -151,16 +194,150 @@ public class UploadProjectTask extends ManagedTask {
      * Uploads pushes the project repository to the server
      */
     private void pushProject() {
-        // TODO: we need to push the project and profile repositories
-        Repo repo = new Repo(mProject.getRepositoryPath());
-        
+        publishProgress(-1, AppContext.context().getResources().getString(R.string.uploading));
+        // commit and push project
+        Repo projectRepo = new Repo(ProjectManager.getRepositoryPath(mProject, mLanguage));
+        if(commitRepo(projectRepo)) {
+            mResponse = pushRepo(projectRepo, ProjectManager.getRemotePath(mProject, mLanguage));
+        }
+
+        // commit and push profile
+        Repo profileRepo = new Repo(ProfileManager.getRepositoryPath());
+        if(commitRepo(profileRepo)) {
+            mResponse += "\n" + pushRepo(profileRepo, ProfileManager.getRemotePath());
+        }
     }
 
-    private void processError(Exception e) {
-        // TODO: log error message for user
+    /**
+     * Pushes a repository to the server
+     * @param repo
+     * @return
+     */
+    private String pushRepo(Repo repo, String remote) {
+        Git git;
+        try {
+            git = repo.getGit();
+        } catch (StopTaskException e1) {
+            return null;
+        }
+        // TODO: we might want to get some progress feedback for the user
+        PushCommand pushCommand = git.push().setPushTags()
+//                .setProgressMonitor(...)
+                .setTransportConfigCallback(new TransportCallback())
+                .setRemote(remote)
+                .setForce(true)
+                .setPushAll();
+
+        try {
+            Iterable<PushResult> result = pushCommand.call();
+            StringBuffer response = new StringBuffer();
+            for (PushResult r : result) {
+                Collection<RemoteRefUpdate> updates = r.getRemoteUpdates();
+                for (RemoteRefUpdate update : updates) {
+                    response.append(parseRemoteRefUpdate(update, remote));
+                }
+            }
+            // give back the response message
+            return response.toString();
+        } catch (TransportException e) {
+            processError(e);
+            return null;
+        } catch (Exception e) {
+            processError(e);
+            return null;
+        } catch (OutOfMemoryError e) {
+            processError(e);
+            return null;
+        } catch (Throwable e) {
+            processError(e);
+            return null;
+        }
     }
 
+    /**
+     * Parses the response from the remote
+     * @param update
+     * @return
+     */
+    private String parseRemoteRefUpdate(RemoteRefUpdate update, String remote) {
+        String msg = null;
+        switch (update.getStatus()) {
+            case AWAITING_REPORT:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_awaiting_report), update.getRemoteName());
+                break;
+            case NON_EXISTING:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_non_existing), update.getRemoteName());
+                break;
+            case NOT_ATTEMPTED:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_not_attempted), update.getRemoteName());
+                break;
+            case OK:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_ok), update.getRemoteName());
+                break;
+            case REJECTED_NODELETE:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_nondelete), update.getRemoteName());
+                break;
+            case REJECTED_NONFASTFORWARD:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_nonfastforward), update.getRemoteName());
+                break;
+            case REJECTED_OTHER_REASON:
+                String reason = update.getMessage();
+                if (reason == null || reason.isEmpty()) {
+                    msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_other_reason), update.getRemoteName());
+                } else {
+                    msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_other_reason_detailed), update.getRemoteName(), reason);
+                }
+                break;
+            case REJECTED_REMOTE_CHANGED:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_rejected_remote_changed),update.getRemoteName());
+                break;
+            case UP_TO_DATE:
+                msg = String.format(AppContext.context().getResources().getString(R.string.git_uptodate), update.getRemoteName());
+                break;
+        }
+        msg += "\n" + String.format(AppContext.context().getResources().getString(R.string.git_server_details), remote);
+        return msg;
+    }
+
+    /**
+     * Commits any unstaged changes
+     * @param repo
+     */
+    private boolean commitRepo(Repo repo) {
+        try {
+            Git git = repo.getGit();
+            if(!git.status().call().isClean()) {
+                CommitCommand commit = git.commit();
+                commit.setAll(true);
+                commit.setMessage("auto save");
+                commit.call();
+            }
+        } catch (StopTaskException e) {
+            processError(e);
+            return false;
+        } catch (GitAPIException e) {
+            processError(e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Handles an error
+     * @param e
+     */
+    private void processError(Throwable e) {
+        Logger.e(this.getClass().getName(), "Project upload exception", e);
+        mErrorMessages += e.getMessage() + "\n";
+    }
+
+    /**
+     * Handles an error
+     * @param resId
+     */
     private void processError(int resId) {
-        // TODO: log error message for user
+        String message = AppContext.context().getResources().getString(resId);
+        Logger.e(this.getClass().getName(), message);
+        mErrorMessages += message + "\n";
     }
 }

@@ -5,7 +5,7 @@
   <string name="title_frames">Muafaka</string>
   <string name="label_ok">OK</string>
   <string name="title_cancel">Kufuta</string>
-  <string name="push_msg_init">Kutuma kwa server ...</string>
+  <string name="uploading">Kutuma kwa server ...</string>
   <string name="terms_title">Masharti ya Matumizi</string>
   <string name="terms">Kwa kutumia programu hii, unakubaliana na kauli ya miongozo imani na tafsiri na kutolewa unafanya kazi chini ya masharti ya Creative Commons Attribution-ShareAlike 4.0 Kimataifa Leseni.</string>
   <string name="chapter_title_field">Sura Title:</string>

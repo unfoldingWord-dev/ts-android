@@ -5,7 +5,7 @@
   <string name="title_frames">Frames</string>
   <string name="label_ok">Oke</string>
   <string name="title_cancel">Batal</string>
-  <string name="push_msg_init">Mengirim ke server...</string>
+  <string name="uploading">Mengirim ke server...</string>
   <string name="terms_title">Persyaratan penggunaan</string>
   <string name="terms">Dengan menggunakan aplikasi ini Anda setuju dengan pernyataan iman dan terjemahan pedoman dan melepaskan Anda bekerja di bawah ketentuan Creative Commons Atribusi-Berbagi Serupa 4.0 Lisensi Internasional.</string>
   <string name="chapter_title_field">Judul bab:</string>

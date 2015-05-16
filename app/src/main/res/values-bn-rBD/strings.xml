@@ -5,7 +5,7 @@
   <string name="title_frames">ফ্রেম</string>
   <string name="label_ok">ঠিক আছে</string>
   <string name="title_cancel">বাতিল করুন</string>
-  <string name="push_msg_init">সার্ভারে পাঠানো হচ্ছে ...</string>
+  <string name="uploading">সার্ভারে পাঠানো হচ্ছে ...</string>
   <string name="terms_title">ব্যবহারের শর্তাবলী</string>
   <string name="terms">এই অ্যাপ্লিকেশন ব্যবহার করে আপনি বিশ্বাস এবং অনুবাদক নির্দেশিকা বিবৃতি সাথে একমত এবং আপনি ক্রিয়েটিভ কমন্স অ্যাট্রিবিউশন- ShareAlike 4.0 আন্তর্জাতিক লাইসেন্সের অধীনে কাজ মুক্তি.</string>
   <string name="chapter_title_field">অধ্যায় শিরোনাম:</string>

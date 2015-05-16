@@ -5,7 +5,7 @@
   <string name="title_frames">قاب</string>
   <string name="label_ok">باشه</string>
   <string name="title_cancel">\"لغو\"</string>
-  <string name="push_msg_init">ارسال به سرور...</string>
+  <string name="uploading">ارسال به سرور...</string>
   <string name="terms_title">شرایط استفاده</string>
   <string name="terms">با استفاده از این برنامه شما را با این بیانیه از دستورالعمل های ایمان و ترجمه به توافق برسند و به انتشار شما تحت شرایط کریتیو کامانز Attribution-ShareAlike در 4.0 مجوز بین المللی کار می کنند.</string>
   <string name="chapter_title_field">عنوان فصل:</string>

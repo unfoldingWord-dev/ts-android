@@ -112,7 +112,7 @@ public class BugReporterActivity extends TranslatorBaseActivity {
             String notes = mCrashReportText.getText().toString().trim();
             Handler handle = new Handler(getMainLooper());
             if(upload) {
-                mDialog.setMessage(getResources().getString(R.string.push_msg_init));
+                mDialog.setMessage(getResources().getString(R.string.uploading));
             } else {
                 mDialog.setMessage(getResources().getString(R.string.loading));
             }

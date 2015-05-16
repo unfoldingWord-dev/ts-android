@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
@@ -79,6 +80,27 @@ public class ProjectManager {
      */
     public boolean isLoaded() {
         return mHasLoaded;
+    }
+
+    /**
+     * Returns the remote path for a local repo
+     * @param project
+     * @param lang
+     * @return
+     */
+    public static String getRemotePath(Project project, Language lang) {
+        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+        return server + ":tS/" + AppContext.udid() + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + project.getId() + "-" + lang.getId();
+    }
+
+    /**
+     * Returns the path to the local repository for a project
+     * @param project
+     * @param lang
+     * @return
+     */
+    public static String getRepositoryPath(Project project, Language lang) {
+        return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + project.getId() + "-" + lang.getId() + "/";
     }
 
     /**

@@ -5,7 +5,7 @@
   <string name="title_frames">帧</string>
   <string name="label_ok">还行</string>
   <string name="title_cancel">取消</string>
-  <string name="push_msg_init">发送到服务器</string>
+  <string name="uploading">发送到服务器</string>
   <string name="terms_title">使用条款</string>
   <string name="terms">通过使用这个程序，你同意的信仰和翻译准则的声明，你在知识共享署名 - 相同方式共享4.0国际许可条款的工作释放。</string>
   <string name="chapter_title_field">章标题</string>

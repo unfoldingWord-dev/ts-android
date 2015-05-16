@@ -5,7 +5,7 @@
   <string name="title_frames">Frames</string>
   <string name="label_ok">ACEITAR</string>
   <string name="title_cancel">Cancelar</string>
-  <string name="push_msg_init">Enviar para o servidor</string>
+  <string name="uploading">Enviar para o servidor</string>
   <string name="terms_title">Termos de Utilização</string>
   <string name="terms">Ao usar este aplicativo, você concorda com a afirmação de orientações religiosas e de tradução e para libertá-lo trabalhar sob os termos da Creative Commons Attribution-Share Alike 4.0 de Licença Internacional.</string>
   <string name="chapter_title_field">Título do capítulo</string>

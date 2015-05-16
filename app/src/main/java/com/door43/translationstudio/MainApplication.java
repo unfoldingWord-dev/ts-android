@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Term;
 import com.door43.util.CustomExceptionHandler;
-import com.door43.translationstudio.util.DummyDialogListener;
+import com.door43.util.DummyDialogListener;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.jcraft.jsch.JSch;
@@ -291,6 +291,7 @@ public class MainApplication extends Application {
      * @param msg
      * @param details
      */
+    @Deprecated
     public void showMessageDialogDetails(final int title, int msg, final String details) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getCurrentActivity());
         builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {

@@ -6,7 +6,6 @@ import android.util.Log;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.events.SecurityKeysSubmittedEvent;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
@@ -54,6 +53,7 @@ public class TranslationManager {
      * Initiates a git sync with the server. This will forcebly push all local changes to the server
      * and discard any discrepencies.
      */
+    @Deprecated
     public static void syncSelectedProject(final OnSyncListener listener) {
         if(AppContext.context().isNetworkAvailable()) {
             listener.onProgress(-1, AppContext.context().getResources().getString(R.string.loading));
@@ -238,7 +238,9 @@ public class TranslationManager {
 
     /**
      * Pushes the currently selected project+language repo to the server
+     *
      */
+    @Deprecated
     private static void pushSelectedProjectRepo() {
         Project p = AppContext.projectManager().getSelectedProject();
 
@@ -252,7 +254,7 @@ public class TranslationManager {
         CommitTask add = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
             @Override
             public void success() {
-                PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.push_msg_init));
+                PushTask push = new PushTask(repo, remotePath, true, true, new ProgressCallback(R.string.uploading));
                 push.executeTask();
                 // TODO: we need to check the errors from the push task. If auth fails then we need to re-register the ssh keys.
             }
@@ -265,7 +267,7 @@ public class TranslationManager {
         add.executeTask();
 
         // send the latest profile info to the server as well
-        ProfileManager.push();
+        ProfileManager.pushAsync();
     }
 
     /**

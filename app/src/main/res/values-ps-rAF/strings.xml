@@ -5,7 +5,7 @@
   <string name="title_frames">شاسو </string>
   <string name="label_ok">منښتونو </string>
   <string name="title_cancel">كوره كوې </string>
-  <string name="push_msg_init">ارسال كله سرور کړي دي...</string>
+  <string name="uploading">ارسال كله سرور کړي دي...</string>
   <string name="terms_title">په كار د </string>
   <string name="chapter_title_field">خطاب فصل کې:</string>
   <string name="chapter_reference_field">څپركې اخځ:</string>

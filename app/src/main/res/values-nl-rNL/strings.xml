@@ -5,7 +5,7 @@
   <string name="title_frames">Frames</string>
   <string name="label_ok">OK</string>
   <string name="title_cancel">Annuleren</string>
-  <string name="push_msg_init">Het verzenden naar de server...</string>
+  <string name="uploading">Het verzenden naar de server...</string>
   <string name="terms_title">Voorwaarden van Gebruik</string>
   <string name="terms">Door het gebruik van deze app gaat u akkoord met de uitspraak van het geloof en de vertaling richtlijnen en vrij te geven u onder de voorwaarden van de Creative Commons Naamsvermelding-Gelijk 4.0 Internationale licentie werken.</string>
   <string name="chapter_title_field">Hoofdstuk Titel:</string>

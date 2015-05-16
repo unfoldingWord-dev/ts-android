@@ -5,7 +5,7 @@
   <string name="title_frames">Cadres</string>
   <string name="label_ok">OK</string>
   <string name="title_cancel">Annuler</string>
-  <string name="push_msg_init">Envoi au serveur...</string>
+  <string name="uploading">Envoi au serveur...</string>
   <string name="terms_title">Conditions d\'Utilisation</string>
   <string name="terms">En utilisant cette application, vous êtes d\'accord avec la déclaration de la foi et de traduction des lignes directrices et de libérer vous travaillez sous les termes de la licence Creative Commons Attribution-ShareAlike 4.0 License international.</string>
   <string name="chapter_title_field">Titre De Chapitre:</string>

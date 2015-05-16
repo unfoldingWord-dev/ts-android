@@ -5,7 +5,7 @@
   <string name="title_frames">ఫ్రేమ్లు</string>
   <string name="label_ok">సరే</string>
   <string name="title_cancel">రద్దు</string>
-  <string name="push_msg_init">సర్వర్ కు పంపుతోంది ...</string>
+  <string name="uploading">సర్వర్ కు పంపుతోంది ...</string>
   <string name="terms_title">ఉపయోగ నిబంధనలు</string>
   <string name="terms">ఈ అనువర్తనం ఉపయోగించి మీరు విశ్వాసం మరియు అనువాద మార్గదర్శకాలను ప్రకటన తో అంగీకరిస్తున్నారు మరియు మీరు క్రియేటివ్ కామన్స్ ఆపాదింపు-యథాతథ పంచుకోలు 4.0 అంతర్జాతీయ లైసెన్సుతోనూ పని విడుదల.</string>
   <string name="chapter_title_field">చాప్టర్ శీర్షిక:</string>

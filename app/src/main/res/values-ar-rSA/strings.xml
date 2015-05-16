@@ -5,7 +5,7 @@
   <string name="title_frames">إطارات</string>
   <string name="label_ok">حسنا</string>
   <string name="title_cancel">إلغاء</string>
-  <string name="push_msg_init">إرسال إلى ملقم...</string>
+  <string name="uploading">إرسال إلى ملقم...</string>
   <string name="terms_title">شروط الاستخدام</string>
   <string name="terms">باستخدام هذا التطبيق كنت أتفق مع بيان المبادئ التوجيهية الإيمان والترجمة والإفراج كنت تعمل وفقا لأحكام المشاع المبدع نسبة المصنف إلى مؤلفه للوثائق الحرة 4.0 الرخصة الدولية.</string>
   <string name="chapter_title_field">الفصل العنوان:</string>

@@ -5,7 +5,7 @@
   <string name="title_frames">फ्रेमहरू</string>
   <string name="label_ok">ठीक</string>
   <string name="title_cancel">रद्द गर्नुहोस्</string>
-  <string name="push_msg_init">सर्भरमा  पठाउँदै ...</string>
+  <string name="uploading">सर्भरमा  पठाउँदै ...</string>
   <string name="terms_title">प्रयोगका शर्तहरु</string>
   <string name="terms">यो अनुप्रयोग प्रयोग गरेर तपाईं विश्वास र अनुवाद निर्देशनहरू को बयान सहमत र तपाईं रचनात्मक कमन्स विशेषता-ShareAlike 4.0 अन्तर्राष्ट्रीय लाइसेन्स को सर्तहरू अन्तर्गत काम जारी छ।</string>
   <string name="chapter_title_field">अध्याय शीर्षक:</string>

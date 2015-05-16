@@ -5,7 +5,7 @@
   <string name="title_frames">Frames</string>
   <string name="label_ok">Ok</string>
   <string name="title_cancel">Hủy bỏ</string>
-  <string name="push_msg_init">Gửi tới hệ phục vụ...</string>
+  <string name="uploading">Gửi tới hệ phục vụ...</string>
   <string name="terms_title">Điều khoản sử dụng</string>
   <string name="terms">Bằng cách sử dụng ứng dụng này, bạn đồng ý với tuyên bố của đức tin và hướng dẫn dịch và phát hành bạn làm việc theo các điều khoản của Creative Commons Ghi công-Chia sẻ tương tự 4.0 License quốc tế.</string>
   <string name="chapter_title_field">Tiêu đề chương:</string>

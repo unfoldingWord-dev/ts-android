@@ -5,7 +5,7 @@
   <string name="title_frames">Çerçeveler</string>
   <string name="label_ok">TAMAM</string>
   <string name="title_cancel">İptal</string>
-  <string name="push_msg_init">Gönderen sunucuya...</string>
+  <string name="uploading">Gönderen sunucuya...</string>
   <string name="terms_title">Kullanım koşulları </string>
   <string name="terms">Bu uygulamayı kullanarak, inanç ve çeviri kurallarına tablosu ile katılıyorum ve Creative Commons Attribution-ShareAlike 4.0 Uluslararası Lisansı şartları altında çalışmak serbest bırakmak için.</string>
   <string name="chapter_title_field">Bölüm Title:</string>

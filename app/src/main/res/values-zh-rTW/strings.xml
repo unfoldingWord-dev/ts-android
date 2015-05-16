@@ -5,7 +5,7 @@
   <string name="title_frames">幀</string>
   <string name="label_ok">還行</string>
   <string name="title_cancel">取消</string>
-  <string name="push_msg_init">將發送到伺服器</string>
+  <string name="uploading">將發送到伺服器</string>
   <string name="terms_title">使用條款</string>
   <string name="terms">通過使用這個程序，你同意的信仰和翻譯準則的聲明，你在知識共享署名 - 相同方式共享4.0國際許可條款的工作釋放。</string>
   <string name="chapter_title_field">章標題</string>

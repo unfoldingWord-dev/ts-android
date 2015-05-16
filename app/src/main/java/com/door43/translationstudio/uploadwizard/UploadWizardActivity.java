@@ -11,8 +11,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
-import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.tasks.GenericTaskWatcher;
+import com.door43.translationstudio.tasks.UploadProjectTask;
 import com.door43.translationstudio.uploadwizard.steps.ContactInfoFragment;
 import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.PreviewFragment;
@@ -20,13 +20,17 @@ import com.door43.translationstudio.uploadwizard.steps.ProjectChooserFragment;
 import com.door43.translationstudio.uploadwizard.steps.ReviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.validate.VerifyFragment;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.DummyDialogListener;
 import com.door43.util.Logger;
 import com.door43.util.threads.ManagedTask;
+import com.door43.util.threads.TaskManager;
 import com.door43.util.wizard.WizardActivity;
 
 
 public class UploadWizardActivity extends WizardActivity implements GenericTaskWatcher.OnFinishedListener {
 
+    private static final String STATE_RESPONSE = "upload_response";
+    private static final String STATE_ERRORS = "upload_errors";
     private boolean mFinished = false;
     private final static String STATE_FINISHED = "finished";
     private final static String STATE_UPLOADED = "uploaded";
@@ -35,6 +39,9 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
     private static Language mTarget;
     private GenericTaskWatcher mTaskWatcher;
     private boolean mUploaded = false;
+    private String mUploadResponse = "";
+    private String mErrorMessages = "";
+    private boolean mFailed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +53,9 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
         if(savedInstanceState != null) {
             mFinished = savedInstanceState.getBoolean(STATE_FINISHED);
             mUploaded = savedInstanceState.getBoolean(STATE_UPLOADED);
+            mUploadResponse = savedInstanceState.getString(STATE_RESPONSE);
+            mErrorMessages = savedInstanceState.getString(STATE_ERRORS);
+            mFailed = !mErrorMessages.isEmpty();
         } else {
             // initialize things for the upload wizard
             mProject = null;
@@ -60,15 +70,16 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
         addStep(new ContactInfoFragment());
         addStep(new PreviewFragment());
 
-        mTaskWatcher = new GenericTaskWatcher(this, R.string.push_msg_init, R.drawable.ic_cloud_small);
+        mTaskWatcher = new GenericTaskWatcher(this, R.string.uploading, R.drawable.ic_cloud_small);
         mTaskWatcher.setOnFinishedListener(this);
         // TODO: do we want to allow users to cancel their uploads?
 
         if(mUploaded) {
             onUploaded();
+        } else if(mFailed) {
+            onUploadFailed();
         } else if(mFinished) {
-            // TODO: attach to tasks
-//            mTaskWatcher.watch();
+            mTaskWatcher.watch(UploadProjectTask.TASK_ID);
         }
     }
 
@@ -161,55 +172,85 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
      * Uploads the translation to the server
      */
     private void upload() {
-        // prepare upload
-        getTranslationProject().commit(new Project.OnCommitComplete() {
-            @Override
-            public void success() {
-                TranslationManager.syncSelectedProject();
-                finish();
-            }
-
-            @Override
-            public void error(Throwable e) {
-                // We don't care. Worst case is the server won't know that the translation is ready.
-                TranslationManager.syncSelectedProject();
-                finish();
-            }
-        });
+        UploadProjectTask task = new UploadProjectTask(getTranslationProject(), getTranslationTarget());
+        mTaskWatcher.watch(task);
+        TaskManager.addTask(task, UploadProjectTask.TASK_ID);
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(STATE_FINISHED, mFinished);
         outState.putBoolean(STATE_UPLOADED, mUploaded);
+        outState.putString(STATE_RESPONSE, mUploadResponse);
+        outState.putString(STATE_ERRORS, mErrorMessages);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onDestroy() {
         mTaskWatcher.stop();
+        super.onDestroy();
     }
 
     @Override
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
-        mUploaded = true;
-        onUploaded();
+
+        if(((UploadProjectTask)task).hasErrors()) {
+            mErrorMessages = ((UploadProjectTask)task).getErrors();
+            onUploadFailed();
+        } else {
+            mUploadResponse = ((UploadProjectTask)task).getResponse();
+            onUploaded();
+        }
+    }
+
+    /**
+     * Displays a notice that the upload failed to the user
+     */
+    public void onUploadFailed() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.success).setMessage(R.string.upload_failed).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(UploadWizardActivity.this);
+                builder.setTitle(R.string.upload_failed).setMessage(mErrorMessages).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                }).show();
+            }
+        }).show();
     }
 
     /**
      * Displays success notice to the user
      */
     public void onUploaded() {
+        mUploaded = true;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.success)
-                .setMessage(R.string.git_push_success)
-                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+        builder.setTitle(R.string.success).setMessage(R.string.git_push_success).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(UploadWizardActivity.this);
+                builder.setTitle(R.string.git_push_success).setMessage(mUploadResponse).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
                     }
-                })
-                .show();
+                }).show();
+            }
+        }).show();
     }
 }

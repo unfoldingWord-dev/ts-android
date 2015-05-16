@@ -5,7 +5,7 @@
   <string name="title_frames">சட்டங்கள்</string>
   <string name="label_ok">சரி</string>
   <string name="title_cancel">ரத்து</string>
-  <string name="push_msg_init">சர்வர் அனுப்புகிறது ...</string>
+  <string name="uploading">சர்வர் அனுப்புகிறது ...</string>
   <string name="terms_title">விதிமுறைகள்</string>
   <string name="terms">இந்த பயன்பாட்டை பயன்படுத்தி நீங்கள் நம்பிக்கை மற்றும் மொழிபெயர்ப்பு வழிகாட்டுதல்கள் அறிக்கை உடன்படவில்லை மற்றும் நீங்கள் படைப்பு காமன்ஸ் Attribution-ShareAlike 4.0 சர்வதேச உரிம விதிகளின் கீழ் வெளியிட வேண்டும்.</string>
   <string name="chapter_title_field">பாடம் தலைப்பு:</string>

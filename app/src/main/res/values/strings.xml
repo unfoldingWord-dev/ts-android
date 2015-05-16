@@ -15,7 +15,7 @@
     <!-- The remote git repository could not be found -->
     <string name="error_repository_not_found" translatable="false">Repository Not Found</string>
     <!-- Local changes are being uploaded to the server -->
-    <string name="push_msg_init">Uploading</string>
+    <string name="uploading">Uploading</string>
     <!-- The repository could not be created-->
     <string name="error_could_not_create_repository" translatable="false">Could not create repository</string>
     <!-- The terms that users must agree with in order to use the app -->
@@ -304,4 +304,6 @@
     <string name="notice">Notice</string>
     <string name="complete_required_fields">Please complete all required fields</string>
     <string name="required_field"><xliff:g id="marker">*</xliff:g> required</string>
+    <string name="failed">Failed</string>
+    <string name="upload_failed">Upload failed</string>
 </resources>

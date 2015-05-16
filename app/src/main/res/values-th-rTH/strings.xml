@@ -5,7 +5,7 @@
   <string name="title_frames">เฟรม</string>
   <string name="label_ok">ตกลง, ได้</string>
   <string name="title_cancel">ยกเลิก</string>
-  <string name="push_msg_init">ส่งไปยังเซิร์ฟเวอร์...</string>
+  <string name="uploading">ส่งไปยังเซิร์ฟเวอร์...</string>
   <string name="terms_title">เงื่อนไขการใช้</string>
   <string name="terms">โดยการใช้ app นี้คุณเห็นด้วยกับคำสั่งของความเชื่อและแนวทางในการแปลและการที่จะปล่อยให้คุณทำงานได้ภายใต้เงื่อนไขของ Creative Commons Attribution 4.0 สัญญาอนุญาตให้ใช้สิทธิระหว่างประเทศ</string>
   <string name="chapter_title_field">ชื่อบท:</string>

@@ -85,7 +85,7 @@ public class ProfileManager {
      * Returns the local path to the repository
      * @return
      */
-    private static String getRepositoryPath() {
+    public static String getRepositoryPath() {
         return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/profile/";
     }
 
@@ -93,7 +93,7 @@ public class ProfileManager {
      * Returns the remote repository url
      * @return
      */
-    private static String getRemotePath() {
+    public static String getRemotePath() {
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
         return server + ":tS/" + AppContext.udid() + "/profile";
     }
@@ -101,7 +101,8 @@ public class ProfileManager {
     /**
      * Pushes the profile to the server
      */
-    public static void push() {
+    @Deprecated
+    public static void pushAsync() {
         if(getProfile() != null) {
 
             final String remotePath = getRemotePath();
@@ -140,4 +141,5 @@ public class ProfileManager {
             add.executeTask();
         }
     }
+
 }

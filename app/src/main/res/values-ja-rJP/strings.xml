@@ -5,7 +5,7 @@
   <string name="title_frames">フレーム</string>
   <string name="label_ok">わかりました</string>
   <string name="title_cancel">キャンセル</string>
-  <string name="push_msg_init">サーバーに送信しています.</string>
+  <string name="uploading">サーバーに送信しています.</string>
   <string name="terms_title">利用規約</string>
   <string name="terms">このアプリを使用することによって、あなたは信仰と翻訳ガイドラインの声明に同意し、あなたはクリエイティブ·コモンズ表示 - 継承4.0国際ライセンスの条件の下で働く解放します。</string>
   <string name="chapter_title_field">章のタイトル:</string>

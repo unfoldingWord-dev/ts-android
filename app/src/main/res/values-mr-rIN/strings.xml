@@ -5,7 +5,7 @@
   <string name="title_frames">फ्रेम्स</string>
   <string name="label_ok">ठीक</string>
   <string name="title_cancel">रद्द करा</string>
-  <string name="push_msg_init">सर्व्हरला पाठवत आहे...</string>
+  <string name="uploading">सर्व्हरला पाठवत आहे...</string>
   <string name="terms_title">वापराच्या अटी</string>
   <string name="terms">हा अनुप्रयोग वापर करून आपण विश्वास आणि अनुवाद मार्गदर्शक मताशी आपण सहमत आहात आणि आपण Creative Commons Attribution-ShareAlike 4.0 आंतरराष्ट्रीय परवाना अटींच्या अंतर्गत काम सोडण्याची.</string>
   <string name="chapter_title_field">चॅप्टर शीर्षक:</string>

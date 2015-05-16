@@ -39,7 +39,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
         mOkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLoadingDialog.setMessage(getResources().getString(R.string.push_msg_init));
+                mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
                 mLoadingDialog.show();
 
                 UploadCrashReportTask task = new UploadCrashReportTask(mCrashReportText.getText().toString().trim());
@@ -65,7 +65,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
         ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(TASK_ARCHIVE_CRASH_REPORT);
 
         if(uploadTask != null) {
-            mLoadingDialog.setMessage(getResources().getString(R.string.push_msg_init));
+            mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
             mLoadingDialog.show();
             uploadTask.addOnFinishedListener(this);
         } else if(archiveTask != null) {

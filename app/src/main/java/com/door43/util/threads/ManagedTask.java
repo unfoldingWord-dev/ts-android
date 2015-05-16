@@ -24,14 +24,23 @@ public abstract class ManagedTask implements Runnable {
     private List mStartListeners = Collections.synchronizedList(new ArrayList<>());
     private boolean mIsRunning = false;
     private List mOnIdChangedListeners = Collections.synchronizedList(new ArrayList<>());
+    protected int mThreadPriority = android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
     public ManagedTask ManagedTask() {
         return this;
     }
 
+    /**
+     * Changes the thread priority. e.g. android.os.Process.THREAD_PRIORITY_BACKGROUND
+     * @param priority the priority of this task default is THREAD_PRIORITY_BACKGROUND
+     */
+    protected final void setThreadPriority(int priority) {
+        mThreadPriority = priority;
+    }
+
     @Override
     public final void run() {
-        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        android.os.Process.setThreadPriority(mThreadPriority);
         mThread = Thread.currentThread();
         try {
             if(Thread.interrupted()) {

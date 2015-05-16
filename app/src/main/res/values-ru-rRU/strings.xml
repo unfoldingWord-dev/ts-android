@@ -5,7 +5,7 @@
   <string name="title_frames">Рамки</string>
   <string name="label_ok">Ок</string>
   <string name="title_cancel">Отмена</string>
-  <string name="push_msg_init">Отправка на сервер...</string>
+  <string name="uploading">Отправка на сервер...</string>
   <string name="terms_title">Условия использования</string>
   <string name="terms">С помощью этого приложения вы согласны с утверждением веры и принципов перевода и освободить вас работать под условиями Creative Commons Attribution-ShareAlike 4.0 License Международного.</string>
   <string name="chapter_title_field">Название Главы:</string>

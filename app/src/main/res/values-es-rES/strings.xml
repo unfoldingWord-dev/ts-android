@@ -5,7 +5,7 @@
   <string name="title_frames">Marcos</string>
   <string name="label_ok">ACEPTAR</string>
   <string name="title_cancel">Cancelar</string>
-  <string name="push_msg_init">Enviar a servidor...</string>
+  <string name="uploading">Enviar a servidor...</string>
   <string name="terms_title">Condiciones de Uso</string>
   <string name="terms">Mediante el uso de esta aplicación está de acuerdo con la declaración de las directrices de fe y de traducción y para liberar a trabajar bajo los términos de la licencia Creative Commons Reconocimiento-Compartir bajo la misma licencia 4.0 Internacional.</string>
   <string name="chapter_title_field">Título De Capítulo:</string>

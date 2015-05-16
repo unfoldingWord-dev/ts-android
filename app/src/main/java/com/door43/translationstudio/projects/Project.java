@@ -830,6 +830,7 @@ public class Project implements Model {
 
     /**
      * Returns the absolute repository path for the given target language
+     * @deprecated use ProjectManager.getRepositoryPath() instead
      * @param projectId
      * @param languageId
      * @return
@@ -848,6 +849,7 @@ public class Project implements Model {
 
     /**
      * Returns the absoute repository path for the currently selected language
+     * @deprecated use ProjectManager.getRepositoryPath() instead
      * @return
      */
     public String getRepositoryPath() {
