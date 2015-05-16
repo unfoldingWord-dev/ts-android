@@ -306,4 +306,6 @@
     <string name="required_field"><xliff:g id="marker">*</xliff:g> required</string>
     <string name="failed">Failed</string>
     <string name="upload_failed">Upload failed</string>
+    <string name="publishing_translation">Publishing translation</string>
+    <string name="backing_up_translation">Backing up translation</string>
 </resources>

@@ -12,6 +12,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
+import com.door43.util.threads.ThreadableUI;
 import com.door43.util.wizard.WizardFragment;
 
 /**
@@ -26,7 +27,7 @@ public class OverviewFragment extends WizardFragment {
         TextView sourceTextView = (TextView)v.findViewById(R.id.sourceLanguageTextView);
         TextView targetTextView = (TextView)v.findViewById(R.id.targetLanguageTextView);
         LinearLayout languageLayout = (LinearLayout)v.findViewById(R.id.languageInfoLayout);
-        CheckBox publishCheckBox = (CheckBox)v.findViewById(R.id.publishTranslationCheckBox);
+        final CheckBox publishCheckBox = (CheckBox)v.findViewById(R.id.publishTranslationCheckBox);
         LinearLayout chooseProjectBtn = (LinearLayout)v.findViewById(R.id.chooseProjectButton);
 
         final Project p = ((UploadWizardActivity)getActivity()).getTranslationProject();
@@ -37,7 +38,7 @@ public class OverviewFragment extends WizardFragment {
         publishCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: mark the project as ready for publication
+                p.setTranslationIsReady(publishCheckBox.isChecked());
             }
         });
         cancelBtn.setOnClickListener(new View.OnClickListener() {
@@ -75,6 +76,7 @@ public class OverviewFragment extends WizardFragment {
             targetTextView.setText(p.getSelectedTargetLanguage().getName());
             publishCheckBox.setVisibility(View.VISIBLE);
             languageLayout.setVisibility(View.VISIBLE);
+            publishCheckBox.setChecked(p.translationIsReady());
         } else {
             titleTextView.setText(R.string.choose_a_project);
             publishCheckBox.setVisibility(View.GONE);

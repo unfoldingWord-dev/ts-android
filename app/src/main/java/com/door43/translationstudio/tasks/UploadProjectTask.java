@@ -1,7 +1,5 @@
 package com.door43.translationstudio.tasks;
 
-import android.os.*;
-
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
@@ -194,7 +192,11 @@ public class UploadProjectTask extends ManagedTask {
      * Uploads pushes the project repository to the server
      */
     private void pushProject() {
-        publishProgress(-1, AppContext.context().getResources().getString(R.string.uploading));
+        if(mProject.translationIsReady()) {
+            publishProgress(-1, AppContext.context().getResources().getString(R.string.publishing_translation));
+        } else {
+            publishProgress(-1, AppContext.context().getResources().getString(R.string.backing_up_translation));
+        }
         // commit and push project
         Repo projectRepo = new Repo(ProjectManager.getRepositoryPath(mProject, mLanguage));
         if(commitRepo(projectRepo)) {
