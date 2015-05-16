@@ -308,4 +308,5 @@
     <string name="upload_failed">Upload failed</string>
     <string name="publishing_translation">Publishing translation</string>
     <string name="backing_up_translation">Backing up translation</string>
+    <string name="translation_appears_valid">Everything appears to be translated</string>
 </resources>

@@ -797,7 +797,7 @@ public class DataStore {
 
     /**
      * Returns the notes.
-     * If downloaded the the existing notes will be replaced
+     * If downloaded the existing notes will be replaced
      * @param projectId
      * @param languageId
      * @param resourceId
@@ -837,6 +837,59 @@ public class DataStore {
     }
 
     /**
+     * Returns the checking questions.
+     * If downloaded the existing questions will be replaced
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param checkServer
+     * @param ignoreCache
+     * @return
+     */
+    public static String pullCheckingQuestions(String projectId, String languageId, String resourceId, boolean checkServer, boolean ignoreCache) {
+        String path = checkingQuestionsPath(projectId, languageId, resourceId);
+
+        if(checkServer) {
+            String key = downloadAsset(checkingQuestionsUri(projectId, languageId, resourceId), ignoreCache);
+            linkAsset(key, path);
+        }
+
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Downloads and returns the checking questions.
+     * Rather than using the standard download uri this method allows you to specify from which uri
+     * to download the checking questions. This is especially helpful when cross referencing api's.
+     * If downloaded the existing questions will be replaced
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param uri
+     * @param ignoreCache
+     * @return
+     */
+    public static String pullCheckingQuestions(String projectId, String languageId, String resourceId, Uri uri, boolean ignoreCache) {
+        String path = checkingQuestionsPath(projectId, languageId, resourceId);
+
+        String key = downloadAsset(uri, ignoreCache);
+        linkAsset(key, path);
+
+        return loadJSONAsset(path);
+    }
+
+    /**
+     * Returns the path to the resource file
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public static String checkingQuestionsPath(String projectId, String languageId, String resourceId) {
+        return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/checking_questions.json";
+    }
+
+    /**
      * Returns the path to the resource file
      * @param projectId
      * @param languageId
@@ -856,6 +909,18 @@ public class DataStore {
      */
     public static Uri notesUri(String projectId, String languageId, String resourceId) {
         return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json");
+    }
+
+    /**
+     * Returns the checking questions uri
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public static Uri checkingQuestionsUri(String projectId, String languageId, String resourceId) {
+        // TODO: The checking questions are not located here at the moment. We need to get this updated.
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/checking_questions.json");
     }
 
     /**

@@ -56,6 +56,7 @@ public class PreviewFragment extends WizardFragment {
             // the profile is missing (should never happen)
             onPrevious();
         }
+
         return v;
     }
 }

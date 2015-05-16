@@ -12,13 +12,14 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 10/24/2014.
  */
 public class UploadValidationAdapter extends BaseAdapter {
     private Context mContext;
-    private ArrayList<UploadValidationItem> mValidationItems;
+    private List<UploadValidationItem> mValidationItems;
 
     public UploadValidationAdapter(ArrayList<UploadValidationItem> items, Context context) {
         mValidationItems = items;
@@ -73,5 +74,14 @@ public class UploadValidationAdapter extends BaseAdapter {
             imageView.setBackgroundResource(R.drawable.ic_check_small);
         }
         return itemView;
+    }
+
+    /**
+     * Changes the list of validation items
+     * @param validationItems
+     */
+    public void changeDataset(List<UploadValidationItem> validationItems) {
+        mValidationItems = validationItems;
+        notifyDataSetChanged();
     }
 }

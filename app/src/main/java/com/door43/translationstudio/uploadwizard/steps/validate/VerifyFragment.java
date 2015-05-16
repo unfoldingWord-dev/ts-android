@@ -1,5 +1,7 @@
 package com.door43.translationstudio.uploadwizard.steps.validate;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +14,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.ValidateTranslationTask;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.DummyDialogListener;
 import com.door43.util.threads.ManagedTask;
 import com.door43.util.threads.TaskManager;
 import com.door43.util.wizard.WizardFragment;
@@ -25,17 +28,16 @@ public class VerifyFragment extends WizardFragment implements GenericTaskWatcher
     private ArrayList<UploadValidationItem> mValidationItems = new ArrayList<>();
     private UploadValidationAdapter mAdapter;
     private GenericTaskWatcher mTaskWatcher;
-    private boolean mClosingActivity = true;
     private ValidateTranslationTask mTask;
     private Button mNextBtn;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        mClosingActivity = true;
         View v = inflater.inflate(R.layout.fragment_upload_verify, container, false);
         ListView list = (ListView)v.findViewById(R.id.validationListView);
         Button backBtn = (Button)v.findViewById(R.id.backButton);
         mNextBtn = (Button)v.findViewById(R.id.nextButton);
+        mNextBtn.setVisibility(View.GONE);
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -48,7 +50,16 @@ public class VerifyFragment extends WizardFragment implements GenericTaskWatcher
             public void onClick(View v) {
                 if(mTask != null) {
                     if(mTask.hasWarnings()) {
-                        // TODO: confirm continue if there are validation warnings
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setTitle(R.string.dialog_validation_warnings)
+                                .setMessage(R.string.validation_warnings)
+                                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        onNext();
+                                    }
+                                })
+                                .setNegativeButton(R.string.title_cancel, new DummyDialogListener()).show();
                     } else {
                         onNext();
                     }
@@ -65,7 +76,10 @@ public class VerifyFragment extends WizardFragment implements GenericTaskWatcher
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 UploadValidationItem item = mAdapter.getItem(position);
                 if(!item.getDescription().isEmpty()) {
-                    AppContext.context().showMessageDialog(item.getTitle(), item.getDescription());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(item.getTitle())
+                            .setMessage(item.getDescription())
+                            .setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
                 }
             }
         });
@@ -93,35 +107,38 @@ public class VerifyFragment extends WizardFragment implements GenericTaskWatcher
 
     @Override
     public void onCanceled(ManagedTask task) {
+        mTaskWatcher.stop();
         onPrevious();
     }
 
     @Override
     public void onFinished(ManagedTask task) {
+        mTaskWatcher.stop();
         if(((ValidateTranslationTask)task).hasErrors()) {
-            // TODO: disable the next button if there are validation errors
-
+            mNextBtn.setVisibility(View.GONE);
+        } else {
+            mNextBtn.setVisibility(View.VISIBLE);
         }
         mTask = (ValidateTranslationTask)task;
-        // TODO: populate the list with the validation items
+        if(!mTask.hasWarnings() && !mTask.hasErrors()) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.notice)
+                    .setMessage(R.string.translation_appears_valid)
+                    .setPositiveButton(R.string.label_ok, new DummyDialogListener())
+                    .show();
+        }
+        mAdapter.changeDataset(mTask.getValidationItems());
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        mClosingActivity = false;
+        // TODO: it would be nice to cache the results of the validation.
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onDestroy() {
-        // clean up the validation task for this project
-        if(mClosingActivity) {
-            ValidateTranslationTask task = (ValidateTranslationTask)TaskManager.getTask(ValidateTranslationTask.TASK_ID);
-            if(task != null) {
-                TaskManager.cancelTask(task);
-                TaskManager.clearTask(task);
-            }
-        }
+        mTaskWatcher.stop();
         super.onDestroy();
     }
 }
