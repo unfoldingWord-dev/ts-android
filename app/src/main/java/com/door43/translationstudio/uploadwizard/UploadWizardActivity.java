@@ -1,39 +1,40 @@
 package com.door43.translationstudio.uploadwizard;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.ContactFormDialog;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
+import com.door43.translationstudio.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.uploadwizard.steps.ContactInfoFragment;
 import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.PreviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.ProjectChooserFragment;
 import com.door43.translationstudio.uploadwizard.steps.ReviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.validate.VerifyFragment;
-import com.door43.translationstudio.user.Profile;
-import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Logger;
+import com.door43.util.threads.ManagedTask;
 import com.door43.util.wizard.WizardActivity;
 
 
-public class UploadWizardActivity extends WizardActivity {
+public class UploadWizardActivity extends WizardActivity implements GenericTaskWatcher.OnFinishedListener {
 
     private boolean mFinished = false;
     private final static String STATE_FINISHED = "finished";
-    // project to upload
+    private final static String STATE_UPLOADED = "uploaded";
     private static Project mProject;
     private static SourceLanguage mSource;
     private static Language mTarget;
+    private GenericTaskWatcher mTaskWatcher;
+    private boolean mUploaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,7 @@ public class UploadWizardActivity extends WizardActivity {
 
         if(savedInstanceState != null) {
             mFinished = savedInstanceState.getBoolean(STATE_FINISHED);
+            mUploaded = savedInstanceState.getBoolean(STATE_UPLOADED);
         } else {
             // initialize things for the upload wizard
             mProject = null;
@@ -58,15 +60,25 @@ public class UploadWizardActivity extends WizardActivity {
         addStep(new ContactInfoFragment());
         addStep(new PreviewFragment());
 
-        if(mFinished) {
+        mTaskWatcher = new GenericTaskWatcher(this, R.string.push_msg_init, R.drawable.ic_cloud_small);
+        mTaskWatcher.setOnFinishedListener(this);
+        // TODO: do we want to allow users to cancel their uploads?
+
+        if(mUploaded) {
+            onUploaded();
+        } else if(mFinished) {
             // TODO: attach to tasks
+//            mTaskWatcher.watch();
         }
     }
 
     @Override
     protected void loadStep() {
         closeKeyboard();
-        super.loadStep();
+        if(!mFinished) {
+            super.loadStep();
+        }
+        // if the wizard has finished we don't need to load any steps
     }
 
     /**
@@ -142,38 +154,15 @@ public class UploadWizardActivity extends WizardActivity {
     @Override
     public void onFinish() {
         mFinished = true;
-        // TODO: place all of this in a task
-        if(AppContext.projectManager().getSelectedProject().translationIsReady() && ProfileManager.getProfile() == null) {
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-            if (prev != null) {
-                ft.remove(prev);
-            }
-            ft.addToBackStack(null);
-
-            // Create and show the dialog
-            ContactFormDialog newFragment = new ContactFormDialog();
-            newFragment.setOkListener(new ContactFormDialog.OnOkListener() {
-                @Override
-                public void onOk(Profile profile) {
-                    ProfileManager.setProfile(profile);
-                    upload();
-                }
-            });
-            newFragment.show(ft, "dialog");
-        } else {
-            upload();
-        }
+        upload();
     }
 
     /**
-     * Initiates the actual upload
+     * Uploads the translation to the server
      */
     private void upload() {
-        // TODO: place all of this in a task
         // prepare upload
-        AppContext.context().showProgressDialog(R.string.preparing_upload);
-        AppContext.projectManager().getSelectedProject().commit(new Project.OnCommitComplete() {
+        getTranslationProject().commit(new Project.OnCommitComplete() {
             @Override
             public void success() {
                 TranslationManager.syncSelectedProject();
@@ -192,6 +181,35 @@ public class UploadWizardActivity extends WizardActivity {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(STATE_FINISHED, mFinished);
+        outState.putBoolean(STATE_UPLOADED, mUploaded);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDestroy() {
+        mTaskWatcher.stop();
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        mTaskWatcher.stop();
+        mUploaded = true;
+        onUploaded();
+    }
+
+    /**
+     * Displays success notice to the user
+     */
+    public void onUploaded() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.success)
+                .setMessage(R.string.git_push_success)
+                .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .show();
     }
 }

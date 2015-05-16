@@ -588,19 +588,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
      */
 
     /**
-     * Triggered by the translation manager after the security keys have been successfully submitted to the server
-     * @param event
-     */
-    @Subscribe
-    public void securityKeysSubmitted(SecurityKeysSubmittedEvent event) {
-        if(AppContext.context().isNetworkAvailable()) {
-            TranslationManager.syncSelectedProject();
-        } else {
-            AppContext.context().showToastMessage(R.string.internet_not_available);
-        }
-    }
-
-    /**
      * Triggered any time a frame is cleaned (deleted)
      * @param event
      */

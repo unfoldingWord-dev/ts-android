@@ -29,7 +29,7 @@ import java.util.TimerTask;
 /**
  * This class handles the storage of translated content.
  */
-public class TranslationManager implements TCPClient.TcpListener {
+public class TranslationManager {
 //    private MainApplication mContext;
     private static final String TAG = "TranslationManager";
     private static final String mParentProjectSlug = "uw"; //  NOTE: not sure if this will ever need to be dynamic
@@ -54,19 +54,76 @@ public class TranslationManager implements TCPClient.TcpListener {
      * Initiates a git sync with the server. This will forcebly push all local changes to the server
      * and discard any discrepencies.
      */
-    public static void syncSelectedProject() {
-        if(!AppContext.context().hasRegisteredKeys()) {
-            AppContext.context().showProgressDialog(R.string.loading);
-            // set up a tcp connection
-            if(mTcpClient == null) {
-                mTcpClient = new TCPClient(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, AppContext.context().getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_auth_server_port))), sInstance);
+    public static void syncSelectedProject(final OnSyncListener listener) {
+        if(AppContext.context().isNetworkAvailable()) {
+            listener.onProgress(-1, AppContext.context().getResources().getString(R.string.loading));
+            if (!AppContext.context().hasRegisteredKeys()) {
+                AppContext.context().showProgressDialog(R.string.loading);
+                // set up a tcp connection
+                if (mTcpClient == null) {
+                    mTcpClient = new TCPClient(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, AppContext.context().getResources().getString(R.string.pref_default_auth_server)), Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_auth_server_port))), new TCPClient.TcpListener() {
+                        @Override
+                        public void onConnectionEstablished() {
+                            // submit key to the server
+                            if (AppContext.context().hasKeys()) {
+                                listener.onProgress(-1, AppContext.context().getResources().getString(R.string.submitting_security_keys));
+                                JSONObject json = new JSONObject();
+                                try {
+                                    String key = FileUtilities.getStringFromFile(AppContext.context().getPublicKey().getAbsolutePath()).trim();
+                                    json.put("key", key);
+                                    json.put("udid", AppContext.udid());
+                                    // TODO: provide support for using user names
+//                                json.put("username", "");
+                                    Log.d(TAG, json.toString());
+                                    mTcpClient.sendMessage(json.toString());
+                                } catch (JSONException e) {
+                                    Logger.e(TranslationManager.class.getName(), "Failed to upload the public key", e);
+                                    listener.onError(e.getMessage());
+                                } catch (Exception e) {
+                                    Logger.e(TranslationManager.class.getName(), "Failed to upload the public key", e);
+                                    listener.onError(e.getMessage());
+                                }
+                            } else {
+                                listener.onError(AppContext.context().getResources().getString(R.string.error_missing_ssh_keys));
+                            }
+                        }
+
+                        @Override
+                        public void onMessageReceived(String message) {
+                            // check if we get an ok message from sending ssh keys to the server
+                            AppContext.context().closeProgressDialog();
+                            try {
+                                JSONObject json = new JSONObject(message);
+                                if (json.has("ok")) {
+                                    AppContext.context().setHasRegisteredKeys(true);
+                                    pushSelectedProjectRepo();
+                                } else {
+                                    Logger.e(TranslationManager.class.getName(), "The server rejected the public key", new Throwable(json.getString("error")));
+                                    listener.onError(json.getString("error"));
+                                }
+                            } catch (JSONException e) {
+                                Logger.e(TranslationManager.class.getName(), "Failed to parse the response from the server", e);
+                                listener.onError(e.getMessage());
+                            }
+                            mTcpClient.stop();
+                        }
+
+                        @Override
+                        public void onError(Throwable t) {
+                            Logger.e(TranslationManager.class.getName(), "Could not connect to the server", t);
+                            listener.onError(t.getMessage());
+                        }
+                    });
+                } else {
+                    // TODO: update the sever and port if they have changed... Not sure if this task is applicable now
+                }
+                // connect to the server so we can submit our key
+                mTcpClient.connect();
             } else {
-                // TODO: update the sever and port if they have changed... Not sure if this task is applicable now
+                pushSelectedProjectRepo();
             }
-            // connect to the server so we can submit our key
-            mTcpClient.connect();
         } else {
-            pushSelectedProjectRepo();
+            listener.onError(AppContext.context().getResources().getString(R.string.internet_not_available));
         }
     }
 
@@ -212,6 +269,24 @@ public class TranslationManager implements TCPClient.TcpListener {
     }
 
     /**
+     * Pushes a project repository to the server
+     * @param p
+     * @param target
+     */
+    private static void pushProjectRepo(Project p, Language target) {
+        // TODO: implement and replace pushSelectedProjectRepo()
+    }
+
+    /**
+     * Pushes a notes repository to the server
+     * @param p
+     * @param target
+     */
+    private static void pushNotesRepo(Project p, Language target) {
+        // TODO: implement
+    }
+
+    /**
      * Generates the remote path for a local repo
      * @param project
      * @param lang
@@ -220,61 +295,6 @@ public class TranslationManager implements TCPClient.TcpListener {
     private static String getRemotePath(Project project, Language lang) {
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
         return server + ":tS/" + AppContext.udid() + "/" + mParentProjectSlug + "-" + project.getId() + "-" + lang.getId();
-    }
-
-    /**
-     * Submits the client public ssh key to the server so we can push updates
-     */
-    private static void registerSSHKeys() {
-        if(AppContext.context().hasKeys()) {
-            JSONObject json = new JSONObject();
-            try {
-                String key = FileUtilities.getStringFromFile(AppContext.context().getPublicKey().getAbsolutePath()).trim();
-                json.put("key", key);
-                json.put("udid", AppContext.udid());
-                // TODO: provide support for using user names
-//                json.put("username", "");
-                Log.d(TAG, json.toString());
-                AppContext.context().showProgressDialog(R.string.submitting_security_keys);
-                mTcpClient.sendMessage(json.toString());
-            } catch (JSONException e) {
-                AppContext.context().showException(e);
-            } catch (Exception e) {
-                AppContext.context().showException(e);
-            }
-        } else {
-            AppContext.context().closeProgressDialog();
-            AppContext.context().showException(new Throwable(AppContext.context().getResources().getString(R.string.error_missing_ssh_keys)));
-        }
-    }
-
-    @Override
-    public void onConnectionEstablished() {
-        // submit key to the server
-        registerSSHKeys();
-    }
-
-    @Override
-    public void onMessageReceived(String message) {
-        // check if we get an ok message from sending ssh keys to the server
-        AppContext.context().closeProgressDialog();
-        try {
-            JSONObject json = new JSONObject(message);
-            if(json.has("ok")) {
-                AppContext.context().setHasRegisteredKeys(true);
-                AppContext.getEventBus().post(new SecurityKeysSubmittedEvent());
-            } else {
-                AppContext.context().showException(new Throwable(json.getString("error")));
-            }
-        } catch (JSONException e) {
-            AppContext.context().showException(e);
-        }
-        mTcpClient.stop();
-    }
-
-    @Override
-    public void onError(Throwable t) {
-        AppContext.context().showException(t);
     }
 
     /**
@@ -484,6 +504,12 @@ public class TranslationManager implements TCPClient.TcpListener {
     }
 
     public interface OnProgressListener {
+        void onProgress(double progress, String message);
+    }
+
+    public interface OnSyncListener {
+        void onFinish();
+        void onError(String message);
         void onProgress(double progress, String message);
     }
 }

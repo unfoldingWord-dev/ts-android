@@ -17,7 +17,6 @@ public class TCPClient {
     private int mPort;
     private TcpListener mTcpListener = null;
     private boolean mRun = false;
-    private final String TAG = "TCP Client";
     private TCPClient me = this;
 
     PrintWriter out;
@@ -78,7 +77,7 @@ public class TCPClient {
             Socket socket = new Socket(serverAddr, mPort);
 
             try {
-                //send the message to the server
+                // send the message to the server
                 out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 in = socket.getInputStream();
 
@@ -134,9 +133,9 @@ public class TCPClient {
     }
 
     public interface TcpListener {
-        public void onConnectionEstablished();
-        public void onMessageReceived(String message);
-        public void onError(Throwable t);
+        void onConnectionEstablished();
+        void onMessageReceived(String message);
+        void onError(Throwable t);
     }
 
     /**
