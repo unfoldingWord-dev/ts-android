@@ -119,13 +119,13 @@ public class VerifyFragment extends WizardFragment implements GenericTaskWatcher
             mNextBtn.setVisibility(View.VISIBLE);
         }
         mTask = (ValidateTranslationTask)task;
-        if(!mTask.hasWarnings() && !mTask.hasErrors()) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle(R.string.notice)
-                    .setMessage(R.string.translation_appears_valid)
-                    .setPositiveButton(R.string.label_ok, new DummyDialogListener())
-                    .show();
-        }
+//        if(!mTask.hasWarnings() && !mTask.hasErrors()) {
+//            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//            builder.setTitle(R.string.notice)
+//                    .setMessage(R.string.translation_appears_valid)
+//                    .setPositiveButton(R.string.label_ok, new DummyDialogListener())
+//                    .show();
+//        }
         mAdapter.changeDataset(mTask.getValidationItems());
     }
 

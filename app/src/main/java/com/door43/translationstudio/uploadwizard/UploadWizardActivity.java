@@ -16,7 +16,7 @@ import com.door43.translationstudio.tasks.UploadProjectTask;
 import com.door43.translationstudio.uploadwizard.steps.ContactInfoFragment;
 import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.PreviewFragment;
-import com.door43.translationstudio.uploadwizard.steps.ProjectChooserFragment;
+import com.door43.translationstudio.uploadwizard.steps.choose.ProjectChooserFragment;
 import com.door43.translationstudio.uploadwizard.steps.review.ReviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.validate.VerifyFragment;
 import com.door43.translationstudio.util.AppContext;

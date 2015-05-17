@@ -32,7 +32,7 @@ public class ValidateTranslationTask extends ManagedTask {
             mValidationItems.add(new UploadValidationItem(AppContext.context().getResources().getString(R.string.title_project_settings), AppContext.context().getResources().getString(R.string.error_target_and_source_are_same), UploadValidationItem.Status.ERROR));
             mHasErrors = true;
         } else {
-//            mValidationItems.add(new UploadValidationItem(AppContext.context().getResources().getString(R.string.title_project_settings), UploadValidationItem.Status.SUCCESS));
+            mValidationItems.add(new UploadValidationItem(AppContext.context().getResources().getString(R.string.title_project_settings), UploadValidationItem.Status.SUCCESS));
         }
 
         // make sure all the chapter titles and references have been set
