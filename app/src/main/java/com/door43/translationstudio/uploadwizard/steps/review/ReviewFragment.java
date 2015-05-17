@@ -59,7 +59,7 @@ public class ReviewFragment extends WizardFragment {
             }
         });
 
-        mAdapter = new CheckingQuestionAdapter();
+        mAdapter = new CheckingQuestionAdapter(getActivity());
         list.setAdapter(mAdapter);
         loadCheckingQuestions();
 
