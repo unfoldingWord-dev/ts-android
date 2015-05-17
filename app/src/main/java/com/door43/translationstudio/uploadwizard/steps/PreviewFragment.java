@@ -9,6 +9,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.wizard.WizardFragment;
@@ -43,6 +46,7 @@ public class PreviewFragment extends WizardFragment {
         contactInfoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // move to contact form
                 onPrevious();
             }
         });

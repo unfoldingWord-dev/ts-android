@@ -20,6 +20,7 @@ import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.Logger;
+import com.door43.util.wizard.WizardActivity;
 import com.door43.util.wizard.WizardFragment;
 
 import org.json.JSONArray;
@@ -96,13 +97,21 @@ public class ReviewFragment extends WizardFragment {
 
         if(questionsRaw == null) {
             // there are no checking questions
-            goToNext();
+            if(((UploadWizardActivity)getActivity()).getStepDirection() == WizardActivity.StepDirection.NEXT) {
+                goToNext();
+            } else {
+                onPrevious();
+            }
         } else {
             List<CheckingQuestion> questions = parseCheckingQuestions(questionsRaw);
             if(questions.size() > 0) {
                 mAdapter.changeDataset(questions);
             } else {
-                goToNext();
+                if(((UploadWizardActivity)getActivity()).getStepDirection() == WizardActivity.StepDirection.NEXT) {
+                    goToNext();
+                } else {
+                    onPrevious();
+                }
             }
         }
     }

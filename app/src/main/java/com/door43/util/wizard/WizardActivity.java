@@ -14,6 +14,12 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
     private int mCurrentFragmentIndex = 0;
     private int mContainerViewId = -1;
     private static final String STATE_INDEX = "fragment_index";
+    private StepDirection mStepDirection = StepDirection.NEXT;
+
+    public static enum StepDirection {
+        NEXT,
+        PREVIOUS
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +35,14 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
     public void onResume() {
         super.onResume();
         loadStep();
+    }
+
+    /**
+     * Returns the direction in which the wizard step was made
+     * @return
+     */
+    public StepDirection getStepDirection() {
+        return mStepDirection;
     }
 
     /**
@@ -57,6 +71,7 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
      */
     @Override
     public void onNext() {
+        mStepDirection = StepDirection.NEXT;
         if(mContainerViewId == -1) {
             throw new IllegalArgumentException(toString() + " must call setReplacementContainerViewId before navigating between steps");
         }
@@ -83,6 +98,7 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
      */
     @Override
     public void onPrevious() {
+        mStepDirection = StepDirection.PREVIOUS;
         if(mContainerViewId == -1) {
             throw new IllegalArgumentException(toString() + " must call setReplacementContainerViewId before navigating between steps");
         }
@@ -111,11 +127,12 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
     @Override
     public void onSkip(int numSteps) {
         if(numSteps < 0) {
-            // onNext adds one so we need to offset it
-            numSteps -= 2;
+            mCurrentFragmentIndex += numSteps;
+            onPrevious();
+        } else {
+            mCurrentFragmentIndex += numSteps;
+            onNext();
         }
-        mCurrentFragmentIndex += numSteps;
-        onNext();
     }
 
     @Override
