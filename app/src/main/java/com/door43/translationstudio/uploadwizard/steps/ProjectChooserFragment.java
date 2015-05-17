@@ -1,5 +1,6 @@
-package com.door43.translationstudio.uploadwizard.steps.choose;
+package com.door43.translationstudio.uploadwizard.steps;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,8 +9,10 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.door43.translationstudio.LanguageSelectorActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
@@ -23,7 +26,9 @@ import java.util.List;
  * Created by joel on 5/14/2015.
  */
 public class ProjectChooserFragment extends WizardFragment {
+    private static final int TARGET_LANGUAGE_REQUEST = 0;
     private ModelItemAdapter mAdapter;
+    private Project mChosenProject = null;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -38,15 +43,26 @@ public class ProjectChooserFragment extends WizardFragment {
             }
         });
 
-        mAdapter = new ModelItemAdapter(AppContext.context(), new Model[0], "translated_project_prep_tasks");
+        mAdapter = new ModelItemAdapter(AppContext.context(), new Model[0], false, false, "translated_project_prep_tasks");
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO: allow the user to choose the target language if there are multiple being translated.
                 Project p = (Project)mAdapter.getItem(position);
-                ((UploadWizardActivity)getActivity()).setTranslationToUpload(p, p.getSelectedSourceLanguage(), p.getSelectedTargetLanguage());
-                onPrevious();
+                if(p.getActiveTargetLanguages().length > 1) {
+                    mChosenProject = p;
+                    // let the user choose which target language to upload
+                    Intent languageIntent = new Intent(getActivity(), LanguageSelectorActivity.class);
+                    List<String> targetIds = new ArrayList<String>();
+                    for(Language l:p.getActiveTargetLanguages()) {
+                        targetIds.add(l.getId());
+                    }
+                    languageIntent.putExtra(LanguageSelectorActivity.EXTRAS_LANGUAGES, targetIds.toArray(new String[targetIds.size()]));
+                    startActivityForResult(languageIntent, TARGET_LANGUAGE_REQUEST);
+                } else {
+                    ((UploadWizardActivity) getActivity()).setTranslationToUpload(p, p.getSelectedSourceLanguage(), p.getSelectedTargetLanguage());
+                    onPrevious();
+                }
             }
         });
 
@@ -65,5 +81,16 @@ public class ProjectChooserFragment extends WizardFragment {
         }
         mAdapter.changeDataSet(projects.toArray(new Model[projects.size()]));
         return v;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == TARGET_LANGUAGE_REQUEST) {
+            if(resultCode == getActivity().RESULT_OK) {
+                String targetId = data.getExtras().getString(LanguageSelectorActivity.EXTRAS_CHOSEN_LANGUAGE);
+                ((UploadWizardActivity) getActivity()).setTranslationToUpload(mChosenProject, mChosenProject.getSelectedSourceLanguage(), AppContext.projectManager().getLanguage(targetId));
+                onPrevious();
+            }
+        }
     }
 }

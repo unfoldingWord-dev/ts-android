@@ -167,13 +167,13 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      */
     private void requestSourceLanguage() {
         Intent languageIntent = new Intent(getActivity(), LanguageSelectorActivity.class);
-        languageIntent.putExtra("sourceLanguages", true);
+        languageIntent.putExtra(LanguageSelectorActivity.EXTRAS_SOURCE_LANGUAGES, true);
         startActivityForResult(languageIntent, SOURCE_LANGUAGE_REQUEST);
     }
 
     private void requestTargetLanguage() {
         Intent languageIntent = new Intent(getActivity(), LanguageSelectorActivity.class);
-        languageIntent.putExtra("sourceLanguages", false);
+        languageIntent.putExtra(LanguageSelectorActivity.EXTRAS_SOURCE_LANGUAGES, false);
         startActivityForResult(languageIntent, TARGET_LANGUAGE_REQUEST);
     }
 
@@ -277,14 +277,14 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == SOURCE_LANGUAGE_REQUEST) {
             if(resultCode == getActivity().RESULT_OK) {
-                String id = data.getExtras().getString(LanguageSelectorActivity.EXTRA_LANGUAGE);
+                String id = data.getExtras().getString(LanguageSelectorActivity.EXTRAS_CHOSEN_LANGUAGE);
                 Project p = AppContext.projectManager().getSelectedProject();
                 p.setSelectedSourceLanguage(id);
                 indexResources(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
             }
         } else if(requestCode == TARGET_LANGUAGE_REQUEST) {
             if(resultCode == getActivity().RESULT_OK) {
-                String id = data.getExtras().getString(LanguageSelectorActivity.EXTRA_LANGUAGE);
+                String id = data.getExtras().getString(LanguageSelectorActivity.EXTRAS_CHOSEN_LANGUAGE);
                 Project p = AppContext.projectManager().getSelectedProject();
                 p.setSelectedTargetLanguage(id);
                 openChaptersTab();

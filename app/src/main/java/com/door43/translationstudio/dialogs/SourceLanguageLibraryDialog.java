@@ -22,6 +22,7 @@ import java.util.Arrays;
 /**
  * This dialog allows users to browse project source langauges and make selections
  */
+@Deprecated
 public class SourceLanguageLibraryDialog extends DialogFragment {
     private SourceLanguage[] mLanguages;
     private LanguageAdapter mAdapter;

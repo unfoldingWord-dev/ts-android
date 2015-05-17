@@ -169,11 +169,41 @@ public class Project implements Model {
     }
 
     /**
+     * Sets whether the translation in the target langauge is ready for submission
+     * @param isReady
+     */
+    public void setTranslationIsReady(Language targetLanguage, boolean isReady){
+        File file = new File(getRepositoryPath(getId(), targetLanguage.getId()), TRANSLATION_READY_TAG);
+        if(isReady == true) {
+            // place a file in the repo so the server knows it is ready
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Failed to create translation ready file", e);
+                return;
+            }
+        } else {
+            // remove the ready tag
+            file.delete();
+        }
+    }
+
+    /**
      * Checks if the translation in the currently selected target language is ready for submission
      * @return
      */
     public boolean translationIsReady() {
         File file = new File(getRepositoryPath(), TRANSLATION_READY_TAG);
+        return file.exists();
+    }
+
+    /**
+     * Checks if the translation is ready for submission
+     * @param targetLanguage
+     * @return
+     */
+    public boolean translationIsReady(Language targetLanguage) {
+        File file = new File(getRepositoryPath(getId(), targetLanguage.getId()), TRANSLATION_READY_TAG);
         return file.exists();
     }
 

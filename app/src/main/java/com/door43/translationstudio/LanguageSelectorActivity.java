@@ -18,6 +18,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -26,7 +27,9 @@ import java.util.List;
  */
 public class LanguageSelectorActivity extends TranslatorBaseActivity {
 
-    public static final String EXTRA_LANGUAGE = "language_id";
+    public static final String EXTRAS_CHOSEN_LANGUAGE = "language_id";
+    public static final String EXTRAS_LANGUAGES = "language_ids";
+    public static final String EXTRAS_SOURCE_LANGUAGES = "show_source_languages";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Boolean showSourceLanguages = false;
+        String[] languageIds = null;
 
         Project p = AppContext.projectManager().getSelectedProject();
         if(p == null) {
@@ -48,15 +52,27 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
 
         Intent intent = getIntent();
         if(intent != null) {
-            showSourceLanguages = intent.getBooleanExtra("sourceLanguages", false);
+            showSourceLanguages = intent.getBooleanExtra(EXTRAS_SOURCE_LANGUAGES, false);
+            languageIds = intent.getStringArrayExtra(EXTRAS_LANGUAGES);
         }
         final boolean willShowSourceLanguages = showSourceLanguages;
 
         // add items to list view
-        if(willShowSourceLanguages) {
-            adapter = new LanguageAdapter((List<Language>)(List<?>)p.getSourceLanguages(), this, showSourceLanguages);
+        if(languageIds != null && languageIds.length > 0) {
+            // use provided languages
+            List<Language> languages = new ArrayList<>();
+            for(String id:languageIds) {
+                languages.add(AppContext.projectManager().getLanguage(id));
+            }
+            // TRICKY: we tell the adapter these are source langauges because no formatting is displayed
+            adapter = new LanguageAdapter(languages, this, true);
         } else {
-            adapter = new LanguageAdapter(AppContext.projectManager().getLanguages(), this, showSourceLanguages);
+            // use languages from the selected project
+            if (willShowSourceLanguages) {
+                adapter = new LanguageAdapter((List<Language>) (List<?>) p.getSourceLanguages(), this, showSourceLanguages);
+            } else {
+                adapter = new LanguageAdapter(AppContext.projectManager().getLanguages(), this, showSourceLanguages);
+            }
         }
 
         list.setAdapter(adapter);
@@ -64,7 +80,7 @@ public class LanguageSelectorActivity extends TranslatorBaseActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Intent intent = getIntent();
-                intent.putExtra(EXTRA_LANGUAGE, adapter.getItem(i).getId());
+                intent.putExtra(EXTRAS_CHOSEN_LANGUAGE, adapter.getItem(i).getId());
                 setResult(RESULT_OK, intent);
                 finish();
             }

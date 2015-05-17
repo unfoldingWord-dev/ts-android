@@ -97,7 +97,7 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
      */
     protected void loadStep() {
         if (mCurrentFragmentIndex >= 0 && mCurrentFragmentIndex < mFragments.size()) {
-            getFragmentManager().beginTransaction().replace(mContainerViewId, mFragments.get(mCurrentFragmentIndex)).addToBackStack(null).commit();
+            getFragmentManager().beginTransaction().replace(mContainerViewId, mFragments.get(mCurrentFragmentIndex)).commit();
         } else {
             Log.w("Step", "Invalid wizard fragment index: " + mCurrentFragmentIndex);
             finish();

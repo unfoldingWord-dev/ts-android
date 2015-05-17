@@ -16,7 +16,11 @@ public class CheckingQuestionAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return mQuestions.size();
+        if(mQuestions != null) {
+            return mQuestions.size();
+        } else {
+            return 0;
+        }
     }
 
     @Override

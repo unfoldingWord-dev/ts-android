@@ -192,7 +192,7 @@ public class UploadProjectTask extends ManagedTask {
      * Uploads pushes the project repository to the server
      */
     private void pushProject() {
-        if(mProject.translationIsReady()) {
+        if(mProject.translationIsReady(mLanguage)) {
             publishProgress(-1, AppContext.context().getResources().getString(R.string.publishing_translation));
         } else {
             publishProgress(-1, AppContext.context().getResources().getString(R.string.backing_up_translation));

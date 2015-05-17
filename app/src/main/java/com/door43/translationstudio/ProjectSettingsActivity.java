@@ -100,7 +100,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
                 @Override
                 public void onClick(View view) {
                     Intent languageIntent = new Intent(ProjectSettingsActivity.this, LanguageSelectorActivity.class);
-                    languageIntent.putExtra("sourceLanguages", false);
+                    languageIntent.putExtra(LanguageSelectorActivity.EXTRAS_SOURCE_LANGUAGES, false);
                     startActivityForResult(languageIntent, TARGET_LANGUAGE_REQUEST);
                 }
             });
@@ -108,7 +108,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
                 @Override
                 public void onClick(View view) {
                     Intent languageIntent = new Intent(ProjectSettingsActivity.this, LanguageSelectorActivity.class);
-                    languageIntent.putExtra("sourceLanguages", true);
+                    languageIntent.putExtra(LanguageSelectorActivity.EXTRAS_SOURCE_LANGUAGES, true);
                     startActivityForResult(languageIntent, SOURCE_LANGUAGE_REQUEST);
                 }
             });
@@ -266,12 +266,12 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == SOURCE_LANGUAGE_REQUEST) {
             if(resultCode == RESULT_OK) {
-                mSelectedSourceLanguageId = data.getExtras().getString(LanguageSelectorActivity.EXTRA_LANGUAGE);
+                mSelectedSourceLanguageId = data.getExtras().getString(LanguageSelectorActivity.EXTRAS_CHOSEN_LANGUAGE);
                 loadValues();
             }
         } else if(requestCode == TARGET_LANGUAGE_REQUEST) {
             if(resultCode == RESULT_OK) {
-                mSelectedTargetLanguageId = data.getExtras().getString(LanguageSelectorActivity.EXTRA_LANGUAGE);
+                mSelectedTargetLanguageId = data.getExtras().getString(LanguageSelectorActivity.EXTRAS_CHOSEN_LANGUAGE);
                 loadValues();
             }
         }

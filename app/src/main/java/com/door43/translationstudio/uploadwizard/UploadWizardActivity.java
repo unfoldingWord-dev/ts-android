@@ -16,7 +16,7 @@ import com.door43.translationstudio.tasks.UploadProjectTask;
 import com.door43.translationstudio.uploadwizard.steps.ContactInfoFragment;
 import com.door43.translationstudio.uploadwizard.steps.OverviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.PreviewFragment;
-import com.door43.translationstudio.uploadwizard.steps.choose.ProjectChooserFragment;
+import com.door43.translationstudio.uploadwizard.steps.ProjectChooserFragment;
 import com.door43.translationstudio.uploadwizard.steps.review.ReviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.validate.VerifyFragment;
 import com.door43.translationstudio.util.AppContext;
@@ -120,6 +120,9 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
      * @return
      */
     public SourceLanguage getTranslationSource() {
+        if(mSource == null) {
+            getTranslationProject();
+        }
         return mSource;
     }
 
@@ -128,6 +131,9 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
      * @return
      */
     public Language getTranslationTarget() {
+        if(mTarget == null) {
+            getTranslationProject();
+        }
         return mTarget;
     }
 

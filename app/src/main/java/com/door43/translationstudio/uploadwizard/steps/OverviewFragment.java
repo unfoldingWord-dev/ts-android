@@ -1,16 +1,20 @@
 package com.door43.translationstudio.uploadwizard.steps;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.util.wizard.WizardFragment;
 
@@ -19,25 +23,30 @@ import com.door43.util.wizard.WizardFragment;
  * or continue to the next step.
  */
 public class OverviewFragment extends WizardFragment {
+    private TextView mTitleTextView;
+    private TextView mSourceTextView;
+    private TextView mTargetTextView;
+    private LinearLayout mLanguageLayout;
+    private CheckBox mPublishCheckBox;
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_upload_overview, container, false);
-        TextView titleTextView = (TextView)v.findViewById(R.id.projectTitle);
-        TextView sourceTextView = (TextView)v.findViewById(R.id.sourceLanguageTextView);
-        TextView targetTextView = (TextView)v.findViewById(R.id.targetLanguageTextView);
-        LinearLayout languageLayout = (LinearLayout)v.findViewById(R.id.languageInfoLayout);
-        final CheckBox publishCheckBox = (CheckBox)v.findViewById(R.id.publishTranslationCheckBox);
+        mTitleTextView = (TextView)v.findViewById(R.id.projectTitle);
+        mSourceTextView = (TextView)v.findViewById(R.id.sourceLanguageTextView);
+        mTargetTextView = (TextView)v.findViewById(R.id.targetLanguageTextView);
+        mLanguageLayout = (LinearLayout)v.findViewById(R.id.languageInfoLayout);
+        mPublishCheckBox = (CheckBox)v.findViewById(R.id.publishTranslationCheckBox);
         LinearLayout chooseProjectBtn = (LinearLayout)v.findViewById(R.id.chooseProjectButton);
-
-        final Project p = ((UploadWizardActivity)getActivity()).getTranslationProject();
-
         Button cancelBtn = (Button)v.findViewById(R.id.cancelButton);
         Button nextBtn = (Button)v.findViewById(R.id.nextButton);
 
-        publishCheckBox.setOnClickListener(new View.OnClickListener() {
+        mPublishCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                p.setTranslationIsReady(publishCheckBox.isChecked());
+                Project p = ((UploadWizardActivity)getActivity()).getTranslationProject();
+                Language t = ((UploadWizardActivity)getActivity()).getTranslationTarget();
+                p.setTranslationIsReady(t, mPublishCheckBox.isChecked());
             }
         });
         cancelBtn.setOnClickListener(new View.OnClickListener() {
@@ -55,10 +64,12 @@ public class OverviewFragment extends WizardFragment {
         nextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Project p = ((UploadWizardActivity)getActivity()).getTranslationProject();
+                Language t = ((UploadWizardActivity)getActivity()).getTranslationTarget();
                 if(p == null) {
                     // choose a project
                     onNext();
-                } else if (p.translationIsReady()) {
+                } else if (p.translationIsReady(t)) {
                     // project is being published
                     onSkip(1); // see UploadWizardActivity.onCreate() for step order
                 } else {
@@ -68,20 +79,29 @@ public class OverviewFragment extends WizardFragment {
             }
         });
 
-        if(p != null) {
-            titleTextView.setText(p.getTitle());
-            // TODO: we will want the user to be able to choose the source language and target language without them being the selected source and target.
-            sourceTextView.setText(p.getSelectedSourceLanguage().getName());
-            targetTextView.setText(p.getSelectedTargetLanguage().getName());
-            publishCheckBox.setVisibility(View.VISIBLE);
-            languageLayout.setVisibility(View.VISIBLE);
-            publishCheckBox.setChecked(p.translationIsReady());
-        } else {
-            titleTextView.setText(R.string.choose_a_project);
-            publishCheckBox.setVisibility(View.GONE);
-            languageLayout.setVisibility(View.GONE);
-        }
-
         return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
+        SourceLanguage source = ((UploadWizardActivity)getActivity()).getTranslationSource();
+        Language target = ((UploadWizardActivity)getActivity()).getTranslationTarget();
+
+        // populate data
+        if(project != null) {
+            mTitleTextView.setText(project.getTitle());
+            mSourceTextView.setText(source.getName());
+            mTargetTextView.setText(target.getName());
+            mPublishCheckBox.setVisibility(View.VISIBLE);
+            mLanguageLayout.setVisibility(View.VISIBLE);
+            mPublishCheckBox.setChecked(project.translationIsReady(target));
+        } else {
+            mTitleTextView.setText(R.string.choose_a_project);
+            mPublishCheckBox.setVisibility(View.GONE);
+            mPublishCheckBox.setChecked(false);
+            mLanguageLayout.setVisibility(View.GONE);
+        }
     }
 }
