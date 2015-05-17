@@ -37,11 +37,12 @@ import java.util.List;
 public class ReviewFragment extends WizardFragment {
     private Button mNextBtn;
     private CheckingQuestionAdapter mAdapter;
+    private ListView mList;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_upload_review, container, false);
-        ListView list = (ListView)v.findViewById(R.id.reviewListView);
+        mList = (ListView)v.findViewById(R.id.reviewListView);
         Button backBtn = (Button)v.findViewById(R.id.backButton);
         mNextBtn = (Button)v.findViewById(R.id.nextButton);
 
@@ -55,15 +56,22 @@ public class ReviewFragment extends WizardFragment {
             @Override
             public void onClick(View v) {
                 // TODO: check if the user viewed all of the questions
+                // TODO: it would be nice to keep track of when a frame or chapter was last changed and also when the user views a question.
+                // that way we could avoid having the user check the same question all over again.
                 goToNext();
             }
         });
 
         mAdapter = new CheckingQuestionAdapter(getActivity());
-        list.setAdapter(mAdapter);
+        mList.setAdapter(mAdapter);
         loadCheckingQuestions();
 
         return v;
+    }
+
+    public void onResume() {
+        super.onResume();
+        mList.setSelectionAfterHeaderView();
     }
 
     /**
