@@ -18,6 +18,7 @@ public class CheckingQuestion {
     public final String answer;
     public final List<String> references;
     public final String chapterId;
+    private boolean mViewed;
 
     protected CheckingQuestion(String chapterId, String question, String answer, List<String> references) {
         this.question = question;
@@ -44,5 +45,22 @@ public class CheckingQuestion {
             Logger.e(CheckingQuestion.class.getName(), "failed to parse checking question", e);
             return null;
         }
+    }
+
+    /**
+     * Sets whether or not the question has been viewed
+     * @param viewed
+     */
+    public void setViewed(boolean viewed) {
+        mViewed = viewed;
+        // TODO: we may want to get a timestamp and keep track of when questions where viewed so we don't have to re-view questions for frames that have not changed.
+    }
+
+    /**
+     * Checks if the question has been viewed
+     * @return
+     */
+    public boolean isViewed() {
+        return mViewed;
     }
 }

@@ -309,4 +309,5 @@
     <string name="publishing_translation">Publishing translation</string>
     <string name="backing_up_translation">Backing up translation</string>
     <string name="translation_appears_valid">Everything appears to be translated</string>
+    <string name="review_all_checking_questions">Please review all questions</string>
 </resources>

@@ -1,12 +1,16 @@
 package com.door43.translationstudio.uploadwizard.steps.review;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.CheckingQuestion;
@@ -19,6 +23,7 @@ import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
+import com.door43.util.DummyDialogListener;
 import com.door43.util.Logger;
 import com.door43.util.wizard.WizardActivity;
 import com.door43.util.wizard.WizardFragment;
@@ -38,14 +43,23 @@ public class ReviewFragment extends WizardFragment {
     private Button mNextBtn;
     private CheckingQuestionAdapter mAdapter;
     private ListView mList;
+    private TextView mRemainingText;
+    private TextView mPercentText;
+    private int numComplete = 0;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_upload_review, container, false);
         mList = (ListView)v.findViewById(R.id.reviewListView);
+        mRemainingText = (TextView)v.findViewById(R.id.remainingQuestionsTextView);
+        mPercentText = (TextView)v.findViewById(R.id.percentCompleteTextView);
         Button backBtn = (Button)v.findViewById(R.id.backButton);
         mNextBtn = (Button)v.findViewById(R.id.nextButton);
+        mAdapter = new CheckingQuestionAdapter(getActivity());
 
+
+        mRemainingText.setText("0/0");
+        mPercentText.setText("0%");
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -55,15 +69,44 @@ public class ReviewFragment extends WizardFragment {
         mNextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: check if the user viewed all of the questions
+                boolean checked = true;
+                for(int i = 0; i < mAdapter.getCount(); i ++) {
+                    if(!mAdapter.getItem(i).isViewed()) {
+                        checked = false;
+                        break;
+                    }
+                }
                 // TODO: it would be nice to keep track of when a frame or chapter was last changed and also when the user views a question.
                 // that way we could avoid having the user check the same question all over again.
-                goToNext();
+                if(checked) {
+                    goToNext();
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(R.string.notice)
+                            .setMessage(R.string.review_all_checking_questions)
+                            .setPositiveButton(R.string.label_ok, new DummyDialogListener())
+                            .show();
+                }
             }
         });
 
-        mAdapter = new CheckingQuestionAdapter(getActivity());
         mList.setAdapter(mAdapter);
+
+        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                mAdapter.getItem(position).setViewed(!mAdapter.getItem(position).isViewed());
+                if(mAdapter.getItem(position).isViewed()) {
+                    numComplete ++;
+                } else {
+                    numComplete --;
+                }
+                mRemainingText.setText(numComplete + "/" + mAdapter.getCount());
+                mPercentText.setText(Math.round((double)numComplete/(double)mAdapter.getCount() * 100d) + "%");
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+
         loadCheckingQuestions();
 
         return v;
@@ -122,6 +165,7 @@ public class ReviewFragment extends WizardFragment {
                 }
             }
         }
+        mRemainingText.setText("0/"+mAdapter.getCount());
     }
 
     /**
@@ -142,15 +186,16 @@ public class ReviewFragment extends WizardFragment {
         for(int i = 0; i < json.length(); i ++) {
             try {
                 JSONObject jsonChapter = json.getJSONObject(i);
-                String chapterId = jsonChapter.getString("id");
-                JSONArray jsonQuestionSet = jsonChapter.getJSONArray("cq");
-                for(int j = 0; j < jsonQuestionSet.length(); j ++) {
-                    JSONObject jsonQuestion = jsonQuestionSet.getJSONObject(j);
-                    questions.add(CheckingQuestion.generate(chapterId, jsonQuestion));
+                if(jsonChapter.has("id") && jsonChapter.has("cq")) {
+                    String chapterId = jsonChapter.getString("id");
+                    JSONArray jsonQuestionSet = jsonChapter.getJSONArray("cq");
+                    for (int j = 0; j < jsonQuestionSet.length(); j++) {
+                        JSONObject jsonQuestion = jsonQuestionSet.getJSONObject(j);
+                        questions.add(CheckingQuestion.generate(chapterId, jsonQuestion));
+                    }
                 }
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "failed to load the checking question", e);
-                continue;
             }
         }
 

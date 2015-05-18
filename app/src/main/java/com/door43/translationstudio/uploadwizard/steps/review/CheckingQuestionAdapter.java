@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -51,12 +52,22 @@ public class CheckingQuestionAdapter extends BaseAdapter {
             LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.fragment_upload_review_item, null);
             holder.questionText = (TextView)v.findViewById(R.id.questionTextView);
+            holder.answerText = (TextView)v.findViewById(R.id.answerTextView);
+            holder.imageView = (ImageView)v.findViewById(R.id.imageView);
             v.setTag(holder);
         } else {
             holder = (ViewHolder)v.getTag();
         }
 
         holder.questionText.setText(getItem(position).question);
+        holder.answerText.setText(getItem(position).answer);
+        if(getItem(position).isViewed()) {
+            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+            holder.answerText.setVisibility(View.VISIBLE);
+        } else {
+            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+            holder.answerText.setVisibility(View.GONE);
+        }
 
         return v;
     }
@@ -72,5 +83,7 @@ public class CheckingQuestionAdapter extends BaseAdapter {
 
     private class ViewHolder {
         public TextView questionText;
+        public TextView answerText;
+        public ImageView imageView;
     }
 }

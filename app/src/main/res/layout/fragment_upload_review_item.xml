@@ -2,14 +2,39 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:background="@color/white"
-    android:padding="5dp"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:padding="5dp"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is a review question"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/dark_gray"
+            android:layout_weight="1"
+            android:id="@+id/questionTextView" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:id="@+id/imageView"
+            android:layout_marginLeft="5dp"
+            android:background="@drawable/ic_check_small_disabled"
+            android:adjustViewBounds="false" />
+    </LinearLayout>
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:padding="5dp"
+        android:background="@color/lighter_gray"
         android:text="New Text"
         android:textSize="@dimen/h5"
-        android:textColor="@color/dark_gray"
-        android:id="@+id/questionTextView" />
+        android:textColor="@color/gray"
+        android:id="@+id/answerTextView" />
 </LinearLayout>

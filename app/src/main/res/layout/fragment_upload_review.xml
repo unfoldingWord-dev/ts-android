@@ -3,16 +3,44 @@
     android:background="@color/white"
     android:layout_height="match_parent">
 
-    <TextView
-        android:text="@string/review"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/h3"
-        android:layout_centerHorizontal="true"
-        android:layout_gravity="center_horizontal"
-        android:layout_alignParentTop="true"
+        android:weightSum="3"
         android:padding="5dp"
-        android:id="@+id/textView3" />
+        android:id="@+id/linearLayout13">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1/600"
+            android:layout_weight="1"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/gray"
+            android:gravity="center"
+            android:id="@+id/remainingQuestionsTextView" />
+
+        <TextView
+            android:text="@string/review"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/h3"
+            android:textColor="@color/dark_gray"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:id="@+id/textView3" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="100%"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/gray"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:id="@+id/percentCompleteTextView" />
+    </LinearLayout>
 
 
     <ListView
@@ -20,7 +48,7 @@
         android:layout_height="fill_parent"
         android:id="@+id/reviewListView"
         android:layout_above="@+id/linearLayout"
-        android:layout_below="@+id/textView3" />
+        android:layout_below="@+id/linearLayout13" />
 
     <LinearLayout
         android:orientation="horizontal"
