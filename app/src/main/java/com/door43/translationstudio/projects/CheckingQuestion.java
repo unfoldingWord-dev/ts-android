@@ -1,6 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import com.door43.util.Logger;
+import com.door43.util.Security;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +20,7 @@ public class CheckingQuestion {
     public final List<String> references;
     public final String chapterId;
     private boolean mViewed;
+    private String mId = null;
 
     protected CheckingQuestion(String chapterId, String question, String answer, List<String> references) {
         this.question = question;
@@ -62,5 +64,16 @@ public class CheckingQuestion {
      */
     public boolean isViewed() {
         return mViewed;
+    }
+
+    /**
+     * Returns the id of the checking question
+     * @return
+     */
+    public String getId() {
+        if(mId == null) {
+            mId = Security.md5(this.chapterId + this.question);
+        }
+        return mId;
     }
 }

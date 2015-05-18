@@ -60,7 +60,7 @@ public class ProjectChooserFragment extends WizardFragment {
                     languageIntent.putExtra(LanguageSelectorActivity.EXTRAS_LANGUAGES, targetIds.toArray(new String[targetIds.size()]));
                     startActivityForResult(languageIntent, TARGET_LANGUAGE_REQUEST);
                 } else {
-                    ((UploadWizardActivity) getActivity()).setTranslationToUpload(p, p.getSelectedSourceLanguage(), p.getSelectedTargetLanguage());
+                    ((UploadWizardActivity) getActivity()).setTranslationToUpload(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource(), p.getSelectedTargetLanguage());
                     onPrevious();
                 }
             }
@@ -88,7 +88,7 @@ public class ProjectChooserFragment extends WizardFragment {
         if(requestCode == TARGET_LANGUAGE_REQUEST) {
             if(resultCode == getActivity().RESULT_OK) {
                 String targetId = data.getExtras().getString(LanguageSelectorActivity.EXTRAS_CHOSEN_LANGUAGE);
-                ((UploadWizardActivity) getActivity()).setTranslationToUpload(mChosenProject, mChosenProject.getSelectedSourceLanguage(), AppContext.projectManager().getLanguage(targetId));
+                ((UploadWizardActivity) getActivity()).setTranslationToUpload(mChosenProject, mChosenProject.getSelectedSourceLanguage(), mChosenProject.getSelectedSourceLanguage().getSelectedResource(), AppContext.projectManager().getLanguage(targetId));
                 onPrevious();
             }
         }

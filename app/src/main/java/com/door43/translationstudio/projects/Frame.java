@@ -9,6 +9,7 @@ import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -164,6 +165,26 @@ public class Frame implements Model {
             }
         }
         return mTranslation;
+    }
+
+    /**
+     * Loads a frame translation from the disk
+     * @param projectId
+     * @param targetId
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public static Translation getTranslation(String projectId, String targetId, String chapterId, String frameId) {
+        try {
+            String text = FileUtils.readFileToString(new File(getFramePath(projectId, targetId, chapterId, frameId)));
+            Translation translation = new Translation(AppContext.projectManager().getLanguage(targetId), text);
+            translation.isSaved(true);
+            return translation;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**

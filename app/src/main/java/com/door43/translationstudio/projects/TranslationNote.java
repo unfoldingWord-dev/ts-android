@@ -132,6 +132,7 @@ public class TranslationNote {
         private TranslationNote mTranslationNote;
         private Translation mDefinitionTranslation;
         private Translation mReferenceTranslation;
+        private String mId = null;
 
         public Note(String ref, String text) {
             mRef = ref;
@@ -311,7 +312,10 @@ public class TranslationNote {
          * @return
          */
         public String getId() {
-            return Security.md5(mTranslationNote.getFrame().getChapterFrameId() + mRef);
+            if(mId == null) {
+                mId = Security.md5(mTranslationNote.getFrame().getChapterFrameId() + mRef);
+            }
+            return mId;
         }
     }
 }

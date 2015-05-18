@@ -10,6 +10,7 @@ import android.view.inputmethod.InputMethodManager;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.UploadProjectTask;
@@ -35,6 +36,7 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
     private final static String STATE_UPLOADED = "uploaded";
     private static Project mProject;
     private static SourceLanguage mSource;
+    private static Resource mResource;
     private static Language mTarget;
     private GenericTaskWatcher mTaskWatcher;
     private boolean mUploaded = false;
@@ -59,6 +61,7 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
             // initialize things for the upload wizard
             mProject = null;
             mSource = null;
+            mResource = null;
             mTarget = null;
         }
 
@@ -109,9 +112,10 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
      * @param source
      * @param target
      */
-    public void setTranslationToUpload(Project project, SourceLanguage source, Language target) {
+    public void setTranslationToUpload(Project project, SourceLanguage source, Resource resource, Language target) {
         mProject = project;
         mSource = source;
+        mResource = resource;
         mTarget = target;
     }
 
@@ -124,6 +128,17 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
             getTranslationProject();
         }
         return mSource;
+    }
+
+    /**
+     * Returns the source langauge resource of the translation that will be uploaded
+     * @return
+     */
+    public Resource getTranslationResource() {
+        if(mResource == null) {
+            getTranslationProject();
+        }
+        return mResource;
     }
 
     /**
@@ -145,9 +160,13 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
         if(mProject == null) {
             mSource = null;
             mTarget = null;
+            mResource = null;
             mProject = AppContext.projectManager().getSelectedProject();
             if(mProject != null && (mProject.isTranslatingGlobal() || mProject.isTranslating())) {
                 mSource = mProject.getSelectedSourceLanguage();
+                if(mSource != null) {
+                    mResource = mSource.getSelectedResource();
+                }
                 if(mProject.isTranslating()) {
                     mTarget = mProject.getSelectedTargetLanguage();
                 } else {

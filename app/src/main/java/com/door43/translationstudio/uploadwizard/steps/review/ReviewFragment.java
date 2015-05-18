@@ -1,22 +1,19 @@
 package com.door43.translationstudio.uploadwizard.steps.review;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.CheckingQuestionChapter;
 import com.door43.translationstudio.projects.CheckingQuestion;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.DataStore;
@@ -32,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,15 +38,16 @@ import java.util.List;
 public class ReviewFragment extends WizardFragment {
     private Button mNextBtn;
     private CheckingQuestionAdapter mAdapter;
-    private ListView mList;
+    private ExpandableListView mList;
     private TextView mRemainingText;
     private TextView mPercentText;
     private int numComplete = 0;
+    private int mNumQuestions = 0;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View v = inflater.inflate(R.layout.fragment_upload_review, container, false);
-        mList = (ListView)v.findViewById(R.id.reviewListView);
+        mList = (ExpandableListView)v.findViewById(R.id.reviewListView);
         mRemainingText = (TextView)v.findViewById(R.id.remainingQuestionsTextView);
         mPercentText = (TextView)v.findViewById(R.id.percentCompleteTextView);
         Button backBtn = (Button)v.findViewById(R.id.backButton);
@@ -70,15 +67,15 @@ public class ReviewFragment extends WizardFragment {
             @Override
             public void onClick(View v) {
                 boolean checked = true;
-                for(int i = 0; i < mAdapter.getCount(); i ++) {
-                    if(!mAdapter.getItem(i).isViewed()) {
+                for (int i = 0; i < mAdapter.getGroupCount(); i++) {
+                    if (!mAdapter.getGroup(i).isViewed()) {
                         checked = false;
                         break;
                     }
                 }
                 // TODO: it would be nice to keep track of when a frame or chapter was last changed and also when the user views a question.
                 // that way we could avoid having the user check the same question all over again.
-                if(checked) {
+                if (checked) {
                     goToNext();
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -92,21 +89,25 @@ public class ReviewFragment extends WizardFragment {
 
         mList.setAdapter(mAdapter);
 
-        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mList.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mAdapter.getItem(position).setViewed(!mAdapter.getItem(position).isViewed());
-                if(mAdapter.getItem(position).isViewed()) {
-                    numComplete ++;
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                mAdapter.getChild(groupPosition, childPosition).setViewed(!mAdapter.getChild(groupPosition, childPosition).isViewed());
+                if (mAdapter.getChild(groupPosition, childPosition).isViewed()) {
+                    numComplete++;
                 } else {
-                    numComplete --;
+                    numComplete--;
                 }
-                mRemainingText.setText(numComplete + "/" + mAdapter.getCount());
-                mPercentText.setText(Math.round((double)numComplete/(double)mAdapter.getCount() * 100d) + "%");
+                mAdapter.getGroup(groupPosition).saveQuestionStatus(mAdapter.getChild(groupPosition, childPosition));
+                mAdapter.getGroup(groupPosition).isViewed(); // generate the view status cache
+                mRemainingText.setText(numComplete + "/" + mNumQuestions);
+                mPercentText.setText(Math.round((double) numComplete / (double) mNumQuestions * 100d) + "%");
                 mAdapter.notifyDataSetChanged();
+                return true;
             }
         });
 
+        // TODO: place this in a task
         loadCheckingQuestions();
 
         return v;
@@ -133,18 +134,12 @@ public class ReviewFragment extends WizardFragment {
     private void loadCheckingQuestions() {
         Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
         SourceLanguage source = ((UploadWizardActivity)getActivity()).getTranslationSource();
+        Language target = ((UploadWizardActivity)getActivity()).getTranslationTarget();
+        Resource resource = ((UploadWizardActivity)getActivity()).getTranslationResource();
 
         // TODO: eventually we'll want the checking questions to be indexed as well
 
-        // TODO: we're not sure if each resource will have it's own checking questions or if we'll just have one.
-        // So for now we're checking all the resources for the first available checking questions.
-        String questionsRaw = null;
-        for(Resource r:source.getResources()) {
-            questionsRaw = DataStore.pullCheckingQuestions(project.getId(), source.getId(), r.getId(), false, false);
-            if(questionsRaw != null) {
-                break;
-            }
-        }
+        String questionsRaw = DataStore.pullCheckingQuestions(project.getId(), source.getId(), resource.getId(), false, false);
 
         if(questionsRaw == null) {
             // there are no checking questions
@@ -154,7 +149,7 @@ public class ReviewFragment extends WizardFragment {
                 onPrevious();
             }
         } else {
-            List<CheckingQuestion> questions = parseCheckingQuestions(questionsRaw);
+            List<CheckingQuestionChapter> questions = parseCheckingQuestions(questionsRaw, project, source, resource, target);
             if(questions.size() > 0) {
                 mAdapter.changeDataset(questions);
             } else {
@@ -165,7 +160,7 @@ public class ReviewFragment extends WizardFragment {
                 }
             }
         }
-        mRemainingText.setText("0/"+mAdapter.getCount());
+        mRemainingText.setText("0/"+mNumQuestions);
     }
 
     /**
@@ -173,8 +168,8 @@ public class ReviewFragment extends WizardFragment {
      * @param rawQuestions
      * @return
      */
-    private List<CheckingQuestion> parseCheckingQuestions(String rawQuestions) {
-        List<CheckingQuestion> questions = new ArrayList<>();
+    private List<CheckingQuestionChapter> parseCheckingQuestions(String rawQuestions, Project project, SourceLanguage source, Resource resource, Language target) {
+        List<CheckingQuestionChapter> questions = new ArrayList<>();
         JSONArray json;
         try {
             json = new JSONArray(rawQuestions);
@@ -189,10 +184,19 @@ public class ReviewFragment extends WizardFragment {
                 if(jsonChapter.has("id") && jsonChapter.has("cq")) {
                     String chapterId = jsonChapter.getString("id");
                     JSONArray jsonQuestionSet = jsonChapter.getJSONArray("cq");
+                    CheckingQuestionChapter chapter = new CheckingQuestionChapter(project, source, resource, target, chapterId);
+                    chapter.setViewed(true);
                     for (int j = 0; j < jsonQuestionSet.length(); j++) {
                         JSONObject jsonQuestion = jsonQuestionSet.getJSONObject(j);
-                        questions.add(CheckingQuestion.generate(chapterId, jsonQuestion));
+                        CheckingQuestion question = CheckingQuestion.generate(chapterId, jsonQuestion);
+                        chapter.loadQuestionStatus(question);
+                        if(!question.isViewed()) {
+                            chapter.setViewed(false);
+                        }
+                        chapter.addQuestion(question);
+                        mNumQuestions ++;
                     }
+                    questions.add(chapter);
                 }
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "failed to load the checking question", e);

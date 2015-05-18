@@ -12,6 +12,7 @@ import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -161,6 +162,28 @@ public class IndexStore {
     }
 
     /**
+     * Loads a single frame from the index
+     * @param projectId
+     * @param sourceId
+     * @param resourceId
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public static Frame getFrame(String projectId, String sourceId, String resourceId, String chapterId, String frameId) {
+        File chapterDir = getSourceChapterDir(projectId, sourceId, resourceId, chapterId);
+        File frameFile = new File(chapterDir, frameId+".json");
+        if(frameFile.exists()) {
+            try {
+                return Frame.generate(new JSONObject(FileUtils.readFileToString(frameFile)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Loads the frames into a chapter
      * TODO: we need to load the notes and terms as well
      * @param p
@@ -288,6 +311,18 @@ public class IndexStore {
      */
     public static File getSourceChapterDir(Project p, SourceLanguage l, Resource r, Chapter c) {
         return new File(sInstance.sIndexDir, p.getId() + "/" + l.getId() + "/" + r.getId() + "/source/" + c.getId());
+    }
+
+    /**
+     * Returns the directory for the chapter index
+     * @param projectId
+     * @param sourceId
+     * @param resourceId
+     * @param chapterId
+     * @return
+     */
+    public static File getSourceChapterDir(String projectId, String sourceId, String resourceId, String chapterId) {
+        return new File(sInstance.sIndexDir, projectId + "/" + sourceId + "/" + resourceId + "/source/" + chapterId);
     }
 
     /**
