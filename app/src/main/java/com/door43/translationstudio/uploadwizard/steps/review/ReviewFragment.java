@@ -51,6 +51,7 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
     private int mNumQuestions = 0;
     private static List<CheckingQuestionChapter> mQuestions = new ArrayList<>();
     private GenericTaskWatcher mTaskWatcher;
+    private int mCheckingQuestionsDateModified = 0;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -135,9 +136,11 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
                         break;
                     }
                 }
-                // TODO: it would be nice to keep track of when a frame or chapter was last changed and also when the user views a question.
-                // that way we could avoid having the user check the same question all over again.
                 if (checked) {
+                    // all the checking questions have been viewed
+                    Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
+                    project.putManifest("checking_questions", mCheckingQuestionsDateModified);
+
                     goToNext();
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -207,6 +210,7 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
         mTaskWatcher.stop();
         LoadCheckingQuestionsTask t = (LoadCheckingQuestionsTask)task;
         if(t.getNumQuestions() > 0) {
+            mCheckingQuestionsDateModified = t.getDateModified();
             mQuestions = t.getQuestions();
             mAdapter.changeDataset(t.getQuestions());
             mNumQuestions = t.getNumQuestions();

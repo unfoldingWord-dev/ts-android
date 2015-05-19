@@ -34,6 +34,7 @@ public class LoadCheckingQuestionsTask extends ManagedTask {
     private int mNumCompletedQuestions = 0;
     private int mNumQuestions = 0;
     private List<CheckingQuestionChapter> mQuestions = new ArrayList<>();
+    private int mDateModified = 0;
 
     public LoadCheckingQuestionsTask(Project project, SourceLanguage source, Resource resource, Language target) {
         mProject = project;
@@ -128,6 +129,8 @@ public class LoadCheckingQuestionsTask extends ManagedTask {
                     if(chapter.getCount() > 0) {
                         questions.add(chapter);
                     }
+                } else if(jsonChapter.has("date_modified")){
+                    mDateModified = jsonChapter.getInt("date_modified");
                 }
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "failed to load the checking question", e);
@@ -135,5 +138,13 @@ public class LoadCheckingQuestionsTask extends ManagedTask {
         }
 
         return questions;
+    }
+
+    /**
+     * Returns the checking questions date_modified value
+     * @return
+     */
+    public int getDateModified() {
+        return mDateModified;
     }
 }

@@ -61,6 +61,7 @@ public class Project implements Model {
     private Uri mSourceLanguageCatalogUri;
     private int mSourceLanguagesDateModified = 0;
     private boolean mAutosave = true;
+    private JSONObject mManifest = null;
 
     /**
      * Creates a new project
@@ -1079,28 +1080,117 @@ public class Project implements Model {
 
     /**
      * Called when one of the chapters in this project has been saved.
+     * TODO: we probably don't want to do this every time something is saved. Just once when the project language or resource is changed will be enough. However project don't know when the resource selection has changed
      * @param chapter
      */
     public void onChapterSaved(Chapter chapter) {
-        // record the source language
-        File sourceLanguageFile = new File(getRepositoryPath(), "manifest.json");
-        JSONObject manifestJson = new JSONObject();
-        JSONObject sourceJson = new JSONObject();
+        JSONObject sourceLangJson = new JSONObject();
         JSONObject resourceJson = new JSONObject();
         try {
             resourceJson.put("slug", getSelectedSourceLanguage().getSelectedResource().getId());
             resourceJson.put("date_modified", getSelectedSourceLanguage().getSelectedResource().getDateModified());
-
-            sourceJson.put("slug", getSelectedSourceLanguage().getId());
-            sourceJson.put("date_modified", getSelectedSourceLanguage().getDateModified());
-            sourceJson.put("resource", resourceJson);
-
-            manifestJson.put("source_language", sourceJson);
-
-            FileUtils.writeStringToFile(sourceLanguageFile, manifestJson.toString());
-            commit(null);
+            sourceLangJson.put("slug", getSelectedSourceLanguage().getId());
+            sourceLangJson.put("date_modified", getSelectedSourceLanguage().getDateModified());
+            sourceLangJson.put("resource", resourceJson);
+            putManifest("source_language", sourceLangJson);
         } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "failed to write the project manifest", e);
+            Logger.e(this.getClass().getName(), "failed to update the manifest", e);
+        }
+    }
+
+    /**
+     * Adds an element to the manifest
+     * @param key
+     * @param json
+     */
+    public void putManifest(String key, JSONObject json) {
+        getManifest();
+        try {
+            mManifest.put(key, json);
+            saveManifest();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds an element to the manifest
+     * @param key
+     * @param json
+     */
+    public void putManifest(String key, JSONArray json) {
+        getManifest();
+        try {
+            mManifest.put(key, json);
+            saveManifest();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds an element to the manifest
+     * @param key
+     * @param value
+     */
+    public void putManifest(String key, int value) {
+        getManifest();
+        try {
+            mManifest.put(key, value);
+            saveManifest();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Adds an element to the manifest
+     * @param key
+     * @param value
+     */
+    public void putManifest(String key, String value) {
+        getManifest();
+        try {
+            mManifest.put(key, value);
+            saveManifest();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Returns the manifest json for this project
+     * @return
+     */
+    public JSONObject getManifest() {
+        if(mManifest == null) {
+            mManifest = new JSONObject();
+            // load existing manifest
+            File manifestFile = new File(getRepositoryPath(), "manifest.json");
+            if (manifestFile.exists()) {
+                try {
+                    mManifest = new JSONObject(FileUtils.readFileToString(manifestFile));
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "failed to load the manifest", e);
+                }
+            }
+        }
+        return mManifest;
+    }
+
+    /**
+     * Saves the manifest to the disk
+     */
+    private void saveManifest() {
+        if(mManifest == null) {
+            mManifest = new JSONObject();
+        }
+        File manifestFile = new File(getRepositoryPath(), "manifest.json");
+        try {
+            FileUtils.writeStringToFile(manifestFile, mManifest.toString());
+            commit(null);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to write the manifest", e);
         }
     }
 
