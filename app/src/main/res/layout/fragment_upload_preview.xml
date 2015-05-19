@@ -48,7 +48,7 @@
                     android:textColor="@color/dark_gray"
                     android:textSize="@dimen/h5"
                     android:text="Open Bible Stories"
-                    android:id="@+id/textView9" />
+                    android:id="@+id/projectTitleTextView" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -66,7 +66,7 @@
                     android:textColor="@color/dark_gray"
                     android:textSize="@dimen/h5"
                     android:text="Afaraf"
-                    android:id="@+id/textViewd9" />
+                    android:id="@+id/targetLanguageTextView" />
 
                 <TextView
                     android:layout_width="wrap_content"

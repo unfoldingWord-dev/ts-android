@@ -30,6 +30,8 @@ public class PreviewFragment extends WizardFragment {
         TextView nameText = (TextView)v.findViewById(R.id.nameTextView);
         TextView emailText = (TextView)v.findViewById(R.id.emailTextView);
         TextView phoneText = (TextView)v.findViewById(R.id.phoneTextView);
+        TextView projectTitleText = (TextView)v.findViewById(R.id.projectTitleTextView);
+        TextView targetTextView = (TextView)v.findViewById(R.id.targetLanguageTextView);
 
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,6 +52,12 @@ public class PreviewFragment extends WizardFragment {
                 onPrevious();
             }
         });
+
+        Project p = ((UploadWizardActivity)getActivity()).getTranslationProject();
+        Language l = ((UploadWizardActivity) getActivity()).getTranslationTarget();
+        projectTitleText.setText(p.getTitle());
+        targetTextView.setText(l.getName());
+        // TODO: set up graphite and font size
 
         Profile profile = ProfileManager.getProfile();
         if(profile != null) {

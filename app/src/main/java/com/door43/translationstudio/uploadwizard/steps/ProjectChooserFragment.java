@@ -76,7 +76,14 @@ public class ProjectChooserFragment extends WizardFragment {
             }
             // include translation notes
             if(p.isTranslatingNotes() || p.isTranslatingNotesGlobal()) {
-                // TODO: create a new project to hold the translation notes and add it to the list
+                Project notes = new Project(p.getTitle() + " " + getActivity().getResources().getString(R.string.label_translation_notes), p.getId()+"-notes", p.getDescription());
+                notes.addSourceLanguage(p.getSelectedSourceLanguage());
+                for(Language target:p.getActiveTargetLanguages()) {
+                    // TODO: we need to make sure there are notes being translated in this target.
+                    notes.addTargetLanguage(target);
+                }
+                notes.setSelectedTargetLanguage(p.getSelectedTargetLanguage().getId());
+                projects.add(notes);
             }
         }
         mAdapter.changeDataSet(projects.toArray(new Model[projects.size()]));
