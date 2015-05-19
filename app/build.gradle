@@ -9,7 +9,7 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 80
+        versionCode 81
         versionName "2.1.5"
     }
     buildTypes {
