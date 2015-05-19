@@ -227,15 +227,30 @@ public class ReviewFragment extends WizardFragment {
                     for (int j = 0; j < jsonQuestionSet.length(); j++) {
                         JSONObject jsonQuestion = jsonQuestionSet.getJSONObject(j);
                         CheckingQuestion question = CheckingQuestion.generate(chapterId, jsonQuestion);
-                        chapter.loadQuestionStatus(question);
-                        if(!question.isViewed()) {
-                            chapter.setViewed(false);
-                            numComplete ++;
+                        // skip questions who's references have not been translated
+                        boolean questionIsNeeded = false;
+                        for(String reference:question.references) {
+                            String parts[] = reference.split("-");
+                            Translation translation = Frame.getTranslation(chapter.getProject().getId(), chapter.getTargetLanguage().getId(), parts[0], parts[1]);
+                            if(translation != null) {
+                                questionIsNeeded = true;
+                                break;
+                            }
                         }
-                        chapter.addQuestion(question);
-                        mNumQuestions ++;
+                        // only include needed questions
+                        if(questionIsNeeded) {
+                            chapter.loadQuestionStatus(question);
+                            if (!question.isViewed()) {
+                                chapter.setViewed(false);
+                                numComplete++;
+                            }
+                            chapter.addQuestion(question);
+                            mNumQuestions++;
+                        }
                     }
-                    questions.add(chapter);
+                    if(chapter.getCount() > 0) {
+                        questions.add(chapter);
+                    }
                 }
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "failed to load the checking question", e);

@@ -102,7 +102,9 @@ public class CheckingQuestionChapter {
                     continue;
                 }
                 Translation translation = Frame.getTranslation(mProject.getId(), mTarget.getId(), parts[0], parts[1]);
-                hashes += Security.md5(translation.getText());
+                if(translation != null) {
+                    hashes += Security.md5(translation.getText());
+                }
             }
             editor.putString(selector, Security.md5(hashes));
         }
@@ -126,7 +128,9 @@ public class CheckingQuestionChapter {
                     continue;
                 }
                 Translation translation = Frame.getTranslation(mProject.getId(), mTarget.getId(), parts[0], parts[1]);
-                hashes += Security.md5(translation.getText());
+                if(translation != null) {
+                    hashes += Security.md5(translation.getText());
+                }
             }
             if(cachedHash.equals(Security.md5(hashes))) {
                 question.setViewed(true);
