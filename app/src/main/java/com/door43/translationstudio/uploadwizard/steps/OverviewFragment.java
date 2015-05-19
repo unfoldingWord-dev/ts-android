@@ -69,16 +69,21 @@ public class OverviewFragment extends WizardFragment {
                 if(p == null) {
                     // choose a project
                     onNext();
-                } else if (p.translationIsReady(t)) {
-                    // project is being published
-                    onSkip(1); // see UploadWizardActivity.onCreate() for step order
                 } else {
-                    // project is being backed up
-                    onFinish();
+                    String parts[] = p.getId().split("-");
+                    if(parts.length == 2 && parts[1].equals("notes")) {
+                        // these are translation notes
+                        onFinish();
+                    } else if (p.translationIsReady(t)) {
+                        // project is being published
+                        onSkip(1); // see UploadWizardActivity.onCreate() for step order
+                    } else {
+                        // project is being backed up
+                        onFinish();
+                    }
                 }
             }
         });
-
         return v;
     }
 

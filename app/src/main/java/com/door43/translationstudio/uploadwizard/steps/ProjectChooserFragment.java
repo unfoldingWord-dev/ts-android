@@ -79,8 +79,9 @@ public class ProjectChooserFragment extends WizardFragment {
                 Project notes = new Project(p.getTitle() + " " + getActivity().getResources().getString(R.string.label_translation_notes), p.getId()+"-notes", p.getDescription());
                 notes.addSourceLanguage(p.getSelectedSourceLanguage());
                 for(Language target:p.getActiveTargetLanguages()) {
-                    // TODO: we need to make sure there are notes being translated in this target.
-                    notes.addTargetLanguage(target);
+                    if(Project.isTranslatingNotes(p.getId(), target.getId())) {
+                        notes.addTargetLanguage(target);
+                    }
                 }
                 notes.setSelectedTargetLanguage(p.getSelectedTargetLanguage().getId());
                 projects.add(notes);
