@@ -2,14 +2,12 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 
-import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Security;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.transform.Source;
 
 /**
  * Created by joel on 5/18/2015.
@@ -30,6 +28,22 @@ public class CheckingQuestionChapter {
         mResource = resource;
         mTarget = target;
         mId = chapterId;
+    }
+
+    public Project getProject() {
+        return mProject;
+    }
+
+    public Language getTargetLanguage() {
+        return mTarget;
+    }
+
+    public Resource getResource() {
+        return mResource;
+    }
+
+    public SourceLanguage getSourceLanguage() {
+        return mSource;
     }
 
     /**

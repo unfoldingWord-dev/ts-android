@@ -3,6 +3,7 @@ package com.door43.translationstudio.spannables;
 import android.graphics.Paint;
 import android.text.style.LineHeightSpan;
 
+@Deprecated
 public class RelativeLineHeightSpan implements LineHeightSpan {
     private final float mProportion;
 

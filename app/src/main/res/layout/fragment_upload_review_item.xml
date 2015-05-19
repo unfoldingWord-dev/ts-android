@@ -8,6 +8,8 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:padding="5dp"
+        android:id="@+id/questionLayout"
+        android:clickable="true"
         android:layout_height="wrap_content">
 
         <TextView
@@ -28,13 +30,38 @@
             android:background="@drawable/ic_check_small_disabled"
             android:adjustViewBounds="false" />
     </LinearLayout>
-    <TextView
+
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
         android:padding="5dp"
         android:background="@color/lighter_gray"
-        android:text="New Text"
-        android:textSize="@dimen/h5"
-        android:textColor="@color/gray"
-        android:id="@+id/answerTextView" />
+        android:id="@+id/answerLayout"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="New Text"
+            android:textSize="@dimen/h5"
+            android:paddingBottom="5dp"
+            android:textColor="@color/gray"
+            android:id="@+id/answerTextView" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:background="@color/light_gray"
+            android:layout_height="1dp"></LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/h5"
+            android:textColor="@color/gray"
+            android:paddingTop="5dp"
+            android:text="New Text"
+            android:id="@+id/questionReferencesTextView" />
+    </LinearLayout>
+
 </LinearLayout>

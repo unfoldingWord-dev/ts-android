@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.text.style.ReplacementSpan;
 
+@Deprecated
 public class RoundedBackgroundSpan extends ReplacementSpan
 {
     private final int mBackgroundColorResource;

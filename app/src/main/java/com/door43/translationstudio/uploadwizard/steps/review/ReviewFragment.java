@@ -1,22 +1,33 @@
 package com.door43.translationstudio.uploadwizard.steps.review;
 
 import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.dialogs.RenderedTextDialog;
 import com.door43.translationstudio.projects.CheckingQuestionChapter;
 import com.door43.translationstudio.projects.CheckingQuestion;
+import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.projects.data.DataStore;
+import com.door43.translationstudio.projects.data.IndexStore;
+import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
@@ -52,8 +63,53 @@ public class ReviewFragment extends WizardFragment {
         mPercentText = (TextView)v.findViewById(R.id.percentCompleteTextView);
         Button backBtn = (Button)v.findViewById(R.id.backButton);
         mNextBtn = (Button)v.findViewById(R.id.nextButton);
-        mAdapter = new CheckingQuestionAdapter(getActivity());
+        mAdapter = new CheckingQuestionAdapter(getActivity(), new CheckingQuestionAdapter.OnClickListener() {
+            @Override
+            public void onItemClick(int groupPosition, int childPosition) {
+                mAdapter.getChild(groupPosition, childPosition).setViewed(!mAdapter.getChild(groupPosition, childPosition).isViewed());
+                if (mAdapter.getChild(groupPosition, childPosition).isViewed()) {
+                    numComplete++;
+                } else {
+                    numComplete--;
+                }
+                mAdapter.getGroup(groupPosition).saveQuestionStatus(mAdapter.getChild(groupPosition, childPosition));
+                mAdapter.getGroup(groupPosition).isViewed(); // generate the view status cache
+                mRemainingText.setText(numComplete + "/" + mNumQuestions);
+                mPercentText.setText(Math.round((double) numComplete / (double) mNumQuestions * 100d) + "%");
+                mAdapter.notifyDataSetChanged();
+            }
 
+            @Override
+            public void onReferenceClick(int groupPosition, int childPosition, String reference) {
+                String[] parts = reference.split("-");
+                if(parts.length == 2) {
+                    CheckingQuestionChapter c = mAdapter.getGroup(groupPosition);
+                    Frame frame = IndexStore.getFrame(c.getProject().getId(), c.getSourceLanguage().getId(), c.getResource().getId(), parts[0], parts[1]);
+                    Translation translation = Frame.getTranslation(c.getProject().getId(), c.getTargetLanguage().getId(), parts[0], parts[1]);
+                    if (translation != null && frame != null) {
+                        // move other dialogs to backstack
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                        if (prev != null) {
+                            ft.remove(prev);
+                        }
+                        ft.addToBackStack(null);
+
+                        // create dialog
+                        RenderedTextDialog dialog = new RenderedTextDialog();
+                        Bundle args = new Bundle();
+                        args.putString(RenderedTextDialog.ARG_BODY, translation.getText());
+                        args.putString(RenderedTextDialog.ARG_BODY_FORMAT, frame.format.toString());
+                        args.putString(RenderedTextDialog.ARG_TITLE, reference);
+                        args.putString(RenderedTextDialog.ARG_TITLE_FORMAT, Frame.Format.DEFAULT.toString());
+                        dialog.setArguments(args);
+                        dialog.show(ft, "dialog");
+                    }
+                } else {
+                    Logger.w(ReviewFragment.class.getName(), "The question reference is invalid: " + reference);
+                }
+            }
+        });
 
         mRemainingText.setText("0/0");
         mPercentText.setText("0%");
@@ -88,24 +144,6 @@ public class ReviewFragment extends WizardFragment {
         });
 
         mList.setAdapter(mAdapter);
-
-        mList.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                mAdapter.getChild(groupPosition, childPosition).setViewed(!mAdapter.getChild(groupPosition, childPosition).isViewed());
-                if (mAdapter.getChild(groupPosition, childPosition).isViewed()) {
-                    numComplete++;
-                } else {
-                    numComplete--;
-                }
-                mAdapter.getGroup(groupPosition).saveQuestionStatus(mAdapter.getChild(groupPosition, childPosition));
-                mAdapter.getGroup(groupPosition).isViewed(); // generate the view status cache
-                mRemainingText.setText(numComplete + "/" + mNumQuestions);
-                mPercentText.setText(Math.round((double) numComplete / (double) mNumQuestions * 100d) + "%");
-                mAdapter.notifyDataSetChanged();
-                return true;
-            }
-        });
 
         // TODO: place this in a task
         loadCheckingQuestions();
@@ -192,6 +230,7 @@ public class ReviewFragment extends WizardFragment {
                         chapter.loadQuestionStatus(question);
                         if(!question.isViewed()) {
                             chapter.setViewed(false);
+                            numComplete ++;
                         }
                         chapter.addQuestion(question);
                         mNumQuestions ++;

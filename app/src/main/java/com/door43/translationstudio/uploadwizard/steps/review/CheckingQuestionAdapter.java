@@ -1,16 +1,24 @@
 package com.door43.translationstudio.uploadwizard.steps.review;
 
 import android.content.Context;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.CheckingQuestionChapter;
 import com.door43.translationstudio.projects.CheckingQuestion;
+import com.door43.translationstudio.spannables.PassageLinkSpan;
+import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.spannables.TermSpan;
 
 import java.security.acl.Group;
 import java.util.List;
@@ -20,20 +28,25 @@ import java.util.List;
  */
 public class CheckingQuestionAdapter extends BaseExpandableListAdapter {
     private final Context mContext;
+    private final OnClickListener mListener;
     private List<CheckingQuestionChapter> mChapters;
 
-    public CheckingQuestionAdapter(Context context) {
+    public CheckingQuestionAdapter(Context context, OnClickListener listener) {
         mContext = context;
+        mListener = listener;
     }
 
     @Override
-    public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+    public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, final ViewGroup parent) {
         View v = convertView;
         ChildHolder holder = new ChildHolder();
 
         if(convertView == null) {
             LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.fragment_upload_review_item, null);
+            holder.questionLayout = (LinearLayout)v.findViewById(R.id.questionLayout);
+            holder.answerLayout = (LinearLayout)v.findViewById(R.id.answerLayout);
+            holder.referencesText = (TextView)v.findViewById(R.id.questionReferencesTextView);
             holder.questionText = (TextView)v.findViewById(R.id.questionTextView);
             holder.answerText = (TextView)v.findViewById(R.id.answerTextView);
             holder.imageView = (ImageView)v.findViewById(R.id.imageView);
@@ -44,12 +57,43 @@ public class CheckingQuestionAdapter extends BaseExpandableListAdapter {
 
         holder.questionText.setText(getChild(groupPosition, childPosition).question);
         holder.answerText.setText(getChild(groupPosition, childPosition).answer);
+
+        holder.questionLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mListener != null) {
+                    mListener.onItemClick(groupPosition, childPosition);
+                }
+            }
+        });
+
+        CharSequence references = "";
+        for(String ref:getChild(groupPosition, childPosition).references) {
+            TermSpan span = new TermSpan(ref, ref);
+            span.setOnClickListener(new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    if(mListener != null) {
+                        mListener.onReferenceClick(groupPosition, childPosition, span.getMachineReadable().toString());
+                    }
+                }
+            });
+            references = TextUtils.concat(references, span.render(), ", ");
+        }
+        holder.referencesText.setText(references);
+        MovementMethod mm = holder.referencesText.getMovementMethod();
+        if((mm == null) || !(mm instanceof LinkMovementMethod)) {
+            if(holder.referencesText.getLinksClickable()) {
+                holder.referencesText.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+        }
+
         if(getChild(groupPosition, childPosition).isViewed()) {
             holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
-            holder.answerText.setVisibility(View.VISIBLE);
+            holder.answerLayout.setVisibility(View.VISIBLE);
         } else {
             holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
-            holder.answerText.setVisibility(View.GONE);
+            holder.answerLayout.setVisibility(View.GONE);
         }
 
         return v;
@@ -149,11 +193,18 @@ public class CheckingQuestionAdapter extends BaseExpandableListAdapter {
         public TextView questionText;
         public TextView answerText;
         public ImageView imageView;
+        public LinearLayout answerLayout;
+        public TextView referencesText;
+        public LinearLayout questionLayout;
     }
 
     private class GroupHolder {
-
         public TextView title;
         public ImageView imageView;
+    }
+
+    public interface OnClickListener {
+        void onItemClick(int groupPosition, int childPosition);
+        void onReferenceClick(int groupPosition, int childPosition, String reference);
     }
 }

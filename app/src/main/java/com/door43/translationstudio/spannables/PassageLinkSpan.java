@@ -27,8 +27,8 @@ public class PassageLinkSpan extends Span {
 
     /**
      * Creates a new passage link
-     * @param title
-     * @param address
+     * @param title the title of the link e.g. 1:5
+     * @param address the address to the link e.g. en:bible:notes:gen:01:03
      */
     public PassageLinkSpan(String title, String address) {
         super(title, address);
