@@ -198,7 +198,7 @@ public class ReviewFragment extends WizardFragment {
                 }
             }
         }
-        mRemainingText.setText("0/"+mNumQuestions);
+        mRemainingText.setText(numComplete +"/"+mNumQuestions);
     }
 
     /**
@@ -242,6 +242,7 @@ public class ReviewFragment extends WizardFragment {
                             chapter.loadQuestionStatus(question);
                             if (!question.isViewed()) {
                                 chapter.setViewed(false);
+                            } else {
                                 numComplete++;
                             }
                             chapter.addQuestion(question);

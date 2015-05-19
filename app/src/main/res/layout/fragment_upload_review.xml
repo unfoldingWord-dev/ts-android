@@ -48,7 +48,9 @@
         android:layout_height="fill_parent"
         android:id="@+id/reviewListView"
         android:layout_above="@+id/linearLayout"
-        android:layout_below="@+id/linearLayout13" />
+        android:layout_below="@+id/linearLayout13"
+        android:paddingBottom="20dp"
+        android:clipToPadding="false"/>
 
     <LinearLayout
         android:orientation="horizontal"
