@@ -16,6 +16,7 @@ import com.door43.translationstudio.dialogs.RenderedTextDialog;
 import com.door43.translationstudio.projects.CheckingQuestionChapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
+import com.door43.util.Manifest;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
@@ -42,6 +43,7 @@ import java.util.List;
 public class ReviewFragment extends WizardFragment implements GenericTaskWatcher.OnFinishedListener, GenericTaskWatcher.OnCanceledListener {
     private static final String STATE_NUM_QUESTIONS = "num_questions";
     private static final String STATE_NUM_VIEWED = "num_viewed_questions";
+    private static final String STATE_DATE_MODIFIED = "date_modified";
     private Button mNextBtn;
     private CheckingQuestionAdapter mAdapter;
     private ExpandableListView mList;
@@ -52,6 +54,7 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
     private static List<CheckingQuestionChapter> mQuestions = new ArrayList<>();
     private GenericTaskWatcher mTaskWatcher;
     private int mCheckingQuestionsDateModified = 0;
+    private boolean mIsBeingDestroyed = true;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -67,6 +70,7 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
         if(savedInstanceState != null) {
             mNumQuestions = savedInstanceState.getInt(STATE_NUM_QUESTIONS, 0);
             mNumViewed = savedInstanceState.getInt(STATE_NUM_VIEWED, 0);
+            mCheckingQuestionsDateModified = savedInstanceState.getInt(STATE_DATE_MODIFIED, 0);
             updateStats();
         } else {
             // reset everything
@@ -139,7 +143,9 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
                 if (checked) {
                     // all the checking questions have been viewed
                     Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
-                    project.putManifest("checking_questions", mCheckingQuestionsDateModified);
+                    Language target = ((UploadWizardActivity)getActivity()).getTranslationTarget();
+                    Manifest m = Project.getManifest(project, target);
+                    m.put("checking_questions", mCheckingQuestionsDateModified);
 
                     goToNext();
                 } else {
@@ -160,16 +166,19 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
 
         LoadCheckingQuestionsTask task = (LoadCheckingQuestionsTask) TaskManager.getTask(LoadCheckingQuestionsTask.TASK_ID);
         if(savedInstanceState == null) {
-            if(task == null) {
-                // load questions
-                Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
-                SourceLanguage source = ((UploadWizardActivity)getActivity()).getTranslationSource();
-                Language target = ((UploadWizardActivity)getActivity()).getTranslationTarget();
-                Resource resource = ((UploadWizardActivity)getActivity()).getTranslationResource();
-                task = new LoadCheckingQuestionsTask(project, source, resource, target);
-                mTaskWatcher.watch(task);
-                TaskManager.addTask(task, LoadCheckingQuestionsTask.TASK_ID);
+            if(task != null) {
+                TaskManager.cancelTask(task);
+                TaskManager.clearTask(task);
             }
+
+            // load questions
+            Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
+            SourceLanguage source = ((UploadWizardActivity)getActivity()).getTranslationSource();
+            Language target = ((UploadWizardActivity)getActivity()).getTranslationTarget();
+            Resource resource = ((UploadWizardActivity)getActivity()).getTranslationResource();
+            task = new LoadCheckingQuestionsTask(project, source, resource, target);
+            mTaskWatcher.watch(task);
+            TaskManager.addTask(task, LoadCheckingQuestionsTask.TASK_ID);
         } else if(mQuestions.size() > 0) {
             mAdapter.changeDataset(mQuestions);
         } else {
@@ -230,12 +239,21 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(STATE_NUM_QUESTIONS, mNumQuestions);
         outState.putInt(STATE_NUM_VIEWED, mNumViewed);
+        outState.putInt(STATE_DATE_MODIFIED, mCheckingQuestionsDateModified);
+        mIsBeingDestroyed = false;
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onDestroy() {
         mTaskWatcher.stop();
+        if(mIsBeingDestroyed) {
+            LoadCheckingQuestionsTask t = (LoadCheckingQuestionsTask)TaskManager.getTask(LoadCheckingQuestionsTask.TASK_ID);
+            if(t != null) {
+                TaskManager.cancelTask(t);
+                TaskManager.clearTask(t);
+            }
+        }
         super.onDestroy();
     }
 

@@ -10,8 +10,8 @@ import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.ListMap;
 import com.door43.util.Logger;
+import com.door43.util.Manifest;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONArray;
@@ -61,7 +61,6 @@ public class Project implements Model {
     private Uri mSourceLanguageCatalogUri;
     private int mSourceLanguagesDateModified = 0;
     private boolean mAutosave = true;
-    private JSONObject mManifest = null;
 
     /**
      * Creates a new project
@@ -1084,6 +1083,9 @@ public class Project implements Model {
      * @param chapter
      */
     public void onChapterSaved(Chapter chapter) {
+        Manifest m = getManifest(this, getSelectedTargetLanguage());
+
+        // update the language info in the manifest
         JSONObject sourceLangJson = new JSONObject();
         JSONObject resourceJson = new JSONObject();
         try {
@@ -1092,106 +1094,23 @@ public class Project implements Model {
             sourceLangJson.put("slug", getSelectedSourceLanguage().getId());
             sourceLangJson.put("date_modified", getSelectedSourceLanguage().getDateModified());
             sourceLangJson.put("resource", resourceJson);
-            putManifest("source_language", sourceLangJson);
+            m.put("source_language", sourceLangJson);
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "failed to update the manifest", e);
         }
+
+        // invalidate checking questions
+        m.remove("checking_questions");
     }
 
     /**
-     * Adds an element to the manifest
-     * @param key
-     * @param json
-     */
-    public void putManifest(String key, JSONObject json) {
-        getManifest();
-        try {
-            mManifest.put(key, json);
-            saveManifest();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Adds an element to the manifest
-     * @param key
-     * @param json
-     */
-    public void putManifest(String key, JSONArray json) {
-        getManifest();
-        try {
-            mManifest.put(key, json);
-            saveManifest();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Adds an element to the manifest
-     * @param key
-     * @param value
-     */
-    public void putManifest(String key, int value) {
-        getManifest();
-        try {
-            mManifest.put(key, value);
-            saveManifest();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Adds an element to the manifest
-     * @param key
-     * @param value
-     */
-    public void putManifest(String key, String value) {
-        getManifest();
-        try {
-            mManifest.put(key, value);
-            saveManifest();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Returns the manifest json for this project
+     * Returns an instance of the project manifest
+     * @param project
+     * @param target
      * @return
      */
-    public JSONObject getManifest() {
-        if(mManifest == null) {
-            mManifest = new JSONObject();
-            // load existing manifest
-            File manifestFile = new File(getRepositoryPath(), "manifest.json");
-            if (manifestFile.exists()) {
-                try {
-                    mManifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "failed to load the manifest", e);
-                }
-            }
-        }
-        return mManifest;
-    }
-
-    /**
-     * Saves the manifest to the disk
-     */
-    private void saveManifest() {
-        if(mManifest == null) {
-            mManifest = new JSONObject();
-        }
-        File manifestFile = new File(getRepositoryPath(), "manifest.json");
-        try {
-            FileUtils.writeStringToFile(manifestFile, mManifest.toString());
-            commit(null);
-        } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "failed to write the manifest", e);
-        }
+    public static Manifest getManifest(Project project, Language target) {
+        return new Manifest(ProjectManager.getRepositoryPath(project, target));
     }
 
     /**

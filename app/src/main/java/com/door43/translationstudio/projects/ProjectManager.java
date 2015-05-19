@@ -96,11 +96,11 @@ public class ProjectManager {
     /**
      * Returns the path to the local repository for a project
      * @param project
-     * @param lang
+     * @param targetLanguage
      * @return
      */
-    public static String getRepositoryPath(Project project, Language lang) {
-        return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + project.getId() + "-" + lang.getId() + "/";
+    public static String getRepositoryPath(Project project, Language targetLanguage) {
+        return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + project.getId() + "-" + targetLanguage.getId() + "/";
     }
 
     /**
