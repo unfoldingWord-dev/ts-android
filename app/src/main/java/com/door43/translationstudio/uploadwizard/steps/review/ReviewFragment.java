@@ -3,13 +3,10 @@ package com.door43.translationstudio.uploadwizard.steps.review;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
@@ -17,17 +14,13 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.RenderedTextDialog;
 import com.door43.translationstudio.projects.CheckingQuestionChapter;
-import com.door43.translationstudio.projects.CheckingQuestion;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.Translation;
-import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.translationstudio.rendering.DefaultRenderer;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.tasks.LoadCheckingQuestionsTask;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.user.Profile;
@@ -40,10 +33,6 @@ import com.door43.util.tasks.TaskManager;
 import com.door43.util.wizard.WizardActivity;
 import com.door43.util.wizard.WizardFragment;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,12 +40,14 @@ import java.util.List;
  * Created by joel on 5/14/2015.
  */
 public class ReviewFragment extends WizardFragment implements GenericTaskWatcher.OnFinishedListener, GenericTaskWatcher.OnCanceledListener {
+    private static final String STATE_NUM_QUESTIONS = "num_questions";
+    private static final String STATE_NUM_VIEWED = "num_viewed_questions";
     private Button mNextBtn;
     private CheckingQuestionAdapter mAdapter;
     private ExpandableListView mList;
     private TextView mRemainingText;
     private TextView mPercentText;
-    private int numComplete = 0;
+    private int mNumViewed = 0;
     private int mNumQuestions = 0;
     private static List<CheckingQuestionChapter> mQuestions = new ArrayList<>();
     private GenericTaskWatcher mTaskWatcher;
@@ -73,8 +64,9 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
         mPercentText.setText("0%");
 
         if(savedInstanceState != null) {
-            // TODO: restore num questions and viewed.
-            // TODO: set the percent and status.
+            mNumQuestions = savedInstanceState.getInt(STATE_NUM_QUESTIONS, 0);
+            mNumViewed = savedInstanceState.getInt(STATE_NUM_VIEWED, 0);
+            updateStats();
         } else {
             // reset everything
             mQuestions = new ArrayList<>();
@@ -85,14 +77,13 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
             public void onItemClick(int groupPosition, int childPosition) {
                 mAdapter.getChild(groupPosition, childPosition).setViewed(!mAdapter.getChild(groupPosition, childPosition).isViewed());
                 if (mAdapter.getChild(groupPosition, childPosition).isViewed()) {
-                    numComplete++;
+                    mNumViewed++;
                 } else {
-                    numComplete--;
+                    mNumViewed--;
                 }
                 mAdapter.getGroup(groupPosition).saveQuestionStatus(mAdapter.getChild(groupPosition, childPosition));
                 mAdapter.getGroup(groupPosition).isViewed(); // generate the view status cache
-                mRemainingText.setText(numComplete + "/" + mNumQuestions);
-                mPercentText.setText(Math.round((double) numComplete / (double) mNumQuestions * 100d) + "%");
+                updateStats();
                 mAdapter.notifyDataSetChanged();
             }
 
@@ -185,6 +176,14 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
         return v;
     }
 
+    /**
+     * Updates the display for the number of completed questions and the total % till complete
+     */
+    public void updateStats() {
+        mRemainingText.setText(mNumViewed + "/" + mNumQuestions);
+        mPercentText.setText(Math.round((double) mNumViewed / (double) mNumQuestions * 100d) + "%");
+    }
+
     public void onResume() {
         super.onResume();
         mList.setSelectionAfterHeaderView();
@@ -211,10 +210,8 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
             mQuestions = t.getQuestions();
             mAdapter.changeDataset(t.getQuestions());
             mNumQuestions = t.getNumQuestions();
-            numComplete = t.getNumCompleted();
-
-            mRemainingText.setText(numComplete +"/"+mNumQuestions);
-            mPercentText.setText(Math.round((double) numComplete / (double) mNumQuestions * 100d) + "%");
+            mNumViewed = t.getNumCompleted();
+            updateStats();
         } else {
             // there are no checking questions
             if(((UploadWizardActivity)getActivity()).getStepDirection() == WizardActivity.StepDirection.NEXT) {
@@ -227,7 +224,8 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        // TODO: save the num completed and num questions
+        outState.putInt(STATE_NUM_QUESTIONS, mNumQuestions);
+        outState.putInt(STATE_NUM_VIEWED, mNumViewed);
         super.onSaveInstanceState(outState);
     }
 

@@ -304,10 +304,8 @@
     <string name="notice">Notice</string>
     <string name="complete_required_fields">Please complete all required fields</string>
     <string name="required_field"><xliff:g id="marker">*</xliff:g> required</string>
-    <string name="failed">Failed</string>
     <string name="upload_failed">Upload failed</string>
     <string name="publishing_translation">Publishing translation</string>
     <string name="backing_up_translation">Backing up translation</string>
-    <string name="translation_appears_valid">Everything appears to be translated</string>
     <string name="review_all_checking_questions">Please review all questions</string>
 </resources>

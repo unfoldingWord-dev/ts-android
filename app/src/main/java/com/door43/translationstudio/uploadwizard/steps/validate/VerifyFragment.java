@@ -21,7 +21,9 @@ import com.door43.util.wizard.WizardFragment;
 import java.util.ArrayList;
 
 /**
- * Created by joel on 5/14/2015.
+ * This step in the upload wizard handles the validation checks that are run against the translation.
+ * If any errors are found the translation cannot be published. If there are just warnings the user will
+ * receive a confirmation before continuing.
  */
 public class VerifyFragment extends WizardFragment implements GenericTaskWatcher.OnCanceledListener, GenericTaskWatcher.OnFinishedListener {
     private ArrayList<UploadValidationItem> mValidationItems = new ArrayList<>();
@@ -119,13 +121,6 @@ public class VerifyFragment extends WizardFragment implements GenericTaskWatcher
             mNextBtn.setVisibility(View.VISIBLE);
         }
         mTask = (ValidateTranslationTask)task;
-//        if(!mTask.hasWarnings() && !mTask.hasErrors()) {
-//            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//            builder.setTitle(R.string.notice)
-//                    .setMessage(R.string.translation_appears_valid)
-//                    .setPositiveButton(R.string.label_ok, new DummyDialogListener())
-//                    .show();
-//        }
         mAdapter.changeDataset(mTask.getValidationItems());
     }
 
