@@ -86,7 +86,9 @@ public class Frame implements Model {
      */
     public void setTranslationNotes(TranslationNote notes) {
         mNotes = notes;
-        notes.setFrame(this);
+        if(notes != null) {
+            notes.setFrame(this);
+        }
     }
 
     /**

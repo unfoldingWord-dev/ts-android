@@ -152,7 +152,7 @@ public class IndexStore {
                             frames.add(f);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Logger.e(IndexStore.class.getName(), "Failed to load the frames for " + p.getId() + ":" + l.getId() + ":" + r.getId() + ":" + c.getId(), e);
                     }
                 }
                 return false;
@@ -172,12 +172,12 @@ public class IndexStore {
      */
     public static Frame getFrame(String projectId, String sourceId, String resourceId, String chapterId, String frameId) {
         File chapterDir = getSourceChapterDir(projectId, sourceId, resourceId, chapterId);
-        File frameFile = new File(chapterDir, frameId+".json");
+        final File frameFile = new File(chapterDir, frameId+".json");
         if(frameFile.exists()) {
             try {
                 return Frame.generate(new JSONObject(FileUtils.readFileToString(frameFile)));
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.e(IndexStore.class.getName(), "Failed to load the frame " + frameFile.getPath(), e);
             }
         }
         return null;
@@ -206,7 +206,7 @@ public class IndexStore {
                             c.addFrame(f);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Logger.e(IndexStore.class.getName(), "Failed to load the frames for "+p.getId()+":"+l.getId()+":"+r.getId()+":"+c.getId(), e);
                     }
                 }
                 return false;
@@ -234,7 +234,7 @@ public class IndexStore {
                     return note;
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Logger.e(IndexStore.class.getName(), "Failed to load the translation notes for " + p.getId() + ":" + l.getId() + ":" + r.getId() + ":" + c.getId() + ":" + f.getId(), e);
             }
         }
         return null;
@@ -247,7 +247,7 @@ public class IndexStore {
      * @param r
      * @return
      */
-    public static void loadChapters(final Project p, SourceLanguage l, Resource r) {
+    public static void loadChapters(final Project p, final SourceLanguage l, final Resource r) {
         final File sourceDir = getSourceDir(p, l, r);
         sourceDir.listFiles(new FilenameFilter() {
             @Override
@@ -261,7 +261,7 @@ public class IndexStore {
                             p.addChapter(c);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Logger.e(IndexStore.class.getName(), "Failed to load the chapters for " + p.getId() + ":" + l.getId() + ":" + r.getId(), e);
                     }
                 }
                 return false;
