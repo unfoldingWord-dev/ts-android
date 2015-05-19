@@ -2,6 +2,11 @@ package com.door43.translationstudio;
 
 import android.test.ActivityInstrumentationTestCase2;
 
+import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
+import com.door43.translationstudio.tasks.DownloadLanguageTask;
+
 /**
  * Created by joel on 3/24/2015.
  */
@@ -11,12 +16,21 @@ public class DownloadTest  extends ActivityInstrumentationTestCase2<MainActivity
         super(activityClass);
     }
 
-    public void testDownloadProjectCatalog() {
+    public void testDownloadAvailableProjects() {
+        DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask(true);
+        task.start();
+        assertEquals(task.getProjects().size() > 0, true);
+        for(Project p:task.getProjects()) {
+            assertEquals(p.getSourceLanguages().size() > 0, true);
+            for(SourceLanguage l:p.getSourceLanguages()) {
+                assertEquals(l.getResources().length > 0, true);
 
+            }
+        }
     }
 
-    public void testDownloadLanguageCatalog() {
-
+    public void testDownloadLanguage() {
+//        DownloadLanguageTask task = new DownloadLanguageTask();
     }
 
     public void testDownloadResourceCatalog() {
