@@ -3,10 +3,15 @@ package com.door43.translationstudio;
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.tasks.IndexProjectsTask;
+import com.door43.translationstudio.tasks.LoadProjectsTask;
+import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
+import com.door43.util.tasks.ManagedTask;
 
 import java.io.File;
 
@@ -20,8 +25,12 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
     protected void setUp() throws Exception {
         super.setUp();
 
-        if(!AppContext.projectManager().isLoaded()) {
-            AppContext.projectManager().init(null);
+        if(!AppContext.isLoaded()) {
+            // load everything
+            Util.runTask(new LoadTargetLanguagesTask());
+            Util.runTask(new LoadProjectsTask());
+            Util.runTask(new IndexProjectsTask(AppContext.projectManager().getProjects()));
+            AppContext.setLoaded(true);
         } else {
             Project[] projects = AppContext.projectManager().getProjects();
             for(Project p:projects) {

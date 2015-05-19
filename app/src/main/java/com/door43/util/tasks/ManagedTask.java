@@ -343,7 +343,11 @@ public abstract class ManagedTask implements Runnable {
      * @return
      */
     public final boolean interrupted() {
-        return mThread.isInterrupted() || mIsStopped;
+        if(mThread != null) {
+            return mThread.isInterrupted() || mIsStopped;
+        } else {
+            return mIsStopped;
+        }
     }
 
     public interface OnFinishedListener {

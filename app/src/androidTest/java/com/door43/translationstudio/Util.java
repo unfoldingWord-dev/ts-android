@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
+import com.door43.util.tasks.ManagedTask;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,5 +25,13 @@ public class Util {
         JSONArray json = new JSONArray(sigJson);
         JSONObject sigObj = json.getJSONObject(0);
         return sigObj.getString("sig");
+    }
+
+    /**
+     * Executes a task
+     * @param task
+     */
+    public static void runTask(ManagedTask task) {
+        task.start();
     }
 }
