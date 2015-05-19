@@ -28,11 +28,15 @@ import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.USXRenderer;
+import com.door43.translationstudio.tasks.LoadCheckingQuestionsTask;
 import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.DummyDialogListener;
 import com.door43.util.Logger;
+import com.door43.util.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 import com.door43.util.wizard.WizardActivity;
 import com.door43.util.wizard.WizardFragment;
 
@@ -46,7 +50,7 @@ import java.util.List;
 /**
  * Created by joel on 5/14/2015.
  */
-public class ReviewFragment extends WizardFragment {
+public class ReviewFragment extends WizardFragment implements GenericTaskWatcher.OnFinishedListener, GenericTaskWatcher.OnCanceledListener {
     private Button mNextBtn;
     private CheckingQuestionAdapter mAdapter;
     private ExpandableListView mList;
@@ -54,6 +58,8 @@ public class ReviewFragment extends WizardFragment {
     private TextView mPercentText;
     private int numComplete = 0;
     private int mNumQuestions = 0;
+    private static List<CheckingQuestionChapter> mQuestions = new ArrayList<>();
+    private GenericTaskWatcher mTaskWatcher;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -63,6 +69,17 @@ public class ReviewFragment extends WizardFragment {
         mPercentText = (TextView)v.findViewById(R.id.percentCompleteTextView);
         Button backBtn = (Button)v.findViewById(R.id.backButton);
         mNextBtn = (Button)v.findViewById(R.id.nextButton);
+        mRemainingText.setText("0/0");
+        mPercentText.setText("0%");
+
+        if(savedInstanceState != null) {
+            // TODO: restore num questions and viewed.
+            // TODO: set the percent and status.
+        } else {
+            // reset everything
+            mQuestions = new ArrayList<>();
+        }
+
         mAdapter = new CheckingQuestionAdapter(getActivity(), new CheckingQuestionAdapter.OnClickListener() {
             @Override
             public void onItemClick(int groupPosition, int childPosition) {
@@ -111,8 +128,6 @@ public class ReviewFragment extends WizardFragment {
             }
         });
 
-        mRemainingText.setText("0/0");
-        mPercentText.setText("0%");
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -145,8 +160,27 @@ public class ReviewFragment extends WizardFragment {
 
         mList.setAdapter(mAdapter);
 
-        // TODO: place this in a task
-        loadCheckingQuestions();
+        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        mTaskWatcher.setOnFinishedListener(this);
+        mTaskWatcher.setOnCanceledListener(this);
+
+        LoadCheckingQuestionsTask task = (LoadCheckingQuestionsTask) TaskManager.getTask(LoadCheckingQuestionsTask.TASK_ID);
+        if(savedInstanceState == null) {
+            if(task == null) {
+                // load questions
+                Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
+                SourceLanguage source = ((UploadWizardActivity)getActivity()).getTranslationSource();
+                Language target = ((UploadWizardActivity)getActivity()).getTranslationTarget();
+                Resource resource = ((UploadWizardActivity)getActivity()).getTranslationResource();
+                task = new LoadCheckingQuestionsTask(project, source, resource, target);
+                mTaskWatcher.watch(task);
+                TaskManager.addTask(task, LoadCheckingQuestionsTask.TASK_ID);
+            }
+        } else if(mQuestions.size() > 0) {
+            mAdapter.changeDataset(mQuestions);
+        } else {
+            mTaskWatcher.watch(task);
+        }
 
         return v;
     }
@@ -169,95 +203,42 @@ public class ReviewFragment extends WizardFragment {
         }
     }
 
-    private void loadCheckingQuestions() {
-        Project project = ((UploadWizardActivity)getActivity()).getTranslationProject();
-        SourceLanguage source = ((UploadWizardActivity)getActivity()).getTranslationSource();
-        Language target = ((UploadWizardActivity)getActivity()).getTranslationTarget();
-        Resource resource = ((UploadWizardActivity)getActivity()).getTranslationResource();
+    @Override
+    public void onFinished(ManagedTask task) {
+        mTaskWatcher.stop();
+        LoadCheckingQuestionsTask t = (LoadCheckingQuestionsTask)task;
+        if(t.getNumQuestions() > 0) {
+            mAdapter.changeDataset(t.getQuestions());
+            mNumQuestions = t.getNumQuestions();
+            numComplete = t.getNumCompleted();
 
-        // TODO: eventually we'll want the checking questions to be indexed as well
-
-        String questionsRaw = DataStore.pullCheckingQuestions(project.getId(), source.getId(), resource.getId(), false, false);
-
-        if(questionsRaw == null) {
+            mRemainingText.setText(numComplete +"/"+mNumQuestions);
+            mPercentText.setText(Math.round((double) numComplete / (double) mNumQuestions * 100d) + "%");
+        } else {
             // there are no checking questions
             if(((UploadWizardActivity)getActivity()).getStepDirection() == WizardActivity.StepDirection.NEXT) {
                 goToNext();
             } else {
                 onPrevious();
             }
-        } else {
-            List<CheckingQuestionChapter> questions = parseCheckingQuestions(questionsRaw, project, source, resource, target);
-            if(questions.size() > 0) {
-                mAdapter.changeDataset(questions);
-            } else {
-                if(((UploadWizardActivity)getActivity()).getStepDirection() == WizardActivity.StepDirection.NEXT) {
-                    goToNext();
-                } else {
-                    onPrevious();
-                }
-            }
         }
-        mRemainingText.setText(numComplete +"/"+mNumQuestions);
     }
 
-    /**
-     * Parses and returns a list of checking questions
-     * @param rawQuestions
-     * @return
-     */
-    private List<CheckingQuestionChapter> parseCheckingQuestions(String rawQuestions, Project project, SourceLanguage source, Resource resource, Language target) {
-        List<CheckingQuestionChapter> questions = new ArrayList<>();
-        JSONArray json;
-        try {
-            json = new JSONArray(rawQuestions);
-        } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "malformed projects catalog", e);
-            return new ArrayList<>();
-        }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // TODO: save the num completed and num questions
+        super.onSaveInstanceState(outState);
+    }
 
-        for(int i = 0; i < json.length(); i ++) {
-            try {
-                JSONObject jsonChapter = json.getJSONObject(i);
-                if(jsonChapter.has("id") && jsonChapter.has("cq")) {
-                    String chapterId = jsonChapter.getString("id");
-                    JSONArray jsonQuestionSet = jsonChapter.getJSONArray("cq");
-                    CheckingQuestionChapter chapter = new CheckingQuestionChapter(project, source, resource, target, chapterId);
-                    chapter.setViewed(true);
-                    for (int j = 0; j < jsonQuestionSet.length(); j++) {
-                        JSONObject jsonQuestion = jsonQuestionSet.getJSONObject(j);
-                        CheckingQuestion question = CheckingQuestion.generate(chapterId, jsonQuestion);
-                        // skip questions who's references have not been translated
-                        boolean questionIsNeeded = false;
-                        for(String reference:question.references) {
-                            String parts[] = reference.split("-");
-                            Translation translation = Frame.getTranslation(chapter.getProject().getId(), chapter.getTargetLanguage().getId(), parts[0], parts[1]);
-                            if(translation != null) {
-                                questionIsNeeded = true;
-                                break;
-                            }
-                        }
-                        // only include needed questions
-                        if(questionIsNeeded) {
-                            chapter.loadQuestionStatus(question);
-                            if (!question.isViewed()) {
-                                chapter.setViewed(false);
-                            } else {
-                                numComplete++;
-                            }
-                            chapter.addQuestion(question);
-                            mNumQuestions++;
-                        }
-                    }
-                    if(chapter.getCount() > 0) {
-                        questions.add(chapter);
-                    }
-                }
-            } catch (JSONException e) {
-                Logger.e(this.getClass().getName(), "failed to load the checking question", e);
-            }
-        }
+    @Override
+    public void onDestroy() {
+        mTaskWatcher.stop();
+        super.onDestroy();
+    }
 
-        return questions;
+    @Override
+    public void onCanceled(ManagedTask task) {
+        mTaskWatcher.stop();
+        onPrevious();
     }
 }

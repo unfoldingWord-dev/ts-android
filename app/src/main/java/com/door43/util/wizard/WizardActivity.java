@@ -15,8 +15,9 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
     private int mContainerViewId = -1;
     private static final String STATE_INDEX = "fragment_index";
     private StepDirection mStepDirection = StepDirection.NEXT;
+    private boolean mHasInstanceState = false;
 
-    public static enum StepDirection {
+    public enum StepDirection {
         NEXT,
         PREVIOUS
     }
@@ -28,13 +29,17 @@ public abstract class WizardActivity extends ActionBarActivity implements Wizard
         // restore state
         if(savedInstanceState != null) {
             mCurrentFragmentIndex = savedInstanceState.getInt(STATE_INDEX, -1);
+            mHasInstanceState = true;
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        loadStep();
+        if(!mHasInstanceState) {
+            // only load the first step when the activity starts up
+            loadStep();
+        }
     }
 
     /**
