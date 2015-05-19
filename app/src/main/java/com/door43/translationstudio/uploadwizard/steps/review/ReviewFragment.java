@@ -208,6 +208,7 @@ public class ReviewFragment extends WizardFragment implements GenericTaskWatcher
         mTaskWatcher.stop();
         LoadCheckingQuestionsTask t = (LoadCheckingQuestionsTask)task;
         if(t.getNumQuestions() > 0) {
+            mQuestions = t.getQuestions();
             mAdapter.changeDataset(t.getQuestions());
             mNumQuestions = t.getNumQuestions();
             numComplete = t.getNumCompleted();
