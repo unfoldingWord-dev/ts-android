@@ -473,6 +473,7 @@ public class TranslationManager {
                                                                                 AppContext.projectManager().getDataStore().importNotes(projSlug, langSlug, r.getId(), r.getNotesCatalog(), notes);
                                                                                 AppContext.projectManager().getDataStore().importSource(projSlug, langSlug, r.getId(), r.getSourceCatalog(), source);
                                                                                 AppContext.projectManager().getDataStore().importTerms(projSlug, langSlug, r.getId(), r.getTermsCatalog(), terms);
+                                                                                AppContext.projectManager().getDataStore().importQuestions(projSlug, langSlug, r.getId(), r.getQuestionsCatalog(), terms);
                                                                             }
                                                                         }
                                                                     } else {

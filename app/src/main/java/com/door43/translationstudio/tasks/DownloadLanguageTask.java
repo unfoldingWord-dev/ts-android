@@ -50,17 +50,26 @@ public class DownloadLanguageTask extends ManagedTask {
             if(interrupted()) return;
             Resource r = resources.get(i);
             AppContext.projectManager().mergeResource(mProject.getId(), mLanguage.getId(), r.getId());
-            publishProgress(((i + 1) / (double) resources.size()) * .3, "");
+
+            // notes
+            publishProgress(((i + 1) / (double) resources.size()) * .25, "");
             AppContext.projectManager().downloadNotes(mProject, mLanguage, r, ignoreCache);
             AppContext.projectManager().mergeNotes(mProject.getId(), mLanguage.getId(), r);
 
-            publishProgress(((i + 1) / (double) resources.size()) * .6, "");
+            // terms
+            publishProgress(((i + 1) / (double) resources.size()) * .50, "");
             AppContext.projectManager().downloadTerms(mProject, mLanguage, r, ignoreCache);
             AppContext.projectManager().mergeTerms(mProject.getId(), mLanguage.getId(), r);
 
-            publishProgress(((i + 1) / (double) resources.size()) * .9, "");
+            // source
+            publishProgress(((i + 1) / (double) resources.size()) * .75, "");
             AppContext.projectManager().downloadSource(mProject, mLanguage, r, ignoreCache);
             AppContext.projectManager().mergeSource(mProject.getId(), mLanguage.getId(), r);
+
+            // questions
+            publishProgress(((i + 1) / (double) resources.size()) * .9, "");
+            AppContext.projectManager().downloadQuestions(mProject, mLanguage, r, ignoreCache);
+            AppContext.projectManager().mergeQuestions(mProject.getId(), mLanguage.getId(), r);
 
             publishProgress((i + 1) / (double) resources.size(), "");
             mLanguage.addResource(r);

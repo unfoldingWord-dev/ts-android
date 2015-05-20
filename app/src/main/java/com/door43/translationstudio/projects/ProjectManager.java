@@ -990,6 +990,22 @@ public class ProjectManager {
     }
 
     /**
+     * Downloads the checking questions from the server.
+     * The downloaded data is stored temporarily and does not affect the currently loaded source
+     * @param p the project
+     * @param l the source language
+     * @param r the resource
+     * @param ignoreCache
+     */
+    public void downloadQuestions(Project p, SourceLanguage l, Resource r, boolean ignoreCache) {
+        if(r.getQuestionsCatalog() != null) {
+            mDataStore.fetchTempAsset(r.getQuestionsCatalog(), ignoreCache);
+        } else {
+            mDataStore.fetchTempAsset(mDataStore.questionsUri(p.getId(), l.getId(), r.getId()), ignoreCache);
+        }
+    }
+
+    /**
      * Loads a list of projects from the disk
      * @param listener
      */
@@ -1658,6 +1674,30 @@ public class ProjectManager {
                 mDataStore.importSource(projectId, languageId, resource.getId(), resource.getSourceCatalog(), FileUtils.readFileToString(newSourceFile));
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "Failed to merge the source "+resource, e);
+            }
+        }
+    }
+
+    /**
+     * Merges questions from the temp assets into the assets
+     * @param projectId
+     * @param languageId
+     * @param resource
+     */
+    public void mergeQuestions(String projectId, String languageId, Resource resource) {
+        String key;
+        if(resource.getQuestionsCatalog() != null) {
+            key = mDataStore.getKey(resource.getQuestionsCatalog());
+        } else {
+            key = mDataStore.getKey(mDataStore.questionsUri(projectId, languageId, resource.getId()));
+        }
+        File newQuestionsFile = mDataStore.getTempAsset(key);
+
+        if(newQuestionsFile.exists()) {
+            try {
+                mDataStore.importQuestions(projectId, languageId, resource.getId(), resource.getQuestionsCatalog(), FileUtils.readFileToString(newQuestionsFile));
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to merge the checking questions "+resource, e);
             }
         }
     }

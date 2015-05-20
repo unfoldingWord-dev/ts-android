@@ -62,19 +62,24 @@ public class DownloadProjectsTask extends ManagedTask {
                             AppContext.projectManager().mergeResource(p.getId(), l.getId(), r.getId());
 
                             // download notes
-                            publishProgress((i + (j + (k + .3)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
+                            publishProgress((i + (j + (k + .25)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
                             AppContext.projectManager().downloadNotes(p, l, r, ignoreCache);
                             AppContext.projectManager().mergeNotes(p.getId(), l.getId(), r);
 
                             // download terms
-                            publishProgress((i + (j + (k + .6)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
+                            publishProgress((i + (j + (k + .50)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
                             AppContext.projectManager().downloadTerms(p, l, r, ignoreCache);
                             AppContext.projectManager().mergeTerms(p.getId(), l.getId(), r);
 
                             // download source
-                            publishProgress((i + (j + (k + .9)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
+                            publishProgress((i + (j + (k + .75)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
                             AppContext.projectManager().downloadSource(p, l, r, ignoreCache);
                             AppContext.projectManager().mergeSource(p.getId(), l.getId(), r);
+
+                            // download questions
+                            publishProgress((i + (j + (k + .9)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
+                            AppContext.projectManager().downloadQuestions(p, l, r, ignoreCache);
+                            AppContext.projectManager().mergeQuestions(p.getId(), l.getId(), r);
 
                             publishProgress((i + (j + (k + 1)/(double)resources.length)/(double)languages.size())/(double)mProjects.size(), p.getId());
                         }

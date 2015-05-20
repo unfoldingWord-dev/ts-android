@@ -216,6 +216,33 @@ public class DataStore {
     }
 
     /**
+     * Adds questions to the resources
+     * Questions may be located at an arbitrary location. If the uri is not null this custom location will
+     * be used when generating the key
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @param sourceUri The uri from which the questions originated
+     * @param data
+     */
+    public void importQuestions(String projectId, String languageId, String resourceId, Uri sourceUri, String data) {
+        String path = questionsPath(projectId, languageId, resourceId);
+        String key;
+        if(sourceUri != null) {
+            key = getKey(sourceUri);
+        } else {
+            key = getKey(sourceUri(projectId, languageId, resourceId));
+        }
+        File file = getAsset(key);
+        try {
+            FileUtils.writeStringToFile(file, data);
+            linkAsset(key, path);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "failed to add the source to the resource", e);
+        }
+    }
+
+    /**
      * Adds terms to the resources
      * Terms may be located at an arbitrary location. If the uri is not null this custom location will
      * be used when generating the key
@@ -976,6 +1003,17 @@ public class DataStore {
     }
 
     /**
+     * Returns the path to the checking questions file
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public static String questionsPath(String projectId, String languageId, String resourceId) {
+        return SOURCE_TRANSLATIONS_DIR + projectId + "/" + languageId + "/" + resourceId + "/checking_questions.json";
+    }
+
+    /**
      * Returns the source uri
      * @param projectId
      * @param languageId
@@ -984,6 +1022,17 @@ public class DataStore {
      */
     public static Uri sourceUri(String projectId, String languageId, String resourceId) {
         return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json");
+    }
+
+    /**
+     * Returns the checking questions uri
+     * @param projectId
+     * @param languageId
+     * @param resourceId
+     * @return
+     */
+    public static Uri questionsUri(String projectId, String languageId, String resourceId) {
+        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/CQ-" + languageId + ".json");
     }
 
     /**
@@ -1176,6 +1225,20 @@ public class DataStore {
                 int dateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
                 if (dateModified == 0) {
                     String dateModifiedRaw = r.getSourceCatalog().getQueryParameter("date_modified");
+                    if (dateModifiedRaw != null) {
+                        writeDateModifiedRecord(ASSET_PREFIX, key, Integer.parseInt(dateModifiedRaw));
+                    }
+                }
+            }
+
+            // questions
+            if(r.getQuestionsCatalog() != null) {
+                String key = getKey(r.getQuestionsCatalog());
+
+                // add missing date modified information for the source language catalog
+                int dateModified = mSettings.getInt(ASSET_PREFIX + key + "_modified", 0);
+                if (dateModified == 0) {
+                    String dateModifiedRaw = r.getQuestionsCatalog().getQueryParameter("date_modified");
                     if (dateModifiedRaw != null) {
                         writeDateModifiedRecord(ASSET_PREFIX, key, Integer.parseInt(dateModifiedRaw));
                     }

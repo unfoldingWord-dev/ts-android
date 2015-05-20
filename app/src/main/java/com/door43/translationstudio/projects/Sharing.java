@@ -739,6 +739,17 @@ public class Sharing {
                         FileUtils.writeStringToFile(new File(dataDir, srcKey), source);
                         FileUtils.writeStringToFile(new File(resourceDir, "source.link"), srcKey);
 
+                        // questions
+                        String questions = ds.pullCheckingQuestions(p.getId(), l.getId(), r.getId(), false, false);
+                        String questionsKey;
+                        if(r.getQuestionsCatalog() != null) {
+                            questionsKey = ds.getKey(r.getQuestionsCatalog());
+                        } else {
+                            questionsKey = ds.getKey(ds.questionsUri(p.getId(), l.getId(), r.getId()));
+                        }
+                        FileUtils.writeStringToFile(new File(dataDir, questionsKey), questions);
+                        FileUtils.writeStringToFile(new File(resourceDir, "checking_questions.link"), questionsKey);
+
                         // notes
                         String notes = ds.pullNotes(p.getId(), l.getId(), r.getId(), false, false);
                         String notesKey;

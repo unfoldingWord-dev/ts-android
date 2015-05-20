@@ -13,6 +13,7 @@ public class Resource {
     private final String mSlug;
     private final String mName;
     private final int mCheckingLevel;
+    private final Uri mQuestionsUri;
     private int mDateModified;
     private Uri mNotesUri = null;
     private Uri mSourceUri = null;
@@ -23,11 +24,31 @@ public class Resource {
 //    private String mTermsUri;
 //    private String mNotesUri;
 
-    public Resource(String slug, String name, int checkingLevel, int dateModified) {
+    protected Resource(String slug, String name, int checkingLevel, int dateModified, String notesUrl, String sourceUrl, String termsUrl, String questionsUrl) {
         mSlug = slug;
         mName = name;
         mCheckingLevel = checkingLevel;
         mDateModified = dateModified;
+        if(termsUrl != null) {
+            mTermsUri = Uri.parse(termsUrl);
+        } else {
+            mTermsUri = null;
+        }
+        if(notesUrl != null) {
+            mNotesUri = Uri.parse(notesUrl);
+        } else {
+            mNotesUri = null;
+        }
+        if(sourceUrl != null) {
+            mSourceUri = Uri.parse(sourceUrl);
+        } else {
+            mSourceUri = null;
+        }
+        if(questionsUrl != null) {
+            mQuestionsUri = Uri.parse(questionsUrl);
+        } else {
+            mQuestionsUri = null;
+        }
     }
 
     /**
@@ -83,57 +104,27 @@ public class Resource {
     public static Resource generate(JSONObject json) {
         try {
             JSONObject jsonStatus = json.getJSONObject("status");
-            Resource r = new Resource(json.getString("slug"), json.getString("name"), jsonStatus.getInt("checking_level"), json.getInt("date_modified"));
+            String notesCatalog = null;
+            String sourceCatalog = null;
+            String termsCatalog = null;
+            String questionsCatalog = null;
             if(json.has("notes")) {
-                r.setNotesCatalog(json.getString("notes"));
+                notesCatalog = json.getString("notes");
             }
             if(json.has("source")) {
-                r.setSourceCatalog(json.getString("source"));
+                sourceCatalog = json.getString("source");
             }
-             if(json.has("terms")) {
-                 r.setTermsCatalog(json.getString("terms"));
-             }
-            return r;
+            if(json.has("terms")) {
+                termsCatalog = json.getString("terms");
+            }
+            if(json.has("checking_questions") && !json.getString("checking_questions").isEmpty()) {
+                questionsCatalog = json.getString("checking_questions");
+            }
+            return new Resource(json.getString("slug"), json.getString("name"), jsonStatus.getInt("checking_level"), json.getInt("date_modified"), notesCatalog, sourceCatalog, termsCatalog, questionsCatalog);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    /**
-     * Sets the url to the terms catalog
-     * @param termsUrl
-     */
-    private void setTermsCatalog(String termsUrl) {
-        if(termsUrl != null) {
-            mTermsUri = Uri.parse(termsUrl);
-        } else {
-            mTermsUri = null;
-        }
-    }
-
-    /**
-     * Sets the url to the notes catalog
-     * @param notesUrl
-     */
-    private void setNotesCatalog(String notesUrl) {
-        if(notesUrl != null) {
-            mNotesUri = Uri.parse(notesUrl);
-        } else {
-            mNotesUri = null;
-        }
-    }
-
-    /**
-     * Sets the url to the source catalog
-     * @param sourceUrl
-     */
-    public void setSourceCatalog(String sourceUrl) {
-        if(sourceUrl != null) {
-            mSourceUri = Uri.parse(sourceUrl);
-        } else {
-            mSourceUri = null;
-        }
     }
 
     /**
@@ -158,6 +149,14 @@ public class Resource {
      */
     public Uri getSourceCatalog() {
         return mSourceUri;
+    }
+
+    /**
+     * Returns the url to the questions catalog
+     * @return
+     */
+    public Uri getQuestionsCatalog() {
+        return mQuestionsUri;
     }
 
     /**
