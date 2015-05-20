@@ -10,7 +10,7 @@
   <string name="pref_title_typeface_size">የትርጉም የመጻፊያ መጠን</string>
   <string-array name="pref_typeface_size_titles">
     <item>ትንሽ</item>
-    <item>normal</item>
+    <item>የተለመደ</item>
     <item>መካከለኛ</item>
     <item>ትልቅ</item>
   </string-array>
@@ -28,4 +28,12 @@
   <string name="pref_title_media_server">የሚዲያ መቆጣጠሪያ</string>
   <string name="pref_title_export_format">የመላኪያ ፎርማት</string>
   <string name="pref_header_advanced">የተሻሻለ</string>
+  <string name="pref_title_developer_tools">የሠራው መሣሪያዎች</string>
+  <string name="pref_description_developer_tools">የሠራው መሣሪያዎችን ክፈት</string>
+  <string name="pref_title_logging_level">ደረጃውን ማስገባት</string>
+  <string-array name="pref_logging_level_titles">
+    <item>መረጃ</item>
+    <item>ማስጠንቀቂያዎች</item>
+    <item>ስህተቶች</item>
+  </string-array>
 </resources>

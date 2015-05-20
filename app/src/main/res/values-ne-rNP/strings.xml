@@ -5,7 +5,7 @@
   <string name="title_frames">फ्रेमहरू</string>
   <string name="label_ok">ठीक</string>
   <string name="title_cancel">रद्द गर्नुहोस्</string>
-  <string name="uploading">सर्भरमा  पठाउँदै ...</string>
+  <string name="uploading">अपलोड</string>
   <string name="terms_title">प्रयोगका शर्तहरु</string>
   <string name="terms">यो अनुप्रयोग प्रयोग गरेर तपाईं विश्वास र अनुवाद निर्देशनहरू को बयान सहमत र तपाईं रचनात्मक कमन्स विशेषता-ShareAlike 4.0 अन्तर्राष्ट्रीय लाइसेन्स को सर्तहरू अन्तर्गत काम जारी छ।</string>
   <string name="chapter_title_field">अध्याय शीर्षक:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">जगेडा र प्रकाशित</string>
   <string name="upload_wizard_intro">तपाईं आफ्नो भाषा अपलोड गर्न लाग्नुभएको छ।</string>
   <string name="label_continue">जारी</string>
+  <string name="next">अर्को</string>
   <string name="upload_wizard_overview">अपलोड समीक्षा</string>
   <string name="label_project_details">प्रोजेक्ट  विवरण</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> <xliff:g id="language" example="English">\"%2$s\"</xliff:g> भाषाबाट <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> भाषामा अनुवाद हुँदैछ।</string>
@@ -73,20 +74,15 @@
   <string name="no_translation_notes">कुनै अनुवाद नोटहरू छैनन्</string>
   <string name="key_terms">मुख्य सर्तहरू</string>
   <string name="translation_check_notice">अब हामी तपाईंको अनुवादन तयार छ भनि सुनिश्चित गर्न केही जाँचहरू गर्नेछौं।</string>
-  <string name="translation_complete">अनुवादन पूरा छ</string>
   <string name="preparing_upload">अपलोडका लागि प्रोजेक्ट तयार गर्दै</string>
-  <string name="license">
-<![CDATA[
-<h2>तपाईं स्वतन्त्र हुनु हुन्छ :</h2>
+  <string name="license"><![CDATA[<h2>तपाईं स्वतन्त्र हुनु हुन्छ :</h2>
 <p> कुनै पनि मध्यम वा ढाँचामा  सामाग्रीहरु  साझा गर्न, नक्कल पार्न र पुन:वितरण गर्न ;  कुनै पनि उद्देश्यको लागि,  व्यापारिक प्रयोजनको लागि रुपान्तर  गर्नुहोस् , रिमिक्स गर्नुहोस्  र   बदल्नुहोस्   । लाइसेन्स प्राप्त गरेका व्यक्तिले लाइसेन्सको सर्तहरु पालना गरुन्जेल सम्म यी स्वतन्त्रहरु हटाउन सक्ने छैन् ।</p>
 <h2>निम्न सर्ताहरुमा:</h2>
 <p>
     लाइसेन्स प्राप्त गरेका व्यक्तिले लाइसेन्सको सर्तहरु पालना गरुन्जेल सम्म यी स्वतन्त्रहरु हटाउन सक्ने छैन् ।  कुनै पनि उचित तरिकामा यसो गर्न सक्छ, तर त्यसो नभई यसले लाइसेन्स प्राप्त गरेको व्यक्तिको मन्जुरीमा वा तपाईको प्रयोगको लागि सुझाव दिन्छ;  s<br/> <b> ShareAlike </b> -  यदि तपाईले सामग्रीहरुमा परिमार्जन, रुपान्तरण, वा निर्माण गर्दा, तपाईले आफ्नो योगदान उही लाइसेन्स सक्कलको रुपमा वितरण गर्नु पर्ने छ; <br/> <b> कुनै थप प्रतिबन्ध छैन </b> - तपाईंलाई कानुनी सर्तहरू वा कानुनी प्रतिबन्ध हुने लाइसेन्सले अनुमति दिने अन्य कुनै पनि कार्य गर्न प्राविधिक उपायहरु लागू छैन ।
 </p>
 <h2>सूचनाहरु:</h2>
-<p>तपाईं आफ्नो प्रयोग एक लागू अपवाद वा सीमा गरेर अनुमति छ, जहाँ सार्वजनिक डोमेन वा भौतिक को तत्व को लागि लाइसेन्स पालन गर्न छैन; कुनै वारंटी दिइएको छ। लाइसेन्स तपाईं आफ्नो उद्देश्य प्रयोगको लागि आवश्यक अनुमतिहरू सबै दिन सक्दैन। उदाहरणका लागि, यस्तो प्रचार, गोपनीयता, वा नैतिक अधिकार अन्य अधिकार तपाईं भौतिक प्रयोग कसरी सीमित हुन सक्छ।</p>
-]]>
-  </string>
+<p>तपाईं आफ्नो प्रयोग एक लागू अपवाद वा सीमा गरेर अनुमति छ, जहाँ सार्वजनिक डोमेन वा भौतिक को तत्व को लागि लाइसेन्स पालन गर्न छैन; कुनै वारंटी दिइएको छ। लाइसेन्स तपाईं आफ्नो उद्देश्य प्रयोगको लागि आवश्यक अनुमतिहरू सबै दिन सक्दैन। उदाहरणका लागि, यस्तो प्रचार, गोपनीयता, वा नैतिक अधिकार अन्य अधिकार तपाईं भौतिक प्रयोग कसरी सीमित हुन सक्छ।</p>]]></string>
   <string name="choose_a_project">कृपया सर्वप्रथम प्रोजेक्ट खोल्नुहोस्</string>
   <string name="choose_a_chapter">कृपया पहिले अध्याय खोल्नुहोस्</string>
   <string name="title_activity_crash_reporter">त्रुटि रिपोर्ट</string>
@@ -151,4 +147,15 @@
   <string name="indexing">अनुक्रमणिका</string>
   <string name="title_upload">अपलोड</string>
   <string name="preview_chapter_translation_draft">पूर्वावलोकन ड्राफ्ट</string>
+  <string name="choose_project_to_upload">अपलोड परियोजना छान्नुहोस्</string>
+  <string name="verify">प्रमाणित</string>
+  <string name="review">समीक्षा</string>
+  <string name="publish_translation">अनुवाद प्रकाशित</string>
+  <string name="notice">सूचना</string>
+  <string name="complete_required_fields">सबै आवश्यक क्षेत्रहरु पूरा कृपया</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> आवश्यक</string>
+  <string name="upload_failed">अपलोड विफल</string>
+  <string name="publishing_translation">प्रकाशन अनुवाद</string>
+  <string name="backing_up_translation">अनुवाद जगेडाबनाउदैछ</string>
+  <string name="review_all_checking_questions">सबै प्रश्नहरू समीक्षा कृपया</string>
 </resources>

@@ -5,8 +5,9 @@
   <string name="title_frames">ማዕቀፎች</string>
   <string name="label_ok">እሺ</string>
   <string name="title_cancel">መሰረዝ</string>
-  <string name="uploading">ወደ መቆጣጠሪያው እየላከ ነው።</string>
+  <string name="uploading">እየጫነ ነው</string>
   <string name="terms_title">ለመጠቀም ሊጠብቁት የሚገባዎት ግደታዎች</string>
+  <string name="terms">ይህን ሶፍትዌር በመጠቀምዎ በእምነት አንቀጽ እና በትርጉም መመሪያዎቹ የተስማሙ ሲሆን በCreative Commons Attribution-ShareAlike 4.0 ዓለም አቀፍ ፈቃድ ደንብ ሥር እንዲሥሩ እንደተለቀቁ ተስማምተዋል።</string>
   <string name="chapter_title_field">የምዕራፍ ርዕስ፤</string>
   <string name="chapter_reference_field">የምዕራፉ ተያያዥ</string>
   <string name="source_language_field">የምጩ ቋንቋ</string>
@@ -23,8 +24,10 @@
   <string name="export_to_sd">ወደ መሞሪው መላክ</string>
   <string name="translation_import_failed">ትርጉሙን ለማስገባት አልቻለም</string>
   <string name="internet_not_available">የሚሠራ ኢንተርኔት ሊኖርዎት አይጠበቅም።</string>
+  <string name="backup_and_publish">መረጃውን መያዝ እና ማሳተም</string>
   <string name="upload_wizard_intro">አሁን የተረጎሙትን ሊያስገቡ ተቃርበዋል።</string>
   <string name="label_continue">ቀጥል</string>
+  <string name="next">ቀጥል</string>
   <string name="upload_wizard_overview">የተከለሰውን ገጽ መጫን</string>
   <string name="label_project_details">የፕሮጄክት ዝርዝሮች</string>
   <string name="project_details"><xliff:g id="language" example="English">\"%2$s\"</xliff:g> ቋንቋውን ወደ <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> ቋንቋ የተተረጎመውን <xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g></string>
@@ -33,6 +36,8 @@
   <string name="error_target_and_source_are_same">የምንጩ እና የተቀባዩ  ቋንቋዎች አንድ ናቸው</string>
   <string name="error_chapter_title_missing">የምዕራፉ ርዕስ ጎድሎአል።</string>
   <string name="error_chapter_reference_missing">የምዕራፉ ማስተያያ ጎድሎአል።</string>
+  <string name="label_chapter_title_detailed">ምዕራፍ <xliff:g id="chapter" example="1. The Creation">%1$s</xliff:g></string>
+  <string name="label_frame_title_detailed">ማዕቀፍ <xliff:g id="frame" example="1">%1$s</xliff:g></string>
   <string name="dialog_validation_errors">ዕውቅና የመስጠት ስህተቶች</string>
   <string name="validation_errors">በትርጉም ሥራው ውስጥ ያልታረሙ ስህተቶች አሉ። እባክዎትን እነዚህን ያስተካክሉ እና እንደገና ይሞክሩ።</string>
   <string name="error_frames_not_translated">%1$s ማዕቀፎች አልተተረጎሙም።</string>
@@ -67,32 +72,90 @@
   <string name="choose_frame_to_start">ለመጀመሪ ከምንጩ ምንባብ ከግራ ጠርዝ ላይ ይምረጡ</string>
   <string name="return_to_important_terms">አስፈላጊ ወደሆነው ደንቦች መመለስ</string>
   <string name="no_translation_notes">ምንም ዓይነት የትርጉም ማስታወሻዎች የሉም።</string>
+  <string name="key_terms">ቁልፍ ቃላት</string>
   <string name="translation_check_notice">የተረጎሙት ዝግጁ መሆኑን ለማረጋገጥ አሁን ትንሽ የፍተሻ ሥራዎችን እናከናውናለን።</string>
-  <string name="translation_complete">ትርጉሙ አልቆአል።</string>
   <string name="preparing_upload">ፕሮጄክቱን ለማስገባት ማዘጋጀት</string>
-  <string name="license">
-<![CDATA[
-<h2>ጄይ ሞኝ ነው።</h2>
+  <string name="license"><![CDATA[<h2>ጄይ ሞኝ ነው።</h2>
 <p>ይጋሩ፣ ያባዙ፣ እና በማንኛውም ማባዣ ወይም ሁኔታ እንደገና ያሰራጩ፤ ያዳቅሉ፣ እንደገና ይከልሱ፣ ያድሱ፣ እና ለማንኛውም ዓላማ ማቴሪያሉን ያዳብሩ፤ ለገበያም ቢሆን። የፈቃዱን ገደታዎች እስከተከተሉ ድረስ ፈቃድ ሰጪው እነዚህን ነጻነቶች ሊያስቀር አይችልም።</p>
 <h2>በሚከተሉት ግዴታዎች ሥር፤</h2>
 <p>
     <b> የተሰጠው ዕውቅና </b>- ተገቢውን ዕውቅና መስጠት፣ ለፈቃዱ ተያያዥ ድኅረገጽ መስጠት፣ እና ለውጥ ተደርጎ ከሆነ ለውጡን ማሳየት አለብዎት። አግባብነት ባለው መንገድ ሊያደርጉት ይችላሉ፤ ነገር ግን ፈቃዱን የሰጦት አካል እርሶዎን ወይም አጠቃቀምዎን እንደደገፍዎት በሚያመለክት መልኩ መሆን የለበትም፤ <br/>   <b> ተመሳሳዩን ይጋሩት</b>- እንደገና ከቀላቀሉ፣ ካደሱ፣ ወይም ማቴሪያሉን ካሻሻሉ፣ ልክ እንደመጀመሪያው በተመሳሳይ ፈቃድ ሥር የራስዎን አስተዋጽኦዎች ማሰራጨት አለብዎት፤  <br/>    <b> ተጨማሪ ክልከላዎች አያስፈልግም  </b>ፈቃዱ የሚፈቅደውን በሕግ ሌሎችን ምንም እንዳይሰሩ ለመከልከል ሕጋዊ ግዴታዎችን ወይም የቴክኖሎጅ ቁጥጥሮችን ተግባራዊ ማድረግ አይችሉም።
 </p>
 <h2>ማሳሰቢያዎች፤</h2>
-<p>በሕዝብ ፍጆታ ለሚውሉ የማቴሪያሉ ክፍሎች ወይም ተገቢነት ባለው ቦታዎች ወይም ውስን በሆኑ ቦታዎች አጠቃቀሞ በሚፈቀድበት ቦታዎች ላይ በፈቃዱ ሊገደዱ አይችሉም። ፈቃዱ የግድ ላሰቡት ፍጆታ ፈቃዶችን በሙሉ ሊሰጥዎት አይችልም። ለምሳሌ፦ ሌሎች መብቶች እንደ ለህዝብ ማሳወቅ፣ የግል መብት፣ ወይም የግብረገብ መብቶች ማቴሪያሉን እንዴት እንደሚጠቀሙ ሊወስኑት ይችላሉ።</p>
-]]>
-  </string>
+<p>በሕዝብ ፍጆታ ለሚውሉ የማቴሪያሉ ክፍሎች ወይም ተገቢነት ባለው ቦታዎች ወይም ውስን በሆኑ ቦታዎች አጠቃቀሞ በሚፈቀድበት ቦታዎች ላይ በፈቃዱ ሊገደዱ አይችሉም። ፈቃዱ የግድ ላሰቡት ፍጆታ ፈቃዶችን በሙሉ ሊሰጥዎት አይችልም። ለምሳሌ፦ ሌሎች መብቶች እንደ ለህዝብ ማሳወቅ፣ የግል መብት፣ ወይም የግብረገብ መብቶች ማቴሪያሉን እንዴት እንደሚጠቀሙ ሊወስኑት ይችላሉ።</p>]]></string>
   <string name="choose_a_project">እባኮትን በመጀመሪያ ፕሮጄክቱን ይክፈቱ።</string>
   <string name="choose_a_chapter">እባኮትን በመጀመሪያ ምዕራፉን ይክፈቱ።</string>
   <string name="title_activity_crash_reporter">ስህተትን ማስታወቂያ</string>
+  <string name="title_activity_bug_reporter">በቫይረስ የመጠቃት ሪፖርት</string>
   <string name="crash_details">ሶፍትዌሩ ከመደምሰሱ በፊት ምን እየሠሩ ነበር?</string>
   <string name="settings">መዋቅሮች</string>
   <string name="yes">Yes</string>
   <string name="no">No</string>
   <string name="view_statement_of_faith">የእምነት አንቀጹን አሳይ</string>
   <string name="view_translation_guidelines">የትርጉም መምሪያን አሳይ</string>
+  <string name="language_resources">ቅጅዎች</string>
+  <string name="import_project">ፕሮጄክቶችን ወደ ውስጥ ማስገባት</string>
+  <string name="no_projects_available_on_server">በሰርቨሩ ላይ ምንም ዓይነት ፕሮጄክቶች የሉም።</string>
+  <string name="downloading">እያወረደ ነው።</string>
+  <string name="confirm_import">እባክዎ ወደ ውስጥ የገባውን መረጃ ያረጋግጡ</string>
+  <string name="waiting_for_device">መሣሪያውን እየጠበቀ ነው።</string>
+  <string name="label_back">ወደኋላ መልስ</string>
+  <string name="bug_report">ያጋጠመዎትን ችግር ይግለጹ</string>
+  <string name="terms_additional">በእምነት አንቀጽ እና በትርጉም መመሪያዎቹ  መስማማት አለብዎት።</string>
   <string name="project_library">ቤተ መጽሐፍት</string>
+  <string name="title_verse">ቁጥር</string>
+  <string name="title_note">ማስታወሻ</string>
+  <string name="dialog_contact_form">የግንኙነት ፎርም</string>
+  <string name="label_name">ስም</string>
+  <string name="label_email">ኢሜል</string>
+  <string name="label_phone">ስልክ</string>
+  <string name="contact_form_description">እባክዎትን የሚገኙበትን መረጃ ይስጡ። ይህ በሚያትሙበት ጊዜ በአስተማማኝ ሁኔታ ወደ ሰርቨሩ ይተላለፋል።</string>
+  <string name="verse_out_of_bounds">በ <xliff:g id="number" example="1">%1$s</xliff:g>እና<xliff:g id="number" example="100">መካከል ያለውን ቁጥር ይምረጡ</xliff:g></string>
+  <string name="no_key_terms">ምንም ዓይነት ቁልፍ ቃላት የሉም።</string>
+  <string name="title_activity_developer">የሠራው መሣሪያዎች</string>
   <string name="action_settings">መዋቅሮች</string>
+  <string name="downloading_project">ፕሮጄክት ማውረድ <xliff:g id="project_id" example="obs">%1$s</xliff:g></string>
   <string name="up">ወደላይ</string>
+  <string name="empty_directory">አመላካቹ ባዶ ነው</string>
+  <string name="exporting">ወደ ውጪ ማጓጓዝ</string>
+  <string name="get_more_projects">ተጨማሪ ፕሮጄክቶች ያግኙ</string>
+  <string name="source_language_library">የምንጭ ቤተ መጽሐፍት</string>
+  <string name="title_project_detail">የቤተ መጽሐፍቱ ፕሮጄክት ቋንቋዎች</string>
+  <string name="languages">ቋንቋዎች</string>
+  <string name="drafts">ንፎች</string>
+  <string name="use_internet_confirmation">\?ይህ የእርስዎን ኢንቴርነት ይጠቀማል፤ ይቀጥል</string>
+  <string name="update_projects">የተሻሻሉ ፕሮጄክቶች</string>
+  <string name="update_projects_description">ከሰርቨሩ ላይ የቀረቡትን ማሻሻያዎችን ያውርዱ እና ይመልከቱ</string>
+  <string name="action_download_all">ሁሉንም ያውርዱ</string>
+  <string name="title_activity_project_updates">የፕሮጄክት ማሻሻያዎች</string>
+  <string name="action_edit_projects">ፕሮጄክቶቹን ማረም</string>
+  <string name="download_all_confirmation">\?በጣም ትልቅ የሆነ መረጃ እያወረዱ ይገኛሉ፤ ይቀጥል</string>
+  <string name="action_cancel_edit_projects">ፕሮጄክቶቹን ማረም ያቁሙ</string>
+  <string name="import_draft">ንድፉን ያስገቡ</string>
+  <string name="import_draft_confirmation">\?ነባሩን ትርጉም በዚህ በተቀባዩ ቋንቋ ይለወጥ</string>
+  <string name="action_search">መፈለግ</string>
+  <string name="transfer_from_device">ከመሳሪያው ላይ ማስተላለፊ</string>
+  <string name="transfer_from_device_description">በኔትዎር አድርገው አጠገቡ ከሚገኘው መሣሪያ አስተላልፊ</string>
+  <string name="import_from_storage">ከማከማቻ አስገባ</string>
+  <string name="import_from_storage_description">በዚህ መሣሪያ ላይ ፕሮጄክቶች ከውጪአዊ ማከማቻ ላይ ወደ ውስጥ ይገባሉ</string>
+  <string name="download_complete">ማውረዱን ጨርሷል</string>
+  <string name="source_export_complete">መላክ አልቋል</string>
+  <string name="exit_confirmation">ከትርጉም ስቱዲዮ ውጣ</string>
+  <string name="read_chapter_menu">ምዕራፍ አንብብ</string>
+  <string name="preview_chapter_translation">ትርጉሙን ምን እንደሚመስል ማየት</string>
+  <string name="toggle_blind_draft_mode">ጭፍን ንድፉን መቆለፍ</string>
+  <string name="indexing">የመጨረሻ ማስታወሻ</string>
   <string name="title_upload">መጫን</string>
+  <string name="preview_chapter_translation_draft">የንድፉ ማሳያ</string>
+  <string name="choose_project_to_upload">ለመጫን ፕሮጄክቱን ምረጥ</string>
+  <string name="verify">አረጋግጥ</string>
+  <string name="review">ከልስ</string>
+  <string name="publish_translation">ትርጉሙን አትም</string>
+  <string name="notice">ማሳሰቢያ</string>
+  <string name="complete_required_fields">እባክዎትን የተጠየቁትን በሙሉ አሟሉ</string>
+  <string name="required_field"><xliff:g id="ምልክት ማድረጊያ">*</xliff:g> ያስፈልጋል</string>
+  <string name="upload_failed">መጫኑ አልተሳካም</string>
+  <string name="publishing_translation">ትርጉሙን ማተም</string>
+  <string name="backing_up_translation">የትርጉሙን ቅጂ መያዝ</string>
+  <string name="review_all_checking_questions">እባክዎትን ጥያቄዎቹን በሙሉ ይከልሱ</string>
 </resources>

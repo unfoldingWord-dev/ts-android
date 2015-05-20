@@ -5,7 +5,7 @@
   <string name="title_frames">Çerçeveler</string>
   <string name="label_ok">TAMAM</string>
   <string name="title_cancel">İptal</string>
-  <string name="uploading">Gönderen sunucuya...</string>
+  <string name="uploading">Yükleme</string>
   <string name="terms_title">Kullanım koşulları </string>
   <string name="terms">Bu uygulamayı kullanarak, inanç ve çeviri kurallarına tablosu ile katılıyorum ve Creative Commons Attribution-ShareAlike 4.0 Uluslararası Lisansı şartları altında çalışmak serbest bırakmak için.</string>
   <string name="chapter_title_field">Bölüm Title:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Yedekleme ve Yayınla</string>
   <string name="upload_wizard_intro">Sen çeviri yüklemek üzeresiniz.</string>
   <string name="label_continue">Devam</string>
+  <string name="next">Sonraki</string>
   <string name="upload_wizard_overview">Upload İnceleme</string>
   <string name="label_project_details">Proje detayları</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> den tercüme ediliyor <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> içine dil <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> dil.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">Hiçbir çeviri notları vardır</string>
   <string name="key_terms">Anahtar Terimler</string>
   <string name="translation_check_notice">Biz şimdi çeviri hazır olduğundan emin olmak için bir kaç kontrollerini yapacaktır.</string>
-  <string name="translation_complete">Tercüme tamamlandı</string>
   <string name="preparing_upload">Yükleme için proje hazırlanması</string>
   <string name="license"><![CDATA[<h2> Sen serbesttir: </h2><p> Paylaş, kopyalama ve herhangi bir ortamda ya da formatta malzemeyi yeniden dağıtmak; , Remix, Uyum dönüşümü, ve hatta ticari, herhangi bir amaç için malzeme üzerine inşa. Lisans koşullarını takip ederek lisans sürece bu özgürlükleri iptal edemezsiniz. </p><h2> Aşağıdaki şartları altında: </h2><p> <b>Atıf</b> - Sen, uygun kredi vermek lisansı bir bağlantı sağlamak ve değişiklik yapıldıysa belirtmelidir. Sen ancak lisans sizi veya kullanımını onayladığı anlaşılacağı herhangi bir şekilde, herhangi bir makul bir şekilde bunu yapabilir; <br/> <b>ShareAlike</b> - Sen remix, malzeme üzerine dönüştürmeniz ya da inşa halinde, orijinal ile aynı lisans altında katkılar dağıtmak gerekir; <br/> <b>Hiçbir ek kısıtlamalar</b> - Yasal koşulları ya da yasal lisans izni şey yapıyor başkalarının kısıtlamak teknolojik önlemleri geçerli olmayabilir. </p><h2> Uyarılar: </h2><p> Sen kullanımı uygulanabilir bir istisna ya da sınırlama izin kamu malı veya malzeme elemanları için lisans uymak zorunda değilsiniz; Hiçbir garanti verilmiştir. lisans size amaçlanan kullanım için gerekli tüm izinlere vermeyebilir. Örneğin, tanıtım, gizlilik veya manevi haklar gibi diğer haklar size malzeme kullanımı nasıl sınırlayabilir. </p>]]></string>
   <string name="choose_a_project">Ilk olarak bir proje açın lütfen.</string>
@@ -140,4 +140,15 @@
   <string name="indexing">İndeksleme</string>
   <string name="title_upload">Yükleme</string>
   <string name="preview_chapter_translation_draft">Önizleme taslak</string>
+  <string name="choose_project_to_upload">Yüklemek için projeyi seçin</string>
+  <string name="verify">Doğrulamak</string>
+  <string name="review">İnceleme</string>
+  <string name="publish_translation">Çeviri Yayınla</string>
+  <string name="notice">Ihbar</string>
+  <string name="complete_required_fields">Gerekli tüm alanları doldurun</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> gereken</string>
+  <string name="upload_failed">Yükleme başarısız oldu</string>
+  <string name="publishing_translation">Yayıncılık çeviri</string>
+  <string name="backing_up_translation">Çeviri yedekleme</string>
+  <string name="review_all_checking_questions">Tüm soruları gözden geçirin</string>
 </resources>

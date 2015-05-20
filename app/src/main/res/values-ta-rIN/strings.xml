@@ -5,7 +5,7 @@
   <string name="title_frames">சட்டங்கள்</string>
   <string name="label_ok">சரி</string>
   <string name="title_cancel">ரத்து</string>
-  <string name="uploading">சர்வர் அனுப்புகிறது ...</string>
+  <string name="uploading">பதிவேற்றுகிறது</string>
   <string name="terms_title">விதிமுறைகள்</string>
   <string name="terms">இந்த பயன்பாட்டை பயன்படுத்தி நீங்கள் நம்பிக்கை மற்றும் மொழிபெயர்ப்பு வழிகாட்டுதல்கள் அறிக்கை உடன்படவில்லை மற்றும் நீங்கள் படைப்பு காமன்ஸ் Attribution-ShareAlike 4.0 சர்வதேச உரிம விதிகளின் கீழ் வெளியிட வேண்டும்.</string>
   <string name="chapter_title_field">பாடம் தலைப்பு:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">காப்பு மற்றும் வெளியிடு</string>
   <string name="upload_wizard_intro">நீங்கள் உங்கள் மொழிபெயர்ப்பு பதிவேற்ற உள்ளீர்கள்.</string>
   <string name="label_continue">தொடர்க</string>
+  <string name="next">அடுத்த</string>
   <string name="upload_wizard_overview">பதிவேற்றம் விமர்சனம்</string>
   <string name="label_project_details">திட்ட விவரங்கள்</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> இருந்து மொழிபெயர்க்க <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> ஒரு மொழி <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> மொழி.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">எந்த மொழிபெயர்ப்பு குறிப்புகள் உள்ளன</string>
   <string name="key_terms">முக்கிய விதிமுறைகள்</string>
   <string name="translation_check_notice">நாம் இப்போது உங்கள் மொழிபெயர்ப்பு தயாராக உள்ளது என்பதை உறுதி செய்ய ஒரு சில காசோலைகளை செய்ய வேண்டும்.</string>
-  <string name="translation_complete">மொழிபெயர்ப்பு முழுமையான ஆகிறது</string>
   <string name="preparing_upload">பதிவேற்றம் செய்ய, திட்ட தயாராகிறது</string>
   <string name="license"><![CDATA[<h2> நீங்கள் இலவச உள்ளன: </h2><p> பகிர், நகல், மற்றும் எந்த நடுத்தர அல்லது வடிவத்தில் பொருள் மறுவிநியோகம்; , ரீமிக்ஸ், ஏற்ப மாற்றி, வணிகரீதியாக எந்த நோக்கத்திற்காக பொருள் மீது கட்டமைக்க. நீங்கள் உரிம விதிமுறைகளை பின்பற்ற என அனுமதிப்பத்திரம் நீண்ட இந்த சுதந்திரங்கள் திரும்பப்பெற முடியும். </p><h2> பின்வரும் நிபந்தனைகளின் கீழ்: </h2><p> <b>கற்பித்து</b> - நீங்கள், அதற்கான கடன் கொடுக்க உரிமத்திற்கான இணைப்பை வழங்க, மற்றும் மாற்றங்கள் செய்யப்பட்டன குறிப்பிட வேண்டும். நீங்கள் ஆனால் அனுமதிப்பத்திரம் நீங்கள் அல்லது உங்கள் பயன்பாடு வழிமொழிகிறார் அறிவுறுத்துகிறது என்று எந்த வழியில், எந்த நியாயமான முறையில், அவ்வாறு செய்யலாம்; <br/> <b>W:</b> - நீங்கள் ரீமிக்ஸ், பொருள் மீது மாற்றும், அல்லது கட்ட என்றால், நீங்கள் அசல் அதே உரிமத்தின் கீழ் உங்கள் பங்களிப்புகளை விநியோகிக்க வேண்டும்; <br/> <b>கூடுதல் கட்டுப்பாடுகள்</b> - நீங்கள் சட்ட விதிமுறைகளை அல்லது சட்டப்பூர்வமாக உரிமம் அனுமதி ஏதும் செய்வதை மற்றவர்கள் கட்டுப்படுத்தும் தொழில்நுட்ப அளவுகளின் விண்ணப்பிக்க முடியாது. </p><h2> நோட்டீஸ்: </h2><p> நீங்கள் உங்கள் பயன்பாடு ஒரு பொருந்தும் விதிவிலக்கு வரையறை மூலம் அனுமதி அமைந்துள்ள பொதுக் களம் அல்லது பொருள் கூறுகள் உரிமம் இணங்க வேண்டும்; எந்த உத்தரவாதங்கள் வழங்கப்படும். உரிமம் நீங்கள் உங்கள் நோக்கம் பயன்படுத்த தேவையான அனுமதிகள் அனைத்து கொடுக்க வேண்டும். உதாரணமாக, அத்தகைய விளம்பரம், தனியுரிமை, அல்லது தார்மீக உரிமைகள் போன்ற இதர உரிமைகள் நீங்கள் பொருள் பயன்படுத்த எப்படி குறைக்க கூடும். </p>]]></string>
   <string name="choose_a_project">முதல் ஒரு திட்டம் திறக்க கொள்ளவும்.</string>
@@ -140,4 +140,15 @@
   <string name="indexing">இடுதல்</string>
   <string name="title_upload">பதிவேற்றம்</string>
   <string name="preview_chapter_translation_draft">வரைவுப்</string>
+  <string name="choose_project_to_upload">பதிவேற்ற திட்டத்தை தேர்வு</string>
+  <string name="verify">சரிபார்க்கவும்</string>
+  <string name="review">விமர்சனம்</string>
+  <string name="publish_translation">மொழிபெயர்ப்பு வெளியிடவும்</string>
+  <string name="notice">ரத்து</string>
+  <string name="complete_required_fields">தேவையான புலங்கள் பூர்த்தி செய்க</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> தேவையான</string>
+  <string name="upload_failed">பதிவேற்றம் தோல்வி</string>
+  <string name="publishing_translation">வெளியீட்டு மொழிபெயர்ப்பு</string>
+  <string name="backing_up_translation">மொழிபெயர்ப்பு பின்சேமிப்பு</string>
+  <string name="review_all_checking_questions">அனைத்து கேள்விகளுக்கும் மறுபரிசீலனை செய்க</string>
 </resources>

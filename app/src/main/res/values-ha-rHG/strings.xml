@@ -5,7 +5,7 @@
   <string name="title_frames">Sassa</string>
   <string name="label_ok">Yayi</string>
   <string name="title_cancel">Soke</string>
-  <string name="uploading">Ana aika sako</string>
+  <string name="uploading">Ana aikawa</string>
   <string name="terms_title">Sharudan amfani</string>
   <string name="terms">Ta amfani da wannan app ka yarda da maganar bangaskiya da translation jagororin kuma a kwato ka yi aiki a karkashin sharuddan da Creative Commons Attribution-ShareAlike 4.0 International License.</string>
   <string name="chapter_title_field">Sunan babi</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Ajiyayyen kuma Buga</string>
   <string name="upload_wizard_intro">Kana gaf da dora fassarar da kayi</string>
   <string name="label_continue">Cigaba</string>
+  <string name="next">Gaba</string>
   <string name="upload_wizard_overview">Duba aikin da ake dorawa</string>
   <string name="label_project_details">Bayanan aiki</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> ana kan fassara shi daga <xliff:g id="language" example="English">\"%2$s\"</xliff:g> harshe zuwa harshen <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g>harshe</string>
@@ -73,20 +74,15 @@
   <string name="no_translation_notes">Babu bayanan fassara</string>
   <string name="key_terms">Key Terms</string>
   <string name="translation_check_notice">Yanzu za mu danyi gwaji don a tabbatar in fassararka/ki ta kammala.</string>
-  <string name="translation_complete">Fassara ta kammala</string>
   <string name="preparing_upload">Har-hada aiki don dorawa</string>
-  <string name="license">
-<![CDATA[
-<h2>Kana da \'yancin</h2>
+  <string name="license"><![CDATA[<h2>Kana da \'yancin</h2>
 <p>Sake sarrafa wannan bayanin ta hanyar kofar shi, juya shi, canja shi ta hanya mai ma\'ana ko yada shi ta kowacce irin kafar sadarwa akan kowane irin dalili, ko da kuwa hanyar ta hada da neman kudi ne. Ba za a taba soke lasisin da ya bayar da \'yancin yin hakan ba makawar dai ba saba ma dokokin da aka shata ba.</p>
 <h2>Karkashin wadannan sharudan da aka shata:</h2>
 <p>
     Dolene a alakanta aikin da mai shi na asali da kuma tushen wurin da aka samo izinin yin sauye-sauyen, haka kuma da bayani mai gamsarwa in har anyi wasu sauye-sauye a cikin gundarin aikin. Kana iya yin hakan ne ta hanyar da ta kamata. Idan ka yi wasu canje-canjen da doka ta aminta da su, to fa dole ne kai ma ka raba wannan aikin tare da bayar da cikakken izini ga duk wanda ke son shima yayi amfani da wannan aikin kamar yanda kai ma aka baka, ba tare da sa wata doka ko sharuddan da za su hana kowa yin hakan ba.
 </p>
 <h2>Fadakarwa:</h2>
-<p>Ba wai dole bane sai ka bi sharuddan wannan izini ba idan ka samu kanka a wani wuri ko hali mai tsari na mussamman da ya ba aikinka wani \'yanci ko iyakokin da ya kamata ka kiyaye Mai yiwuwa ne wannan  lasisin ba zai baka damar samun dukkanin izinin da zaka bukata ba domin gudanar da aikin naka. Misali, wasu sharudda masu alaka  da sha\'anin sirri, yada labarai ko tarbiyya na iya kawo cikas a wurin gudanar da wannan aikin</p>
-]]>
-  </string>
+<p>Ba wai dole bane sai ka bi sharuddan wannan izini ba idan ka samu kanka a wani wuri ko hali mai tsari na mussamman da ya ba aikinka wani \'yanci ko iyakokin da ya kamata ka kiyaye Mai yiwuwa ne wannan  lasisin ba zai baka damar samun dukkanin izinin da zaka bukata ba domin gudanar da aikin naka. Misali, wasu sharudda masu alaka  da sha\'anin sirri, yada labarai ko tarbiyya na iya kawo cikas a wurin gudanar da wannan aikin</p>]]></string>
   <string name="choose_a_project">Ka fara buda aiki tukuna.</string>
   <string name="choose_a_chapter">Ka fara buda babi tukuna.</string>
   <string name="title_activity_crash_reporter">Akwai matsala</string>
@@ -151,4 +147,15 @@
   <string name="indexing">Indexing</string>
   <string name="title_upload">Dora aiki</string>
   <string name="preview_chapter_translation_draft">Preview daftarin</string>
+  <string name="choose_project_to_upload">Zabi aikin upload</string>
+  <string name="verify">Tabbatar</string>
+  <string name="review">Review</string>
+  <string name="publish_translation">Buga translation</string>
+  <string name="notice">Sanarwa</string>
+  <string name="complete_required_fields">Don Allah cika duk ake bukata filayen</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> da ake bukata</string>
+  <string name="upload_failed">Upload kasa</string>
+  <string name="publishing_translation">Publishing translation</string>
+  <string name="backing_up_translation">Ajiyar waje translation</string>
+  <string name="review_all_checking_questions">Don Allah a duba duk tambayoyi</string>
 </resources>

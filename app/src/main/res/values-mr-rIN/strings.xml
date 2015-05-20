@@ -5,7 +5,7 @@
   <string name="title_frames">फ्रेम्स</string>
   <string name="label_ok">ठीक</string>
   <string name="title_cancel">रद्द करा</string>
-  <string name="uploading">सर्व्हरला पाठवत आहे...</string>
+  <string name="uploading">अपलोड</string>
   <string name="terms_title">वापराच्या अटी</string>
   <string name="terms">हा अनुप्रयोग वापर करून आपण विश्वास आणि अनुवाद मार्गदर्शक मताशी आपण सहमत आहात आणि आपण Creative Commons Attribution-ShareAlike 4.0 आंतरराष्ट्रीय परवाना अटींच्या अंतर्गत काम सोडण्याची.</string>
   <string name="chapter_title_field">चॅप्टर शीर्षक:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">बॅकअप आणि प्रकाशित करा</string>
   <string name="upload_wizard_intro">तुम्ही तुमचे भाषांतर अपलोड करणार आहात.</string>
   <string name="label_continue">सुरू ठेवा</string>
+  <string name="next">पुढील</string>
   <string name="upload_wizard_overview">अपलोड रिव्ह्यू</string>
   <string name="label_project_details">प्रोजेक्ट तपशील</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> हे <xliff:g id="language" example="English">\"%2$s\"</xliff:g> या भाषेतून <xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g> या भाषेत भाषांतरीत केले जात आहे.</string>
@@ -73,20 +74,15 @@
   <string name="no_translation_notes">कोणत्याही भाषांतर नोंदी नाहीत</string>
   <string name="key_terms">की अटी</string>
   <string name="translation_check_notice">तुमचे भाषांतर अपलोड करण्यासाठी तयार असल्याची खातरजमा करण्यासाठी आम्ही आता काही तपासण्या करू.</string>
-  <string name="translation_complete">भाषांतर पूर्ण आहे.</string>
   <string name="preparing_upload">प्रोजेक्ट अपलोड करण्यासाठी तयार करत आहे</string>
-  <string name="license">
-<![CDATA[
-<h2>तुम्ही हे करण्यास मोकळे आहात:</h2>
+  <string name="license"><![CDATA[<h2>तुम्ही हे करण्यास मोकळे आहात:</h2>
 <p>कोणत्याही स्वरूपात ही सामग्री शेअर, कॉपी व पुनर्वितरीत करणे; कोणत्याही उद्देशाने, कोणत्याही स्वरूपात, अगदी व्यावसायिकपणेही, स्वीकारणे, पुन्हा मिसळणे, बदलाव करणे व त्यावर उभारणी करणे. तुम्ही परवाना अटींचे पालन करत आहात तोपर्यंत परवानेदार ही स्वातंत्र्ये बंद करू शकत नाही.</p>
 <h2>खालील अटींनुसार:</h2>
 <p>
     <b>Attribution</b> - तुम्ही योग्य ते क्रेडिट देणे, परवान्याची लिंक पुरवणे, आणि बदल केले असल्यास ते दर्शवणे हे केलेच पाहिजे. तुम्ही हे कोणत्याही वाजवी स्वरूपात करू शकता, पण परवानेदाराने तुम्हाला वा तुमच्या वापराला शहानिशा केल्याचे सूचित होईल अशा कोणत्याही प्रकारे नाही;<br/><b>ShareAlike</b> - तुम्ही सामग्रीचे पुन्हा मिसळणे, बदलाव करणे व त्यावर उभारणी करणे केल्यास, तुम्ही मूळ स्वरूपातील परवान्याखालीच तुमची योगदाने वितरीत केली पाहिजेत;<br/><b>अतिरिक्त बंधने नाहीत</b> - परवाना अनुमती देत असेल असे काहीही करण्यास इतरांवर मर्यादा घालणाऱ्या कायदेशीर अटी व तांत्रिक बंधने तुम्ही घालता कामा नयेत.
 </p>
 <h2>सूचना:</h2>
-<p>सार्वजनिक डोमेनमधील सामग्रीच्या घटकांसाठी किंवा लागू अपवाद वा मर्यादा यांद्वारा जेथे आपल्या वापराला मान्यता आहे तेथे तुम्ही परवान्याचे पालन करण्याची गरज नाही; कोणत्याही हम्या दिलेल्या नाहीत. परवाना तुम्हाला तुमच्या इच्छित वापराला आवश्यक त्या सर्व संमत्या कदाचित देणार नाही.  उदाहरणार्थ, प्रसिद्धी, खाजगीयता वा नैतिक हक्क यांसारखे अन्य हक्क तुमच्या सामग्रीच्या वापरावर मर्यादा आणू शकतात.</p>
-]]>
-  </string>
+<p>सार्वजनिक डोमेनमधील सामग्रीच्या घटकांसाठी किंवा लागू अपवाद वा मर्यादा यांद्वारा जेथे आपल्या वापराला मान्यता आहे तेथे तुम्ही परवान्याचे पालन करण्याची गरज नाही; कोणत्याही हम्या दिलेल्या नाहीत. परवाना तुम्हाला तुमच्या इच्छित वापराला आवश्यक त्या सर्व संमत्या कदाचित देणार नाही.  उदाहरणार्थ, प्रसिद्धी, खाजगीयता वा नैतिक हक्क यांसारखे अन्य हक्क तुमच्या सामग्रीच्या वापरावर मर्यादा आणू शकतात.</p>]]></string>
   <string name="choose_a_project">कृपया आधी प्रोजेक्ट उघडा.</string>
   <string name="choose_a_chapter">कृपया आधी चॅप्टर उघडा</string>
   <string name="title_activity_crash_reporter">त्रुटी अहवाल</string>
@@ -151,4 +147,15 @@
   <string name="indexing">अनुक्रमणिका</string>
   <string name="title_upload">अपलोड करा</string>
   <string name="preview_chapter_translation_draft">पूर्वावलोकन मसुदा</string>
+  <string name="choose_project_to_upload">अपलोड प्रकल्प निवडा</string>
+  <string name="verify">सत्यापित करा</string>
+  <string name="review">पुनरावलोकन</string>
+  <string name="publish_translation">अनुवाद प्रकाशित</string>
+  <string name="notice">सूचना</string>
+  <string name="complete_required_fields">सर्व आवश्यक फील्ड पूर्ण करा</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> आवश्यक</string>
+  <string name="upload_failed">अपलोड करा अयशस्वी</string>
+  <string name="publishing_translation">प्रकाशन अनुवाद</string>
+  <string name="backing_up_translation">अनुवाद बॅक अप घेत</string>
+  <string name="review_all_checking_questions">सर्व प्रश्न पुनरावलोकन करा</string>
 </resources>

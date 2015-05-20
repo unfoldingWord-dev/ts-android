@@ -5,7 +5,7 @@
   <string name="title_frames">フレーム</string>
   <string name="label_ok">わかりました</string>
   <string name="title_cancel">キャンセル</string>
-  <string name="uploading">サーバーに送信しています.</string>
+  <string name="uploading">アップロード</string>
   <string name="terms_title">利用規約</string>
   <string name="terms">このアプリを使用することによって、あなたは信仰と翻訳ガイドラインの声明に同意し、あなたはクリエイティブ·コモンズ表示 - 継承4.0国際ライセンスの条件の下で働く解放します。</string>
   <string name="chapter_title_field">章のタイトル:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">バックアップとパブリッシュ</string>
   <string name="upload_wizard_intro">あなたの翻訳をアップロードしようとしています。</string>
   <string name="label_continue">続行</string>
+  <string name="next">次</string>
   <string name="upload_wizard_overview">レビューをアップロードします。</string>
   <string name="label_project_details">プロジェクトの詳細</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> 「%1$s \" </xliff:g>から翻訳されています<xliff:g id="language" example="English"> 「%2$s \" </xliff:g>への言語<xliff:g id="language" example="Deutsch"> 「%3$s \" </xliff:g>言語。</string>
@@ -73,13 +74,8 @@
   <string name="no_translation_notes">全く翻訳ノートはありません</string>
   <string name="key_terms">重要な用語</string>
   <string name="translation_check_notice">私たちは今、あなたの翻訳が準備ができていることを確認するために、いくつかのチェックを実行します。</string>
-  <string name="translation_complete">翻訳が完了しました</string>
   <string name="preparing_upload">アップロードのためのプロジェクトの準備</string>
-  <string name="license">
-<![CDATA[
-<h2>あなたがに無料です。 </h2><p>シェア、コピー、および任意の媒体又は形式で材料を再配布する。適応し、リミックス、変換、さらには商業的に、どのような目的のための材料の上に構築。ライセンサーは、限り、あなたはライセンス条項に従うように、これらの自由を取り消すことはできません。 </p><h2>以下の条件の下で： </h2><p> <b>アトリビューション</b> -あなたは、適切な信用を与えるライセンスへのリンクを提供し、変更が行われたかどうかを示す必要があります。あなたはなく、ライセンサーがあなたやあなたの使用を支持していると示唆するような方法で、任意の合理的な方法でそれを行うことができる。 <br/> <b>同一条件許諾は</b> -あなたがリミックス、材料に変換、またはビルドする場合は、オリジナルと同じライセンスの下であなたの貢献を配布する必要があります。 <br/> <b>追加制限なし</b> -あなたは法律用語や法律的にライセンスを許可し、何をやってから他の人を制限する技術的措置を適用しない場合があります。 </p><h2>注意事項： </h2><p>あなたは、あなたの使用が適用される例外または制限によって許可されているパブリックドメインまたはにおける材料の要素のためのライセンスに準拠する必要はありません。一切の保証は与えられていない。ライセンスは、あなたの使用目的に必要な権限のすべてを与えないことがあります。例えば、このような宣伝、プライバシー、または人格権などその他の権利はあなたが材料をどのように使用するか制限される場合があります。 </p>
-]]>
-  </string>
+  <string name="license"><![CDATA[<h2>あなたがに無料です。 </h2><p>シェア、コピー、および任意の媒体又は形式で材料を再配布する。適応し、リミックス、変換、さらには商業的に、どのような目的のための材料の上に構築。ライセンサーは、限り、あなたはライセンス条項に従うように、これらの自由を取り消すことはできません。 </p><h2>以下の条件の下で： </h2><p> <b>アトリビューション</b> -あなたは、適切な信用を与えるライセンスへのリンクを提供し、変更が行われたかどうかを示す必要があります。あなたはなく、ライセンサーがあなたやあなたの使用を支持していると示唆するような方法で、任意の合理的な方法でそれを行うことができる。 <br/> <b>同一条件許諾は</b> -あなたがリミックス、材料に変換、またはビルドする場合は、オリジナルと同じライセンスの下であなたの貢献を配布する必要があります。 <br/> <b>追加制限なし</b> -あなたは法律用語や法律的にライセンスを許可し、何をやってから他の人を制限する技術的措置を適用しない場合があります。 </p><h2>注意事項： </h2><p>あなたは、あなたの使用が適用される例外または制限によって許可されているパブリックドメインまたはにおける材料の要素のためのライセンスに準拠する必要はありません。一切の保証は与えられていない。ライセンスは、あなたの使用目的に必要な権限のすべてを与えないことがあります。例えば、このような宣伝、プライバシー、または人格権などその他の権利はあなたが材料をどのように使用するか制限される場合があります。 </p>]]></string>
   <string name="choose_a_project">最初のプロジェクトを開いてください。</string>
   <string name="choose_a_chapter">最初の章を開いてください</string>
   <string name="title_activity_crash_reporter">エラーレポート</string>
@@ -144,4 +140,15 @@
   <string name="indexing">インデキシング</string>
   <string name="title_upload">アップロード</string>
   <string name="preview_chapter_translation_draft">プレビュードラフト</string>
+  <string name="choose_project_to_upload">アップロードするプロジェクトを選択してください</string>
+  <string name="verify">確認します</string>
+  <string name="review">レビュー</string>
+  <string name="publish_translation">翻訳を公開</string>
+  <string name="notice">お知らせ</string>
+  <string name="complete_required_fields">すべての必須フィールドを入力してください</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g>必須</string>
+  <string name="upload_failed">アップロードに失敗しました</string>
+  <string name="publishing_translation">出版翻訳</string>
+  <string name="backing_up_translation">翻訳のバックアップ</string>
+  <string name="review_all_checking_questions">すべての質問を確認してください</string>
 </resources>

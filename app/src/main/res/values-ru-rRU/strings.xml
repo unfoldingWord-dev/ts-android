@@ -5,7 +5,7 @@
   <string name="title_frames">Рамки</string>
   <string name="label_ok">Ок</string>
   <string name="title_cancel">Отмена</string>
-  <string name="uploading">Отправка на сервер...</string>
+  <string name="uploading">Загрузка</string>
   <string name="terms_title">Условия использования</string>
   <string name="terms">С помощью этого приложения вы согласны с утверждением веры и принципов перевода и освободить вас работать под условиями Creative Commons Attribution-ShareAlike 4.0 License Международного.</string>
   <string name="chapter_title_field">Название Главы:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Резервное копирование и публикация</string>
   <string name="upload_wizard_intro">Вы собираетесь загрузить ваш перевод.</string>
   <string name="label_continue">Продолжить</string>
+  <string name="next">Следующий</string>
   <string name="upload_wizard_overview">Загрузить Обзор</string>
   <string name="label_project_details">Детали проекта</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> переводится из <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> язык, на <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> язык.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">Там нет заметок перевод</string>
   <string name="key_terms">Ключевые Термины</string>
   <string name="translation_check_notice">Теперь выполним несколько проверок, чтобы убедиться, что ваш перевод будет готов.</string>
-  <string name="translation_complete">Перевод является полным</string>
   <string name="preparing_upload">Подготовка проекта для загрузки</string>
   <string name="license"><![CDATA[<h2> Вы можете свободно: </h2><p> Доля, копировать и распространять материалы на любом носителе или в формате; Адаптация, ремикс, преобразования и построить на материал для любой цели, даже в коммерческих целях. Лицензиар не может отменить эти свободы до тех пор, пока вы будете следовать условия лицензионного соглашения. </p><h2> При соблюдении следующих условий: </h2><p> <b>Указание авторства</b> - Вы должны дать соответствующую кредит, дать ссылку на лицензии, и указать, были сделаны изменения. Вы можете сделать это любым разумным способом, но ни в коем случае, что предполагает лицензиар поддерживает вас или ваше использование; <br/> <b>ShareAlike</b> - Если вы ремикс, преобразуете или создаёте от материала, вы обязаны распространять свои взносы в рамках одной и той же лицензии, что и оригинал; <br/> <b>Никакие дополнительные ограничения</b> - Вы не имеете права применять правовые термины или технологические меры, которые юридически ограничивают других делать что-либо, что лицензия позволяет. </p><h2> Примечания: </h2><p> Вы не должны соответствовать лицензии для элементов материала в общественном достоянии или там, где ваше использование разрешено в соответствии с применимым исключения или ограничения; Никаких гарантий не дается. Лицензия не может дать вам все разрешения, необходимые для вашего предполагаемого использования. Например, другие права, такие как гласность, частную жизнь, или моральных прав может ограничить, как вы используете этот материал. </p>]]></string>
   <string name="choose_a_project">Пожалуйста, откройте проект в первую очередь.</string>
@@ -140,4 +140,15 @@
   <string name="indexing">Индексация</string>
   <string name="title_upload">Загрузить</string>
   <string name="preview_chapter_translation_draft">Предварительный проект</string>
+  <string name="choose_project_to_upload">Выберите проект, чтобы загрузить</string>
+  <string name="verify">Проверить</string>
+  <string name="review">Обзор</string>
+  <string name="publish_translation">Опубликовать перевод</string>
+  <string name="notice">Уведомление</string>
+  <string name="complete_required_fields">Пожалуйста заполните все поля</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> требуется</string>
+  <string name="upload_failed">Загрузка не удалась</string>
+  <string name="publishing_translation">Перевод издания</string>
+  <string name="backing_up_translation">Резервное копирование перевод</string>
+  <string name="review_all_checking_questions">Пожалуйста, ознакомьтесь с все вопросы</string>
 </resources>

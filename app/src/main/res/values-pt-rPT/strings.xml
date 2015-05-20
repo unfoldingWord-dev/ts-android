@@ -5,7 +5,7 @@
   <string name="title_frames">Frames</string>
   <string name="label_ok">ACEITAR</string>
   <string name="title_cancel">Cancelar</string>
-  <string name="uploading">Enviar para o servidor</string>
+  <string name="uploading">Upload</string>
   <string name="terms_title">Termos de Utilização</string>
   <string name="terms">Ao usar este aplicativo, você concorda com a afirmação de orientações religiosas e de tradução e para libertá-lo trabalhar sob os termos da Creative Commons Attribution-Share Alike 4.0 de Licença Internacional.</string>
   <string name="chapter_title_field">Título do capítulo</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Backup e Publicar</string>
   <string name="upload_wizard_intro">Está prestes a enviar a sua tradução.</string>
   <string name="label_continue">Continuar</string>
+  <string name="next">Next</string>
   <string name="upload_wizard_overview">Enviar Revisão</string>
   <string name="label_project_details">Detalhes do projeto</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> está a ser traduzido a partir da <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> linguagem para o <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> língua.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">Não há notas de tradução</string>
   <string name="key_terms">Termos Chave</string>
   <string name="translation_check_notice">Vamos agora executar algumas verificações para garantir a sua tradução está pronto.</string>
-  <string name="translation_complete">A tradução está completa</string>
   <string name="preparing_upload">Preparando o projeto para fazer o upload</string>
   <string name="license"><![CDATA[<h2> Você é livre para: </h2><p> Share, copiar e redistribuir o material em qualquer meio ou formato; Adaptar, remix, transformar e construir em cima do material para qualquer finalidade, inclusive comercialmente. O concedente não pode revogar essas liberdades, desde que você siga os termos da licença. </p><h2> De acordo com os seguintes termos: </h2><p> <b>Atribuição</b> - Você deve dar crédito adequado, fornecer um link para a licença, e indicar se as mudanças foram feitas. Você pode fazê-lo de qualquer forma razoável, mas não de qualquer forma que sugira que o licenciante endossa você ou o seu uso; <br/> <b>Compartilhamento pela mesma licença</b> - Se você remix, transformar ou criar em cima do material, você deve distribuir suas contribuições sob a mesma licença que o original; <br/> <b>Não há restrições adicionais</b> - Você pode não se aplicar termos legais ou medidas tecnológicas que legalmente restringem os outros de fazer qualquer coisa a licença permite. </p><h2> Avisos: </h2><p> Você não tem que cumprir com a licença para os elementos do material de domínio público ou de onde seu uso é permitido por uma exceção ou limitação aplicável; Nenhuma garantia é dada. A licença não pode dar-lhe todas as permissões necessárias para o seu uso pretendido. Por exemplo, outros direitos, tais como publicidade, privacidade ou direitos morais podem limitar a forma como você usa o material. </p>]]></string>
   <string name="choose_a_project">Por favor, abra um projeto pela primeira vez.</string>
@@ -140,4 +140,15 @@
   <string name="indexing">Indexação</string>
   <string name="title_upload">Upload</string>
   <string name="preview_chapter_translation_draft">Projecto de pré-visualização</string>
+  <string name="choose_project_to_upload">Escolha projeto para fazer upload</string>
+  <string name="verify">Verificar</string>
+  <string name="review">Revisão</string>
+  <string name="publish_translation">Publicar tradução</string>
+  <string name="notice">Aviso prévio</string>
+  <string name="complete_required_fields">Por favor, preencha todos os campos obrigatórios</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> requeridos</string>
+  <string name="upload_failed">Envio falhou</string>
+  <string name="publishing_translation">Tradução Publishing</string>
+  <string name="backing_up_translation">Fazer o backup de tradução</string>
+  <string name="review_all_checking_questions">Por favor, reveja todas as perguntas</string>
 </resources>

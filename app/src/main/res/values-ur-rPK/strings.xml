@@ -5,7 +5,7 @@
   <string name="title_frames">فریمز</string>
   <string name="label_ok">ٹھيک ہے</string>
   <string name="title_cancel">منسوخ کریں</string>
-  <string name="uploading">پیش کار کو بھیج رہا ہے...</string>
+  <string name="uploading">اپ لوڈ</string>
   <string name="terms_title">استعمال کی شرائط</string>
   <string name="terms">اس اپلی کیشن کا استعمال کرتے ہوئے کی طرف سے آپ کے ایمان اور ترجمہ ہدایات کے بیان سے متفق ہیں اور آپ کو تخلیقی العام انتساب مماثل-شراکت 4.0 انٹرنیشنل لائسنس کی شرائط کے تحت کام کی رہائی کے لئے.</string>
   <string name="chapter_title_field">باب کا عنوان:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">بیک اپ اور شائع کریں</string>
   <string name="upload_wizard_intro">آپ کو آپ ترجمہ کو اپ لوڈ کرنے والے ہیں.</string>
   <string name="label_continue">جاری رکھیں</string>
+  <string name="next">اگلا</string>
   <string name="upload_wizard_overview">کا جائزہ لیں اپ لوڈ کریں</string>
   <string name="label_project_details">اس منصوبے کی تفصیلات</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> سے ترجمہ کیا جا رہا ہے <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> میں زبان <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> زبان.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">کوئی ترجمہ نوٹ ہیں</string>
   <string name="key_terms">کلیدی شرائط</string>
   <string name="translation_check_notice">اب ہم آپ کے ترجمہ کے لئے تیار ہے کو یقینی بنانے کے لئے چند چیک انجام دے گا.</string>
-  <string name="translation_complete">ترجمہ مکمل ہو گیا ہے</string>
   <string name="preparing_upload">اپ لوڈ کے لئے منصوبے تیار کر رہا ہے</string>
   <string name="license"><![CDATA[<h2>آپ مفت کے لئے ہیں:</h2>
 <p>کی حصہ داری کریں، نقل اور دستورالعمل کے مواد کسی درمیانے یا وضع کریں ۔ مطابق ڈھال، ریمکس، ڈھالنے اور کیلئے بھی، کسی بھی مقصد کے لیے مواد پر تعمیر ہے ۔ آپ لائسنس کی شرائط کی پیروی کریں جب تک کے طور پر ٱس میں ان آزادیوں منسوخ نہیں کر سکتا ہے ۔</p>
@@ -147,4 +147,15 @@
   <string name="indexing">انڈیکسنگ</string>
   <string name="title_upload">اپ لوڈ کریں</string>
   <string name="preview_chapter_translation_draft">پیش نظارہ مسودہ</string>
+  <string name="choose_project_to_upload">اپ لوڈ کرنے کے منصوبے کا انتخاب کریں</string>
+  <string name="verify">تصدیق کریں</string>
+  <string name="review">کا جائزہ لیں</string>
+  <string name="publish_translation">ترجمہ شائع کریں</string>
+  <string name="notice">نوٹس</string>
+  <string name="complete_required_fields">تمام مطلوبہ فیلڈز کو مکمل کریں</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> مطلوب</string>
+  <string name="upload_failed">اپ لوڈ ناکام</string>
+  <string name="publishing_translation">پبلشنگ ترجمہ</string>
+  <string name="backing_up_translation">ترجمہ بیک اپ</string>
+  <string name="review_all_checking_questions">تمام سوالات کا جائزہ لیں</string>
 </resources>

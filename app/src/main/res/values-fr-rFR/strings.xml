@@ -5,7 +5,7 @@
   <string name="title_frames">Cadres</string>
   <string name="label_ok">OK</string>
   <string name="title_cancel">Annuler</string>
-  <string name="uploading">Envoi au serveur...</string>
+  <string name="uploading">Ajout</string>
   <string name="terms_title">Conditions d\'Utilisation</string>
   <string name="terms">En utilisant cette application, vous êtes d\'accord avec la déclaration de la foi et de traduction des lignes directrices et de libérer vous travaillez sous les termes de la licence Creative Commons Attribution-ShareAlike 4.0 License international.</string>
   <string name="chapter_title_field">Titre De Chapitre:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Sauvegarde et Publier</string>
   <string name="upload_wizard_intro">Vous êtes sur le point de télécharger votre traduction.</string>
   <string name="label_continue">Continuer</string>
+  <string name="next">Suivant</string>
   <string name="upload_wizard_overview">Télécharger Examen</string>
   <string name="label_project_details">Détails du projet</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> est en cours de traduction de la <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> dans la langue <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> langue.</string>
@@ -73,13 +74,8 @@
   <string name="no_translation_notes">Il n\'y a pas de notes de traduction</string>
   <string name="key_terms">Mots Clés</string>
   <string name="translation_check_notice">Nous allons maintenant effectuer quelques vérifications pour se assurer votre traduction est prêt.</string>
-  <string name="translation_complete">La traduction est complète</string>
   <string name="preparing_upload">La préparation du projet pour le téléchargement</string>
-  <string name="license">
-<![CDATA[
-<h2> Vous êtes libre de: </h2><p> Partager, copier et redistribuer le matériel de quelque format que ce soit; Adapter, remix, transformer, et se appuyer sur le matériel pour ne importe quel but, même commercialement. Le donneur de licence ne peut pas révoquer ces libertés aussi longtemps que vous suivez les termes de la licence. </p><h2> Selon les termes suivants: </h2><p> <b>Paternité</b> - Vous devez accorder le crédit, fournir un lien à la licence, et d\'indiquer si des modifications ont été faites. Vous pouvez le faire de manière raisonnable, mais pas d\'une façon qui suggère que le donneur de licence vous ou votre utilisation approuve; <br/> <b>ShareAlike</b> - Si vous remix, de transformer ou d\'adapter le matériel, vous devez distribuer vos contributions sous la même licence que l\'original; <br/> <b>Pas de restrictions supplémentaires</b> - Vous ne pouvez pas appliquer des conditions juridiques ou mesures techniques qui limitent légalement les autres de faire tout ce que les permis de licence. </p><h2> Avertissements: </h2><p> Vous ne avez pas à se conformer à la licence pour les éléments de la matière dans le domaine public ou si votre utilisation est autorisée par une exception ou limitation applicable; Aucune garantie ne est donnée. La licence ne peut pas vous donner toutes les autorisations nécessaires à l\'utilisation prévue. Par exemple, d\'autres droits tels que la publicité, la vie privée ou les droits moraux peuvent limiter la façon dont vous utilisez le matériel. </p>
-]]>
-  </string>
+  <string name="license"><![CDATA[<h2> Vous êtes libre de: </h2><p> Partager, copier et redistribuer le matériel de quelque format que ce soit; Adapter, remix, transformer, et se appuyer sur le matériel pour ne importe quel but, même commercialement. Le donneur de licence ne peut pas révoquer ces libertés aussi longtemps que vous suivez les termes de la licence. </p><h2> Selon les termes suivants: </h2><p> <b>Paternité</b> - Vous devez accorder le crédit, fournir un lien à la licence, et d\'indiquer si des modifications ont été faites. Vous pouvez le faire de manière raisonnable, mais pas d\'une façon qui suggère que le donneur de licence vous ou votre utilisation approuve; <br/> <b>ShareAlike</b> - Si vous remix, de transformer ou d\'adapter le matériel, vous devez distribuer vos contributions sous la même licence que l\'original; <br/> <b>Pas de restrictions supplémentaires</b> - Vous ne pouvez pas appliquer des conditions juridiques ou mesures techniques qui limitent légalement les autres de faire tout ce que les permis de licence. </p><h2> Avertissements: </h2><p> Vous ne avez pas à se conformer à la licence pour les éléments de la matière dans le domaine public ou si votre utilisation est autorisée par une exception ou limitation applicable; Aucune garantie ne est donnée. La licence ne peut pas vous donner toutes les autorisations nécessaires à l\'utilisation prévue. Par exemple, d\'autres droits tels que la publicité, la vie privée ou les droits moraux peuvent limiter la façon dont vous utilisez le matériel. </p>]]></string>
   <string name="choose_a_project">Se il vous plaît ouvrir un premier projet.</string>
   <string name="choose_a_chapter">Se il vous plaît ouvrir un chapitre premier</string>
   <string name="title_activity_crash_reporter">Rapport d\'erreur</string>
@@ -144,4 +140,15 @@
   <string name="indexing">Indexage</string>
   <string name="title_upload">Télécharger</string>
   <string name="preview_chapter_translation_draft">Aperçu projet</string>
+  <string name="choose_project_to_upload">Choisissez projet télécharger</string>
+  <string name="verify">Vérifier</string>
+  <string name="review">Examen</string>
+  <string name="publish_translation">Publier traduction</string>
+  <string name="notice">Avis</string>
+  <string name="complete_required_fields">S\'il vous plaît remplir tous les champs obligatoires</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> requis</string>
+  <string name="upload_failed">Échec de l\'envoi</string>
+  <string name="publishing_translation">Traduction Publishing</string>
+  <string name="backing_up_translation">Sauvegarde de la traduction</string>
+  <string name="review_all_checking_questions">S\'il vous plaît examiner toutes les questions</string>
 </resources>

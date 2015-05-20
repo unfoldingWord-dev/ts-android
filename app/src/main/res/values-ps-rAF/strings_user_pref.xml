@@ -10,7 +10,7 @@
   <string name="pref_title_typeface_size">د ژباړې typeface غټ تياگانو </string>
   <string-array name="pref_typeface_size_titles">
     <item>کُشنئی</item>
-    <item>normal</item>
+    <item>نورمال</item>
     <item>منځ گوړي</item>
     <item>لوئے زڑے</item>
   </string-array>
@@ -28,4 +28,11 @@
   <string name="pref_title_media_server">د رسنيو د پالنگر </string>
   <string name="pref_title_export_format">بهر لېږلو جوړښت </string>
   <string name="pref_header_advanced">پرمخ تللو</string>
+  <string name="pref_description_developer_tools">وده ورکوونکي ابزار پرانیزي</string>
+  <string name="pref_title_logging_level">ننوتلو کچه</string>
+  <string-array name="pref_logging_level_titles">
+    <item>معلومات</item>
+    <item>اخطارونه</item>
+    <item>تېروتنې</item>
+  </string-array>
 </resources>

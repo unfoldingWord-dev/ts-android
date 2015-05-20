@@ -5,7 +5,7 @@
   <string name="title_frames">Frames</string>
   <string name="label_ok">OK</string>
   <string name="title_cancel">Annuleren</string>
-  <string name="uploading">Het verzenden naar de server...</string>
+  <string name="uploading">Uploaden</string>
   <string name="terms_title">Voorwaarden van Gebruik</string>
   <string name="terms">Door het gebruik van deze app gaat u akkoord met de uitspraak van het geloof en de vertaling richtlijnen en vrij te geven u onder de voorwaarden van de Creative Commons Naamsvermelding-Gelijk 4.0 Internationale licentie werken.</string>
   <string name="chapter_title_field">Hoofdstuk Titel:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Back-up en publiceren</string>
   <string name="upload_wizard_intro">U staat op het punt om uw vertaling te uploaden.</string>
   <string name="label_continue">Doorgaan</string>
+  <string name="next">Volgende</string>
   <string name="upload_wizard_overview">Upload Review</string>
   <string name="label_project_details">Project details</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> wordt vertaald uit het <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> taal in de <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> taal.</string>
@@ -73,13 +74,8 @@
   <string name="no_translation_notes">Er zijn geen vertaling notities</string>
   <string name="key_terms">Kernbegrippen</string>
   <string name="translation_check_notice">We zullen nu het uitvoeren van een paar controles om ervoor te zorgen uw vertaling is klaar.</string>
-  <string name="translation_complete">Vertaling is voltooid</string>
   <string name="preparing_upload">De voorbereiding van het project voor het uploaden</string>
-  <string name="license">
-<![CDATA[
-<h2> U bent vrij om: </h2><p> Aandeel, kopiëren, en herverdelen van het materiaal in elk medium of format; Aan te passen, remix, te transformeren, en voort te bouwen op het materiaal voor welk doel dan ook, zelfs commercieel. De licentiegever kan deze vrijheden in te trekken zolang je volg de licentievoorwaarden. </p><h2> Onder de volgende voorwaarden: </h2><p> <b>Naamsvermelding</b> - De gebruiker dient de juiste krediet te geven, een link naar de licentie, en aangeven of wijzigingen zijn aangebracht. U kunt dit doen in een redelijke manier, maar niet op een manier die suggereert dat de licentiegever onderschrijft u of uw gebruik; <br/> <b>Gelijk delen</b> - Indien u remix, te transformeren, of bouwen op het materiaal, moet u uw bijdragen onder dezelfde licentie als de oorspronkelijke te verdelen; <br/> <b>Geen extra beperkingen</b> - Je mag geen juridische termen of technologische maatregelen die wettelijk anderen van iets te doen de licentie vergunningen beperken van toepassing. </p><h2> Kennisgevingen: </h2><p> Je hoeft niet te voldoen aan de licentie voor elementen van het materiaal in het publieke domein, of waar uw gebruik is toegestaan ​​door een wettelijke uitzondering of beperking; Geen garanties worden gegeven. De licentie mag u niet geven alle toestemmingen die nodig is voor uw beoogde gebruik. Zo kunnen andere rechten zoals publiciteit, privacy, of morele rechten te beperken hoe je het materiaal te gebruiken. </p>
-]]>
-  </string>
+  <string name="license"><![CDATA[<h2> U bent vrij om: </h2><p> Aandeel, kopiëren, en herverdelen van het materiaal in elk medium of format; Aan te passen, remix, te transformeren, en voort te bouwen op het materiaal voor welk doel dan ook, zelfs commercieel. De licentiegever kan deze vrijheden in te trekken zolang je volg de licentievoorwaarden. </p><h2> Onder de volgende voorwaarden: </h2><p> <b>Naamsvermelding</b> - De gebruiker dient de juiste krediet te geven, een link naar de licentie, en aangeven of wijzigingen zijn aangebracht. U kunt dit doen in een redelijke manier, maar niet op een manier die suggereert dat de licentiegever onderschrijft u of uw gebruik; <br/> <b>Gelijk delen</b> - Indien u remix, te transformeren, of bouwen op het materiaal, moet u uw bijdragen onder dezelfde licentie als de oorspronkelijke te verdelen; <br/> <b>Geen extra beperkingen</b> - Je mag geen juridische termen of technologische maatregelen die wettelijk anderen van iets te doen de licentie vergunningen beperken van toepassing. </p><h2> Kennisgevingen: </h2><p> Je hoeft niet te voldoen aan de licentie voor elementen van het materiaal in het publieke domein, of waar uw gebruik is toegestaan ​​door een wettelijke uitzondering of beperking; Geen garanties worden gegeven. De licentie mag u niet geven alle toestemmingen die nodig is voor uw beoogde gebruik. Zo kunnen andere rechten zoals publiciteit, privacy, of morele rechten te beperken hoe je het materiaal te gebruiken. </p>]]></string>
   <string name="choose_a_project">Open eerst een project.</string>
   <string name="choose_a_chapter">Gelieve eerst opent een hoofdstuk</string>
   <string name="title_activity_crash_reporter">Error Report</string>
@@ -144,4 +140,15 @@
   <string name="indexing">Indexeren</string>
   <string name="title_upload">Upload</string>
   <string name="preview_chapter_translation_draft">Voorbeeld ontwerp</string>
+  <string name="choose_project_to_upload">Kies een project om te uploaden</string>
+  <string name="verify">Controleren</string>
+  <string name="review">Recensie</string>
+  <string name="publish_translation">Publiceer vertaling</string>
+  <string name="notice">Kennisgeving</string>
+  <string name="complete_required_fields">Gelieve alle verplichte velden</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> verplicht</string>
+  <string name="upload_failed">Upload mislukt</string>
+  <string name="publishing_translation">Vertaling Publishing</string>
+  <string name="backing_up_translation">Een back-up vertaling</string>
+  <string name="review_all_checking_questions">Lees alle vragen</string>
 </resources>

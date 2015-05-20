@@ -5,7 +5,7 @@
   <string name="title_frames">帧</string>
   <string name="label_ok">还行</string>
   <string name="title_cancel">取消</string>
-  <string name="uploading">发送到服务器</string>
+  <string name="uploading">上传</string>
   <string name="terms_title">使用条款</string>
   <string name="terms">通过使用这个程序，你同意的信仰和翻译准则的声明，你在知识共享署名 - 相同方式共享4.0国际许可条款的工作释放。</string>
   <string name="chapter_title_field">章标题</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">备份和发布</string>
   <string name="upload_wizard_intro">你将要上传你的翻译。</string>
   <string name="label_continue">继续</string>
+  <string name="next">下一个</string>
   <string name="upload_wizard_overview">上传评论</string>
   <string name="label_project_details">项目详细信息</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories">\"%1$s\"</xliff:g> ，正被<xliff:g id="language" example="English">\"%2$s\"</xliff:g>语言译成<xliff:g id="language" example="Deutsch">\"%3$s\"</xliff:g>的语言。</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">没有翻译笔记</string>
   <string name="key_terms">关键术语</string>
   <string name="translation_check_notice">我们现在将执行一些检查，以确保你的翻译是准备好了。</string>
-  <string name="translation_complete">翻译完毕</string>
   <string name="preparing_upload">准备项目上载</string>
   <string name="license">
 <![CDATA[<h2>你可以自由的：
@@ -147,4 +147,15 @@
   <string name="indexing">索引</string>
   <string name="title_upload">上传</string>
   <string name="preview_chapter_translation_draft">预览草案</string>
+  <string name="choose_project_to_upload">选择的项目要上传</string>
+  <string name="verify">确认</string>
+  <string name="review">回顾</string>
+  <string name="publish_translation">发布翻译</string>
+  <string name="notice">通知</string>
+  <string name="complete_required_fields">请填写所有必填字段</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g>需要</string>
+  <string name="upload_failed">上传失败</string>
+  <string name="publishing_translation">翻译出版</string>
+  <string name="backing_up_translation">备份翻译</string>
+  <string name="review_all_checking_questions">请检查所有问题</string>
 </resources>

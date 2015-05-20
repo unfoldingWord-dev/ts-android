@@ -5,7 +5,7 @@
   <string name="title_frames">ਫਰੇਮ</string>
   <string name="label_ok">ਠੀਕ ਹੈ</string>
   <string name="title_cancel">ਰੱਦ ਕਰੋ</string>
-  <string name="uploading">ਸਰਵਰ ਨੂੰ ਭੇਜਣਾ</string>
+  <string name="uploading">ਅੱਪਲੋਡ</string>
   <string name="terms_title">ਵਰਤੋ ਦੀਆਂ ਸ਼ਰਤਾਂ</string>
   <string name="terms">ਇਸ ਐਪਲੀਕੇਸ਼ ਨੂੰ ਵਰਤ ਕੇ ਤੁਹਾਨੂੰ ਵਿਸ਼ਵਾਸ ਅਤੇ ਅਨੁਵਾਦ ਦਿਸ਼ਾ ਦੇ ਬਿਆਨ ਨਾਲ ਸਹਿਮਤ ਹੈ ਅਤੇ ਤੁਹਾਨੂੰ ਕਰੀਏਟਿਵ ਕਾਮਨਜ਼ ਐਟ੍ਰਬ੍ਯੂਸ਼ਨ-ਸ਼ੇਅਰਲਾਈਕ 4.0 ਇੰਟਰਨੈਸ਼ਨਲ, ਦੇ ਆਧਾਰ \'ਤੇ ਸੰਪਤੀ ਦੇ ਅਧੀਨ ਕੰਮ ਕਰਨ ਜਾਰੀ ਕਰਨ ਲਈ.</string>
   <string name="chapter_title_field">ਅਧਿਆਇ ਟਾਈਟਲ</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">ਬੈਕਅੱਪ ਅਤੇ ਪਬਲਿਸ਼</string>
   <string name="upload_wizard_intro">ਤੁਹਾਨੂੰ ਆਪਣੇ ਅਨੁਵਾਦ ਦੀ ਅੱਪਲੋਡ ਕਰਨ ਬਾਰੇ ਹਨ.</string>
   <string name="label_continue">ਜਾਰੀ ਰੱਖੋ</string>
+  <string name="next">ਅਗਲਾ</string>
   <string name="upload_wizard_overview">ਅੱਪਲੋਡ ਰਿਵਿਊ</string>
   <string name="label_project_details">ਪ੍ਰੋਜੈਕਟ ਵੇਰਵੇ</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> ਤੱਕ ਅਨੁਵਾਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ <xliff:g id="source_language" example="English"> \"%2$s\" </xliff:g> ਵਿੱਚ ਭਾਸ਼ਾ <xliff:g id="target_language" example="Deutsch"> \"%3$s\" </xliff:g> ਭਾਸ਼ਾ.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">ਕੋਈ ਅਨੁਵਾਦ ਸੂਚਨਾ ਹਨ</string>
   <string name="key_terms">ਮੁੱਖ ਸ਼ਬਦ</string>
   <string name="translation_check_notice">ਸਾਨੂੰ ਹੁਣ ਆਪਣੀ ਅਨੁਵਾਦ ਤਿਆਰ ਹੈ ਨੂੰ ਯਕੀਨੀ ਬਣਾਉਣ ਲਈ ਕੁਝ ਕੁ ਚੈਕ ਕਰਨ ਜਾਵੇਗਾ.</string>
-  <string name="translation_complete">ਅਨੁਵਾਦ ਪੂਰਾ ਹੋ ਗਿਆ ਹੈ</string>
   <string name="preparing_upload">ਅੱਪਲੋਡ ਕਰਨ ਲਈ ਪ੍ਰਾਜੈਕਟ ਨੂੰ ਤਿਆਰੀ</string>
   <string name="license"><![CDATA[<h2> ਤੁਹਾਨੂੰ ਕਰਨ ਲਈ ਮੁਫ਼ਤ ਹਨ: </h2><p> ਹਿੱਸਾ, ਨਕਲ ਕਰੋ, ਅਤੇ ਕਿਸੇ ਵੀ ਦਰਮਿਆਨੇ ਜ ਫਾਰਮੈਟ ਵਿੱਚ ਸਮੱਗਰੀ ਵੰਡ; , ਰੀਮੀਕਸ, ਨੂੰ ਢਾਲੋ ਬਦਲ, ਅਤੇ ਵੀ ਵਪਾਰਕ, ​​ਕਿਸੇ ਵੀ ਮਕਸਦ ਲਈ ਸਮੱਗਰੀ ਉੱਤੇ ਬਣਾਉਣ. ਤੁਹਾਨੂੰ ਲਾਇਸੰਸ ਰੂਪ ਦੀ ਪਾਲਣਾ ਤੌਰ licensor ਦੇ ਤੌਰ ਤੇ ਲੰਬੇ ਇਹ ਆਜ਼ਾਦੀ ਰੱਦ ਨਾ ਕਰ ਸਕਦਾ ਹੈ. </p><h2> ਹੇਠਲੇ ਸ਼ਬਦ ਅਧੀਨ: </h2><p> <b>ਐਟ੍ਰਬ੍ਯੂਸ਼ਨ</b> - ਤੁਹਾਨੂੰ, ਉਚਿਤ ਕਰੈਡਿਟ ਦੇਣ ਲਾਇਸੰਸ ਕਰਨ ਲਈ ਲਿੰਕ ਨੂੰ ਮੁਹੱਈਆ ਹੈ, ਅਤੇ ਤਬਦੀਲੀ ਕੀਤੇ ਗਏ ਸਨ, ਜੇ ਲੱਗਦਾ ਹੈ ਚਾਹੀਦਾ ਹੈ. ਤੁਹਾਨੂੰ, ਪਰ ਨਾ licensor ਤੁਹਾਨੂੰ ਜ ਤੁਹਾਡੇ ਵਰਤਣ ਸਮਰਥਨ ਸੁਝਾਅ ਦਿੰਦਾ ਹੈ, ਜੋ ਕਿ ਕਿਸੇ ਵੀ ਤਰੀਕੇ ਨਾਲ, ਕਿਸੇ ਵੀ ਵਾਜਬ ਢੰਗ ਨਾਲ ਅਜਿਹਾ ਕਰ ਸਕਦੇ ਹੋ; <br/> <b>ਸ਼ੇਅਰਲਾਈਕ</b> - ਤੁਹਾਨੂੰ ਰੀਮੀਕਸ, ਸਮੱਗਰੀ ਤੇ ਬਦਲ, ਜ ਨੂੰ ਬਣਾਉਣ, ਜੇ, ਤੁਹਾਨੂੰ ਅਸਲੀ ਤੌਰ \'ਤੇ ਉਸੇ ਲਾਇਸੰਸ ਅਧੀਨ ਆਪਣੇ ਯੋਗਦਾਨ ਨੂੰ ਵੰਡਣ ਦੀ ਲੋੜ ਹੈ; <br/> <b>ਕੋਈ ਵਾਧੂ ਪਾਬੰਦੀ</b> - ਤੁਹਾਨੂੰ ਕਾਨੂੰਨੀ ਰੂਪ ਜ ਕਾਨੂੰਨੀ ਤੌਰ \'ਤੇ ਲਾਇਸੰਸ ਪਰਮਿਟ ਕੁਝ ਵੀ ਕਰਨ ਤੱਕ ਹੋਰ ਪਾਬੰਦੀ ਹੈ, ਜੋ ਕਿ ਤਕਨੀਕੀ ਉਪਾਅ ਲਾਗੂ ਨਹੀ ਹੋ ਸਕਦਾ ਹੈ. </p><h2> ਨੋਟਿਸ: </h2><p> ਤੁਹਾਨੂੰ ਆਪਣੇ ਵਰਤਣ ਇੱਕ ਹੀ ਲਾਗੂ ਅਪਵਾਦ ਓੜਕ ਦੇ ਇਜਾਜ਼ਤ ਹੈ, ਜਿੱਥੇ ਜਨਤਕ ਡੋਮੇਨ ਜ ਵਿੱਚ ਸਮੱਗਰੀ ਦੀ ਤੱਤ ਲਈ ਲਾਇਸੰਸ ਦੀ ਪਾਲਣਾ ਕਰਨ ਦੀ ਲੋੜ ਨਹ ਹੈ; ਕੋਈ ਵਾਰੰਟੀ ਦਿੱਤੇ ਗਏ ਹਨ. ਲਾਇਸੰਸ ਤੁਹਾਨੂੰ ਤੁਹਾਡੀ ਕੀਤੀ ਜਾਣ ਵਰਤਣ ਲਈ ਜਰੂਰੀ ਅਧਿਕਾਰ ਦੇ ਸਾਰੇ ਦੇਣ ਨਾ ਹੋ ਸਕਦਾ ਹੈ. ਉਦਾਹਰਨ ਲਈ, ਅਜਿਹੇ ਪ੍ਰਚਾਰ, ਰਹੱਸ ਨੂੰ, ਜ ਨੈਤਿਕ ਅਧਿਕਾਰ ਦੇ ਤੌਰ ਤੇ ਹੋਰ ਅਧਿਕਾਰ ਤੁਹਾਨੂੰ ਸਮੱਗਰੀ ਨੂੰ ਵਰਤਣ ਦਾ ਸੀਮਿਤ ਕਰ ਸਕਦੇ ਹੋ. </p> ]]></string>
   <string name="choose_a_project">ਪਹਿਲੀ ਇੱਕ ਪ੍ਰੋਜੈਕਟ ਨੂੰ ਖੋਲ੍ਹਣ ਜੀ.</string>
@@ -140,4 +140,15 @@
   <string name="indexing">ਇੰਡੈਕਸਿੰਗ</string>
   <string name="title_upload">ਅੱਪਲੋਡ</string>
   <string name="preview_chapter_translation_draft">ਜਾਣਕਾਰੀ ਦੇ ਡਰਾਫਟ</string>
+  <string name="choose_project_to_upload">ਅੱਪਲੋਡ ਕਰਨ ਲਈ ਪ੍ਰਾਜੈਕਟ ਨੂੰ ਚੁਣੋ</string>
+  <string name="verify">ਪੜਤਾਲ</string>
+  <string name="review">ਰਿਵਿਊ</string>
+  <string name="publish_translation">ਅਨੁਵਾਦ ਪ੍ਰਕਾਸ਼ਿਤ</string>
+  <string name="notice">ਨੋਟਿਸ</string>
+  <string name="complete_required_fields">ਸਾਰੇ ਲੋੜੀਦੇ ਖੇਤਰ ਨੂੰ ਪੂਰਾ ਕਰੋ ਜੀ</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> ਦੀ ਲੋੜ ਹੈ</string>
+  <string name="upload_failed">ਅੱਪਲੋਡ ਫੇਲ੍ਹ ਹੈ</string>
+  <string name="publishing_translation">ਪਬਲਿਸ਼ਿੰਗ ਅਨੁਵਾਦ</string>
+  <string name="backing_up_translation">ਅਨੁਵਾਦ ਬੈਕਅੱਪ</string>
+  <string name="review_all_checking_questions">ਸਾਰੇ ਸਵਾਲ ਦੀ ਸਮੀਖਿਆ ਕਰੋ ਜੀ</string>
 </resources>

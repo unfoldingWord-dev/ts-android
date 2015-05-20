@@ -5,7 +5,7 @@
   <string name="title_frames">Marcos</string>
   <string name="label_ok">ACEPTAR</string>
   <string name="title_cancel">Cancelar</string>
-  <string name="uploading">Enviar a servidor...</string>
+  <string name="uploading">Carga</string>
   <string name="terms_title">Condiciones de Uso</string>
   <string name="terms">Mediante el uso de esta aplicación está de acuerdo con la declaración de las directrices de fe y de traducción y para liberar a trabajar bajo los términos de la licencia Creative Commons Reconocimiento-Compartir bajo la misma licencia 4.0 Internacional.</string>
   <string name="chapter_title_field">Título De Capítulo:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Copia de seguridad y publicar</string>
   <string name="upload_wizard_intro">Vas a subir su traducción.</string>
   <string name="label_continue">Continuar</string>
+  <string name="next">Siguiente</string>
   <string name="upload_wizard_overview">Subir Revisión</string>
   <string name="label_project_details">Detalles del proyecto</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> está siendo traducida del <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> idioma en el <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> idioma.</string>
@@ -73,20 +74,15 @@
   <string name="no_translation_notes">No hay notas de traducción</string>
   <string name="key_terms">Términos Clave</string>
   <string name="translation_check_notice">Ahora vamos a realizar algunas verificaciones para asegurar que su traducción está lista.</string>
-  <string name="translation_complete">La traducción es completa</string>
   <string name="preparing_upload">Preparación del proyecto para la carga</string>
-  <string name="license">
-<![CDATA[
-<h2>Eres libre de:</h2>
+  <string name="license"><![CDATA[<h2>Eres libre de:</h2>
 <p>Compartir, copiar y redistribuir el material en cualquier medio o formato; Adaptar, remix, transformar y construir sobre el material para cualquier propósito, incluso comercialmente. El licenciante no puede revocar esas libertades mientras sigues los términos de licencia.</p>
 <h2>Bajo los siguientes términos:</h2>
 <p><b>Atribución</b> - debe dar el crédito apropiado, proporciona un enlace a la licencia e indicar si se realizaron cambios. Puede hacerlo de cualquier manera razonable, pero de ninguna manera que sugiere que el licenciante respalda usted o su uso;
     <br/> <b>CompartirIgual</b> - si usted remix, transforma o construir sobre el material, deben distribuir sus contribuciones bajo la misma licencia que la original;
     <br/> <b>Sin restricciones adicionales</b> - no puede aplicar los términos legales o medidas tecnológicas que restringen legalmente otros de hacer algo la licencia permite.</p>
 <h2>Nota:</h2>
-<p>Usted no tiene que cumplir con la licencia para los elementos del material en el dominio público o donde su uso está permitido por una excepción aplicable o limitación; No reciben ninguna garantía. La licencia no puede darle todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos como la publicidad, privacidad o moral pueden limitar derechos cómo usar el material.</p>
-]]>
-  </string>
+<p>Usted no tiene que cumplir con la licencia para los elementos del material en el dominio público o donde su uso está permitido por una excepción aplicable o limitación; No reciben ninguna garantía. La licencia no puede darle todos los permisos necesarios para su uso previsto. Por ejemplo, otros derechos como la publicidad, privacidad o moral pueden limitar derechos cómo usar el material.</p>]]></string>
   <string name="choose_a_project">Por favor, abra un proyecto primero.</string>
   <string name="choose_a_chapter">Por favor, abra un capítulo primero</string>
   <string name="title_activity_crash_reporter">Notificar un error</string>
@@ -151,4 +147,15 @@
   <string name="indexing">Indexación</string>
   <string name="title_upload">Subir</string>
   <string name="preview_chapter_translation_draft">Proyecto Prevista</string>
+  <string name="choose_project_to_upload">Elige proyecto para cargar</string>
+  <string name="verify">Verificar</string>
+  <string name="review">Revisión</string>
+  <string name="publish_translation">Publicar traducción</string>
+  <string name="notice">Aviso</string>
+  <string name="complete_required_fields">Por favor complete todos los campos requeridos</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> necesario</string>
+  <string name="upload_failed">No subir</string>
+  <string name="publishing_translation">Traducción editorial</string>
+  <string name="backing_up_translation">Copia de seguridad de traducción</string>
+  <string name="review_all_checking_questions">Por favor revise todas las preguntas</string>
 </resources>

@@ -5,7 +5,7 @@
   <string name="title_frames">Muafaka</string>
   <string name="label_ok">OK</string>
   <string name="title_cancel">Kufuta</string>
-  <string name="uploading">Kutuma kwa server ...</string>
+  <string name="uploading">Kuweka</string>
   <string name="terms_title">Masharti ya Matumizi</string>
   <string name="terms">Kwa kutumia programu hii, unakubaliana na kauli ya miongozo imani na tafsiri na kutolewa unafanya kazi chini ya masharti ya Creative Commons Attribution-ShareAlike 4.0 Kimataifa Leseni.</string>
   <string name="chapter_title_field">Sura Title:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Backup na Kuchapisha</string>
   <string name="upload_wizard_intro">Wewe ni kuhusu kupakia tafsiri yako.</string>
   <string name="label_continue">Kuendelea</string>
+  <string name="next">Ijayo</string>
   <string name="upload_wizard_overview">Pakia mapitio</string>
   <string name="label_project_details">Maelezo ya mradi</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> unatafsiriwa kutoka <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> Lugha katika <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> lugha.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">Kuna maelezo hakuna tafsiri</string>
   <string name="key_terms">Kanuni muhimu</string>
   <string name="translation_check_notice">Sisi sasa kufanya uchunguzi wa chache kuhakikisha tafsiri yako ni tayari.</string>
-  <string name="translation_complete">Tafsiri ni kamili</string>
   <string name="preparing_upload">Maandalizi ya mradi kwa ajili ya kuweka</string>
   <string name="license"><![CDATA[<h2> Wewe ni huru: </h2><p> Share, nakala, na kugawanya vifaa katika kati yoyote au format, Kukabiliana, remix, kubadilisha, na kujenga juu ya nyenzo kwa madhumuni yoyote, hata kibiashara. leseni hawezi kubatilisha uhuru haya kwa muda mrefu kama wewe kufuata masharti ya leseni. </p><h2> Chini ya masharti yafuatayo: </h2><p> <b>Attribution</b> - Lazima kutoa mikopo inafaa, kutoa kiungo kwa leseni, na zinaonyesha kama mabadiliko yalifanywa. Unaweza kufanya hivyo kwa namna yoyote ya kuridhisha, lakini si kwa njia yoyote kwamba anapendekeza leseni tillstyrker au matumizi yako, <br/> <b>ShareAlike</b> - Kama remix, kubadilisha, au kujenga juu ya nyenzo, lazima kusambaza michango yako chini ya leseni sawa kama awali; <br/> <b>Hakuna vikwazo ziada</b> - Unaweza si kuomba masharti ya kisheria au hatua kiteknolojia kwamba kisheria kuzuia wengine kutoka kufanya kitu chochote vibali na leseni. </p><h2> Ilani: </h2><p> Huna kwa kuzingatia leseni kwa ajili ya mambo ya nyenzo katika maeneo ya umma au ambapo matumizi yako inaruhusiwa na ubaguzi husika au juu, Hakuna dhamana wanapewa. leseni inaweza kukupa yote ya ruhusa muhimu kwa ajili ya matumizi yako yaliyokusudiwa. Kwa mfano, haki nyingine kama vile utangazaji, faragha, au haki za maadili inaweza kikomo jinsi ya kutumia nyenzo. </p>]]></string>
   <string name="choose_a_project">Tafadhali kufungua mradi wa kwanza.</string>
@@ -140,4 +140,15 @@
   <string name="indexing">Indexing</string>
   <string name="title_upload">Kupakia</string>
   <string name="preview_chapter_translation_draft">Hakikisho rasimu</string>
+  <string name="choose_project_to_upload">Kuchagua mradi kupakia</string>
+  <string name="verify">Kuthibitisha</string>
+  <string name="review">Mapitio</string>
+  <string name="publish_translation">Kuchapisha tafsiri</string>
+  <string name="notice">Ilani</string>
+  <string name="complete_required_fields">Tafadhali kukamilisha nyanja zote zinazohitajika</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> inavyotakiwa</string>
+  <string name="upload_failed">Haikupakiwa</string>
+  <string name="publishing_translation">Kuchapisha tafsiri</string>
+  <string name="backing_up_translation">Inaunga mkono juu tafsiri</string>
+  <string name="review_all_checking_questions">Tafadhali kupitia maswali yote</string>
 </resources>

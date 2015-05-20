@@ -5,7 +5,7 @@
   <string name="title_frames">ఫ్రేమ్లు</string>
   <string name="label_ok">సరే</string>
   <string name="title_cancel">రద్దు</string>
-  <string name="uploading">సర్వర్ కు పంపుతోంది ...</string>
+  <string name="uploading">అప్లోడ్</string>
   <string name="terms_title">ఉపయోగ నిబంధనలు</string>
   <string name="terms">ఈ అనువర్తనం ఉపయోగించి మీరు విశ్వాసం మరియు అనువాద మార్గదర్శకాలను ప్రకటన తో అంగీకరిస్తున్నారు మరియు మీరు క్రియేటివ్ కామన్స్ ఆపాదింపు-యథాతథ పంచుకోలు 4.0 అంతర్జాతీయ లైసెన్సుతోనూ పని విడుదల.</string>
   <string name="chapter_title_field">చాప్టర్ శీర్షిక:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">బ్యాకప్ మరియు ప్రచురించు</string>
   <string name="upload_wizard_intro">మీరు మీ అనువాదం అప్లోడ్ చేయబోతున్నారు.</string>
   <string name="label_continue">కొనసాగించు</string>
+  <string name="next">తదుపరి</string>
   <string name="upload_wizard_overview">అప్లోడ్ రివ్యూ</string>
   <string name="label_project_details">ప్రాజెక్ట్ వివరాలు</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> నుండి అనువదించబడింది ఉంది <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> లోకి భాష <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> భాష.</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">ఏ అనువాద గమనికలు ఉన్నాయి</string>
   <string name="key_terms">కీ నిబంధనలు</string>
   <string name="translation_check_notice">మేము ఇప్పుడు మీ అనువాదం సిద్ధంగా ఉంది నిర్ధారించడానికి కొన్ని తనిఖీలు చేస్తారు.</string>
-  <string name="translation_complete">అనువాద పూర్తయింది</string>
   <string name="preparing_upload">అప్లోడ్ ప్రాజెక్ట్ సిద్ధమౌతోంది</string>
   <string name="license"><![CDATA[<h2> మీరు స్వేచ్ఛగా: </h2><p> భాగస్వామ్యం, కాపీ, మరియు ఏ మాధ్యమంలో లేదా ఫార్మాట్ లో పదార్థం పునఃపంపిణీ; రీమిక్స్, స్వీకరించడం అనుకరిస్తే, మరియు కూడా వాణిజ్యపరంగా, ఏ ఉద్దేశానికైనా విషయం మీద నిర్మించడానికి. మీరు లైసెన్స్ షరతులు అనుసరించండి వంటి లైసెన్సరు కాలం ఈ స్వేచ్ఛలు ఉపసంహరించుకోవచ్చు కాదు. </p><h2> క్రింది నిబంధనలలో: </h2><p> <b>ఆపాదింపు</b> - మీరు తగిన క్రెడిట్ ఇవ్వాలని లైసెన్స్ ఒక లింక్ను అందించే, మరియు మార్పులు జరిగాయి ఉంటే సూచించడానికి ఉండాలి. మీరు కానీ లైసెన్సరు మీరు లేదా మీ ఉపయోగం ప్రచారకర్త సూచిస్తుంది ఏ విధంగా, ఏ సహేతుకమైన పద్ధతిలో అలా ఉండవచ్చు; <br/> <b>ShareAlike</b> - మీరు రీమిక్స్, మెటీరియల్ మీద అనుకరిస్తే, లేదా మెరుగుపరిస్తే, మీరు అసలు అదే లైసెన్సు క్రింద మీ రచనలు పంపిణీ చేయాలి; <br/> <b>అదనపు ఆంక్షలు</b> - మీరు చట్టపరమైన నిబంధనలు చట్టబద్ధంగా లేదా లైసెన్స్ అనుమతులు ఏదైనా చేయడం నుండి ఇతరులు పరిమితం అని సాంకేతిక చర్యలు పోవచ్చు. </p><h2> నోటీసులు: </h2><p> మీరు మీ ఉపయోగం ఒక వర్తించే మినహాయింపు లేదా పరిమితి ద్వారా అనుమతి ఉన్న ప్రజా డొమైన్ లేదా పదార్థం యొక్క మూలకాల కోసం లైసెన్స్ లోబడి లేదు; ఎలాంటి వారెంటీలు ఇస్తారు. లైసెన్స్ మీరు మీ ఉద్దేశించిన ఉపయోగం కోసం అవసరమైన అనుమతులు అన్ని ఇవ్వాలని లేదు. ఉదాహరణకు, అటువంటి ప్రచారం, గోప్యత లేదా నైతిక హక్కులు వంటి ఇతర హక్కులను మీరు పదార్థం ఎలా ఉపయోగిస్తున్నారో పరిమితం కావచ్చు. </p>]]></string>
   <string name="choose_a_project">మొదటి ప్రాజెక్టు తెరవడానికి దయచేసి.</string>
@@ -140,4 +140,15 @@
   <string name="indexing">ఇండెక్సింగ్</string>
   <string name="title_upload">అప్లోడ్</string>
   <string name="preview_chapter_translation_draft">ప్రివ్యూ డ్రాఫ్ట్</string>
+  <string name="choose_project_to_upload">అప్లోడ్ ప్రాజెక్ట్ను ఎంచుకోండి</string>
+  <string name="verify">ధృవీకరించండి</string>
+  <string name="review">రివ్యూ</string>
+  <string name="publish_translation">అనువాదం ప్రచురించు</string>
+  <string name="notice">నోటీసు</string>
+  <string name="complete_required_fields">అన్ని అవసరమైన ఖాళీలను పూర్తి చేయండి</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> అవసరం</string>
+  <string name="upload_failed">అప్లోడ్ విఫలమైంది</string>
+  <string name="publishing_translation">ప్రచురణ అనువాదం</string>
+  <string name="backing_up_translation">అనువాదం అప్ బ్యాకింగ్</string>
+  <string name="review_all_checking_questions">అన్ని ప్రశ్నలు సమీక్షించండి</string>
 </resources>

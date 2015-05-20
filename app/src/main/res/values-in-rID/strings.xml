@@ -5,7 +5,7 @@
   <string name="title_frames">Frames</string>
   <string name="label_ok">Oke</string>
   <string name="title_cancel">Batal</string>
-  <string name="uploading">Mengirim ke server...</string>
+  <string name="uploading">Meng-upload</string>
   <string name="terms_title">Persyaratan penggunaan</string>
   <string name="terms">Dengan menggunakan aplikasi ini Anda setuju dengan pernyataan iman dan terjemahan pedoman dan melepaskan Anda bekerja di bawah ketentuan Creative Commons Atribusi-Berbagi Serupa 4.0 Lisensi Internasional.</string>
   <string name="chapter_title_field">Judul bab:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">Backup dan Publikasikan</string>
   <string name="upload_wizard_intro">Anda akan meng-upload terjemahan Anda.</string>
   <string name="label_continue">Lanjutkan</string>
+  <string name="next">Berikutnya</string>
   <string name="upload_wizard_overview">Meng-upload Review</string>
   <string name="label_project_details">Rincian proyek</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> sedang diterjemahkan dari <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> bahasa ke dalam <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> bahasa.</string>
@@ -73,13 +74,8 @@
   <string name="no_translation_notes">Tidak ada catatan terjemahan</string>
   <string name="key_terms">Syarat utama</string>
   <string name="translation_check_notice">Sekarang kita akan melakukan beberapa pemeriksaan untuk memastikan terjemahan Anda siap.</string>
-  <string name="translation_complete">Terjemahan selesai</string>
   <string name="preparing_upload">Mempersiapkan proyek untuk meng-upload</string>
-  <string name="license">
-<![CDATA[
-<h2> Anda bebas untuk: </h2><p> Share, menyalin, dan mendistribusikan materi dalam media atau format; Beradaptasi, remix, mengubah, dan membangun bahan untuk tujuan apapun, bahkan untuk tujuan komersial. Lisensi tidak dapat mencabut kebebasan tersebut selama Anda mengikuti persyaratan lisensi. </p><h2> Dengan ketentuan sebagai berikut: </h2><p> <b>Atribusi</b> - Anda harus memberikan kredit yang sesuai, menyediakan link ke lisensi, dan menunjukkan jika perubahan yang dilakukan. Anda dapat melakukannya dengan cara yang masuk akal, tapi tidak dengan cara apa pun yang mengesankan pemberi lisensi mendukung Anda atau penggunaan Anda; <br/> <b>ShareAlike</b> - Jika Anda remix, mengubah, atau membuat atas dasar materi, Anda harus mendistribusikan kontribusi Anda di bawah lisensi yang sama seperti aslinya; <br/> <b>Tidak ada batasan-batasan tambahan</b> - Anda mungkin tidak berlaku istilah hukum atau langkah-langkah teknologi yang secara hukum membatasi orang lain melakukan sesuatu izin lisensi. </p><h2> Pemberitahuan: </h2><p> Anda tidak harus mematuhi lisensi untuk unsur-unsur material dalam domain publik atau di mana penggunaan yang diizinkan oleh pengecualian berlaku atau pembatasan; Tidak ada jaminan yang diberikan. Lisensi mungkin tidak memberikan semua izin yang diperlukan untuk penggunaan yang diinginkan. Misalnya, hak-hak lain seperti publisitas, privasi, atau hak moral dapat membatasi bagaimana Anda menggunakan materi. </p>
-]]>
-  </string>
+  <string name="license"><![CDATA[<h2> Anda bebas untuk: </h2><p> Share, menyalin, dan mendistribusikan materi dalam media atau format; Beradaptasi, remix, mengubah, dan membangun bahan untuk tujuan apapun, bahkan untuk tujuan komersial. Lisensi tidak dapat mencabut kebebasan tersebut selama Anda mengikuti persyaratan lisensi. </p><h2> Dengan ketentuan sebagai berikut: </h2><p> <b>Atribusi</b> - Anda harus memberikan kredit yang sesuai, menyediakan link ke lisensi, dan menunjukkan jika perubahan yang dilakukan. Anda dapat melakukannya dengan cara yang masuk akal, tapi tidak dengan cara apa pun yang mengesankan pemberi lisensi mendukung Anda atau penggunaan Anda; <br/> <b>ShareAlike</b> - Jika Anda remix, mengubah, atau membuat atas dasar materi, Anda harus mendistribusikan kontribusi Anda di bawah lisensi yang sama seperti aslinya; <br/> <b>Tidak ada batasan-batasan tambahan</b> - Anda mungkin tidak berlaku istilah hukum atau langkah-langkah teknologi yang secara hukum membatasi orang lain melakukan sesuatu izin lisensi. </p><h2> Pemberitahuan: </h2><p> Anda tidak harus mematuhi lisensi untuk unsur-unsur material dalam domain publik atau di mana penggunaan yang diizinkan oleh pengecualian berlaku atau pembatasan; Tidak ada jaminan yang diberikan. Lisensi mungkin tidak memberikan semua izin yang diperlukan untuk penggunaan yang diinginkan. Misalnya, hak-hak lain seperti publisitas, privasi, atau hak moral dapat membatasi bagaimana Anda menggunakan materi. </p>]]></string>
   <string name="choose_a_project">Silahkan buka proyek pertama.</string>
   <string name="choose_a_chapter">Silahkan buka bab pertama</string>
   <string name="title_activity_crash_reporter">Kesalahan Laporan</string>
@@ -144,4 +140,15 @@
   <string name="indexing">Indeksasi</string>
   <string name="title_upload">Meng-upload</string>
   <string name="preview_chapter_translation_draft">Preview rancangan</string>
+  <string name="choose_project_to_upload">Pilih proyek untuk meng-upload</string>
+  <string name="verify">Memeriksa</string>
+  <string name="review">Ulasan</string>
+  <string name="publish_translation">Publikasikan terjemahan</string>
+  <string name="notice">Pemberitahuan</string>
+  <string name="complete_required_fields">Lengkapi semua bidang yang diperlukan</string>
+  <string name="required_field"><xliff:g id="marker"> * </xliff:g> wajib</string>
+  <string name="upload_failed">Upload gagal</string>
+  <string name="publishing_translation">Terjemahan Publishing</string>
+  <string name="backing_up_translation">Back up terjemahan</string>
+  <string name="review_all_checking_questions">Silahkan lihat semua pertanyaan</string>
 </resources>

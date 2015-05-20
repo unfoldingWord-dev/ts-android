@@ -5,7 +5,7 @@
   <string name="title_frames">เฟรม</string>
   <string name="label_ok">ตกลง, ได้</string>
   <string name="title_cancel">ยกเลิก</string>
-  <string name="uploading">ส่งไปยังเซิร์ฟเวอร์...</string>
+  <string name="uploading">อัพโหลด</string>
   <string name="terms_title">เงื่อนไขการใช้</string>
   <string name="terms">โดยการใช้ app นี้คุณเห็นด้วยกับคำสั่งของความเชื่อและแนวทางในการแปลและการที่จะปล่อยให้คุณทำงานได้ภายใต้เงื่อนไขของ Creative Commons Attribution 4.0 สัญญาอนุญาตให้ใช้สิทธิระหว่างประเทศ</string>
   <string name="chapter_title_field">ชื่อบท:</string>
@@ -27,6 +27,7 @@
   <string name="backup_and_publish">สำรองข้อมูลและการเผยแพร่</string>
   <string name="upload_wizard_intro">คุณกำลังจะอัปโหลดการแปลของคุณ</string>
   <string name="label_continue">ดำเนินการต่อไป</string>
+  <string name="next">ถัดไป</string>
   <string name="upload_wizard_overview">ตรวจสอบการอัปโหลด</string>
   <string name="label_project_details">รายละเอียดโครงการ</string>
   <string name="project_details"><xliff:g id="project" example="Open Bible Stories"> \"%1$s\" </xliff:g> จะถูกแปลมาจาก <xliff:g id="language" example="English"> \"%2$s\" </xliff:g> ภาษาเป็น <xliff:g id="language" example="Deutsch"> \"%3$s\" </xliff:g> ภาษา</string>
@@ -73,7 +74,6 @@
   <string name="no_translation_notes">มีบันทึกการแปลไม่มี</string>
   <string name="key_terms">ข้อตกลงและเงื่อนไขที่สำคัญ</string>
   <string name="translation_check_notice">ตอนนี้เราจะดำเนินการตรวจสอบเพื่อให้แน่ใจว่าไม่กี่แปลของคุณพร้อม</string>
-  <string name="translation_complete">แปลเสร็จสมบูรณ์</string>
   <string name="preparing_upload">โครงการเตรียมความพร้อมสำหรับการอัปโหลด</string>
   <string name="license"><![CDATA[<h2> คุณมีอิสระในการ: </h2><p> แบ่งปันให้คัดลอกและแจกจ่ายวัสดุในสื่อใด ๆ หรือรูปแบบ; ปรับเรียบเรียงเปลี่ยนและสร้างวัสดุเพื่อวัตถุประสงค์ใด ๆ แม้ในเชิงพาณิชย์ อนุญาตไม่สามารถเพิกถอนเสรีภาพเหล่านี้ตราบใดที่คุณทำตามเงื่อนไขของใบอนุญาต </p><h2> ภายใต้เงื่อนไขดังต่อไปนี้: </h2><p> <b>แสดงที่มา</b> - คุณต้องให้เครดิตที่เหมาะสมให้เชื่อมโยงไปยังใบอนุญาตและระบุว่าการเปลี่ยนแปลงที่ทำ คุณอาจจะทำในลักษณะที่เหมาะสมใด ๆ แต่ไม่ใช่ในลักษณะที่แสดงให้เห็นออกใบอนุญาตรับรองคุณหรือการใช้งานใด ๆ ของคุณ; <br/> <b>สัญญา</b> - ถ้าคุณเรียบเรียงเปลี่ยนรูปหรือต่อเติมวัสดุที่คุณจะต้องกระจายการมีส่วนร่วมของคุณภายใต้ใบอนุญาตเหมือนเดิม; <br/> <b>ไม่มีข้อ จำกัด เพิ่มเติม</b> - คุณอาจใช้ไม่ได้ข้อตกลงทางกฎหมายหรือมาตรการทางเทคโนโลยีที่ถูกต้องตามกฎหมาย จำกัด อื่น ๆ จากการทำอะไรที่ใบอนุญาตใบอนุญาต </p><h2> คำชี้แจง: </h2><p> คุณไม่จำเป็นต้องปฏิบัติตามสัญญาอนุญาตสำหรับองค์ประกอบของวัสดุในโดเมนสาธารณะหรือสถานที่ที่ใช้งานของคุณจะได้รับอนุญาตโดยมีข้อยกเว้นบังคับหรือข้อ จำกัด ; ไม่มีการรับประกันจะได้รับ ใบอนุญาตอาจจะไม่ให้คุณทั้งหมดของสิทธิ์ที่จำเป็นสำหรับการใช้งานที่คุณตั้งใจ ตัวอย่างเช่นสิทธิอื่น ๆ เช่นการประชาสัมพันธ์ความเป็นส่วนตัวหรือสิทธิทางศีลธรรมอาจ จำกัด วิธีการที่คุณใช้วัสดุ </p>]]></string>
   <string name="choose_a_project">กรุณาเปิดโครงการแรก</string>
@@ -140,4 +140,15 @@
   <string name="indexing">การจัดทำดัชนี</string>
   <string name="title_upload">อัปโหลด</string>
   <string name="preview_chapter_translation_draft">ร่างตัวอย่าง</string>
+  <string name="choose_project_to_upload">เลือกโครงการที่จะอัปโหลด</string>
+  <string name="verify">ตรวจสอบ</string>
+  <string name="review">ทบทวน</string>
+  <string name="publish_translation">เผยแพร่คำแปล</string>
+  <string name="notice">แจ้งให้ทราบ</string>
+  <string name="complete_required_fields">กรุณากรอกข้อมูลที่จำเป็นทั้งหมด</string>
+  <string name="required_field"><xliff:g id="marker"> * * * * </xliff:g> จำเป็นต้องใช้</string>
+  <string name="upload_failed">อัปโหลดล้มเหลว</string>
+  <string name="publishing_translation">แปลสำนักพิมพ์</string>
+  <string name="backing_up_translation">สำรองแปล</string>
+  <string name="review_all_checking_questions">โปรดอ่านคำถามทุกข้อ</string>
 </resources>
