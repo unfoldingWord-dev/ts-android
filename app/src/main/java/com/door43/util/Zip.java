@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -147,6 +149,44 @@ public class Zip {
     }
 
     /**
+     * Zips up a list of files that are mapped to a relative directory in the resulting archive.
+     * TODO: we'd like to begin using this so we don't have to organize everything into a directory before zipping
+     * @param files
+     * @param archivePath
+     * @throws IOException
+     */
+    public static void zip(Map<File, String> files, File archivePath) throws IOException {
+        final int BUFFER = 2048;
+        BufferedInputStream origin = null;
+        FileOutputStream dest = new FileOutputStream(archivePath);
+        ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
+
+        Iterator it = files.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry<File, String> pair = (Map.Entry)it.next();
+            // clean the target path
+            pair.setValue(pair.getValue().replaceAll("^/+", "").replace("/*$", "") + "/");
+            if (pair.getKey().isDirectory()) {
+                // TRICKY: we add 1 to the base path length to exclude the leading path separator
+                zipSubFolder(out, pair.getKey(), pair.getValue() + pair.getKey().getName());
+            } else {
+                byte data[] = new byte[BUFFER];
+                FileInputStream fi = new FileInputStream(pair.getKey());
+                origin = new BufferedInputStream(fi, BUFFER);
+                String relativePath = pair.getValue() + pair.getKey().getName();
+                ZipEntry entry = new ZipEntry(pair.getValue());
+                out.putNextEntry(entry);
+                int count;
+                while ((count = origin.read(data, 0, BUFFER)) != -1) {
+                    out.write(data, 0, count);
+                }
+            }
+        }
+
+        out.close();
+    }
+
+    /**
      * Zips up a sub folder
      * @param out
      * @param folder
@@ -167,6 +207,35 @@ public class Zip {
                 FileInputStream fi = new FileInputStream(unmodifiedFilePath);
                 origin = new BufferedInputStream(fi, BUFFER);
                 ZipEntry entry = new ZipEntry(relativePath);
+                out.putNextEntry(entry);
+                int count;
+                while ((count = origin.read(data, 0, BUFFER)) != -1) {
+                    out.write(data, 0, count);
+                }
+                origin.close();
+            }
+        }
+    }
+
+    /**
+     * Zips up a sub folder
+     * @param out
+     * @param folder
+     * @param relativePath
+     * @throws IOException
+     */
+    private static void zipSubFolder(ZipOutputStream out, File folder, String relativePath) throws IOException {
+        final int BUFFER = 2048;
+        File[] fileList = folder.listFiles();
+        BufferedInputStream origin = null;
+        for (File file : fileList) {
+            if (file.isDirectory()) {
+                zipSubFolder(out, file, relativePath + "/" + file.getName());
+            } else {
+                byte data[] = new byte[BUFFER];
+                FileInputStream fi = new FileInputStream(file.getPath());
+                origin = new BufferedInputStream(fi, BUFFER);
+                ZipEntry entry = new ZipEntry(relativePath + "/" + file.getName());
                 out.putNextEntry(entry);
                 int count;
                 while ((count = origin.read(data, 0, BUFFER)) != -1) {
