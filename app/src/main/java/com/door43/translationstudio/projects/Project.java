@@ -260,7 +260,7 @@ public class Project implements Model {
      * @return
      */
     public String getDescription(SourceLanguage l) {
-        if(mDescriptionTranslations.get(l.getId()) != null) {
+        if(l != null && mDescriptionTranslations.get(l.getId()) != null) {
             return mDescriptionTranslations.get(l.getId()).getText();
         } else {
             return mDefaultDescription;

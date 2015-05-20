@@ -150,6 +150,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             TaskManager.cancelTask(task);
             mTaskId = -1;
         }
+        getActivity().finish();
     }
 
     public void filter(String query) {
