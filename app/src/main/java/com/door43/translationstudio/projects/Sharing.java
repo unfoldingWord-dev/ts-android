@@ -36,6 +36,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -943,7 +944,11 @@ public class Sharing {
             }
 
             // TRICKY: this has to be read after we commit changes to the repo
+            // TODO: we need to provide better error handling when the commit returns null (e.g. try to commit again)
             String gitCommit = p.getLocalTranslationVersion(l);
+            if(gitCommit == null) {
+                gitCommit = "(null)";
+            }
             signature += gitCommit;
 
             // update manifest
@@ -1056,7 +1061,13 @@ public class Sharing {
         }
 
         // TRICKY: this has to be read after we commit changes to the repo
-        String tag = p.getLocalTranslationVersion().substring(0, 10);
+        // TODO: we need to provide better error handling when the git commit is null (e.g. try to commit again)
+        String tag = p.getLocalTranslationVersion();
+        if(tag != null && tag.length() >= 10) {
+            tag = tag.substring(0, 10);
+        } else {
+            tag = "(null)";
+        }
         File outputZipFile = new File(exportDir, projectComplexName + "_" + tag + ".zip");
         File outputDir = new File(exportDir, projectComplexName + "_" + tag);
 
