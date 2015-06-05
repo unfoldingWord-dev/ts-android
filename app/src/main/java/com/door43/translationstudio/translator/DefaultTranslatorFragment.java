@@ -51,6 +51,7 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.Translation;
@@ -542,6 +543,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
      * TODO: this needs to be broken up into a generic animator and a managed task
      */
     private void renderSourceText() {
+        final Frame f = AppContext.projectManager().getSelectedProject().getSelectedChapter().getSelectedFrame();
         if(mHighlightSourceThread != null) {
             mHighlightSourceThread.stop();
         }
@@ -591,14 +593,14 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                 // build rendering engines
                 mSourceRendering = new RenderingGroup();
                 if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
-                    mSourceRendering.addEngine(new KeyTermRenderer(mSelectedFrame, mKeyTermClickListener));
+                    mSourceRendering.addEngine(new KeyTermRenderer(f, mKeyTermClickListener));
                 }
-                if(mSelectedFrame.format == Frame.Format.USX) {
+                if(f.format == Frame.Format.USX) {
                     mSourceRendering.addEngine(new USXRenderer(null, mSourceFootnoteListener));
                 } else {
                     mSourceRendering.addEngine(new DefaultRenderer());
                 }
-                mSourceRendering.init(mSelectedFrame.getText());
+                mSourceRendering.init(f.getText());
 
                 in.setAnimationListener(new Animation.AnimationListener() {
                     @Override
