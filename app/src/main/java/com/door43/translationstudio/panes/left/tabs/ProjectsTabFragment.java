@@ -25,6 +25,7 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
+import com.door43.translationstudio.tasks.LoadTermsTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
@@ -127,7 +128,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 } else {
                     if(p.hasSelectedSourceLanguage()) {
                         if(IndexStore.hasResourceIndex(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource())) {
-                            loadChapters(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
+                            loadTerms(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
                         } else {
                             indexResources(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
                         }
@@ -139,6 +140,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 // open current project
                 if(p.hasSelectedSourceLanguage()) {
                     if (p.getChapters().length == 0) {
+                        // note: the terms have already been loaded so we don't have to load them again here.
                         loadChapters(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
                     } else {
                         openChaptersTab();
@@ -200,7 +202,20 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     private void loadChapters(Project p, SourceLanguage l, Resource r) {
         LoadChaptersTask task = new LoadChaptersTask(p, l, r);
         mTaskWatcher.watch(task);
-        TaskManager.addTask(task, task.TASK_ID);
+        TaskManager.addTask(task, LoadChaptersTask.TASK_ID);
+    }
+
+    /**
+     * Starts up a task to load the important terms
+     * @param p
+     * @param l
+     * @param r
+     */
+    private void loadTerms(Project p, SourceLanguage l, Resource r) {
+        // TODO: start task
+        LoadTermsTask task = new LoadTermsTask(p, l, r);
+        mTaskWatcher.watch(task);
+        TaskManager.addTask(task, LoadTermsTask.TASK_ID);
     }
 
     /**
@@ -263,10 +278,14 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
                 ((MainActivity) getActivity()).reloadFramesTab();
                 openChaptersTab();
             }
-        } else if(task instanceof IndexResourceTask) {
+        } else if(task instanceof LoadTermsTask) {
             // load the chapters
+            Project p = AppContext.projectManager().getProject(((LoadTermsTask) task).getProject().getId());
+            loadChapters(p, ((LoadTermsTask) task).getSourceLanguage(), ((LoadTermsTask) task).getResource());
+        } else if(task instanceof IndexResourceTask) {
+            // load the terms
             Project p = AppContext.projectManager().getProject(((IndexResourceTask) task).getProject().getId());
-            loadChapters(p, ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
+            loadTerms(p, ((IndexResourceTask) task).getSourceLanguage(), ((IndexResourceTask) task).getResource());
         } else if(task instanceof LoadFramesTask) {
             ((MainActivity) getActivity()).reloadFramesTab();
             openChaptersTab();

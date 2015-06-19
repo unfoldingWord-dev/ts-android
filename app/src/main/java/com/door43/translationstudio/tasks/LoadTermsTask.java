@@ -1,5 +1,7 @@
 package com.door43.translationstudio.tasks;
 
+import android.app.Fragment;
+
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
@@ -34,5 +36,17 @@ public class LoadTermsTask extends ManagedTask {
     @Override
     public int maxProgress() {
         return mMaxProgress;
+    }
+
+    public SourceLanguage getSourceLanguage() {
+        return mLanguage;
+    }
+
+    public Project getProject() {
+        return mProject;
+    }
+
+    public Resource getResource() {
+        return mResource;
     }
 }
