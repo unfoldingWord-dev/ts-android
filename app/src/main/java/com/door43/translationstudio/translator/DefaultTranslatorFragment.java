@@ -592,9 +592,9 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
                 // build rendering engines
                 mSourceRendering = new RenderingGroup();
-                if(app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)))) {
-                    mSourceRendering.addEngine(new KeyTermRenderer(f, mKeyTermClickListener));
-                }
+                // TRICKY: we currently have to parse the source to get the key terms so we must pass in a flag to hide or show the links.
+                Boolean highlightTerms = app().getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(getResources().getString(R.string.pref_default_highlight_key_terms)));
+                mSourceRendering.addEngine(new KeyTermRenderer(f, mKeyTermClickListener, highlightTerms));
                 if(f.format == Frame.Format.USX) {
                     mSourceRendering.addEngine(new USXRenderer(null, mSourceFootnoteListener));
                 } else {

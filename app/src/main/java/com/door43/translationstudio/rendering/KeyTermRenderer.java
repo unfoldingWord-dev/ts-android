@@ -19,16 +19,18 @@ public class KeyTermRenderer extends RenderingEngine {
     private final List<Term> mTerms;
     private final Frame mFrame;
     private final Span.OnClickListener mClickListener;
+    private final Boolean mHighlightTerms;
     private Vector<Boolean> mIndicies;
 
     /**
      * Creates a new key term renderer
      * @param frame the frame with key terms that will be rendered
      */
-    public KeyTermRenderer(Frame frame, Span.OnClickListener clickListener) {
+    public KeyTermRenderer(Frame frame, Span.OnClickListener clickListener, Boolean highlightTerms) {
         mClickListener = clickListener;
         mTerms = frame.getChapter().getProject().getTerms();
         mFrame = frame;
+        mHighlightTerms = highlightTerms;
     }
 
     public CharSequence renderTerms(CharSequence in) {
@@ -39,11 +41,14 @@ public class KeyTermRenderer extends RenderingEngine {
         while(matcher.find()) {
             if(isStopped()) return in;
 
-            // add term
-            TermSpan span = new TermSpan(matcher.group(1), matcher.group(1));
-            span.setOnClickListener(mClickListener);
-
-            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span.toCharSequence());
+            if(mHighlightTerms) {
+                // add term
+                TermSpan span = new TermSpan(matcher.group(1), matcher.group(1));
+                span.setOnClickListener(mClickListener);
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), span.toCharSequence());
+            } else {
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), matcher.group(1));
+            }
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
