@@ -118,12 +118,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Log.d("","test");
-    }
-
-    @Override
     public void NotifyAdapterDataSetChanged() {
         if(mModelItemAdapter != null && app() != null && AppContext.projectManager() != null) {
             mModelItemAdapter.notifyDataSetChanged();
