@@ -196,8 +196,10 @@ import java.util.ArrayList;
                         span.setOnClickListener(new Span.OnClickListener() {
                             @Override
                             public void onClick(View view, Span span, int start, int end) {
+                                // TODO: this should be done in the navigator
                                 p.setSelectedChapter(example.getChapterId());
                                 p.getSelectedChapter().setSelectedFrame(example.getFrameId());
+                                // TODO: we need to load the chapters and frames first.
                                 ((MainActivity) getActivity()).reload();
                                 ((MainActivity) getActivity()).closeDrawers();
                                 Chapter c = p.getChapter(example.getChapterId());
