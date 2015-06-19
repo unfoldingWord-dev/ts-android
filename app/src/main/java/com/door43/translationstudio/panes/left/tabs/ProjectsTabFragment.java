@@ -36,6 +36,11 @@ import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 /**
  * Created by joel on 8/29/2014.
  */
@@ -94,7 +99,28 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             }
         }
 
+        // connect to running tasks
+        Object[] taskIds = {
+                IndexResourceTask.TASK_ID,
+                LoadChaptersTask.TASK_ID,
+                LoadTermsTask.TASK_ID,
+                LoadFramesTask.TASK_ID,
+        };
+        for(Object o:taskIds) {
+            if (!mTaskWatcher.isWatching()) {
+                mTaskWatcher.watch(o);
+            } else {
+                break;
+            }
+        }
+
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("","test");
     }
 
     @Override

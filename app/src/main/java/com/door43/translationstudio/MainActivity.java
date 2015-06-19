@@ -131,6 +131,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
+        // TODO: fetch the fragments from the main layout if the saved instance state is not null
         mLeftPane = new LeftPaneFragment();
         mRightPane = new RightPaneFragment();
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
