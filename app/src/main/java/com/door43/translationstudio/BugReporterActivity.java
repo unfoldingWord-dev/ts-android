@@ -185,7 +185,7 @@ public class BugReporterActivity extends TranslatorBaseActivity {
                     List<NameValuePair> headers = new ArrayList<NameValuePair>();
                     headers.add(new BasicNameValuePair("Authorization", "token "+getResources().getString(R.string.github_oauth2)));
                     headers.add(new BasicNameValuePair("Content-Type", "application/json"));
-                    String response = ServerUtilities.post("https://api.github.com/repos/Door43/translationStudio2/issues", headers, json.toString());
+                    String response = ServerUtilities.post(getResources().getString(R.string.github_bug_report_repo), headers, json.toString());
                     Log.d("Response", response);
                 } catch (IOException e) {
                     Logger.w(this.getClass().getName(), "failed to upload bug report", e);

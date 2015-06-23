@@ -111,7 +111,7 @@ public class UploadCrashReportTask extends ManagedTask {
                     List<NameValuePair> headers = new ArrayList<>();
                     headers.add(new BasicNameValuePair("Authorization", "token " + AppContext.context().getResources().getString(R.string.github_oauth2)));
                     headers.add(new BasicNameValuePair("Content-Type", "application/json"));
-                    String response = ServerUtilities.post("https://api.github.com/repos/Door43/translationStudio2/issues", headers, json.toString());
+                    String response = ServerUtilities.post(AppContext.context().getResources().getString(R.string.github_bug_report_repo), headers, json.toString());
                 } catch (IOException e) {
                     Logger.w(this.getClass().getName(), "failed to upload traces", e);
                     // archive stack trace for later use

@@ -5,4 +5,5 @@
     <string name="exported_projects_dir" translatable="false">exported</string>
     <string name="imported_projects_dir" translatable="false">imported</string>
     <string name="p2p_keys_dir" translatable="false">p2p_keys</string>
+    <string name="github_bug_report_repo" translatable="false">https://api.github.com/repos/unfoldingWord-dev/ts-android/issues</string>
 </resources>
