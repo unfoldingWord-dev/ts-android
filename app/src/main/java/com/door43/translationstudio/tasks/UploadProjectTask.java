@@ -189,7 +189,7 @@ public class UploadProjectTask extends ManagedTask {
     }
 
     /**
-     * Uploads pushes the project repository to the server
+     * Uploads the project repository to the server
      */
     private void pushProject() {
         if(mProject.translationIsReady(mLanguage)) {
@@ -204,9 +204,14 @@ public class UploadProjectTask extends ManagedTask {
         }
 
         // commit and push profile
-        Repo profileRepo = new Repo(ProfileManager.getRepositoryPath());
-        if(commitRepo(profileRepo)) {
-            mResponse += "\n" + pushRepo(profileRepo, ProfileManager.getRemotePath());
+        if(mProject.translationIsReady(mLanguage)) {
+            Repo profileRepo = new Repo(ProfileManager.getRepositoryPath());
+            if (commitRepo(profileRepo)) {
+                String response = pushRepo(profileRepo, ProfileManager.getRemotePath());
+                if(response != null) {
+                    mResponse += "\n" + response;
+                }
+            }
         }
     }
 
