@@ -1,4 +1,4 @@
-translationStudio
+translationStudio Android
 --
 
 unfoldingWord translationStudio is an Android app for translating biblical content in any language.
