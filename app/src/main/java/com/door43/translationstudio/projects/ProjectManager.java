@@ -1326,7 +1326,7 @@ public class ProjectManager {
         try {
             jsonNotes = new JSONArray(jsonString);
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "malformed notes for project "+p.getId(), e);
+            Logger.e(this.getClass().getName(), "malformed notes for project "+p.getId()+ " language "+p.getSelectedSourceLanguage().getId(), e);
             return;
         }
 
