@@ -7,7 +7,7 @@ A tool to translate the Bible and [Open Bible Stories](http://distantshores.org/
 
 ##Requirements
 The official development requirements are available at
-* [tS Requirements](https://github.com/unfoldingWord-dev/ts-requirements).
+* [tS Requirements](https://github.com/unfoldingWord-dev/ts-requirements)
 
 Additional documentation specific to the android platform is available in the [wiki].
 
