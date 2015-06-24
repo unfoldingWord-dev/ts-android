@@ -6,7 +6,9 @@ translationStudio Android
 A tool to translate the Bible and [Open Bible Stories](http://distantshores.org/openbiblestories) into your own language. You can read more about the purpose of this project at [unfoldingWord](https://unfoldingword.org/apps/#tS).
 
 ##Requirements
-The official development requirements are available at [tS Requirements](https://github.com/unfoldingWord-dev/ts-requirements).
+The official development requirements are available at
+* [tS Requirements](https://github.com/unfoldingWord-dev/ts-requirements).
+
 Additional documentation specific to the android platform is available in the [wiki].
 
 ##Contributing
