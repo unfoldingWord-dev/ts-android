@@ -1,14 +1,15 @@
+[![Crowdin](https://d322cqt584bo4o.cloudfront.net/translation-studio/localized.png)](https://crowdin.com/project/translation-studio)
+
 translationStudio Android
 --
 
-unfoldingWord translationStudio is an Android app for translating biblical content in any language.
+A tool to translate the Bible and [Open Bible Stories](http://distantshores.org/openbiblestories) into your own language. You can read more about the purpose of this project at [unfoldingWord](https://unfoldingword.org/apps/#tS).
 
-[![Crowdin](https://d322cqt584bo4o.cloudfront.net/translation-studio/localized.png)](https://crowdin.com/project/translation-studio)
+##Requirements
+The official development requirements are available at [tS Requirements](https://github.com/unfoldingWord-dev/ts-requirements).
+Additional documentation specific to the android platform is available in the [wiki](https://github.com/unfoldingWord-dev/ts-android/wiki)
 
-## Requirements Specification
-The official requirements are available at [tS Requirements](https://github.com/unfoldingWord-dev/ts-requirements).
-
-###Contributing
+##Contributing
 Below are the technical specifications regarding this Android app and instructions for setting up your development environment.
 
 * **Minimum SDK**: 15 (4.0.3 Ice Cream Sandwich)
