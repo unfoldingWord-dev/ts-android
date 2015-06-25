@@ -12,7 +12,7 @@ The official development requirements are available at
 Additional documentation specific to the android platform is available in the [wiki].
 
 ##Contributing
-If you would like to contribute to this project please read the [Contributing] article in the wiki.
+If you would like to contribute to this project please read the [Contributing](https://github.com/unfoldingWord-dev/ts-android/wiki/Contributing) article in the wiki.
 
 ##Quck Start
 First make sure you have all the dependencies installed
