@@ -9,13 +9,20 @@ android {
         applicationId "com.translationstudio.androidapp"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 85
-        versionName "2.2.0"
+        versionCode 86
+        versionName "2.2.1"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        applicationVariants.all { variant ->
+            variant.outputs.each { output ->
+                def apk = output.outputFile;
+                def newName = "tS_"+defaultConfig.versionName+"_build"+defaultConfig.versionCode+".apk";
+                output.outputFile = new File(apk.parentFile, newName);
+            }
         }
     }
     lintOptions {
@@ -23,33 +30,33 @@ android {
         disable 'ExtraTranslation'
     }
     // we could build platform specific apks this way
-    productFlavors {
-        x86 {
-            ndk {
-                versionCode Integer.parseInt("6" + defaultConfig.versionCode)
-                abiFilter "x86"
-            }
-        }
-        mips {
-            ndk {
-                versionCode Integer.parseInt("4" + defaultConfig.versionCode)
-                abiFilter "mips"
-            }
-        }
-        armv7 {
-            ndk {
-                versionCode Integer.parseInt("2" + defaultConfig.versionCode)
-                abiFilter "armeabi-v7a"
-            }
-        }
-        arm {
-            ndk {
-                versionCode Integer.parseInt("1" + defaultConfig.versionCode)
-                abiFilter "armeabi"
-            }
-        }
-        fat
-    }
+//    productFlavors {
+//        x86 {
+//            ndk {
+//                versionCode Integer.parseInt("6" + defaultConfig.versionCode)
+//                abiFilter "x86"
+//            }
+//        }
+//        mips {
+//            ndk {
+//                versionCode Integer.parseInt("4" + defaultConfig.versionCode)
+//                abiFilter "mips"
+//            }
+//        }
+//        armv7 {
+//            ndk {
+//                versionCode Integer.parseInt("2" + defaultConfig.versionCode)
+//                abiFilter "armeabi-v7a"
+//            }
+//        }
+//        arm {
+//            ndk {
+//                versionCode Integer.parseInt("1" + defaultConfig.versionCode)
+//                abiFilter "armeabi"
+//            }
+//        }
+//        fat
+//    }
 // or this way (which is cleaner)
 //    splits {
 //        abi {

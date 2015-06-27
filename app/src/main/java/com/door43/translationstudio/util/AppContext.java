@@ -21,8 +21,6 @@ import com.squareup.otto.ThreadEnforcer;
 
 //import org.sil.palaso.Graphite;
 
-import org.sil.palaso.Graphite;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -35,7 +33,7 @@ public class AppContext {
     private static Navigator mNavigator;
     private static ProjectManager mProjectManager;
     public static final Bundle args = new Bundle();
-    private static boolean sEnableGraphite = true;
+    private final static boolean sEnableGraphite = false;
     private static boolean loaded;
 
     /**
@@ -47,7 +45,7 @@ public class AppContext {
     public AppContext(MainApplication context) {
         if(mContext == null) {
             if(sEnableGraphite && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-                Graphite.loadGraphite();
+//                Graphite.loadGraphite();
             }
             mContext = context;
             mProjectManager = new ProjectManager(context);
@@ -168,24 +166,24 @@ public class AppContext {
         if (font != null) {
             try {
                 Typeface customTypeface;
-                if (sEnableGraphite) {
-                    TTFAnalyzer analyzer = new TTFAnalyzer();
-                    String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
-                    if (fontname != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-                        // assets container, font asset, font name, rtl, language, feats (what's this for????)
-                        int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
-                        try {
-                            customTypeface = (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            customTypeface = Typeface.createFromFile(font);
-                        }
-                    } else {
-                        customTypeface = Typeface.createFromFile(font);
-                    }
-                } else {
+//                if (sEnableGraphite) {
+//                    TTFAnalyzer analyzer = new TTFAnalyzer();
+//                    String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
+//                    if (fontname != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+//                        // assets container, font asset, font name, rtl, language, feats (what's this for????)
+//                        int translationRTL = l.getDirection() == Language.Direction.RightToLeft ? 1 : 0;
+//                        try {
+////                            customTypeface = (Typeface) Graphite.addFontResource(mContext.getAssets(), "fonts/" + typeFace, fontname, translationRTL, l.getId(), "");
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                            customTypeface = Typeface.createFromFile(font);
+//                        }
+//                    } else {
+//                        customTypeface = Typeface.createFromFile(font);
+//                    }
+//                } else {
                     customTypeface = Typeface.createFromFile(font);
-                }
+//                }
                 return customTypeface;
             } catch (Exception e) {
                 Logger.e(AppContext.class.getName(), "Could not load the typeface " + typeFace, e);
