@@ -50,6 +50,20 @@ android {
         }
         fat
     }
+    android.applicationVariants.all { variant ->
+        def apkVariant = variant.outputs[0]
+        def outputFile = apkVariant.outputFile
+        def variantName = apkVariant.name
+        def versionName = android.defaultConfig.versionName
+        def versionCode = android.defaultConfig.versionCode
+        if(variantName == "fatRelease") {
+            def newName = "tS_${versionName}_build${versionCode}.apk"
+            apkVariant.outputFile = file("${outputFile.parentFile}/$newName")
+        } else {
+            def newName = "tS_${versionName}_build${versionCode}-${variantName}.apk"
+            apkVariant.outputFile = file("${outputFile.parentFile}/$newName")
+        }
+    }
 // or this way (which is cleaner)
 //    splits {
 //        abi {
