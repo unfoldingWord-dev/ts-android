@@ -13,7 +13,6 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.util.StorageUtils;
 import com.door43.util.TTFAnalyzer;
 import com.squareup.otto.Bus;
@@ -35,7 +34,7 @@ public class AppContext {
     private static Navigator mNavigator;
     private static ProjectManager mProjectManager;
     public static final Bundle args = new Bundle();
-    private static boolean sEnableGraphite = true;
+    private static boolean mEnableGraphite = true;
     private static boolean loaded;
 
     /**
@@ -46,8 +45,14 @@ public class AppContext {
      */
     public AppContext(MainApplication context) {
         if(mContext == null) {
-            if(sEnableGraphite && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
-                Graphite.loadGraphite();
+            if(mEnableGraphite && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {
+                try {
+                    Graphite.loadGraphite();
+                } catch (UnsatisfiedLinkError e) {
+                    // graphite failed to load
+                    Logger.e(this.getClass().getName(), "failed to load graphite", e);
+                    mEnableGraphite = false;
+                }
             }
             mContext = context;
             mProjectManager = new ProjectManager(context);
@@ -168,7 +173,7 @@ public class AppContext {
         if (font != null) {
             try {
                 Typeface customTypeface;
-                if (sEnableGraphite) {
+                if (mEnableGraphite) {
                     TTFAnalyzer analyzer = new TTFAnalyzer();
                     String fontname = analyzer.getTtfFontName(font.getAbsolutePath());
                     if (fontname != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.FROYO && Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT) {

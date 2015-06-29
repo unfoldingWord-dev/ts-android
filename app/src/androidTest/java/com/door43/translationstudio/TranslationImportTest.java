@@ -11,7 +11,6 @@ import com.door43.translationstudio.tasks.LoadProjectsTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.tasks.ManagedTask;
 
 import java.io.File;
 
@@ -34,7 +33,7 @@ public class TranslationImportTest extends ActivityInstrumentationTestCase2<Main
         } else {
             Project[] projects = AppContext.projectManager().getProjects();
             for(Project p:projects) {
-                FileUtilities.deleteRecursive(new File(p.getRepositoryPath()));
+                FileUtilities.deleteRecursive(new File(ProjectManager.getRepositoryPath(p, p.getSelectedSourceLanguage())));
                 p.flush();
             }
         }
