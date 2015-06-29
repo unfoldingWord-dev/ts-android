@@ -1,4 +1,4 @@
-[![Crowdin](https://d322cqt584bo4o.cloudfront.net/translation-studio/localized.png)](https://crowdin.com/project/translation-studio)
+[![Crowdin](https://d322cqt584bo4o.cloudfront.net/translation-studio/localized.png)](https://crowdin.com/project/translation-studio) [![Travis](https://travis-ci.org/unfoldingWord-dev/ts-android.svg)](https://travis-ci.org/unfoldingWord-dev/ts-android)
 
 translationStudio Android
 --
