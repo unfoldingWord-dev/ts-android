@@ -36,6 +36,8 @@ import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.util.tasks.GenericTaskWatcher;
@@ -51,6 +53,11 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.squareup.otto.Subscribe;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 public class MainActivity extends TranslatorBaseActivity implements TranslatorActivityInterface, GenericTaskWatcher.OnFinishedListener {
     private final MainActivity me = this;
@@ -224,6 +231,24 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
      * Notifies the translator fragment to reload it's content
      */
     public void reload() {
+        // TODO: instead of generating a backup each time the ui reloads perhaps we should generate a backup every few minutes.
+        // backup the translation
+        Project currProj = AppContext.projectManager().getSelectedProject();
+        if(currProj != null && currProj.getSelectedTargetLanguage() != null) {
+            try {
+                String archivePath = Sharing.export(currProj);
+                File archiveFile = new File(archivePath);
+                if (archiveFile.exists()) {
+                    File backupFile = new File(AppContext.getPublicDownloadsDirectory(), Project.GLOBAL_PROJECT_SLUG + "-" + currProj.getId() + "-" + currProj.getSelectedTargetLanguage().getId() + "-backup." + Project.PROJECT_EXTENSION);
+                    FileUtils.copyFile(archiveFile, backupFile);
+                    archiveFile.delete();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // reload the ui
         if(mContextualButtonEnabled && frameIsSelected()) {
             mContextualButton.setVisibility(View.VISIBLE);
         } else {
