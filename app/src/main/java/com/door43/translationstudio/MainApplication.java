@@ -6,6 +6,7 @@ import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
@@ -15,6 +16,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Term;
+import com.door43.translationstudio.service.BackupManager;
 import com.door43.util.CustomExceptionHandler;
 import com.door43.util.DummyDialogListener;
 import com.door43.util.Logger;
@@ -69,6 +71,9 @@ public class MainApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.save_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.sharing_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
+
+        // begins the backup manager service
+        startService(new Intent(this, BackupManager.class));
     }
 
     /**
