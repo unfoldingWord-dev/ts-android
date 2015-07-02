@@ -1,4 +1,4 @@
-package com.door43.translationstudio.translator;
+package com.door43.translationstudio.translatonui;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -51,7 +51,6 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.Translation;

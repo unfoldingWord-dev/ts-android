@@ -18,7 +18,7 @@ import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.tasks.LoadFramesTask;
-import com.door43.translationstudio.translator.TranslatorFragment;
+import com.door43.translationstudio.translatonui.TranslatorFragment;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.tasks.ManagedTask;

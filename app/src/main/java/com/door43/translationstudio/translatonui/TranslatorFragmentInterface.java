@@ -1,8 +1,7 @@
-package com.door43.translationstudio.translator;
+package com.door43.translationstudio.translatonui;
 
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.PopupMenu;
 
 /**
  * Created by joel on 4/17/2015.

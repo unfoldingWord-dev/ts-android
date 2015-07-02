@@ -1,4 +1,4 @@
-package com.door43.translationstudio.translator;
+package com.door43.translationstudio.translatonui;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
