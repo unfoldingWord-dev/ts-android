@@ -17,53 +17,46 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        applicationVariants.all { variant ->
+            variant.outputs.each { output ->
+                def apk = output.outputFile;
+                def newName = "tS_"+defaultConfig.versionName+"_build"+defaultConfig.versionCode+".apk";
+                output.outputFile = new File(apk.parentFile, newName);
+            }
+        }
     }
     lintOptions {
         disable 'MissingTranslation'
         disable 'ExtraTranslation'
     }
     // we could build platform specific apks this way
-    productFlavors {
-        x86 {
-            ndk {
-                versionCode Integer.parseInt("6" + defaultConfig.versionCode)
-                abiFilter "x86"
-            }
-        }
-        mips {
-            ndk {
-                versionCode Integer.parseInt("4" + defaultConfig.versionCode)
-                abiFilter "mips"
-            }
-        }
-        armv7 {
-            ndk {
-                versionCode Integer.parseInt("2" + defaultConfig.versionCode)
-                abiFilter "armeabi-v7a"
-            }
-        }
-        arm {
-            ndk {
-                versionCode Integer.parseInt("1" + defaultConfig.versionCode)
-                abiFilter "armeabi"
-            }
-        }
-        fat
-    }
-    android.applicationVariants.all { variant ->
-        def apkVariant = variant.outputs[0]
-        def outputFile = apkVariant.outputFile
-        def variantName = apkVariant.name
-        def versionName = android.defaultConfig.versionName
-        def versionCode = android.defaultConfig.versionCode
-        if(variantName == "fatRelease") {
-            def newName = "tS_${versionName}_build${versionCode}.apk"
-            apkVariant.outputFile = file("${outputFile.parentFile}/$newName")
-        } else {
-            def newName = "tS_${versionName}_build${versionCode}-${variantName}.apk"
-            apkVariant.outputFile = file("${outputFile.parentFile}/$newName")
-        }
-    }
+//    productFlavors {
+//        x86 {
+//            ndk {
+//                versionCode Integer.parseInt("6" + defaultConfig.versionCode)
+//                abiFilter "x86"
+//            }
+//        }
+//        mips {
+//            ndk {
+//                versionCode Integer.parseInt("4" + defaultConfig.versionCode)
+//                abiFilter "mips"
+//            }
+//        }
+//        armv7 {
+//            ndk {
+//                versionCode Integer.parseInt("2" + defaultConfig.versionCode)
+//                abiFilter "armeabi-v7a"
+//            }
+//        }
+//        arm {
+//            ndk {
+//                versionCode Integer.parseInt("1" + defaultConfig.versionCode)
+//                abiFilter "armeabi"
+//            }
+//        }
+//        fat
+//    }
 // or this way (which is cleaner)
 //    splits {
 //        abi {
