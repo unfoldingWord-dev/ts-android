@@ -38,7 +38,7 @@ import java.util.TimerTask;
  * Created by joel on 7/2/2015.
  */
 public class BackupManager extends Service {
-    private static final long BACKUP_INTERVAL = 10 * 1000;
+    private static final long BACKUP_INTERVAL = 5 * 60 * 1000;
     private static final Timer sTimer = new Timer();
     private static boolean mFirstRun = true;
 
