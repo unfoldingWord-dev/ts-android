@@ -21,6 +21,7 @@ import com.door43.util.CustomExceptionHandler;
 import com.door43.util.DummyDialogListener;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.exception.GlobalExceptionHandler;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -60,10 +61,8 @@ public class MainApplication extends Application {
         // initialize basic functions with link to main application
         new AppContext(this);
 
-        if(!(Thread.getDefaultUncaughtExceptionHandler() instanceof CustomExceptionHandler)) {
-            File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
-            Thread.setDefaultUncaughtExceptionHandler(new CustomExceptionHandler(dir));
-        }
+        File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
+        GlobalExceptionHandler.register(this, dir.getAbsolutePath());
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
