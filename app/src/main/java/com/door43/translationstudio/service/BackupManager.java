@@ -112,7 +112,7 @@ public class BackupManager extends Service {
                 }
                 File backupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
                 File backupFile = new File(backupDir, tag + "." + Project.PROJECT_EXTENSION);
-                // TODO: it would be nice if we could use the export tools instead. That way users could or import their backups manually.
+                // TODO: export the translation so users can easily import it. This will require an updated project manager.
                 if(!backupFile.exists()) {
                     FileUtilities.deleteRecursive(backupDir);
                     backupDir.mkdirs();
