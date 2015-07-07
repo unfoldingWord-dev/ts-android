@@ -29,9 +29,9 @@ public class CommitTask extends RepoOpTask {
     protected void onPostExecute(Boolean isSuccess) {
         super.onPostExecute(isSuccess);
         // fire the callback
-        if(isSuccess) {
+        if(isSuccess && mCallback != null) {
             mCallback.success();
-        } else {
+        } else if(mCallback != null) {
             mCallback.error(mException);
         }
     }

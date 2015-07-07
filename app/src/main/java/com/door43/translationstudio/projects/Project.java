@@ -1101,6 +1101,11 @@ public class Project implements Model {
 
         // invalidate checking questions
         m.remove("checking_questions");
+
+        // add and commit changes
+        Repo repo = new Repo(ProjectManager.getRepositoryPath(this, getSelectedTargetLanguage()));
+        CommitTask add = new CommitTask(repo, ".", null);
+        add.executeTask();
     }
 
     /**

@@ -12,16 +12,21 @@ import android.util.Log;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
+import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
@@ -33,8 +38,9 @@ import java.util.TimerTask;
  * Created by joel on 7/2/2015.
  */
 public class BackupManager extends Service {
-    private static final long BACKUP_INTERVAL = 5 * 60 * 1000;
+    private static final long BACKUP_INTERVAL = 10 * 1000;
     private static final Timer sTimer = new Timer();
+    private static boolean mFirstRun = true;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -56,7 +62,10 @@ public class BackupManager extends Service {
         sTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                runBackup();
+                if (!mFirstRun) {
+                    runBackup();
+                }
+                mFirstRun = false;
             }
         }, 0, BACKUP_INTERVAL);
         return START_STICKY;
@@ -77,34 +86,56 @@ public class BackupManager extends Service {
      */
     private void runBackup() {
         // TODO: we need to look in the settings for the project repo path and manually check if a backup is required
-        // TODO: need to set up time period in which backups will exist.
-        // there are any translations that need to be backed up.
-        for(Project p:AppContext.projectManager().getProjects()) {
-            if(p.isTranslatingGlobal()) {
+        File projectsRoot = new File(AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/");
+        String projectDirs[] = projectsRoot.list();
+        boolean backedUpTranslations = false;
+        for(String filename:projectDirs) {
+            File translationDir = new File(projectsRoot, filename);
+            if(translationDir.isDirectory()) {
+                Repo repo = new Repo(translationDir.getAbsolutePath());
+                String tag = null;
                 try {
-                    String archivePath = Sharing.export(p, new SourceLanguage[]{}, p.getActiveTargetLanguages());
-                    File archiveFile = new File(archivePath);
-                    if (archiveFile.exists()) {
-                        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyy'T'HH:mm:ss.SSSZ");
-                        File backupFile = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + Project.GLOBAL_PROJECT_SLUG + "-" + p.getId() + "-" + format.format(new Date()) + "-backup." + Project.PROJECT_EXTENSION);
-                        FileUtils.copyFile(archiveFile, backupFile);
-                        archiveFile.delete();
+                    Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+                    RevCommit commit = null;
+                    for(RevCommit c : commits) {
+                        commit = c;
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Logger.e(this.getClass().getName(), "Failed to backup the project " + p.getId(), e);
+                    if(commit != null) {
+                        String[] pieces = commit.toString().split(" ");
+                        tag = pieces[1];
+                    } else {
+                        tag = null;
+                    }
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to backup the translation " + translationDir.getName() + ". Missing commit tag", e);
+                    continue;
+                }
+                File backupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
+                File backupFile = new File(backupDir, tag + "." + Project.PROJECT_EXTENSION);
+                // TODO: it would be nice if we could use the export tools instead. That way users could or import their backups manually.
+                if(!backupFile.exists()) {
+                    FileUtilities.deleteRecursive(backupDir);
+                    backupDir.mkdirs();
+                    try {
+                        Zip.zip(translationDir.getAbsolutePath(), backupFile.getAbsolutePath());
+                        backedUpTranslations = true;
+                    } catch (IOException e) {
+                        Logger.e(this.getClass().getName(), "Failed to backup the translation " + translationDir.getName(), e);
+                        continue;
+                    }
                 }
             }
         }
-        onBackupComplete();
+        if(backedUpTranslations) {
+            onBackupComplete();
+        }
     }
 
     /**
      * Notifies the user that a backup was made
      */
     private void onBackupComplete() {
-        SimpleDateFormat format = new SimpleDateFormat("h:mm a");
-        CharSequence noticeText = "Translations last backed up at " + format.format(new Date());
+        CharSequence noticeText = "Translations backed up";
 
         // activity to open when clicked
         Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);

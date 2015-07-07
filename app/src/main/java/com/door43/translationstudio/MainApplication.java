@@ -73,7 +73,8 @@ public class MainApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
 
         // begins the backup manager service
-        startService(new Intent(this, BackupManager.class));
+        Intent backupIntent = new Intent(this, BackupManager.class);
+        startService(backupIntent);
     }
 
     /**
