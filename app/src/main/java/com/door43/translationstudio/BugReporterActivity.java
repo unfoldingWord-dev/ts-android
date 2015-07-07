@@ -3,6 +3,7 @@ package com.door43.translationstudio;
 import android.app.ProgressDialog;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -126,7 +127,9 @@ public class BugReporterActivity extends TranslatorBaseActivity {
 
             File logFile = new File(getExternalCacheDir(), "log.txt");
 
-            if(upload) {
+            // TRICKY: make sure the github_oauth2 token has been set
+            int githubTokenIdentifier = AppContext.context().getResources().getIdentifier("github_oauth2", "string", AppContext.context().getPackageName());
+            if(upload && githubTokenIdentifier != 0) {
                 // upload report
                 try {
                     JSONObject json = new JSONObject();
@@ -183,13 +186,15 @@ public class BugReporterActivity extends TranslatorBaseActivity {
                     }
 
                     List<NameValuePair> headers = new ArrayList<NameValuePair>();
-                    headers.add(new BasicNameValuePair("Authorization", "token "+getResources().getString(R.string.github_oauth2)));
+                    headers.add(new BasicNameValuePair("Authorization", "token "+getResources().getString(githubTokenIdentifier)));
                     headers.add(new BasicNameValuePair("Content-Type", "application/json"));
                     String response = ServerUtilities.post(getResources().getString(R.string.github_bug_report_repo), headers, json.toString());
                     Log.d("Response", response);
                 } catch (IOException e) {
                     Logger.w(this.getClass().getName(), "failed to upload bug report", e);
                 }
+            } else if(githubTokenIdentifier == 0) {
+                Logger.w(BugReporterActivity.class.getName(), "the github oauth2 token is missing");
             }
             return null;
         }

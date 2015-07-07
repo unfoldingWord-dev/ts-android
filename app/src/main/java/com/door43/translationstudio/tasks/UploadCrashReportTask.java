@@ -51,69 +51,76 @@ public class UploadCrashReportTask extends ManagedTask {
             archiveDir.mkdirs();
             for(int i = 0; i < files.length; i ++) {
                 File traceFile = new File(dir, files[i]);
-
-                // submit crash report to Github
-                try {
-                    JSONObject json = new JSONObject();
-                    String title;
-                    // generate title
-                    if(mMessage.length() < 30 && !mMessage.isEmpty()) {
-                        title = mMessage;
-                    } else if(!mMessage.isEmpty()) {
-                        title = mMessage.substring(0, 29) + "...";
-                    } else {
-                        title = "crash report";
-                    }
-
-                    // record environment details
-                    PackageInfo pInfo = null;
-                    StringBuffer infoBuf = new StringBuffer();
-                    if(!mMessage.isEmpty()) {
-                        infoBuf.append("Notes\n======\n");
-                        infoBuf.append(mMessage + "\n");
-                    }
-                    infoBuf.append("\nEnvironment\n======\n");
+                // TRICKY: make sure the github_oauth2 token has been set
+                int githubTokenIdentifier = AppContext.context().getResources().getIdentifier("github_oauth2", "string", AppContext.context().getPackageName());
+                if(githubTokenIdentifier != 0) {
+                    // submit crash report to Github
                     try {
-                        pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
-                        infoBuf.append("version: " + pInfo.versionName + "\n");
-                        infoBuf.append("build: " + pInfo.versionCode + "\n");
-                    } catch (PackageManager.NameNotFoundException e) {
-                    }
-                    infoBuf.append("UDID: " + AppContext.udid() + "\n");
-                    infoBuf.append("Android Release: " + Build.VERSION.RELEASE + "\n");
-                    infoBuf.append("Androind SDK: " + Build.VERSION.SDK_INT + "\n");
-                    infoBuf.append("Brand: " + Build.BRAND + "\n");
-                    infoBuf.append("Device: " + Build.DEVICE + "\n");
-                    infoBuf.append("Stack trace\n======\n");
-                    infoBuf.append(FileUtilities.getStringFromFile(traceFile));
-
-                    if(logFile.exists() && logFile.length() > 0) {
-                        infoBuf.append("Log history\n======\n");
-                        infoBuf.append(FileUtilities.getStringFromFile(logFile));
-                        // empty the log.
-                        FileUtils.write(logFile, "");
-                    }
-
-                    // build payload
-                    try {
-                        json.put("title", title);
-                        json.put("body", infoBuf.toString());
-                        JSONArray labels = new JSONArray();
-                        labels.put("crash report");
-                        if(pInfo != null) {
-                            labels.put(pInfo.versionName);
+                        JSONObject json = new JSONObject();
+                        String title;
+                        // generate title
+                        if (mMessage.length() < 30 && !mMessage.isEmpty()) {
+                            title = mMessage;
+                        } else if (!mMessage.isEmpty()) {
+                            title = mMessage.substring(0, 29) + "...";
+                        } else {
+                            title = "crash report";
                         }
-                        json.put("labels", labels);
-                    } catch (JSONException e) {
-                        continue;
-                    }
 
-                    List<NameValuePair> headers = new ArrayList<>();
-                    headers.add(new BasicNameValuePair("Authorization", "token " + AppContext.context().getResources().getString(R.string.github_oauth2)));
-                    headers.add(new BasicNameValuePair("Content-Type", "application/json"));
-                    String response = ServerUtilities.post(AppContext.context().getResources().getString(R.string.github_bug_report_repo), headers, json.toString());
-                } catch (IOException e) {
-                    Logger.w(this.getClass().getName(), "failed to upload traces", e);
+                        // record environment details
+                        PackageInfo pInfo = null;
+                        StringBuffer infoBuf = new StringBuffer();
+                        if (!mMessage.isEmpty()) {
+                            infoBuf.append("Notes\n======\n");
+                            infoBuf.append(mMessage + "\n");
+                        }
+                        infoBuf.append("\nEnvironment\n======\n");
+                        try {
+                            pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
+                            infoBuf.append("version: " + pInfo.versionName + "\n");
+                            infoBuf.append("build: " + pInfo.versionCode + "\n");
+                        } catch (PackageManager.NameNotFoundException e) {
+                        }
+                        infoBuf.append("UDID: " + AppContext.udid() + "\n");
+                        infoBuf.append("Android Release: " + Build.VERSION.RELEASE + "\n");
+                        infoBuf.append("Androind SDK: " + Build.VERSION.SDK_INT + "\n");
+                        infoBuf.append("Brand: " + Build.BRAND + "\n");
+                        infoBuf.append("Device: " + Build.DEVICE + "\n");
+                        infoBuf.append("Stack trace\n======\n");
+                        infoBuf.append(FileUtilities.getStringFromFile(traceFile));
+
+                        if (logFile.exists() && logFile.length() > 0) {
+                            infoBuf.append("Log history\n======\n");
+                            infoBuf.append(FileUtilities.getStringFromFile(logFile));
+                            // empty the log.
+                            FileUtils.write(logFile, "");
+                        }
+
+                        // build payload
+                        try {
+                            json.put("title", title);
+                            json.put("body", infoBuf.toString());
+                            JSONArray labels = new JSONArray();
+                            labels.put("crash report");
+                            if (pInfo != null) {
+                                labels.put(pInfo.versionName);
+                            }
+                            json.put("labels", labels);
+                        } catch (JSONException e) {
+                            continue;
+                        }
+
+                        List<NameValuePair> headers = new ArrayList<>();
+                        headers.add(new BasicNameValuePair("Authorization", "token " + AppContext.context().getResources().getString(githubTokenIdentifier)));
+                        headers.add(new BasicNameValuePair("Content-Type", "application/json"));
+                        String response = ServerUtilities.post(AppContext.context().getResources().getString(R.string.github_bug_report_repo), headers, json.toString());
+                    } catch (IOException e) {
+                        Logger.w(this.getClass().getName(), "failed to upload traces", e);
+                        // archive stack trace for later use
+                        FileUtilities.moveOrCopy(traceFile, new File(archiveDir, files[i]));
+                    }
+                } else {
+                    Logger.w(UploadCrashReportTask.class.getName(), "the github oauth2 token is missing");
                     // archive stack trace for later use
                     FileUtilities.moveOrCopy(traceFile, new File(archiveDir, files[i]));
                 }
