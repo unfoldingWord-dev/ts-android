@@ -18,7 +18,7 @@ import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.Security;
 import com.door43.util.Zip;
 
@@ -36,14 +36,11 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.xml.transform.Source;
 
 /**
  * This class handles all the features for importing and exporting projects.

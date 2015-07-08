@@ -14,7 +14,7 @@ import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.TCPClient;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;

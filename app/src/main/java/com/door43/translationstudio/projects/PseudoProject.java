@@ -1,7 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import com.door43.util.ListMap;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 
 import org.json.JSONException;

@@ -6,7 +6,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.ListMap;
 
 import org.json.JSONException;
@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 
 /**
  * Chapters encapsulate a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation

@@ -8,13 +8,12 @@ import android.provider.Settings;
 
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Language;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.util.StorageUtils;
-import com.door43.util.TTFAnalyzer;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 

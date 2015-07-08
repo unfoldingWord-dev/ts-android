@@ -21,7 +21,7 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;

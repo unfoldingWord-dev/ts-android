@@ -1,4 +1,4 @@
-package com.door43.util.exception;
+package com.door43.util.reporting;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;

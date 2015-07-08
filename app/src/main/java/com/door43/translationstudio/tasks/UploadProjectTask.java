@@ -11,7 +11,7 @@ import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.tasks.ManagedTask;
 
 import org.eclipse.jgit.api.CommitCommand;

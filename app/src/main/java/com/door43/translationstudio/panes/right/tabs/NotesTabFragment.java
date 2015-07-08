@@ -1,36 +1,22 @@
 package com.door43.translationstudio.panes.right.tabs;
 
-import android.annotation.TargetApi;
-import android.app.ProgressDialog;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.Html;
-import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
-import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.TranslationNote;
-import com.door43.translationstudio.rendering.LinkRenderer;
-import com.door43.translationstudio.spannables.PassageLinkSpan;
-import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 

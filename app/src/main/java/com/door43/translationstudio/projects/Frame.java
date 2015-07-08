@@ -6,7 +6,7 @@ import com.door43.translationstudio.rendering.RenderingEngine;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.util.FileUtilities;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 
 import org.apache.commons.io.FileUtils;

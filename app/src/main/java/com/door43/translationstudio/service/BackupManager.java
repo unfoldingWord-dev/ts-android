@@ -13,24 +13,16 @@ import android.util.Log;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.Repo;
-import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.Zip;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 

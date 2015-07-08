@@ -5,7 +5,7 @@ import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 
 import java.io.IOException;
 import java.net.Inet4Address;

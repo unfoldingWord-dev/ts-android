@@ -1,6 +1,6 @@
 package com.door43.util;
 
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;

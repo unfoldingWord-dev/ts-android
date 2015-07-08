@@ -27,7 +27,7 @@ import com.door43.translationstudio.uploadwizard.UploadWizardActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.DummyDialogListener;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;

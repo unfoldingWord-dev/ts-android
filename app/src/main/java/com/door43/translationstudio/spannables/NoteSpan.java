@@ -1,6 +1,5 @@
 package com.door43.translationstudio.spannables;
 
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -12,7 +11,7 @@ import android.text.style.StyleSpan;
 import android.util.Xml;
 
 import com.door43.translationstudio.R;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 
 import org.apache.commons.io.input.CharSequenceReader;

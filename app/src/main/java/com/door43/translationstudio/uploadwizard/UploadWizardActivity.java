@@ -21,7 +21,7 @@ import com.door43.translationstudio.uploadwizard.steps.ProjectChooserFragment;
 import com.door43.translationstudio.uploadwizard.steps.review.ReviewFragment;
 import com.door43.translationstudio.uploadwizard.steps.validate.VerifyFragment;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.wizard.WizardActivity;

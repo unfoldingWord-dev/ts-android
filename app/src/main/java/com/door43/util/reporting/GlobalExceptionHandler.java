@@ -1,4 +1,4 @@
-package com.door43.util.exception;
+package com.door43.util.reporting;
 
 import java.io.BufferedWriter;
 import java.io.File;

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
@@ -18,9 +17,9 @@ import android.widget.Toast;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.service.BackupManager;
 import com.door43.util.DummyDialogListener;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.exception.GlobalExceptionHandler;
+import com.door43.util.reporting.GlobalExceptionHandler;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -30,9 +29,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Custom application class so we can effectively handle state accross activities and other classes

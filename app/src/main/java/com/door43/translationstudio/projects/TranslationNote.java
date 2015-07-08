@@ -1,11 +1,9 @@
 package com.door43.translationstudio.projects;
 
-import android.util.Log;
-
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.Security;
 
 import org.apache.commons.io.FileUtils;

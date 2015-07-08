@@ -1,7 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
 import android.content.Context;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -17,7 +17,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ThreadableUI;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 
 
 import java.io.BufferedReader;

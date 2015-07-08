@@ -17,7 +17,7 @@ import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Logger;
+import com.door43.util.reporting.Logger;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 

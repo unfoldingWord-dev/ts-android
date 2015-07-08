@@ -1,30 +1,16 @@
 package com.door43.translationstudio.tasks;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.os.Build;
-
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.Logger;
-import com.door43.util.ServerUtilities;
-import com.door43.util.exception.GithubReporter;
-import com.door43.util.exception.GlobalExceptionHandler;
+import com.door43.util.reporting.GithubReporter;
+import com.door43.util.reporting.GlobalExceptionHandler;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This task submits the latest crash report to github
