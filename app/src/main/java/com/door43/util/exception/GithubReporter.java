@@ -6,10 +6,12 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 
-import com.door43.util.ServerUtilities;
-
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -174,8 +176,22 @@ public class GithubReporter {
         headers.add(new BasicNameValuePair("Authorization", "token " + sGithubOauth2Token));
         headers.add(new BasicNameValuePair("Content-Type", "application/json"));
 
-        // TODO: place the code in here so we have a few dependencies as possible.
-        return ServerUtilities.post(sRepositoryUrl, headers, json.toString());
+        // create post request
+        DefaultHttpClient httpClient = new DefaultHttpClient();
+        HttpPost httpPost = new HttpPost(sRepositoryUrl);
+        try {
+            httpPost.setEntity(new StringEntity(json.toString()));
+            if(headers != null) {
+                for(NameValuePair h:headers) {
+                    httpPost.setHeader(h.getName(), h.getValue());
+                }
+            }
+            HttpResponse response = httpClient.execute(httpPost);
+            return response.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     /**
