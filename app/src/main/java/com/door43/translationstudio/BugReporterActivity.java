@@ -1,16 +1,11 @@
 package com.door43.translationstudio;
 
 import android.app.ProgressDialog;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -19,20 +14,13 @@ import android.widget.EditText;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.Logger;
-import com.door43.util.ServerUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.exception.GithubReporter;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by joel on 1/14/2015.
@@ -129,70 +117,18 @@ public class BugReporterActivity extends TranslatorBaseActivity {
 
             // TRICKY: make sure the github_oauth2 token has been set
             int githubTokenIdentifier = AppContext.context().getResources().getIdentifier("github_oauth2", "string", AppContext.context().getPackageName());
+            String githubUrl = AppContext.context().getResources().getString(R.string.github_bug_report_repo);
+
             if(upload && githubTokenIdentifier != 0) {
-                // upload report
+                GithubReporter reporter = new GithubReporter(AppContext.context(), githubUrl, AppContext.context().getResources().getString(githubTokenIdentifier));
+                reporter.reportBug(notes, logFile);
+                // empty the log
                 try {
-                    JSONObject json = new JSONObject();
-                    String title;
-                    // generate title
-                    if(notes.length() < 30 && !notes.isEmpty()) {
-                        title = notes;
-                    } else if(!notes.isEmpty()) {
-                        title = notes.substring(0, 29) + "...";
-                    } else {
-                        title = "bug report";
-                    }
-
-                    // record environment details
-                    PackageInfo pInfo = null;
-                    StringBuffer infoBuf = new StringBuffer();
-                    if(!notes.isEmpty()) {
-                        infoBuf.append("Notes\n======\n");
-                        infoBuf.append(notes + "\n");
-                    }
-                    infoBuf.append("\nEnvironment\n======\n");
-                    try {
-                        pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                        infoBuf.append("version: " + pInfo.versionName + "\n");
-                        infoBuf.append("build: " + pInfo.versionCode + "\n");
-                    } catch (PackageManager.NameNotFoundException e) {
-                        Logger.e(BugReporterActivity.this.getClass().getName(), "Could not find the package name", e);
-                    }
-                    infoBuf.append("UDID: " + AppContext.udid() + "\n");
-                    infoBuf.append("Android Release: " + Build.VERSION.RELEASE + "\n");
-                    infoBuf.append("Androind SDK: " + Build.VERSION.SDK_INT + "\n");
-                    infoBuf.append("Brand: " + Build.BRAND + "\n");
-                    infoBuf.append("Device: " + Build.DEVICE + "\n");
-
-                    if(logFile.exists() && logFile.length() > 0) {
-                        infoBuf.append("Log history\n======\n");
-                        infoBuf.append(FileUtilities.getStringFromFile(logFile));
-                        // empty the log.
-                        FileUtils.write(logFile, "");
-                    }
-
-                    // build payload
-                    try {
-                        json.put("title", title);
-                        json.put("body", infoBuf.toString());
-                        JSONArray labels = new JSONArray();
-                        labels.put("bug report");
-                        if(pInfo != null) {
-                            labels.put(pInfo.versionName);
-                        }
-                        json.put("labels", labels);
-                    } catch (JSONException e) {
-                        return null;
-                    }
-
-                    List<NameValuePair> headers = new ArrayList<NameValuePair>();
-                    headers.add(new BasicNameValuePair("Authorization", "token "+getResources().getString(githubTokenIdentifier)));
-                    headers.add(new BasicNameValuePair("Content-Type", "application/json"));
-                    String response = ServerUtilities.post(getResources().getString(R.string.github_bug_report_repo), headers, json.toString());
-                    Log.d("Response", response);
+                    FileUtils.write(logFile, "");
                 } catch (IOException e) {
-                    Logger.w(this.getClass().getName(), "failed to upload bug report", e);
+                    e.printStackTrace();
                 }
+                Logger.i(BugReporterActivity.class.getName(), "Submitted bug report");
             } else if(githubTokenIdentifier == 0) {
                 Logger.w(BugReporterActivity.class.getName(), "the github oauth2 token is missing");
             }

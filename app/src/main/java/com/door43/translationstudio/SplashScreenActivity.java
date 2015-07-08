@@ -19,6 +19,7 @@ import com.door43.translationstudio.tasks.LoadTermsTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.exception.GlobalExceptionHandler;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
@@ -57,19 +58,12 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
 
         // check if we crashed
         File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
-        if (dir.exists()) {
-            String[] files = dir.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File file, String s) {
-                    return !new File(file, s).isDirectory();
-                }
-            });
-            if (files.length > 0) {
-                Intent intent = new Intent(this, CrashReporterActivity.class);
-                startActivity(intent);
-                finish();
-                return;
-            }
+        String[] files = GlobalExceptionHandler.getStacktraces(dir);
+        if (files.length > 0) {
+            Intent intent = new Intent(this, CrashReporterActivity.class);
+            startActivity(intent);
+            finish();
+            return;
         }
 
         // begin loading things

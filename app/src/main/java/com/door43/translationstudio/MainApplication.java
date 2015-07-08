@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.service.BackupManager;
-import com.door43.util.CustomExceptionHandler;
 import com.door43.util.DummyDialogListener;
 import com.door43.util.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -46,10 +45,10 @@ public class MainApplication extends Application {
     private ProgressDialog mProgressDialog;
     public static final String PREFERENCES_TAG = "com.door43.translationstudio";
     private ImageLoader mImageLoader;
-    private Activity mCurrentDialogActivity;
-    private Map<String, ArrayList<String>> mNotificationsMap = new HashMap<String, ArrayList<String>>();
-    private static Typeface mTranslationTypeface;
-    private static String mSelectedTypeface = "";
+//    private Activity mCurrentDialogActivity;
+//    private Map<String, ArrayList<String>> mNotificationsMap = new HashMap<String, ArrayList<String>>();
+//    private static Typeface mTranslationTypeface;
+//    private static String mSelectedTypeface = "";
     private static Activity mMainActivity;
     private Term mSelectedKeyTerm;
     private boolean mShowImportantTerms;
@@ -62,7 +61,7 @@ public class MainApplication extends Application {
         new AppContext(this);
 
         File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
-        GlobalExceptionHandler.register(this, dir.getAbsolutePath());
+        GlobalExceptionHandler.register(dir);
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
@@ -327,7 +326,7 @@ public class MainApplication extends Application {
             @Override
             public void run() {
                 if(mMainActivity != null && !mClosingProgressDialog) {
-                    if (mProgressDialog == null || mCurrentDialogActivity != mMainActivity) { // was using: getCurrentActivity()
+                    if (mProgressDialog == null) { // was using: getCurrentActivity()
                         closeProgressDialog();
                         mProgressDialog = new ProgressDialog(mMainActivity); // was using: getCurrentActivity()
                     }

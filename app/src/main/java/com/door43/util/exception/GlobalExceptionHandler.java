@@ -1,7 +1,5 @@
 package com.door43.util.exception;
 
-import android.content.Context;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -16,46 +14,53 @@ import java.io.Writer;
  * http://stackoverflow.com/questions/601503/how-do-i-obtain-crash-data-from-my-android-application
  */
 public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
+    private static final String STACKTRACE_EXT = "stacktrace";
     private Thread.UncaughtExceptionHandler defaultUEH;
-    private String localPath;
+    private final String mStracktraceDir;
 
-    /*
+    /**
      * if any of the parameters is null, the respective functionality
      * will not be used
+     * @param stacktraceDir
      */
-    public GlobalExceptionHandler(File localPath) {
-        if(!localPath.exists()) {
-            localPath.mkdirs();
+    public GlobalExceptionHandler(File stacktraceDir) {
+        if(!stacktraceDir.exists()) {
+            stacktraceDir.mkdirs();
         }
-        this.localPath = localPath.getAbsolutePath();
+        this.mStracktraceDir = stacktraceDir.getAbsolutePath();
         this.defaultUEH = Thread.getDefaultUncaughtExceptionHandler();
     }
 
     /**
      * Registers the exception handler as the global exception handler for the app
-     * @param context the application context
      * @param stacktraceDirectory the directory where the stacktrace files will be stored
      */
-    public static void register(Context context, String stacktraceDirectory) {
-        if(!(Thread.getDefaultUncaughtExceptionHandler() instanceof com.door43.util.CustomExceptionHandler)) {
-            File dir = new File(context.getExternalCacheDir(), stacktraceDirectory);
-            Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler(dir));
+    public static void register(File stacktraceDirectory) {
+        if(!(Thread.getDefaultUncaughtExceptionHandler() instanceof GlobalExceptionHandler)) {
+            Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler(stacktraceDirectory));
         }
     }
 
     /**
-     * Returns a list of stacktrace files
-     * @param stacktraceDirectory
+     * Returns a list of stacktrace files found in the directory
+     * @param stacktraceDir
      * @return
      */
-    public static String[] getStacktraces(String stacktraceDirectory) {
-        File dir = new File(stacktraceDirectory);
-        return dir.list(new FilenameFilter() {
+    public static String[] getStacktraces(File stacktraceDir) {
+        String[] files = stacktraceDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                return new File(dir, filename).isFile();
+                String pieces[] = filename.split("\\.");
+                String ext = pieces[pieces.length - 1];
+                return new File(dir, filename).isFile() && ext.equals(STACKTRACE_EXT);
             }
         });
+        // build full path
+        String[] stacktraces = new String[files.length];
+        for(int i = 0; i < files.length; i ++) {
+            stacktraces[i] = new File(stacktraceDir, files[i]).getAbsolutePath();
+        }
+        return stacktraces;
     }
 
     /**
@@ -71,9 +76,9 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
         e.printStackTrace(printWriter);
         String stacktrace = result.toString();
         printWriter.close();
-        String filename = timestamp + ".stacktrace";
+        String filename = timestamp + "." + STACKTRACE_EXT;
 
-        if (localPath != null) {
+        if (mStracktraceDir != null) {
             writeToFile(stacktrace, filename);
         }
 
@@ -88,7 +93,7 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
     public void writeToFile(String stacktrace, String filename) {
         try {
             BufferedWriter bos = new BufferedWriter(new FileWriter(
-                    localPath + "/" + filename));
+                    mStracktraceDir + "/" + filename));
             bos.write(stacktrace);
             bos.flush();
             bos.close();
