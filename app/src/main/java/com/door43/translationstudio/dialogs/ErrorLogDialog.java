@@ -3,8 +3,6 @@ package com.door43.translationstudio.dialogs;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,15 +15,10 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ThreadableUI;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -76,7 +69,7 @@ public class ErrorLogDialog  extends DialogFragment{
         emtpyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Logger.getLogFile().delete();
+                Logger.flush();
                 dismiss();
             }
         });
@@ -99,27 +92,8 @@ public class ErrorLogDialog  extends DialogFragment{
             return;
         }
 
-        final Handler handle = new Handler(Looper.getMainLooper());
         mThread = new ThreadableUI(getActivity()) {
-            private int numLogs = 0;
-            /**
-             * updates the ui
-             * @param log
-             * @param details
-             */
-            private void saveLog(Logger.ErrorLog log, String details) {
-                numLogs ++;
-                log.setDetails(details.trim());
-
-                // update the ui
-                final Logger.ErrorLog staticLog = log;
-                handle.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAdapter.addItem(staticLog);
-                    }
-                });
-            }
+            private List<Logger.Entry> mLogs = new ArrayList<>();
 
             @Override
             public void onStop() {
@@ -128,41 +102,14 @@ public class ErrorLogDialog  extends DialogFragment{
 
             @Override
             public void run() {
-                try {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(Logger.getLogFile())));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    Pattern pattern = Pattern.compile(Logger.PATTERN);
-                    Logger.ErrorLog log = null;
-                    while((line = br.readLine()) != null) {
-                        if(isInterrupted()) break;
-                        Matcher match = pattern.matcher(line);
-                        if(match.find()) {
-                            // save log
-                            if(log != null) {
-                                saveLog(log, sb.toString());
-                                sb.setLength(0);
-                            }
-                            // start new log
-                            SimpleDateFormat format = new SimpleDateFormat("MM/dd/yy hh:mm a");
-                            log = new Logger.ErrorLog(format.parse(match.group(1)), Logger.Level.getLevel(match.group(2)), match.group(3), match.group(5));
-                        } else {
-                            // build log details
-                            sb.append(line);
-                        }
-                    }
-                    // save the last log
-                    if(log != null) {
-                        saveLog(log, sb.toString());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                mLogs = Logger.getLogEntries();
             }
 
             @Override
             public void onPostExecute() {
-                if(numLogs == 0) {
+                if(mLogs.size() > 0) {
+                    mAdapter.setItems(mLogs);
+                } else {
                     AppContext.context().showToastMessage("There are no logs");
                     dismiss();
                 }

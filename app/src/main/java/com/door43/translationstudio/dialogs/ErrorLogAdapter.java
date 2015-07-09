@@ -8,7 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +19,14 @@ import java.util.List;
 public class ErrorLogAdapter extends BaseAdapter {
 
     private final Context mContext;
-    private List<Logger.ErrorLog> mLogs = new ArrayList<>();
+    private List<Logger.Entry> mLogs = new ArrayList<>();
 
     /**
      * Adds an item to the adapter
-     * @param log
+     * @param logs
      */
-    public void addItem(Logger.ErrorLog log) {
-        mLogs.add(log);
+    public void setItems(List<Logger.Entry> logs) {
+        mLogs = logs;
         notifyDataSetChanged();
     }
 
@@ -40,7 +40,7 @@ public class ErrorLogAdapter extends BaseAdapter {
     }
 
     @Override
-    public Logger.ErrorLog getItem(int i) {
+    public Logger.Entry getItem(int i) {
         return mLogs.get(i);
     }
 

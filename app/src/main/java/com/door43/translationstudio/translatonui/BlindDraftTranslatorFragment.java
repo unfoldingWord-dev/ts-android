@@ -55,7 +55,7 @@ import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 import com.door43.util.StringUtilities;
 import com.door43.util.tasks.ThreadableUI;
 

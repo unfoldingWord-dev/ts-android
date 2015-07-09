@@ -99,5 +99,8 @@ dependencies {
     compile 'org.kamranzafar:jtar:2.2'
     compile 'com.jpardogo.materialtabstrip:library:1.0.8'
     compile project(':html-textview')
+    compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
     compile 'com.google.guava:guava:18.0'
+    compile project(':com.door43.tools.security')
+    compile project(':com.door43.tools.reporting')
 }

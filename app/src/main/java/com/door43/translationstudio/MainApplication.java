@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.service.BackupManager;
 import com.door43.util.DummyDialogListener;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.reporting.GlobalExceptionHandler;
 import com.jcraft.jsch.JSch;
@@ -58,6 +58,10 @@ public class MainApplication extends Application {
 
         File dir = new File(getExternalCacheDir(), STACKTRACE_DIR);
         GlobalExceptionHandler.register(dir);
+
+        // configure logger
+        int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
+        Logger.configure(new File(getExternalCacheDir(), "log.txt"), Logger.Level.getLevel(minLogLevel));
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.

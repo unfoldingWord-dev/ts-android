@@ -28,7 +28,7 @@ import com.door43.util.StringUtilities;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.translationstudio.util.TranslatorBaseActivity;

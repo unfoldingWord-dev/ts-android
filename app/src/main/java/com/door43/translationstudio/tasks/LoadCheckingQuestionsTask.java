@@ -9,7 +9,7 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.projects.data.DataStore;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 import com.door43.util.tasks.ManagedTask;
 
 import org.json.JSONArray;

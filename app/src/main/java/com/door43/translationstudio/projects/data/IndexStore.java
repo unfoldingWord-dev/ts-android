@@ -9,7 +9,7 @@ import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
@@ -42,6 +42,7 @@ public class IndexStore {
      * This will reverse the effect of finalizing the index.
      * The index is not destroyed, but running an indexing task again
      * will check each part of the index for completeness
+     *
      * @param p
      */
     public static void dirtyIndex(Project p) {
@@ -54,6 +55,7 @@ public class IndexStore {
      * This will reverse the effect of finalizing the index.
      * The index is not destroyed, but running an indexing task again
      * will check each part of the index for completeness
+     *
      * @param p
      * @param l
      * @param r
@@ -66,6 +68,7 @@ public class IndexStore {
 
     /**
      * This will delete the entire index
+     *
      * @param p
      */
     public static void destroy(Project p) {
@@ -75,6 +78,7 @@ public class IndexStore {
 
     /**
      * Checks if the project is indexed
+     *
      * @param p
      * @return
      */
@@ -87,6 +91,7 @@ public class IndexStore {
 
     /**
      * Checks if the currently selected resource on the project is indexed
+     *
      * @param p
      * @return
      */
@@ -98,6 +103,7 @@ public class IndexStore {
 
     /**
      * Marks the index as being ready. e.g. hasIndex() will return true;
+     *
      * @param p
      */
     public static void finalizeIndex(Project p) {
@@ -112,6 +118,7 @@ public class IndexStore {
 
     /**
      * Marks the index as being ready. e.g. hasResourceIndex() will return true;
+     *
      * @param p
      */
     public static void finalizeResourceIndex(Project p, SourceLanguage l, Resource r) {
@@ -128,6 +135,7 @@ public class IndexStore {
      * Returns the indexed frames
      * The project, source language, resource and chapter should all be connected together.
      * This will not add the frames into the chapter
+     *
      * @param p
      * @param l
      * @param r
@@ -140,11 +148,11 @@ public class IndexStore {
         chapterDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                if(!filename.equals(DATA_FILE)) {
+                if (!filename.equals(DATA_FILE)) {
                     try {
                         String data = FileUtils.readFileToString(new File(dir, filename));
                         Frame f = Frame.generate(new JSONObject(data));
-                        if(f != null) {
+                        if (f != null) {
                             TranslationNote note = getTranslationNote(p, l, r, c, f);
                             f.setTranslationNotes(note);
                             f.setChapter(c);
@@ -162,6 +170,7 @@ public class IndexStore {
 
     /**
      * Loads a single frame from the index
+     *
      * @param projectId
      * @param sourceId
      * @param resourceId
@@ -171,8 +180,8 @@ public class IndexStore {
      */
     public static Frame getFrame(String projectId, String sourceId, String resourceId, String chapterId, String frameId) {
         File chapterDir = getSourceChapterDir(projectId, sourceId, resourceId, chapterId);
-        final File frameFile = new File(chapterDir, frameId+".json");
-        if(frameFile.exists()) {
+        final File frameFile = new File(chapterDir, frameId + ".json");
+        if (frameFile.exists()) {
             try {
                 return Frame.generate(new JSONObject(FileUtils.readFileToString(frameFile)));
             } catch (Exception e) {
@@ -185,6 +194,7 @@ public class IndexStore {
     /**
      * Loads the frames into a chapter
      * TODO: we need to load the notes and terms as well
+     *
      * @param p
      * @param l
      * @param r
@@ -195,17 +205,17 @@ public class IndexStore {
         chapterDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                if(!filename.equals(DATA_FILE)) {
+                if (!filename.equals(DATA_FILE)) {
                     try {
                         String data = FileUtils.readFileToString(new File(dir, filename));
                         Frame f = Frame.generate(new JSONObject(data));
-                        if(f != null)  {
+                        if (f != null) {
                             TranslationNote note = getTranslationNote(p, l, r, c, f);
                             f.setTranslationNotes(note);
                             c.addFrame(f);
                         }
                     } catch (Exception e) {
-                        Logger.e(IndexStore.class.getName(), "Failed to load the frames for "+p.getId()+":"+l.getId()+":"+r.getId()+":"+c.getId(), e);
+                        Logger.e(IndexStore.class.getName(), "Failed to load the frames for " + p.getId() + ":" + l.getId() + ":" + r.getId() + ":" + c.getId(), e);
                     }
                 }
                 return false;
@@ -215,6 +225,7 @@ public class IndexStore {
 
     /**
      * Loads a translation note from the index.
+     *
      * @param p
      * @param l
      * @param r
@@ -224,11 +235,11 @@ public class IndexStore {
      */
     public static TranslationNote getTranslationNote(Project p, SourceLanguage l, Resource r, Chapter c, Frame f) {
         File noteFile = new File(getNotesChapterDir(p, l, r, c), f.getId() + ".json");
-        if(noteFile.exists()) {
+        if (noteFile.exists()) {
             try {
                 String data = FileUtils.readFileToString(noteFile);
                 TranslationNote note = TranslationNote.Generate(new JSONObject(data));
-                if(note != null) {
+                if (note != null) {
                     note.setFrame(f);
                     return note;
                 }
@@ -241,6 +252,7 @@ public class IndexStore {
 
     /**
      * Loads the chapters into the project
+     *
      * @param p
      * @param l
      * @param r
@@ -252,11 +264,11 @@ public class IndexStore {
             @Override
             public boolean accept(File dir, String filename) {
                 File dataFile = new File(sourceDir, filename + "/" + DATA_FILE);
-                if(dataFile.exists()) {
+                if (dataFile.exists()) {
                     try {
                         String data = FileUtils.readFileToString(dataFile);
                         Chapter c = Chapter.generate(new JSONObject(data));
-                        if(c != null) {
+                        if (c != null) {
                             p.addChapter(c);
                         }
                     } catch (Exception e) {
@@ -270,6 +282,7 @@ public class IndexStore {
 
     /**
      * Returns the directory for the project index
+     *
      * @param p
      * @return
      */
@@ -279,6 +292,7 @@ public class IndexStore {
 
     /**
      * Returns the directory for the language index
+     *
      * @param p
      * @param l
      * @return
@@ -289,6 +303,7 @@ public class IndexStore {
 
     /**
      * Returns the directory for the resource index
+     *
      * @param p
      * @param l
      * @param r
@@ -299,9 +314,9 @@ public class IndexStore {
     }
 
 
-
     /**
      * Returns the directory for the chapter index
+     *
      * @param p
      * @param l
      * @param r
@@ -314,6 +329,7 @@ public class IndexStore {
 
     /**
      * Returns the directory for the chapter index
+     *
      * @param projectId
      * @param sourceId
      * @param resourceId
@@ -326,6 +342,7 @@ public class IndexStore {
 
     /**
      * Returns the directory for the source
+     *
      * @param p
      * @param l
      * @param r
@@ -337,6 +354,7 @@ public class IndexStore {
 
     /**
      * Returns the directory for the chapter index
+     *
      * @param p
      * @param l
      * @param r
@@ -349,6 +367,7 @@ public class IndexStore {
 
     /**
      * Returns the directory for the notes
+     *
      * @param p
      * @param l
      * @param r
@@ -360,13 +379,14 @@ public class IndexStore {
 
     /**
      * Generates a project index
+     *
      * @param p
      */
     public static void index(Project p) {
         File dir = getProjectDir(p);
         dir.mkdirs();
         File dataFile = new File(dir, DATA_FILE);
-        if(!dataFile.exists()) {
+        if (!dataFile.exists()) {
             try {
                 FileUtils.write(dataFile, p.serialize().toString());
             } catch (Exception e) {
@@ -379,28 +399,30 @@ public class IndexStore {
 
     /**
      * Deletes a source language index
+     *
      * @param p
      * @param l
      */
     public static void destroy(Project p, SourceLanguage l) {
         dirtyIndex(p);
-        File dir  = getLanguageDir(p, l);
+        File dir = getLanguageDir(p, l);
         FileUtilities.deleteRecursive(dir);
     }
 
     /**
      * Generates a source language index
+     *
      * @param l
      */
     public static void index(Project p, SourceLanguage l) {
         File dir = getLanguageDir(p, l);
         dir.mkdirs();
         File dataFile = new File(dir, DATA_FILE);
-        if(!dataFile.exists()) {
+        if (!dataFile.exists()) {
             try {
                 FileUtils.write(dataFile, p.serializeSourceLanguage(l).toString());
             } catch (Exception e) {
-                Logger.e(IndexStore.class.getName(), "Failed to index the source language. Project: "+p.getId()+" Language: "+l.getId(), e);
+                Logger.e(IndexStore.class.getName(), "Failed to index the source language. Project: " + p.getId() + " Language: " + l.getId(), e);
             }
         } else {
             // TODO: make sure we have a good expiration system set up for indexes.
@@ -409,6 +431,7 @@ public class IndexStore {
 
     /**
      * Generates a resource index
+     *
      * @param p
      * @param l
      * @param r
@@ -417,7 +440,7 @@ public class IndexStore {
         File dir = getResourceDir(p, l, r);
         dir.mkdirs();
         File dataFile = new File(dir, DATA_FILE);
-        if(!dataFile.exists()) {
+        if (!dataFile.exists()) {
             try {
                 FileUtils.write(dataFile, r.serialize().toString());
             } catch (Exception e) {
@@ -430,6 +453,7 @@ public class IndexStore {
 
     /**
      * Generates a chapter index
+     *
      * @param c
      */
     public static void index(Project p, SourceLanguage l, Resource r, Chapter c) {
@@ -449,6 +473,7 @@ public class IndexStore {
 
     /**
      * Generates a frame index
+     *
      * @param f
      */
     public static void index(Project p, SourceLanguage l, Resource r, Chapter c, Frame f) {
@@ -457,7 +482,7 @@ public class IndexStore {
         File notesFrameInfo = new File(getNotesChapterDir(p, l, r, c), f.getId() + ".json");
         notesFrameInfo.getParentFile().mkdirs();
 
-        if(!sourceFrameInfo.exists()) {
+        if (!sourceFrameInfo.exists()) {
             try {
                 FileUtils.write(sourceFrameInfo, f.serialize().toString());
             } catch (Exception e) {
@@ -465,9 +490,9 @@ public class IndexStore {
             }
         }
 
-        if(!notesFrameInfo.exists()) {
+        if (!notesFrameInfo.exists()) {
             try {
-                if(f.getTranslationNotes() != null) {
+                if (f.getTranslationNotes() != null) {
                     FileUtils.write(notesFrameInfo, f.serializeTranslationNote().toString());
                 }
             } catch (Exception e) {

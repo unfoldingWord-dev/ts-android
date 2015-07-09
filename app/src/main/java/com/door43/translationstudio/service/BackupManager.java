@@ -16,7 +16,7 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 import com.door43.util.Zip;
 
 import org.eclipse.jgit.revwalk.RevCommit;

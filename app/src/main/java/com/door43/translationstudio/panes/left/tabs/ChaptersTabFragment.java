@@ -17,7 +17,7 @@ import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.tasks.ManagedTask;

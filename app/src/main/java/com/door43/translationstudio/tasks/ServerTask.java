@@ -7,7 +7,7 @@ import android.content.pm.PackageManager;
 import com.door43.translationstudio.network.BroadcastRunnable;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 
 import java.net.InetAddress;
 import java.net.ServerSocket;

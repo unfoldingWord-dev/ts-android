@@ -8,7 +8,7 @@ import android.provider.Settings;
 
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Language;
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Navigator;
@@ -54,7 +54,6 @@ public class AppContext {
             mContext = context;
             mProjectManager = new ProjectManager(context);
             mNavigator = new Navigator(context, mProjectManager, getEventBus());
-            new Logger(context);
         }
     }
 

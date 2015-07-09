@@ -5,7 +5,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 
-import com.door43.util.reporting.Logger;
+import com.door43.tools.reporting.Logger;
 
 import java.net.InetAddress;
 import java.net.ServerSocket;
