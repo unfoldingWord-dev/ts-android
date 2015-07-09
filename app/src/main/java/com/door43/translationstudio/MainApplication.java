@@ -19,7 +19,7 @@ import com.door43.translationstudio.service.BackupManager;
 import com.door43.util.DummyDialogListener;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.reporting.GlobalExceptionHandler;
+import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
 import com.nostra13.universalimageloader.core.ImageLoader;

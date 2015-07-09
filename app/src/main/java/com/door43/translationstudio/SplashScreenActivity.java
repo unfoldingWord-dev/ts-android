@@ -19,7 +19,7 @@ import com.door43.translationstudio.tasks.LoadTermsTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.door43.util.reporting.GlobalExceptionHandler;
+import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 

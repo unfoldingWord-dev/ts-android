@@ -14,7 +14,7 @@ import android.widget.EditText;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-import com.door43.util.reporting.GithubReporter;
+import com.door43.tools.reporting.GithubReporter;
 
 import org.apache.commons.io.FileUtils;
 

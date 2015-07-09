@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,9 +12,9 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.tools.reporting.Logger;
 
@@ -34,7 +35,7 @@ public class ErrorLogDialog  extends DialogFragment{
         View v = inflater.inflate(R.layout.dialog_error_log, container, false);
 
         ListView list = (ListView)v.findViewById(R.id.errorLogListView);
-        mAdapter = new ErrorLogAdapter(AppContext.context());
+        mAdapter = new ErrorLogAdapter(getActivity());
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -110,7 +111,9 @@ public class ErrorLogDialog  extends DialogFragment{
                 if(mLogs.size() > 0) {
                     mAdapter.setItems(mLogs);
                 } else {
-                    AppContext.context().showToastMessage("There are no logs");
+                    Toast toast = Toast.makeText(getActivity(), "There are no logs", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP, 0, 0);
+                    toast.show();
                     dismiss();
                 }
             }
