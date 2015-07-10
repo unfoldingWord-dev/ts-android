@@ -1,8 +1,14 @@
 language: android
 jdk: oraclejdk7
 
-# Turn off caching to avoid any caching problems
-cache: false
+cache:
+  directories:
+  - $HOME/.gradle
+  - .gradle
+
+before_cache:
+  - rm -rf $HOME/.gradle/caches/2.2.1
+
 # Use the Travis Container-Based Infrastructure
 sudo: false
 
