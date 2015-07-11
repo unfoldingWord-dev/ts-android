@@ -5,7 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Path;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -24,6 +23,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.util.Manifest;
 import com.door43.util.Zip;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,7 +93,7 @@ public class BackupManager extends Service {
             if(translationDir.isDirectory()) {
                 // load the project and target language from the manifest
                 Manifest manifest = Manifest.generate(translationDir);
-                Language targetLanguage = null;
+                Language targetLanguage;
                 JSONObject targetJson = manifest.getJSONObject("target_language");
                 try {
                     String targetLanguageId = targetJson.getString("slug");
@@ -108,54 +108,68 @@ public class BackupManager extends Service {
 
                 // export the project
                 if(p != null) {
-                    try {
-                        Sharing.export(p, new SourceLanguage[]{}, new Language[]{targetLanguage});
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    String tag = getRepoHeadTag(translationDir);
+                    if(tag != null) {
+                        File backupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
+                        File backupFile = new File(backupDir, tag + "." + Project.PROJECT_EXTENSION);
+
+                        if(!backupFile.exists()) {
+                            // export
+                            String archivePath;
+                            try {
+                                archivePath = Sharing.export(p, new SourceLanguage[]{}, new Language[]{targetLanguage});
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                continue;
+                            }
+                            File archiveFile = new File(archivePath);
+                            if(archiveFile.exists()) {
+                                FileUtilities.deleteRecursive(backupDir);
+                                backupDir.mkdirs();
+                                FileUtilities.moveOrCopy(archiveFile, backupFile);
+                                archiveFile.delete();
+                                backedUpTranslations = true;
+                            } else {
+                                Logger.w(this.getClass().getName(), "Failed to export the project translation "+filename);
+                            }
+                        }
+                    } else {
+                        Logger.w(this.getClass().getName(), "Failed to get the git HEAD tag for "+filename);
                     }
                 } else {
                     Logger.w(this.getClass().getName(), "Failed to load the project at "+filename);
-                }
-
-                // TODO: finish this. need to check if the project needs to be backed up then we can export it on line 112 above.
-                //old
-                Repo repo = new Repo(translationDir.getAbsolutePath());
-                String tag = null;
-                try {
-                    Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
-                    RevCommit commit = null;
-                    for(RevCommit c : commits) {
-                        commit = c;
-                    }
-                    if(commit != null) {
-                        String[] pieces = commit.toString().split(" ");
-                        tag = pieces[1];
-                    } else {
-                        tag = null;
-                    }
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to backup the translation " + translationDir.getName() + ". Missing commit tag", e);
-                    continue;
-                }
-                File backupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
-                File backupFile = new File(backupDir, tag + "." + Project.PROJECT_EXTENSION);
-                // TODO: export the translation so users can easily import it. This will require an updated project manager.
-                if(!backupFile.exists()) {
-                    FileUtilities.deleteRecursive(backupDir);
-                    backupDir.mkdirs();
-                    try {
-                        Zip.zip(translationDir.getAbsolutePath(), backupFile.getAbsolutePath());
-                        backedUpTranslations = true;
-                    } catch (IOException e) {
-                        Logger.e(this.getClass().getName(), "Failed to backup the translation " + translationDir.getName(), e);
-                        continue;
-                    }
                 }
             }
         }
         if(backedUpTranslations) {
             onBackupComplete();
         }
+    }
+
+    /**
+     * Returns the commit tag for the repo HEAD
+     * @param translationDir
+     * @return
+     */
+    private static String getRepoHeadTag(File translationDir) {
+        Repo repo = new Repo(translationDir.getAbsolutePath());
+        String tag = null;
+        try {
+            Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+            RevCommit commit = null;
+            for(RevCommit c : commits) {
+                commit = c;
+            }
+            if(commit != null) {
+                String[] pieces = commit.toString().split(" ");
+                tag = pieces[1];
+            } else {
+                tag = null;
+            }
+        } catch (Exception e) {
+            Logger.e(BackupManager.class.getName(), "Failed to backup the translation " + translationDir.getName() + ". Missing commit tag", e);
+        }
+        return tag;
     }
 
     /**
