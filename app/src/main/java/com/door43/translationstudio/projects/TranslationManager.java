@@ -13,7 +13,7 @@ import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.TCPClient;
+import com.door43.util.network.TCPClient;
 import com.door43.tools.reporting.Logger;
 
 import org.apache.commons.io.FileUtils;

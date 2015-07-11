@@ -10,7 +10,7 @@ import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.util.FileUtilities;
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Security;
-import com.door43.util.ServerUtilities;
+import com.door43.util.network.ServerUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;

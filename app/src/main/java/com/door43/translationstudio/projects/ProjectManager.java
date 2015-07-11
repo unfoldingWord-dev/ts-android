@@ -10,6 +10,7 @@ import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.tools.reporting.Logger;
+import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -364,7 +365,7 @@ public class ProjectManager {
      * Adds a source lanuage to the manager
      * @param l the language to add
      */
-    private boolean addLanguage(Language l) {
+    private static boolean addLanguage(Language l) {
         if(!mLanguagesMap.containsKey(l.getId())) {
             mLanguagesMap.put(l.getId(), l);
             mLanguagesNameMap.put(l.getName(), l);
@@ -1065,6 +1066,68 @@ public class ProjectManager {
     }
 
     /**
+     * Returns a source project by id
+     * @param projectid the project id
+     * @param sourceLanguageId the source language (gateway language) id
+     * @param resourceId the language resource id
+     * @return the project or null if it does not exist
+     */
+    public static Project getProject(String projectid, String sourceLanguageId, String resourceId) {
+        // TODO: this should pull directly from the index once we have updated it.
+        String catalog = mDataStore.pullProjectCatalog(false, false);
+        JSONArray json;
+        try {
+            json = new JSONArray(catalog);
+        } catch (JSONException e) {
+            Logger.e(ProjectManager.class.getName(), "malformed projects catalog", e);
+            return null;
+        }
+
+        Project p = null;
+        for(int i = 0; i < json.length(); i ++) {
+            try {
+                JSONObject projectJson = json.getJSONObject(i);
+                p = Project.generate(projectJson);
+                if(p != null && p.getId().equals(projectid)) {
+                    loadSourceLanguageCatalog(p);
+                    p.setSelectedSourceLanguage(sourceLanguageId);
+                    p.getSelectedSourceLanguage().setSelectedResource(resourceId);
+                    break;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                continue;
+            }
+        }
+
+        return p;
+    }
+
+    /**
+     * Returns a source project by manifest.
+     * This method will parse the manifest to collec the required information
+     * @param manifest the project manifest
+     * @return the project or null if it does not exist
+     */
+    public static Project getProject(Manifest manifest) {
+        String projectId = manifest.getString("slug");
+        String sourceLanguageId;
+        String resourceId;
+        JSONObject sourceJson = manifest.getJSONObject("source_language");
+        JSONObject targetJson = manifest.getJSONObject("target_language");
+        try {
+            sourceLanguageId = sourceJson.getString("slug");
+            JSONObject resourceJson = sourceJson.getJSONObject("resource");
+            resourceId = resourceJson.getString("slug");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return getProject(projectId, sourceLanguageId, resourceId);
+    }
+
+    /**
      * Loads a list of projects from the disk
      */
     public List<Project> initProjects() {
@@ -1129,7 +1192,7 @@ public class ProjectManager {
      * Loads source languages from the disk into the project
      * @param p
      */
-    private List<SourceLanguage> loadSourceLanguageCatalog(Project p) {
+    private static List<SourceLanguage> loadSourceLanguageCatalog(Project p) {
         String catalog = mDataStore.pullSourceLanguageCatalog(p.getId(), false, false);
 
         List<SourceLanguage> importedLanguages = new ArrayList<>();
@@ -1141,7 +1204,7 @@ public class ProjectManager {
         try {
             json = new JSONArray(catalog);
         } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "malformed source language catalog", e);
+            Logger.e(ProjectManager.class.getName(), "malformed source language catalog", e);
             return new ArrayList<>();
         }
 
@@ -1185,25 +1248,25 @@ public class ProjectManager {
                                     if(sp != null) {
                                         sp.addTranslation(new Translation(l, jsonMeta.get(j).toString()));
                                     } else {
-                                        Logger.w(this.getClass().getName(), "missing meta category in project "+p.getId());
+                                        Logger.w(ProjectManager.class.getName(), "missing meta category in project "+p.getId());
                                         break;
                                     }
                                 }
                             } else {
-                                Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                                Logger.w(ProjectManager.class.getName(), "missing meta translations in project "+p.getId());
                             }
                         } else if(p.numSudoProjects() > 0) {
-                            Logger.w(this.getClass().getName(), "missing meta translations in project "+p.getId());
+                            Logger.w(ProjectManager.class.getName(), "missing meta translations in project "+p.getId());
                         }
                     } else {
                         // language draft
                         p.addSourceLanguageDraft(l);
                     }
                 } else {
-                    Logger.w(this.getClass().getName(), "missing required parameters in the source language catalog");
+                    Logger.w(ProjectManager.class.getName(), "missing required parameters in the source language catalog");
                 }
             } catch (JSONException e) {
-                Logger.w(this.getClass().getName(), "failed to load source language", e);
+                Logger.w(ProjectManager.class.getName(), "failed to load source language", e);
                 continue;
             }
         }
@@ -1271,7 +1334,7 @@ public class ProjectManager {
      * @param p  the project
      * @param l the source language
      */
-    private List<Resource> loadResourcesCatalog(Project p, SourceLanguage l) {
+    private static List<Resource> loadResourcesCatalog(Project p, SourceLanguage l) {
         String catalog = mDataStore.pullResourceCatalog(p.getId(), l.getId(), false, false);
 
         List<Resource> importedResources = new ArrayList<>();
@@ -1283,7 +1346,7 @@ public class ProjectManager {
         try {
             json = new JSONArray(catalog);
         } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "malformed resource catalog", e);
+            Logger.e(ProjectManager.class.getName(), "malformed resource catalog", e);
             return new ArrayList<>();
         }
 
@@ -1298,10 +1361,10 @@ public class ProjectManager {
                     l.addResource(r);
                     importedResources.add(r);
                 } else {
-                    Logger.w(this.getClass().getName(), "Corrupt resource definition for language " + l.getId());
+                    Logger.w(ProjectManager.class.getName(), "Corrupt resource definition for language " + l.getId());
                 }
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "failed to load the resources catalog", e);
+                Logger.e(ProjectManager.class.getName(), "failed to load the resources catalog", e);
                 continue;
             }
         }

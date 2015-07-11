@@ -1,7 +1,5 @@
 package com.door43.util;
 
-import com.door43.tools.reporting.Logger;
-
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,34 +13,91 @@ import java.io.IOException;
  *
  */
 public class Manifest {
-    private final String mDirectory;
+    private final File mManifestFile;
     private JSONObject mManifest = new JSONObject();
-    private static String FILE_NAME = "manifest.json";
+    private static final String FILE_NAME = "manifest.json";
 
-    public Manifest(String directory) {
-        mDirectory = directory;
-        load();
+    /**
+     * Creates a new manifest object representing a file on the disk
+     * @param file
+     */
+    private Manifest(File file) {
+        mManifestFile = file;
     }
 
     /**
-     * Deletes the manifest file
+     * Generates a new manifest object.
+     * If a manifest file already exists it will be loaded otherwise it will be created.
+     * @param directory the directory in which the manifest file exists
+     * @return the manifest object or null if the manifest could not be created
      */
-    private void destroy() {
-        File manifestFile = new File(mDirectory, FILE_NAME);
-        manifestFile.delete();
-    }
-
-    /**
-     * Reads the manifest file from the disk
-     */
-    private void load() {
-        File manifestFile = new File(mDirectory, FILE_NAME);
-        if (manifestFile.exists()) {
+    public static Manifest generate(File directory) {
+        File file = new File(directory, FILE_NAME);
+        if(!file.exists()) {
+            file.mkdirs();
+        }
+        if(!file.isFile()) {
             try {
-                mManifest = new JSONObject(FileUtils.readFileToString(manifestFile));
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "failed to load the manifest", e);
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
             }
+        }
+        Manifest m = new Manifest(file);
+        m.load();
+        return m;
+    }
+
+    /**
+     *
+     * @param key
+     * @return an empty string if the key is invalid
+     */
+    public String getString(String key) {
+        try {
+            return mManifest.getString(key);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    /**
+     *
+     * @param key
+     * @return
+     * @throws JSONException
+     */
+    public int getInt(String key) throws JSONException {
+        return mManifest.getInt(key);
+    }
+
+    /**
+     *
+     * @param key
+     * @return an empty json object if the key is invalid
+     */
+    public JSONObject getJSONObject(String key) {
+        try {
+            return mManifest.getJSONObject(key);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new JSONObject();
+        }
+    }
+
+    /**
+     *
+     * @param key
+     * @return an empty json array if the key is invalid
+     */
+    public JSONArray getJSONArray(String key) {
+        try {
+            return mManifest.getJSONArray(key);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new JSONArray();
         }
     }
 
@@ -115,11 +170,30 @@ public class Manifest {
      * Saves the manifest to the disk
      */
     private void save() {
-        File manifestFile = new File(mDirectory, FILE_NAME);
         try {
-            FileUtils.writeStringToFile(manifestFile, mManifest.toString());
+            FileUtils.writeStringToFile(mManifestFile, mManifest.toString());
         } catch (IOException e) {
-            Logger.e(this.getClass().getName(), "failed to write the manifest", e);
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * Deletes the manifest file
+     */
+    private void delete() {
+        mManifestFile.delete();
+        mManifest = new JSONObject();
+    }
+
+    /**
+     * Reads the manifest file from the disk
+     */
+    private void load() {
+        try {
+            mManifest = new JSONObject(FileUtils.readFileToString(mManifestFile));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

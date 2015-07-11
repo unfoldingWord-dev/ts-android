@@ -1,4 +1,4 @@
-package com.door43.util;
+package com.door43.util.network;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;

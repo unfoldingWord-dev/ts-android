@@ -12,8 +12,33 @@ public class Language {
     private final Direction mDirection;
     private int mSessionVersion; // this is used for target language
 
-    public static enum Direction {
-        LeftToRight, RightToLeft
+    public enum Direction {
+        LeftToRight("ltr"),
+        RightToLeft("rtl");
+
+        Direction(String label) {
+            this.label = label;
+        }
+
+        private String label;
+
+        public String getLabel() {
+            return label;
+        }
+
+        /**
+         * Returns a direction by it's label
+         * @param label
+         * @return
+         */
+        public static Direction get(String label) {
+            for (Direction l : Direction.values()) {
+                if (l.getLabel().equals(label.toLowerCase())) {
+                    return l;
+                }
+            }
+            return null;
+        }
     }
 
     /**

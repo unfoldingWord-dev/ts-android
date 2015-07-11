@@ -5,21 +5,28 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Path;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.Sharing;
+import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.tools.reporting.Logger;
+import com.door43.util.Manifest;
 import com.door43.util.Zip;
 
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +34,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Created by joel on 7/2/2015.
+ * This services runs in the background to provide automatic backups for translations.
  */
 public class BackupManager extends Service {
     private static final long BACKUP_INTERVAL = 5 * 60 * 1000;
@@ -41,7 +48,7 @@ public class BackupManager extends Service {
 
     @Override
     public void onCreate() {
-        Log.d("BackupManager", "starting backup service");
+        Logger.i("BackupManager", "starting backup service");
     }
 
     @Override
@@ -70,7 +77,7 @@ public class BackupManager extends Service {
         if(sTimer != null) {
             sTimer.cancel();
         }
-        Log.d("BackupManager", "stopping backup service");
+        Logger.i("BackupManager", "stopping backup service");
     }
 
     /**
@@ -84,6 +91,34 @@ public class BackupManager extends Service {
         for(String filename:projectDirs) {
             File translationDir = new File(projectsRoot, filename);
             if(translationDir.isDirectory()) {
+                // load the project and target language from the manifest
+                Manifest manifest = Manifest.generate(translationDir);
+                Language targetLanguage = null;
+                JSONObject targetJson = manifest.getJSONObject("target_language");
+                try {
+                    String targetLanguageId = targetJson.getString("slug");
+                    String targetLanguageName = targetJson.getString("name");
+                    String targetLanguageDirection = targetJson.getString("direction");
+                    targetLanguage = new Language(targetLanguageId, targetLanguageName, Language.Direction.get(targetLanguageDirection));
+                } catch(JSONException e) {
+                    Logger.e(this.getClass().getName(), "Failed to load the target language", e);
+                    continue;
+                }
+                Project p = ProjectManager.getProject(manifest);
+
+                // export the project
+                if(p != null) {
+                    try {
+                        Sharing.export(p, new SourceLanguage[]{}, new Language[]{targetLanguage});
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Logger.w(this.getClass().getName(), "Failed to load the project at "+filename);
+                }
+
+                // TODO: finish this. need to check if the project needs to be backed up then we can export it on line 112 above.
+                //old
                 Repo repo = new Repo(translationDir.getAbsolutePath());
                 String tag = null;
                 try {

@@ -1085,6 +1085,8 @@ public class Project implements Model {
     public void onChapterSaved(Chapter chapter) {
         Manifest m = getManifest(this, getSelectedTargetLanguage());
 
+        m.put("slug", getId());
+
         // update the language info in the manifest
         JSONObject sourceLangJson = new JSONObject();
         JSONObject resourceJson = new JSONObject();
@@ -1095,7 +1097,15 @@ public class Project implements Model {
             sourceLangJson.put("date_modified", getSelectedSourceLanguage().getDateModified());
             sourceLangJson.put("resource", resourceJson);
             m.put("source_language", sourceLangJson);
-        } catch (Exception e) {
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "failed to update the manifest", e);
+        }
+
+        JSONObject targetLangJson = new JSONObject();
+        try {
+            targetLangJson.put("slug", getSelectedTargetLanguage().getId());
+            m.put("target_language", targetLangJson);
+        } catch (JSONException e) {
             Logger.e(this.getClass().getName(), "failed to update the manifest", e);
         }
 
@@ -1115,7 +1125,7 @@ public class Project implements Model {
      * @return
      */
     public static Manifest getManifest(Project project, Language target) {
-        return new Manifest(ProjectManager.getRepositoryPath(project, target));
+        return Manifest.generate(new File(ProjectManager.getRepositoryPath(project, target)));
     }
 
     /**
