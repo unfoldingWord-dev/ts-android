@@ -88,56 +88,70 @@ public class BackupManager extends Service {
         File projectsRoot = new File(AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/");
         String projectDirs[] = projectsRoot.list();
         boolean backedUpTranslations = false;
-        for(String filename:projectDirs) {
-            File translationDir = new File(projectsRoot, filename);
-            if(translationDir.isDirectory()) {
-                // load the project and target language from the manifest
-                Manifest manifest = Manifest.generate(translationDir);
-                Language targetLanguage;
-                JSONObject targetJson = manifest.getJSONObject("target_language");
-                try {
-                    String targetLanguageId = targetJson.getString("slug");
-                    String targetLanguageName = targetJson.getString("name");
-                    String targetLanguageDirection = targetJson.getString("direction");
-                    targetLanguage = new Language(targetLanguageId, targetLanguageName, Language.Direction.get(targetLanguageDirection));
-                } catch(JSONException e) {
-                    Logger.e(this.getClass().getName(), "Failed to load the target language", e);
-                    continue;
-                }
-                Project p = ProjectManager.getProject(manifest);
+        if(projectDirs != null) {
+            for (String filename : projectDirs) {
+                File translationDir = new File(projectsRoot, filename);
+                if (translationDir.isDirectory()) {
+                    // load the project and target language from the manifest
+                    Manifest manifest = Manifest.generate(translationDir);
+                    Language targetLanguage;
+                    JSONObject targetJson = manifest.getJSONObject("target_language");
+                    try {
+                        String targetLanguageId = targetJson.getString("slug");
+                        // the name and direction are optional because the backup doesn't need them
+                        String targetLanguageName = "";
+                        if (targetJson.has("name")) {
+                            targetLanguageName = targetJson.getString("name");
+                        }
+                        String targetLanguageDirection = "";
+                        if (targetJson.has("direction")) {
+                            targetLanguageDirection = targetJson.getString("direction");
+                        }
+                        Language.Direction direction = Language.Direction.get(targetLanguageDirection);
+                        if (direction == null) {
+                            direction = Language.Direction.LeftToRight;
+                        }
+                        targetLanguage = new Language(targetLanguageId, targetLanguageName, direction);
+                    } catch (JSONException e) {
+                        Logger.e(this.getClass().getName(), "Failed to load the target language", e);
+                        continue;
+                    }
+                    Project p = ProjectManager.getProject(manifest);
 
-                // export the project
-                if(p != null) {
-                    String tag = getRepoHeadTag(translationDir);
-                    if(tag != null) {
-                        File backupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
-                        File backupFile = new File(backupDir, tag + "." + Project.PROJECT_EXTENSION);
+                    if (p != null) {
+                        // check if backup is required
+                        String tag = getRepoHeadTag(translationDir);
+                        if (tag != null) {
+                            File backupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
+                            File backupFile = new File(backupDir, tag + "." + Project.PROJECT_EXTENSION);
 
-                        if(!backupFile.exists()) {
-                            // export
-                            String archivePath;
-                            try {
-                                archivePath = Sharing.export(p, new SourceLanguage[]{}, new Language[]{targetLanguage});
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                continue;
+                            if (!backupFile.exists()) {
+                                // export
+                                String archivePath;
+                                try {
+                                    archivePath = Sharing.export(p, new SourceLanguage[]{}, new Language[]{targetLanguage});
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    continue;
+                                }
+                                File archiveFile = new File(archivePath);
+                                if (archiveFile.exists()) {
+                                    // replace existing backup
+                                    FileUtilities.deleteRecursive(backupDir);
+                                    backupDir.mkdirs();
+                                    FileUtilities.moveOrCopy(archiveFile, backupFile);
+                                    archiveFile.delete();
+                                    backedUpTranslations = true;
+                                } else {
+                                    Logger.w(this.getClass().getName(), "Failed to export the project translation " + filename);
+                                }
                             }
-                            File archiveFile = new File(archivePath);
-                            if(archiveFile.exists()) {
-                                FileUtilities.deleteRecursive(backupDir);
-                                backupDir.mkdirs();
-                                FileUtilities.moveOrCopy(archiveFile, backupFile);
-                                archiveFile.delete();
-                                backedUpTranslations = true;
-                            } else {
-                                Logger.w(this.getClass().getName(), "Failed to export the project translation "+filename);
-                            }
+                        } else {
+                            Logger.w(this.getClass().getName(), "Failed to get the git HEAD tag for " + filename);
                         }
                     } else {
-                        Logger.w(this.getClass().getName(), "Failed to get the git HEAD tag for "+filename);
+                        Logger.w(this.getClass().getName(), "Failed to load the project at " + filename);
                     }
-                } else {
-                    Logger.w(this.getClass().getName(), "Failed to load the project at "+filename);
                 }
             }
         }

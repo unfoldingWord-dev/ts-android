@@ -1,5 +1,6 @@
 package com.door43.util;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 
 import org.apache.commons.io.FileUtils;
@@ -81,17 +82,21 @@ public class FileUtilities {
      * @return
      */
     public static boolean moveOrCopy(File sourceFile, File destFile) {
-        // first try to move
-        if(!sourceFile.renameTo(destFile)) {
-            // try to copy
-            try {
-                FileUtils.copyDirectory(sourceFile, destFile);
-                return true;
-            } catch (IOException e) {
-                AppContext.context().showException(e);
+        if(sourceFile.exists()) {
+            // first try to move
+            if (!sourceFile.renameTo(destFile)) {
+                // try to copy
+                try {
+                    if (sourceFile.isDirectory()) {
+                        FileUtils.copyDirectory(sourceFile, destFile);
+                    } else {
+                        FileUtils.copyFile(sourceFile, destFile);
+                    }
+                    return true;
+                } catch (IOException e) {
+                    Logger.e(FileUtilities.class.getName(), "Failed to copy the file", e);
+                }
             }
-        } else {
-            return true;
         }
         return false;
     }

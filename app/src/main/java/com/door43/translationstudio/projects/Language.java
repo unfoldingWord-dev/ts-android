@@ -66,11 +66,7 @@ public class Language {
      * @return
      */
     public String getDirectionName() {
-        if(mDirection == Direction.RightToLeft) {
-            return "rtl";
-        } else {
-            return "ltr";
-        }
+        return mDirection.getLabel();
     }
 
     /**

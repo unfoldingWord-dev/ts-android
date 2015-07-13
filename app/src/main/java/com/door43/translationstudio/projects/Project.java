@@ -951,7 +951,7 @@ public class Project implements Model {
      * Adds and commits the changes to the repository
      */
     public void commit(final OnCommitComplete callback) {
-        final Repo repo = new Repo(getRepositoryPath());
+        final Repo repo = new Repo(ProjectManager.getRepositoryPath(this, getSelectedTargetLanguage()));
 
         CommitTask commit = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
             @Override
@@ -1104,6 +1104,8 @@ public class Project implements Model {
         JSONObject targetLangJson = new JSONObject();
         try {
             targetLangJson.put("slug", getSelectedTargetLanguage().getId());
+            targetLangJson.put("name", getSelectedTargetLanguage().getName());
+            targetLangJson.put("direction", getSelectedTargetLanguage().getDirection().getLabel());
             m.put("target_language", targetLangJson);
         } catch (JSONException e) {
             Logger.e(this.getClass().getName(), "failed to update the manifest", e);
