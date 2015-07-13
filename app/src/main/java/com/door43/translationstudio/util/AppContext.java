@@ -150,7 +150,11 @@ public class AppContext {
         // TRICKY: KITKAT introduced changes to the external media that made sd cards read only
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) { // || Root.isDeviceRooted()
             StorageUtils.StorageInfo removeableMediaInfo = StorageUtils.getRemoveableMediaDevice();
-            dir = new File("/storage/" + removeableMediaInfo.getMountName() + "/Download/translationStudio");
+            if(removeableMediaInfo != null) {
+                dir = new File("/storage/" + removeableMediaInfo.getMountName() + "/Download/translationStudio");
+            } else {
+                dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
+            }
         } else {
             dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "translationStudio");
         }
