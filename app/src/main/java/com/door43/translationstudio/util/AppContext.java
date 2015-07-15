@@ -162,6 +162,12 @@ public class AppContext {
         return dir;
     }
 
+    public static File getPublicDirectory() {
+        File dir = new File(Environment.getExternalStorageDirectory(), "translationStudio");
+        dir.mkdirs();
+        return dir;
+    }
+
     /**
      * Returns the graphite typeface to be used with the given language.
      * When setting the typeface make sure to disable the style e.g. setTypeface(typeFace, 0);

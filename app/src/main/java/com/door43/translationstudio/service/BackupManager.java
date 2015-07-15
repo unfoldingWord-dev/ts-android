@@ -35,6 +35,7 @@ import java.util.TimerTask;
 
 /**
  * This services runs in the background to provide automatic backups for translations.
+ * For now this service is backup the translations to two locations for added peace of mind.
  */
 public class BackupManager extends Service {
     private static final long BACKUP_INTERVAL = 5 * 60 * 1000;
@@ -122,10 +123,12 @@ public class BackupManager extends Service {
                         // check if backup is required
                         String tag = getRepoHeadTag(translationDir);
                         if (tag != null) {
-                            File backupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
-                            File backupFile = new File(backupDir, tag + "." + Project.PROJECT_EXTENSION);
+                            File primaryBackupDir = new File(AppContext.getPublicDirectory(), "backups/" + translationDir.getName() + "/");
+                            File primaryBackupFile = new File(primaryBackupDir, tag + "." + Project.PROJECT_EXTENSION);
+                            File downloadBackupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
+                            File downloadBackupFile = new File(downloadBackupDir, tag + "." + Project.PROJECT_EXTENSION);
 
-                            if (!backupFile.exists()) {
+                            if (!downloadBackupFile.exists()) {
                                 // export
                                 String archivePath;
                                 try {
@@ -137,11 +140,20 @@ public class BackupManager extends Service {
                                 File archiveFile = new File(archivePath);
                                 if (archiveFile.exists()) {
                                     // replace existing backup
-                                    FileUtilities.deleteRecursive(backupDir);
-                                    backupDir.mkdirs();
-                                    FileUtilities.moveOrCopy(archiveFile, backupFile);
+                                    FileUtilities.deleteRecursive(downloadBackupDir);
+                                    FileUtilities.deleteRecursive(primaryBackupDir);
+                                    downloadBackupDir.mkdirs();
+                                    primaryBackupDir.mkdirs();
+                                    try {
+                                        // backup to downloads directory
+                                        FileUtils.copyFile(archiveFile, downloadBackupFile);
+                                        // backup to a slightly less public area
+                                        FileUtils.copyFile(archiveFile, primaryBackupFile);
+                                        backedUpTranslations = true;
+                                    } catch (IOException e) {
+                                        Logger.e(this.getClass().getName(), "Failed to copy the backup archive", e);
+                                    }
                                     archiveFile.delete();
-                                    backedUpTranslations = true;
                                 } else {
                                     Logger.w(this.getClass().getName(), "Failed to export the project translation " + filename);
                                 }
