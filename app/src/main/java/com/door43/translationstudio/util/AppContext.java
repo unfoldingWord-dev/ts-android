@@ -195,7 +195,7 @@ public class AppContext {
 //                        customTypeface = Typeface.createFromFile(font);
 //                    }
 //                } else {
-                    customTypeface = Typeface.createFromFile(font);
+                    customTypeface = Typeface.createFromAsset(AppContext.context().getAssets(), "fonts/" + typeFace); //.createFromFile(font);
 //                }
                 return customTypeface;
             } catch (Exception e) {

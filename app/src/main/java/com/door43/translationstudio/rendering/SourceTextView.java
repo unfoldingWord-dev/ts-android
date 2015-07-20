@@ -7,6 +7,7 @@ import android.widget.TextView;
 /**
  * Created by joel on 1/26/2015.
  */
+@Deprecated
 public class SourceTextView extends TextView {
     public SourceTextView(Context context) {
         super(context);
