@@ -91,14 +91,16 @@ public class TaskManager {
      * @return
      */
     static public boolean groupTask(ManagedTask task, String group) {
-        if(task != null && task.getTaskId() != null) {
-            if (task.getTaskId() instanceof String) {
-                if (mTaskKeys.containsKey(task.getTaskId())) {
-                    setGroup(mTaskKeys.get(task.getTaskId()), group);
-                }
-            } else if (task.getTaskId() instanceof Integer) {
-                if (mTaskMap.containsKey(task.getTaskId())) {
-                    setGroup((int) task.getTaskId(), group);
+        synchronized (sInstance) {
+            if (task != null && task.getTaskId() != null) {
+                if (task.getTaskId() instanceof String) {
+                    if (mTaskKeys.containsKey(task.getTaskId())) {
+                        setGroup(mTaskKeys.get(task.getTaskId()), group);
+                    }
+                } else if (task.getTaskId() instanceof Integer) {
+                    if (mTaskMap.containsKey(task.getTaskId())) {
+                        setGroup((int) task.getTaskId(), group);
+                    }
                 }
             }
         }
@@ -107,8 +109,8 @@ public class TaskManager {
 
     static private void setGroup(int id, String group) {
         // group to task access
-        if(mGroupTasksMap.containsKey(group)) {
-            if(!mGroupTasksMap.get(group).contains(id)) {
+        if (mGroupTasksMap.containsKey(group)) {
+            if (!mGroupTasksMap.get(group).contains(id)) {
                 mGroupTasksMap.get(group).add(id);
             }
         } else {
@@ -118,8 +120,8 @@ public class TaskManager {
         }
 
         // task to group access
-        if(mTaskGroupsMap.containsKey(id)) {
-            if(!mTaskGroupsMap.get(id).contains(group)) {
+        if (mTaskGroupsMap.containsKey(id)) {
+            if (!mTaskGroupsMap.get(id).contains(group)) {
                 mTaskGroupsMap.get(id).add(group);
             }
         } else {
