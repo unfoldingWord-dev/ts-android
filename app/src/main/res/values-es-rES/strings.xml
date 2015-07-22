@@ -72,7 +72,7 @@
   <string name="choose_frame_to_start">Elegir un texto de origen en la ficha de la izquierda para empezar</string>
   <string name="return_to_important_terms">Regreso a términos importantes</string>
   <string name="no_translation_notes">No hay notas de traducción</string>
-  <string name="key_terms">Términos Clave</string>
+  <string name="translation_words">Términos Clave</string>
   <string name="translation_check_notice">Ahora vamos a realizar algunas verificaciones para asegurar que su traducción está lista.</string>
   <string name="preparing_upload">Preparación del proyecto para la carga</string>
   <string name="license"><![CDATA[<h2>Eres libre de:</h2>

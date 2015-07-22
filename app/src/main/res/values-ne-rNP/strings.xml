@@ -72,7 +72,7 @@
   <string name="choose_frame_to_start">सुरू गर्न बायाँ ट्याबबाट केही स्रोत पाठ छान्नुहोस्</string>
   <string name="return_to_important_terms">महत्त्वपूर्ण शब्दहरूमा फर्कनुहोस्</string>
   <string name="no_translation_notes">कुनै अनुवाद नोटहरू छैनन्</string>
-  <string name="key_terms">मुख्य सर्तहरू</string>
+  <string name="translation_words">मुख्य सर्तहरू</string>
   <string name="translation_check_notice">अब हामी तपाईंको अनुवादन तयार छ भनि सुनिश्चित गर्न केही जाँचहरू गर्नेछौं।</string>
   <string name="preparing_upload">अपलोडका लागि प्रोजेक्ट तयार गर्दै</string>
   <string name="license"><![CDATA[<h2>तपाईं स्वतन्त्र हुनु हुन्छ :</h2>

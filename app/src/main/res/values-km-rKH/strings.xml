@@ -72,7 +72,7 @@
   <string name="choose_frame_to_start">ជ្រើសយកអត្ថបទប្រភពដើមមួយចំនួយចេញពីថេបខាងឆ្វេងដើម្បីចាប់ផ្ដើម</string>
   <string name="return_to_important_terms">ត្រឡប់ទៅកម្រងពាក្យសំខាន់ៗ</string>
   <string name="no_translation_notes">មិនមានកំណត់សម្គាល់សម្រាប់ការបកប្រែនេះទេ</string>
-  <string name="key_terms">លក្ខខណ្ឌ​គន្លឹះ​ដ៏​សំខាន់</string>
+  <string name="translation_words">លក្ខខណ្ឌ​គន្លឹះ​ដ៏​សំខាន់</string>
   <string name="translation_check_notice">ឥឡូវនេះ យើងនឹងអនុវត្តការពិនិត្យអក្ខរាវិរុទ្ធពីរបីពាក្យប្រយោជន៍ធានាឲ្យបានថា ការបកប្រែរបស់អ្នកមានលក្ខណៈស្រេចបាច់ហើយ។</string>
   <string name="preparing_upload">កំពុងរៀបចំគម្រោងសម្រាប់អាប់ឡូដ (បង្ហោះ)</string>
   <string name="license"><![CDATA[<h2>អ្នកមានសិទ្ធិ:</h2>

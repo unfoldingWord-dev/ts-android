@@ -114,7 +114,7 @@ public class BackupManager extends Service {
                         }
                         targetLanguage = new Language(targetLanguageId, targetLanguageName, direction);
                     } catch (JSONException e) {
-                        Logger.e(this.getClass().getName(), "Failed to load the target language", e);
+                        Logger.e(this.getClass().getName(), "Failed to load the target language for " + filename, e);
                         continue;
                     }
                     Project p = ProjectManager.getProject(manifest);
@@ -151,7 +151,7 @@ public class BackupManager extends Service {
                                         FileUtils.copyFile(archiveFile, primaryBackupFile);
                                         backedUpTranslations = true;
                                     } catch (IOException e) {
-                                        Logger.e(this.getClass().getName(), "Failed to copy the backup archive", e);
+                                        Logger.e(this.getClass().getName(), "Failed to copy the backup archive for " + filename, e);
                                     }
                                     archiveFile.delete();
                                 } else {

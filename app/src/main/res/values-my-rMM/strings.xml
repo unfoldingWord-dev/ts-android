@@ -72,7 +72,7 @@
   <string name="choose_frame_to_start">စတင္ရန္ ဘယ္ဘက္အျပားမွ ရင္းျမစ္စာသားအခ်ိဳ႔ကို ေရြးပါ</string>
   <string name="return_to_important_terms">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ားသို႔ ျပန္သြားပါ</string>
   <string name="no_translation_notes">ဘာသာျပန္ဆိုမူ မွတ္စုမ်ားမရွိပါ</string>
-  <string name="key_terms">Key ကိုသက်မှတ်ချက်များ</string>
+  <string name="translation_words">Key ကိုသက်မှတ်ချက်များ</string>
   <string name="translation_check_notice">သင့္ဘာသာျပန္ဆိုမူက အဆင့္သင့္ျဖစ္တာေသခ်ာေစရန္ စစ္ေဆးမူ ကၽြႏု္ပ္တို႔က အနည္းငယ္ျပဳလုပ္မည္။</string>
   <string name="preparing_upload">ပေရာဂ်က္အား အပ္လုပ္တင္ရန္ ျပင္ဆင္ေနသည္</string>
   <string name="license"><![CDATA[<h2>သင့္သည္လြတ္လပ္စြာ</h2>

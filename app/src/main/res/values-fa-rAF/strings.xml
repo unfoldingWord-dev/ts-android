@@ -72,7 +72,7 @@
   <string name="choose_frame_to_start">متن منبع را از بند چپ برای شروع را انتخاب کنید</string>
   <string name="return_to_important_terms">بازگشت به لحاظ مهم</string>
   <string name="no_translation_notes">یادداشت ترجمه بدون وجود دارد</string>
-  <string name="key_terms">شرایط کلیدی</string>
+  <string name="translation_words">شرایط کلیدی</string>
   <string name="translation_check_notice">ما هم اکنون انجام چند چک برای اطمینان از ترجمه شما آماده است.</string>
   <string name="preparing_upload">پروژه آماده برای آپلود</string>
   <string name="license"><![CDATA[<h2>شما آزاد هستید به:</h2>

@@ -72,7 +72,7 @@
   <string name="choose_frame_to_start">Эхлэхийн тулд зүүн табнаас эх бичвэрийг сонгох</string>
   <string name="return_to_important_terms">Чухал нөхцөл рүү буцах</string>
   <string name="no_translation_notes">Ямар ч орчуулгын тэмдэглэл байхгүй байна</string>
-  <string name="key_terms">Түлхүүр ухагдахуунууд</string>
+  <string name="translation_words">Түлхүүр ухагдахуунууд</string>
   <string name="translation_check_notice">Бид одоо таны орчуулга бэлэн болсон эсэхийг магадлахын тулд бага зэрэг шалгалт хийнэ.</string>
   <string name="preparing_upload">Төслийг байршуулахад бэлдэх</string>
   <string name="license"><![CDATA[<h2>Та дараах үйлдэл хийхэд чөлөөтэй. Үүнд:</h2>

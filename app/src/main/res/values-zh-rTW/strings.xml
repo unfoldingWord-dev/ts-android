@@ -72,7 +72,7 @@
   <string name="choose_frame_to_start">從左側的選項卡，要開始選擇一些源文本</string>
   <string name="return_to_important_terms">返回到重要條款</string>
   <string name="no_translation_notes">沒有翻譯筆記</string>
-  <string name="key_terms">關鍵術語</string>
+  <string name="translation_words">關鍵術語</string>
   <string name="translation_check_notice">我們現在將執行一些檢查，以確保你的翻譯是準備好了。</string>
   <string name="preparing_upload">準備專案上載</string>
   <string name="license">
