@@ -230,23 +230,6 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
      * Notifies the translator fragment to reload it's content
      */
     public void reload() {
-        // TODO: instead of generating a backup each time the ui reloads perhaps we should generate a backup every few minutes.
-        // backup the translation
-        Project currProj = AppContext.projectManager().getSelectedProject();
-        if(currProj != null && currProj.getSelectedTargetLanguage() != null) {
-            try {
-                String archivePath = Sharing.export(currProj);
-                File archiveFile = new File(archivePath);
-                if (archiveFile.exists()) {
-                    File backupFile = new File(AppContext.getPublicDownloadsDirectory(), Project.GLOBAL_PROJECT_SLUG + "-" + currProj.getId() + "-" + currProj.getSelectedTargetLanguage().getId() + "-backup." + Project.PROJECT_EXTENSION);
-                    FileUtils.copyFile(archiveFile, backupFile);
-                    archiveFile.delete();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
         // reload the ui
         if(mContextualButtonEnabled && frameIsSelected()) {
             mContextualButton.setVisibility(View.VISIBLE);

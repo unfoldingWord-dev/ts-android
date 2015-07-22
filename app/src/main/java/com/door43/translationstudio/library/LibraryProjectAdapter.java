@@ -81,7 +81,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
         }
 
         // set graphite fontface
-        if(!holder.hasFont) {
+//        if(!holder.hasFont) {
             holder.hasFont = true;
             Typeface typeface;
             if (getItem(i).getSelectedSourceLanguage() != null) {
@@ -90,7 +90,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
                 typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
             }
             holder.name.setTypeface(typeface, 0);
-        }
+//        }
 
         // set font size
         float fontsize = AppContext.typefaceSize();

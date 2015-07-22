@@ -203,7 +203,6 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                 showSourceFootnote((NoteSpan) span);
             }
         };
-        initFonts();
 
         reload();
 
@@ -218,6 +217,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
             AppContext.args.remove(ARGS_VIEW_TRANSLATION_DRAFT);
             showFrameReaderDialog(AppContext.projectManager().getSelectedProject(), FramesListAdapter.DisplayOption.DRAFT_TRANSLATION);
         }
+        initFonts();
     }
 
     /**

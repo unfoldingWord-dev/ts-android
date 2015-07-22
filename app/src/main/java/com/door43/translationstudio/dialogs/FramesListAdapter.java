@@ -84,7 +84,7 @@ public class FramesListAdapter  extends BaseAdapter {
         }
 
         // set fontface
-        if(!holder.hasFont) {
+//        if(!holder.hasFont) {
             // NOTE: this only runs once for each holder to improve performance
             // TODO: we should place the font loading in a new managed task
             holder.hasFont = true;
@@ -96,7 +96,7 @@ public class FramesListAdapter  extends BaseAdapter {
                 typeface = AppContext.graphiteTypeface(AppContext.projectManager().getLanguage("en"));
             }
             holder.text.setTypeface(typeface, 0);
-        }
+//        }
 
         // set font size
         float fontsize = AppContext.typefaceSize();

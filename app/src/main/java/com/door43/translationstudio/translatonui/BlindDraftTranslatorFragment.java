@@ -122,7 +122,6 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
                 updateNoteMarker((NoteSpan) span, start, end);
             }
         };
-        initFonts();
 
         reload();
 
@@ -137,6 +136,8 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
             AppContext.args.remove(ARGS_VIEW_TRANSLATION_DRAFT);
             showFrameReaderDialog(AppContext.projectManager().getSelectedProject(), FramesListAdapter.DisplayOption.DRAFT_TRANSLATION);
         }
+
+        initFonts();
     }
 
     private void initTranslationChangedWatcher() {

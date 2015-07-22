@@ -87,11 +87,11 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         }
 
         // set graphite fontface
-        if(!holder.hasFont) {
+//        if(!holder.hasFont) {
             holder.hasFont = true;
             Typeface typeface = AppContext.graphiteTypeface(getItem(i));
             holder.name.setTypeface(typeface, 0);
-        }
+//        }
 
         // set font size
         float fontsize = AppContext.typefaceSize();

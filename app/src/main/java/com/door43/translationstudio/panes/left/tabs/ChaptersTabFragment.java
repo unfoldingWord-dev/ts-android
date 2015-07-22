@@ -76,6 +76,13 @@ public class ChaptersTabFragment extends TranslatorBaseFragment implements TabsF
         return view;
     }
 
+    public void onResume() {
+        super.onResume();
+        if(mModelItemAdapter != null) {
+            mModelItemAdapter.notifyDataSetChanged();
+        }
+    }
+
     /**
      * reloads and opens the frames tab
      */

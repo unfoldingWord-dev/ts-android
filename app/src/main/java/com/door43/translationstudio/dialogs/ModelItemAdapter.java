@@ -174,7 +174,7 @@ public class ModelItemAdapter extends BaseAdapter {
         final boolean staticIsSelected = isSelected;
 
         // set fontface
-        if(!holder.hasFont) {
+//        if(!holder.hasFont) {
             // NOTE: this only runs once for each holder to improve performance
             if (holder.fontTaskId != null) {
                 LoadModelFontTask oldTask = (LoadModelFontTask) TaskManager.getTask(holder.fontTaskId);
@@ -209,7 +209,7 @@ public class ModelItemAdapter extends BaseAdapter {
                 TaskManager.groupTask(task, mGroupTaskId);
             }
             holder.fontTaskId = task.getTaskId();
-        }
+//        }
 
         // set font size
         float fontsize = AppContext.typefaceSize();

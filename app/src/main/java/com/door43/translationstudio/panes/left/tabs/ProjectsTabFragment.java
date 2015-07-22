@@ -117,6 +117,13 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         return view;
     }
 
+    public void onResume() {
+        super.onResume();
+        if(mModelItemAdapter != null) {
+            mModelItemAdapter.notifyDataSetChanged();
+        }
+    }
+
     @Override
     public void NotifyAdapterDataSetChanged() {
         if(mModelItemAdapter != null && app() != null && AppContext.projectManager() != null) {
