@@ -29,8 +29,11 @@
         <service android:name=".service.BroadcastService"
             android:label="Services Broadcaster">
         </service>
-        <service android:name=".service.SharingService"
-            android:label="Sharing Service">
+        <service android:name=".service.ExportingService"
+            android:label="Exporting Service">
+        </service>
+        <service android:name=".service.ImportingService"
+            android:label="Importing Service">
         </service>
 
         <activity

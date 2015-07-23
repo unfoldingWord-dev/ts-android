@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,7 +40,7 @@ import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.service.BroadcastService;
-import com.door43.translationstudio.service.SharingService;
+import com.door43.translationstudio.service.ExportingService;
 import com.door43.util.ListMap;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -76,7 +77,7 @@ import static com.tozny.crypto.android.AesCbcWithIntegrity.generateKey;
 import static com.tozny.crypto.android.AesCbcWithIntegrity.keyString;
 import static com.tozny.crypto.android.AesCbcWithIntegrity.keys;
 
-public class DeviceToDeviceActivity extends TranslatorBaseActivity implements SharingService.Callbacks {
+public class DeviceToDeviceActivity extends TranslatorBaseActivity implements ExportingService.Callbacks {
     private boolean mStartAsServer = false;
     private static com.door43.translationstudio.network.Service mService;
     private DevicePeerAdapter mAdapter;
@@ -91,21 +92,22 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
     private static final String SERVICE_NAME = "tS";
     private boolean mShuttingDown = true;
     private static final int PORT_CLIENT_UDP = 9939;
-    private SharingService mSharingService;
+    private ExportingService mExportService;
 
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            SharingService.LocalBinder binder = (SharingService.LocalBinder) service;
-            mSharingService = binder.getServiceInstance();
-            mSharingService.registerClient(DeviceToDeviceActivity.this);
+            ExportingService.LocalBinder binder = (ExportingService.LocalBinder) service;
+            mExportService = binder.getServiceInstance();
+            mExportService.registerCallback(DeviceToDeviceActivity.this);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to sharing service");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mSharingService.registerClient(null);
+            mExportService.registerCallback(null);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from sharing service");
+            // TODO: notify activity that service was dropped.
         }
     };
     private Intent sharingServiceIntent;
@@ -123,18 +125,24 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
 
-        sharingServiceIntent = new Intent(this, SharingService.class);
-        sharingServiceIntent.putExtra(SharingService.PARAM_SERVICE_NAME, SERVICE_NAME);
+        sharingServiceIntent = new Intent(this, ExportingService.class);
         broadcastServiceIntent = new Intent(this, BroadcastService.class);
 
         if(mStartAsServer) {
             setTitle(R.string.export_to_device);
             // begin sharing service
-            if(!SharingService.isRunning()) {
+            if(!ExportingService.isRunning()) {
                 try {
                     generateSessionKeys();
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to generate the session keys", e);
+                    finish();
+                }
+                try {
+                    sharingServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, getPrivateKey());
+                    sharingServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, getPublicKeyString());
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
                     finish();
                 }
                 startService(sharingServiceIntent);
@@ -355,18 +363,16 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(mStartAsServer) {
-                    Server s = (Server)mService;
+//                    Server s = (Server)mService;
                     Peer client = mAdapter.getItem(i);
                     if(!client.isConnected()) {
-                        // let the client know it's connection has been authorized.
-                        client.setIsAuthorized(true);
+                        mExportService.acceptConnection(client);
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                updatePeerList();
+                                updatePeerList(mExportService.getPeers());
                             }
                         });
-                        s.writeTo(client, "ok");
                     } else {
                         // TODO: maybe display a popup to disconnect the client.
                     }
@@ -412,18 +418,27 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
         // start the service if the activity is starting the first time.
         if(savedInstanceState == null) {
             // This will set up a service on the local network named "tS".
-//            mService.start("tS", new Handler(getMainLooper()));
+            if(!mStartAsServer) {
+                mService.start("tS", new Handler(getMainLooper()));
+            }
         }
     }
 
     @Override
     public void onDestroy() {
-        unbindService(mConnection);
+        if(mExportService != null) {
+            mExportService.registerCallback(null);
+        }
+        try {
+            unbindService(mConnection);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         // TODO: eventually we'll allow these services to run in the background.
         if(BroadcastService.isRunning()) {
             stopService(broadcastServiceIntent);
         }
-        if(SharingService.isRunning()) {
+        if(ExportingService.isRunning()) {
             stopService(sharingServiceIntent);
         }
         super.onDestroy();
@@ -566,22 +581,25 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
         }
     }
 
+    @Deprecated
+    public void updatePeerList() {
+        updatePeerList(mService.getPeers());
+    }
+
     /**
      * Updates the peer list on the screen.
      * This should always be ran on the main thread or a handler
      */
-    public void updatePeerList() {
-        // TRICKY: when using this in threads we need to make sure everything has been initialized and not null
-        // update the progress bar dispaly
+    public void updatePeerList(ArrayList<Peer> peers) {
         if(mLoadingBar != null) {
-            if(mService.getPeers().size() == 0) {
+            if(peers.size() == 0) {
                 mLoadingBar.setVisibility(View.VISIBLE);
             } else {
                 mLoadingBar.setVisibility(View.GONE);
             }
         }
         if(mLoadingText != null) {
-            if(mService.getPeers().size() == 0) {
+            if(peers.size() == 0) {
                 mLoadingText.setVisibility(View.VISIBLE);
             } else {
                 mLoadingText.setVisibility(View.GONE);
@@ -589,7 +607,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
         }
         // update the adapter
         if(mAdapter != null) {
-            mAdapter.setPeerList(mService.getPeers());
+            mAdapter.setPeerList(peers);
         }
     }
 
@@ -1226,11 +1244,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         mShuttingDown = true;
-        // update the handler so we are connected to the correct activity
-        // TODO: this is not nessesary
-//        if(mService != null) {
-//            mService.setHandler(new Handler(getMainLooper()));
-//        }
     }
 
     @Override
@@ -1241,25 +1254,51 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Sh
         broadcastServiceIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
         broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
         startService(broadcastServiceIntent);
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mExportService.getPeers());
+            }
+        });
     }
 
     @Override
-    public void onConnectionRequest() {
-
+    public void onConnectionRequest(Peer peer) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mExportService.getPeers());
+            }
+        });
     }
 
     @Override
-    public void onConnectionLost() {
-
+    public void onConnectionLost(Peer peer) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mExportService.getPeers());
+            }
+        });
     }
 
     @Override
-    public void onMessageReceived() {
-
+    public void onConnectionChanged(Peer peer) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mExportService.getPeers());
+            }
+        });
     }
 
     @Override
-    public void onSendMessage() {
-
+    public void onServiceError(Throwable e) {
+        Logger.e(this.getClass().getName(), "Export service encountered an exception", e);
     }
 }

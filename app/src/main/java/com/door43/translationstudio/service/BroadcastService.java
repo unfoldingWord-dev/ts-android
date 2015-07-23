@@ -53,61 +53,61 @@ public class BroadcastService extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startid) {
-        sRunning = true;
-        Bundle args = intent.getExtras();
-        if(args != null) {
-            final int udpPort = args.getInt(PARAM_BROADCAST_PORT);
-            final int serviceTCPPort = args.getInt(PARAM_SERVICE_PORT);
-            final int broadcastFrequency = args.getInt(PARAM_FREQUENCY);
-            final String serviceName = args.getString(PARAM_SERVICE_NAME);
-            PackageInfo pInfo;
-            try {
-                pInfo = getApplication().getPackageManager().getPackageInfo(getApplication().getPackageName(), 0);
-            } catch (PackageManager.NameNotFoundException e) {
-                // TODO: notify app
-                Logger.e(this.getClass().getName(), "Failed to load the app version", e);
-                stopService();
-                return START_NOT_STICKY;
-            }
-            String data = serviceName + ":" + pInfo.versionCode + ":" + serviceTCPPort;
-
-            // prepare packet
-            if(data.length() > 1024) {
-                // TODO: notify app
-                Logger.w(this.getClass().getName(), "The broadcast data cannot be longer than 1024 bytes");
-                stopService();
-                return START_NOT_STICKY;
-            }
-            WifiManager wifi = (WifiManager)getApplication().getSystemService(Context.WIFI_SERVICE);
-            final InetAddress ipAddress;
-            try {
-                ipAddress = getBroadcastAddress();
-            } catch (UnknownHostException e) {
-                // TODO: notify app
-                Logger.e(this.getClass().getName(), "Failed to get the broadcast ip address", e);
-                stopService();
-                return START_NOT_STICKY;
-            }
-            final DatagramPacket packet = new DatagramPacket(data.getBytes(), data.length(), ipAddress, udpPort);
-
-            // schedule broadcast
-            sTimer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    Logger.i(this.getClass().getName(), "Broadcasting service");
-                    try {
-                        sSocket.send(packet);
-                    } catch (IOException e) {
-                        Logger.e(this.getClass().getName(), "Failed to send the broadcast packet", e);
-                    }
+        if(intent != null) {
+            Bundle args = intent.getExtras();
+            if (args != null) {
+                sRunning = true;
+                final int udpPort = args.getInt(PARAM_BROADCAST_PORT);
+                final int serviceTCPPort = args.getInt(PARAM_SERVICE_PORT);
+                final int broadcastFrequency = args.getInt(PARAM_FREQUENCY);
+                final String serviceName = args.getString(PARAM_SERVICE_NAME);
+                PackageInfo pInfo;
+                try {
+                    pInfo = getApplication().getPackageManager().getPackageInfo(getApplication().getPackageName(), 0);
+                } catch (PackageManager.NameNotFoundException e) {
+                    // TODO: notify app
+                    Logger.e(this.getClass().getName(), "Failed to load the app version", e);
+                    stopService();
+                    return START_NOT_STICKY;
                 }
-            }, 0, broadcastFrequency);
-            return START_STICKY;
-        } else {
-            Logger.w(this.getClass().getName(), "The broadcaster requires arguments to operate correctly");
-            stopService();
-            return START_NOT_STICKY;
+                String data = serviceName + ":" + pInfo.versionCode + ":" + serviceTCPPort;
+
+                // prepare packet
+                if (data.length() > 1024) {
+                    // TODO: notify app
+                    Logger.w(this.getClass().getName(), "The broadcast data cannot be longer than 1024 bytes");
+                    stopService();
+                    return START_NOT_STICKY;
+                }
+                WifiManager wifi = (WifiManager) getApplication().getSystemService(Context.WIFI_SERVICE);
+                final InetAddress ipAddress;
+                try {
+                    ipAddress = getBroadcastAddress();
+                } catch (UnknownHostException e) {
+                    // TODO: notify app
+                    Logger.e(this.getClass().getName(), "Failed to get the broadcast ip address", e);
+                    stopService();
+                    return START_NOT_STICKY;
+                }
+                final DatagramPacket packet = new DatagramPacket(data.getBytes(), data.length(), ipAddress, udpPort);
+
+                // schedule broadcast
+                sTimer.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
+                            sSocket.send(packet);
+                        } catch (IOException e) {
+                            Logger.e(this.getClass().getName(), "Failed to send the broadcast packet", e);
+                        }
+                    }
+                }, 0, broadcastFrequency);
+                return START_STICKY;
+            }
         }
+        Logger.w(this.getClass().getName(), "The broadcaster requires arguments to operate correctly");
+        stopService();
+        return START_NOT_STICKY;
     }
 
     @Override
