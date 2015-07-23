@@ -26,6 +26,12 @@
         <service android:name=".service.BackupManager"
             android:label="Backup Manager">
         </service>
+        <service android:name=".service.BroadcastService"
+            android:label="Services Broadcaster">
+        </service>
+        <service android:name=".service.SharingService"
+            android:label="Sharing Service">
+        </service>
 
         <activity
             android:name=".TermsActivity"

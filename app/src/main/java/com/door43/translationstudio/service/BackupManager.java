@@ -41,6 +41,7 @@ public class BackupManager extends Service {
     private static final long BACKUP_INTERVAL = 5 * 60 * 1000;
     private static final Timer sTimer = new Timer();
     private static boolean mFirstRun = true;
+    private static boolean sRunning = false;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -59,6 +60,7 @@ public class BackupManager extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startid) {
+        sRunning = true;
         sTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -72,12 +74,21 @@ public class BackupManager extends Service {
     }
 
     /**
+     * Checks if the service is running
+     * @return
+     */
+    public static boolean isRunning() {
+        return sRunning;
+    }
+
+    /**
      * Stops the service
      */
     private void stopService() {
         if(sTimer != null) {
             sTimer.cancel();
         }
+        sRunning = false;
         Logger.i(this.getClass().getName(), "stopping backup service");
     }
 

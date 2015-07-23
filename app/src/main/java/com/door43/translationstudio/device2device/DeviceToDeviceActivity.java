@@ -4,8 +4,13 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,6 +38,8 @@ import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.service.BroadcastService;
+import com.door43.translationstudio.service.SharingService;
 import com.door43.util.ListMap;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -69,9 +76,9 @@ import static com.tozny.crypto.android.AesCbcWithIntegrity.generateKey;
 import static com.tozny.crypto.android.AesCbcWithIntegrity.keyString;
 import static com.tozny.crypto.android.AesCbcWithIntegrity.keys;
 
-public class DeviceToDeviceActivity extends TranslatorBaseActivity {
+public class DeviceToDeviceActivity extends TranslatorBaseActivity implements SharingService.Callbacks {
     private boolean mStartAsServer = false;
-    private static Service mService;
+    private static com.door43.translationstudio.network.Service mService;
     private DevicePeerAdapter mAdapter;
     private ProgressBar mLoadingBar;
     private TextView mLoadingText;
@@ -81,8 +88,28 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
     private static Map<String, DialogFragment> mPeerDialogs = new HashMap<>();
     private static final String TASK_SERVER = "p2p_server_service";
     private static final String TASK_CLIENT = "p2p_client_service";
+    private static final String SERVICE_NAME = "tS";
     private boolean mShuttingDown = true;
     private static final int PORT_CLIENT_UDP = 9939;
+    private SharingService mSharingService;
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            SharingService.LocalBinder binder = (SharingService.LocalBinder) service;
+            mSharingService = binder.getServiceInstance();
+            mSharingService.registerClient(DeviceToDeviceActivity.this);
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to sharing service");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mSharingService.registerClient(null);
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from sharing service");
+        }
+    };
+    private Intent sharingServiceIntent;
+    private Intent broadcastServiceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,8 +123,23 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
 
+        sharingServiceIntent = new Intent(this, SharingService.class);
+        sharingServiceIntent.putExtra(SharingService.PARAM_SERVICE_NAME, SERVICE_NAME);
+        broadcastServiceIntent = new Intent(this, BroadcastService.class);
+
         if(mStartAsServer) {
             setTitle(R.string.export_to_device);
+            // begin sharing service
+            if(!SharingService.isRunning()) {
+                try {
+                    generateSessionKeys();
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to generate the session keys", e);
+                    finish();
+                }
+                startService(sharingServiceIntent);
+            }
+            bindService(sharingServiceIntent, mConnection, Context.BIND_AUTO_CREATE);
         } else {
             setTitle(R.string.import_from_device);
         }
@@ -128,13 +170,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 
 
         // reset things on first load
-        if(savedInstanceState == null) {
-            mPeerDialogs.clear();
-            if(mService != null) {
-                mService.stop();
-                mService = null;
-            }
-        }
+//        if(savedInstanceState == null) {
+//            mPeerDialogs.clear();
+//            if(mService != null) {
+//                mService.stop();
+//                mService = null;
+//            }
+//        }
 
         if(mService == null || !mService.isRunning()) {
             // set up the threads
@@ -370,8 +412,21 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
         // start the service if the activity is starting the first time.
         if(savedInstanceState == null) {
             // This will set up a service on the local network named "tS".
-            mService.start("tS", new Handler(getMainLooper()));
+//            mService.start("tS", new Handler(getMainLooper()));
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        unbindService(mConnection);
+        // TODO: eventually we'll allow these services to run in the background.
+        if(BroadcastService.isRunning()) {
+            stopService(broadcastServiceIntent);
+        }
+        if(SharingService.isRunning()) {
+            stopService(sharingServiceIntent);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -1176,5 +1231,35 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity {
 //        if(mService != null) {
 //            mService.setHandler(new Handler(getMainLooper()));
 //        }
+    }
+
+    @Override
+    public void onServiceReady(int port) {
+        // begin broadcasting services
+        broadcastServiceIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
+        broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_PORT, port);
+        broadcastServiceIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
+        broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
+        startService(broadcastServiceIntent);
+    }
+
+    @Override
+    public void onConnectionRequest() {
+
+    }
+
+    @Override
+    public void onConnectionLost() {
+
+    }
+
+    @Override
+    public void onMessageReceived() {
+
+    }
+
+    @Override
+    public void onSendMessage() {
+
     }
 }

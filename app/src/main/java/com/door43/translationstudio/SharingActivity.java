@@ -66,6 +66,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                 }
             }
         });
+
     }
 
     @Override

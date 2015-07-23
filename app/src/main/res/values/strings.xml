@@ -129,9 +129,9 @@
     <string name="term_examples">Examples:</string>
     <string name="git_push_success">Project successfully uploaded</string>
     <string name="choose_frame_to_start">Open a project to start translating</string>
-    <string name="return_to_important_terms">Return to <xliff:g id="name" example="">translationWords</xliff:g></string>
+    <string name="return_to_important_terms">Return to Words</string>
     <string name="no_translation_notes">No notes</string>
-    <string name="translation_words" translatable="false">translationWords</string>
+    <string name="translation_words">Words</string>
     <string name="translation_check_notice">We will now perform a few checks to ensure your translation is ready.</string>
     <string name="preparing_upload">Preparing upload</string>
     <!-- This is the license agreement to use the app. It is formatted as HTML. -->
@@ -241,7 +241,7 @@
     <string name="label_phone">Phone</string>
     <string name="contact_form_description">Please provide your contact information. This will be securely transfered to the server when you publish</string>
     <string name="verse_out_of_bounds">Choose a verse between <xliff:g id="number" example="1">%1$s</xliff:g> and <xliff:g id="number" example="100">%2$s</xliff:g></string>
-    <string name="no_key_terms">There are no <xliff:g id="name" example="">translationWords</xliff:g></string>
+    <string name="no_key_terms">There are no Words</string>
     <string name="title_activity_developer">Developer Tools</string>
     <string name="action_settings">Settings</string>
     <!-- displays the application build or version code -->
