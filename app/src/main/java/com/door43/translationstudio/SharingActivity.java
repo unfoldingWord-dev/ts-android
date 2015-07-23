@@ -166,6 +166,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     app().showToastMessage(R.string.project_archive_missing);
                                 }
                             } else {
+                                // there is nothing to export
                                 app().showToastMessage(R.string.project_archive_missing);
                             }
                         } catch (IOException e) {

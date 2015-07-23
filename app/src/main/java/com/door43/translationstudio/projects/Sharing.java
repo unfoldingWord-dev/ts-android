@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipException;
 
 /**
  * This class handles all the features for importing and exporting projects.
@@ -1183,7 +1184,11 @@ public class Sharing {
         }
 
         // zip
-        com.door43.util.Zip.zip(outputDir.getAbsolutePath(), outputZipFile.getAbsolutePath());
+        try {
+            com.door43.util.Zip.zip(outputDir.getAbsolutePath(), outputZipFile.getAbsolutePath());
+        } catch (ZipException e) {
+            Logger.w(Sharing.class.getName(), "Failed to zip the files", e);
+        }
         // cleanup
         FileUtilities.deleteRecursive(outputDir);
         return outputZipFile.getAbsolutePath();

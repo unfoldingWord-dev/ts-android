@@ -49,7 +49,7 @@ public class BackupManager extends Service {
 
     @Override
     public void onCreate() {
-        Logger.i("BackupManager", "starting backup service");
+        Logger.i(this.getClass().getName(), "starting backup service");
     }
 
     @Override
@@ -78,7 +78,7 @@ public class BackupManager extends Service {
         if(sTimer != null) {
             sTimer.cancel();
         }
-        Logger.i("BackupManager", "stopping backup service");
+        Logger.i(this.getClass().getName(), "stopping backup service");
     }
 
     /**

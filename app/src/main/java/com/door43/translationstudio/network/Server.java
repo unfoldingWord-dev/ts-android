@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class operats are a server on the local network.
+ * This class operates as a server on the local network.
  * The server will broadcast it's services to a UDP port.
  * Clients will then be able to connect to a tcp port as detailed in the UDP message.
  */
