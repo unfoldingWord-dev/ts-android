@@ -1,6 +1,5 @@
 package com.door43.translationstudio.service;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
@@ -11,44 +10,48 @@ import com.door43.translationstudio.device2device.PeerStatusKeys;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
+import com.door43.util.RSAEncryption;
 import com.door43.util.StringUtilities;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tozny.crypto.android.AesCbcWithIntegrity.decryptString;
-import static com.tozny.crypto.android.AesCbcWithIntegrity.encrypt;
-
 /**
- * Created by joel on 7/23/2015.
+ * This class provides an exporting service (effectively a server) from which
+ * other devices may browse and retreive translations
  */
 public class ExportingService extends NetworkService {
     public static final String PARAM_PRIVATE_KEY = "param_private_key";
     public static final String PARAM_PUBLIC_KEY = "param_public_key";
     private final IBinder mBinder = new LocalBinder();
-    private Callbacks mActivity;
+    private Callbacks mListener;
     private static boolean sRunning = false;
     private static int mPort = 0;
     private static Thread mServerThread;
     private static Map<String, Connection> mClientConnections = new HashMap<>();
     private PrivateKey mPrivateKey;
     private String mPublicKey;
+    private ServerSocket mServerSocket;
 
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
     }
 
-    public void registerCallback(Activity activity) {
-        mActivity = (Callbacks) activity;
-        if(sRunning && mActivity != null) {
-            mActivity.onServiceReady(mPort);
+    public void registerCallback(Callbacks callback) {
+        mListener = callback;
+        if(sRunning && mListener != null) {
+            mListener.onExportServiceReady(mPort);
         }
     }
 
+    @Override
     public int onStartCommand(Intent intent, int flags, int startid) {
         Bundle args = intent.getExtras();
         if(args != null) {
@@ -58,17 +61,37 @@ public class ExportingService extends NetworkService {
             mServerThread.start();
             return START_STICKY;
         } else {
-            Logger.e(this.getClass().getName(), "Sharing service requires arguments");
+            Logger.e(this.getClass().getName(), "Export service requires arguments");
             stopService();
             return START_NOT_STICKY;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        stopService();
     }
 
     /**
      * Stops the service
      */
     public void stopService() {
-        Logger.i(this.getClass().getName(), "Stopping sharing service");
+        Logger.i(this.getClass().getName(), "Stopping export service");
+        if(mServerThread != null) {
+            mServerThread.interrupt();
+        }
+        if(mServerSocket != null) {
+            try {
+                mServerSocket.close();
+            } catch (IOException e) {
+                Logger.e(this.getClass().getName(), "Failed to close server socket", e);
+            }
+        }
+        Connection[] clients = mClientConnections.values().toArray(new Connection[mClientConnections.size()]);
+        for(Connection c:clients) {
+            c.close();
+        }
+        mClientConnections.clear();
         sRunning = false;
     }
 
@@ -87,6 +110,16 @@ public class ExportingService extends NetworkService {
      */
     private void sendMessage(Peer client, String message) {
         if (mClientConnections.containsKey(client.getIpAddress())) {
+            if(client.isConnected()) {
+                // encrypt message
+                PublicKey key = RSAEncryption.getPublicKeyFromString(client.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
+                if(key != null) {
+                    message = encryptMessage(key, message);
+                } else {
+                    Logger.w(this.getClass().getName(), "Missing the client's public key");
+                    message = SocketMessages.MSG_EXCEPTION;
+                }
+            }
             mClientConnections.get(client.getIpAddress()).write(message);
         }
     }
@@ -94,40 +127,66 @@ public class ExportingService extends NetworkService {
     public void acceptConnection(Peer peer) {
         peer.setIsAuthorized(true);
         // let the client know it's connection has been authorized.
-        sendMessage(peer, "ok");
+        sendMessage(peer, SocketMessages.MSG_OK);
     }
 
-
+    /**
+     * Handles the initial handshake and authorization
+     * @param client
+     * @param message
+     */
     private void onMessageReceived(Peer client, String message) {
         if(client.isAuthorized()) {
             if(client.isConnected()) {
                 message = decryptMessage(mPrivateKey, message);
-                String[] data = StringUtilities.chunk(message, ":");
-                // TODO: handle commands
-                Logger.i(this.getClass().getName(), message);
+                if(message != null) {
+                    String[] data = StringUtilities.chunk(message, ":");
+                    Logger.i(this.getClass().getName(), "message from " + client.getIpAddress() + ": " + message);
+                    onCommandReceived(client, data[0], Arrays.copyOfRange(data, 1, data.length - 1));
+                } else if(mListener != null) {
+                    mListener.onExportServiceError(new Exception("Message descryption failed"));
+                }
             } else {
                 String[] data = StringUtilities.chunk(message, ":");
-                // authorized but has not finished connecting
-                if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
-                    // receive the client's public key
-                    client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
+                switch(data[0]) {
+                    case SocketMessages.MSG_PUBLIC_KEY:
+                        // receive the client's public key
+                        client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
 
-                    // send the client our public key
-                    sendMessage(client, SocketMessages.MSG_PUBLIC_KEY + ":" + mPublicKey);
-                    client.setIsConnected(true);
+                        // send the client our public key
+                        sendMessage(client, SocketMessages.MSG_PUBLIC_KEY + ":" + mPublicKey);
+                        client.setIsConnected(true);
 
-                    // reload the list
-                    if(mActivity != null) {
-                        mActivity.onConnectionChanged(client);
-                    }
-                } else {
-                    Logger.w(this.getClass().getName(), "Invalid request: " + message);
-                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
+                        // reload the list
+                        if(mListener != null) {
+                            mListener.onClientConnectionChanged(client);
+                        }
+                        break;
+                    default:
+                        Logger.w(this.getClass().getName(), "Invalid request: " + message);
+                        sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
             }
         } else {
             Logger.w(this.getClass().getName(), "The client is not authorized");
             sendMessage(client, SocketMessages.MSG_AUTHORIZATION_ERROR);
+        }
+    }
+
+    /**
+     * Handles commands sent from the client
+     * @param client
+     * @param command
+     * @param data
+     */
+    private void onCommandReceived(Peer client, String command, String[] data) {
+        switch(command) {
+            case SocketMessages.MSG_PROJECT_LIST:
+                break;
+            case SocketMessages.MSG_PROJECT_ARCHIVE:
+
+            default:
+                sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
         }
     }
 
@@ -144,11 +203,11 @@ public class ExportingService extends NetworkService {
      * Interface for communication with service clients.
      */
     public interface Callbacks {
-        void onServiceReady(int port);
-        void onConnectionRequest(Peer peer);
-        void onConnectionLost(Peer peer);
-        void onConnectionChanged(Peer peer);
-        void onServiceError(Throwable e);
+        void onExportServiceReady(int port);
+        void onClientConnectionRequest(Peer peer);
+        void onClientConnectionLost(Peer peer);
+        void onClientConnectionChanged(Peer peer);
+        void onExportServiceError(Throwable e);
     }
 
     /**
@@ -158,21 +217,20 @@ public class ExportingService extends NetworkService {
 
         public void run() {
             Socket socket;
-            ServerSocket serverSocket;
 
             // set up sockets
             try {
-                serverSocket = new ServerSocket(0);
+                mServerSocket = new ServerSocket(0);
             } catch (Exception e) {
-                if(mActivity != null) {
-                    mActivity.onServiceError(e);
+                if(mListener != null) {
+                    mListener.onExportServiceError(e);
                 }
                 return;
             }
-            mPort = serverSocket.getLocalPort();
+            mPort = mServerSocket.getLocalPort();
 
-            if(mActivity != null) {
-                mActivity.onServiceReady(mPort);
+            if(mListener != null) {
+                mListener.onExportServiceReady(mPort);
             }
 
             sRunning = true;
@@ -180,7 +238,7 @@ public class ExportingService extends NetworkService {
             // begin listening for connections
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    socket = serverSocket.accept();
+                    socket = mServerSocket.accept();
                     ClientRunnable clientRunnable = new ClientRunnable(socket);
                     new Thread(clientRunnable).start();
                 } catch (Exception e) {
@@ -188,7 +246,7 @@ public class ExportingService extends NetworkService {
                 }
             }
             try {
-                serverSocket.close();
+                mServerSocket.close();
             } catch (Exception e) {
                 Logger.e(this.getClass().getName(), "failed to shutdown the server socket", e);
             }
@@ -206,8 +264,8 @@ public class ExportingService extends NetworkService {
             // create a new peer
             mClient = new Peer(clientSocket.getInetAddress().toString().replace("/", ""), clientSocket.getPort());
             if(addPeer(mClient)) {
-                if(mActivity != null) {
-                    mActivity.onConnectionRequest(mClient);
+                if(mListener != null) {
+                    mListener.onClientConnectionRequest(mClient);
                 }
             }
             // set up socket
@@ -222,8 +280,8 @@ public class ExportingService extends NetworkService {
                 // we store a reference to all connections so we can access them later
                 mClientConnections.put(mConnection.getIpAddress(), mConnection);
             } catch (Exception e) {
-                if(mActivity != null) {
-                    mActivity.onServiceError(e);
+                if(mListener != null) {
+                    mListener.onExportServiceError(e);
                 }
                 Thread.currentThread().interrupt();
             }
@@ -245,8 +303,8 @@ public class ExportingService extends NetworkService {
                 mClientConnections.remove(mConnection.getIpAddress());
             }
             removePeer(mClient);
-            if(mActivity != null) {
-                mActivity.onConnectionLost(mClient);
+            if(mListener != null) {
+                mListener.onClientConnectionLost(mClient);
             }
         }
     }

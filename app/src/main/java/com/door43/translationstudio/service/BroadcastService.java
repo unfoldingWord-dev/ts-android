@@ -1,11 +1,9 @@
 package com.door43.translationstudio.service;
 
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -24,7 +22,7 @@ import java.util.TimerTask;
 /**
  * Broadcasts services provided by this device on the network
  */
-public class BroadcastService extends Service {
+public class BroadcastService extends NetworkService {
     private static final Timer sTimer = new Timer();
     public static final String PARAM_BROADCAST_PORT = "param_broadcast_udp_port";
     public static final String PARAM_SERVICE_PORT = "param_service_tcp_port";
@@ -135,20 +133,5 @@ public class BroadcastService extends Service {
      */
     public static boolean isRunning() {
         return sRunning;
-    }
-
-    private InetAddress getBroadcastAddress() throws UnknownHostException {
-        WifiManager wifi = (WifiManager)getApplication().getSystemService(Context.WIFI_SERVICE);
-        DhcpInfo dhcp = wifi.getDhcpInfo();
-        if(dhcp == null) {
-            throw new UnknownHostException();
-        }
-
-        int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
-        byte[] quads = new byte[4];
-        for (int k = 0; k < 4; k++) {
-            quads[k] = (byte) ((broadcast >> k * 8) & 0xFF);
-        }
-        return InetAddress.getByAddress(quads);
     }
 }

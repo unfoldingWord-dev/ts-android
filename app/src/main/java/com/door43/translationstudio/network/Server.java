@@ -18,6 +18,7 @@ import java.util.Map;
  * The server will broadcast it's services to a UDP port.
  * Clients will then be able to connect to a tcp port as detailed in the UDP message.
  */
+@Deprecated
 public class Server extends Service {
     private final int mClientUDPPort; // the port on which the client listens for broadcast messages
     private final OnServerEventListener mListener;

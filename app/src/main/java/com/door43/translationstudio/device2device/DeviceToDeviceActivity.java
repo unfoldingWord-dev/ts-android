@@ -30,7 +30,6 @@ import com.door43.translationstudio.events.ChoseProjectToImportEvent;
 import com.door43.translationstudio.network.Client;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.network.Server;
 import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
@@ -39,8 +38,10 @@ import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.PseudoProject;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ExportingService;
+import com.door43.translationstudio.service.ImportingService;
 import com.door43.util.ListMap;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -77,7 +78,7 @@ import static com.tozny.crypto.android.AesCbcWithIntegrity.generateKey;
 import static com.tozny.crypto.android.AesCbcWithIntegrity.keyString;
 import static com.tozny.crypto.android.AesCbcWithIntegrity.keys;
 
-public class DeviceToDeviceActivity extends TranslatorBaseActivity implements ExportingService.Callbacks {
+public class DeviceToDeviceActivity extends TranslatorBaseActivity implements ExportingService.Callbacks, ImportingService.Callbacks, BroadcastListenerService.Callbacks {
     private boolean mStartAsServer = false;
     private static com.door43.translationstudio.network.Service mService;
     private DevicePeerAdapter mAdapter;
@@ -93,25 +94,61 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     private boolean mShuttingDown = true;
     private static final int PORT_CLIENT_UDP = 9939;
     private ExportingService mExportService;
+    private ImportingService mImportService;
+    private BroadcastListenerService mBroadcastListenerService;
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+    private ServiceConnection mExportConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             ExportingService.LocalBinder binder = (ExportingService.LocalBinder) service;
             mExportService = binder.getServiceInstance();
             mExportService.registerCallback(DeviceToDeviceActivity.this);
-            Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to sharing service");
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to export service");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             mExportService.registerCallback(null);
-            Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from sharing service");
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from export service");
             // TODO: notify activity that service was dropped.
         }
     };
-    private Intent sharingServiceIntent;
+    private ServiceConnection mImportConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            ImportingService.LocalBinder binder = (ImportingService.LocalBinder) service;
+            mImportService = binder.getServiceInstance();
+            mImportService.registerCallback(DeviceToDeviceActivity.this);
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to import service");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mImportService.registerCallback(null);
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from import service");
+            // TODO: notify activity that service was dropped.
+        }
+    };
+    private ServiceConnection mBroadcastListenerConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            BroadcastListenerService.LocalBinder binder = (BroadcastListenerService.LocalBinder) service;
+            mBroadcastListenerService = binder.getServiceInstance();
+            mBroadcastListenerService.registerCallback(DeviceToDeviceActivity.this);
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to broadcast listener service");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBroadcastListenerService.registerCallback(null);
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from broadcast listener service");
+            // TODO: notify activity that service was dropped.
+        }
+    };
+    private Intent exportServiceIntent;
     private Intent broadcastServiceIntent;
+    private Intent importServiceIntent;
+    private Intent broadcastListenerServiceIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,12 +162,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
 
-        sharingServiceIntent = new Intent(this, ExportingService.class);
-        broadcastServiceIntent = new Intent(this, BroadcastService.class);
-
         if(mStartAsServer) {
             setTitle(R.string.export_to_device);
-            // begin sharing service
+            exportServiceIntent = new Intent(this, ExportingService.class);
+            broadcastServiceIntent = new Intent(this, BroadcastService.class);
+
+            // begin export service
             if(!ExportingService.isRunning()) {
                 try {
                     generateSessionKeys();
@@ -139,183 +176,95 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                     finish();
                 }
                 try {
-                    sharingServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, getPrivateKey());
-                    sharingServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, getPublicKeyString());
+                    exportServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, getPrivateKey());
+                    exportServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, getPublicKeyString());
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
                     finish();
                 }
-                startService(sharingServiceIntent);
+                startService(exportServiceIntent);
             }
-            bindService(sharingServiceIntent, mConnection, Context.BIND_AUTO_CREATE);
+            bindService(exportServiceIntent, mExportConnection, Context.BIND_AUTO_CREATE);
         } else {
             setTitle(R.string.import_from_device);
+            importServiceIntent = new Intent(this, ImportingService.class);
+            broadcastListenerServiceIntent = new Intent(this, BroadcastListenerService.class);
+
+            // begin import service
+            if(!ImportingService.isRunning()) {
+                try {
+                    generateSessionKeys();
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to generate the session keys", e);
+                    finish();
+                }
+                try {
+                    importServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, getPrivateKey());
+                    importServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, getPublicKeyString());
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
+                    finish();
+                }
+                startService(importServiceIntent);
+            }
         }
-
-        // start up the service
-//        ServerTask serverTask = (ServerTask)TaskManager.getTask(TASK_SERVER);
-//        ClientTask clientTask = (ClientTask)TaskManager.getTask(TASK_CLIENT);
-//        if(mStartAsServer) {
-//            // run as server
-//            TaskManager.clearTask(clientTask);
-//            if(serverTask == null) {
-//                serverTask = new ServerTask();
-//                TaskManager.addTask(serverTask);
-//            }
-//            // TODO: set up listeners
-//        } else {
-//            // run as client
-//            TaskManager.clearTask(serverTask);
-//            if(clientTask == null) {
-//                clientTask = new ClientTask();
-//                TaskManager.addTask(clientTask);
-//            }
-//            // TODO: set up listeners
-//        }
-
 
         if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
 
-
-        // reset things on first load
-//        if(savedInstanceState == null) {
-//            mPeerDialogs.clear();
-//            if(mService != null) {
-//                mService.stop();
-//                mService = null;
-//            }
-//        }
-
         if(mService == null || !mService.isRunning()) {
             // set up the threads
-            if(mStartAsServer) {
-                mService = new Server(DeviceToDeviceActivity.this, PORT_CLIENT_UDP, new Server.OnServerEventListener() {
-
-                    @Override
-                    public void onBeforeStart(Handler handle) {
-                        // generate new session keys
-                        try {
-                            generateSessionKeys();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
-                            mService.stop();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Handler handle, final Exception e) {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                app().showException(e);
-                                finish();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFoundClient(Handler handle, final Peer client) {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                updatePeerList();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onLostClient(Handler handle, Peer client) {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                updatePeerList();
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onMessageReceived(Handler handle, Peer client, String message) {
-                        // decrypt messages when the server is connected
-                        if(client.isConnected()) {
-                            message = decryptMessage(message);
-                            if(message == null) {
-                                Logger.e(this.getClass().getName(), "The message could not be decrypted");
-                                app().showToastMessage("Decryption exception");
-                                return;
-                            }
-                        }
-                        onServerReceivedMessage(handle, client, message);
-                    }
-
-                    @Override
-                    public String onWriteMessage(Handler handle, Peer client, String message) {
-                        if(client.isConnected()) {
-                            // encrypt message once the client has connected
-                            PublicKey key = getPublicKeyFromString(client.keyStore.getString(PeerStatusKeys.PUBLIC_KEY));
-                            if(key != null) {
-                                return encryptMessage(key, message);
-                            } else {
-                                Logger.w(this.getClass().getName(), "Missing the client's public key");
-                                return SocketMessages.MSG_EXCEPTION;
-                            }
-                        } else {
-                            return message;
-                        }
-                    }
-                });
-            } else {
+            if(!mStartAsServer) {
                 mService = new Client(DeviceToDeviceActivity.this, PORT_CLIENT_UDP, new Client.OnClientEventListener() {
                     @Override
                     public void onBeforeStart(Handler handle) {
                         // generate new session keys
-                        try {
-                            generateSessionKeys();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
-                            mService.stop();
-                        }
+//                        try {
+//                            generateSessionKeys();
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                            Logger.e(DeviceToDeviceActivity.class.getName(), "Failed to generate session keys", e);
+//                            mService.stop();
+//                        }
                     }
 
                     @Override
                     public void onError(Handler handle, final Exception e) {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                app().showException(e);
-                                finish();
-                            }
-                        });
+//                        handle.post(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                app().showException(e);
+//                                finish();
+//                            }
+//                        });
                     }
 
                     @Override
                     public void onFoundServer(Handler handle, final Peer server) {
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                updatePeerList();
-                            }
-                        });
+//                        handle.post(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                updatePeerList();
+//                            }
+//                        });
                     }
 
                     @Override
                     public void onLostServer(Handler handle, final Peer server) {
                         // close any dialogs for this server
-                        if(mPeerDialogs.containsKey(server.getIpAddress())) {
-                            DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
-                            if(dialog.getActivity() != null) {
-                                dialog.dismiss();
-                            }
-                            mPeerDialogs.remove(server.getIpAddress());
-                        }
-                        // reload the list
-                        handle.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                updatePeerList();
-                            }
-                        });
+//                        if(mPeerDialogs.containsKey(server.getIpAddress())) {
+//                            DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
+//                            if(dialog.getActivity() != null) {
+//                                dialog.dismiss();
+//                            }
+//                            mPeerDialogs.remove(server.getIpAddress());
+//                        }
+//                        // reload the list
+//                        handle.post(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                updatePeerList();
+//                            }
+//                        });
                     }
 
                     @Override
@@ -363,7 +312,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(mStartAsServer) {
-//                    Server s = (Server)mService;
                     Peer client = mAdapter.getItem(i);
                     if(!client.isConnected()) {
                         mExportService.acceptConnection(client);
@@ -377,7 +325,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                         // TODO: maybe display a popup to disconnect the client.
                     }
                 } else {
-                    Client c = (Client)mService;
+//                    Client c = (Client)mService;
                     Peer server = mAdapter.getItem(i);
                     if(!server.isConnected()) {
                         // TRICKY: we don't let the client connect again otherwise it may get an encryption exception due to miss-matched keys
@@ -390,7 +338,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                                     updatePeerList();
                                 }
                             });
-                            c.connectToServer(mAdapter.getItem(i));
+                            mImportService.connectToServer(server);
                         }
                     } else {
                         // request a list of projects from the server.
@@ -398,18 +346,17 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                         showProgress(getResources().getString(R.string.loading));
                         // Include the suggested language(s) in which the results should be returned (if possible)
                         // This just makes it easier for users to read the results
-                        JSONArray preferredLanguagesJson = new JSONArray();
-                        // device language
-                        preferredLanguagesJson.put(Locale.getDefault().getLanguage());
-                        // current project language
+                        ArrayList<String> preferredLanguages = new ArrayList<>();
+                        // device
+                        preferredLanguages.add(Locale.getDefault().getLanguage());
+                        // current project
                         Project p = AppContext.projectManager().getSelectedProject();
                         if(p != null) {
-                            preferredLanguagesJson.put(p.getSelectedSourceLanguage());
+                            preferredLanguages.add(p.getSelectedSourceLanguage().getId());
                         }
-                        // english as default
-                        preferredLanguagesJson.put("en");
-
-                        c.writeTo(server, SocketMessages.MSG_PROJECT_LIST + ":" + preferredLanguagesJson.toString());
+                        // default
+                        preferredLanguages.add("en");
+                        mImportService.requestProjectList(server, preferredLanguages);
                     }
                 }
             }
@@ -429,17 +376,36 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         if(mExportService != null) {
             mExportService.registerCallback(null);
         }
+        if(mImportService != null) {
+            mImportService.registerCallback(null);
+        }
+        if(mBroadcastListenerService != null) {
+            mBroadcastListenerService.registerCallback(null);
+        }
         try {
-            unbindService(mConnection);
+            unbindService(mExportConnection);
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to unbind connection to export service", e);
         }
-        // TODO: eventually we'll allow these services to run in the background.
-        if(BroadcastService.isRunning()) {
-            stopService(broadcastServiceIntent);
+        try {
+            unbindService(mImportConnection);
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to unbind connection to import service", e);
         }
-        if(ExportingService.isRunning()) {
-            stopService(sharingServiceIntent);
+        if(mShuttingDown) {
+            // TODO: eventually we'll allow these services to run in the background.
+            if (BroadcastService.isRunning() && broadcastServiceIntent != null) {
+                stopService(broadcastServiceIntent);
+            }
+            if (ExportingService.isRunning() && exportServiceIntent != null) {
+                stopService(exportServiceIntent);
+            }
+            if (BroadcastListenerService.isRunning() && broadcastListenerServiceIntent != null) {
+                stopService(broadcastListenerServiceIntent);
+            }
+            if (ImportingService.isRunning() && importServiceIntent != null) {
+                stopService(importServiceIntent);
+            }
         }
         super.onDestroy();
     }
@@ -776,38 +742,38 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             } else {
                 // *********************************
                 // authorized but not connected yet
-                // *********************************
-
-                if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
-                    // receive the client's public key
-                    client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
-
-                    // send the client our public key
-                    String key;
-                    try {
-                        key = getPublicKeyString();
-                    } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Missing the client public key", e);
-                        return;
-                    }
-                    mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
-                    client.setIsConnected(true);
-
-                    // reload the list
-                    handle.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updatePeerList();
-                        }
-                    });
-                }
+//                // *********************************
+//
+//                if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
+//                    // receive the client's public key
+//                    client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
+//
+//                    // send the client our public key
+//                    String key;
+//                    try {
+//                        key = getPublicKeyString();
+//                    } catch (Exception e) {
+//                        Logger.e(this.getClass().getName(), "Missing the client public key", e);
+//                        return;
+//                    }
+//                    mService.writeTo(client, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+//                    client.setIsConnected(true);
+//
+//                    // reload the list
+//                    handle.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            updatePeerList();
+//                        }
+//                    });
+//                }
             }
         } else {
             // *********************************
             // not authorized
             // *********************************
             // the client is not authorized
-            mService.writeTo(client, SocketMessages.MSG_AUTHORIZATION_ERROR);
+//            mService.writeTo(client, SocketMessages.MSG_AUTHORIZATION_ERROR);
         }
     }
 
@@ -970,17 +936,17 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                 app().showToastMessage("invalid response");
             }
         } else if(data[0].equals(SocketMessages.MSG_OK)) {
-            // we are authorized to access the server
-            // send public key to server
-            String key;
-            try {
-                key = getPublicKeyString();
-            } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Missing the public key", e);
-                // TODO: missing public key
-                return;
-            }
-            mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
+//            // we are authorized to access the server
+//            // send public key to server
+//            String key;
+//            try {
+//                key = getPublicKeyString();
+//            } catch (Exception e) {
+//                Logger.e(this.getClass().getName(), "Missing the public key", e);
+//                // TODO: missing public key
+//                return;
+//            }
+//            mService.writeTo(server, SocketMessages.MSG_PUBLIC_KEY+":"+key);
         } else if(data[0].equals(SocketMessages.MSG_PROJECT_LIST)) {
             // the sever gave us the list of available projects for import
             String library = data[1];
@@ -1109,17 +1075,17 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                 }
             });
         } else if(data[0].equals(SocketMessages.MSG_PUBLIC_KEY)) {
-            // receive the server's public key
-            server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
-            server.keyStore.add(PeerStatusKeys.WAITING, false);
-            server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.import_project));
-            server.setIsConnected(true);
-            handle.post(new Runnable() {
-                @Override
-                public void run() {
-                    updatePeerList();
-                }
-            });
+//            // receive the server's public key
+//            server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
+//            server.keyStore.add(PeerStatusKeys.WAITING, false);
+//            server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.import_project));
+//            server.setIsConnected(true);
+//            handle.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    updatePeerList();
+//                }
+//            });
         }
     }
 
@@ -1247,7 +1213,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     }
 
     @Override
-    public void onServiceReady(int port) {
+    public void onExportServiceReady(int port) {
         // begin broadcasting services
         broadcastServiceIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
         broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_PORT, port);
@@ -1265,7 +1231,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     }
 
     @Override
-    public void onConnectionRequest(Peer peer) {
+    public void onClientConnectionRequest(Peer peer) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -1276,7 +1242,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     }
 
     @Override
-    public void onConnectionLost(Peer peer) {
+    public void onClientConnectionLost(Peer peer) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -1287,7 +1253,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     }
 
     @Override
-    public void onConnectionChanged(Peer peer) {
+    public void onClientConnectionChanged(Peer peer) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -1298,7 +1264,82 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     }
 
     @Override
-    public void onServiceError(Throwable e) {
+    public void onExportServiceError(Throwable e) {
         Logger.e(this.getClass().getName(), "Export service encountered an exception", e);
+    }
+
+    @Override
+    public void onImportServiceReady() {
+        // begin listening for service broadcasts
+        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
+        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
+        startService(broadcastListenerServiceIntent);
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mImportService.getPeers());
+            }
+        });
+    }
+
+    @Override
+    public void onServerConnectionLost(Peer peer) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mImportService.getPeers());
+            }
+        });
+    }
+
+    @Override
+    public void onServerConnectionChanged(Peer peer) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mImportService.getPeers());
+            }
+        });
+    }
+
+    @Override
+    public void onImportServiceError(Throwable e) {
+        Logger.e(this.getClass().getName(), "Import service encountered an exception", e);
+    }
+
+    @Override
+    public void onFoundServer(Peer server) {
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mBroadcastListenerService.getPeers());
+            }
+        });
+    }
+
+    @Override
+    public void onLostServer(Peer server) {
+        // close dialogs
+        if(mPeerDialogs.containsKey(server.getIpAddress())) {
+            DialogFragment dialog = mPeerDialogs.get(server.getIpAddress());
+            if(dialog.getActivity() != null) {
+                dialog.dismiss();
+            }
+            mPeerDialogs.remove(server.getIpAddress());
+        }
+
+        // reload the list
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                updatePeerList(mBroadcastListenerService.getPeers());
+            }
+        });
     }
 }

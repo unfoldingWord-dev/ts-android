@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.SocketException;
 import java.nio.channels.DatagramChannel;
 
@@ -13,6 +14,7 @@ import java.nio.channels.DatagramChannel;
 public class BroadcastListenerRunnable implements Runnable {
     private final int mPort;
     private final OnBroadcastListenerEventListener mListener;
+    private DatagramSocket mSocket;
 
     /**
      * Creates a new runnable that listens for UDB broadcasts
@@ -33,17 +35,17 @@ public class BroadcastListenerRunnable implements Runnable {
             mListener.onError(e);
             return;
         }
-        DatagramSocket socket = channel.socket();
+        mSocket = channel.socket();
         // TRICKY: we set the address to reusable so we don't get port binding errors when turning the client on and off.
         try {
-            socket.setReuseAddress(true);
+            mSocket.setReuseAddress(true);
         } catch (SocketException e) {
             mListener.onError(e);
             return;
         }
         InetSocketAddress socketAddress = new InetSocketAddress(mPort);
         try {
-            socket.bind(socketAddress);
+            mSocket.bind(socketAddress);
         } catch (SocketException e) {
             mListener.onError(e);
             return;
@@ -54,13 +56,13 @@ public class BroadcastListenerRunnable implements Runnable {
             while (!Thread.currentThread().isInterrupted()) {
                 // TODO: it's not really safe to hard code the byte size.
                 byte[] recvBuf = new byte[1024];
-                if (socket == null || socket.isClosed()) {
-                    socket = new DatagramSocket(mPort);
+                if (mSocket == null || mSocket.isClosed()) {
+                    mSocket = new DatagramSocket(mPort);
                 }
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
 
                 // receive broadcast message
-                socket.receive(packet);
+                mSocket.receive(packet);
                 String senderIP = packet.getAddress().getHostAddress();
                 String message = new String(packet.getData()).trim();
 
@@ -70,7 +72,13 @@ public class BroadcastListenerRunnable implements Runnable {
         } catch (Exception e) {
             mListener.onError(e);
         } finally {
-            socket.close();
+            mSocket.close();
+        }
+    }
+
+    public void stop() {
+        if(mSocket != null) {
+            mSocket.close();
         }
     }
 
@@ -78,7 +86,7 @@ public class BroadcastListenerRunnable implements Runnable {
      * An interface to handle events from the broadcast listener
      */
     public interface OnBroadcastListenerEventListener {
-        public void onError(Exception e);
-        public void onMessageReceived(String message, String senderIP);
+        void onError(Exception e);
+        void onMessageReceived(String message, String senderIP);
     }
 }

@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Context;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
 import android.util.Base64;
 
 import com.door43.tools.reporting.Logger;
@@ -50,7 +49,9 @@ public abstract class NetworkService extends Service {
     public InetAddress getBroadcastAddress() throws UnknownHostException {
         WifiManager wifi = (WifiManager)getApplication().getSystemService(Context.WIFI_SERVICE);
         DhcpInfo dhcp = wifi.getDhcpInfo();
-        // handle null somehow
+        if(dhcp == null) {
+            throw new UnknownHostException();
+        }
 
         int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
         byte[] quads = new byte[4];

@@ -41,6 +41,11 @@ public class Language {
         }
     }
 
+    @Override
+    public String toString() {
+        return mCode;
+    }
+
     /**
      * Create a new language
      * @param code the language code
