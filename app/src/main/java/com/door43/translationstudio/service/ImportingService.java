@@ -1,5 +1,7 @@
 package com.door43.translationstudio.service;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
@@ -9,14 +11,30 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.device2device.PeerStatusKeys;
 import com.door43.translationstudio.device2device.SocketMessages;
+import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
+import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.projects.Model;
+import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.projects.PseudoProject;
+import com.door43.translationstudio.projects.Sharing;
+import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.projects.imports.ProjectImport;
+import com.door43.util.ListMap;
 import com.door43.util.RSAEncryption;
 import com.door43.util.StringUtilities;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.security.PrivateKey;
@@ -133,6 +151,10 @@ public class ImportingService extends NetworkService {
         sendMessage(server, SocketMessages.MSG_PROJECT_LIST + ":" + languagesJson);
     }
 
+    public void requestProjectArchive(Peer server, JSONObject languagesJson) {
+        sendMessage(server, SocketMessages.MSG_PROJECT_ARCHIVE + ":" + languagesJson);
+    }
+
     /**
      * Handles the initial handshake and authorization
      * @param server
@@ -182,8 +204,267 @@ public class ImportingService extends NetworkService {
     private void onCommandReceived(Peer server, String command, String[] data) {
         switch(command) {
             case SocketMessages.MSG_PROJECT_ARCHIVE:
+                // receive project archive from server
+                JSONObject infoJson;
+                try {
+                    infoJson = new JSONObject(data[1]);
+                } catch (JSONException e) {
+                    if(mListener != null) {
+                        mListener.onImportServiceError(e);
+                    }
+                    break;
+                }
+
+                if(infoJson.has("port") && infoJson.has("size") && infoJson.has("name")) {
+                    int port;
+                    final long size;
+                    final String name;
+                    try {
+                        port = infoJson.getInt("port");
+                        size = infoJson.getLong("size");
+                        name = infoJson.getString("name");
+                    } catch (JSONException e) {
+                        if(mListener != null) {
+                            mListener.onImportServiceError(e);
+                        }
+                        break;
+                    }
+                    // the server is sending a project archive
+                    generateReadSocket(server, port, new OnSocketEventListener() {
+                        @Override
+                        public void onOpen(Connection connection) {
+                            connection.setOnCloseListener(new Connection.OnCloseListener() {
+                                @Override
+                                public void onClose() {
+                                    if(mListener != null) {
+                                        mListener.onImportServiceError(new Exception("Socket was closed before download completed"));
+                                    }
+                                }
+                            });
+
+//                            showProgress(getResources().getString(R.string.downloading));
+                            final File file = new File(getExternalCacheDir() + "/transferred/" + name);
+                            try {
+                                // download archive
+                                DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
+                                file.getParentFile().mkdirs();
+                                file.createNewFile();
+                                OutputStream out = new FileOutputStream(file.getAbsolutePath());
+                                byte[] buffer = new byte[8 * 1024];
+                                int totalCount = 0;
+                                int count;
+                                while ((count = in.read(buffer)) > 0) {
+                                    totalCount += count;
+                                    server.keyStore.add(PeerStatusKeys.PROGRESS, totalCount / ((int) size) * 100);
+                                    if(mListener != null) {
+                                        mListener.onServerConnectionChanged(server);
+                                    }
+                                    out.write(buffer, 0, count);
+                                }
+                                server.keyStore.add(PeerStatusKeys.PROGRESS, 0);
+                                if(mListener != null) {
+                                    mListener.onServerConnectionChanged(server);
+                                }
+                                out.close();
+                                in.close();
+
+                                // import the project
+                                ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
+                                if (importStatuses.length > 0) {
+                                    boolean importWarnings = false;
+                                    for (ProjectImport s : importStatuses) {
+                                        if (!s.isApproved()) {
+                                            importWarnings = true;
+                                        }
+                                    }
+                                    if (importWarnings) {
+                                        // review the import status in a dialog
+                                        // TODO: stash the changes and ask the user to review warnings
+//                                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+//                                        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+//                                        if (prev != null) {
+//                                            ft.remove(prev);
+//                                        }
+//                                        ft.addToBackStack(null);
+//                                        app().closeToastMessage();
+//                                        ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
+//                                        newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+//                                            @Override
+//                                            public void onOk(ProjectImport[] requests) {
+//                                                showProgress(getResources().getString(R.string.loading));
+//                                                for (ProjectImport r : requests) {
+//                                                    Sharing.importProject(r);
+//                                                }
+//                                                Sharing.cleanImport(requests);
+//                                                file.delete();
+//                                                hideProgress();
+//                                                app().showToastMessage(R.string.success);
+//                                            }
+//
+//                                            @Override
+//                                            public void onCancel(ProjectImport[] requests) {
+//                                                // import was aborted
+//                                                Sharing.cleanImport(requests);
+//                                                file.delete();
+//                                            }
+//                                        });
+//                                        // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
+//                                        newFragment.setImportRequests(importStatuses);
+//                                        newFragment.show(ft, "dialog");
+                                    } else {
+                                        for (ProjectImport r : importStatuses) {
+                                            Sharing.importProject(r);
+                                        }
+                                        Sharing.cleanImport(importStatuses);
+                                        file.delete();
+//                                        app().showToastMessage(R.string.success);
+                                        // TODO: notify we are done
+                                    }
+//                                    hideProgress();
+                                } else {
+                                    file.delete();
+                                    Logger.w(this.getClass().getName(), "failed to import the project archive");
+                                    if(mListener != null) {
+                                        mListener.onImportServiceError(new Exception("failed to import the project archive"));
+                                    }
+                                }
+                            } catch (IOException e) {
+                                Logger.e(this.getClass().getName(), "Failed to download the file", e);
+                                file.delete();
+                                if(mListener != null) {
+                                    mListener.onImportServiceError(e);
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    Logger.w(this.getClass().getName(), "Invalid response from server: " + data.toString());
+                    if(mListener != null) {
+                        mListener.onImportServiceError(new Exception("Invalid response from server"));
+                    }
+                }
                 break;
             case SocketMessages.MSG_PROJECT_LIST:
+                // the sever gave us the list of available projects for import
+                String library = data[1];
+                final ListMap<Model> listableProjects = new ListMap<>();
+
+                JSONArray json;
+                try {
+                    json = new JSONArray(library);
+                } catch (final JSONException e) {
+                    if(mListener != null) {
+                        mListener.onImportServiceError(e);
+                    }
+                    break;
+                }
+
+                ListMap<PseudoProject> pseudoProjects = new ListMap<>();
+
+                // load the data
+                for(int i=0; i<json.length(); i++) {
+                    try {
+                        JSONObject projectJson = json.getJSONObject(i);
+                        if (projectJson.has("id") && projectJson.has("project") && projectJson.has("language") && projectJson.has("target_languages")) {
+                            Project p = new Project(projectJson.getString("id"));
+
+                            // source language (just for project info)
+                            JSONObject sourceLangJson = projectJson.getJSONObject("language");
+                            String sourceLangDirection = sourceLangJson.getString("direction");
+                            Language.Direction langDirection;
+                            if(sourceLangDirection.toLowerCase().equals("ltr")) {
+                                langDirection = Language.Direction.LeftToRight;
+                            } else {
+                                langDirection = Language.Direction.RightToLeft;
+                            }
+                            SourceLanguage sourceLanguage = new SourceLanguage(sourceLangJson.getString("slug"), sourceLangJson.getString("name"), langDirection, 0);
+                            p.addSourceLanguage(sourceLanguage);
+                            p.setSelectedSourceLanguage(sourceLanguage.getId());
+
+                            // project info
+                            JSONObject projectInfoJson = projectJson.getJSONObject("project");
+                            p.setDefaultTitle(projectInfoJson.getString("name"));
+                            if(projectInfoJson.has("description")) {
+                                p.setDefaultDescription(projectInfoJson.getString("description"));
+                            }
+
+                            // load meta
+                            // TRICKY: we are actually getting the meta names instead of the id's since we only receive one translation of the project info
+                            PseudoProject rootPseudoProject = null;
+                            if (projectInfoJson.has("meta")) {
+                                JSONArray jsonMeta = projectInfoJson.getJSONArray("meta");
+                                if(jsonMeta.length() > 0) {
+                                    // get the root meta
+                                    String metaSlug = jsonMeta.getString(0); // this is actually the meta name in this case
+                                    rootPseudoProject = pseudoProjects.get(metaSlug);
+                                    if(rootPseudoProject == null) {
+                                        rootPseudoProject = new PseudoProject(metaSlug);
+                                        pseudoProjects.add(rootPseudoProject.getId(), rootPseudoProject);
+                                    }
+                                    // load children meta
+                                    PseudoProject currentPseudoProject = rootPseudoProject;
+                                    for (int j = 1; j < jsonMeta.length(); j++) {
+                                        PseudoProject sp = new PseudoProject(jsonMeta.getString(j));
+                                        if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
+                                            // load already created meta
+                                            currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
+                                        } else {
+                                            // create new meta
+                                            currentPseudoProject.addChild(sp);
+                                            currentPseudoProject = sp;
+                                        }
+                                        // add to project
+                                        p.addSudoProject(sp);
+                                    }
+                                    currentPseudoProject.addChild(p);
+                                }
+                            }
+
+                            // available translation languages
+                            JSONArray languagesJson = projectJson.getJSONArray("target_languages");
+                            for(int j=0; j<languagesJson.length(); j++) {
+                                JSONObject langJson = languagesJson.getJSONObject(j);
+                                String languageId = langJson.getString("slug");
+                                String languageName = langJson.getString("name");
+                                String direction  = langJson.getString("direction");
+                                Language.Direction langDir;
+                                if(direction.toLowerCase().equals("ltr")) {
+                                    langDir = Language.Direction.LeftToRight;
+                                } else {
+                                    langDir = Language.Direction.RightToLeft;
+                                }
+                                Language l = new Language(languageId, languageName, langDir);
+                                p.addTargetLanguage(l);
+                            }
+                            // add project or meta to the project list
+                            if(rootPseudoProject == null) {
+                                listableProjects.add(p.getId(), p);
+                            } else {
+                                listableProjects.add(rootPseudoProject.getId(), rootPseudoProject);
+                            }
+                        } else {
+                            Logger.w(this.getClass().getName(), "An invalid response was received from the server");
+                        }
+                    } catch(final JSONException e) {
+                        if(mListener != null) {
+                            mListener.onImportServiceError(e);
+                        }
+                    }
+                }
+
+//                handle.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        hideProgress();
+//                        if(listableProjects.size() > 0) {
+//                            showProjectSelectionDialog(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
+//                        } else {
+//                            // there are no available projects on the server
+//                            // TODO: eventually we'll want to display the user friendly name of the server.
+//                            app().showMessageDialog(server.getIpAddress(), getResources().getString(R.string.no_projects_available_on_server));
+//                        }
+//                    }
+//                });
                 break;
             default:
                 sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);

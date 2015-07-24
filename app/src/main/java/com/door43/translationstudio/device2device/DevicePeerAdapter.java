@@ -22,6 +22,12 @@ public class DevicePeerAdapter extends BaseAdapter {
     private ArrayList<Peer> mPeerList;
     private final Context mContext;
 
+    public DevicePeerAdapter(boolean isServer, Context context) {
+        mPeerList = new ArrayList<>();
+        mContext = context;
+        mIsServer = isServer;
+    }
+
     public DevicePeerAdapter(ArrayList<Peer> peerList, boolean isServer, Context context) {
         mPeerList = peerList;
         mContext = context;
