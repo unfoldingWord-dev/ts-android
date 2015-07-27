@@ -201,7 +201,7 @@ public class ImportingService extends NetworkService {
      * @param command
      * @param data
      */
-    private void onCommandReceived(Peer server, String command, String[] data) {
+    private void onCommandReceived(final Peer server, String command, String[] data) {
         switch(command) {
             case SocketMessages.MSG_PROJECT_ARCHIVE:
                 // receive project archive from server

@@ -50,10 +50,10 @@ public class BroadcastListenerService extends NetworkService {
     public int onStartCommand(Intent intent, int flags, int startid) {
         Bundle args = intent.getExtras();
         if(args != null) {
-            int UDPport = args.getInt(PARAM_BROADCAST_PORT);
-            String serviceName = args.getString(PARAM_SERVICE_NAME);
-            int serverTTL = args.getInt(PARAM_SERVER_TTL);
-            int refreshFrequency = args.getInt(PARAM_REFRESH_FREQUENCY);
+            final int UDPport = args.getInt(PARAM_BROADCAST_PORT);
+            final String serviceName = args.getString(PARAM_SERVICE_NAME);
+            final int serverTTL = args.getInt(PARAM_SERVER_TTL);
+            final int refreshFrequency = args.getInt(PARAM_REFRESH_FREQUENCY);
             // listener thread
             mBroadcastListenerRunnable = new BroadcastListenerRunnable(UDPport, new BroadcastListenerRunnable.OnBroadcastListenerEventListener() {
                 @Override

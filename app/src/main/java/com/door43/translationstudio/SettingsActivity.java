@@ -22,6 +22,8 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.TTFAnalyzer;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -151,11 +153,11 @@ public class SettingsActivity extends PreferenceActivity {
                     TTFAnalyzer analyzer = new TTFAnalyzer();
                     String fontname = "";
                     fontname = analyzer.getTtfFontName(typeface.getAbsolutePath());
-                    if(fontname != null) {
-                        // add valid fonts to the list
-                        entries.add(fontname);
-                        entryValues.add(fileList[i]);
+                    if(fontname == null) {
+                        fontname = FilenameUtils.removeExtension(typeface.getName());
                     }
+                    entries.add(fontname);
+                    entryValues.add(fileList[i]);
                 }
             }
         }
@@ -316,11 +318,12 @@ public class SettingsActivity extends PreferenceActivity {
                         TTFAnalyzer analyzer = new TTFAnalyzer();
                         String fontname = "";
                         fontname = analyzer.getTtfFontName(typeface.getAbsolutePath());
-                        if(fontname != null) {
-                            // add valid fonts to the list
-                            entries.add(fontname);
-                            entryValues.add(fileList[i]);
+                        if(fontname == null) {
+                            fontname = FilenameUtils.removeExtension(typeface.getName());
                         }
+                        // add valid fonts to the list
+                        entries.add(fontname);
+                        entryValues.add(fileList[i]);
                     }
                 }
             }
