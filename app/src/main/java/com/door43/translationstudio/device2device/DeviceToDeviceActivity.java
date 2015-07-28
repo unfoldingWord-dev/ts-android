@@ -4,15 +4,16 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Network;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,58 +28,38 @@ import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
 import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.events.ChoseProjectToImportEvent;
-import com.door43.translationstudio.network.Client;
-import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.projects.PseudoProject;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ExportingService;
 import com.door43.translationstudio.service.ImportingService;
-import com.door43.util.ListMap;
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.service.NetworkService;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.RSAEncryption;
-import com.door43.util.StringUtilities;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.squareup.otto.Subscribe;
-import com.tozny.crypto.android.AesCbcWithIntegrity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static com.tozny.crypto.android.AesCbcWithIntegrity.decryptString;
-import static com.tozny.crypto.android.AesCbcWithIntegrity.encrypt;
-import static com.tozny.crypto.android.AesCbcWithIntegrity.generateKey;
-import static com.tozny.crypto.android.AesCbcWithIntegrity.keyString;
-import static com.tozny.crypto.android.AesCbcWithIntegrity.keys;
-
 public class DeviceToDeviceActivity extends TranslatorBaseActivity implements ExportingService.Callbacks, ImportingService.Callbacks, BroadcastListenerService.Callbacks {
+    private static final int REFRESH_FREQUENCY = 5000;
+    private static final int SERVER_TTL = 10000;
     private boolean mStartAsServer = false;
     private DevicePeerAdapter mAdapter;
     private ProgressBar mLoadingBar;
@@ -204,6 +185,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                 }
                 startService(importServiceIntent);
             }
+            bindService(importServiceIntent, mImportConnection, Context.BIND_AUTO_CREATE);
         }
 
         if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
@@ -273,23 +255,29 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     public void onDestroy() {
         if(mExportService != null) {
             mExportService.registerCallback(null);
+            try {
+                unbindService(mExportConnection);
+            } catch (Exception e) {
+                Logger.w(this.getClass().getName(), "Failed to unbind connection to export service", e);
+            }
         }
         if(mImportService != null) {
             mImportService.registerCallback(null);
+            try {
+                unbindService(mImportConnection);
+            } catch (Exception e) {
+                Logger.w(this.getClass().getName(), "Failed to unbind connection to import service", e);
+            }
         }
         if(mBroadcastListenerService != null) {
             mBroadcastListenerService.registerCallback(null);
+            try {
+                unbindService(mBroadcastListenerConnection);
+            } catch (Exception e) {
+                Logger.w(this.getClass().getName(), "Failed to unbind connection to listener service", e);
+            }
         }
-        try {
-            unbindService(mExportConnection);
-        } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "Failed to unbind connection to export service", e);
-        }
-        try {
-            unbindService(mImportConnection);
-        } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "Failed to unbind connection to import service", e);
-        }
+
         if(mShuttingDown) {
             // TODO: eventually we'll allow these services to run in the background.
             if (BroadcastService.isRunning() && broadcastServiceIntent != null) {
@@ -569,7 +557,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
 
     @Override
     public void onExportServiceError(Throwable e) {
-        Logger.e(this.getClass().getName(), "Export service encountered an exception", e);
+        Logger.e(this.getClass().getName(), "Export service encountered an exception: " + e.getMessage(), e);
     }
 
     @Override
@@ -577,7 +565,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         // begin listening for service broadcasts
         broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
         broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
+        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_REFRESH_FREQUENCY, REFRESH_FREQUENCY);
+        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVER_TTL, SERVER_TTL);
         startService(broadcastListenerServiceIntent);
+        bindService(broadcastListenerServiceIntent, mBroadcastListenerConnection, Context.BIND_AUTO_CREATE);
 
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
@@ -612,13 +603,62 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
 
     @Override
     public void onImportServiceError(Throwable e) {
-        Logger.e(this.getClass().getName(), "Import service encountered an exception", e);
+        Logger.e(this.getClass().getName(), "Import service encountered an exception: " + e.getMessage(), e);
+    }
+
+    @Override
+    public void onReceivedProjectList(Peer server, Model[] models) {
+        if(models.length > 0) {
+            showProjectSelectionDialog(server, models);
+        } else {
+            app().showMessageDialog(server.getIpAddress(), getResources().getString(R.string.no_projects_available_on_server));
+        }
+    }
+
+    @Override
+    public void onReceivedProject(Peer server, ProjectImport[] importStatuses) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+        app().closeToastMessage();
+        ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
+        newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+            @Override
+            public void onOk(ProjectImport[] requests) {
+                showProgress(getResources().getString(R.string.loading));
+                // TODO: we need to tell the import service what we want to import. It needs to be able to keep track of multiple imports.
+                for (ProjectImport r : requests) {
+                    Sharing.importProject(r);
+                }
+                Sharing.cleanImport(requests);
+//                file.delete();
+                hideProgress();
+                app().showToastMessage(R.string.success);
+            }
+
+            @Override
+            public void onCancel(ProjectImport[] requests) {
+                // TODO: tell the import service to cancel.
+                // import was aborted
+                Sharing.cleanImport(requests);
+//                file.delete();
+            }
+        });
+        // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
+        newFragment.setImportRequests(importStatuses);
+        newFragment.show(ft, "dialog");
+        hideProgress();
     }
 
     @Override
     public void onFoundServer(Peer server) {
-        // TODO: identify which api to use based on the server version: server.getVersion()
-        // This will allow clients to identify what features a server provides.
+        switch(server.getVersion()) {
+            default:
+                // TODO: initialize the api that will be used to handle this version of the server
+        }
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override

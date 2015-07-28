@@ -23,13 +23,13 @@ import java.util.TimerTask;
  * Broadcasts services provided by this device on the network
  */
 public class BroadcastService extends NetworkService {
-    private static final Timer sTimer = new Timer();
     public static final String PARAM_BROADCAST_PORT = "param_broadcast_udp_port";
     public static final String PARAM_SERVICE_PORT = "param_service_tcp_port";
     public static final String PARAM_FREQUENCY = "param_broadcast_frequency";
     public static final String PARAM_SERVICE_NAME = "param_service_name";
-    private static DatagramSocket sSocket;
     private static boolean sRunning = false;
+    private DatagramSocket mSocket;
+    private Timer mTimer;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -39,9 +39,10 @@ public class BroadcastService extends NetworkService {
     @Override
     public void onCreate() {
         Logger.i(this.getClass().getName(), "Starting broadcaster");
+        mTimer = new Timer();
         try {
-            sSocket = new DatagramSocket();
-            sSocket.setBroadcast(true);
+            mSocket = new DatagramSocket();
+            mSocket.setBroadcast(true);
         } catch (SocketException e) {
             // TODO: notify app
             Logger.e(this.getClass().getName(), "Failed to start the broadcaster", e);
@@ -90,11 +91,11 @@ public class BroadcastService extends NetworkService {
                 final DatagramPacket packet = new DatagramPacket(data.getBytes(), data.length(), ipAddress, udpPort);
 
                 // schedule broadcast
-                sTimer.scheduleAtFixedRate(new TimerTask() {
+                mTimer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
                         try {
-                            sSocket.send(packet);
+                            mSocket.send(packet);
                         } catch (IOException e) {
                             Logger.e(this.getClass().getName(), "Failed to send the broadcast packet", e);
                         }
@@ -117,11 +118,11 @@ public class BroadcastService extends NetworkService {
      * Stops the service
      */
     private void stopService() {
-        if(sTimer != null) {
-            sTimer.cancel();
+        if(mTimer != null) {
+            mTimer.cancel();
         }
-        if(sSocket != null) {
-            sSocket.close();
+        if(mSocket != null) {
+            mSocket.close();
         }
         sRunning = false;
         Logger.i(this.getClass().getName(), "Stopping broadcaster");

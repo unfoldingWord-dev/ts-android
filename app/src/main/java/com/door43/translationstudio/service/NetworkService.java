@@ -153,7 +153,7 @@ public abstract class NetworkService extends Service {
      * TODO: I don't think we should attempt to throw too much into the client and server classes.
      * They work well at establishing initial contact. We should place this elsewhere.
      */
-    public ServerSocket generateWriteSocket(final OnSocketEventListener listener) {
+    public ServerSocket openWriteSocket(final OnSocketEventListener listener) {
         final ServerSocket serverSocket;
         try {
             serverSocket = new ServerSocket(0);
@@ -190,7 +190,7 @@ public abstract class NetworkService extends Service {
      * @param listener
      * @return
      */
-    public void generateReadSocket(final Peer peer, final int port, final OnSocketEventListener listener) {
+    public void openReadSocket(final Peer peer, final int port, final OnSocketEventListener listener) {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {

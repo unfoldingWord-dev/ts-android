@@ -1,20 +1,18 @@
 package com.door43.translationstudio.service;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.device2device.PeerStatusKeys;
 import com.door43.translationstudio.device2device.SocketMessages;
-import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.network.Service;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
@@ -72,16 +70,21 @@ public class ImportingService extends NetworkService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startid) {
-        Bundle args = intent.getExtras();
-        if(args != null) {
-            mPrivateKey = (PrivateKey)args.get(PARAM_PRIVATE_KEY);
-            mPublicKey = args.getString(PARAM_PUBLIC_KEY);
-            return START_STICKY;
-        } else {
-            Logger.e(this.getClass().getName(), "Import service requires arguments");
-            stopService();
-            return START_NOT_STICKY;
+        if(intent != null) {
+            Bundle args = intent.getExtras();
+            if (args != null && args.containsKey(PARAM_PRIVATE_KEY) && args.containsKey(PARAM_PUBLIC_KEY)) {
+                mPrivateKey = (PrivateKey) args.get(PARAM_PRIVATE_KEY);
+                mPublicKey = args.getString(PARAM_PUBLIC_KEY);
+                if (mListener != null) {
+                    mListener.onImportServiceReady();
+                }
+                sRunning = true;
+                return START_STICKY;
+            }
         }
+        Logger.e(this.getClass().getName(), "Import service requires arguments");
+        stopService();
+        return START_NOT_STICKY;
     }
 
     /**
@@ -165,8 +168,7 @@ public class ImportingService extends NetworkService {
             message = decryptMessage(mPrivateKey, message);
             if(message != null) {
                 String[] data = StringUtilities.chunk(message, ":");
-                Logger.i(this.getClass().getName(), "message from " + server.getIpAddress() + ": " + message);
-                onCommandReceived(server, data[0], Arrays.copyOfRange(data, 1, data.length-1));
+                onCommandReceived(server, data[0], Arrays.copyOfRange(data, 1, data.length));
             } else if(mListener != null) {
                 mListener.onImportServiceError(new Exception("Message descryption failed"));
             }
@@ -174,6 +176,7 @@ public class ImportingService extends NetworkService {
             String[] data = StringUtilities.chunk(message, ":");
             switch(data[0]) {
                 case SocketMessages.MSG_PUBLIC_KEY:
+                    Logger.i(this.getClass().getName(), "connected to server " + server.getIpAddress());
                     // receive the server's public key
                     server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
                     server.keyStore.add(PeerStatusKeys.WAITING, false);
@@ -184,6 +187,7 @@ public class ImportingService extends NetworkService {
                     }
                     break;
                 case SocketMessages.MSG_OK:
+                    Logger.i(this.getClass().getName(), "accepted by server " + server.getIpAddress());
                     // we are authorized to access the server
                     // send public key to server
                     sendMessage(server, SocketMessages.MSG_PUBLIC_KEY + ":" + mPublicKey);
@@ -204,10 +208,11 @@ public class ImportingService extends NetworkService {
     private void onCommandReceived(final Peer server, String command, String[] data) {
         switch(command) {
             case SocketMessages.MSG_PROJECT_ARCHIVE:
+                Logger.i(this.getClass().getName(), "received project archive from " + server.getIpAddress());
                 // receive project archive from server
                 JSONObject infoJson;
                 try {
-                    infoJson = new JSONObject(data[1]);
+                    infoJson = new JSONObject(data[0]);
                 } catch (JSONException e) {
                     if(mListener != null) {
                         mListener.onImportServiceError(e);
@@ -230,13 +235,13 @@ public class ImportingService extends NetworkService {
                         break;
                     }
                     // the server is sending a project archive
-                    generateReadSocket(server, port, new OnSocketEventListener() {
+                    openReadSocket(server, port, new OnSocketEventListener() {
                         @Override
                         public void onOpen(Connection connection) {
                             connection.setOnCloseListener(new Connection.OnCloseListener() {
                                 @Override
                                 public void onClose() {
-                                    if(mListener != null) {
+                                    if (mListener != null) {
                                         mListener.onImportServiceError(new Exception("Socket was closed before download completed"));
                                     }
                                 }
@@ -256,13 +261,13 @@ public class ImportingService extends NetworkService {
                                 while ((count = in.read(buffer)) > 0) {
                                     totalCount += count;
                                     server.keyStore.add(PeerStatusKeys.PROGRESS, totalCount / ((int) size) * 100);
-                                    if(mListener != null) {
+                                    if (mListener != null) {
                                         mListener.onServerConnectionChanged(server);
                                     }
                                     out.write(buffer, 0, count);
                                 }
                                 server.keyStore.add(PeerStatusKeys.PROGRESS, 0);
-                                if(mListener != null) {
+                                if (mListener != null) {
                                     mListener.onServerConnectionChanged(server);
                                 }
                                 out.close();
@@ -278,60 +283,30 @@ public class ImportingService extends NetworkService {
                                         }
                                     }
                                     if (importWarnings) {
-                                        // review the import status in a dialog
-                                        // TODO: stash the changes and ask the user to review warnings
-//                                        FragmentTransaction ft = getFragmentManager().beginTransaction();
-//                                        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-//                                        if (prev != null) {
-//                                            ft.remove(prev);
-//                                        }
-//                                        ft.addToBackStack(null);
-//                                        app().closeToastMessage();
-//                                        ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
-//                                        newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
-//                                            @Override
-//                                            public void onOk(ProjectImport[] requests) {
-//                                                showProgress(getResources().getString(R.string.loading));
-//                                                for (ProjectImport r : requests) {
-//                                                    Sharing.importProject(r);
-//                                                }
-//                                                Sharing.cleanImport(requests);
-//                                                file.delete();
-//                                                hideProgress();
-//                                                app().showToastMessage(R.string.success);
-//                                            }
-//
-//                                            @Override
-//                                            public void onCancel(ProjectImport[] requests) {
-//                                                // import was aborted
-//                                                Sharing.cleanImport(requests);
-//                                                file.delete();
-//                                            }
-//                                        });
-//                                        // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
-//                                        newFragment.setImportRequests(importStatuses);
-//                                        newFragment.show(ft, "dialog");
+                                        if(mListener != null) {
+                                            mListener.onReceivedProject(server, importStatuses);
+                                        }
                                     } else {
                                         for (ProjectImport r : importStatuses) {
                                             Sharing.importProject(r);
                                         }
                                         Sharing.cleanImport(importStatuses);
                                         file.delete();
-//                                        app().showToastMessage(R.string.success);
-                                        // TODO: notify we are done
+                                        if(mListener != null) {
+                                            mListener.onReceivedProject(server, new ProjectImport[0]);
+                                        }
                                     }
-//                                    hideProgress();
                                 } else {
                                     file.delete();
                                     Logger.w(this.getClass().getName(), "failed to import the project archive");
-                                    if(mListener != null) {
+                                    if (mListener != null) {
                                         mListener.onImportServiceError(new Exception("failed to import the project archive"));
                                     }
                                 }
                             } catch (IOException e) {
                                 Logger.e(this.getClass().getName(), "Failed to download the file", e);
                                 file.delete();
-                                if(mListener != null) {
+                                if (mListener != null) {
                                     mListener.onImportServiceError(e);
                                 }
                             }
@@ -345,8 +320,9 @@ public class ImportingService extends NetworkService {
                 }
                 break;
             case SocketMessages.MSG_PROJECT_LIST:
+                Logger.i(this.getClass().getName(), "received project list from " + server.getIpAddress());
                 // the sever gave us the list of available projects for import
-                String library = data[1];
+                String library = data[0];
                 final ListMap<Model> listableProjects = new ListMap<>();
 
                 JSONArray json;
@@ -451,22 +427,18 @@ public class ImportingService extends NetworkService {
                         }
                     }
                 }
-
-//                handle.post(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        hideProgress();
-//                        if(listableProjects.size() > 0) {
-//                            showProjectSelectionDialog(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
-//                        } else {
-//                            // there are no available projects on the server
-//                            // TODO: eventually we'll want to display the user friendly name of the server.
-//                            app().showMessageDialog(server.getIpAddress(), getResources().getString(R.string.no_projects_available_on_server));
-//                        }
-//                    }
-//                });
+                if(mListener != null) {
+                    mListener.onReceivedProjectList(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
+                }
+                break;
+            case SocketMessages.MSG_INVALID_REQUEST:
+                // TODO: do something about this.
+                if(mListener != null) {
+                    mListener.onImportServiceError(new Throwable("Invalid request"));
+                }
                 break;
             default:
+                Logger.i(this.getClass().getName(), "received invalid request from " + server.getIpAddress() + ": " + command);
                 sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
         }
     }
@@ -479,6 +451,8 @@ public class ImportingService extends NetworkService {
         void onServerConnectionLost(Peer peer);
         void onServerConnectionChanged(Peer peer);
         void onImportServiceError(Throwable e);
+        void onReceivedProjectList(Peer server, Model[] models);
+        void onReceivedProject(Peer server, ProjectImport[] importStatuses);
     }
     /**
      * Class to retrieve instance of service
@@ -515,7 +489,9 @@ public class ImportingService extends NetworkService {
                 // we store references to all connections so we can access them later
                 mServerConnections.put(mConnection.getIpAddress(), mConnection);
             } catch (Exception e) {
-                mListener.onImportServiceError(e);
+                if(mListener != null) {
+                    mListener.onImportServiceError(e);
+                }
                 Thread.currentThread().interrupt();
                 return;
             }
@@ -536,7 +512,9 @@ public class ImportingService extends NetworkService {
                 mServerConnections.remove(mConnection.getIpAddress());
             }
             removePeer(mServer);
-            mListener.onServerConnectionLost(mServer);
+            if(mListener != null) {
+                mListener.onServerConnectionLost(mServer);
+            }
         }
     }
 }

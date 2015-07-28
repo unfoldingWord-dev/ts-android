@@ -29,6 +29,9 @@
         <service android:name=".service.BroadcastService"
             android:label="Services Broadcaster">
         </service>
+        <service android:name=".service.BroadcastListenerService"
+            android:label="Services Listener">
+        </service>
         <service android:name=".service.ExportingService"
             android:label="Exporting Service">
         </service>

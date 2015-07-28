@@ -53,7 +53,7 @@ public class ExportingService extends NetworkService {
     private static Map<String, Connection> mClientConnections = new HashMap<>();
     private PrivateKey mPrivateKey;
     private String mPublicKey;
-    private ServerSocket mServerSocket;
+    private static ServerSocket mServerSocket;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -69,18 +69,19 @@ public class ExportingService extends NetworkService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startid) {
-        Bundle args = intent.getExtras();
-        if(args != null) {
-            mPrivateKey = (PrivateKey)args.get(PARAM_PRIVATE_KEY);
-            mPublicKey = args.getString(PARAM_PUBLIC_KEY);
-            mServerThread = new Thread(new ServerRunnable());
-            mServerThread.start();
-            return START_STICKY;
-        } else {
-            Logger.e(this.getClass().getName(), "Export service requires arguments");
-            stopService();
-            return START_NOT_STICKY;
+        if(intent != null) {
+            Bundle args = intent.getExtras();
+            if (args != null && args.containsKey(PARAM_PRIVATE_KEY) && args.containsKey(PARAM_PUBLIC_KEY)) {
+                mPrivateKey = (PrivateKey) args.get(PARAM_PRIVATE_KEY);
+                mPublicKey = args.getString(PARAM_PUBLIC_KEY);
+                mServerThread = new Thread(new ServerRunnable());
+                mServerThread.start();
+                return START_STICKY;
+            }
         }
+        Logger.e(this.getClass().getName(), "Export service requires arguments");
+        stopService();
+        return START_NOT_STICKY;
     }
 
     @Override
@@ -157,8 +158,7 @@ public class ExportingService extends NetworkService {
                 message = decryptMessage(mPrivateKey, message);
                 if(message != null) {
                     String[] data = StringUtilities.chunk(message, ":");
-                    Logger.i(this.getClass().getName(), "message from " + client.getIpAddress() + ": " + message);
-                    onCommandReceived(client, data[0], Arrays.copyOfRange(data, 1, data.length - 1));
+                    onCommandReceived(client, data[0], Arrays.copyOfRange(data, 1, data.length));
                 } else if(mListener != null) {
                     mListener.onExportServiceError(new Exception("Message descryption failed"));
                 }
@@ -166,6 +166,7 @@ public class ExportingService extends NetworkService {
                 String[] data = StringUtilities.chunk(message, ":");
                 switch(data[0]) {
                     case SocketMessages.MSG_PUBLIC_KEY:
+                        Logger.i(this.getClass().getName(), "connected to client "+client.getIpAddress());
                         // receive the client's public key
                         client.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
 
@@ -198,13 +199,14 @@ public class ExportingService extends NetworkService {
     private void onCommandReceived(Peer client, String command, String[] data) {
         switch(command) {
             case SocketMessages.MSG_PROJECT_LIST:
+                Logger.i(this.getClass().getName(), "received project list request from " + client.getIpAddress());
                 // send the project list to the client
                 // TODO: we shouldn't use the project manager here because this may be running in the background (eventually)
 
                 // read preferred source languages (for better readability on the client)
                 List<Language> preferredLanguages = new ArrayList<>();
                 try {
-                    JSONArray preferredLanguagesJson = new JSONArray(data[1]);
+                    JSONArray preferredLanguagesJson = new JSONArray(data[0]);
                     for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
                         Language lang = AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
                         if(lang != null) {
@@ -222,11 +224,12 @@ public class ExportingService extends NetworkService {
                 sendMessage(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 break;
             case SocketMessages.MSG_PROJECT_ARCHIVE:
+                Logger.i(this.getClass().getName(), "received project archive request from " + client.getIpAddress());
                 // TODO: we shouldn't use the project manager here because this may be running in the background (eventually)
                 // send the project archive to the client
                 JSONObject json;
                 try {
-                    json = new JSONObject(data[1]);
+                    json = new JSONObject(data[0]);
                 } catch (final JSONException e) {
                     Logger.e(this.getClass().getName(), "failed to parse project archive response", e);
                     sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
@@ -272,7 +275,7 @@ public class ExportingService extends NetworkService {
                                 final File archive = new File(path);
                                 if(archive.exists()) {
                                     // open a socket to send the project
-                                    ServerSocket fileSocket = generateWriteSocket(new OnSocketEventListener() {
+                                    ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
                                         @Override
                                         public void onOpen(Connection connection) {
                                             // send an archive of the current project to the connection
@@ -321,7 +324,15 @@ public class ExportingService extends NetworkService {
                 } else {
                     sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
+                break;
+            case SocketMessages.MSG_INVALID_REQUEST:
+                // TODO: do something about this.
+                if(mListener != null) {
+                    mListener.onExportServiceError(new Throwable("Invalid request"));
+                }
+                break;
             default:
+                Logger.i(this.getClass().getName(), "received invalid request from " + client.getIpAddress() + ": " + command);
                 sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
         }
     }
@@ -378,7 +389,9 @@ public class ExportingService extends NetworkService {
                     ClientRunnable clientRunnable = new ClientRunnable(socket);
                     new Thread(clientRunnable).start();
                 } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "failed to accept socket", e);
+                    if(!Thread.currentThread().isInterrupted()) {
+                        Logger.e(this.getClass().getName(), "failed to accept socket", e);
+                    }
                 }
             }
             try {
