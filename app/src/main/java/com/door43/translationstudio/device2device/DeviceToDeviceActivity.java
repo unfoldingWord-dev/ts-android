@@ -121,6 +121,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             mBroadcastListenerService = binder.getServiceInstance();
             mBroadcastListenerService.registerCallback(DeviceToDeviceActivity.this);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to broadcast listener service");
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    updatePeerList(mBroadcastListenerService.getPeers());
+                }
+            });
         }
 
         @Override
@@ -227,6 +234,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                     Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
                     finish();
                 }
+                Logger.i(this.getClass().getName(), "Starting export service");
                 startService(exportServiceIntent);
             }
             bindService(exportServiceIntent, mExportConnection, Context.BIND_AUTO_CREATE);
@@ -250,6 +258,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                     Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
                     finish();
                 }
+                Logger.i(this.getClass().getName(), "Starting import service");
                 startService(importServiceIntent);
             }
             bindService(importServiceIntent, mImportConnection, Context.BIND_AUTO_CREATE);
@@ -263,6 +272,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             mExportService.registerCallback(null);
             try {
                 unbindService(mExportConnection);
+                Logger.i(this.getClass().getName(), "Disconnected from export service");
             } catch (Exception e) {
                 Logger.w(this.getClass().getName(), "Failed to unbind connection to export service", e);
             }
@@ -271,6 +281,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             mImportService.registerCallback(null);
             try {
                 unbindService(mImportConnection);
+                Logger.i(this.getClass().getName(), "Disconnected from import service");
             } catch (Exception e) {
                 Logger.w(this.getClass().getName(), "Failed to unbind connection to import service", e);
             }
@@ -279,6 +290,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             mBroadcastListenerService.registerCallback(null);
             try {
                 unbindService(mBroadcastListenerConnection);
+                Logger.i(this.getClass().getName(), "Disconnected from broadcast listener service");
             } catch (Exception e) {
                 Logger.w(this.getClass().getName(), "Failed to unbind connection to listener service", e);
             }
@@ -470,8 +482,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             broadcastServiceIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
             broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
             startService(broadcastServiceIntent);
-            bindService(broadcastServiceIntent, mBroadcastConnection, Context.BIND_AUTO_CREATE);
         }
+        bindService(broadcastServiceIntent, mBroadcastConnection, Context.BIND_AUTO_CREATE);
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -528,15 +540,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_REFRESH_FREQUENCY, REFRESH_FREQUENCY);
             broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVER_TTL, SERVER_TTL);
             startService(broadcastListenerServiceIntent);
-            bindService(broadcastListenerServiceIntent, mBroadcastListenerConnection, Context.BIND_AUTO_CREATE);
         }
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                updatePeerList(mImportService.getPeers());
-            }
-        });
+        bindService(broadcastListenerServiceIntent, mBroadcastListenerConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
