@@ -7,7 +7,7 @@
 
     <string name="pref_default_translation_typeface" translatable="false">GentiumPlus.ttf</string>
     <string-array name="pref_translation_typeface_values" translatable="false">
-        <item>GentiumPlus.ttf</item>
+        <item>NotoSans-Regular.ttf</item>
     </string-array>
 
     <string name="pref_default_typeface_size" translatable="false">25</string>

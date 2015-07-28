@@ -71,17 +71,6 @@ public class MainApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.sharing_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
 
-        // HACK: JL 07/27/2015 most of the fonts do not work on Lenovo A10 so we change the default to Noto.
-        if(Build.BRAND.equals("Lenovo") && Build.DEVICE.equals("A10-70F")) {
-            String defaultTypeface = getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, "");
-            if(defaultTypeface.equals(getResources().getString(R.string.pref_default_translation_typeface))) {
-                Logger.i(this.getClass().getName(), "Changed the default font to Noto Sans Regular");
-                SharedPreferences.Editor editor = getUserPreferences().edit();
-                editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, "NotoSans-Regular.ttf");
-                editor.apply();
-            }
-        }
-
         // begins the backup manager service
         Intent backupIntent = new Intent(this, BackupManager.class);
         startService(backupIntent);
