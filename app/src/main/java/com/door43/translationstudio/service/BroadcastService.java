@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 
@@ -27,13 +28,30 @@ public class BroadcastService extends NetworkService {
     public static final String PARAM_SERVICE_PORT = "param_service_tcp_port";
     public static final String PARAM_FREQUENCY = "param_broadcast_frequency";
     public static final String PARAM_SERVICE_NAME = "param_service_name";
-    private static boolean sRunning = false;
+    private final IBinder mBinder = new LocalBinder();
     private DatagramSocket mSocket;
     private Timer mTimer;
+    private static Boolean mIsRunning = false;
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return mBinder;
+    }
+
+    /**
+     * Sets whether or not the service is running
+     * @param running
+     */
+    protected void setRunning(Boolean running) {
+        mIsRunning = running;
+    }
+
+    /**
+     * Checks if the service is currently running
+     * @return
+     */
+    public static boolean isRunning() {
+        return mIsRunning;
     }
 
     @Override
@@ -55,7 +73,7 @@ public class BroadcastService extends NetworkService {
         if(intent != null) {
             Bundle args = intent.getExtras();
             if (args != null) {
-                sRunning = true;
+                setRunning(true);
                 final int udpPort = args.getInt(PARAM_BROADCAST_PORT);
                 final int serviceTCPPort = args.getInt(PARAM_SERVICE_PORT);
                 final int broadcastFrequency = args.getInt(PARAM_FREQUENCY);
@@ -124,15 +142,16 @@ public class BroadcastService extends NetworkService {
         if(mSocket != null) {
             mSocket.close();
         }
-        sRunning = false;
+        setRunning(false);
         Logger.i(this.getClass().getName(), "Stopping broadcaster");
     }
 
     /**
-     * Checks if the service is running
-     * @return
+     * Class to retrieve instance of service
      */
-    public static boolean isRunning() {
-        return sRunning;
+    public class LocalBinder extends Binder {
+        public BroadcastService getServiceInstance() {
+            return BroadcastService.this;
+        }
     }
 }

@@ -4,18 +4,14 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
-import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Network;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -39,7 +35,6 @@ import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ExportingService;
 import com.door43.translationstudio.service.ImportingService;
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.service.NetworkService;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.RSAEncryption;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
@@ -50,8 +45,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
-import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
@@ -69,10 +62,10 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     private File mPrivateKeyFile;
     private static Map<String, DialogFragment> mPeerDialogs = new HashMap<>();
     private static final String SERVICE_NAME = "tS";
-    private boolean mShuttingDown = true;
     private static final int PORT_CLIENT_UDP = 9939;
     private ExportingService mExportService;
     private ImportingService mImportService;
+    private BroadcastService mBroadcastService;
     private BroadcastListenerService mBroadcastListenerService;
 
     private ServiceConnection mExportConnection = new ServiceConnection() {
@@ -88,6 +81,20 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         public void onServiceDisconnected(ComponentName name) {
             mExportService.registerCallback(null);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from export service");
+            // TODO: notify activity that service was dropped.
+        }
+    };
+    private ServiceConnection mBroadcastConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            BroadcastService.LocalBinder binder = (BroadcastService.LocalBinder) service;
+            mBroadcastService = binder.getServiceInstance();
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to broadcast service");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from broadcast service");
             // TODO: notify activity that service was dropped.
         }
     };
@@ -140,54 +147,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
 
-        if(mStartAsServer) {
-            setTitle(R.string.export_to_device);
-            exportServiceIntent = new Intent(this, ExportingService.class);
-            broadcastServiceIntent = new Intent(this, BroadcastService.class);
-
-            // begin export service
-            if(!ExportingService.isRunning()) {
-                try {
-                    generateSessionKeys();
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to generate the session keys", e);
-                    finish();
-                }
-                try {
-                    exportServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, getPrivateKey());
-                    exportServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, getPublicKeyString());
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
-                    finish();
-                }
-                startService(exportServiceIntent);
-            }
-            bindService(exportServiceIntent, mExportConnection, Context.BIND_AUTO_CREATE);
-        } else {
-            setTitle(R.string.import_from_device);
-            importServiceIntent = new Intent(this, ImportingService.class);
-            broadcastListenerServiceIntent = new Intent(this, BroadcastListenerService.class);
-
-            // begin import service
-            if(!ImportingService.isRunning()) {
-                try {
-                    generateSessionKeys();
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to generate the session keys", e);
-                    finish();
-                }
-                try {
-                    importServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, getPrivateKey());
-                    importServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, getPublicKeyString());
-                } catch (Exception e) {
-                    Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
-                    finish();
-                }
-                startService(importServiceIntent);
-            }
-            bindService(importServiceIntent, mImportConnection, Context.BIND_AUTO_CREATE);
-        }
-
         if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
 
         // set up the ui
@@ -220,17 +179,11 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                         if(!server.keyStore.getBool(PeerStatusKeys.WAITING)) {
                             // connect to the server, implicitly requesting permission to access it
                             server.keyStore.add(PeerStatusKeys.WAITING, true);
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    updatePeerList();
-                                }
-                            });
+                            updatePeerList(mImportService.getPeers());
                             mImportService.connectToServer(server);
                         }
                     } else {
                         // request a list of projects from the server.
-                        // TODO: the response to this request should be cached until the server disconnects.
                         showProgress(getResources().getString(R.string.loading));
                         // Include the suggested language(s) in which the results should be returned (if possible)
                         // This just makes it easier for users to read the results
@@ -251,8 +204,61 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         });
     }
 
+    public void onStart() {
+        super.onStart();
+        // start and/or connect to services
+        if(mStartAsServer) {
+            setTitle(R.string.export_to_device);
+            exportServiceIntent = new Intent(this, ExportingService.class);
+            broadcastServiceIntent = new Intent(this, BroadcastService.class);
+
+            // begin export service
+            if(!ExportingService.isRunning()) {
+                try {
+                    generateSessionKeys();
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to generate the session keys", e);
+                    finish();
+                }
+                try {
+                    exportServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile));
+                    exportServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile)));
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
+                    finish();
+                }
+                startService(exportServiceIntent);
+            }
+            bindService(exportServiceIntent, mExportConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            setTitle(R.string.import_from_device);
+            importServiceIntent = new Intent(this, ImportingService.class);
+            broadcastListenerServiceIntent = new Intent(this, BroadcastListenerService.class);
+
+            // begin import service
+            if(!ImportingService.isRunning()) {
+                try {
+                    generateSessionKeys();
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to generate the session keys", e);
+                    finish();
+                }
+                try {
+                    importServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile));
+                    importServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile)));
+                } catch (Exception e) {
+                    Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
+                    finish();
+                }
+                startService(importServiceIntent);
+            }
+            bindService(importServiceIntent, mImportConnection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
     @Override
-    public void onDestroy() {
+    public void onStop() {
+        // disconnect from services
         if(mExportService != null) {
             mExportService.registerCallback(null);
             try {
@@ -277,31 +283,37 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                 Logger.w(this.getClass().getName(), "Failed to unbind connection to listener service", e);
             }
         }
+        super.onStop();
+    }
 
-        if(mShuttingDown) {
-            // TODO: eventually we'll allow these services to run in the background.
+    @Override
+    public void onDestroy() {
+        if(isFinishing()) {
+            // stop services
             if (BroadcastService.isRunning() && broadcastServiceIntent != null) {
-                stopService(broadcastServiceIntent);
+                if(!stopService(broadcastServiceIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastService.class.getName());
+                }
             }
             if (ExportingService.isRunning() && exportServiceIntent != null) {
-                stopService(exportServiceIntent);
+                if(!stopService(exportServiceIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + ExportingService.class.getName());
+                }
             }
             if (BroadcastListenerService.isRunning() && broadcastListenerServiceIntent != null) {
-                stopService(broadcastListenerServiceIntent);
+                if(!stopService(broadcastListenerServiceIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastListenerService.class.getName());
+                }
             }
             if (ImportingService.isRunning() && importServiceIntent != null) {
-                stopService(importServiceIntent);
+                if(!stopService(importServiceIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + ImportingService.class.getName());
+                }
             }
             mProgressDialog = null;
             mPeerDialogs.clear();
         }
         super.onDestroy();
-    }
-
-    @Override
-    public boolean isFinishing() {
-        // TODO: this is where we should perform shutdown operations
-        return super.isFinishing();
     }
 
     /**
@@ -312,28 +324,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         if(!mPrivateKeyFile.exists() || !mPublicKeyFile.exists()) {
             RSAEncryption.generateKeys(mPrivateKeyFile, mPublicKeyFile);
         }
-    }
-
-    /**
-     * Returns the public key used for this session
-     * @return the raw public key string
-     * @throws IOException
-     */
-    public String getPublicKeyString() throws Exception {
-        return RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile));
-    }
-
-    /**
-     * Returns the private key used for this session
-     * @return a private key object or null
-     * @throws IOException
-     */
-    public PrivateKey getPrivateKey() throws IOException {
-        return RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile);
-    }
-
-    @Deprecated
-    public void updatePeerList() {
     }
 
     /**
@@ -359,27 +349,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         if(mAdapter != null) {
             mAdapter.setPeerList(peers);
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-//        getMenuInflater().inflate(R.menu.menu_device_to_device, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        if (id == R.id.action_share_to_all) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     /**
@@ -472,7 +441,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             @Override
             public void run() {
                 mProgressDialog.setMessage(message);
-                if(!mProgressDialog.isShowing()) {
+                if (!mProgressDialog.isShowing()) {
                     mProgressDialog.show();
                 }
             }
@@ -493,26 +462,16 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        mShuttingDown = false;
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        mShuttingDown = true;
-    }
-
-    @Override
     public void onExportServiceReady(int port) {
         // begin broadcasting services
-        broadcastServiceIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
-        broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_PORT, port);
-        broadcastServiceIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
-        broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
-        startService(broadcastServiceIntent);
-
+        if(!BroadcastService.isRunning()) {
+            broadcastServiceIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
+            broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_PORT, port);
+            broadcastServiceIntent.putExtra(BroadcastService.PARAM_FREQUENCY, 2000);
+            broadcastServiceIntent.putExtra(BroadcastService.PARAM_SERVICE_NAME, SERVICE_NAME);
+            startService(broadcastServiceIntent);
+            bindService(broadcastServiceIntent, mBroadcastConnection, Context.BIND_AUTO_CREATE);
+        }
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -563,13 +522,14 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     @Override
     public void onImportServiceReady() {
         // begin listening for service broadcasts
-        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
-        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
-        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_REFRESH_FREQUENCY, REFRESH_FREQUENCY);
-        broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVER_TTL, SERVER_TTL);
-        startService(broadcastListenerServiceIntent);
-        bindService(broadcastListenerServiceIntent, mBroadcastListenerConnection, Context.BIND_AUTO_CREATE);
-
+        if(!BroadcastListenerService.isRunning()) {
+            broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
+            broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVICE_NAME, SERVICE_NAME);
+            broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_REFRESH_FREQUENCY, REFRESH_FREQUENCY);
+            broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_SERVER_TTL, SERVER_TTL);
+            startService(broadcastListenerServiceIntent);
+            bindService(broadcastListenerServiceIntent, mBroadcastListenerConnection, Context.BIND_AUTO_CREATE);
+        }
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override

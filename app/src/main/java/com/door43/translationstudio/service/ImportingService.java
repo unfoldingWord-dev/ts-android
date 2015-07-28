@@ -51,10 +51,26 @@ public class ImportingService extends NetworkService {
     private static final String PARAM_PRIVATE_KEY = "param_private_key";
     private final IBinder mBinder = new LocalBinder();
     private Callbacks mListener;
-    private static boolean sRunning = false;
     private Map<String, Connection> mServerConnections = new HashMap<>();
     private PrivateKey mPrivateKey;
     private String mPublicKey;
+    private static Boolean mIsRunning = false;
+
+    /**
+     * Sets whether or not the service is running
+     * @param running
+     */
+    protected void setRunning(Boolean running) {
+        mIsRunning = running;
+    }
+
+    /**
+     * Checks if the service is currently running
+     * @return
+     */
+    public static boolean isRunning() {
+        return mIsRunning;
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -63,7 +79,7 @@ public class ImportingService extends NetworkService {
 
     public void registerCallback(Callbacks callback) {
         mListener = callback;
-        if(sRunning && mListener != null) {
+        if(isRunning() && mListener != null) {
             mListener.onImportServiceReady();
         }
     }
@@ -78,7 +94,7 @@ public class ImportingService extends NetworkService {
                 if (mListener != null) {
                     mListener.onImportServiceReady();
                 }
-                sRunning = true;
+                setRunning(true);
                 return START_STICKY;
             }
         }
@@ -104,15 +120,7 @@ public class ImportingService extends NetworkService {
      */
     public void stopService() {
         Logger.i(this.getClass().getName(), "Stopping import service");
-        sRunning = false;
-    }
-
-    /**
-     * Checks if the service is running
-     * @return
-     */
-    public static boolean isRunning() {
-        return sRunning;
+        setRunning(false);
     }
 
     @Override

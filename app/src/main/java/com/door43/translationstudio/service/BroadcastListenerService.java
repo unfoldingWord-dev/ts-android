@@ -22,12 +22,28 @@ public class BroadcastListenerService extends NetworkService {
     public static final String PARAM_REFRESH_FREQUENCY = "param_refresh_frequency";
     public static final String PARAM_BROADCAST_PORT = "param_broadcast_udp_port";
     public static final String PARAM_SERVICE_NAME = "param_service_name";
-    private static boolean sRunning = false;
     private final IBinder mBinder = new LocalBinder();
     private Thread mBroadcastListenerThread;
     private BroadcastListenerRunnable mBroadcastListenerRunnable;
     private Callbacks mListener;
     private Timer mCleanupTimer;
+    private static Boolean mIsRunning = false;
+
+    /**
+     * Sets whether or not the service is running
+     * @param running
+     */
+    protected void setRunning(Boolean running) {
+        mIsRunning = running;
+    }
+
+    /**
+     * Checks if the service is currently running
+     * @return
+     */
+    public static boolean isRunning() {
+        return mIsRunning;
+    }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -42,14 +58,6 @@ public class BroadcastListenerService extends NetworkService {
     public void onCreate() {
         Logger.i(this.getClass().getName(), "Starting broadcast listener");
         mCleanupTimer = new Timer();
-    }
-
-    /**
-     * Checks if the service is running
-     * @return
-     */
-    public static boolean isRunning() {
-        return sRunning;
     }
 
     @Override
@@ -104,7 +112,7 @@ public class BroadcastListenerService extends NetworkService {
                         }
                     }
                 }, 0, refreshFrequency);
-                sRunning = true;
+                setRunning(true);
                 return START_STICKY;
             }
         }
@@ -128,7 +136,7 @@ public class BroadcastListenerService extends NetworkService {
         if(mBroadcastListenerRunnable != null) {
             mBroadcastListenerRunnable.stop();
         }
-        sRunning = false;
+        setRunning(false);
         Logger.i(this.getClass().getName(), "Stopping broadcast listener");
     }
 

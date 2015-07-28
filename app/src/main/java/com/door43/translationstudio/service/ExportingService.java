@@ -45,24 +45,40 @@ import java.util.Map;
 public class ExportingService extends NetworkService {
     public static final String PARAM_PRIVATE_KEY = "param_private_key";
     public static final String PARAM_PUBLIC_KEY = "param_public_key";
+    private static Boolean mIsRunning = false;
     private final IBinder mBinder = new LocalBinder();
     private Callbacks mListener;
-    private static boolean sRunning = false;
-    private static int mPort = 0;
-    private static Thread mServerThread;
-    private static Map<String, Connection> mClientConnections = new HashMap<>();
+    private int mPort = 0;
+    private Thread mServerThread;
+    private Map<String, Connection> mClientConnections = new HashMap<>();
     private PrivateKey mPrivateKey;
     private String mPublicKey;
-    private static ServerSocket mServerSocket;
+    private ServerSocket mServerSocket;
 
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
     }
 
+    /**
+     * Sets whether or not the service is running
+     * @param running
+     */
+    protected void setRunning(Boolean running) {
+        mIsRunning = running;
+    }
+
+    /**
+     * Checks if the service is currently running
+     * @return
+     */
+    public static boolean isRunning() {
+        return mIsRunning;
+    }
+
     public void registerCallback(Callbacks callback) {
         mListener = callback;
-        if(sRunning && mListener != null) {
+        if(isRunning() && mListener != null) {
             mListener.onExportServiceReady(mPort);
         }
     }
@@ -109,15 +125,7 @@ public class ExportingService extends NetworkService {
             c.close();
         }
         mClientConnections.clear();
-        sRunning = false;
-    }
-
-    /**
-     * Checks if the service is running
-     * @return
-     */
-    public static boolean isRunning() {
-        return sRunning;
+        setRunning(false);
     }
 
     /**
@@ -380,7 +388,7 @@ public class ExportingService extends NetworkService {
                 mListener.onExportServiceReady(mPort);
             }
 
-            sRunning = true;
+            setRunning(true);
 
             // begin listening for connections
             while (!Thread.currentThread().isInterrupted()) {
