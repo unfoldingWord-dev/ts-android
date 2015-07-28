@@ -85,8 +85,7 @@ public class BroadcastListenerService extends NetworkService {
                                 int version = Integer.parseInt(parts[1]);
                                 int port = Integer.parseInt(parts[2]);
                                 Peer p = new Peer(senderIP, port, service, version);
-                                addPeer(p);
-                                if (mListener != null) {
+                                if(addPeer(p) && mListener != null) {
                                     mListener.onFoundServer(p);
                                 }
                             }

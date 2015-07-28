@@ -52,7 +52,7 @@ import java.util.Map;
 
 public class DeviceToDeviceActivity extends TranslatorBaseActivity implements ExportingService.Callbacks, ImportingService.Callbacks, BroadcastListenerService.Callbacks {
     private static final int REFRESH_FREQUENCY = 5000;
-    private static final int SERVER_TTL = 10000;
+    private static final int SERVER_TTL = 5000; // time before a slient server is considered lost
     private boolean mStartAsServer = false;
     private DevicePeerAdapter mAdapter;
     private ProgressBar mLoadingBar;
@@ -186,7 +186,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                         if(!server.keyStore.getBool(PeerStatusKeys.WAITING)) {
                             // connect to the server, implicitly requesting permission to access it
                             server.keyStore.add(PeerStatusKeys.WAITING, true);
-                            updatePeerList(mImportService.getPeers());
+                            updatePeerList(mBroadcastListenerService.getPeers());
                             mImportService.connectToServer(server);
                         }
                     } else {
@@ -550,7 +550,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         hand.post(new Runnable() {
             @Override
             public void run() {
-                updatePeerList(mImportService.getPeers());
+                updatePeerList(mBroadcastListenerService.getPeers());
             }
         });
     }
@@ -561,7 +561,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
         hand.post(new Runnable() {
             @Override
             public void run() {
-                updatePeerList(mImportService.getPeers());
+                updatePeerList(mBroadcastListenerService.getPeers());
             }
         });
     }

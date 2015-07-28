@@ -120,6 +120,10 @@ public class ImportingService extends NetworkService {
      */
     public void stopService() {
         Logger.i(this.getClass().getName(), "Stopping import service");
+        // close sockets
+        for(String key:mServerConnections.keySet()) {
+            mServerConnections.get(key).close();
+        }
         setRunning(false);
     }
 
@@ -462,6 +466,7 @@ public class ImportingService extends NetworkService {
         void onReceivedProjectList(Peer server, Model[] models);
         void onReceivedProject(Peer server, ProjectImport[] importStatuses);
     }
+
     /**
      * Class to retrieve instance of service
      */

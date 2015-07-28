@@ -124,6 +124,10 @@ public abstract class NetworkService extends Service {
         if(!mPeers.containsKey(p.getIpAddress())) {
             mPeers.put(p.getIpAddress(), p);
             return true;
+        } else if(mPeers.get(p.getIpAddress()).getPort() != p.getPort()) {
+            // the port changed, replace peer
+            mPeers.put(p.getIpAddress(), p);
+            return true;
         } else {
             mPeers.get(p.getIpAddress()).touch();
             return false;
