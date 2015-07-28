@@ -38,7 +38,7 @@ import static com.tozny.crypto.android.AesCbcWithIntegrity.keys;
  * Created by joel on 7/23/2015.
  */
 public abstract class NetworkService extends Service {
-    private static int CONNECTION_TIMEOUT = 10000; // 10 seconds
+    private static int CONNECTION_TIMEOUT = 30000; // 30 seconds
     private Map<String, Peer> mPeers = new HashMap<String, Peer>();
 
     /**
