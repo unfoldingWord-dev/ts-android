@@ -141,6 +141,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     private Intent broadcastServiceIntent;
     private Intent importServiceIntent;
     private Intent broadcastListenerServiceIntent;
+    private ProjectTranslationImportApprovalDialog mImportDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -370,8 +371,12 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     private void showProjectSelectionDialog(Peer server, Model[] models) {
         app().closeToastMessage();
         if(!isFinishing()) {
-            // Create and show the dialog.
             FragmentTransaction ft = getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
             ChooseProjectToImportDialog newFragment = new ChooseProjectToImportDialog();
             mPeerDialogs.put(server.getIpAddress(), newFragment);
             newFragment.setImportDetails(server, models);
@@ -588,9 +593,8 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             ft.remove(prev);
         }
         ft.addToBackStack(null);
-        app().closeToastMessage();
-        ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
-        newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+        mImportDialog = new ProjectTranslationImportApprovalDialog();
+        mImportDialog.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
             @Override
             public void onOk(ProjectImport[] requests) {
                 showProgress(getResources().getString(R.string.loading));
@@ -602,6 +606,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
 //                file.delete();
                 hideProgress();
                 app().showToastMessage(R.string.success);
+                // TODO: success dialog
             }
 
             @Override
@@ -609,12 +614,13 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                 // TODO: tell the import service to cancel.
                 // import was aborted
                 Sharing.cleanImport(requests);
+                hideProgress();
 //                file.delete();
             }
         });
         // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
-        newFragment.setImportRequests(importStatuses);
-        newFragment.show(ft, "dialog");
+        mImportDialog.setImportRequests(importStatuses);
+        mImportDialog.show(ft, "dialog");
         hideProgress();
     }
 

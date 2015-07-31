@@ -1,5 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -21,6 +22,20 @@ import com.door43.translationstudio.projects.imports.TranslationImport;
 public class ProjectTranslationImportApprovalDialog extends DialogFragment {
     private ProjectImport[] mRequests = new ProjectImport[]{};
     private OnClickListener mListener;
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setRetainInstance(true);
+        return super.onCreateDialog(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+        super.onDestroyView();
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.import_project);
@@ -109,8 +124,8 @@ public class ProjectTranslationImportApprovalDialog extends DialogFragment {
         mListener = listener;
     }
 
-    public static interface OnClickListener {
-        public void onOk(ProjectImport[] requests);
-        public void onCancel(ProjectImport[] requests);
+    public interface OnClickListener {
+        void onOk(ProjectImport[] requests);
+        void onCancel(ProjectImport[] requests);
     }
 }
