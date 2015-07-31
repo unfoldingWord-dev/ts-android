@@ -1,5 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -26,6 +27,26 @@ public class ChooseProjectToImportDialog extends DialogFragment {
     private Model[] mModelList = null;
     private static final String GROUP_TASK_ID = "import_project_list_group";
     private Peer mPeer;
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setRetainInstance(true);
+        return super.onCreateDialog(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+
+        TaskManager.killGroup(GROUP_TASK_ID);
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+
+        super.onDestroyView();
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.title_projects);
@@ -67,14 +88,5 @@ public class ChooseProjectToImportDialog extends DialogFragment {
     public void setImportDetails(Peer server, Model[] models) {
         mPeer = server;
         mModelList = models;
-    }
-
-    @Override
-    public void onDestroyView() {
-        TaskManager.killGroup(GROUP_TASK_ID);
-        if (getDialog() != null && getRetainInstance()) {
-            getDialog().setDismissMessage(null);
-        }
-        super.onDestroyView();
     }
 }

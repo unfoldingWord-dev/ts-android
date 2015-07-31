@@ -1,5 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,6 +19,19 @@ import com.door43.translationstudio.projects.imports.TranslationImport;
 public class ChapterFrameImportApprovalDialog extends DialogFragment {
     private TranslationImport mRequest;
 
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setRetainInstance(true);
+        return super.onCreateDialog(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+        super.onDestroyView();
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.import_project);

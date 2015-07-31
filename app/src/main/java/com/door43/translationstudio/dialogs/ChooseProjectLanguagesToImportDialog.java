@@ -1,5 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -21,8 +22,6 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -32,6 +31,20 @@ import java.util.Arrays;
 public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
     private Project mProject = null;
     private Peer mPeer;
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setRetainInstance(true);
+        return super.onCreateDialog(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+        super.onDestroyView();
+    }
 
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.import_project);

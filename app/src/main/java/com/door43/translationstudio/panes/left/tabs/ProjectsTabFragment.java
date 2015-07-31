@@ -281,7 +281,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
             if(mProjectSelectorDialog.getArguments() != null) {
                 outState.putString(ChooseProjectDialog.ARG_META_ID, mProjectSelectorDialog.getArguments().getString(ChooseProjectDialog.ARG_META_ID));
             }
-            mProjectSelectorDialog.dismiss();
         }
         super.onSaveInstanceState(outState);
     }

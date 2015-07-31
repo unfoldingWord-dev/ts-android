@@ -1,5 +1,6 @@
 package com.door43.translationstudio.dialogs;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -31,6 +32,20 @@ public class ChooseProjectDialog extends DialogFragment {
     private String mMetaId;
     private static final String GROUP_TASK_ID = "select_project_list_group";
     private OnSuccessListener mSuccessListener;
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        setRetainInstance(true);
+        return super.onCreateDialog(savedInstanceState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (getDialog() != null && getRetainInstance()) {
+            getDialog().setDismissMessage(null);
+        }
+        super.onDestroyView();
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().setTitle(R.string.title_projects);

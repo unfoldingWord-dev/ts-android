@@ -57,7 +57,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     private DevicePeerAdapter mAdapter;
     private ProgressBar mLoadingBar;
     private TextView mLoadingText;
-    private static ProgressDialog mProgressDialog;
+//    private static ProgressDialog mProgressDialog;
     private File mPublicKeyFile;
     private File mPrivateKeyFile;
     private static Map<String, DialogFragment> mPeerDialogs = new HashMap<>();
@@ -155,7 +155,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
 
         mStartAsServer = getIntent().getBooleanExtra("startAsServer", false);
 
-        if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
+//        if(mProgressDialog == null) mProgressDialog = new ProgressDialog(this);
 
         // set up the ui
         final Handler handler = new Handler(getMainLooper());
@@ -323,7 +323,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                     Logger.w(this.getClass().getName(), "Failed to stop service " + ImportingService.class.getName());
                 }
             }
-            mProgressDialog = null;
+//            mProgressDialog = null;
             mPeerDialogs.clear();
         }
         super.onDestroy();
@@ -453,29 +453,29 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
      * @param message the message to display in the progress dialog.
      */
     private void showProgress(final String message) {
-        Handler handle = new Handler(getMainLooper());
-        handle.post(new Runnable() {
-            @Override
-            public void run() {
-                mProgressDialog.setMessage(message);
-                if (!mProgressDialog.isShowing()) {
-                    mProgressDialog.show();
-                }
-            }
-        });
+//        Handler handle = new Handler(getMainLooper());
+//        handle.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                mProgressDialog.setMessage(message);
+//                if (!mProgressDialog.isShowing()) {
+//                    mProgressDialog.show();
+//                }
+//            }
+//        });
     }
 
     /**
      * closes the progress dialog
      */
     private void hideProgress() {
-        Handler handle = new Handler(getMainLooper());
-        handle.post(new Runnable() {
-            @Override
-            public void run() {
-                mProgressDialog.dismiss();
-            }
-        });
+//        Handler handle = new Handler(getMainLooper());
+//        handle.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                mProgressDialog.dismiss();
+//            }
+//        });
     }
 
     @Override
