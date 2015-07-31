@@ -269,7 +269,9 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         mProjectSelectorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                ((MainActivity)getActivity()).closeKeyboard();
+                if(getActivity() != null) {
+                    ((MainActivity) getActivity()).closeKeyboard();
+                }
             }
         });
         mProjectSelectorDialog.setOnSuccessListener(this);
@@ -286,6 +288,10 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     }
 
     public void onDestroy() {
+        if(mProjectSelectorDialog != null) {
+            mProjectSelectorDialog.setOnDismissListener(null);
+            mProjectSelectorDialog.setOnSuccessListener(null);
+        }
         mTaskWatcher.stop();
         super.onDestroy();
     }
@@ -344,6 +350,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      */
     @Override
     public void onSuccess(DialogInterface dialog, Project project) {
+        // TODO: clear saved instance state
+        dialog.dismiss();
         handleProjectSelection(project);
         ((MainActivity)getActivity()).closeKeyboard();
     }
