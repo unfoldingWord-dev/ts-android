@@ -137,16 +137,20 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        // TODO: fetch the fragments from the main layout if the saved instance state is not null
-        mLeftPane = new LeftPaneFragment();
-        mRightPane = new RightPaneFragment();
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
-            // make both panes fill half the screen when in landscape mode.
-            mRightPane.setLayoutWidth(size.x / 2);
-            mLeftPane.setLayoutWidth(size.x / 2);
+        if(savedInstanceState == null) {
+            mLeftPane = new LeftPaneFragment();
+            mRightPane = new RightPaneFragment();
+            if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+                // make both panes fill half the screen when in landscape mode.
+                mRightPane.setLayoutWidth(size.x / 2);
+                mLeftPane.setLayoutWidth(size.x / 2);
+            }
+            getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
+            getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
+        } else {
+            mLeftPane = (LeftPaneFragment)getFragmentManager().findFragmentById(R.id.leftPaneContent);
+            mRightPane = (RightPaneFragment)getFragmentManager().findFragmentById(R.id.rightPaneContent);
         }
-        getFragmentManager().beginTransaction().replace(R.id.leftPaneContent, mLeftPane).commit();
-        getFragmentManager().beginTransaction().replace(R.id.rightPaneContent, mRightPane).commit();
 
         // get notified when drawers open
         mDrawerLayout.setDrawerListener(new ActionBarDrawerToggle(this, mDrawerLayout, R.string.title_close_drawer, R.string.title_close_drawer) {

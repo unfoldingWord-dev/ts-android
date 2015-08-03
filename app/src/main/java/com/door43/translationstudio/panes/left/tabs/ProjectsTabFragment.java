@@ -36,11 +36,6 @@ import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 /**
  * Created by joel on 8/29/2014.
  */
@@ -255,7 +250,7 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         if (prev != null) {
             ft.remove(prev);
         }
-        ft.addToBackStack(null);
+//        ft.addToBackStack(null);
 
         app().closeToastMessage();
         // Create and show the dialog.
@@ -269,7 +264,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         mProjectSelectorDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                if(getActivity() != null) {
+                mProjectSelectorDialog = null;
+                if (getActivity() != null) {
                     ((MainActivity) getActivity()).closeKeyboard();
                 }
             }
@@ -279,6 +275,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
     }
 
     public void onSaveInstanceState(Bundle outState) {
+        // save state
+        outState.remove(ChooseProjectDialog.ARG_META_ID);
         if(mProjectSelectorDialog != null && mProjectSelectorDialog.isVisible()) {
             if(mProjectSelectorDialog.getArguments() != null) {
                 outState.putString(ChooseProjectDialog.ARG_META_ID, mProjectSelectorDialog.getArguments().getString(ChooseProjectDialog.ARG_META_ID));
@@ -350,8 +348,8 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
      */
     @Override
     public void onSuccess(DialogInterface dialog, Project project) {
-        // TODO: clear saved instance state
-        dialog.dismiss();
+        mProjectSelectorDialog.dismiss();
+        mProjectSelectorDialog = null;
         handleProjectSelection(project);
         ((MainActivity)getActivity()).closeKeyboard();
     }
