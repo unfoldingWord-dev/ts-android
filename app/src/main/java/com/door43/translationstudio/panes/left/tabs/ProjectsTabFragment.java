@@ -250,8 +250,6 @@ public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsF
         if (prev != null) {
             ft.remove(prev);
         }
-//        ft.addToBackStack(null);
-
         app().closeToastMessage();
         // Create and show the dialog.
         if(mProjectSelectorDialog != null) {
