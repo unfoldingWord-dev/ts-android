@@ -1,6 +1,7 @@
 package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
@@ -19,6 +20,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.service.BackupService;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.TTFAnalyzer;
 
@@ -63,6 +65,7 @@ public class SettingsActivity extends PreferenceActivity {
     public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
 //    public static final String KEY_PREF_ADVANCED_SETTINGS = "advanced_settings";
     public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
+    public static final String KEY_PREF_BACKUP_INTERVAL = "backup_interval";
 
     /**
      * TRICKY: this was added after API 19 to fix a vulnerability.
@@ -166,7 +169,6 @@ public class SettingsActivity extends PreferenceActivity {
         pref.setEntries(entries.toArray(new CharSequence[entries.size()]));
         pref.setEntryValues(entryValues.toArray(new CharSequence[entryValues.size()]));
         bindPreferenceSummaryToValue(pref);
-        bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
 
         // Add 'sharing' preferences, and a corresponding header.
         PreferenceCategory preferenceHeader = new PreferenceCategory(this);
@@ -185,7 +187,7 @@ public class SettingsActivity extends PreferenceActivity {
         preferenceHeader.setTitle(R.string.pref_header_advanced);
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.advanced_preferences);
-        bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
+
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -197,7 +199,9 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
-        bindPreferenceSummaryToValue(findPreference(KEY_PREF_TRANSLATION_TYPEFACE));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
+        bindPreferenceSummaryToValue(findPreference(KEY_PREF_TYPEFACE_SIZE));
     }
 
     /** {@inheritDoc} */
@@ -245,6 +249,17 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
+
+            if(preference.getKey().equals(KEY_PREF_BACKUP_INTERVAL)) {
+                // restart the backup service.
+                if(BackupService.isRunning()) {
+                    Intent backupIntent = new Intent(AppContext.context(), BackupService.class);
+                    AppContext.context().stopService(backupIntent);
+                    AppContext.context().startService(backupIntent);
+                }
+            } else if(preference.getKey().equals(KEY_PREF_LOGGING_LEVEL)) {
+                AppContext.context().configureLogger(Integer.parseInt((String)value));
+            }
 
             if (preference instanceof ListPreference) {
                 // For list preferences, look up the correct display value in
@@ -386,7 +401,9 @@ public class SettingsActivity extends PreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.advanced_preferences);
+
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
+            bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
         }
     }
 }

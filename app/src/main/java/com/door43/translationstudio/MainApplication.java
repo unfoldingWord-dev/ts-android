@@ -10,13 +10,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.projects.Term;
-import com.door43.translationstudio.service.BackupManager;
+import com.door43.translationstudio.service.BackupService;
 import com.door43.util.DummyDialogListener;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -62,7 +61,7 @@ public class MainApplication extends Application {
 
         // configure logger
         int minLogLevel = Integer.parseInt(getUserPreferences().getString(SettingsActivity.KEY_PREF_LOGGING_LEVEL, getResources().getString(R.string.pref_default_logging_level)));
-        Logger.configure(new File(getExternalCacheDir(), "log.txt"), Logger.Level.getLevel(minLogLevel));
+        configureLogger(minLogLevel);
 
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
@@ -72,8 +71,12 @@ public class MainApplication extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
 
         // begins the backup manager service
-        Intent backupIntent = new Intent(this, BackupManager.class);
+        Intent backupIntent = new Intent(this, BackupService.class);
         startService(backupIntent);
+    }
+
+    public void configureLogger(int minLogLevel) {
+        Logger.configure(new File(getExternalCacheDir(), "log.txt"), Logger.Level.getLevel(minLogLevel));
     }
 
     /**

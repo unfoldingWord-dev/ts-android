@@ -34,7 +34,7 @@ public class Manifest {
     public static Manifest generate(File directory) {
         File file = new File(directory, FILE_NAME);
         if(!file.exists()) {
-            file.mkdirs();
+            file.getParentFile().mkdirs();
         }
         if(!file.isFile()) {
             try {

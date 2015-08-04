@@ -23,7 +23,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
-        <service android:name=".service.BackupManager"
+        <service android:name=".service.BackupService"
             android:label="Backup Manager">
         </service>
         <service android:name=".service.BroadcastService"

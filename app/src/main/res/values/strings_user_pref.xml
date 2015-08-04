@@ -71,5 +71,14 @@
         <item>Warnings</item>
         <item>Errors</item>
     </string-array>
-
+    <!-- The length of time between automatic translation backups -->
+    <string-array name="pref_backup_interval_titles">
+        <item>1 Minute</item>
+        <item>2 Minutes</item>
+        <item>3 Minutes</item>
+        <item>4 Minutes</item>
+        <item>5 Minutes</item>
+        <item>10 Minutes</item>
+        <item>Disable Backup</item>
+    </string-array>
 </resources>

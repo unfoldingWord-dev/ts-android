@@ -6,6 +6,15 @@
         <!--android:summary="@string/pref_description_advanced_settings"-->
         <!--android:defaultValue="@string/pref_default_advanced_settings" />-->
     <ListPreference
+        android:key="backup_interval"
+        android:title="Backup Interval"
+        android:entries="@array/pref_backup_interval_titles"
+        android:entryValues="@array/pref_backup_interval_values"
+        android:defaultValue="@string/pref_default_backup_interval"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+    <ListPreference
         android:key="logging_level"
         android:title="@string/pref_title_logging_level"
         android:entries="@array/pref_logging_level_titles"
@@ -13,6 +22,7 @@
         android:defaultValue="@string/pref_default_logging_level"
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
+
     <Preference android:title="@string/pref_title_developer_tools"
         android:summary="@string/pref_description_developer_tools">
         <intent android:action="com.activity.DeveloperToolsActivity" />
