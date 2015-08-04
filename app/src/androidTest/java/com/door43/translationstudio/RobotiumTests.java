@@ -1,9 +1,12 @@
 package com.door43.translationstudio;
 
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.support.v4.view.ViewPager;
 import android.support.v7.internal.widget.TintButton;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 
 import java.io.BufferedReader;
@@ -27,6 +30,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.TermsActivity;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.projects.Frame;
 import com.door43.util.ClearableEditText;
 import com.robotium.solo.Solo;
 
@@ -282,6 +286,106 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
         pView = solo.getView(R.id.sourceTitleText);
         boolean isSourceView= solo.waitForView(R.id.sourceTitleText,1,5000);
         assertTrue(isSourceView);
+    }
+    /*
+    Feature: Frame swipe navigation
+  Translations will be able to quickly move between frames by swiping left or right.
+
+  Background:
+    Given I have selected a frame
+
+  Scenario: Swipe to next frame
+    Given I am viewing the main activity
+    When I swipe from right to left
+    Then I want to see the next frame
+
+  Scenario: Swipe to previous frame
+    Given I am viewing the main activity
+    When I swipe from left to right
+    Then I want to see the previous frame
+
+  Scenario: Device back button
+    Given I am viewing the main activity
+    When I click on the device back button
+    Then I want to return to the previously selected frame
+     */
+    public void test06TestFrameSwipeNavigation(){
+        waitForLoad();
+        int title = R.id.translationNoteReferenceEditText;
+        ArrayList<View> cvs;
+        //ArrayList<EditText> etViews = solo.getCurrentViews(EditText.class);
+        boolean isChapter = solo.waitForText("Chapter", 1, 30000);
+        boolean isFrame = solo.waitForText("Frame", 1, 30000);
+        boolean isTranslation = solo.waitForText("Afaraf: [Chapter 1]", 1, 30000);
+        EditText et = (EditText)solo.getView(R.id.inputText);
+
+        TextView tTitle = (TextView)solo.getView(R.id.translationTitleText);
+        isTranslation= tTitle.getText().toString().endsWith("[Chapter 1]");
+        assertTrue("Failed to find translation view.", isTranslation);
+        assertNotNull("Could not find id.inputText", et);
+        ArrayList<TextView> tvs = solo.getCurrentViews(TextView.class);
+        View pView = solo.getView(R.id.readSourceTranslation);
+        TextView frameView = (TextView)solo.getView(R.id.sourceFrameNumText);
+        frame  frameInfo = new frame(frameView.getText().toString());
+        int startFrame = frameInfo.getCurrent();
+        swipeToRight(R.id.inputText, 10);
+       //swipeToLeft(5);
+        solo.sleep(2000);
+        frameInfo.parse(frameView.getText().toString());
+        int newFrame =frameInfo.getCurrent();
+        assertTrue("Failed to advance frame.", newFrame > startFrame);
+        solo.sleep(9000);//TODO: need to figure out how to waIT FOR SPINNER STOP
+        swipeToLeft(R.id.inputText, 10);
+        solo.sleep(2000);
+        frameInfo.parse(frameView.getText().toString());
+        int endFrame =frameInfo.getCurrent();
+        assertTrue("Failed to revert frame.",endFrame == startFrame);
+        //TODO: navigate to last frmae then back
+    }
+    class frame {
+        private int current;
+        private int total;
+        private String frameString;
+        frame(String FrameString){
+            frameString=FrameString;
+            parse();
+        }
+        public int getCurrent(){return current;}
+        public int getTotal(){return total;}
+        public void parse(String FrameString){
+            frameString=FrameString;
+            parse();
+        }
+        private void parse(){
+            if(frameString.isEmpty()){return;}
+            String s[] = frameString.split(" ");
+            current = Integer.parseInt(s[1]);
+            total = Integer.parseInt(s[3]);
+        }
+    }
+    private void swipeToLeft(int id, int stepCount) {
+        View pView = solo.getView(id);
+        int loc[] = new int[2];
+        Rect rectSource = new Rect();
+        pView.getWindowVisibleDisplayFrame(rectSource);
+        pView.getLocationOnScreen(loc);
+        solo.drag(loc[1],loc[0],rectSource.exactCenterY(),rectSource.exactCenterY(),stepCount);
+    }
+    private void swipeToRight(int id, int stepCount) {
+        View pView = solo.getView(id);
+        int loc[] = new int[2];
+        Rect rectSource = new Rect();
+        pView.getWindowVisibleDisplayFrame(rectSource);
+        pView.getLocationOnScreen(loc);
+        solo.drag(loc[0],loc[1],rectSource.exactCenterY(),rectSource.exactCenterY(),stepCount);
+    }
+    private void swipeToRight(int stepCount) {
+        Display display = solo.getCurrentActivity().getWindowManager().getDefaultDisplay();
+        int width = display.getWidth();
+        int height = display.getHeight();
+        float xStart = 10 ;
+        float xEnd = width - 10;
+        solo.drag(xStart, xEnd, height / 2, height / 2, stepCount);
     }
     //TODO: add tests for feature / use cases found here: https://github.com/unfoldingWord-dev/ts-requirements/tree/master/features
 
