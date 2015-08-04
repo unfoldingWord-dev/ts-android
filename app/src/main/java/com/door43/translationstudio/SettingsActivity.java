@@ -253,11 +253,13 @@ public class SettingsActivity extends PreferenceActivity {
             if(preference.getKey().equals(KEY_PREF_BACKUP_INTERVAL)) {
                 // restart the backup service.
                 if(BackupService.isRunning()) {
+                    // TODO: only restart if changed
                     Intent backupIntent = new Intent(AppContext.context(), BackupService.class);
                     AppContext.context().stopService(backupIntent);
                     AppContext.context().startService(backupIntent);
                 }
             } else if(preference.getKey().equals(KEY_PREF_LOGGING_LEVEL)) {
+                // TODO: only re-configure if changed
                 AppContext.context().configureLogger(Integer.parseInt((String)value));
             }
 
