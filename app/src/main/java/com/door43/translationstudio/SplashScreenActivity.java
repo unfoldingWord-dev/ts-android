@@ -79,11 +79,11 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
 
             // start new task
             if(!isWorking) {
-                LoadTargetLanguagesTask langTask = new LoadTargetLanguagesTask();
-                langTask.addOnProgressListener(this);
-                langTask.addOnFinishedListener(this);
-                langTask.addOnStartListener(this);
-                TaskManager.addTask(langTask, langTask.TASK_ID);
+                UpdateAppTask updateTask = new UpdateAppTask();
+                updateTask.addOnProgressListener(this);
+                updateTask.addOnFinishedListener(this);
+                updateTask.addOnStartListener(this);
+                TaskManager.addTask(updateTask, UpdateAppTask.TASK_ID);
             }
         } else {
             // index projects
@@ -191,7 +191,13 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
             }
         });
 
-        if(task instanceof LoadTargetLanguagesTask) {
+        if(task instanceof UpdateAppTask) {
+            LoadTargetLanguagesTask langTask = new LoadTargetLanguagesTask();
+            langTask.addOnProgressListener(this);
+            langTask.addOnFinishedListener(this);
+            langTask.addOnStartListener(this);
+            TaskManager.addTask(langTask, LoadTargetLanguagesTask.TASK_ID);
+        } else if(task instanceof LoadTargetLanguagesTask) {
             LoadProjectsTask newTask = new LoadProjectsTask();
             newTask.addOnFinishedListener(this);
             newTask.addOnProgressListener(this);

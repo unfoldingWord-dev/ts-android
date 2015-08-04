@@ -56,7 +56,6 @@ public class UpdateAppTask extends ManagedTask {
                         Logger.w(this.getClass().getName(), message);
                     }
                 });
-            } else {
             }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();

@@ -1,9 +1,12 @@
 package com.door43.translationstudio.migration;
 
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.util.FileUtilities;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
@@ -70,8 +73,18 @@ public class UpdateManager {
                 FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_database"));
                 FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_webview")); // this technically deletes 2.x stuff too, but it will be rebuilt automatically
             } else {
-                onError("The database from version 1.x could not be found at " + db.getAbsolutePath());
+                Logger.e(this.getClass().getName(), "The database from version 1.x could not be found at " + db.getAbsolutePath());
             }
+        }
+
+        if(mOldVersionCode < 87) {
+            onProgress(-1, "Upgrading to 2.2.1");
+            // change font to noto because most of the others do not work.
+            Logger.i(this.getClass().getName(), "Upgrading to 2.2.1");
+            SharedPreferences.Editor editor = AppContext.context().getUserPreferences().edit();
+            editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getString(R.string.pref_default_translation_typeface));
+            editor.apply();
+            UpdateManager.this.onProgress(100, "");
         }
         onSuccess();
     }
