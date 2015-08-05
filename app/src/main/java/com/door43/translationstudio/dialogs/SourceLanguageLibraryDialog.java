@@ -50,7 +50,7 @@ public class SourceLanguageLibraryDialog extends DialogFragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 mAdapter.toggleSelected(i);
                 if(mAdapter.getSelectedItems().length > 0) {
-                    okButton.setBackgroundColor(getResources().getColor(R.color.blue));
+                    okButton.setBackgroundColor(getResources().getColor(R.color.accent));
                 } else {
                     okButton.setBackgroundColor(getResources().getColor(R.color.gray));
                 }

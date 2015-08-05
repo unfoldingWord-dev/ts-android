@@ -53,7 +53,7 @@ public class LanguageResourceAdapter extends BaseAdapter {
 
         // highlight selected resource
         if(mSelectedResource.getId().equals(r.getId())) {
-            v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             textView.setTextColor(Color.WHITE);
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);

@@ -151,7 +151,7 @@ public class ModelItemAdapter extends BaseAdapter {
         boolean isSelected = false;
         if(getItem(position).isSelected() && mIndicateSelected) {
             isSelected = true;
-            v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             holder.title.setTextColor(Color.WHITE);
             holder.altTitle.setTextColor(Color.WHITE);
             holder.description.setTextColor(Color.WHITE);

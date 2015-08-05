@@ -136,8 +136,8 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
         mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
         ImageView nextFrameView = (ImageView)rootView.findViewById(R.id.hasNextFrameImageView);
         ImageView previousFrameView = (ImageView)rootView.findViewById(R.id.hasPreviousFrameImageView);
-        nextFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
-        previousFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
+        nextFrameView.setColorFilter(getResources().getColor(R.color.accent), PorterDuff.Mode.SRC_ATOP);
+        previousFrameView.setColorFilter(getResources().getColor(R.color.accent), PorterDuff.Mode.SRC_ATOP);
         mSourceText.setMovementMethod(new ScrollingMovementMethod());
         mSourceText.setFocusable(true);
         initLinks();
@@ -1334,7 +1334,7 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
                         String resourceName = p.getSelectedSourceLanguage().getSelectedResource().getName();
                         String chapterName = ": " + chapter.getTitle();
                         SpannableStringBuilder span = new SpannableStringBuilder(languageName + resourceName + chapterName);
-                        span.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.blue)), languageName.length(), languageName.length() + resourceName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        span.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.accent)), languageName.length(), languageName.length() + resourceName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         mSourceTitleText.setText(span);
                     } else {
                         mSourceTitleText.setText(p.getSelectedSourceLanguage().getName() + ": " + chapter.getTitle());

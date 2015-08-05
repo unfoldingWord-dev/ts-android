@@ -9,5 +9,5 @@
         android:id="@+id/keyTermTitleText"
         android:padding="10dp"
         android:textSize="@dimen/h2"
-        android:textColor="@color/blue" />
+        android:textColor="@color/accent" />
 </LinearLayout>

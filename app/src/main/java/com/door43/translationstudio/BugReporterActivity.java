@@ -62,7 +62,7 @@ public class BugReporterActivity extends TranslatorBaseActivity {
                 if(mCrashReportText.getText().toString().isEmpty()) {
                     mOkButton.setBackgroundResource(R.color.gray);
                 } else {
-                    mOkButton.setBackgroundResource(R.color.blue);
+                    mOkButton.setBackgroundResource(R.color.accent);
                 }
             }
         });

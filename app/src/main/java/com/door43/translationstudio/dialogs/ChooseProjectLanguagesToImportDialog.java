@@ -108,7 +108,7 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                     adapter.toggleSelected(i);
                     if(adapter.getSelectedItems().length > 0) {
-                        okButton.setBackgroundColor(getResources().getColor(R.color.blue));
+                        okButton.setBackgroundColor(getResources().getColor(R.color.accent));
                     } else {
                         okButton.setBackgroundColor(getResources().getColor(R.color.gray));
                     }

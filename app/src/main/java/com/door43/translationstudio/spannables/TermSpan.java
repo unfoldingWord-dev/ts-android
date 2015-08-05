@@ -25,7 +25,7 @@ public class TermSpan extends Span {
         if(mSpannable == null) {
             mSpannable = super.render();
             // apply custom styles
-            mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.blue)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            mSpannable.setSpan(new ForegroundColorSpan(AppContext.context().getResources().getColor(R.color.accent)), 0, mSpannable.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return mSpannable;
     }

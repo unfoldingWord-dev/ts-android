@@ -19,7 +19,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:paddingTop="1dp"
-            android:background="@color/dark_green"></LinearLayout>
+            android:background="@color/primary_dark"></LinearLayout>
 
         <com.door43.translationstudio.util.BetterSwitchCompat
             android:layout_width="wrap_content"

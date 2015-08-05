@@ -100,8 +100,8 @@ public class BlindDraftTranslatorFragment extends TranslatorFragment {
         mTranslationEditText.addTextChangedListener(mTranslationChangedListener);
         ImageView nextFrameView = (ImageView)rootView.findViewById(R.id.hasNextFrameImageView);
         ImageView previousFrameView = (ImageView)rootView.findViewById(R.id.hasPreviousFrameImageView);
-        nextFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
-        previousFrameView.setColorFilter(getResources().getColor(R.color.blue), PorterDuff.Mode.SRC_ATOP);
+        nextFrameView.setColorFilter(getResources().getColor(R.color.accent), PorterDuff.Mode.SRC_ATOP);
+        previousFrameView.setColorFilter(getResources().getColor(R.color.accent), PorterDuff.Mode.SRC_ATOP);
         initLinks();
         mTranslationEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override

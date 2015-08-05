@@ -1,16 +1,13 @@
 package com.door43.translationstudio.library;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -116,7 +113,7 @@ public class LibraryProjectAdapter extends BaseAdapter {
 
         // indicated selected
         if(i == mSelectedIndex) {
-            holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             holder.name.setTextColor(mContext.getResources().getColor(R.color.white));
         } else {
             holder.container.setBackgroundColor(mContext.getResources().getColor(R.color.white));

@@ -34,7 +34,7 @@
                 android:orientation="horizontal"
                 android:layout_width="2dp"
                 android:layout_height="fill_parent"
-                android:background="@color/blue"></LinearLayout>
+                android:background="@color/accent"></LinearLayout>
             <LinearLayout>
                 <FrameLayout android:id="@+id/project_detail_container" android:layout_width="match_parent"
                     android:layout_height="match_parent" />

@@ -2,12 +2,12 @@
 
     <color name="black_overlay">#66000000</color>
     <color name="light_green">#ff9fc564</color>
-    <color name="green">#99cc00</color>
-    <color name="dark_green">#ff387000</color>
+    <color name="primary">#009688</color>
+    <color name="primary_dark">#00796B</color>
     <color name="lighter_blue">#baeeff</color>
     <color name="clear_blue">#5bbaeeff</color>
     <color name="light_blue">#98c2d0</color>
-    <color name="blue">#0099cc</color>
+    <color name="accent">#40C4FF</color>
     <color name="medium_blue">#ff0086b8</color>
     <color name="purple">#9933cc</color>
     <color name="light_purple">#ffe175ff</color>

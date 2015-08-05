@@ -55,7 +55,7 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
         // Sliding tab layout
         mSlidingTabLayout = (PagerSlidingTabStrip) mRootView.findViewById(R.id.left_sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
-        if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.blue);
+        if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.accent);
         mSlidingTabLayout.setIndicatorColor(mSelectedTabColor);
         mSlidingTabLayout.setDividerColor(Color.TRANSPARENT);
 

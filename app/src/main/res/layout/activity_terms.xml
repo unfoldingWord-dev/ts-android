@@ -52,7 +52,7 @@
                     android:id="@+id/license_btn"
                     android:background="@null"
                     android:padding="10dp"
-                    android:textColor="@color/blue"
+                    android:textColor="@color/accent"
                     android:textSize="@dimen/h5" />
 
                 <Button
@@ -62,7 +62,7 @@
                     android:id="@+id/translation_guidelines_btn"
                     android:background="@null"
                     android:padding="10dp"
-                    android:textColor="@color/blue"
+                    android:textColor="@color/accent"
                     android:textSize="@dimen/h5" />
 
                 <Button
@@ -72,7 +72,7 @@
                     android:id="@+id/statement_of_faith_btn"
                     android:background="@null"
                     android:padding="10dp"
-                    android:textColor="@color/blue"
+                    android:textColor="@color/accent"
                     android:textSize="@dimen/h5" />
             </LinearLayout>
 

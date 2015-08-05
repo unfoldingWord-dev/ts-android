@@ -114,7 +114,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
             holder.translationStatusIcon.setVisibility(View.GONE);
         }
         if(mSelectedItems.containsKey(l.getId())) {
-            v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             holder.languageNameView.setTextColor(Color.WHITE);
             holder.languageIdView.setTextColor(Color.WHITE);
             holder.translationStatusIcon.setBackgroundResource(R.drawable.ic_project_status_translating);

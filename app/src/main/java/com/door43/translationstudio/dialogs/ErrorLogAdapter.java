@@ -80,7 +80,7 @@ public class ErrorLogAdapter extends BaseAdapter {
             case Info:
             default:
                 holder.levelText.setBackgroundColor(mContext.getResources().getColor(R.color.lighter_blue));
-                holder.levelText.setTextColor(mContext.getResources().getColor(R.color.blue));
+                holder.levelText.setTextColor(mContext.getResources().getColor(R.color.accent));
         }
 
         return v;

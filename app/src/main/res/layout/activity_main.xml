@@ -54,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:paddingRight="@dimen/drawer_edge_width"
-            android:background="@color/blue"
+            android:background="@color/accent"
             android:layout_gravity="start"
             android:id="@+id/leftPaneContent">
         </RelativeLayout>

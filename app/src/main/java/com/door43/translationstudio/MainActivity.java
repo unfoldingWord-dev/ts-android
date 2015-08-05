@@ -36,7 +36,6 @@ import com.door43.translationstudio.events.OpenedProjectEvent;
 import com.door43.translationstudio.panes.left.LeftPaneFragment;
 import com.door43.translationstudio.panes.right.RightPaneFragment;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.util.tasks.GenericTaskWatcher;
@@ -52,11 +51,6 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.squareup.otto.Subscribe;
-
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 
 public class MainActivity extends TranslatorBaseActivity implements TranslatorActivityInterface, GenericTaskWatcher.OnFinishedListener {
     private final MainActivity me = this;
@@ -300,7 +294,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
             resizeRootView(r);
 
             // apply main menu styles
-            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.green));
+            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.primary));
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             invalidateOptionsMenu();
         }

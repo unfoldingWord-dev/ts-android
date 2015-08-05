@@ -6,4 +6,4 @@
     android:background="@drawable/span_light_blue_bubble"
     android:paddingLeft="10dp"
     android:paddingRight="10dp"
-    android:textColor="@color/blue"></TextView>
+    android:textColor="@color/accent"></TextView>

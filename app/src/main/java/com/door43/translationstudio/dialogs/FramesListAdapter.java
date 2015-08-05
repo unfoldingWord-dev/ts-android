@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
@@ -15,7 +14,6 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.rendering.USXRenderer;
-import com.door43.translationstudio.tasks.LoadModelFontTask;
 import com.door43.translationstudio.util.AppContext;
 
 /**
@@ -104,7 +102,7 @@ public class FramesListAdapter  extends BaseAdapter {
 
         // color selection
         if(getItem(position).isSelected() && mIndicateSelected) {
-            v.setBackgroundColor(mContext.getResources().getColor(R.color.blue));
+            v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             holder.text.setTextColor(Color.WHITE);
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
