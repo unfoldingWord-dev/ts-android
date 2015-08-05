@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="@color/white" >
+    android:background="@color/white">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/light_primary_text"
+        android:background="@color/primary"
+        android:padding="16dp"
+        android:text="@string/menu_library"
+        android:id="@+id/textView9"
+        android:textSize="@dimen/headline" />
+
     <com.astuetz.PagerSlidingTabStrip
         android:id="@+id/left_sliding_tabs"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize" />
+        android:layout_height="?attr/actionBarSize"
+        app:pstsIndicatorColor="@color/white"
+        app:pstsShouldExpand="true"
+        app:pstsIndicatorHeight="2dp"
+        app:pstsDividerColor="@android:color/transparent"
+        android:background="@color/primary" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/leftViewPager"

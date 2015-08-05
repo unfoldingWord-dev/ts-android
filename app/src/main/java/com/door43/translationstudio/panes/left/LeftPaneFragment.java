@@ -16,6 +16,7 @@ import com.door43.translationstudio.util.StringFragmentKeySet;
 import com.door43.translationstudio.util.TabbedViewPagerAdapter;
 import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
+import com.door43.util.Screen;
 
 import java.util.ArrayList;
 
@@ -55,9 +56,8 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
         // Sliding tab layout
         mSlidingTabLayout = (PagerSlidingTabStrip) mRootView.findViewById(R.id.left_sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
-        if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.accent);
-        mSlidingTabLayout.setIndicatorColor(mSelectedTabColor);
-        mSlidingTabLayout.setDividerColor(Color.TRANSPARENT);
+        mSlidingTabLayout.setTextColorResource(R.color.light_primary_text);
+        mSlidingTabLayout.setTextSize(Screen.dpToPx(getActivity(), 20));
 
         selectTab(mDefaultPage);
 

@@ -122,9 +122,9 @@ public class ModelItemAdapter extends BaseAdapter {
             holder.description = (TextView)v.findViewById(R.id.modelDescription);
 
             // alternate layout
-            holder.altBodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayoutAlt);
-            holder.altTitle = (TextView)v.findViewById(R.id.modelTitleAlt);
-            holder.altDescription = (TextView)v.findViewById(R.id.modelDescriptionAlt);
+//            holder.altBodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayoutAlt);
+//            holder.altTitle = (TextView)v.findViewById(R.id.modelTitleAlt);
+//            holder.altDescription = (TextView)v.findViewById(R.id.modelDescriptionAlt);
 
             // icons
             holder.audioIcon = (ImageView)v.findViewById(R.id.audioIcon);
@@ -143,27 +143,33 @@ public class ModelItemAdapter extends BaseAdapter {
 
         // set title and description
         holder.title.setText(getItem(position).getTitle());
-        holder.altTitle.setText(getItem(position).getTitle());
-        holder.description.setText(getItem(position).getDescription());
-        holder.altDescription.setText(getItem(position).getDescription());
+//        holder.altTitle.setText(getItem(position).getTitle());
+        if(getItem(position).getDescription().equals("")) {
+            holder.description.setVisibility(View.GONE);
+            holder.description.setText(getItem(position).getDescription());
+        } else {
+            holder.description.setVisibility(View.VISIBLE);
+            holder.description.setText(getItem(position).getDescription());
+        }
+//        holder.altDescription.setText(getItem(position).getDescription());
 
         // highlight selected item
         boolean isSelected = false;
         if(getItem(position).isSelected() && mIndicateSelected) {
             isSelected = true;
             v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
-            holder.title.setTextColor(Color.WHITE);
-            holder.altTitle.setTextColor(Color.WHITE);
-            holder.description.setTextColor(Color.WHITE);
-            holder.altDescription.setTextColor(Color.WHITE);
-            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.medium_blue));
+            holder.title.setTextColor(mContext.getResources().getColor(R.color.light_primary_text));
+//            holder.altTitle.setTextColor(Color.WHITE);
+            holder.description.setTextColor(mContext.getResources().getColor(R.color.light_secondary_text));
+//            holder.altDescription.setTextColor(Color.WHITE);
+//            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
-            holder.title.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
-            holder.altTitle.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
-            holder.description.setTextColor(mContext.getResources().getColor(R.color.gray));
-            holder.altDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
-            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.lighter_gray));
+            holder.title.setTextColor(mContext.getResources().getColor(R.color.dark_primary_text));
+//            holder.altTitle.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
+            holder.description.setTextColor(mContext.getResources().getColor(R.color.dark_secondary_text));
+//            holder.altDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
+//            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.lighter_gray));
         }
 
         // prepare image
@@ -197,8 +203,8 @@ public class ModelItemAdapter extends BaseAdapter {
                                 staticHolder.hasFont = true;
                                 staticHolder.title.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
                                 staticHolder.description.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-                                staticHolder.altTitle.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-                                staticHolder.altDescription.setTypeface(((LoadModelFontTask) task).getDescriptionTypeface(), 0);
+//                                staticHolder.altTitle.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+//                                staticHolder.altDescription.setTypeface(((LoadModelFontTask) task).getDescriptionTypeface(), 0);
                             }
                         });
                     }
@@ -214,19 +220,18 @@ public class ModelItemAdapter extends BaseAdapter {
         // set font size
         float fontsize = AppContext.typefaceSize();
         holder.title.setTextSize(fontsize);
-        holder.altTitle.setTextSize(fontsize);
+//        holder.altTitle.setTextSize(fontsize);
         holder.description.setTextSize((float)(fontsize*0.7));
-        holder.altDescription.setTextSize((float)(fontsize*0.7));
+//        holder.altDescription.setTextSize((float)(fontsize*0.7));
 
         // display the correct layout
-        if(imageUri != null) {
-            // default layout
-            holder.bodyLayout.setVisibility(View.VISIBLE);
-            holder.altBodyLayout.setVisibility(View.GONE);
-        } else {
-            // alternate layout
-            holder.bodyLayout.setVisibility(View.GONE);
-            holder.altBodyLayout.setVisibility(View.VISIBLE);
+        if(imageUri == null) {
+            if(isSelected) {
+                holder.image.setImageResource(R.drawable.icon_library_white);
+            } else {
+                holder.image.setImageResource(R.drawable.icon_library_dark);
+            }
+            staticHolder.image.setVisibility(View.VISIBLE);
         }
 
         // icons
@@ -277,12 +282,12 @@ public class ModelItemAdapter extends BaseAdapter {
             @Override
             public void onPostExecute() {
                 if(staticIsSelected) {
-                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_translating);
+                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.icon_edit_white);
                     if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global);
                     if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio);
                     if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes);
                 } else {
-                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_translating_light);
+                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.icon_edit_blue);
                     if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global_light);
                     if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio_light);
                     if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes_light);
@@ -320,9 +325,9 @@ public class ModelItemAdapter extends BaseAdapter {
         public TextView title;
         public TextView description;
 
-        public RelativeLayout altBodyLayout;
-        public TextView altTitle;
-        public TextView altDescription;
+//        public RelativeLayout altBodyLayout;
+//        public TextView altTitle;
+//        public TextView altDescription;
 
         public ImageView translationIcon;
         public ImageView languagesIcon;

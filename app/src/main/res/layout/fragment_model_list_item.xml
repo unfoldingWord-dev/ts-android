@@ -2,6 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
+    android:layout_marginEnd="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
     android:layout_height="wrap_content">
 
     <RelativeLayout
@@ -12,22 +16,26 @@
         android:layout_weight="3"
         android:layout_height="wrap_content">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minHeight="100dp"
-            android:minWidth="100dp"
-            android:id="@+id/modelImage"
-            android:layout_centerVertical="true"
-            android:background="@color/gray" />
+        <LinearLayout
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:gravity="center"
+            android:id="@+id/iconContainer">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/modelImage"
+                android:background="@drawable/icon_library_dark" />
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toRightOf="@+id/modelImage"
-            android:layout_toEndOf="@+id/modelImage"
+            android:layout_toRightOf="@+id/iconContainer"
+            android:layout_toEndOf="@+id/iconContainer"
+            android:gravity="center_vertical"
             android:paddingTop="1dp"
             android:paddingBottom="1dp"
             android:paddingLeft="5dp">
@@ -47,7 +55,6 @@
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="20dp"
                 android:id="@+id/modelDescription"
                 android:ellipsize="end"
                 android:maxLines="2"
@@ -56,6 +63,7 @@
 
     </RelativeLayout>
 
+    <!-- @deprecated -->
     <RelativeLayout
         android:visibility="gone"
         android:id="@+id/bodyLayoutAlt"
@@ -110,7 +118,6 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:padding="2dp"
-        android:background="@color/lighter_gray"
         android:minHeight="@dimen/model_list_item_height"
         android:gravity="center">
 
@@ -130,7 +137,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/translationIcon"
-            android:background="@drawable/ic_project_status_translating_light" />
+            android:background="@drawable/icon_edit_blue" />
 
         <ImageView
             android:layout_width="wrap_content"

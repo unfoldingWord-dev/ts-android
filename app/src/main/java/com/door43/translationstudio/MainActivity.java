@@ -102,7 +102,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         AppContext.context().setMainActivity(this);
 
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
-        mDrawerLayout.setScrimColor(getResources().getColor(R.color.scrim));
+//        mDrawerLayout.setScrimColor(getResources().getColor(R.color.scrim));
 
         // watch for the soft keyboard open and close
         final View rootView = ((ViewGroup)findViewById(android.R.id.content)).getChildAt(0);
@@ -278,7 +278,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
             resizeRootView(r);
 
             // apply contextual menu styles
-            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.light_blue));
+            mMainToolbar.setBackgroundColor(getResources().getColor(R.color.accent));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             invalidateOptionsMenu();
         }

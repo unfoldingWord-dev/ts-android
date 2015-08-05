@@ -1,13 +1,31 @@
 <resources>
+    <!-- primary colors -->
+    <color name="primary_light">#B2DFD8</color>
+    <color name="primary">#009688</color>
+    <color name="primary_dark">#00796B</color>
+
+    <!-- accent colors -->
+    <color name="accent_light">#80D8FF</color>
+    <color name="accent">#40C4FF</color>
+    <color name="accent_dark">#00B0FF</color>
+
+    <!-- dark text -->
+    <color name="dark_primary_text">#dd000000</color>
+    <color name="dark_secondary_text">#89000000</color>
+    <color name="dark_disabled_text">#42000000</color>
+
+    <!-- light text -->
+    <color name="light_primary_text">#ffffff</color>
+    <color name="light_secondary_text">#b2ffffff</color>
+    <color name="light_disabled_text">#4cffffff</color>
+
+    <color name="list_separator">#42000000</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="light_green">#ff9fc564</color>
-    <color name="primary">#009688</color>
-    <color name="primary_dark">#00796B</color>
     <color name="lighter_blue">#baeeff</color>
     <color name="clear_blue">#5bbaeeff</color>
     <color name="light_blue">#98c2d0</color>
-    <color name="accent">#40C4FF</color>
     <color name="medium_blue">#ff0086b8</color>
     <color name="purple">#9933cc</color>
     <color name="light_purple">#ffe175ff</color>

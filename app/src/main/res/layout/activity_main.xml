@@ -53,18 +53,16 @@
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:paddingRight="@dimen/drawer_edge_width"
-            android:background="@color/accent"
             android:layout_gravity="start"
+            android:elevation="16dp"
             android:id="@+id/leftPaneContent">
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:paddingLeft="@dimen/drawer_edge_width"
-            android:background="@color/purple"
             android:layout_gravity="end"
+            android:elevation="16dp"
             android:id="@+id/rightPaneContent">
         </RelativeLayout>
 
