@@ -42,6 +42,7 @@ import java.util.List;
 public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivity> {
     private Solo solo;
     private TermsActivity activity;
+    private UIActions act;
     //TODO: add log to file
     public RobotiumTests() {
         super(TermsActivity.class);
@@ -51,6 +52,12 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
         super.setUp();
         solo = new Solo(getInstrumentation());
         this.activity= getActivity();
+        try {
+            act = new UIActions(solo);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return;
+        }
     }
 
     @Override
@@ -58,17 +65,7 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
         solo.finishOpenedActivities();
         super.tearDown();
     }
-    public boolean waitAndClickText(String text,int match,int wait){
-        boolean isFound = solo.waitForText(text,match,wait);
-        solo.clickOnText(text);
-        return isFound;
-    }
-    public boolean waitAndClickText(String text, int wait){
-        return waitAndClickText(text,1,wait);
-    }
-    public boolean waitAndClickText(String text){
-        return waitAndClickText(text,1,5000);
-    }
+
     private void selectTab(int tabIndex){
         if(tabIndex>1){
             solo.scrollToSide(tabIndex);
@@ -106,22 +103,9 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
     user experience it take time to develop smart tests that can detect the state of the UI and
     decide how to navigate.
     */
-    public boolean waitForLoad(){
-        boolean isAgree = solo.waitForText("I Agree", 1, 5000);
-        if(isAgree)solo.clickOnText("I Agree");
-        boolean loadingTarget = solo.waitForText("Loading target", 1, 20000);
-        boolean loadingProject = solo.waitForText("Loading project", 1, 20000);
-        boolean isIndexing = solo.waitForText("Indexing", 1, 20000);
-        return isIndexing;
-    }
-    public void __test00SimpleStartToTranslate() {
-        ArrayList<View> cvs;
-        boolean isAgree = solo.waitForText("I Agree", 1, 5000);
-        if(isAgree)solo.clickOnText("I Agree");
-        boolean loadingTarget = solo.waitForText("Loading target", 1, 20000);
-        boolean loadingProject = solo.waitForText("Loading project", 1, 20000);
-        boolean isIndexing = solo.waitForText("Indexing", 1, 20000);
 
+    public void test00SimpleStartToTranslate() {
+        act.waitForLoad();
         boolean isOpen = solo.waitForText("Get more projects", 1, 25000);
 
         if(!isOpen){
@@ -129,15 +113,15 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
             isOpen = solo.waitForText("Get more projects", 1, 15000);
         }
         if(isOpen){
-            boolean isNT = waitAndClickText("Bible: NT");
-            boolean isMat = waitAndClickText("Matthew",15000);
-            waitAndClickText("English");
+            boolean isNT =act.waitAndClickText("Bible: NT");
+            boolean isMat = act.waitAndClickText("Matthew", 15000);
+            act.waitAndClickText("English");
 
             solo.waitForText("Loading", 1, 10000);
             solo.waitForText("Afaraf", 1, 25000);
             solo.clickInList(0);
-            waitAndClickText("Chapter 1");
-            waitAndClickText("1-3");
+            act.waitAndClickText("Chapter 1");
+            act.waitAndClickText("1-3");
             TextView verseOne2Three = solo.getText("genealogy",true);
             String expectedString = "The book of the genealogy of Jesus Christ";
             String verse = verseOne2Three.getText().toString();
@@ -147,7 +131,7 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
             assertTrue(expected);
             //TODO: start really testing
         }else {
-            cvs = solo.getCurrentViews();
+            //cvs = solo.getCurrentViews();
             //TODO: query to find the visible view
             assertEquals(true,false);
         }
@@ -166,26 +150,17 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
     When I am inactive for a few moments
     Then I want my changes to be saved
     */
-    public <T extends View> T getViewById(Class<T> viewClass,int id){
-        ArrayList<T> tViews = solo.getCurrentViews(viewClass);
-        for(int i=0;i<tViews.size();i++){
-            if(tViews.get(i).getId()==id){
-                return tViews.get(i);
-            }
-        }
-        return null;
-    }
     public void test01AutoSaveByTime(){
         //  /data/data/com.translationstudio.androidapp/files/git/uw-mat-aa/01/04.txt
         // save code for frames is in frame.java
         //text files start with two digit of first verse in frame example: frame 4-6 would be 04.txt
-        waitForLoad();
+        act.waitForLoad();
         //ArrayList<TextView> tvs = solo.getCurrentViews(TextView.class);
         //com.door43.util.ClearableEditText{424443e8 GFED..CL ......I. 0,0-0,0 #7f0a00cf app:id/translationNoteEditText}
         int title = R.id.translationNoteReferenceEditText;
 
         //ArrayList<EditText> etViews = solo.getCurrentViews(EditText.class);
-        EditText et = getViewById(EditText.class, R.id.inputText);
+        EditText et = (EditText)solo.getView(R.id.inputText);
 
         assertNotNull("Could not find id.inputText", et);
         String inText = "Test input text";
@@ -256,7 +231,7 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
     */
     public void test05EnableDisableBlindDraftMode()
     {
-        waitForLoad();
+        act.waitForLoad();
         int title = R.id.translationNoteReferenceEditText;
         ArrayList<View> cvs;
         //ArrayList<EditText> etViews = solo.getCurrentViews(EditText.class);
@@ -284,7 +259,7 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
         solo.clickOnMenuItem("Toggle blind draft");
         solo.sleep(1000);
         pView = solo.getView(R.id.sourceTitleText);
-        boolean isSourceView= solo.waitForView(R.id.sourceTitleText,1,5000);
+        boolean isSourceView= solo.waitForView(R.id.sourceTitleText, 1, 5000);
         assertTrue(isSourceView);
     }
     /*
@@ -310,7 +285,7 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
     Then I want to return to the previously selected frame
      */
     public void test06TestFrameSwipeNavigation(){
-        waitForLoad();
+        act.waitForLoad();
         int title = R.id.translationNoteReferenceEditText;
         ArrayList<View> cvs;
         //ArrayList<EditText> etViews = solo.getCurrentViews(EditText.class);
@@ -325,68 +300,15 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
         assertNotNull("Could not find id.inputText", et);
         ArrayList<TextView> tvs = solo.getCurrentViews(TextView.class);
         View pView = solo.getView(R.id.readSourceTranslation);
-        TextView frameView = (TextView)solo.getView(R.id.sourceFrameNumText);
-        frame  frameInfo = new frame(frameView.getText().toString());
-        int startFrame = frameInfo.getCurrent();
-        swipeToRight(R.id.inputText, 10);
-       //swipeToLeft(5);
-        solo.sleep(2000);
-        frameInfo.parse(frameView.getText().toString());
-        int newFrame =frameInfo.getCurrent();
-        assertTrue("Failed to advance frame.", newFrame > startFrame);
+        act.nextFrame();
         solo.sleep(9000);//TODO: need to figure out how to waIT FOR SPINNER STOP
-        swipeToLeft(R.id.inputText, 10);
-        solo.sleep(2000);
-        frameInfo.parse(frameView.getText().toString());
-        int endFrame =frameInfo.getCurrent();
-        assertTrue("Failed to revert frame.",endFrame == startFrame);
-        //TODO: navigate to last frmae then back
+        act.prevFrame();
+        assertTrue(true);
+        //TODO: navigate to last frame then back
     }
-    class frame {
-        private int current;
-        private int total;
-        private String frameString;
-        frame(String FrameString){
-            frameString=FrameString;
-            parse();
-        }
-        public int getCurrent(){return current;}
-        public int getTotal(){return total;}
-        public void parse(String FrameString){
-            frameString=FrameString;
-            parse();
-        }
-        private void parse(){
-            if(frameString.isEmpty()){return;}
-            String s[] = frameString.split(" ");
-            current = Integer.parseInt(s[1]);
-            total = Integer.parseInt(s[3]);
-        }
-    }
-    private void swipeToLeft(int id, int stepCount) {
-        View pView = solo.getView(id);
-        int loc[] = new int[2];
-        Rect rectSource = new Rect();
-        pView.getWindowVisibleDisplayFrame(rectSource);
-        pView.getLocationOnScreen(loc);
-        solo.drag(loc[1],loc[0],rectSource.exactCenterY(),rectSource.exactCenterY(),stepCount);
-    }
-    private void swipeToRight(int id, int stepCount) {
-        View pView = solo.getView(id);
-        int loc[] = new int[2];
-        Rect rectSource = new Rect();
-        pView.getWindowVisibleDisplayFrame(rectSource);
-        pView.getLocationOnScreen(loc);
-        solo.drag(loc[0],loc[1],rectSource.exactCenterY(),rectSource.exactCenterY(),stepCount);
-    }
-    private void swipeToRight(int stepCount) {
-        Display display = solo.getCurrentActivity().getWindowManager().getDefaultDisplay();
-        int width = display.getWidth();
-        int height = display.getHeight();
-        float xStart = 10 ;
-        float xEnd = width - 10;
-        solo.drag(xStart, xEnd, height / 2, height / 2, stepCount);
-    }
+
+
+
     //TODO: add tests for feature / use cases found here: https://github.com/unfoldingWord-dev/ts-requirements/tree/master/features
 
 }
