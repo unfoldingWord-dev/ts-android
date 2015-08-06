@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.tasks.LoadModelFontTask;
 import com.door43.translationstudio.util.AnimationUtilities;
@@ -121,18 +122,12 @@ public class ModelItemAdapter extends BaseAdapter {
             holder.title = (TextView)v.findViewById(R.id.modelTitle);
             holder.description = (TextView)v.findViewById(R.id.modelDescription);
 
-            // alternate layout
-//            holder.altBodyLayout = (RelativeLayout)v.findViewById(R.id.bodyLayoutAlt);
-//            holder.altTitle = (TextView)v.findViewById(R.id.modelTitleAlt);
-//            holder.altDescription = (TextView)v.findViewById(R.id.modelDescriptionAlt);
-
             // icons
             holder.audioIcon = (ImageView)v.findViewById(R.id.audioIcon);
             holder.languagesIcon = (ImageView)v.findViewById(R.id.languagesIcon);
             holder.translationIcon = (ImageView)v.findViewById(R.id.translationIcon);
             holder.translationNotesIcon = (ImageView)v.findViewById(R.id.translationNotesIcon);
             holder.iconGroup = (LinearLayout)v.findViewById(R.id.iconGroupLayout);
-            holder.iconGroup.setVisibility(View.INVISIBLE);
             v.setTag(holder);
         } else {
             holder = (ViewHolder)v.getTag();
@@ -144,13 +139,11 @@ public class ModelItemAdapter extends BaseAdapter {
         // set title and description
         holder.title.setText(getItem(position).getTitle());
         holder.description.setText(getItem(position).getDescription());
-//        holder.altTitle.setText(getItem(position).getTitle());
         if(getItem(position).getDescription().equals("")) {
             holder.description.setVisibility(View.GONE);
         } else {
             holder.description.setVisibility(View.VISIBLE);
         }
-//        holder.altDescription.setText(getItem(position).getDescription());
 
         // highlight selected item
         boolean isSelected = false;
@@ -158,29 +151,20 @@ public class ModelItemAdapter extends BaseAdapter {
             isSelected = true;
             v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             holder.title.setTextColor(mContext.getResources().getColor(R.color.light_primary_text));
-//            holder.altTitle.setTextColor(Color.WHITE);
             holder.description.setTextColor(mContext.getResources().getColor(R.color.light_secondary_text));
-//            holder.altDescription.setTextColor(Color.WHITE);
-//            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
             holder.title.setTextColor(mContext.getResources().getColor(R.color.dark_primary_text));
-//            holder.altTitle.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
             holder.description.setTextColor(mContext.getResources().getColor(R.color.dark_secondary_text));
-//            holder.altDescription.setTextColor(mContext.getResources().getColor(R.color.gray));
-//            holder.iconGroup.setBackgroundColor(mContext.getResources().getColor(R.color.lighter_gray));
         }
-
-        // prepare image
-        holder.image.setVisibility(View.INVISIBLE);
 
         final ViewHolder staticHolder = holder;
         final Model staticModel = getItem(position);
         final boolean staticIsSelected = isSelected;
 
         // set fontface
-//        if(!holder.hasFont) {
-            // NOTE: this only runs once for each holder to improve performance
+        String selectedFontName = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getResources().getString(R.string.pref_default_translation_typeface));
+        if(!holder.hasFont || !holder.fontName.equals(selectedFontName)) {
             if (holder.fontTaskId != null) {
                 LoadModelFontTask oldTask = (LoadModelFontTask) TaskManager.getTask(holder.fontTaskId);
                 if (oldTask != null) {
@@ -200,10 +184,9 @@ public class ModelItemAdapter extends BaseAdapter {
                             @Override
                             public void run() {
                                 staticHolder.hasFont = true;
+                                staticHolder.fontName = ((LoadModelFontTask) task).getTypefaceName();
                                 staticHolder.title.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
                                 staticHolder.description.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-//                                staticHolder.altTitle.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-//                                staticHolder.altDescription.setTypeface(((LoadModelFontTask) task).getDescriptionTypeface(), 0);
                             }
                         });
                     }
@@ -214,24 +197,12 @@ public class ModelItemAdapter extends BaseAdapter {
                 TaskManager.groupTask(task, mGroupTaskId);
             }
             holder.fontTaskId = task.getTaskId();
-//        }
+        }
 
         // set font size
         float fontsize = AppContext.typefaceSize();
         holder.title.setTextSize(fontsize);
-//        holder.altTitle.setTextSize(fontsize);
-        holder.description.setTextSize((float)(fontsize*0.7));
-//        holder.altDescription.setTextSize((float)(fontsize*0.7));
-
-        // display the correct layout
-        if(imageUri == null) {
-            if(isSelected) {
-                holder.image.setImageResource(R.drawable.icon_library_white);
-            } else {
-                holder.image.setImageResource(R.drawable.icon_library_dark);
-            }
-            holder.image.setVisibility(View.VISIBLE);
-        }
+        holder.description.setTextSize((float) (fontsize * 0.7));
 
         // icons
         holder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
@@ -241,7 +212,15 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.iconGroup.setVisibility(View.INVISIBLE);
 
         // load image
-        if(imageUri != null) {
+        if(imageUri == null) {
+            if(isSelected) {
+                holder.image.setImageResource(R.drawable.icon_library_white);
+            } else {
+                holder.image.setImageResource(R.drawable.icon_library_dark);
+            }
+            holder.image.setVisibility(View.VISIBLE);
+        } else {
+            holder.image.setVisibility(View.INVISIBLE);
             mContext.getImageLoader().loadImage(imageUri, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
@@ -324,10 +303,6 @@ public class ModelItemAdapter extends BaseAdapter {
         public TextView title;
         public TextView description;
 
-//        public RelativeLayout altBodyLayout;
-//        public TextView altTitle;
-//        public TextView altDescription;
-
         public ImageView translationIcon;
         public ImageView languagesIcon;
         public ImageView audioIcon;
@@ -337,5 +312,6 @@ public class ModelItemAdapter extends BaseAdapter {
         public Object fontTaskId;
         public boolean hasFont;
         public ImageView translationNotesIcon;
+        public String fontName;
     }
 }

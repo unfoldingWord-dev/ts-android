@@ -2,10 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_marginEnd="16dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:paddingEnd="16dp"
+    android:paddingLeft="16dp"
+    android:paddingStart="16dp"
+    android:paddingRight="16dp"
     android:layout_height="wrap_content">
 
     <RelativeLayout
@@ -17,7 +17,7 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
-            android:layout_width="100dp"
+            android:layout_width="wrap_content"
             android:layout_height="100dp"
             android:gravity="center"
             android:id="@+id/iconContainer">
@@ -38,7 +38,7 @@
             android:gravity="center_vertical"
             android:paddingTop="1dp"
             android:paddingBottom="1dp"
-            android:paddingLeft="5dp">
+            android:paddingLeft="16dp">
 
             <TextView
                 android:layout_width="fill_parent"
@@ -61,54 +61,6 @@
                 android:textSize="@dimen/h5" />
         </LinearLayout>
 
-    </RelativeLayout>
-
-    <!-- @deprecated -->
-    <RelativeLayout
-        android:visibility="gone"
-        android:id="@+id/bodyLayoutAlt"
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_weight="3"
-        android:layout_height="wrap_content"
-        android:paddingLeft="5dp"
-        android:paddingRight="2dp">
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="1dp"
-            android:paddingBottom="1dp"
-            android:layout_centerVertical="true">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Model Title"
-                android:id="@+id/modelTitleAlt"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:textSize="@dimen/h4"
-                android:gravity="center"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:textColor="@color/dark_gray"
-                android:singleLine="true"
-                android:textStyle="bold"
-                android:layout_above="@+id/modelDescriptionAlt" />
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/modelDescriptionAlt"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:paddingLeft="5dp"
-                android:paddingRight="5dp"
-                android:gravity="center"
-                android:text="Model Description\ntest\testsdfsd f\ntest"
-                android:textSize="@dimen/h4" />
-        </LinearLayout>
     </RelativeLayout>
 
     <LinearLayout
