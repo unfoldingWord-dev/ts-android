@@ -143,13 +143,12 @@ public class ModelItemAdapter extends BaseAdapter {
 
         // set title and description
         holder.title.setText(getItem(position).getTitle());
+        holder.description.setText(getItem(position).getDescription());
 //        holder.altTitle.setText(getItem(position).getTitle());
         if(getItem(position).getDescription().equals("")) {
             holder.description.setVisibility(View.GONE);
-            holder.description.setText(getItem(position).getDescription());
         } else {
             holder.description.setVisibility(View.VISIBLE);
-            holder.description.setText(getItem(position).getDescription());
         }
 //        holder.altDescription.setText(getItem(position).getDescription());
 
@@ -231,7 +230,7 @@ public class ModelItemAdapter extends BaseAdapter {
             } else {
                 holder.image.setImageResource(R.drawable.icon_library_dark);
             }
-            staticHolder.image.setVisibility(View.VISIBLE);
+            holder.image.setVisibility(View.VISIBLE);
         }
 
         // icons
