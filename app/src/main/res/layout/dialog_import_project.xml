@@ -12,7 +12,7 @@
 
         <ImageView
             android:layout_width="@dimen/model_list_item_image_width"
-            android:layout_height="@dimen/model_list_item_height"
+            android:layout_height="@dimen/list_item_height"
             android:id="@+id/modelImage"
             android:background="@color/lighter_gray" />
 
@@ -21,7 +21,7 @@
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_weight="3"
-            android:layout_height="@dimen/model_list_item_height"
+            android:layout_height="@dimen/list_item_height"
             android:paddingLeft="5dp"
             android:paddingRight="2dp"
             android:paddingTop="1dp"

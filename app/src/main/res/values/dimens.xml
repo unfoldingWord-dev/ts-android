@@ -7,7 +7,7 @@
     <dimen name="sliding_layer_width_narrow">100dp</dimen>
     <dimen name="drawer_edge_width">3dp</dimen>
     <dimen name="model_list_item_image_width">70dp</dimen>
-    <dimen name="model_list_item_height">70dp</dimen>
+    <dimen name="list_item_height">70dp</dimen>
     <dimen name="h1">60sp</dimen>
     <dimen name="h2">30sp</dimen>
     <dimen name="h3">25sp</dimen>

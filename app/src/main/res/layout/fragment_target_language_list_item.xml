@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/list_item_height"
+    android:gravity="center_vertical"
     android:padding="10dp">
 
     <TextView android:id="@+id/target_language_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
+        android:textSize="@dimen/title"
         android:text="name"
-        android:textColor="@color/dark_gray"
+        android:textColor="@color/dark_primary_text"
         android:paddingRight="10dp" />
 
     <TextView android:id="@+id/target_language_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="id"
-        android:textColor="@color/gray"
+        android:textColor="@color/dark_secondary_text"
         android:layout_weight="1"
         android:paddingLeft="10dp"
         android:paddingRight="10dp" />
@@ -24,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/translationStatusIcon"
-        android:background="@drawable/ic_project_status_translating_light"
+        android:background="@drawable/icon_edit_dark"
         android:layout_gravity="center_vertical"
         android:baselineAlignBottom="false"
         android:paddingLeft="10dp" />
