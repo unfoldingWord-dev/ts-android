@@ -12,6 +12,7 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
@@ -65,7 +66,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     private int mPreviousRootViewHeight;
     private TranslatorFragmentInterface mTranslatorFragment;
     private GenericTaskWatcher mIndexTaskWatcher;
-    private Button mContextualButton;
+    private FloatingActionButton mContextualButton;
     private boolean mContextualButtonEnabled = false;
 
     @Override
@@ -79,7 +80,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
             AppContext.projectManager().setSelectedProject(null);
         }
 
-        mContextualButton = (Button) findViewById(R.id.contextual_menu_btn);
+        mContextualButton = (FloatingActionButton) findViewById(R.id.contextual_menu_btn);
 
         // insert translator fragment
         if(savedInstanceState == null) {
@@ -347,12 +348,12 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
     @Override
     public void disableResourcesDrawer() {
-        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.END);
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, Gravity.RIGHT);
     }
 
     @Override
     public void enableResourcesDrawer() {
-        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.END);
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED, Gravity.RIGHT);
     }
 
     @Override
@@ -381,7 +382,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     }
 
     public void hideContextualMenu() {
-        Button button = (Button) findViewById(R.id.contextual_menu_btn);
+        FloatingActionButton button = (FloatingActionButton) findViewById(R.id.contextual_menu_btn);
         button.setVisibility(View.GONE);
     }
 

@@ -52,6 +52,7 @@ public class MainApplication extends Application {
     private boolean mClosingProgressDialog = false;
 
     public void onCreate() {
+        super.onCreate();
 
         // initialize basic functions with link to main application
         new AppContext(this);
