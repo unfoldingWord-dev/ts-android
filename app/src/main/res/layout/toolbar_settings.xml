@@ -5,8 +5,9 @@
     android:id="@+id/toolbar"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
-    android:background="@color/primary"
+    android:minHeight="?attr/actionBarSize"
     app:navigationContentDescription="@string/abc_action_bar_up_description"
     app:navigationIcon="?attr/homeAsUpIndicator"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    android:theme="@style/AppTheme.Toolbar.Primary"
+    android:popupTheme="@style/Theme.AppCompat.Light"
     app:title="@string/settings"/>
