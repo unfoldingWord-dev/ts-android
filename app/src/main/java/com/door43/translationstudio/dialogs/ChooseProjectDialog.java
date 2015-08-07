@@ -56,7 +56,7 @@ public class ChooseProjectDialog extends DialogFragment {
         Bundle args = getArguments();
         mMetaId = args.getString(ARG_META_ID);
 
-        mModelItemAdapter = new ModelItemAdapter(AppContext.context(), new Model[]{}, GROUP_TASK_ID);
+        mModelItemAdapter = new ModelItemAdapter(AppContext.context(), new Model[]{}, R.drawable.icon_library_dark, R.drawable.icon_library_white, GROUP_TASK_ID);
 
         if(mMetaId != null) {
             // connect adapter

@@ -15,6 +15,7 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.util.TabsAdapter;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
+import com.door43.util.Screen;
 
 /**
  * Created by joel on 8/26/2014.
@@ -25,7 +26,7 @@ public class RightPaneFragment extends TranslatorBaseFragment {
     private TabsAdapter mTabsAdapter;
 //    private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
     private int mDefaultPage = 0;
-    private int mSelectedTabColor = 0;
+//    private int mSelectedTabColor = 0;
 //    private NotesTab mNotesTab = new NotesTab();
 //    private TermsTab mTermsTab = new TermsTab();
     private int mLayoutWidth = 0;
@@ -59,9 +60,8 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         // Sliding tab layout
         mSlidingTabLayout = (PagerSlidingTabStrip) mView.findViewById(R.id.right_sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
-        if(mSelectedTabColor == 0) mSelectedTabColor = getResources().getColor(R.color.purple);
-        mSlidingTabLayout.setIndicatorColor(mSelectedTabColor);
-        mSlidingTabLayout.setDividerColor(Color.TRANSPARENT);
+        mSlidingTabLayout.setTextColorResource(R.color.light_primary_text);
+        mSlidingTabLayout.setTextSize(Screen.dpToPx(getActivity(), 20));
 
         // open the default page
         selectTab(mDefaultPage);

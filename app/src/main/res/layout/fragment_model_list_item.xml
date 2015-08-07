@@ -25,7 +25,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/modelImage"
-                android:background="@drawable/icon_library_dark" />
+                android:background="@drawable/icon_library_dark"
+                android:layout_marginRight="16dp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -37,8 +38,7 @@
             android:layout_toEndOf="@+id/iconContainer"
             android:gravity="center_vertical"
             android:paddingTop="1dp"
-            android:paddingBottom="1dp"
-            android:paddingLeft="16dp">
+            android:paddingBottom="1dp">
 
             <TextView
                 android:layout_width="fill_parent"

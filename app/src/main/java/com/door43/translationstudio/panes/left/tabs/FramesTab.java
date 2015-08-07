@@ -35,9 +35,9 @@ public class FramesTab extends TranslatorBaseFragment implements TabsAdapterNoti
         if(mModelItemAdapter == null) {
             Project p = AppContext.projectManager().getSelectedProject();
             if(p == null || p.getSelectedChapter() == null ) {
-                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{}, "");
+                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{}, 0, 0, "");
             } else {
-                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getSelectedChapter().getFrames(), "");
+                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getSelectedChapter().getFrames(), 0, 0, "");
             }
         }
 

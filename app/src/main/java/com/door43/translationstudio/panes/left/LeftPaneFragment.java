@@ -25,7 +25,7 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
     private TabsAdapter mTabsAdapter;
 //    private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
     private int mDefaultPage = 0;
-    private int mSelectedTabColor = 0;
+//    private int mSelectedTabColor = 0;
 //    private ProjectsTab mProjectsTab = new ProjectsTab();
 //    private ChaptersTab mChaptersTab = new ChaptersTab();
 //    private FramesTab mFramesTab = new FramesTab();

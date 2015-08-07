@@ -56,7 +56,7 @@ public class ProjectsTab extends TranslatorBaseFragment implements TabsAdapterNo
         mTaskWatcher.setOnFinishedListener(this);
 
         // create adapter
-        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects(), null);
+        if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getListableProjects(), R.drawable.icon_library_dark, R.drawable.icon_library_white, null);
 
         // connect adapter
         listView.setAdapter(mModelItemAdapter);

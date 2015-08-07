@@ -55,7 +55,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
         ListView listView = (ListView)v.findViewById(R.id.listView);
 
         if(mModelList != null) {
-            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), mModelList, false, GROUP_TASK_ID);
+            if(mModelItemAdapter == null) mModelItemAdapter = new ModelItemAdapter(AppContext.context(), mModelList, false, R.drawable.icon_library_dark, R.drawable.icon_library_white, GROUP_TASK_ID);
             // connect adapter
             listView.setAdapter(mModelItemAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -74,7 +74,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
                 }
             });
         } else {
-            listView.setAdapter(new ModelItemAdapter(AppContext.context(), new Model[]{}, false, GROUP_TASK_ID));
+            listView.setAdapter(new ModelItemAdapter(AppContext.context(), new Model[]{}, false, R.drawable.icon_library_dark, R.drawable.icon_library_white, GROUP_TASK_ID));
             dismiss();
         }
 

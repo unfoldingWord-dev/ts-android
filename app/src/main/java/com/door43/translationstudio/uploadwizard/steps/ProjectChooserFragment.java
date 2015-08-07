@@ -43,7 +43,7 @@ public class ProjectChooserFragment extends WizardFragment {
             }
         });
 
-        mAdapter = new ModelItemAdapter(AppContext.context(), new Model[0], false, false, "translated_project_prep_tasks");
+        mAdapter = new ModelItemAdapter(AppContext.context(), new Model[0], false, false, R.drawable.icon_library_dark, R.drawable.icon_library_white, "translated_project_prep_tasks");
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

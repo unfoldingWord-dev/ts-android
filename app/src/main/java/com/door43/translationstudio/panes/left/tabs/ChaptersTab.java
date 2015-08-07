@@ -42,9 +42,9 @@ public class ChaptersTab extends TranslatorBaseFragment implements TabsAdapterNo
         // create adapter
         if(mModelItemAdapter == null) {
             if(AppContext.projectManager().getSelectedProject() == null) {
-                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{}, "");
+                mModelItemAdapter = new ModelItemAdapter(app(), new Model[]{}, 0, 0, "");
             } else {
-                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getChapters(), "");
+                mModelItemAdapter = new ModelItemAdapter(app(), AppContext.projectManager().getSelectedProject().getChapters(), 0, 0, "");
             }
         }
         // connect adapter
