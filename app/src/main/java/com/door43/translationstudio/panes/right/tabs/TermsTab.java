@@ -25,6 +25,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
+import com.door43.util.Screen;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
@@ -34,7 +35,7 @@ import java.util.ArrayList;
   * Created by joel on 2/12/2015.
   */
  public class TermsTab extends TranslatorBaseFragment implements TabsAdapterNotification {
-    private TextView mTermName;
+//    private TextView mTermName;
     private HtmlTextView mTermDescriptionView;
     private TextView mRelatedTerms;
     private TextView mRelatedTermsTitle;
@@ -53,7 +54,7 @@ import java.util.ArrayList;
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_pane_right_resources_term, container, false);
 
-        mTermName = (TextView)view.findViewById(R.id.termName);
+//        mTermName = (TextView)view.findViewById(R.id.termName);
         mRelatedTermsTitle = (TextView)view.findViewById(R.id.relatedTermsTitleText);
         mExamplePassagesView = (LinearLayout)view.findViewById(R.id.examplePassagesView);
         mExamplePassagesTitle = (TextView)view.findViewById(R.id.examplePassagesTitleText);
@@ -151,7 +152,7 @@ import java.util.ArrayList;
 
             mRelatedTerms.setText("");
             mExamplePassagesView.removeAllViews();
-            mTermName.setText(term.getName());
+            mImportantTermsButton.setText(term.getName());
             mTermDescriptionView.setHtmlFromString(term.getDefinition(), true);
 
             // related terms
