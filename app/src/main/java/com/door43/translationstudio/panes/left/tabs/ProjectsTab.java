@@ -288,7 +288,9 @@ public class ProjectsTab extends TranslatorBaseFragment implements TabsAdapterNo
             mProjectSelectorDialog.setOnDismissListener(null);
             mProjectSelectorDialog.setOnSuccessListener(null);
         }
-        mTaskWatcher.stop();
+        if(mTaskWatcher != null) {
+            mTaskWatcher.stop();
+        }
         super.onDestroy();
     }
 

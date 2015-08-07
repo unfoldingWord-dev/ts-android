@@ -3,6 +3,7 @@ package com.door43.translationstudio.panes.right.tabs;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,6 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.door43.util.Screen;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
@@ -35,20 +35,24 @@ import java.util.ArrayList;
   * Created by joel on 2/12/2015.
   */
  public class TermsTab extends TranslatorBaseFragment implements TabsAdapterNotification {
-//    private TextView mTermName;
+    private static final String STATE_SHOWN_TERM = "shown_term";
+    //    private TextView mTermName;
     private HtmlTextView mTermDescriptionView;
     private TextView mRelatedTerms;
     private TextView mRelatedTermsTitle;
     private TextView mExamplePassagesTitle;
     private LinearLayout mExamplePassagesView;
     private View mTermInfoLayout;
-    private ListView mTermsListLayout;
+    private ListView mTermsList;
     private Button mImportantTermsButton;
     private boolean mIsLoaded = false;
     private ScrollView mTermInfoScroll;
     private TextView mTermsMessageText;
     private View mTermsLayout;
     private ImportantTermsAdapter mTermsAdapter;
+    private String mShownTerm = null;
+    private Integer mScrollX = 0;
+    private Integer mScrollY = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -66,14 +70,14 @@ import java.util.ArrayList;
         mTermsLayout = view.findViewById(R.id.termsLayout);
 
         mTermInfoLayout = view.findViewById(R.id.termInfoLayout);
-        mTermsListLayout = (ListView)view.findViewById(R.id.termsListLayout);
+        mTermsList = (ListView)view.findViewById(R.id.termsListLayout);
 
         // hook up adapter for key terms
 
         mTermsAdapter = new ImportantTermsAdapter(this.getActivity(), new ArrayList<String>(){});
-        mTermsListLayout.setAdapter(mTermsAdapter);
+        mTermsList.setAdapter(mTermsAdapter);
 
-        mTermsListLayout.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mTermsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Project p = AppContext.projectManager().getSelectedProject();
@@ -103,9 +107,51 @@ import java.util.ArrayList;
 
         mIsLoaded = true;
 
-        showTerms();
+        if(savedInstanceState != null) {
+            mShownTerm = savedInstanceState.getString(STATE_SHOWN_TERM, null);
+        }
+        
+        if(mShownTerm == null) {
+            showTerms();
+        } else {
+            Project p = AppContext.projectManager().getSelectedProject();
+            if(p != null) {
+                Term term = p.getTerm(mShownTerm);
+                if(term != null) {
+                    showTerm(term);
+                } else {
+                    showTerms();
+                }
+            } else {
+                showTerms();
+            }
+        }
 
         return view;
+    }
+
+    /**
+     * Returns the scroll x and y position of the notes
+     * @return
+     */
+    public Pair<Integer, Integer> getScroll() {
+        if(mTermsList != null) {
+            return new Pair<>(mTermsList.getScrollX(), mTermsList.getScrollY());
+        } else {
+            return new Pair<>(0, 0);
+        }
+    }
+
+    /**
+     * Sets the scroll position of the notes
+     * @param scrollPair
+     */
+    public void setScroll(Pair<Integer, Integer> scrollPair) {
+        mScrollX = scrollPair.first;
+        mScrollY = scrollPair.second;
+        if(mTermsList != null) {
+            mTermsList.scrollTo(mScrollX, mScrollY);
+        }
     }
 
     /**
@@ -113,6 +159,7 @@ import java.util.ArrayList;
      * Will show the related terms of the current term if one has already been selected.
      */
     public void showTerms() {
+        mShownTerm = null;
         Project p = AppContext.projectManager().getSelectedProject();
         if(p != null) {
             Chapter c = p.getSelectedChapter();
@@ -120,7 +167,6 @@ import java.util.ArrayList;
                 Frame f = c.getSelectedFrame();
                 if(f != null) {
                     if(!mIsLoaded) return;
-
                     // load the terms
                     toggleTermsList(true);
                     mTermsAdapter.setTermsList(f.getImportantTerms());
@@ -146,6 +192,7 @@ import java.util.ArrayList;
         // TODO: this should load asynchronously with a loading indicator
         final Project p = AppContext.projectManager().getSelectedProject();
         if(term != null && mIsLoaded && p != null) {
+            mShownTerm = term.getName();
             AppContext.context().setShowImportantTerms(false);
 
             toggleTermDetails(true);
@@ -248,10 +295,10 @@ import java.util.ArrayList;
         if(show) {
             toggleMissingNotice(false);
             toggleTermDetails(false);
-            mTermsListLayout.setVisibility(View.VISIBLE);
-            mTermsListLayout.scrollTo(0, 0);
+            mTermsList.setVisibility(View.VISIBLE);
+            mTermsList.scrollTo(0, 0);
         } else {
-            mTermsListLayout.setVisibility(View.GONE);
+            mTermsList.setVisibility(View.GONE);
         }
     }
 
@@ -285,6 +332,13 @@ import java.util.ArrayList;
 
     @Override
     public void NotifyAdapterDataSetChanged() {
-        showTerms();
+        if(mShownTerm == null) {
+            showTerms();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(STATE_SHOWN_TERM, mShownTerm);
     }
 }

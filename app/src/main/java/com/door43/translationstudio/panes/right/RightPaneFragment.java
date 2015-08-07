@@ -4,6 +4,7 @@ import android.database.DataSetObserver;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ import com.door43.util.Screen;
  * Created by joel on 8/26/2014.
  */
 public class RightPaneFragment extends TranslatorBaseFragment {
+    private static final String STATE_TERMS_SCROLL_X = "terms_scroll_x";
+    private static final String STATE_TERMS_SCROLL_Y = "terms_scroll_y";
     private ViewPager mViewPager;
     private PagerSlidingTabStrip mSlidingTabLayout;
     private TabsAdapter mTabsAdapter;
@@ -42,14 +45,6 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         super.onCreateView(inflater, container, savedInstanceState);
         mView = inflater.inflate(R.layout.fragment_pane_right, container, false);
         mEditButton = (ImageButton)mView.findViewById(R.id.editButton);
-
-        if(savedInstanceState != null) {
-            // restore scroll position
-            mSelectedTab = savedInstanceState.getInt(STATE_SELECTED_TAB, 0);
-            mDefaultPage = mSelectedTab;
-            // TODO: give scroll to notes tab
-//            mNotesTab.setScroll(new Pair<>(savedInstanceState.getInt(STATE_NOTES_SCROLL_X), savedInstanceState.getInt(STATE_NOTES_SCROLL_Y)));
-        }
 
         mEditButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,6 +89,20 @@ public class RightPaneFragment extends TranslatorBaseFragment {
 
             }
         });
+
+        if(savedInstanceState != null) {
+            // restore scroll position
+            mSelectedTab = savedInstanceState.getInt(STATE_SELECTED_TAB, 0);
+            mDefaultPage = mSelectedTab;
+            NotesTab notesPage = (NotesTab)mTabsAdapter.getFragmentForPosition(TAB_INDEX_NOTES);
+            if(notesPage != null) {
+                notesPage.setScroll(new Pair<>(savedInstanceState.getInt(STATE_NOTES_SCROLL_X), savedInstanceState.getInt(STATE_NOTES_SCROLL_Y)));
+            }
+            TermsTab termsPage = (TermsTab)mTabsAdapter.getFragmentForPosition(TAB_INDEX_TERMS);
+            if(termsPage != null) {
+                termsPage.setScroll(new Pair<>(savedInstanceState.getInt(STATE_TERMS_SCROLL_X), savedInstanceState.getInt(STATE_TERMS_SCROLL_Y)));
+            }
+        }
 
         // open the default page
         selectTab(mDefaultPage);
@@ -169,12 +178,15 @@ public class RightPaneFragment extends TranslatorBaseFragment {
      */
     public void showTerm(Term term) {
         selectTab(TAB_INDEX_TERMS);
-        // TODO: display terms
-//        if(term == null) {
-//            mTermsTab.showTerms();
-//        } else {
-//            mTermsTab.showTerm(term);
-//        }
+        TermsTab page = (TermsTab)mTabsAdapter.getFragmentForPosition(TAB_INDEX_TERMS);
+        if(page != null) {
+            page.NotifyAdapterDataSetChanged();
+            if(term == null) {
+                page.showTerms();
+            } else {
+                page.showTerm(term);
+            }
+        }
     }
 
     /**
@@ -191,10 +203,18 @@ public class RightPaneFragment extends TranslatorBaseFragment {
 
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // TODO: save scroll for notes tab
-//        Pair scrollPosition = mNotesTab.getScroll();
-//        outState.putInt(STATE_NOTES_SCROLL_X, (int)scrollPosition.first);
-//        outState.putInt(STATE_NOTES_SCROLL_Y, (int)scrollPosition.second);
+        NotesTab notesPage = (NotesTab)mTabsAdapter.getFragmentForPosition(TAB_INDEX_NOTES);
+        if(notesPage != null) {
+            Pair scrollPosition = notesPage.getScroll();
+            outState.putInt(STATE_NOTES_SCROLL_X, (int)scrollPosition.first);
+            outState.putInt(STATE_NOTES_SCROLL_Y, (int)scrollPosition.second);
+        }
+        TermsTab termsPage = (TermsTab)mTabsAdapter.getFragmentForPosition(TAB_INDEX_TERMS);
+        if(termsPage != null) {
+            Pair scrollPosition = termsPage.getScroll();
+            outState.putInt(STATE_TERMS_SCROLL_X, (int)scrollPosition.first);
+            outState.putInt(STATE_TERMS_SCROLL_Y, (int)scrollPosition.second);
+        }
         outState.putInt(STATE_SELECTED_TAB, mSelectedTab);
     }
 }
