@@ -1,5 +1,6 @@
 package com.door43.translationstudio.panes.right;
 
+import android.database.DataSetObserver;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -77,6 +78,23 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         mSlidingTabLayout.setTextColorResource(R.color.light_primary_text);
         mSlidingTabLayout.setTextSize(Screen.dpToPx(getActivity(), 20));
 
+        mSlidingTabLayout.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                // TODO: save scroll position
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                updateNotesEditButton(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         // open the default page
         selectTab(mDefaultPage);
 
@@ -85,6 +103,14 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         }
 
         return mView;
+    }
+
+    private void updateNotesEditButton(int position) {
+        if(position == TAB_INDEX_NOTES) {
+            mEditButton.setVisibility(View.VISIBLE);
+        } else {
+            mEditButton.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -99,11 +125,7 @@ public class RightPaneFragment extends TranslatorBaseFragment {
                 page.NotifyAdapterDataSetChanged();
             }
 
-            if(i == TAB_INDEX_NOTES) {
-                mEditButton.setVisibility(View.VISIBLE);
-            } else {
-                mEditButton.setVisibility(View.GONE);
-            }
+            updateNotesEditButton(i);
         } else {
             mDefaultPage = i;
         }

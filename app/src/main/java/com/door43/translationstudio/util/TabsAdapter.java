@@ -14,6 +14,8 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.AbsoluteSizeSpan;
 
+import com.door43.translationstudio.panes.right.RightPaneFragment;
+
 import java.util.ArrayList;
 
 /**
