@@ -40,32 +40,19 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
         mAdapter = new NotesAdapter(getActivity());
         mNotesListView.setAdapter(mAdapter);
         mNotesMessageText = (TextView)view.findViewById(R.id.notesMessageText);
-        final Button translateBtn = (Button)view.findViewById(R.id.translateNotesBtn);
-        translateBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mAdapter.getRenderTranslations()) {
-                    // save changes and change button image
-                    if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                        translateBtn.setBackgroundDrawable(getActivity().getResources().getDrawable(R.drawable.ic_new_pencil_small));
-                    } else {
-                        translateBtn.setBackground(getActivity().getResources().getDrawable(R.drawable.ic_new_pencil_small));
-                    }
-                } else {
-                    // change button image
-                    if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                        translateBtn.setBackgroundDrawable(getActivity().getResources().getDrawable(R.drawable.ic_check_small));
-                    } else {
-                        translateBtn.setBackground(getActivity().getResources().getDrawable(R.drawable.ic_check_small));
-                    }
-                }
-                mAdapter.setRenderTranslations(!mAdapter.getRenderTranslations());
-            }
-        });
 
         mIsLoaded = true;
         showNotes();
         return view;
+    }
+
+    public int translateNotes() {
+        mAdapter.setRenderTranslations(!mAdapter.getRenderTranslations());
+        if(mAdapter.getRenderTranslations()) {
+            return R.drawable.icon_close_white;
+        } else {
+            return R.drawable.icon_edit_white;
+        }
     }
 
     @Override
@@ -89,6 +76,8 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
                         mNotesMessageText.setVisibility(View.GONE);
                         mNotesDisplay.setVisibility(View.VISIBLE);
                     }
+
+                    // show edit button
                     return;
                 }
             }

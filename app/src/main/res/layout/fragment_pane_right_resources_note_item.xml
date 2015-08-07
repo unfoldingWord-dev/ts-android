@@ -3,6 +3,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginEnd="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
     android:padding="5dp">
 
     <TextView
@@ -11,8 +15,8 @@
         android:text="New Text"
         android:id="@+id/translationNoteReferenceText"
         android:paddingRight="10dp"
-        android:textColor="@color/dark_gray"
-        android:textSize="@dimen/h4"
+        android:textColor="@color/dark_primary_text"
+        android:textSize="@dimen/headline"
         android:textStyle="bold|italic" />
 
     <com.door43.util.ClearableEditText
@@ -23,17 +27,18 @@
         android:inputType="textNoSuggestions|text"
         android:imeOptions="flagNoExtractUi"
         android:background="@drawable/form_input"
+        android:textColor="@color/dark_primary_text"
         android:textCursorDrawable="@null"
         android:cursorVisible="true"
-        android:textSize="@dimen/h4"
+        android:textSize="@dimen/headline"
         android:hint="New Text"
         android:textStyle="bold|italic" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textColor="@color/dark_gray"
-        android:textSize="@dimen/h4"
+        android:textColor="@color/dark_primary_text"
+        android:textSize="@dimen/body"
         android:text="New Text\nasdffsd\nsdfsdsd\nsdgfsdf"
         android:id="@+id/translationNoteText" />
 
@@ -45,8 +50,9 @@
         android:inputType="textNoSuggestions|text|textMultiLine"
         android:textCursorDrawable="@null"
         android:cursorVisible="true"
+        android:textColor="@color/dark_primary_text"
         android:visibility="gone"
-        android:textSize="@dimen/h4"
+        android:textSize="@dimen/body"
         android:id="@+id/translationNoteEditText"
         android:background="@drawable/form_input"
         android:hint="New Text\nasdffsd\nsdfsdsd\nsdgfsdf" />

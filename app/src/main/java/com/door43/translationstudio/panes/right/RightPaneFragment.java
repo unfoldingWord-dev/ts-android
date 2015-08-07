@@ -1,11 +1,12 @@
 package com.door43.translationstudio.panes.right;
 
-import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.door43.translationstudio.R;
@@ -24,11 +25,7 @@ public class RightPaneFragment extends TranslatorBaseFragment {
     private ViewPager mViewPager;
     private PagerSlidingTabStrip mSlidingTabLayout;
     private TabsAdapter mTabsAdapter;
-//    private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
     private int mDefaultPage = 0;
-//    private int mSelectedTabColor = 0;
-//    private NotesTab mNotesTab = new NotesTab();
-//    private TermsTab mTermsTab = new TermsTab();
     private int mLayoutWidth = 0;
     private View mView;
     private static final int TAB_INDEX_NOTES = 0;
@@ -36,12 +33,14 @@ public class RightPaneFragment extends TranslatorBaseFragment {
     private static final String STATE_NOTES_SCROLL_X = "notes_scroll_x";
     private static final String STATE_NOTES_SCROLL_Y = "notes_scroll_y";
     private static final String STATE_SELECTED_TAB = "selected_tab_index";
-    private int mSelectedTab = 0;
+    private int mSelectedTab = TAB_INDEX_NOTES;
+    private ImageButton mEditButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         mView = inflater.inflate(R.layout.fragment_pane_right, container, false);
+        mEditButton = (ImageButton)mView.findViewById(R.id.editButton);
 
         if(savedInstanceState != null) {
             // restore scroll position
@@ -50,6 +49,21 @@ public class RightPaneFragment extends TranslatorBaseFragment {
             // TODO: give scroll to notes tab
 //            mNotesTab.setScroll(new Pair<>(savedInstanceState.getInt(STATE_NOTES_SCROLL_X), savedInstanceState.getInt(STATE_NOTES_SCROLL_Y)));
         }
+
+        mEditButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                NotesTab page = (NotesTab)mTabsAdapter.getFragmentForPosition(TAB_INDEX_NOTES);
+                if(page != null) {
+                    int btnResource = page.translateNotes();
+                    if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+                        mEditButton.setBackgroundDrawable(getActivity().getResources().getDrawable(btnResource));
+                    } else {
+                        mEditButton.setBackground(getActivity().getResources().getDrawable(btnResource));
+                    }
+                }
+            }
+        });
 
         // tabs
         mViewPager = (ViewPager) mView.findViewById(R.id.rightViewPager);
@@ -79,16 +93,17 @@ public class RightPaneFragment extends TranslatorBaseFragment {
      */
     public void selectTab(int i) {
         if(mViewPager != null) {
-//            if(tabs.size() > i && i >= 0) {
-                // select the tab
             mViewPager.setCurrentItem(i);
             TabsAdapterNotification page = (TabsAdapterNotification)mTabsAdapter.getFragmentForPosition(i);
             if(page != null) {
                 page.NotifyAdapterDataSetChanged();
             }
-                // notify the tab list adapter that it should reload
-//                ((TabsAdapterNotification)tabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
-//            }
+
+            if(i == TAB_INDEX_NOTES) {
+                mEditButton.setVisibility(View.VISIBLE);
+            } else {
+                mEditButton.setVisibility(View.GONE);
+            }
         } else {
             mDefaultPage = i;
         }
@@ -102,18 +117,6 @@ public class RightPaneFragment extends TranslatorBaseFragment {
     public int getSelectedTabIndex() {
         return mViewPager.getCurrentItem();
     }
-
-//    /**
-//     * Changes the color of the tabs selector
-//     * @param color a hexidecimal color value
-//     */
-//    public void setSelectedTabColor(int color) {
-//        if(mSlidingTabLayout != null) {
-//            mSlidingTabLayout.setIndicatorColor(color);
-//        } else {
-//            mSelectedTabColor = color;
-//        }
-//    }
 
     /**
      * Notifies the notes adapter that the dataset has changed
@@ -143,7 +146,7 @@ public class RightPaneFragment extends TranslatorBaseFragment {
      * @param term
      */
     public void showTerm(Term term) {
-        selectTab(1);
+        selectTab(TAB_INDEX_TERMS);
         // TODO: display terms
 //        if(term == null) {
 //            mTermsTab.showTerms();

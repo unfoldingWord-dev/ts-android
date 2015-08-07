@@ -36,18 +36,6 @@
                 android:clipToPadding="false"
                 android:id="@+id/notesListView" />
 
-            <Button
-                style="?android:attr/buttonStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/translateNotesBtn"
-                android:background="@drawable/ic_new_pencil_small"
-                android:focusable="true"
-                android:clickable="true"
-                android:layout_margin="5dp"
-                android:alpha=".7"
-                android:layout_gravity="bottom|right" />
-
         </FrameLayout>
     </LinearLayout>
 
