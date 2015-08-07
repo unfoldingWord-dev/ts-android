@@ -15,14 +15,14 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
  * Created by joel on 8/29/2014.
  */
-public class FramesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
-    private FramesTabFragment me = this;
+public class FramesTab extends TranslatorBaseFragment implements TabsAdapterNotification {
+    private FramesTab me = this;
     private ModelItemAdapter mModelItemAdapter;
     private ListView mListView;
 

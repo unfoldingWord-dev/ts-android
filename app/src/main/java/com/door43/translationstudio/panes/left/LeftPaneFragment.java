@@ -1,6 +1,5 @@
 package com.door43.translationstudio.panes.left;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
@@ -9,16 +8,13 @@ import android.view.ViewGroup;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.panes.left.tabs.ChaptersTabFragment;
-import com.door43.translationstudio.panes.left.tabs.FramesTabFragment;
-import com.door43.translationstudio.panes.left.tabs.ProjectsTabFragment;
-import com.door43.translationstudio.util.StringFragmentKeySet;
-import com.door43.translationstudio.util.TabbedViewPagerAdapter;
-import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.translationstudio.panes.left.tabs.ChaptersTab;
+import com.door43.translationstudio.panes.left.tabs.FramesTab;
+import com.door43.translationstudio.panes.left.tabs.ProjectsTab;
+import com.door43.translationstudio.util.TabsAdapter;
+import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.Screen;
-
-import java.util.ArrayList;
 
 /**
  * Created by joel on 8/26/2014.
@@ -26,35 +22,33 @@ import java.util.ArrayList;
 public class LeftPaneFragment extends TranslatorBaseFragment {
     private ViewPager mViewPager;
     private PagerSlidingTabStrip mSlidingTabLayout;
-    private TabbedViewPagerAdapter tabbedViewPagerAdapter;
-    private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
+    private TabsAdapter mTabsAdapter;
+//    private ArrayList<StringFragmentKeySet> tabs = new ArrayList<StringFragmentKeySet>();
     private int mDefaultPage = 0;
     private int mSelectedTabColor = 0;
-    private ProjectsTabFragment mProjectsTab = new ProjectsTabFragment();
-    private ChaptersTabFragment mChaptersTab = new ChaptersTabFragment();
-    private FramesTabFragment mFramesTab = new FramesTabFragment();
+//    private ProjectsTab mProjectsTab = new ProjectsTab();
+//    private ChaptersTab mChaptersTab = new ChaptersTab();
+//    private FramesTab mFramesTab = new FramesTab();
+    public static final int TAB_INDEX_PROJECTS = 0;
+    public static final int TAB_INDEX_CHAPTERS = 1;
+    public static final int TAB_INDEX_FRAMES = 2;
     private int mLayoutWidth = 0;
-    private View mRootView;
+    private View mView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
-        mRootView = inflater.inflate(R.layout.fragment_pane_left, container, false);
+        mView = inflater.inflate(R.layout.fragment_pane_left, container, false);
 
-        if(tabs.size() == 0) {
-            // Tabs
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.title_projects), mProjectsTab));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.title_chapters), mChaptersTab));
-            tabs.add(new StringFragmentKeySet(getResources().getString(R.string.title_frames), mFramesTab));
-        }
-
-//        ViewPager
-        mViewPager = (ViewPager) mRootView.findViewById(R.id.leftViewPager);
-        tabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), tabs);
-        mViewPager.setAdapter(tabbedViewPagerAdapter);
+        // tabs
+        mViewPager = (ViewPager) mView.findViewById(R.id.leftViewPager);
+        mTabsAdapter = new TabsAdapter(getActivity(), mViewPager);
+        mTabsAdapter.addTab(getResources().getString(R.string.title_projects), ProjectsTab.class, null);
+        mTabsAdapter.addTab(getResources().getString(R.string.title_chapters), ChaptersTab.class, null);
+        mTabsAdapter.addTab(getResources().getString(R.string.title_frames), FramesTab.class, null);
 
         // Sliding tab layout
-        mSlidingTabLayout = (PagerSlidingTabStrip) mRootView.findViewById(R.id.left_sliding_tabs);
+        mSlidingTabLayout = (PagerSlidingTabStrip) mView.findViewById(R.id.left_sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
         mSlidingTabLayout.setTextColorResource(R.color.light_primary_text);
         mSlidingTabLayout.setTextSize(Screen.dpToPx(getActivity(), 20));
@@ -62,10 +56,10 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
         selectTab(mDefaultPage);
 
         if(mLayoutWidth != 0) {
-            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.MATCH_PARENT));
+            mView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.MATCH_PARENT));
         }
 
-        return mRootView;
+        return mView;
     }
 
     /**
@@ -74,12 +68,17 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
      */
     public void selectTab(int i) {
         if(mViewPager != null) {
-            if(tabs.size() > i && i >= 0) {
+//            if(tabs.size() > i && i >= 0) {
                 // select the tab
-                mViewPager.setCurrentItem(i);
+            mViewPager.setCurrentItem(i);
+            mTabsAdapter.notifyDataSetChanged();
                 // notify the tab list adapter that it should reload
-                ((TabsFragmentAdapterNotification)tabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
+            TabsAdapterNotification page = (TabsAdapterNotification)mTabsAdapter.getFragmentForPosition(i);
+            if(page != null) {
+                page.NotifyAdapterDataSetChanged();
             }
+//                ((TabsAdapterNotification)tabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
+//            }
         } else {
             mDefaultPage = i;
         }
@@ -101,21 +100,36 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
      * Notifies the projects adapter that the dataset has changed
      */
     public void reloadProjectsTab() {
-        mProjectsTab.NotifyAdapterDataSetChanged();
+        if(mTabsAdapter != null) {
+            TabsAdapterNotification page = (TabsAdapterNotification)mTabsAdapter.getFragmentForPosition(TAB_INDEX_PROJECTS);
+            if(page != null) {
+                page.NotifyAdapterDataSetChanged();
+            }
+        }
     }
 
     /**
      * Notifies the chapters adapter that the dataset has changed
      */
     public void reloadChaptersTab() {
-        mChaptersTab.NotifyAdapterDataSetChanged();
+        if(mTabsAdapter != null) {
+            TabsAdapterNotification page = (TabsAdapterNotification)mTabsAdapter.getFragmentForPosition(TAB_INDEX_CHAPTERS);
+            if(page != null) {
+                page.NotifyAdapterDataSetChanged();
+            }
+        }
     }
 
     /**
      * Notifies the frames adapter that the dataset has changed
      */
     public void reloadFramesTab() {
-        mFramesTab.NotifyAdapterDataSetChanged();
+        if(mTabsAdapter != null) {
+            TabsAdapterNotification page = (TabsAdapterNotification)mTabsAdapter.getFragmentForPosition(TAB_INDEX_FRAMES);
+            if(page != null) {
+                page.NotifyAdapterDataSetChanged();
+            }
+        }
     }
 
     /**
@@ -123,8 +137,8 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
      * @param width
      */
     public void setLayoutWidth(int width) {
-        if(mRootView != null) {
-            mRootView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.MATCH_PARENT));
+        if(mView != null) {
+            mView.setLayoutParams(new ViewGroup.LayoutParams(mLayoutWidth, ViewGroup.LayoutParams.MATCH_PARENT));
         } else {
             mLayoutWidth = width;
         }

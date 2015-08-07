@@ -23,7 +23,7 @@ import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -33,7 +33,7 @@ import java.util.ArrayList;
 /**
   * Created by joel on 2/12/2015.
   */
- public class TermsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
+ public class TermsTab extends TranslatorBaseFragment implements TabsAdapterNotification {
     private TextView mTermName;
     private HtmlTextView mTermDescriptionView;
     private TextView mRelatedTerms;

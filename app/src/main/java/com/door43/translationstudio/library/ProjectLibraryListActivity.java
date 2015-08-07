@@ -42,7 +42,7 @@ import java.util.List;
  * {@link ProjectLibraryListFragment.Callbacks} interface
  * to listen for item selections.
  */
-public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTabFragment.Callbacks, LibraryCallbacks, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
+public class ProjectLibraryListActivity extends TranslatorBaseActivity implements ProjectLibraryListFragment.Callbacks, TranslationDraftsTab.Callbacks, LibraryCallbacks, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
 
     public static final String ARG_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_SHOW_NEW = "only_show_new";

@@ -5,7 +5,7 @@ import android.app.DialogFragment;
 import com.door43.translationstudio.projects.Project;
 
 /**
-  * This events communicates the chosen project from the MetaProjectDialog to the ProjectsTabFragment.
+  * This events communicates the chosen project from the MetaProjectDialog to the ProjectsTab.
   */
  public class ChoseProjectEvent {
     private final Project mProject;

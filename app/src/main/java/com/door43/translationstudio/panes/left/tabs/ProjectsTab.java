@@ -31,7 +31,7 @@ import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
@@ -39,7 +39,7 @@ import com.door43.translationstudio.util.TranslatorBaseFragment;
 /**
  * Created by joel on 8/29/2014.
  */
-public class ProjectsTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification, GenericTaskWatcher.OnFinishedListener, ChooseProjectDialog.OnSuccessListener {
+public class ProjectsTab extends TranslatorBaseFragment implements TabsAdapterNotification, GenericTaskWatcher.OnFinishedListener, ChooseProjectDialog.OnSuccessListener {
     private static final int SOURCE_LANGUAGE_REQUEST = 0;
     private static final int TARGET_LANGUAGE_REQUEST = 1;
     private ModelItemAdapter mModelItemAdapter;

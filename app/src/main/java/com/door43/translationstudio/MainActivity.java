@@ -243,15 +243,15 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     }
 
     public void openProjectsTab() {
-        mLeftPane.selectTab(0);
+        mLeftPane.selectTab(LeftPaneFragment.TAB_INDEX_PROJECTS);
     }
 
     public void openChaptersTab() {
-        mLeftPane.selectTab(1);
+        mLeftPane.selectTab(LeftPaneFragment.TAB_INDEX_CHAPTERS);
     }
 
     public void openFramesTab() {
-        mLeftPane.selectTab(2);
+        mLeftPane.selectTab(LeftPaneFragment.TAB_INDEX_FRAMES);
     }
 
     public void reloadFramesTab() {

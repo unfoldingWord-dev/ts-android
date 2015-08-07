@@ -20,15 +20,11 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.StringFragmentKeySet;
-import com.door43.translationstudio.util.TabbedViewPagerAdapter;
-import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.translationstudio.util.TabsAdapter;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-
-import java.util.ArrayList;
 
 /**
  * A fragment representing a single Project detail screen.
@@ -40,15 +36,15 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     public static final String ARG_ITEM_ID = "item_id";
     private static final String IMAGE_TASK_PREFIX = "project-image-";
     private Project mProject;
-    private ArrayList<StringFragmentKeySet> mTabs = new ArrayList<>();
-    private LanguagesTabFragment mLanguagesTab = new LanguagesTabFragment();
-    private TranslationDraftsTabFragment mDraftsTab = new TranslationDraftsTabFragment();
+//    private ArrayList<StringFragmentKeySet> mTabs = new ArrayList<>();
+//    private LanguagesTab mLanguagesTab = new LanguagesTab();
+//    private TranslationDraftsTab mDraftsTab = new TranslationDraftsTab();
     private ViewPager mViewPager;
     private int mDefaultPage = 0;
     private ImageView mIcon;
     private String mImagePath;
     private int mTaskId = -1;
-    private TabbedViewPagerAdapter mTabbedViewPagerAdapter;
+    private TabsAdapter mTabsAdapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -71,19 +67,13 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_project_library_detail, container, false);
 
-        // Tabs
-        mLanguagesTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
-        mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.languages), mLanguagesTab));
-
-        if(AppContext.projectManager().isProjectDownloaded(mProject.getId())) {
-            mDraftsTab.setArguments(getArguments()); // pass args to tab so it can look up the languages
-            mTabs.add(new StringFragmentKeySet(getResources().getString(R.string.drafts), mDraftsTab));
-        }
-
-        // view pager
+        // tabs
         mViewPager = (ViewPager) rootView.findViewById(R.id.projectBrowserViewPager);
-        mTabbedViewPagerAdapter = new TabbedViewPagerAdapter(getFragmentManager(), mTabs);
-        mViewPager.setAdapter(mTabbedViewPagerAdapter);
+        mTabsAdapter = new TabsAdapter(getActivity(), mViewPager);
+        mTabsAdapter.addTab(getResources().getString(R.string.languages), LanguagesTab.class, getArguments());
+        if(AppContext.projectManager().isProjectDownloaded(mProject.getId())) {
+            mTabsAdapter.addTab(getResources().getString(R.string.drafts), TranslationDraftsTab.class, getArguments());
+        }
 
         // sliding tabs layout
         PagerSlidingTabStrip slidingTabLayout = (PagerSlidingTabStrip) rootView.findViewById(R.id.projectBrowserTabs);
@@ -156,12 +146,13 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
      */
     public void selectTab(int i) {
         if(mViewPager != null) {
-            if(mTabs.size() > i && i >= 0) {
+//            if(mTabs.size() > i && i >= 0) {
                 // select the tab
                 mViewPager.setCurrentItem(i);
+                mTabsAdapter.notifyDataSetChanged();
                 // notify the tab list adapter that it should reload
-                ((TabsFragmentAdapterNotification) mTabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
-            }
+//                ((TabsAdapterNotification) mTabs.get(i).getFragment()).NotifyAdapterDataSetChanged();
+//            }
         } else {
             mDefaultPage = i;
         }
@@ -200,9 +191,12 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
      * Removes the drafts tab
      */
     public void hideDraftsTab() {
-        if(mTabs.size() > 1) {
-            mTabs.remove(1);
+        // TODO: remove the drafts tab
+//        if(mTabs.size() > 1) {
+//            mTabs.remove(1);
+//        }
+        if(mTabsAdapter != null) {
+            mTabsAdapter.notifyDataSetChanged();
         }
-        mTabbedViewPagerAdapter.notifyDataSetChanged();
     }
 }

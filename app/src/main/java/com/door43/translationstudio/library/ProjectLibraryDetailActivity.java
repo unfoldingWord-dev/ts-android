@@ -17,7 +17,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * This activity is mostly just a 'shell' activity containing nothing
  * more than a {@link ProjectLibraryDetailFragment}.
  */
-public class ProjectLibraryDetailActivity extends TranslatorBaseActivity implements TranslationDraftsTabFragment.Callbacks, LibraryCallbacks {
+public class ProjectLibraryDetailActivity extends TranslatorBaseActivity implements TranslationDraftsTab.Callbacks, LibraryCallbacks {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

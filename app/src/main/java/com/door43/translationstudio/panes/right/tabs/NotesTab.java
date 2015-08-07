@@ -17,13 +17,13 @@ import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TabsFragmentAdapterNotification;
+import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
   * Created by joel on 2/12/2015.
   */
- public class NotesTabFragment extends TranslatorBaseFragment implements TabsFragmentAdapterNotification {
+ public class NotesTab extends TranslatorBaseFragment implements TabsAdapterNotification {
     private Boolean mIsLoaded = false;
     private TextView mNotesMessageText;
     private Integer mScrollX = 0;
