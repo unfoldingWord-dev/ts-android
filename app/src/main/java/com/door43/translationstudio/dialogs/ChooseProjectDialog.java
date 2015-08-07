@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -48,7 +49,7 @@ public class ChooseProjectDialog extends DialogFragment {
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().setTitle(R.string.title_projects);
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE); //.setTitle(R.string.title_projects);
         View v = inflater.inflate(R.layout.dialog_choose_project, container, false);
 
         ListView listView = (ListView)v.findViewById(R.id.listView);

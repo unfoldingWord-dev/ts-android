@@ -6,4 +6,5 @@
     android:layout_height="wrap_content"
     android:minHeight="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
-    android:visibility="gone"/>
+    android:theme="@style/AppTheme.Toolbar"
+    android:visibility="visible"/>

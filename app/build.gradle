@@ -89,6 +89,7 @@ dependencies {
     compile files('libs/prov-1.51.0.0.jar')
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:support-v13:21.0.3'
+    compile 'com.android.support:design:22.2.0'
     compile 'com.loopj.android:android-async-http:1.4.5'
     compile 'com.google.code.gson:gson:2.3'
     compile 'org.eclipse.jgit:org.eclipse.jgit:3.5.0.201409071800-rc1'
@@ -99,9 +100,10 @@ dependencies {
     compile 'org.kamranzafar:jtar:2.2'
     compile 'com.jpardogo.materialtabstrip:library:1.0.8'
     compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
+    //    compile 'com.android.support:cardview-v7:21.0.+'
     compile 'com.google.guava:guava:18.0'
-//    compile 'com.android.support:cardview-v7:21.0.+'
-//    compile 'com.android.support:recyclerview-v7:21.0.+'
+    compile 'com.android.support:appcompat-v7:22.0.0'
+    //    compile 'com.android.support:recyclerview-v7:21.0.+'
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')
