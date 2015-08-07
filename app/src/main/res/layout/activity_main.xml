@@ -31,31 +31,31 @@
                     android:layout_height="match_parent">
                 </LinearLayout>
 
-                <android.support.design.widget.FloatingActionButton
-                    android:id="@+id/contextual_menu_btn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="bottom"
-                    android:layout_margin="16dp"
-                    android:clickable="true"
-                    android:src="@drawable/icon_view_blue"
-                    android:layout_alignParentBottom="true"/>
-
-                <!--<Button-->
-                    <!--style="?android:attr/buttonStyleSmall"-->
+                <!--<android.support.design.widget.FloatingActionButton-->
                     <!--android:id="@+id/contextual_menu_btn"-->
                     <!--android:layout_width="wrap_content"-->
                     <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_alignBottom="@+id/readSourceTranslation"-->
-                    <!--android:layout_alignParentLeft="true"-->
-                    <!--android:layout_alignParentStart="true"-->
-                    <!--android:background="@drawable/ic_menu_small"-->
-                    <!--android:focusable="true"-->
+                    <!--android:layout_gravity="bottom"-->
+                    <!--android:layout_margin="16dp"-->
                     <!--android:clickable="true"-->
-                    <!--android:visibility="visible"-->
-                    <!--android:layout_margin="5dp"-->
-                    <!-- -->
-                    <!--android:alpha=".7" />-->
+                    <!--android:src="@drawable/icon_view_white"-->
+                    <!--android:layout_alignParentBottom="true"/>-->
+
+                <Button
+                    style="?android:attr/buttonStyleSmall"
+                    android:id="@+id/contextual_menu_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/readSourceTranslation"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:background="@drawable/ic_menu_small"
+                    android:focusable="true"
+                    android:clickable="true"
+                    android:visibility="visible"
+                    android:layout_margin="16dp"
+                    android:layout_alignParentBottom="true"
+                    android:alpha=".7" />
 
             </RelativeLayout>
         </LinearLayout>

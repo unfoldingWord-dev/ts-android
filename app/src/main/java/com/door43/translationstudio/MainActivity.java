@@ -12,7 +12,6 @@ import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.Toolbar;
@@ -66,7 +65,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     private int mPreviousRootViewHeight;
     private TranslatorFragmentInterface mTranslatorFragment;
     private GenericTaskWatcher mIndexTaskWatcher;
-    private FloatingActionButton mContextualButton;
+    private Button mContextualButton;
     private boolean mContextualButtonEnabled = false;
 
     @Override
@@ -80,7 +79,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
             AppContext.projectManager().setSelectedProject(null);
         }
 
-        mContextualButton = (FloatingActionButton) findViewById(R.id.contextual_menu_btn);
+        mContextualButton = (Button) findViewById(R.id.contextual_menu_btn);
 
         // insert translator fragment
         if(savedInstanceState == null) {
@@ -382,7 +381,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     }
 
     public void hideContextualMenu() {
-        FloatingActionButton button = (FloatingActionButton) findViewById(R.id.contextual_menu_btn);
+        Button button = (Button) findViewById(R.id.contextual_menu_btn);
         button.setVisibility(View.GONE);
     }
 

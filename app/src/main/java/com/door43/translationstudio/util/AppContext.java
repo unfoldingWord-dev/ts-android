@@ -4,6 +4,8 @@ import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 
 import com.door43.translationstudio.SettingsActivity;
@@ -235,5 +237,39 @@ public class AppContext {
 
     public static void setLoaded(boolean loaded) {
         AppContext.loaded = loaded;
+    }
+
+    private static class MainThreadBus extends Bus {
+        private final Handler mHandler = new Handler(Looper.getMainLooper());
+
+        public MainThreadBus() {
+            super();
+        }
+
+        public MainThreadBus(ThreadEnforcer enforcer) {
+            super(enforcer);
+        }
+
+        public MainThreadBus(String identifier) {
+            super(identifier);
+        }
+
+        public MainThreadBus(ThreadEnforcer enforcer, String identifier) {
+            super(enforcer, identifier);
+        }
+
+        @Override
+        public void post(final Object event) {
+            if (Looper.myLooper() == Looper.getMainLooper()) {
+                super.post(event);
+            } else {
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        MainThreadBus.super.post(event);
+                    }
+                });
+            }
+        }
     }
 }
