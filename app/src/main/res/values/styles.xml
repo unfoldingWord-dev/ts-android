@@ -37,14 +37,6 @@
         <item name="colorControlHighlight">@color/light_primary_text</item>
     </style>
 
-    <style name="AppTheme.Toolbar.Primary">
-        <item name="android:background">?attr/colorPrimary</item>
-    </style>
-
-    <style name="AppTheme.Toolbar.Secondary">
-        <item name="android:background">?attr/colorAccent</item>
-    </style>
-
     <!-- Base application theme. -->
     <!--android:Theme.NoTitleBar.Fullscreen-->
     <!--<style name="Theme.Main" parent="Theme.AppCompat.Light.NoActionBar">-->

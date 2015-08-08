@@ -21,6 +21,8 @@
 
     <color name="list_separator">#42000000</color>
 
+    <color name="icon_dark">#82000000</color>
+
     <color name="black_overlay">#66000000</color>
     <color name="light_green">#ff9fc564</color>
     <color name="lighter_blue">#baeeff</color>
