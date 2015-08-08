@@ -3,6 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:gravity="center_vertical">
 
     <ImageView
@@ -16,9 +17,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/app_name"
+        android:textColor="@color/dark_primary_text"
         android:id="@+id/toolTitleText"
         android:gravity="center"
-        android:textSize="@dimen/h2" />
+        android:textSize="@dimen/display" />
 
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
@@ -30,9 +32,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/loading"
+        android:textSize="@dimen/body"
         android:id="@+id/loadingText"
         android:gravity="center"
-        android:textColor="@color/gray"
+        android:textColor="@color/dark_secondary_text"
         android:padding="10dp" />
 
 </LinearLayout>

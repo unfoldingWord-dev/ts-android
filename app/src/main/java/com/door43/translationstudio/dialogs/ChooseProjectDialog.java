@@ -49,7 +49,7 @@ public class ChooseProjectDialog extends DialogFragment {
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE); //.setTitle(R.string.title_projects);
+        getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_choose_project, container, false);
 
         ListView listView = (ListView)v.findViewById(R.id.listView);

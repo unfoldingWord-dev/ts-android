@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -69,9 +71,13 @@ public class DevicePeerAdapter extends BaseAdapter {
         } else {
             v = (LinearLayout)view;
         }
+        TextView ipAddressView = (TextView)v.findViewById(R.id.ipAddressText);
+        TextView instructionsText = (TextView)v.findViewById(R.id.instructionsText);
+        Button browseButton = (Button)v.findViewById(R.id.browseButton);
+        ProgressBar progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
+        ImageView peerIcon = (ImageView)v.findViewById(R.id.peerIcon);
 
         // ip address
-        TextView ipAddressView = (TextView)v.findViewById(R.id.ipAddressText);
         ipAddressView.setText(p.getIpAddress());
 
         // button
@@ -86,31 +92,44 @@ public class DevicePeerAdapter extends BaseAdapter {
         // TODO: handle click events on the button
 
         // instructions
-        TextView instructionsText = (TextView)v.findViewById(R.id.instructionsText);
+
         if(p.isConnected()) {
             instructionsText.setText(R.string.connected);
+            if(mIsServer) {
+                peerIcon.setBackgroundResource(R.drawable.icon_update_nearby_blue);
+            } else {
+                peerIcon.setBackgroundResource(R.drawable.icon_library_blue);
+            }
         } else {
+            if(mIsServer) {
+                peerIcon.setBackgroundResource(R.drawable.icon_update_nearby_dark);
+            } else {
+                peerIcon.setBackgroundResource(R.drawable.icon_library_dark);
+            }
             instructionsText.setText(R.string.click_to_connect);
         }
 
-        TextView controlTextView = (TextView)v.findViewById(R.id.controlTextView);
-        controlTextView.setVisibility(View.GONE);
+        browseButton.setVisibility(View.GONE);
 
         // progress bar
-        ProgressBar progressBar = (ProgressBar)v.findViewById(R.id.progressBar);
+
         boolean isWaiting = p.keyStore.getBool(PeerStatusKeys.WAITING);
         int progress = p.keyStore.getInt(PeerStatusKeys.PROGRESS);
         progressBar.setIndeterminate(isWaiting);
         progressBar.setProgress(progress);
         if(!isWaiting && progress == 0) {
             progressBar.setVisibility(View.GONE);
+            peerIcon.setVisibility(View.VISIBLE);
             String controlText = p.keyStore.getString(PeerStatusKeys.CONTROL_TEXT);
             if(controlText != null && !controlText.isEmpty()) {
-                controlTextView.setVisibility(View.VISIBLE);
-                controlTextView.setText(controlText);
+                browseButton.setVisibility(View.VISIBLE);
+                browseButton.setText(controlText);
+            } else {
+                browseButton.setText(R.string.browse);
             }
         } else {
             progressBar.setVisibility(View.VISIBLE);
+            peerIcon.setVisibility(View.GONE);
         }
         if(isWaiting) {
             instructionsText.setText(R.string.waiting_for_device);

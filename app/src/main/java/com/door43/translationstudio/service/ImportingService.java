@@ -190,7 +190,7 @@ public class ImportingService extends NetworkService {
                     // receive the server's public key
                     server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
                     server.keyStore.add(PeerStatusKeys.WAITING, false);
-                    server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.import_project));
+                    server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.browse));
                     server.setIsConnected(true);
                     if(mListener != null) {
                         mListener.onServerConnectionChanged(server);

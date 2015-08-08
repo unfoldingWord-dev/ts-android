@@ -2,43 +2,42 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context="com.door43.translationstudio.device2device.DeviceToDeviceActivity">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
-
-        <ProgressBar
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/loadingBar"
-            android:max="100"
-            android:progress="100"
-            android:indeterminate="true"
-            android:layout_marginBottom="-8dp"
-            android:layout_marginTop="-4dp" />
-
         <ListView
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:divider="@color/list_separator"
+            android:dividerHeight="1px"
             android:id="@+id/peerListView" />
     </LinearLayout>
 
-    <ProgressBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/loadingBarOld"
-        android:layout_alignWithParentIfMissing="false"
-        android:visibility="gone"
-        android:layout_centerInParent="true" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/searching_for_devices"
-        android:textColor="@color/gray"
-        android:id="@+id/loadingText"
-        android:layout_centerInParent="true" />
+    <LinearLayout
+        android:id="@+id/loadingLayout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/searching_for_devices"
+            android:textSize="@dimen/headline"
+            android:textColor="@color/dark_primary_text" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignWithParentIfMissing="false"
+            android:indeterminate="true"
+            android:layout_centerInParent="true" />
+    </LinearLayout>
 </RelativeLayout>

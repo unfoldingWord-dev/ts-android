@@ -127,7 +127,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             exportToAppEnabled = false;
             exportToAppMessage = getResources().getString(R.string.choose_a_project);
         }
-        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.ic_icon_export_app, new ToolItem.ToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_app), getResources().getString(descriptionResource), R.drawable.icon_share_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 mProgressDialog.setMessage(getResources().getString(R.string.exporting));
@@ -191,7 +191,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             externalMediaAvailable = false;
             exportToSDMessage = getResources().getString(R.string.choose_a_project);
         }
-        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.ic_icon_export_sd, new ToolItem.ToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_sd), getResources().getString(descriptionResource), R.drawable.icon_export_sd_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 final ProgressDialog dialog = new ProgressDialog(SharingActivity.this);
@@ -248,7 +248,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             }
         }, externalMediaAvailable, exportToSDMessage));
 
-        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_storage), "", R.drawable.ic_icon_import_sd, new ToolItem.ToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_storage), "", R.drawable.icon_import_sd_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 if(AppContext.isExternalMediaAvailable()) {
@@ -269,7 +269,7 @@ public class SharingActivity extends TranslatorBaseActivity {
         boolean isNetworkAvailable = app().isNetworkAvailable();
 
         // TODO: we should check to see if the user has any sharable content first.
-        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.ic_icon_export_nearby, new ToolItem.ToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.icon_export_nearby_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 Intent intent = new Intent(SharingActivity.this, DeviceToDeviceActivity.class);
@@ -280,7 +280,7 @@ public class SharingActivity extends TranslatorBaseActivity {
             }
         }, isNetworkAvailable, getResources().getString(R.string.internet_not_available)));
 
-        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.ic_icon_import_nearby, new ToolItem.ToolAction() {
+        mSharingTools.add(new ToolItem(getResources().getString(R.string.import_from_device), "", R.drawable.icon_import_nearby_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 Intent intent = new Intent(SharingActivity.this, DeviceToDeviceActivity.class);

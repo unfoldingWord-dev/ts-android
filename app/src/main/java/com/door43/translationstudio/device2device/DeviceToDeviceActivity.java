@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -54,9 +55,6 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     private static final int SERVER_TTL = 5000; // time before a slient server is considered lost
     private boolean mStartAsServer = false;
     private DevicePeerAdapter mAdapter;
-    private ProgressBar mLoadingBar;
-    private TextView mLoadingText;
-//    private static ProgressDialog mProgressDialog;
     private File mPublicKeyFile;
     private File mPrivateKeyFile;
     private static Map<String, DialogFragment> mPeerDialogs = new HashMap<>();
@@ -141,6 +139,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     private Intent importServiceIntent;
     private Intent broadcastListenerServiceIntent;
     private ProjectTranslationImportApprovalDialog mImportDialog = null;
+    private LinearLayout mLoadingLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,8 +157,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
 
         // set up the ui
         final Handler handler = new Handler(getMainLooper());
-        mLoadingBar = (ProgressBar)findViewById(R.id.loadingBar);
-        mLoadingText = (TextView)findViewById(R.id.loadingText);
+        mLoadingLayout = (LinearLayout)findViewById(R.id.loadingLayout);
         ListView peerListView = (ListView)findViewById(R.id.peerListView);
         mAdapter = new DevicePeerAdapter(mStartAsServer, this);
         peerListView.setAdapter(mAdapter);
@@ -343,20 +341,14 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
      * This should always be ran on the main thread or a handler
      */
     public void updatePeerList(ArrayList<Peer> peers) {
-        if(mLoadingBar != null) {
+        if(mLoadingLayout != null) {
             if(peers.size() == 0) {
-                mLoadingBar.setVisibility(View.VISIBLE);
+                mLoadingLayout.setVisibility(View.VISIBLE);
             } else {
-                mLoadingBar.setVisibility(View.GONE);
+                mLoadingLayout.setVisibility(View.GONE);
             }
         }
-        if(mLoadingText != null) {
-            if(peers.size() == 0) {
-                mLoadingText.setVisibility(View.VISIBLE);
-            } else {
-                mLoadingText.setVisibility(View.GONE);
-            }
-        }
+
         // update the adapter
         if(mAdapter != null) {
             mAdapter.setPeerList(peers);

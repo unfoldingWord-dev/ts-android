@@ -7,12 +7,12 @@
 
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="?attr/actionBarSize"
         android:text="@string/terms_title"
-        android:textSize="@dimen/h3"
-        android:textColor="@color/white"
+        android:textSize="@dimen/headline"
+        android:textColor="@color/light_primary_text"
         android:gravity="center"
-        android:background="@color/dark_gray"
+        android:background="@color/primary"
         android:autoText="false"
         android:id="@+id/examplePassageLinkText" />
 
@@ -22,7 +22,7 @@
         android:id="@+id/scrollView"
         android:layout_above="@+id/linearLayout"
         android:layout_below="@+id/examplePassageLinkText"
-        android:padding="5dp">
+        android:padding="16dp">
 
         <LinearLayout
             android:orientation="vertical"
@@ -33,8 +33,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/terms"
-                android:textColor="@color/dark_gray"
-                android:textSize="@dimen/h5"
+                android:textColor="@color/dark_primary_text"
+                android:textSize="@dimen/body"
                 android:gravity="center" />
 
             <LinearLayout
@@ -50,30 +50,36 @@
                     android:layout_height="wrap_content"
                     android:text="@string/view_license"
                     android:id="@+id/license_btn"
-                    android:background="@null"
-                    android:padding="10dp"
-                    android:textColor="@color/accent"
-                    android:textSize="@dimen/h5" />
+                    android:elevation="2dp"
+                    style="@style/Base.Widget.AppCompat.ActionButton"
+                    android:background="?attr/colorAccent"
+                    android:textColor="@color/light_primary_text"
+                    android:textSize="@dimen/title"
+                    android:layout_marginTop="16dp"/>
 
                 <Button
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/view_translation_guidelines"
                     android:id="@+id/translation_guidelines_btn"
-                    android:background="@null"
-                    android:padding="10dp"
-                    android:textColor="@color/accent"
-                    android:textSize="@dimen/h5" />
+                    android:elevation="2dp"
+                    style="@style/Base.Widget.AppCompat.ActionButton"
+                    android:background="?attr/colorAccent"
+                    android:textColor="@color/light_primary_text"
+                    android:textSize="@dimen/title"
+                    android:layout_marginTop="16dp" />
 
                 <Button
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/view_statement_of_faith"
                     android:id="@+id/statement_of_faith_btn"
-                    android:background="@null"
-                    android:padding="10dp"
-                    android:textColor="@color/accent"
-                    android:textSize="@dimen/h5" />
+                    android:elevation="2dp"
+                    style="@style/Base.Widget.AppCompat.ActionButton"
+                    android:background="?attr/colorAccent"
+                    android:textColor="@color/light_primary_text"
+                    android:textSize="@dimen/title"
+                    android:layout_marginTop="16dp" />
             </LinearLayout>
 
         </LinearLayout>

@@ -2,27 +2,26 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="16dp">
 
     <RelativeLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/toolIconImageView"
-            android:background="@drawable/ic_download"
-            android:minHeight="50dp"
+            android:background="@drawable/icon_update_cloud_dark"
             android:layout_centerVertical="true"
-            android:layout_margin="5dp" />
+            android:layout_marginRight="16dp" />
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
             android:layout_centerVertical="true"
             android:layout_toRightOf="@+id/toolIconImageView"
             android:layout_toEndOf="@+id/toolIconImageView">
@@ -31,15 +30,16 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="New Text"
-                android:textColor="@color/dark_gray"
+                android:textColor="@color/dark_primary_text"
                 android:id="@+id/toolTitleText"
-                android:textSize="@dimen/h4"/>
+                android:textSize="@dimen/headline"/>
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:text="New Text"
+                android:textSize="@dimen/body"
                 android:id="@+id/toolDescriptionText"
-                android:textColor="@color/gray" />
+                android:textColor="@color/dark_secondary_text" />
         </LinearLayout>
     </RelativeLayout>
 </LinearLayout>

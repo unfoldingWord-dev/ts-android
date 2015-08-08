@@ -68,7 +68,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
 //                        .show();
 //            }
 //        }, hasNetwork, getResources().getString(R.string.internet_not_available)));
-        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.update_projects), getResources().getString(R.string.update_projects_description), R.drawable.ic_update, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.update_projects), getResources().getString(R.string.update_projects_description), R.drawable.icon_update_cloud_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 mBrowseDialog = new AlertDialog.Builder(GetMoreProjectsActivity.this)
@@ -87,7 +87,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                         .show();
             }
         }, hasNetwork, getResources().getString(R.string.internet_not_available)));
-        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.transfer_from_device), getResources().getString(R.string.transfer_from_device_description), R.drawable.ic_phone, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.transfer_from_device), getResources().getString(R.string.transfer_from_device_description), R.drawable.icon_update_nearby_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // TODO: we need to update the p2p sharing to support requesting just the source.
@@ -99,7 +99,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                 startActivity(intent);
             }
         }, false, "Not implimented"));// hasNetwork, getResources().getString(R.string.internet_not_available)));
-        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.import_from_storage), getResources().getString(R.string.import_from_storage_description), R.drawable.ic_folder, new ToolItem.ToolAction() {
+        mGetProjectTools.add(new ToolItem(getResources().getString(R.string.import_from_storage), getResources().getString(R.string.import_from_storage_description), R.drawable.icon_update_storage_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {
                 // TODO: This is the same as for the Sharing activity though we should package it all up into a single method call.
