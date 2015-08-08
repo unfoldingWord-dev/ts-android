@@ -10,6 +10,10 @@
         <item name="android:textColorLink">@color/accent</item>
         <item name="android:textColorLinkInverse">@color/accent_light</item>
 
+        <item name="android:actionBarStyle">@style/AppActionBar</item>
+        <item name="android:actionBarTabTextStyle">@style/AppActionBarTabText</item>
+        <item name="android:actionMenuTextColor">@color/light_primary_text</item>
+
         <!-- You can also set colorControlNormal, colorControlActivated
          colorControlHighlight, and colorSwitchThumbNormal. -->
         <item name="windowActionModeOverlay">true</item>
@@ -37,63 +41,19 @@
         <item name="colorControlHighlight">@color/light_primary_text</item>
     </style>
 
-    <!-- Base application theme. -->
-    <!--android:Theme.NoTitleBar.Fullscreen-->
-    <!--<style name="Theme.Main" parent="Theme.AppCompat.Light.NoActionBar">-->
-
-        <!--<item name="colorPrimary">@color/primary</item>-->
-        <!--<item name="colorPrimaryDark">@color/primary_dark</item>-->
-        <!--<item name="colorAccent">@color/accent</item>-->
-
-        <!--<item name="android:textColor">@color/dark_primary_text</item>-->
-        <!--<item name="android:textColorLink">@color/accent</item>-->
-        <!--<item name="android:textColorLinkInverse">@color/accent_light</item>-->
-
-        <!--&lt;!&ndash;<item name="android:actionOverflowButtonStyle">@style/DrawerArrowStyle</item>&ndash;&gt;-->
-        <!--&lt;!&ndash;<item name="drawerArrowStyle">@style/DrawerArrowStyle</item>&ndash;&gt;-->
-
-        <!--&lt;!&ndash; You can also set colorControlNormal, colorControlActivated-->
-         <!--colorControlHighlight, and colorSwitchThumbNormal. &ndash;&gt;-->
-        <!--<item name="windowActionModeOverlay">true</item>-->
-
-        <!--<item name="android:actionBarStyle">@style/MyTheme.ActionBarStyle</item>-->
-        <!--<item name="android:actionMenuTextColor">@color/light_primary_text</item>-->
-    <!--</style>-->
-
-    <!--<style name="Theme.Titled" parent="Theme.AppCompat.Light">-->
-        <!--&lt;!&ndash; Set AppCompat’s color theming attrs &ndash;&gt;-->
-        <!--<item name="colorPrimary">@color/primary</item>-->
-        <!--<item name="colorPrimaryDark">@color/primary_dark</item>-->
-        <!--<item name="colorAccent">@color/accent</item>-->
-
-        <!--<item name="android:textColor">@color/dark_primary_text</item>-->
-        <!--<item name="android:textColorLink">@color/accent</item>-->
-        <!--<item name="android:textColorLinkInverse">@color/accent_light</item>-->
-        <!--&lt;!&ndash; You can also set colorControlNormal, colorControlActivated-->
-         <!--colorControlHighlight, and colorSwitchThumbNormal. &ndash;&gt;-->
-
-        <!--<item name="android:actionBarStyle">@style/MyTheme.ActionBarStyle</item>-->
-        <!--<item name="android:actionMenuTextColor">@color/light_primary_text</item>-->
-    <!--</style>-->
-
-    <style name="MyTheme.Dialog" parent="@android:style/Theme.Dialog">
-        <item name="android:windowTitleStyle">@style/MyTheme.Dialog.Style</item>
+    <style name="AppActionBar" parent="@style/Widget.AppCompat.Light.ActionBar">
+        <item name="android:titleTextStyle">@style/AppActionBarTitleText</item>
     </style>
 
-    <style name="MyTheme.Dialog.Style" parent="android:Widget.TextView">
-        <item name="android:background">@color/accent</item>
-        <item name="android:padding">10dp</item>
+    <style name="AppActionBarTitleText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textColor">@color/light_primary_text</item>
     </style>
 
-    <!--<style name="Theme.Transparent" parent="Theme.AppCompat.Light">-->
-        <!--<item name="android:windowIsTranslucent">true</item>-->
-        <!--<item name="android:windowBackground">@android:color/transparent</item>-->
-        <!--<item name="android:windowContentOverlay">@null</item>-->
-        <!--<item name="android:windowNoTitle">true</item>-->
-        <!--<item name="android:windowIsFloating">true</item>-->
-        <!--<item name="android:backgroundDimEnabled">false</item>-->
-    <!--</style>-->
+    <style name="AppActionBarTabText" parent="@style/Widget.AppCompat.Light.ActionBar.TabText">
+        <item name="android:textColor">@color/light_primary_text</item>
+    </style>
+
+    <!-- Deprecated styles -->
 
     <style name="Widget.Button.Primary" parent="android:Widget">
         <item name="android:background">@drawable/btn_blue</item>
@@ -113,38 +73,10 @@
         <item name="android:textSize">@dimen/h4</item>
     </style>
 
-    <!--<style name="MySearchViewStyle" parent="Widget.AppCompat.SearchView">-->
-        <!-- Background for the search query section (e.g. EditText) -->
-        <!--<item name="queryBackground">...</item>-->
-        <!-- Background for the actions section (e.g. voice, submit) -->
-        <!--<item name="submitBackground">...</item>-->
-        <!-- Close button icon -->
-        <!--<item name="closeIcon">...</item>-->
-        <!-- Search button icon -->
-        <!--<item name="searchIcon">...</item>-->
-        <!-- Go/commit button icon -->
-        <!--<item name="goIcon">...</item>-->
-        <!-- Voice search button icon -->
-        <!--<item name="voiceIcon">...</item>-->
-        <!-- Commit icon shown in the query suggestion row -->
-        <!--<item name="commitIcon">...</item>-->
-        <!-- Layout for query suggestion rows -->
-        <!--<item name="suggestionRowLayout">...</item>-->
+
+    <!--<style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">-->
+        <!--<item name="spinBars">true</item>-->
+        <!--<item name="color">@android:color/white</item>-->
     <!--</style>-->
-
-    <style name="popupMenuStyle" parent="Widget.AppCompat.PopupMenu">
-        <item name="android:popupBackground">@color/white</item>
-    </style>
-    <style name="MyTheme.ActionBarStyle" parent="Theme.AppCompat.Light">
-        <item name="android:titleTextStyle">@style/MyTheme.ActionBar.TitleTextStyle</item>
-    </style>
-    <style name="MyTheme.ActionBar.TitleTextStyle" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
-        <item name="android:textColor">@color/light_primary_text</item>
-    </style>
-
-    <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
-        <item name="spinBars">true</item>
-        <item name="color">@android:color/white</item>
-    </style>
 
 </resources>

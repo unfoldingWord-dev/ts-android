@@ -1,5 +1,46 @@
 apply plugin: 'com.android.application'
 
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath('fr.avianey.androidsvgdrawable:gradle-plugin:1.0.2') {
+            // should be excluded to avoid conflict
+            exclude group: 'xerces'
+        }
+    }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: "androidsvgdrawable"
+
+// create a task to convert SVG to PNG
+// TODO: finish setting this up so we can just manage svg assets.
+//task svgToPngWhite(type: fr.avianey.androidsvgdrawable.gradle.SvgDrawableTask) {
+//    from = file('src/main/svg-png/white')
+//    to = file('src/main/tmp')
+//    createMissingDirectories = true
+//    targetedDensities = ['ldpi', 'hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
+//    outputFormat = 'PNG'
+//}
+//task svgToPngDark(type: fr.avianey.androidsvgdrawable.gradle.SvgDrawableTask) {
+//    from = file('src/main/svg-png/dark')
+//    to = file('src/main/tmp')
+//    createMissingDirectories = true
+//    targetedDensities = ['ldpi', 'hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
+//    outputFormat = 'PNG'
+//}
+//task svgToPngBlue(type: fr.avianey.androidsvgdrawable.gradle.SvgDrawableTask) {
+//    from = file('src/main/svg-png/blue')
+//    to = file('src/main/tmp')
+//    createMissingDirectories = true
+//    targetedDensities = ['ldpi', 'hdpi', 'mdpi', 'xhdpi', 'xxhdpi', 'xxxhdpi']
+//    outputFormat = 'PNG'
+//}
+
 android {
     signingConfigs {
     }
