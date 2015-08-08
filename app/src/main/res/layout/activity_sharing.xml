@@ -6,4 +6,5 @@
     android:id="@+id/sharingListView"
     android:divider="@color/list_separator"
     android:dividerHeight="1px"
+    android:background="@color/white"
     tools:context="com.door43.translationstudio.SharingActivity"/>

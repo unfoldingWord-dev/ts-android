@@ -1,5 +1,6 @@
 package com.door43.translationstudio.device2device;
 
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -568,11 +569,19 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
     }
 
     @Override
-    public void onReceivedProjectList(Peer server, Model[] models) {
+    public void onReceivedProjectList(final Peer server, Model[] models) {
         if(models.length > 0) {
             showProjectSelectionDialog(server, models);
         } else {
-            app().showMessageDialog(server.getIpAddress(), getResources().getString(R.string.no_projects_available_on_server));
+//            app().showToastMessage(getResources().getString(R.string.no_projects_available_on_server));
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(DeviceToDeviceActivity.this);
+                    builder.setTitle(server.getIpAddress()).setMessage(getResources().getString(R.string.no_projects_available_on_server)).show();
+                }
+            });
         }
     }
 

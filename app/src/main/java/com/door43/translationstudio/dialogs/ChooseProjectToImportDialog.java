@@ -31,7 +31,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         setRetainInstance(true);
-        return super.onCreateDialog(savedInstanceState);
+        return new Dialog(getActivity(), R.style.AppTheme_Dialog);
     }
 
     @Override

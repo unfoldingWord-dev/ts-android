@@ -24,6 +24,10 @@
         <item name="windowActionModeOverlay">true</item>
     </style>
 
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Light.Dialog">
+
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>

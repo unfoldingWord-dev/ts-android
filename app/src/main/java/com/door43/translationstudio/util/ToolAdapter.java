@@ -60,6 +60,12 @@ public class ToolAdapter extends BaseAdapter {
         TextView descriptionText = (TextView)view.findViewById(R.id.toolDescriptionText);
         descriptionText.setText(getItem(i).getDescription());
 
+        if(getItem(i).getDescription().isEmpty()) {
+            descriptionText.setVisibility(View.GONE);
+        } else {
+            descriptionText.setVisibility(View.VISIBLE);
+        }
+
         // image
         ImageView iconImage = (ImageView)view.findViewById(R.id.toolIconImageView);
         if(getItem(i).getIcon() > 0) {

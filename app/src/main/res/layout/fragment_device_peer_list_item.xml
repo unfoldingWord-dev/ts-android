@@ -59,6 +59,9 @@
         android:elevation="2dp"
         style="@style/Base.Widget.AppCompat.ActionButton"
         android:textSize="@dimen/title"
+        android:focusable="false"
+        android:clickable="false"
+        android:focusableInTouchMode="false"
         android:textColor="@color/light_primary_text"
         android:id="@+id/browseButton" />
 
