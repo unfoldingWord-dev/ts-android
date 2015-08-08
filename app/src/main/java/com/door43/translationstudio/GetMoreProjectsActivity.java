@@ -94,11 +94,11 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                 Intent intent = new Intent(GetMoreProjectsActivity.this, DeviceToDeviceActivity.class);
                 Bundle extras = new Bundle();
                 extras.putBoolean("startAsServer", false);
-                extras.putBoolean("browseSourceProjects", true);
+                extras.putBoolean("browseSourceProjects", true); // TODO: this is not implemented
                 intent.putExtras(extras);
                 startActivity(intent);
             }
-        }, false, "Not implimented"));// hasNetwork, getResources().getString(R.string.internet_not_available)));
+        }, hasNetwork, getResources().getString(R.string.internet_not_available)));
         mGetProjectTools.add(new ToolItem(getResources().getString(R.string.import_from_storage), getResources().getString(R.string.import_from_storage_description), R.drawable.icon_update_storage_dark, new ToolItem.ToolAction() {
             @Override
             public void run() {

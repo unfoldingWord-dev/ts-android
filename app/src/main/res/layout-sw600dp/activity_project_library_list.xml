@@ -10,6 +10,9 @@
         android:id="@+id/toolbar_server_library"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:elevation="4dp"
+        android:theme="@style/AppTheme.Toolbar"
+        android:popupTheme="@style/Theme.AppCompat.Light"
         android:minHeight="?attr/actionBarSize"
         android:background="?attr/colorPrimary"/>
 
