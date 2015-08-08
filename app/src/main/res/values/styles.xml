@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -13,6 +13,11 @@
         <item name="android:actionBarStyle">@style/AppActionBar</item>
         <item name="android:actionBarTabTextStyle">@style/AppActionBarTabText</item>
         <item name="android:actionMenuTextColor">@color/light_primary_text</item>
+
+        <!-- Support library compatability -->
+        <item name="actionBarStyle">@style/AppActionBar</item>
+        <item name="actionBarTabTextStyle">@style/AppActionBarTabText</item>
+        <item name="actionMenuTextColor">@color/light_primary_text</item>
 
         <!-- You can also set colorControlNormal, colorControlActivated
          colorControlHighlight, and colorSwitchThumbNormal. -->
@@ -41,8 +46,14 @@
         <item name="colorControlHighlight">@color/light_primary_text</item>
     </style>
 
-    <style name="AppActionBar" parent="@style/Widget.AppCompat.Light.ActionBar">
+    <style name="AppActionBar" parent="@style/Widget.AppCompat.ActionBar">
+
         <item name="android:titleTextStyle">@style/AppActionBarTitleText</item>
+        <item name="android:background">?attr/colorPrimary</item>
+
+        <!-- Support library compatability -->
+        <item name="titleTextStyle">@style/AppActionBarTitleText</item>
+        <item name="background">?attr/colorPrimary</item>
     </style>
 
     <style name="AppActionBarTitleText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">

@@ -9,6 +9,7 @@
     android:theme="@style/AppTheme.Toolbar"
     android:popupTheme="@style/Theme.AppCompat.Light"
     android:minHeight="?attr/actionBarSize"
+    android:elevation="4dp"
     app:navigationContentDescription="@string/abc_action_bar_up_description"
     app:navigationIcon="?attr/homeAsUpIndicator"
     app:title="@string/settings"/>
