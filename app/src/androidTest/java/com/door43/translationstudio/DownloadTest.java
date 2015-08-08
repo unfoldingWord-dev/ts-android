@@ -5,7 +5,6 @@ import android.test.ActivityInstrumentationTestCase2;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
-import com.door43.translationstudio.tasks.DownloadLanguageTask;
 
 /**
  * Created by joel on 3/24/2015.

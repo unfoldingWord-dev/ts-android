@@ -3,9 +3,7 @@ package com.door43.translationstudio.service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;

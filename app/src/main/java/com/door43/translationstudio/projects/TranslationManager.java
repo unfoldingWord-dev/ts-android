@@ -4,6 +4,7 @@ import android.text.Editable;
 import android.text.SpannedString;
 import android.util.Log;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.git.Repo;
@@ -11,10 +12,9 @@ import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.user.ProfileManager;
-import com.door43.util.FileUtilities;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.FileUtilities;
 import com.door43.util.network.TCPClient;
-import com.door43.tools.reporting.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;

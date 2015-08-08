@@ -1,7 +1,6 @@
 package com.door43.translationstudio;
 
 import android.annotation.TargetApi;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;

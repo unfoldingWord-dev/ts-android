@@ -1,7 +1,5 @@
 package com.door43.translationstudio.projects.imports;
 
-import java.io.File;
-
 /**
  * This manages importing a frame
  */

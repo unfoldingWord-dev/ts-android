@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.projects.CheckingQuestion;
 import com.door43.translationstudio.projects.CheckingQuestionChapter;
 import com.door43.translationstudio.projects.Frame;
@@ -9,7 +10,6 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.projects.data.DataStore;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.tasks.ManagedTask;
 
 import org.json.JSONArray;

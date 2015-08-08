@@ -1,9 +1,9 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.tasks.ManagedTask;
 
 /**

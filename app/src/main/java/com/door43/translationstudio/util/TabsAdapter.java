@@ -1,20 +1,12 @@
 package com.door43.translationstudio.util;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentPagerAdapter;
-import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.AbsoluteSizeSpan;
-
-import com.door43.translationstudio.panes.right.RightPaneFragment;
 
 import java.util.ArrayList;
 

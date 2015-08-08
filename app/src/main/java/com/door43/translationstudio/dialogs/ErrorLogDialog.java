@@ -14,9 +14,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.util.tasks.ThreadableUI;
-import com.door43.tools.reporting.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

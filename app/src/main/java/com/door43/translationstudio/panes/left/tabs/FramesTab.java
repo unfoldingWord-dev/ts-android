@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ModelItemAdapter;
@@ -14,7 +15,6 @@ import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 

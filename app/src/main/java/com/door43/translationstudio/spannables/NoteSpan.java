@@ -10,8 +10,8 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Xml;
 
-import com.door43.translationstudio.R;
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 
 import org.apache.commons.io.input.CharSequenceReader;

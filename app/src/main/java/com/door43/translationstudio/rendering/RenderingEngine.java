@@ -1,8 +1,5 @@
 package com.door43.translationstudio.rendering;
 
-import android.os.Handler;
-import android.os.Looper;
-
 /**
  * Created by joel on 1/26/2015.
  */

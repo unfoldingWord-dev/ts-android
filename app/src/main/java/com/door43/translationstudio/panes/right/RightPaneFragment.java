@@ -1,6 +1,5 @@
 package com.door43.translationstudio.panes.right;
 
-import android.database.DataSetObserver;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;

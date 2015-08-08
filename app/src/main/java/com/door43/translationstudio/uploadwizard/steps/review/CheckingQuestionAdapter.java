@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,13 +13,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.projects.CheckingQuestionChapter;
 import com.door43.translationstudio.projects.CheckingQuestion;
-import com.door43.translationstudio.spannables.PassageLinkSpan;
+import com.door43.translationstudio.projects.CheckingQuestionChapter;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
 
-import java.security.acl.Group;
 import java.util.List;
 
 /**

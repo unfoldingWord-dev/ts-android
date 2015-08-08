@@ -12,7 +12,6 @@ import android.widget.LinearLayout;
 
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.ImportTranslationDraftTask;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.tasks.IndexResourceTask;
@@ -21,6 +20,7 @@ import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.translatonui.TranslatorFragment;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 

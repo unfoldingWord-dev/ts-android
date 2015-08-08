@@ -1,6 +1,5 @@
 package com.door43.translationstudio.rendering;
 
-import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 
 /**

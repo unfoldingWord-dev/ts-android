@@ -7,9 +7,6 @@ import android.text.Editable;
 import android.text.SpannedString;
 import android.util.Pair;
 
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.AppContext;
-
 /**
  * Created by joel on 1/14/2015.
  */

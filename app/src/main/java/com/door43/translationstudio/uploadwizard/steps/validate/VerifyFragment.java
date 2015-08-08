@@ -11,9 +11,9 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.ValidateTranslationTask;
 import com.door43.util.DummyDialogListener;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.wizard.WizardFragment;

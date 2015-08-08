@@ -8,21 +8,21 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 
-import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.projects.Language;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.util.StorageUtils;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
 
-//import org.sil.palaso.Graphite;
-
 import java.io.File;
 import java.io.IOException;
+
+//import org.sil.palaso.Graphite;
 
 /**
  * This class provides global access to the application context as well as other important tools

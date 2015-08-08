@@ -24,6 +24,11 @@
 
 package com.tozny.crypto.android;
 
+import android.os.Build;
+import android.os.Process;
+import android.util.Base64;
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -52,11 +57,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import android.os.Build;
-import android.os.Process;
-import android.util.Base64;
-import android.util.Log;
 
 import static java.util.Arrays.copyOfRange;
 

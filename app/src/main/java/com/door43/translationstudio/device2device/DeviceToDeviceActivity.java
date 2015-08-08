@@ -3,7 +3,6 @@ package com.door43.translationstudio.device2device;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +17,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.dialogs.ChooseProjectLanguagesToImportDialog;
 import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
@@ -34,10 +34,9 @@ import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ExportingService;
 import com.door43.translationstudio.service.ImportingService;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.RSAEncryption;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.util.RSAEncryption;
 import com.squareup.otto.Subscribe;
 
 import org.json.JSONArray;

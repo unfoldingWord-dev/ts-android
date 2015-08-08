@@ -1,7 +1,5 @@
 package com.door43.translationstudio.tasks;
 
-import android.app.Fragment;
-
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;

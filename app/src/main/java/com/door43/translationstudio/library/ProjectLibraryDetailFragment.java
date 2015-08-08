@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import com.astuetz.PagerSlidingTabStrip;
 import com.door43.translationstudio.R;
-
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;

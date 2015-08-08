@@ -8,16 +8,16 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ListView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.tools.reporting.Logger;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 

@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Chapter;
@@ -22,7 +23,6 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;

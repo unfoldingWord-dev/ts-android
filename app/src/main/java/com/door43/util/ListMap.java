@@ -1,7 +1,5 @@
 package com.door43.util;
 
-import com.door43.translationstudio.projects.Model;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

@@ -1,7 +1,6 @@
 package com.door43.util;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.util.AppContext;
 
 import org.apache.commons.io.FileUtils;
 

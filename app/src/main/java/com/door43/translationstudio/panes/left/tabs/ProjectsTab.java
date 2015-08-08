@@ -25,16 +25,16 @@ import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationManager;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.translationstudio.tasks.LoadTermsTask;
-import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.translationstudio.tasks.IndexResourceTask;
 import com.door43.translationstudio.tasks.LoadChaptersTask;
 import com.door43.translationstudio.tasks.LoadFramesTask;
+import com.door43.translationstudio.tasks.LoadTermsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsAdapterNotification;
+import com.door43.translationstudio.util.TranslatorBaseFragment;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
-import com.door43.translationstudio.util.TranslatorBaseFragment;
 
 /**
  * Created by joel on 8/29/2014.

@@ -1,7 +1,5 @@
 package com.door43.translationstudio.library.temp;
 
-import android.widget.Filter;
-
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;

@@ -3,12 +3,12 @@ package com.door43.translationstudio.projects.data;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.util.FileUtilities;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.Security;
 import com.door43.util.network.ServerUtilities;
 

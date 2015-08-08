@@ -41,6 +41,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.dialogs.FramesListAdapter;
@@ -66,7 +67,6 @@ import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 import com.door43.translationstudio.util.AnimationUtilities;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.StringUtilities;
 import com.door43.util.tasks.ThreadableUI;
 

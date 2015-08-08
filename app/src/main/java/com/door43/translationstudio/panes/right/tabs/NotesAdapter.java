@@ -7,12 +7,10 @@ import android.text.Html;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.door43.translationstudio.MainActivity;
@@ -21,15 +19,12 @@ import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.ClearableEditText;
-
-import org.eclipse.jgit.diff.Edit;
 
 /**
  * Created by joel on 5/7/2015.

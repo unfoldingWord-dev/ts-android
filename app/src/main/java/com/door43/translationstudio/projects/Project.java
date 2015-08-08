@@ -3,13 +3,13 @@ package com.door43.translationstudio.projects;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.ListMap;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.Manifest;
 
 import org.eclipse.jgit.api.errors.GitAPIException;

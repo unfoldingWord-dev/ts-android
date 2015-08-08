@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -22,7 +23,6 @@ import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;

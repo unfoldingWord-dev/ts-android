@@ -2,11 +2,11 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.ListMap;
 
 import org.json.JSONException;

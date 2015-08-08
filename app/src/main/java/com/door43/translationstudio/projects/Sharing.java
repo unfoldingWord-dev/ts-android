@@ -4,6 +4,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
@@ -18,7 +19,6 @@ import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.tools.reporting.Logger;
 import com.door43.util.Security;
 import com.door43.util.Zip;
 

@@ -5,11 +5,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.util.FileUtilities;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.FileUtilities;
 
 import java.io.File;
 

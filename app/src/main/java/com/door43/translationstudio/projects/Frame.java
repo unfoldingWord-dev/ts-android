@@ -1,13 +1,13 @@
 package com.door43.translationstudio.projects;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.events.FrameTranslationStatusChangedEvent;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingEngine;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.VerseSpan;
-import com.door43.util.FileUtilities;
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.FileUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONException;

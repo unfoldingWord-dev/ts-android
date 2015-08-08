@@ -9,11 +9,6 @@ import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ThreadableUI;
 import com.squareup.otto.Bus;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-
 /**
  * This class handles the project navigation within the app.
  * e.g. switching between projects, chapter, frames etc.

@@ -2,10 +2,8 @@ package com.door43.translationstudio.rendering;
 
 import android.text.TextUtils;
 
-import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.TermSpan;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

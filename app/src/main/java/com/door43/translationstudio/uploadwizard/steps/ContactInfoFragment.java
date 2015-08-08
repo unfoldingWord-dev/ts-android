@@ -1,7 +1,6 @@
 package com.door43.translationstudio.uploadwizard.steps;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;

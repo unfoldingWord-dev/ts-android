@@ -1,5 +1,6 @@
 package com.door43.translationstudio.projects.data;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.projects.Chapter;
 import com.door43.translationstudio.projects.Frame;
 import com.door43.translationstudio.projects.Model;
@@ -9,7 +10,6 @@ import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
-import com.door43.tools.reporting.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;

@@ -4,8 +4,8 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 
-import com.door43.translationstudio.R;
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.regex.Matcher;

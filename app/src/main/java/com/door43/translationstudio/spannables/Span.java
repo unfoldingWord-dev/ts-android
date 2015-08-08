@@ -4,7 +4,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
-import android.text.style.ClickableSpan;
 import android.view.View;
 import android.widget.TextView;
 

@@ -5,7 +5,6 @@ import android.net.Uri;
 
 import com.door43.translationstudio.util.AppContext;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
