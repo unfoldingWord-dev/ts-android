@@ -444,7 +444,7 @@
       }, 
       {
         "ref": "shame", 
-        "text": "The feeling that comes with knowing we have sinned or that we fall short in some way. Before sin came into the world, there was no sense of shame about being naked."
+        "text": "The feeling that comes with knowing we have sinned or that we fall short in some way."
       }
     ]
   }, 
@@ -3250,8 +3250,8 @@
         "text": "A sword is a weapon that has a long sharp blade and a handle at one end. People hold the handle and hit or stab the enemy with the sharp blade. If your people don't have a weapon just like this, you could translate it as a \"long knife,\" \"machete\" or, \"bush knife.\""
       }, 
       {
-        "ref": "A sword for God and for Gideon", 
-        "text": "This means, \"We fight for God and for Gideon!\""
+        "ref": "A sword for Yahweh and for Gideon", 
+        "text": "This means, \"We fight for Yahweh and for Gideon!\""
       }
     ]
   }, 
@@ -9270,6 +9270,6 @@
     ]
   }, 
   {
-    "date_modified": "20150409"
+    "date_modified": "20150723"
   }
 ]
