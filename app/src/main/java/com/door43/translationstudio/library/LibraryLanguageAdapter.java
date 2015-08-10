@@ -12,8 +12,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
+import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
@@ -30,13 +32,12 @@ import java.util.ListIterator;
  */
 public class LibraryLanguageAdapter extends BaseAdapter {
     private final Context mContext;
-    private final String mProjectId;
+    private String mProjectId = null;
     private final String mTaskIdPrefix;
     private final boolean mIsDrafts;
     private List<SourceLanguage> mLanguages = new ArrayList<>();
 
-    public LibraryLanguageAdapter(Context context, String projectId, String taskIdPrefix, boolean isDrafts) {
-        mProjectId = projectId;
+    public LibraryLanguageAdapter(Context context, String taskIdPrefix, boolean isDrafts) {
         mContext = context;
         mTaskIdPrefix = taskIdPrefix;
         mIsDrafts = isDrafts;
@@ -189,6 +190,10 @@ public class LibraryLanguageAdapter extends BaseAdapter {
     public void changeDataSet(List<SourceLanguage> languages) {
         mLanguages = languages;
 
+        if(mLanguages != null) {
+            Logger.i(this.getClass().getName(), "Loaded " + mLanguages.size() + " languages into the adapter");
+        }
+        notifyDataSetChanged();
         sortAndFilter();
     }
 
@@ -218,6 +223,10 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                 LibraryLanguageAdapter.this.notifyDataSetChanged();
             }
         }.start();
+    }
+
+    public void setProjectId(String projectId) {
+        mProjectId = projectId;
     }
 
     private class ViewHolder {

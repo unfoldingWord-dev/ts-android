@@ -95,23 +95,28 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
     @Override
     public void onItemSelected(String id) {
         if(id != null) {
-            if (mTwoPane) {
-                // In two-pane mode, show the detail view in this activity by
-                // adding or replacing the detail fragment using a
-                // fragment transaction.
-
-                Bundle arguments = getIntent().getExtras();
-                if(arguments == null) {
-                    arguments = new Bundle();
-                }
-                arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
-                ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
-                if (arguments != null) {
-                    fragment.setArguments(arguments);
-                }
-                getFragmentManager().beginTransaction().replace(R.id.project_detail_container, fragment).commit();
-
-            } else {
+            // TODO: fix two pane
+//            if (mTwoPane) {
+//                // In two-pane mode, show the detail view in this activity by
+//                // adding or replacing the detail fragment using a
+//                // fragment transaction.
+//
+//                Bundle arguments = getIntent().getExtras();
+//                if(arguments == null) {
+//                    arguments = new Bundle();
+//                }
+//                arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
+//                ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.project_detail_container);
+//                if(fragment == null) {
+//                    fragment = new ProjectLibraryDetailFragment();
+//                    if (arguments != null) {
+//                        fragment.setArguments(arguments);
+//                    }
+//                    getFragmentManager().beginTransaction().replace(R.id.project_detail_container, fragment).commit();
+//                } else {
+//                    fragment.setProjectId(id);
+//                }
+//            } else {
                 // In single-pane mode, simply start the detail activity
                 // for the selected item ID.
                 Intent detailIntent = new Intent(this, ProjectLibraryDetailActivity.class);
@@ -124,7 +129,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 }
                 detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
                 startActivity(detailIntent);
-            }
+//            }
         } else {
             reload(false);
         }
@@ -247,12 +252,12 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
 
     private void reload(boolean scrollToTop) {
         invalidateOptionsMenu();
-        if(mTwoPane) {
-            // remove details
-            if(getFragmentManager().findFragmentById(R.id.project_detail_container) != null) {
-                getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.project_detail_container)).commit();
-            }
-        }
+//        if(mTwoPane) {
+//            // remove details
+//            if(getFragmentManager().findFragmentById(R.id.project_detail_container) != null) {
+//                getFragmentManager().beginTransaction().remove(getFragmentManager().findFragmentById(R.id.project_detail_container)).commit();
+//            }
+//        }
         // reload list
         ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
         listFragment.reload(scrollToTop);

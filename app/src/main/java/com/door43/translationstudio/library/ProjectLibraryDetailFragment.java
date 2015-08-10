@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.astuetz.PagerSlidingTabStrip;
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
@@ -35,9 +36,6 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
     public static final String ARG_ITEM_ID = "item_id";
     private static final String IMAGE_TASK_PREFIX = "project-image-";
     private Project mProject;
-//    private ArrayList<StringFragmentKeySet> mTabs = new ArrayList<>();
-//    private LanguagesTab mLanguagesTab = new LanguagesTab();
-//    private TranslationDraftsTab mDraftsTab = new TranslationDraftsTab();
     private ViewPager mViewPager;
     private int mDefaultPage = 0;
     private ImageView mIcon;
@@ -70,9 +68,9 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         mViewPager = (ViewPager) rootView.findViewById(R.id.projectBrowserViewPager);
         mTabsAdapter = new TabsAdapter(getActivity(), mViewPager);
         mTabsAdapter.addTab(getResources().getString(R.string.languages), LanguagesTab.class, getArguments());
-        if(AppContext.projectManager().isProjectDownloaded(mProject.getId())) {
-            mTabsAdapter.addTab(getResources().getString(R.string.drafts), TranslationDraftsTab.class, getArguments());
-        }
+//        if(AppContext.projectManager().isProjectDownloaded(mProject.getId())) {
+        mTabsAdapter.addTab(getResources().getString(R.string.drafts), TranslationDraftsTab.class, getArguments());
+//        }
 
         // sliding tabs layout
         PagerSlidingTabStrip slidingTabLayout = (PagerSlidingTabStrip) rootView.findViewById(R.id.projectBrowserTabs);
@@ -90,7 +88,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
         TextView projectDescription = (TextView)rootView.findViewById(R.id.modelDescription);
         projectDescription.setText(mProject.getDescription());
         mIcon = (ImageView)rootView.findViewById(R.id.modelImage);
-        mIcon.setVisibility(View.GONE);
+        mIcon.setBackgroundResource(R.drawable.icon_library_white);
 
         // delete project
         Button deleteButton = (Button)rootView.findViewById(R.id.deleteProjectButton);
@@ -100,6 +98,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
                 @Override
                 public void onClick(View view) {
                     // TODO: place this in a task
+                    Logger.i(ProjectLibraryDetailFragment.class.getName(), "Deleting project " + mProject.getId());
                     AppContext.projectManager().deleteProject(mProject.getId());
                     LibraryTempData.organizeProjects();
                     if(getActivity() != null && getActivity() instanceof LibraryCallbacks) {
@@ -178,7 +177,6 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                     if (mIcon != null) {
                         mIcon.setImageBitmap(loadedImage);
-                        mIcon.setVisibility(View.VISIBLE);
                         AnimationUtilities.fadeIn(mIcon, 100);
                     }
                 }
@@ -196,6 +194,60 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
 //        }
         if(mTabsAdapter != null) {
             mTabsAdapter.notifyDataSetChanged();
+        }
+    }
+
+    public void setProjectId(String projectId) {
+        // TODO: this is rather ugly we need to clean this up.
+        mProject = LibraryTempData.getProject(projectId);
+
+        // update project info
+        View rootView = getView();
+        TextView dateModifiedText = (TextView)rootView.findViewById(R.id.dateModifiedTextView);
+        dateModifiedText.setText("v. "+mProject.getDateModified());
+        TextView projectTitle = (TextView)rootView.findViewById(R.id.modelTitle);
+        projectTitle.setText(mProject.getTitle());
+        TextView projectDescription = (TextView)rootView.findViewById(R.id.modelDescription);
+        projectDescription.setText(mProject.getDescription());
+        mIcon = (ImageView)rootView.findViewById(R.id.modelImage);
+        mIcon.setBackgroundResource(R.drawable.icon_library_white);
+
+        // set graphite fontface
+        Typeface typeface = AppContext.graphiteTypeface(mProject.getSelectedSourceLanguage());
+        projectDescription.setTypeface(typeface, 0);
+        projectTitle.setTypeface(typeface, 0);
+
+        // set font size
+        float fontsize = AppContext.typefaceSize();
+        projectDescription.setTextSize((float)(fontsize*.7));
+        projectTitle.setTextSize(fontsize);
+
+        if(mImagePath == null) {
+            // download project image
+            if (TaskManager.getTask(mTaskId) != null) {
+                // connect to existing task
+                DownloadProjectImageTask task = (DownloadProjectImageTask) TaskManager.getTask(IMAGE_TASK_PREFIX+mProject.getId());
+                task.addOnFinishedListener(this);
+            } else {
+                // begin downloading the image
+                DownloadProjectImageTask task = new DownloadProjectImageTask(mProject);
+                task.addOnFinishedListener(this);
+                TaskManager.addTask(task, IMAGE_TASK_PREFIX+mProject.getId());
+            }
+        } else {
+            loadImage();
+        }
+
+        // update tabs
+        if(mTabsAdapter != null) {
+            LanguagesTab languagesTab = (LanguagesTab) mTabsAdapter.getFragmentForPosition(0);
+            if (languagesTab != null) {
+                languagesTab.setProject(getArguments().getString(ARG_ITEM_ID));
+            }
+            TranslationDraftsTab draftsTab = (TranslationDraftsTab) mTabsAdapter.getFragmentForPosition(1);
+            if (draftsTab != null) {
+                draftsTab.setProject(getArguments().getString(ARG_ITEM_ID));
+            }
         }
     }
 }

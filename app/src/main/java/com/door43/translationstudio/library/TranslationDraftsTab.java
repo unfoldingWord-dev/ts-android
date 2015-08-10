@@ -31,13 +31,12 @@ public class TranslationDraftsTab extends TranslatorBaseFragment implements Tabs
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
+        mAdapter = new LibraryLanguageAdapter(AppContext.context(), DOWNLOAD_DRAFT_PREFIX, true);
 
         if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_ID)) {
             String id = getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_ID);
-            mProject = LibraryTempData.getProject(id);
+            setProject(id);
         }
-
-        mAdapter = new LibraryLanguageAdapter(AppContext.context(), mProject.getId(), DOWNLOAD_DRAFT_PREFIX, true);
 
         ListView list = (ListView)view.findViewById(R.id.listView);
         list.setAdapter(mAdapter);
@@ -56,7 +55,7 @@ public class TranslationDraftsTab extends TranslatorBaseFragment implements Tabs
             }
         });
 
-        populateList();
+//        populateList();
 
         return view;
     }
@@ -118,6 +117,12 @@ public class TranslationDraftsTab extends TranslatorBaseFragment implements Tabs
 
     @Override
     public void NotifyAdapterDataSetChanged() {
+        populateList();
+    }
+
+    public void setProject(String projectId) {
+        mProject = LibraryTempData.getProject(projectId);
+        mAdapter.setProjectId(projectId);
         populateList();
     }
 
