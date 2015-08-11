@@ -3,11 +3,14 @@ package com.door43.translationstudio;
 import android.graphics.Rect;
 import android.test.ActivityInstrumentationTestCase2;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.TermsActivity;
 import com.door43.translationstudio.R;
 import com.robotium.solo.Solo;
+
+import java.util.ArrayList;
 
 /**
  * Created by Gary on 8/4/2015.
@@ -62,6 +65,12 @@ public class UIActions extends ActivityInstrumentationTestCase2<TermsActivity> {
     public int getFrame(){
         getFrameInfo();
         return frameInfo.getCurrent();
+    }
+    public void clickOnOverflowButton(){
+        View pView = solo.getView(R.id.action_project_settings);
+        ArrayList<ImageView> mvs = solo.getCurrentViews(ImageView.class,(View)pView.getParent());
+        //assertTrue("Failed to find overflow button",mvs.get(0).getContentDescription().toString().equals("More Options"));//unfortunately getContentDescription is just a stub
+        solo.clickOnView(mvs.get(0));
     }
     public boolean prevFrame(){
         getFrameInfo();
