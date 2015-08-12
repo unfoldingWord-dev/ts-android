@@ -2,6 +2,7 @@ package com.door43.translationstudio.projects;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.Security;
@@ -48,6 +49,15 @@ public class TranslationNote {
      */
     public static String getRepositoryPath(String projectId, String languageId) {
         return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + projectId + "-" + languageId + "-notes/";
+    }
+
+    /**
+     * Returns the remote repository url
+     * @return
+     */
+    public static String getRemotePath(String projectId, String targetLanguageId) {
+        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+        return server + ":tS/" + AppContext.udid() + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + projectId + "tn-" + targetLanguageId;
     }
 
     /**
