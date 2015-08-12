@@ -57,7 +57,7 @@ public class TranslationNote {
      */
     public static String getRemotePath(String projectId, String targetLanguageId) {
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
-        return server + ":tS/" + AppContext.udid() + "/notes-" + Project.GLOBAL_PROJECT_SLUG + "-" + projectId + "-" + targetLanguageId;
+        return server + ":tS/" + AppContext.udid() + "/" + Project.GLOBAL_PROJECT_SLUG + "-" + projectId + "tn-" + targetLanguageId;
     }
 
     /**
