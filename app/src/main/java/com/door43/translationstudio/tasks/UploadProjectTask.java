@@ -8,12 +8,14 @@ import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.projects.TranslationNote;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.tools.reporting.Logger;
 import com.door43.util.tasks.ManagedTask;
 
+import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
@@ -40,7 +42,7 @@ public class UploadProjectTask extends ManagedTask {
 
     public static final String TASK_ID = "push_project_task";
     private final Project mProject;
-    private final Language mLanguage;
+    private final Language mTargetLanguage;
     private final String mAuthServer;
     private final int mAuthServerPort;
     private String mErrorMessages = "";
@@ -49,7 +51,7 @@ public class UploadProjectTask extends ManagedTask {
     public UploadProjectTask(Project p, Language target) {
         setThreadPriority(android.os.Process.THREAD_PRIORITY_DEFAULT);
         mProject = p;
-        mLanguage = target;
+        mTargetLanguage = target;
         mAuthServer = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER, AppContext.context().getResources().getString(R.string.pref_default_auth_server));
         mAuthServerPort = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTH_SERVER_PORT, AppContext.context().getResources().getString(R.string.pref_default_auth_server_port)));
     }
@@ -192,19 +194,28 @@ public class UploadProjectTask extends ManagedTask {
      * Uploads the project repository to the server
      */
     private void pushProject() {
-        if(mProject.translationIsReady(mLanguage)) {
+        if(mProject.translationIsReady(mTargetLanguage)) {
             publishProgress(-1, AppContext.context().getResources().getString(R.string.publishing_translation));
         } else {
             publishProgress(-1, AppContext.context().getResources().getString(R.string.backing_up_translation));
         }
         // commit and push project
-        Repo projectRepo = new Repo(ProjectManager.getRepositoryPath(mProject, mLanguage));
+        Repo projectRepo = new Repo(ProjectManager.getRepositoryPath(mProject, mTargetLanguage));
         if(commitRepo(projectRepo)) {
-            mResponse = pushRepo(projectRepo, ProjectManager.getRemotePath(mProject, mLanguage));
+            mResponse = pushRepo(projectRepo, ProjectManager.getRemotePath(mProject, mTargetLanguage));
+        }
+
+        // commit and push translation notes
+        Repo notesRepo = new Repo(TranslationNote.getRepositoryPath(mProject.getId(), mTargetLanguage.getId()));
+        if(commitRepo(notesRepo)) {
+            String response = pushRepo(notesRepo, TranslationNote.getRemotePath(mProject.getId(), mTargetLanguage.getId()));
+            if(response != null) {
+                mResponse += "\n" + response;
+            }
         }
 
         // commit and push profile
-        if(mProject.translationIsReady(mLanguage)) {
+        if(mProject.translationIsReady(mTargetLanguage)) {
             Repo profileRepo = new Repo(ProfileManager.getRepositoryPath());
             if (commitRepo(profileRepo)) {
                 String response = pushRepo(profileRepo, ProfileManager.getRemotePath());
@@ -314,6 +325,11 @@ public class UploadProjectTask extends ManagedTask {
         try {
             Git git = repo.getGit();
             if(!git.status().call().isClean()) {
+                // stage changes
+                AddCommand add = git.add();
+                add.addFilepattern(".").call();
+
+                // commit changes
                 CommitCommand commit = git.commit();
                 commit.setAll(true);
                 commit.setMessage("auto save");
