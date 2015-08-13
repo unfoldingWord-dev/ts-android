@@ -15,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.library.temp.LibraryTempData;
@@ -291,6 +292,11 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
             search(query);
+        } else {
+            ProjectLibraryListFragment listFragment = ((ProjectLibraryListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list));
+            if(listFragment != null) {
+                listFragment.setActivatedPosition(ListView.INVALID_POSITION);
+            }
         }
     }
 
