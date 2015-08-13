@@ -34,6 +34,10 @@ public class LoadFramesTask extends ManagedTask {
         IndexStore.loadFrames(mProject, mLanguage, mResource, mChapter);
     }
 
+    public String getChapterId() {
+        return mChapter.getId();
+    }
+
     @Override
     public int maxProgress() {
         return mMaxProgress;

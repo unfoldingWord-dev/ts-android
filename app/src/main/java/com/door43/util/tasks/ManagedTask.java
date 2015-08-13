@@ -1,5 +1,7 @@
 package com.door43.util.tasks;
 
+import android.os.Bundle;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -23,9 +25,26 @@ public abstract class ManagedTask implements Runnable {
     private boolean mIsRunning = false;
     private List mOnIdChangedListeners = Collections.synchronizedList(new ArrayList<>());
     protected int mThreadPriority = android.os.Process.THREAD_PRIORITY_BACKGROUND;
+    private Bundle mArgs = null;
 
     public ManagedTask ManagedTask() {
         return this;
+    }
+
+    /**
+     * Passes optional arguments to the task
+     * @param args
+     */
+    public void setArgs(Bundle args) {
+        mArgs = args;
+    }
+
+    /**
+     * Returns arguments from the task
+     * @return
+     */
+    public Bundle getArgs() {
+        return mArgs;
     }
 
     /**

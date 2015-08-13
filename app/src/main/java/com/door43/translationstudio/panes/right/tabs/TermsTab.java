@@ -23,9 +23,11 @@ import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
+import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
+import com.door43.util.tasks.TaskManager;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
@@ -245,16 +247,28 @@ import java.util.ArrayList;
                             @Override
                             public void onClick(View view, Span span, int start, int end) {
                                 // TODO: this should be done in the navigator
-                                p.setSelectedChapter(example.getChapterId());
-                                p.getSelectedChapter().setSelectedFrame(example.getFrameId());
-                                // TODO: we need to load the chapters and frames first.
-                                ((MainActivity) getActivity()).reload();
-                                ((MainActivity) getActivity()).closeDrawers();
-                                Chapter c = p.getChapter(example.getChapterId());
-                                if (c != null) {
-                                    app().showToastMessage(String.format(getResources().getString(R.string.now_viewing_frame), example.getFrameId(), c.getTitle()));
+                                if(example.getChapterId().equals(p.getSelectedChapter().getId())) {
+                                    p.setSelectedChapter(example.getChapterId());
+                                    p.getSelectedChapter().setSelectedFrame(example.getFrameId());
+                                    // TODO: we need to load the chapters and frames first.
+
+                                    ((MainActivity) getActivity()).reload();
+                                    ((MainActivity) getActivity()).closeDrawers();
+                                    Chapter c = p.getChapter(example.getChapterId());
+                                    if (c != null) {
+                                        app().showToastMessage(String.format(getResources().getString(R.string.now_viewing_frame), example.getFrameId(), c.getTitle()));
+                                    } else {
+                                        app().showToastMessage(R.string.missing_chapter);
+                                    }
                                 } else {
-                                    app().showToastMessage(R.string.missing_chapter);
+                                    // load the frames
+                                    p.setSelectedChapter(example.getChapterId());
+                                    LoadFramesTask task = new LoadFramesTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource(), p.getSelectedChapter());
+                                    Bundle args = new Bundle();
+                                    args.putString("frame_id", example.getFrameId());
+                                    args.putString("chapter_id", example.getChapterId());
+                                    task.setArgs(args);
+                                    ((MainActivity)getActivity()).loadAndOpenFrame(task);
                                 }
                             }
                         });

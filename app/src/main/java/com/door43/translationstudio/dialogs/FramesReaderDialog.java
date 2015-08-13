@@ -54,7 +54,6 @@ public class FramesReaderDialog extends DialogFragment implements GenericTaskWat
             mAdapter = new FramesListAdapter(AppContext.context(), new Model[]{}, FramesListAdapter.DisplayOption.values()[displayOrdinal]);
             list.setAdapter(mAdapter);
 
-
             mProject = AppContext.projectManager().getProject(projectId);
             if(mProject != null && mProject.getChapter(chapterId) != null) {
                 mChapter = mProject.getChapter(chapterId);
