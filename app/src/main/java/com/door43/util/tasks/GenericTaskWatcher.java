@@ -76,16 +76,18 @@ public class GenericTaskWatcher implements ManagedTask.OnFinishedListener, Manag
      * WARNING: this method expects the task with the given id to have already been added to the task manager
      * @param taskId
      */
-    public void watch(Object taskId) {
+    public boolean watch(Object taskId) {
         if(!mWatching) {
             if(taskId != null) {
                 ManagedTask task = TaskManager.getTask(taskId);
-                connectTask(task);
+                return connectTask(task);
             } else {
                 Log.w(null, "You cannot watch a task with id NULL");
+                return false;
             }
         } else {
             Log.w(null, "The watcher is already watching a task. Did you forget to call stop() first?");
+            return false;
         }
     }
 
@@ -94,15 +96,16 @@ public class GenericTaskWatcher implements ManagedTask.OnFinishedListener, Manag
      * If you want to begin watching another task you should call disconnect() first
      * @param task
      */
-    public void watch(ManagedTask task) {
+    public boolean watch(ManagedTask task) {
         if(!mWatching) {
-            connectTask(task);
+            return connectTask(task);
         } else {
             Log.w(null, "The watcher is already watching a task. Did you forget to call stop() first?");
+            return false;
         }
     }
 
-    private void connectTask(ManagedTask task) {
+    private boolean connectTask(ManagedTask task) {
         if(task != null) {
             mWatching = true;
 
@@ -113,8 +116,10 @@ public class GenericTaskWatcher implements ManagedTask.OnFinishedListener, Manag
             task.addOnFinishedListener(this);
             task.addOnProgressListener(this);
             task.addOnStartListener(this);
+            return true;
         } else {
             Log.w(null, "The task does not exist");
+            return false;
         }
     }
 

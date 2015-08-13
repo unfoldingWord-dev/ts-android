@@ -64,7 +64,7 @@ public class ChaptersTab extends TranslatorBaseFragment implements TabsAdapterNo
                     if(p.getSelectedChapter().getFrames().length == 0) {
                         LoadFramesTask task = new LoadFramesTask(p, l, l.getSelectedResource(), p.getSelectedChapter());
                         mTaskWatcher.watch(task);
-                        TaskManager.addTask(task, task.TASK_ID);
+                        TaskManager.addTask(task, LoadFramesTask.TASK_ID);
                     } else {
                         openFramesTab();
                     }

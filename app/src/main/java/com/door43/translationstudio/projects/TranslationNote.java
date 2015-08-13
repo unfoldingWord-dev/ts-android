@@ -5,6 +5,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
+import com.door43.util.Manifest;
 import com.door43.util.Security;
 
 import org.apache.commons.io.FileUtils;
@@ -250,6 +251,20 @@ public class TranslationNote {
          */
         public void save() {
             synchronized (this) {
+                // TODO: we'll need to give manifests to translation note projects
+//                Project p = mTranslationNote.getFrame().getChapter().getProject();
+//                Manifest manifest = Manifest.generate(new File(mTranslationNote.getTranslationNotePath()));
+//                manifest.put("slug", p.getId() + "tn");
+//                JSONObject targetLangJson = new JSONObject();
+//                try {
+//                    targetLangJson.put("slug", p.getSelectedTargetLanguage().getId());
+//                    targetLangJson.put("name", p.getSelectedTargetLanguage().getName());
+//                    targetLangJson.put("direction", p.getSelectedTargetLanguage().getDirection().getLabel());
+//                    manifest.put("target_language", targetLangJson);
+//                } catch (JSONException e) {
+//                    Logger.e(this.getClass().getName(), "failed to update the manifest", e);
+//                }
+
                 if (mReferenceTranslation != null && !mReferenceTranslation.isSaved()) {
                     mReferenceTranslation.isSaved(true);
                     File file = new File(getReferencePath());

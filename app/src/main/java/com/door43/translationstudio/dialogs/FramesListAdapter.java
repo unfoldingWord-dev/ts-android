@@ -102,11 +102,9 @@ public class FramesListAdapter  extends BaseAdapter {
 
         // color selection
         if(getItem(position).isSelected() && mIndicateSelected) {
-            v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
-            holder.text.setTextColor(Color.WHITE);
+            holder.text.setTextColor(mContext.getResources().getColor(R.color.accent_dark));
         } else {
-            v.setBackgroundColor(Color.TRANSPARENT);
-            holder.text.setTextColor(mContext.getResources().getColor(R.color.black));
+            holder.text.setTextColor(mContext.getResources().getColor(R.color.dark_primary_text));
         }
         return v;
     }

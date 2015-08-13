@@ -368,7 +368,11 @@ public class DefaultTranslatorFragment extends TranslatorFragment {
 
                         if (link.length != 0) {
                             if (action == MotionEvent.ACTION_UP) {
-                                link[0].onClick(widget);
+                                if(layout.getLineVisibleEnd(line) == off) {
+                                    // don't click so we can continue editing.
+                                } else {
+                                    link[0].onClick(widget);
+                                }
                             }
                             return mTranslationGestureDetector.onTouchEvent(motionEvent);
                         }

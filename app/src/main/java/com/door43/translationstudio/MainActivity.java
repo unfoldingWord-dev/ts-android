@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -39,6 +40,7 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.projects.data.IndexStore;
 import com.door43.translationstudio.tasks.IndexProjectsTask;
 import com.door43.translationstudio.tasks.IndexResourceTask;
+import com.door43.translationstudio.tasks.LoadFramesTask;
 import com.door43.translationstudio.translatonui.BlindDraftTranslatorFragment;
 import com.door43.translationstudio.translatonui.DefaultTranslatorFragment;
 import com.door43.translationstudio.translatonui.TranslatorActivityInterface;
@@ -52,6 +54,7 @@ import com.door43.util.tasks.TaskManager;
 import com.squareup.otto.Subscribe;
 
 public class MainActivity extends TranslatorBaseActivity implements TranslatorActivityInterface, GenericTaskWatcher.OnFinishedListener {
+    private static final String TASK_LOAD_AND_OPEN_FRAME = "task_load_and_open_frame";
     private final MainActivity me = this;
 
     // content panes
@@ -63,7 +66,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     private boolean mKeyboardIsOpen;
     private int mPreviousRootViewHeight;
     private TranslatorFragmentInterface mTranslatorFragment;
-    private GenericTaskWatcher mIndexTaskWatcher;
+    private GenericTaskWatcher mTaskWatcher;
     private Button mContextualButton;
     private boolean mContextualButtonEnabled = false;
 
@@ -88,8 +91,8 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         }
 
         // set up task watcher
-        mIndexTaskWatcher = new GenericTaskWatcher(this, R.string.indexing, R.drawable.ic_index_small);
-        mIndexTaskWatcher.setOnFinishedListener(this);
+        mTaskWatcher = new GenericTaskWatcher(this, R.string.loading);
+        mTaskWatcher.setOnFinishedListener(this);
 
         // set up toolbars
         mMainToolbar = (Toolbar)findViewById(R.id.toolbar_main);
@@ -185,17 +188,20 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
         // connect to tasks
         IndexProjectsTask indexProjectsTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
         IndexProjectsTask indexResourcesTask = (IndexProjectsTask)TaskManager.getTask(IndexProjectsTask.TASK_ID);
+        IndexProjectsTask loadFramesTask = (IndexProjectsTask)TaskManager.getTask(TASK_LOAD_AND_OPEN_FRAME);
         if(indexProjectsTask != null) {
-            mIndexTaskWatcher.watch(indexProjectsTask);
+            mTaskWatcher.watch(indexProjectsTask);
         } else if(indexResourcesTask != null) {
-            mIndexTaskWatcher.watch(indexResourcesTask);
+            mTaskWatcher.watch(indexResourcesTask);
+        } else if(loadFramesTask != null) {
+            mTaskWatcher.watch(loadFramesTask);
         }
 
         // rebuild the index if it was destroyed
         Project p = AppContext.projectManager().getSelectedProject();
         if(p != null && !IndexStore.hasIndex(p) && indexProjectsTask == null) {
             indexProjectsTask = new IndexProjectsTask(AppContext.projectManager().getProjects());
-            mIndexTaskWatcher.watch(indexProjectsTask);
+            mTaskWatcher.watch(indexProjectsTask);
             TaskManager.addTask(indexProjectsTask, IndexProjectsTask.TASK_ID);
         }
 
@@ -255,6 +261,10 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
     public void reloadFramesTab() {
         mLeftPane.reloadFramesTab();
+    }
+
+    public void reloadChaptersTab() {
+        mLeftPane.reloadChaptersTab();
     }
 
     private void onKeyboardChanged(View root) {
@@ -525,7 +535,7 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
     @Override
     public void onDestroy() {
         unregisterReceiver(mMessageReceiver);
-        mIndexTaskWatcher.stop();
+        mTaskWatcher.stop();
         super.onDestroy();
     }
 
@@ -639,14 +649,42 @@ public class MainActivity extends TranslatorBaseActivity implements TranslatorAc
 
     @Override
     public void onFinished(final ManagedTask task) {
-        mIndexTaskWatcher.stop();
+        mTaskWatcher.stop();
         Project p = AppContext.projectManager().getSelectedProject();
         if (task instanceof IndexProjectsTask && p != null && !IndexStore.hasResourceIndex(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource())) {
             IndexResourceTask newTask = new IndexResourceTask(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource());
-            mIndexTaskWatcher.watch(newTask);
+            mTaskWatcher.watch(newTask);
             TaskManager.addTask(newTask, IndexResourceTask.TASK_ID);
         } else if (task instanceof IndexResourceTask) {
             reload();
+        } else if(task instanceof LoadFramesTask) {
+            Bundle args = task.getArgs();
+            if(args != null) {
+                String chapterId = args.getString("chapter_id");
+                String frameId = args.getString("frame_id");
+                p.setSelectedChapter(chapterId);
+
+                if(p.getSelectedChapter() != null) {
+                    p.getSelectedChapter().setSelectedFrame(frameId);
+                    app().showToastMessage(String.format(getResources().getString(R.string.now_viewing_frame), frameId, p.getSelectedChapter().getTitle()));
+                } else {
+                    app().showToastMessage(R.string.missing_chapter);
+                }
+
+                reload();
+                reloadFramesTab();
+                reloadChaptersTab();
+                mRightPane.reloadNotesTab();
+                mRightPane.reloadTermsTab();
+                closeDrawers();
+            } else {
+                Log.e(this.getClass().getName(), "Missing arguments for load frames task");
+            }
         }
+    }
+
+    public void loadAndOpenFrame(LoadFramesTask task) {
+        mTaskWatcher.watch(task);
+        TaskManager.addTask(task, TASK_LOAD_AND_OPEN_FRAME);
     }
 }

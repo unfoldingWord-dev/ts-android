@@ -240,7 +240,11 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
                 mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
             }
         }
-        preparProjectList();
+    }
+
+    public void onResume() {
+        super.onResume();
+        prepareProjectList();
     }
 
     private List<Project> getProjectList() {
@@ -264,7 +268,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
     /**
      * Fetches a list of available projects
      */
-    private void preparProjectList() {
+    private void prepareProjectList() {
         if(TaskManager.getTask(mTaskId) != null) {
             // connect to existing task
             DownloadAvailableProjectsTask task = (DownloadAvailableProjectsTask) TaskManager.getTask(mTaskId);
@@ -272,7 +276,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             task.addOnProgressListener(this);
         } else if(LibraryTempData.getProjects().size() == 0) {
             // start process
-            DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask(false);
+            DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask(true);
             task.addOnFinishedListener(this);
             task.addOnProgressListener(this);
             mTaskId = TaskManager.addTask(task);
@@ -347,7 +351,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
                 : ListView.CHOICE_MODE_NONE);
     }
 
-    private void setActivatedPosition(int position) {
+    public void setActivatedPosition(int position) {
         if (position == ListView.INVALID_POSITION) {
             getListView().setItemChecked(mActivatedPosition, false);
             if(mAdapter != null) {
