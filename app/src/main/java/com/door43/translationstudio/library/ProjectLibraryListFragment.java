@@ -240,6 +240,10 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
                 mTaskId = savedInstanceState.getInt(STATE_TASK_ID);
             }
         }
+    }
+
+    public void onResume() {
+        super.onResume();
         preparProjectList();
     }
 
@@ -272,7 +276,7 @@ public class ProjectLibraryListFragment extends ListFragment implements ManagedT
             task.addOnProgressListener(this);
         } else if(LibraryTempData.getProjects().size() == 0) {
             // start process
-            DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask(false);
+            DownloadAvailableProjectsTask task = new DownloadAvailableProjectsTask(true);
             task.addOnFinishedListener(this);
             task.addOnProgressListener(this);
             mTaskId = TaskManager.addTask(task);

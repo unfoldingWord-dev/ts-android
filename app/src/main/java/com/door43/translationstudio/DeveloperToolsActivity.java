@@ -295,7 +295,10 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                 int killme = 1/0;
             }
         }));
+    }
 
+    public void onResume() {
+        super.onResume();
         connectDownloadAllTask();
     }
 
