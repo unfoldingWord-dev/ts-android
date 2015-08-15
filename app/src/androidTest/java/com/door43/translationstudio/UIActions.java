@@ -72,6 +72,10 @@ public class UIActions extends ActivityInstrumentationTestCase2<TermsActivity> {
         //assertTrue("Failed to find overflow button",mvs.get(0).getContentDescription().toString().equals("More Options"));//unfortunately getContentDescription is just a stub
         solo.clickOnView(mvs.get(0));
     }
+    public boolean isTranslation(String expected){
+        TextView tTitle = (TextView)solo.getView(R.id.translationTitleText);
+        return tTitle.getText().toString().equalsIgnoreCase(expected);
+    }
     public boolean prevFrame(){
         getFrameInfo();
         int startFrame = frameInfo.getCurrent();

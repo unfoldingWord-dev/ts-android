@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.sql.Time;
 import java.util.ArrayList;
-
+import com.door43.translationstudio.util.AppContext;
 /**
  * Created by Gary S on 7/13/2015.
  */
@@ -158,20 +158,20 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
         //text files start with two digit of first verse in frame example: frame 4-6 would be 04.txt
         act.waitForLoad();
         //ArrayList<TextView> tvs = solo.getCurrentViews(TextView.class);
-        //com.door43.util.ClearableEditText{424443e8 GFED..CL ......I. 0,0-0,0 #7f0a00cf app:id/translationNoteEditText}
         int title = R.id.translationNoteReferenceEditText;
 
         //ArrayList<EditText> etViews = solo.getCurrentViews(EditText.class);
-        EditText et = (EditText)solo.getView(R.id.inputText);
+        EditText et = (EditText) solo.getView(R.id.inputText);
 
         assertNotNull("Could not find id.inputText", et);
         String inText = "Test input text";
         solo.enterText(et,inText);
         solo.sleep(10000);
-        //List<File> files = getListFiles(new File("/data/data/com.translationstudio.androidapp/files/git/uw-mat-aa/01/"));
-        String path = "/data/data/com.translationstudio.androidapp/files/git/uw-mat-aa/01/01.txt";
+        String path = AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/uw-mat-aa/01/";
+       List<File> files = getListFiles(new File(path));
+        String fpath = path + "01.txt";
         try{
-            FileReader fr = new FileReader(path);
+            FileReader fr = new FileReader(fpath);
             BufferedReader br = new BufferedReader(fr);
             String s = br.readLine();
 
@@ -346,7 +346,7 @@ Feature: Bug report
         EditText etBug = (EditText)solo.getView(R.id.crashDescriptioneditText);
         solo.enterText(etBug,"Robotium test07ReportBug()- this is not a real bug.");
         solo.clickOnButton("Cancel");
-        isTranslation = solo.waitForText("Afaraf: [Chapter 1]", 1, 30000);
+        isTranslation = act.isTranslation("Afaraf: [Chapter 1]");
         act.clickOnOverflowButton();
         solo.sleep(1000);
         solo.clickOnMenuItem("Report Bug");
@@ -429,7 +429,32 @@ Feature: Bug report
     Then I want to see a notice that my changes have not been published to the server yet
      */
     public void test08PublishAndBackup(){
-        assertTrue(true);
+        act.waitForLoad();
+        boolean isChapter = solo.waitForText("Chapter", 1, 30000);
+        boolean isFrame = solo.waitForText("Frame", 1, 30000);
+        boolean isTranslation =  act.isTranslation("Afaraf: [Chapter 1]");
+        act.clickOnOverflowButton();
+        solo.sleep(1000);
+        solo.clickOnMenuItem("Backup and Publish");
+        Boolean foundText = solo.waitForText("Choose project to upload");
+        assertTrue("Failed to find upload title", foundText);
+        solo.clickOnButton("Cancel");
+        isTranslation = act.isTranslation("Afaraf: [Chapter 1]");
+        assertTrue("Failed to return to translation", isTranslation);
+        act.clickOnOverflowButton();
+        solo.sleep(1000);
+        solo.clickOnMenuItem("Backup and Publish");
+        foundText = solo.waitForText("Choose project to upload");
+        assertTrue("Failed to find upload title", foundText);
+        solo.clickOnButton("Next");
+        Boolean uploading = solo.waitForText("Uploading");
+        assertTrue("Failed to start uploading",uploading);
+        Boolean success = solo.waitForText("Success",1,20000);
+        assertTrue("Failed to upload",success);
+        solo.clickOnButton("OK");
+        isTranslation = act.isTranslation("Afaraf: [Chapter 1]");
+        assertTrue("Failed to return to translation", isTranslation);
+
     }
 
     //TODO: add tests for feature / use cases found here: https://github.com/unfoldingWord-dev/ts-requirements/tree/master/features
