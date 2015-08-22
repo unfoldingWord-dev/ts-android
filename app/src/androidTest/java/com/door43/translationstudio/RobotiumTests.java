@@ -28,6 +28,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.TermsActivity;
@@ -448,7 +449,7 @@ Feature: Bug report
         assertTrue("Failed to find upload title", foundText);
         solo.clickOnButton("Next");
         Boolean uploading = solo.waitForText("Uploading");
-        assertTrue("Failed to start uploading",uploading);
+        assertTrue("Failed to start uploading", uploading);
         Boolean success = solo.waitForText("Success",1,20000);
         assertTrue("Failed to upload",success);
         solo.clickOnButton("OK");
@@ -456,7 +457,48 @@ Feature: Bug report
         assertTrue("Failed to return to translation", isTranslation);
 
     }
+/*
+Feature: Read Chapter
+  Translators will be able to read through an entire chapter in a source langugae
+  to help them gain a better context of the frame they are translating
 
+  Background:
+    Given I have selected a frame
+    And I am viewing the main activity
+
+  Scenario: Open the chapter reader
+    Given I have opened the contextual menu
+    When I click on the read chapter button
+    Then i want to view the source text for the entire chapter.
+*/
+    public void test09ReadChapter(){
+        act.waitForLoad();
+        int title = R.id.translationNoteReferenceEditText;
+        ArrayList<View> cvs;
+        //ArrayList<EditText> etViews = solo.getCurrentViews(EditText.class);
+        boolean isChapter = solo.waitForText("Chapter", 1, 30000);
+        boolean isFrame = solo.waitForText("Frame", 1, 30000);
+        boolean isTranslation = solo.waitForText("Afaraf: [Chapter 1]", 1, 30000);
+        EditText et = (EditText)solo.getView(R.id.inputText);
+
+        TextView tTitle = (TextView)solo.getView(R.id.translationTitleText);
+        isTranslation= tTitle.getText().toString().endsWith("[Chapter 1]");
+
+        assertTrue("Failed to find translation view.", isTranslation);
+        assertNotNull("Could not find id.inputText", et);
+        View pView = solo.getView(R.id.sourceTitleText);
+        ArrayList<Button> btns = solo.getCurrentViews(Button.class);
+        View cButton = solo.getView(R.id.contextual_menu_btn);
+        assertTrue("Failed to find contextual menu button.", cButton.getVisibility() == View.VISIBLE);
+        solo.clickOnView(cButton);
+        solo.sleep(1000);
+        solo.clickOnMenuItem("Read chapter");
+        solo.sleep(1000);
+        ArrayList<ListView> lvs = solo.getCurrentViews(ListView.class);
+        TextView tv = solo.getText("Solomon was the father",true);
+        assertNotNull("Unexpectedly found chapter", tv);
+        
+        }
     //TODO: add tests for feature / use cases found here: https://github.com/unfoldingWord-dev/ts-requirements/tree/master/features
 
 }
