@@ -106,7 +106,22 @@ public class RobotiumTests extends ActivityInstrumentationTestCase2<TermsActivit
     user experience it take time to develop smart tests that can detect the state of the UI and
     decide how to navigate.
     */
-
+    public void test00AcceptRejectTerms(){
+        boolean isAgree = solo.waitForText("I Agree", 1, 5000);
+        assertTrue("Failed to find agree button", isAgree);
+        ArrayList<TextView> tvs = solo.getCurrentViews(TextView.class);
+        solo.clickOnButton("License");
+        assertTrue("Failed to view license", solo.waitForText("You are free to:", 1, 3000));
+        solo.clickOnButton("OK");
+        solo.clickOnButton("Translation Guidelines");
+        assertTrue("Failed to view translation guideline", solo.waitForText("Translation Guidelines", 1, 3000));
+        solo.clickOnButton("OK");
+        solo.clickOnButton("Statement of Faith");
+        assertTrue("Failed to view statement of faith", solo.waitForText("Statement of Faith", 1, 3000));
+        assertTrue("Failed to view statement of faith essential beliefs", solo.waitForText("Essential beliefs", 1, 500));
+        solo.clickOnButton("OK");
+        solo.clickOnButton("No Thanks");
+    }
     public void test00SimpleStartToTranslate() {
         act.waitForLoad();
         boolean isOpen = solo.waitForText("Get more projects", 1, 25000);
@@ -497,8 +512,52 @@ Feature: Read Chapter
         ArrayList<ListView> lvs = solo.getCurrentViews(ListView.class);
         TextView tv = solo.getText("Solomon was the father",true);
         assertNotNull("Unexpectedly found chapter", tv);
-        
         }
+    /*
+    Feature: Translating
+  Translators will be able to type in their translation of the source text and optionally insert
+  verse markers, notes, etc.
+
+  Background:
+    Given I have selected a frame
+
+  Scenario: Enter translation mode
+    Given I am viewing the main frame
+    When I tap on the translation input field
+    Then I want the translation menu to appear
+
+  Scenario: Insert marker
+    Given I am viewing the main frame
+    And I am in translation mode
+    And the source text supports markers
+    When I click on a marker from the translation menu
+    Then I want the marker to be inserted into the translation at the current cursor position
+
+  Scenario: Insert note
+    Given I am viewing the main frame
+    And I am in translation mode
+    And the source text supports notes
+    And I have selected text in the translation field
+    When I click on the insert note button
+    Then I want to enter my note that will be attached to the selected text.
+
+  Scenario: Enter translation mode for Translation Note
+    Given I am viewing the Translation Notes
+    When I click on the edit button
+    Then I want to enter into translation mode for the Translation Notes
+
+  Scenario: Exit translation mode for Translation Notes
+    Given I am translating the Translation Notes
+    When I click on the ok button
+    Then I want to exit the translation mode for the Translation Notes
+    And save my translations
+    */
+    public void test10TranslationMarkerAdded(){
+        assertTrue(true);
+    }
+    public void test10TranslationNoteAdded(){
+        assertTrue(true);
+    }
     //TODO: add tests for feature / use cases found here: https://github.com/unfoldingWord-dev/ts-requirements/tree/master/features
 
 }
