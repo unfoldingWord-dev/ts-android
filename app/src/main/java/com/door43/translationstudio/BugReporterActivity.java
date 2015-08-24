@@ -1,34 +1,44 @@
 package com.door43.translationstudio;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
-import com.door43.tools.reporting.GithubReporter;
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
+import com.door43.translationstudio.tasks.UploadBugReportTask;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
-
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 /**
  * Created by joel on 1/14/2015.
  */
-public class BugReporterActivity extends TranslatorBaseActivity {
+public class BugReporterActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener {
+    private static final String STATE_LATEST_RELEASE = "state_latest_release";
+    private static final String STATE_NOTES = "staet_notes";
     private Button mOkButton;
     private Button mCancelButton;
-    private ProgressDialog mDialog;
+    private ProgressDialog mLoadingDialog;
     private EditText mCrashReportText;
+    private String mNotes = "";
+    private CheckForLatestReleaseTask.Release mLatestRelease = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,14 +47,15 @@ public class BugReporterActivity extends TranslatorBaseActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        final UploadReportsTask task = new UploadReportsTask();
-
         mOkButton = (Button)findViewById(R.id.okButton);
         mOkButton.setBackgroundResource(R.color.gray);
         mCancelButton = (Button)findViewById(R.id.cancelButton);
         mCrashReportText = (EditText)findViewById(R.id.crashDescriptioneditText);
         mCrashReportText.setHint(R.string.bug_report);
-        mDialog = new ProgressDialog(BugReporterActivity.this);
+
+        mLoadingDialog = new ProgressDialog(BugReporterActivity.this);
+        mLoadingDialog.setCancelable(false);
+        mLoadingDialog.setCanceledOnTouchOutside(false);
 
         mCrashReportText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -66,17 +77,25 @@ public class BugReporterActivity extends TranslatorBaseActivity {
                 }
             }
         });
-
         mOkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(!mCrashReportText.getText().toString().isEmpty()) {
-                    showLoading();
-                    task.execute(true);
+                    mNotes = mCrashReportText.getText().toString().trim();
+
+                    mLoadingDialog.setMessage(getResources().getString(R.string.loading));
+                    mLoadingDialog.show();
+
+                    CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
+                    task.addOnFinishedListener(BugReporterActivity.this);
+                    TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
+                } else {
+                    Toast toast = Toast.makeText(BugReporterActivity.this, R.string.please_enter_text, Toast.LENGTH_SHORT);
+                    toast.setGravity(Gravity.TOP, 0, 0);
+                    toast.show();
                 }
             }
         });
-
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -85,68 +104,39 @@ public class BugReporterActivity extends TranslatorBaseActivity {
         });
     }
 
-    private void showLoading() {
-        // hide buttons
-        mOkButton.setVisibility(View.GONE);
-        mCancelButton.setVisibility(View.GONE);
-        mCrashReportText.setVisibility(View.GONE);
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState != null) {
+            mNotes = savedInstanceState.getString(STATE_NOTES, "");
+            mLatestRelease = (CheckForLatestReleaseTask.Release)savedInstanceState.getSerializable(STATE_LATEST_RELEASE);
+        }
+
+        if(TextUtils.isEmpty(mNotes)) {
+            mOkButton.setBackgroundResource(R.color.gray);
+        } else {
+            mOkButton.setBackgroundResource(R.color.accent);
+            mCrashReportText.setText(mNotes);
+        }
     }
 
-    private class UploadReportsTask extends AsyncTask<Boolean, String, Void> {
+    @Override
+    public void onResume() {
+        super.onResume();
 
-        @Override
-        protected Void doInBackground(Boolean... bools) {
-            Boolean upload = bools[0];
-            String notes = mCrashReportText.getText().toString().trim();
-            Handler handle = new Handler(getMainLooper());
-            if(upload) {
-                mDialog.setMessage(getResources().getString(R.string.uploading));
-            } else {
-                mDialog.setMessage(getResources().getString(R.string.loading));
-            }
-            // show the dialog
-            handle.post(new Runnable() {
-                @Override
-                public void run() {
-                    mDialog.show();
-                }
-            });
+        CheckForLatestReleaseTask checkTask = (CheckForLatestReleaseTask) TaskManager.getTask(CheckForLatestReleaseTask.TASK_ID);
+        UploadBugReportTask uploadTask = (UploadBugReportTask)TaskManager.getTask(UploadBugReportTask.TASK_ID);
 
-            File logFile = new File(getExternalCacheDir(), "log.txt");
-
-            // TRICKY: make sure the github_oauth2 token has been set
-            int githubTokenIdentifier = AppContext.context().getResources().getIdentifier("github_oauth2", "string", AppContext.context().getPackageName());
-            String githubUrl = AppContext.context().getResources().getString(R.string.github_bug_report_repo);
-
-            if(upload && githubTokenIdentifier != 0) {
-                GithubReporter reporter = new GithubReporter(AppContext.context(), githubUrl, AppContext.context().getResources().getString(githubTokenIdentifier));
-                reporter.reportBug(notes, logFile);
-                // empty the log
-                try {
-                    FileUtils.write(logFile, "");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Logger.i(BugReporterActivity.class.getName(), "Submitted bug report");
-            } else if(githubTokenIdentifier == 0) {
-                Logger.w(BugReporterActivity.class.getName(), "the github oauth2 token is missing");
-            }
-            return null;
-        }
-
-        protected void onProgressUpdate(String... items) {
-        }
-
-        protected void onPostExecute(Void item) {
-            Handler handle = new Handler(getMainLooper());
-            handle.post(new Runnable() {
-                @Override
-                public void run() {
-                    mDialog.dismiss();
-                }
-            });
-            app().showToastMessage(R.string.success);
-            finish();
+        if(checkTask != null) {
+            mLoadingDialog.setMessage(getResources().getString(R.string.loading));
+            mLoadingDialog.show();
+            checkTask.addOnFinishedListener(this);
+        } else if(uploadTask != null) {
+            mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
+            mLoadingDialog.show();
+            uploadTask.addOnFinishedListener(this);
+        } else if(mLatestRelease != null) {
+            notifyLatestRelease(mLatestRelease);
         }
     }
 
@@ -159,5 +149,128 @@ public class BugReporterActivity extends TranslatorBaseActivity {
             default:
                 return false;
         }
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(mLoadingDialog.isShowing()) {
+                    mLoadingDialog.dismiss();
+                }
+            }
+        });
+
+        if(task.getClass().getName().equals(CheckForLatestReleaseTask.class.getName())) {
+            CheckForLatestReleaseTask.Release release = ((CheckForLatestReleaseTask)task).getLatestRelease();
+            if(release != null) {
+                mLatestRelease = release;
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        notifyLatestRelease(mLatestRelease);
+                    }
+                });
+            } else {
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
+                        mLoadingDialog.show();
+                    }
+                });
+
+                UploadBugReportTask newTask = new UploadBugReportTask(mNotes);
+                newTask.addOnFinishedListener(BugReporterActivity.this);
+                TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
+            }
+        } else if(task.getClass().getName().equals(UploadBugReportTask.class.getName())) {
+            finish();
+        }
+    }
+
+    /**
+     * Displays a dialog to the user telling them there is an apk update.
+     * @param release
+     */
+    private void notifyLatestRelease(final CheckForLatestReleaseTask.Release release) {
+        final Boolean isStoreVersion = ((MainApplication)getApplication()).isStoreVersion();
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.apk_update_available)
+                .setMessage(R.string.upload_report_or_download_latest_apk)
+                .setNegativeButton(R.string.title_cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mLatestRelease = null;
+                        BugReporterActivity.this.finish();
+                    }
+                })
+                .setNeutralButton(R.string.download_update, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(isStoreVersion) {
+                            // open play store
+                            final String appPackageName = getPackageName();
+                            try {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                            } catch (android.content.ActivityNotFoundException anfe) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                            }
+                        } else {
+                            // download from github
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(release.downloadUrl));
+                            startActivity(browserIntent);
+                        }
+                        dialog.dismiss();
+                        BugReporterActivity.this.finish();
+                    }
+                })
+                .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
+                        mLoadingDialog.show();
+
+                        UploadBugReportTask newTask = new UploadBugReportTask(mNotes);
+                        newTask.addOnFinishedListener(BugReporterActivity.this);
+                        TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
+                        dialog.dismiss();
+                    }
+                })
+                .setCancelable(false)
+                .create()
+                .show();
+        Logger.i(BugReporterActivity.class.getName(), "A new release is available: " + release.name);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if(mLatestRelease != null) {
+            outState.putSerializable(STATE_LATEST_RELEASE, mLatestRelease);
+        } else {
+            outState.remove(STATE_LATEST_RELEASE);
+        }
+        outState.putString(STATE_NOTES, mCrashReportText.getText().toString().trim());
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDestroy() {
+        // disconnect listeners
+        CheckForLatestReleaseTask checkTask = (CheckForLatestReleaseTask) TaskManager.getTask(CheckForLatestReleaseTask.TASK_ID);
+        if(checkTask != null) {
+            checkTask.removeOnFinishedListener(this);
+        }
+        UploadBugReportTask uploadTask = (UploadBugReportTask)TaskManager.getTask(UploadBugReportTask.TASK_ID);
+        if(uploadTask != null) {
+            uploadTask.removeOnFinishedListener(this);
+        }
+
+        super.onDestroy();
     }
 }

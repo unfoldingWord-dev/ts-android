@@ -309,4 +309,8 @@
     <string name="backing_up_translation">Backing up translation</string>
     <string name="review_all_checking_questions">Please review all questions</string>
     <string name="browse">Browse</string>
+    <string name="please_enter_text">Please enter some text</string>
+    <string name="apk_update_available">A new version of the app is available</string>
+    <string name="download_update">Download Update</string>
+    <string name="upload_report_or_download_latest_apk">Downloading this update may fix your problem, continue?</string>
 </resources>
