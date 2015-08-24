@@ -32,7 +32,7 @@ import com.door43.util.tasks.TaskManager;
  */
 public class BugReporterActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener {
     private static final String STATE_LATEST_RELEASE = "state_latest_release";
-    private static final String STATE_NOTES = "staet_notes";
+    private static final String STATE_NOTES = "state_notes";
     private Button mOkButton;
     private Button mCancelButton;
     private ProgressDialog mLoadingDialog;
@@ -245,7 +245,6 @@ public class BugReporterActivity extends TranslatorBaseActivity implements Manag
                 .setCancelable(false)
                 .create()
                 .show();
-        Logger.i(BugReporterActivity.class.getName(), "A new release is available: " + release.name);
     }
 
     @Override
