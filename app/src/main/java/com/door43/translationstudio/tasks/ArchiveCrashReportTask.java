@@ -11,7 +11,7 @@ import java.io.FilenameFilter;
  * This task archives the latest crash report
  */
 public class ArchiveCrashReportTask extends ManagedTask {
-
+    public static final String TASK_ID = "archive_crash_report_task";
     private int mMaxProgress = 1;
 
     @Override

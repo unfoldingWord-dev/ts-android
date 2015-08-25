@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.Toast;
 
@@ -230,6 +231,15 @@ public class MainApplication extends Application {
                 }
             });
         }
+    }
+
+    /**
+     * Checks if this apk was installed from the playstore or sideloaded
+     * @return
+     */
+    public boolean isStoreVersion() {
+        String installer = getPackageManager().getInstallerPackageName(getPackageName());
+        return !TextUtils.isEmpty(installer);
     }
 
     /**

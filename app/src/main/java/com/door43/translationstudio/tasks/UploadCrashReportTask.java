@@ -16,7 +16,7 @@ import java.io.IOException;
  * This task submits the latest crash report to github
  */
 public class UploadCrashReportTask extends ManagedTask {
-
+    public static final String TASK_ID = "upload_crash_report_task";
     private final String mMessage;
     private int mMaxProgress = 100;
 

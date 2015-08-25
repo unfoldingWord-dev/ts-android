@@ -289,6 +289,10 @@ public class Logger {
         }
     }
 
+    public static File getLogFile() {
+        return sInstance.mLogFile;
+    }
+
     /**
      * Returns a list of log entries
      * @return
