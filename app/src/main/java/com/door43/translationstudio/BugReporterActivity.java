@@ -242,7 +242,6 @@ public class BugReporterActivity extends TranslatorBaseActivity implements Manag
                         dialog.dismiss();
                     }
                 })
-                .setCancelable(false)
                 .create()
                 .show();
     }

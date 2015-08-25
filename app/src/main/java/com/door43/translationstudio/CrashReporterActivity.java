@@ -16,7 +16,6 @@ import android.widget.EditText;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.tasks.ArchiveCrashReportTask;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
-import com.door43.translationstudio.tasks.UploadBugReportTask;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
 import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.tasks.ManagedTask;
@@ -27,12 +26,12 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
     private Button mCancelButton;
     private ProgressDialog mLoadingDialog;
     private EditText mCrashReportText;
-    private static final String TASK_UPLOAD_CRASH_REPORT = "upload_crash_report";
-    private static final String TASK_ARCHIVE_CRASH_REPORT = "archive_crash_report";
     private static final String STATE_LATEST_RELEASE = "state_latest_release";
     private static final String STATE_NOTES = "state_notes";
+    private static final String STATE_DOWNLOAD_UPDATES = "state_download_updates";
     private String mNotes = "";
     private CheckForLatestReleaseTask.Release mLatestRelease = null;
+    private boolean mDownloadAfterArchive = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,9 +57,6 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
                 CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
                 task.addOnFinishedListener(CrashReporterActivity.this);
                 TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
-
-                mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
-                mLoadingDialog.show();
             }
         });
 
@@ -72,7 +68,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
 
                 ArchiveCrashReportTask task = new ArchiveCrashReportTask();
                 task.addOnFinishedListener(CrashReporterActivity.this);
-                TaskManager.addTask(task, TASK_ARCHIVE_CRASH_REPORT);
+                TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
             }
         });
 
@@ -84,6 +80,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
         if(savedInstanceState != null) {
             mNotes = savedInstanceState.getString(STATE_NOTES, "");
             mLatestRelease = (CheckForLatestReleaseTask.Release)savedInstanceState.getSerializable(STATE_LATEST_RELEASE);
+            mDownloadAfterArchive = savedInstanceState.getBoolean(STATE_DOWNLOAD_UPDATES, false);
         }
         mCrashReportText.setText(mNotes);
         super.onRestoreInstanceState(savedInstanceState);
@@ -92,10 +89,10 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
     @Override
     public void onResume() {
         super.onResume();
-        
+
         CheckForLatestReleaseTask checkTask = (CheckForLatestReleaseTask) TaskManager.getTask(CheckForLatestReleaseTask.TASK_ID);
-        UploadCrashReportTask uploadTask = (UploadCrashReportTask)TaskManager.getTask(TASK_UPLOAD_CRASH_REPORT);
-        ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(TASK_ARCHIVE_CRASH_REPORT);
+        UploadCrashReportTask uploadTask = (UploadCrashReportTask)TaskManager.getTask(UploadCrashReportTask.TASK_ID);
+        ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(ArchiveCrashReportTask.TASK_ID);
 
         if(checkTask != null) {
             mLoadingDialog.setMessage(getResources().getString(R.string.loading));
@@ -119,8 +116,6 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
      * @param release
      */
     private void notifyLatestRelease(final CheckForLatestReleaseTask.Release release) {
-        final Boolean isStoreVersion = ((MainApplication)getApplication()).isStoreVersion();
-
         new AlertDialog.Builder(this)
                 .setTitle(R.string.apk_update_available)
                 .setMessage(R.string.upload_report_or_download_latest_apk)
@@ -128,27 +123,31 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mLatestRelease = null;
-                        CrashReporterActivity.this.finish();
+
+                        dialog.dismiss();
+
+                        // archive crash report
+                        mLoadingDialog.setMessage(getResources().getString(R.string.loading));
+                        mLoadingDialog.show();
+
+                        ArchiveCrashReportTask task = new ArchiveCrashReportTask();
+                        task.addOnFinishedListener(CrashReporterActivity.this);
+                        TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
                     }
                 })
                 .setNeutralButton(R.string.download_update, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if(isStoreVersion) {
-                            // open play store
-                            final String appPackageName = getPackageName();
-                            try {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
-                            } catch (android.content.ActivityNotFoundException anfe) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
-                            }
-                        } else {
-                            // download from github
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(release.downloadUrl));
-                            startActivity(browserIntent);
-                        }
+                        mDownloadAfterArchive = true;
                         dialog.dismiss();
-                        CrashReporterActivity.this.finish();
+
+                        // archive crash report
+                        mLoadingDialog.setMessage(getResources().getString(R.string.loading));
+                        mLoadingDialog.show();
+
+                        ArchiveCrashReportTask task = new ArchiveCrashReportTask();
+                        task.addOnFinishedListener(CrashReporterActivity.this);
+                        TaskManager.addTask(task, ArchiveCrashReportTask.TASK_ID);
                     }
                 })
                 .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
@@ -157,20 +156,25 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
                         mLoadingDialog.setMessage(getResources().getString(R.string.uploading));
                         mLoadingDialog.show();
 
-                        UploadBugReportTask newTask = new UploadBugReportTask(mNotes);
+                        UploadCrashReportTask newTask = new UploadCrashReportTask(mNotes);
                         newTask.addOnFinishedListener(CrashReporterActivity.this);
-                        TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
+                        TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
                         dialog.dismiss();
                     }
                 })
-                .setCancelable(false)
                 .create()
                 .show();
     }
 
+    private void openSplash() {
+        Intent intent = new Intent(CrashReporterActivity.this, SplashScreenActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
     @Override
     public void onFinished(ManagedTask task) {
-        TaskManager.clearTask(TaskManager.getTask(task));
+        TaskManager.clearTask(task);
 
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
@@ -205,16 +209,30 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
 
                 UploadCrashReportTask newTask = new UploadCrashReportTask(mCrashReportText.getText().toString().trim());
                 newTask.addOnFinishedListener(CrashReporterActivity.this);
-                TaskManager.addTask(newTask, TASK_UPLOAD_CRASH_REPORT);
+                TaskManager.addTask(newTask, UploadCrashReportTask.TASK_ID);
             }
         } else if(task.getClass().getName().equals(UploadCrashReportTask.class.getName())) {
-            Intent intent = new Intent(CrashReporterActivity.this, SplashScreenActivity.class);
-            startActivity(intent);
-            finish();
+            openSplash();
         } else if(task.getClass().getName().equals(ArchiveCrashReportTask.class.getName())) {
-            Intent intent = new Intent(CrashReporterActivity.this, SplashScreenActivity.class);
-            startActivity(intent);
-            finish();
+            if(mDownloadAfterArchive) {
+                Boolean isStoreVersion = ((MainApplication)getApplication()).isStoreVersion();
+                if (isStoreVersion) {
+                    // open play store
+                    final String appPackageName = getPackageName();
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                    } catch (android.content.ActivityNotFoundException anfe) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + appPackageName)));
+                    }
+                } else {
+                    // download from github
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(mLatestRelease.downloadUrl));
+                    startActivity(browserIntent);
+                }
+                finish();
+            } else {
+                openSplash();
+            }
         }
     }
 
@@ -225,6 +243,7 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
         } else {
             outState.remove(STATE_LATEST_RELEASE);
         }
+        outState.putBoolean(STATE_DOWNLOAD_UPDATES, mDownloadAfterArchive);
         outState.putString(STATE_NOTES, mCrashReportText.getText().toString().trim());
         super.onSaveInstanceState(outState);
     }
@@ -236,11 +255,11 @@ public class CrashReporterActivity extends TranslatorBaseActivity implements Man
         if(checkTask != null) {
             checkTask.removeOnFinishedListener(this);
         }
-        UploadCrashReportTask uploadTask = (UploadCrashReportTask)TaskManager.getTask(TASK_UPLOAD_CRASH_REPORT);
+        UploadCrashReportTask uploadTask = (UploadCrashReportTask)TaskManager.getTask(UploadCrashReportTask.TASK_ID);
         if(uploadTask != null) {
             uploadTask.removeOnFinishedListener(this);
         }
-        ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(TASK_ARCHIVE_CRASH_REPORT);
+        ArchiveCrashReportTask archiveTask = (ArchiveCrashReportTask)TaskManager.getTask(ArchiveCrashReportTask.TASK_ID);
         if(archiveTask != null) {
             archiveTask.removeOnFinishedListener(this);
         }
