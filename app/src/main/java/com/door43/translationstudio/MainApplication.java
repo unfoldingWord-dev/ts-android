@@ -340,7 +340,7 @@ public class MainApplication extends Application {
         getCurrentActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(mMainActivity != null && !mClosingProgressDialog) {
+                if (mMainActivity != null && !mClosingProgressDialog) {
                     if (mProgressDialog == null) { // was using: getCurrentActivity()
                         closeProgressDialog();
                         mProgressDialog = new ProgressDialog(mMainActivity); // was using: getCurrentActivity()
@@ -349,7 +349,7 @@ public class MainApplication extends Application {
                     if (!mProgressDialog.isShowing()) {
                         mProgressDialog.show();
                     }
-                } else if(mProgressDialog != null) {
+                } else if (mProgressDialog != null) {
                     mProgressDialog.dismiss();
                 }
                 mClosingProgressDialog = false;
@@ -557,5 +557,21 @@ public class MainApplication extends Application {
      */
     public void setShowImportantTerms(boolean showImportantTerms) {
         this.mShowImportantTerms = showImportantTerms;
+    }
+
+    /**
+     * Returns the directory where temporary indexes are stored
+     * @return
+     */
+    public File getCacheIndexDir() {
+        return new File(getCacheDir(), "index");
+    }
+
+    /**
+     * Returns the directory where indexes are stored
+     * @return
+     */
+    public File getIndexDir() {
+        return new File(getFilesDir(), "index");
     }
 }

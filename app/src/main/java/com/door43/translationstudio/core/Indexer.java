@@ -12,6 +12,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 
+
 /**
  * Created by joel on 8/26/2015.
  */
@@ -22,9 +23,17 @@ public class Indexer {
     private final String mSourcePath = "source";
     private final String mLinksPath = mDataPath + "/links.json";
 
+    /**
+     * Destroys the entire index
+     */
+    public void destroy() {
+        FileUtils.deleteQuietly(mIndexDir);
+    }
+
     private enum CatalogType {
         Simple,
-        Source
+        Source,
+        Advanced
     };
 
     /**
@@ -270,7 +279,7 @@ public class Indexer {
      * @return
      */
     private String getUrlFromObject(JSONObject json, String urlProperty) {
-        if(json.has(urlProperty)) {
+        if(json != null && json.has(urlProperty)) {
             try {
                 String[] list = json.getString(urlProperty).split("/\\?/");
                 if (list.length > 0) {
@@ -413,6 +422,96 @@ public class Indexer {
             String md5hash = Security.md5(catalogApiUrl);
             String catalogLinkFile = mSourcePath + "/" + projectId + "/languages_catalog.link";
             return indexItems(md5hash, catalogLinkFile, CatalogType.Simple, catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Builds a resource index from json
+     * @param projectId
+     * @param sourceLanguageId
+     * @param catalog
+     * @return
+     */
+    public Boolean indexResources(String projectId, String sourceLanguageId, String catalog) {
+        String catalogApiUrl = getUrlFromObject(getSourceLanguage(projectId, sourceLanguageId), "res_catalog");
+        if(catalogApiUrl != null) {
+            String md5hash = Security.md5(catalogApiUrl);
+            String catalogLinkFile = mSourcePath + "/" + projectId + "/" + sourceLanguageId + "/resources_catalog.link";
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Simple, catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Builds a source index from json
+     * @param translation
+     * @param catalog
+     * @return
+     */
+    public Boolean indexSource(SourceTranslation translation, String catalog) {
+        //KLUDGE: modify v2 sources catalogJson to match expected catalogJson format
+        try {
+            JSONObject catalogJson = new JSONObject(catalog);
+            catalog = catalogJson.getJSONArray("chapters").toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        //KLUDGE: end modify v2
+
+        String catalogApiUrl = getUrlFromObject(getResource(translation), "source");
+        if(catalogApiUrl != null) {
+            String md5hash = Security.md5(catalogApiUrl);
+            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link";
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Source, catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Builds a notes index from json
+     * @param translation
+     * @param catalog
+     * @return
+     */
+    public Boolean indexNotes(SourceTranslation translation, String catalog) {
+        String catalogApiUrl = getUrlFromObject(getResource(translation), "notes");
+        if(catalogApiUrl != null) {
+            String md5hash = Security.md5(catalogApiUrl);
+            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link";
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Builds a terms index from json
+     * @param translation
+     * @param catalog
+     * @return
+     */
+    public Boolean indexTerms(SourceTranslation translation, String catalog) {
+        String catalogApiUrl = getUrlFromObject(getResource(translation), "terms");
+        if(catalogApiUrl != null) {
+            String md5hash = Security.md5(catalogApiUrl);
+            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link";
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
+        }
+        return false;
+    }
+
+    /**
+     * Builds a questions index from json
+     * @param translation
+     * @param catalog
+     * @return
+     */
+    public Boolean indexQuestions(SourceTranslation translation, String catalog) {
+        String catalogApiUrl = getUrlFromObject(getResource(translation), "checking_questions");
+        if(catalogApiUrl != null) {
+            String md5hash = Security.md5(catalogApiUrl);
+            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link";
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
         }
         return false;
     }
