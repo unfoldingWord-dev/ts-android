@@ -837,4 +837,36 @@ public class Indexer {
         }
         return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + ".json");
     }
+
+    /**
+     * Returns the json object for a single checkingQuestion
+     * @param translation
+     * @param chapterId
+     * @param frameId
+     * @param questionId
+     * @return
+     */
+    public JSONObject getQuestion(SourceTranslation translation, String chapterId, String frameId, String questionId) {
+        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link");
+        if(md5hash == null) {
+            return null;
+        }
+        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + questionId + ".json");
+    }
+
+    /**
+     * Returns the json object for a single translationNote
+     * @param translation
+     * @param chapterId
+     * @param frameId
+     * @param noteId
+     * @return
+     */
+    public JSONObject getNote(SourceTranslation translation, String chapterId, String frameId, String noteId) {
+        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link");
+        if(md5hash == null) {
+            return null;
+        }
+        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + noteId + ".json");
+    }
 }

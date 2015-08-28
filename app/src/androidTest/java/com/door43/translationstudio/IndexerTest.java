@@ -79,6 +79,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(mIndex.indexNotes(translation, catalog));
         String[] noteIds = mIndex.getNotes(translation, "01", "01");
         assertTrue(noteIds.length > 0);
+        assertNotNull(mIndex.getNote(translation, "01", "01", noteIds[0]));
     }
 
     public void test6IndexTerms() throws Exception {
@@ -95,5 +96,6 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(mIndex.indexQuestions(translation, catalog));
         String[] questionIds = mIndex.getQuestions(translation, "01", "01");
         assertTrue(questionIds.length > 0);
+        assertNotNull(mIndex.getQuestion(translation, "01", "01", questionIds[0]));
     }
 }
