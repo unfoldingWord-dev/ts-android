@@ -74,9 +74,26 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
     }
 
     public void test5IndexNotes() throws Exception {
-        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/notes.json"));
-        assertTrue(mIndex.indexNotes(obsTranslation, catalog));
-        // TODO: make sure we can retreive notes on a frame.
+        assertTrue(mIndex.indexNotes(translation, catalog));
+        String[] noteIds = mIndex.getNotes(translation, "01", "01");
+        assertTrue(noteIds.length > 0);
+    }
+
+    public void test6IndexTerms() throws Exception {
+        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
+        String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
+        assertTrue(mIndex.indexTerms(translation, catalog));
+        String[] termIds = mIndex.getTerms(translation, "01", "01");
+        assertTrue(termIds.length > 0);
+    }
+
+    public void test7IndexQuestions() throws Exception {
+        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
+        String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/checking_questions.json"));
+        assertTrue(mIndex.indexQuestions(translation, catalog));
+        String[] questionIds = mIndex.getQuestions(translation, "01", "01");
+        assertTrue(questionIds.length > 0);
     }
 }

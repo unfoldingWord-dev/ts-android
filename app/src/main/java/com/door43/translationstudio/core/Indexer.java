@@ -33,7 +33,9 @@ public class Indexer {
     private enum CatalogType {
         Simple,
         Source,
-        Advanced
+        Advanced,
+        Questions,
+        Terms
     };
 
     /**
@@ -185,6 +187,36 @@ public class Indexer {
                     if(item.has("slug")) {
                         String itemPath = md5Path + "/" + item.getString("slug") + ".json";
                         saveFile(itemPath, item.toString());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if(type == CatalogType.Advanced) {
+            for(int chapterIndex = 0; chapterIndex < items.length(); chapterIndex ++) {
+                try {
+                    JSONObject chapter = items.getJSONObject(chapterIndex);
+                    String chapterId = chapter.getString("id");
+                    JSONArray frames = chapter.getJSONArray("frames");
+                    for(int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
+                        try {
+                            JSONObject frame = frames.getJSONObject(frameIndex);
+                            String frameId = frame.getString("id");
+                            JSONArray notes = frame.getJSONArray("tn");
+                            for(int noteIndex = 0; noteIndex < notes.length(); noteIndex ++) {
+                                try {
+                                    JSONObject note = notes.getJSONObject(noteIndex);
+                                    String noteId = note.getString("id");
+                                    // save note
+                                    String itemPath = md5Path + "/" + chapterId + "/" + frameId + "/" + noteId + ".json";
+                                    saveFile(itemPath, note.toString());
+                                } catch(JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        } catch(JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -393,13 +425,14 @@ public class Indexer {
      * @return
      */
     public Boolean indexSourceLanguages(String projectId, String catalog) {
+        //KLUDGE: modify v2 sourceLanguages catalogJson to match expected catalogJson format
         JSONArray items = null;
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
         }
-        //KLUDGE: modify v2 sourceLanguages catalogJson to match expected catalogJson format
         for (int i = 0; i < items.length(); i ++) {
             try {
                 JSONObject item = items.getJSONObject(i);
@@ -456,6 +489,7 @@ public class Indexer {
             catalog = catalogJson.getJSONArray("chapters").toString();
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
         }
         //KLUDGE: end modify v2
 
@@ -475,6 +509,60 @@ public class Indexer {
      * @return
      */
     public Boolean indexNotes(SourceTranslation translation, String catalog) {
+        //KLUDGE: modify v2 notes catalogJson to match expected catalogJson format
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+        JSONObject formattedCatalog = new JSONObject();
+        for (int i = 0; i < items.length(); i ++) {
+            try {
+                JSONObject item = items.getJSONObject(i);
+                String[] complexId = item.getString("id").split("-");
+                String chapterId = complexId[0];
+                String frameId = complexId[1];
+                JSONArray notesJson = item.getJSONArray("tn");
+                for(int j = 0; j < notesJson.length(); j ++) {
+                    JSONObject note = notesJson.getJSONObject(j);
+                    String noteId = Security.md5(note.getString("ref").trim().toLowerCase());
+                    note.put("id", noteId);
+                }
+
+                // build chapter
+                if(!formattedCatalog.has(chapterId)) {
+                    JSONObject newChapterJson = new JSONObject();
+                    newChapterJson.put("id", chapterId);
+                    newChapterJson.put("frames", new JSONArray());
+                    formattedCatalog.put(chapterId, newChapterJson);
+                }
+
+                // build frame
+                JSONArray framesJson = formattedCatalog.getJSONObject(chapterId).getJSONArray("frames");
+                JSONObject newFrameJson = new JSONObject();
+                newFrameJson.put("id", frameId);
+                newFrameJson.put("tn", notesJson);
+                framesJson.put(newFrameJson);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        // repackage as json array
+        Iterator x = formattedCatalog.keys();
+        JSONArray jsonArray = new JSONArray();
+        while (x.hasNext()){
+            String key = (String) x.next();
+            try {
+                jsonArray.put(formattedCatalog.get(key));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        catalog = jsonArray.toString();
+        //KLUDGE: end modify v2
+
         String catalogApiUrl = getUrlFromObject(getResource(translation), "notes");
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
@@ -495,7 +583,7 @@ public class Indexer {
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
             String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Terms, catalog);
         }
         return false;
     }
@@ -511,7 +599,7 @@ public class Indexer {
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
             String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Questions, catalog);
         }
         return false;
     }
@@ -560,6 +648,49 @@ public class Indexer {
      */
     public String[] getFrames(SourceTranslation translation, String chapterId) {
         return getItemsArray(getResource(translation), "source", chapterId);
+    }
+
+    /**
+     * Returns an array of translationNote ids
+     * @param translation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public String[] getNotes(SourceTranslation translation, String chapterId, String frameId) {
+        return getItemsArray(getResource(translation), "notes", chapterId + "/" + frameId);
+    }
+
+    /**
+     * Returns an array of translationWord ids
+     * @param translation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public String[] getTerms(SourceTranslation translation, String chapterId, String frameId) {
+        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "terms.link");
+        if(md5hash == null) {
+            return null;
+        }
+        // TODO: 8/26/2015 Finish implimenting this. This depends on indexing the terms
+        return new String[0];
+    }
+
+    /**
+     * Returns an array of checkingQuestion ids
+     * @param translation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public String[] getQuestions(SourceTranslation translation, String chapterId, String frameId) {
+        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "checking_questions.link");
+        if(md5hash == null) {
+            return null;
+        }
+        // TODO: 8/26/2015 Finish implimenting this. This depends on indexing the questions
+        return new String[0];
     }
 
     /**
@@ -629,49 +760,5 @@ public class Indexer {
             return null;
         }
         return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + ".json");
-    }
-
-    /**
-     * Returns an array of translationNote ids
-     * @param translation
-     * @return
-     */
-    public String[] getNotes(SourceTranslation translation, String chapterId, String frameId) {
-        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "notes.link");
-        if(md5hash == null) {
-            return null;
-        }
-        // TODO: 8/26/2015 Finish implimenting this. This depends on indexing the notes
-        return new String[0];
-    }
-
-    /**
-     * Returns an array of translationWord ids
-     * @param translation
-     * @return
-     */
-    public String[] getTerms(SourceTranslation translation) {
-        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "terms.link");
-        if(md5hash == null) {
-            return null;
-        }
-        // TODO: 8/26/2015 Finish implimenting this. This depends on indexing the terms
-        return new String[0];
-    }
-
-    /**
-     * Returns an array of checkingQuestion ids
-     * @param translation
-     * @param chapterId
-     * @param frameId
-     * @return
-     */
-    public String[] getQuestions(SourceTranslation translation, String chapterId, String frameId) {
-        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "checking_questions.link");
-        if(md5hash == null) {
-            return null;
-        }
-        // TODO: 8/26/2015 Finish implimenting this. This depends on indexing the questions
-        return new String[0];
     }
 }

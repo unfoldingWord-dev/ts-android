@@ -47,21 +47,21 @@ public class DownloaderTest extends ActivityInstrumentationTestCase2<MainActivit
     }
 
     public void test4DownloadTerms() throws Exception {
-        SourceTranslation translation = new SourceTranslation("obs", "en", "ulb");
+        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         assertTrue(mDownloader.downloadTerms(translation));
-        String[] termsIds = mIndex.getTerms(translation);
+        String[] termsIds = mIndex.getTerms(translation, "01", "01");
         assertTrue(termsIds.length > 0);
     }
 
     public void test5DownloadNotes() throws Exception {
-        SourceTranslation translation = new SourceTranslation("obs", "en", "ulb");
+        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         assertTrue(mDownloader.downloadNotes(translation));
         String[] noteIds = mIndex.getNotes(translation, "01", "01");
         assertTrue(noteIds.length > 0);
     }
 
     public void test6DownloadQuestions() throws Exception {
-        SourceTranslation translation = new SourceTranslation("obs", "en", "ulb");
+        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         assertTrue(mDownloader.downloadCheckingQuestions(translation));
         String[] questionIds = mIndex.getQuestions(translation, "01", "01");
         assertTrue(questionIds.length > 0);
