@@ -202,7 +202,7 @@ public class Indexer {
                         try {
                             JSONObject frame = frames.getJSONObject(frameIndex);
                             String frameId = frame.getString("id");
-                            JSONArray notes = frame.getJSONArray("tn");
+                            JSONArray notes = frame.getJSONArray("items");
                             for(int noteIndex = 0; noteIndex < notes.length(); noteIndex ++) {
                                 try {
                                     JSONObject note = notes.getJSONObject(noteIndex);
@@ -543,7 +543,7 @@ public class Indexer {
                 JSONArray framesJson = formattedCatalog.getJSONObject(chapterId).getJSONArray("frames");
                 JSONObject newFrameJson = new JSONObject();
                 newFrameJson.put("id", frameId);
-                newFrameJson.put("tn", notesJson);
+                newFrameJson.put("items", notesJson);
                 framesJson.put(newFrameJson);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -595,11 +595,92 @@ public class Indexer {
      * @return
      */
     public Boolean indexQuestions(SourceTranslation translation, String catalog) {
+        //KLUDGE: modify v2 questions catalogJson to match expected catalogJson format
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+        JSONObject formattedCatalog = new JSONObject();
+        for (int i = 0; i < items.length(); i ++) {
+            try {
+                JSONObject item = items.getJSONObject(i);
+                String chapterId = item.getString("id");
+
+                // build chapter
+                if(!formattedCatalog.has(chapterId)) {
+                    JSONObject newChapterJson = new JSONObject();
+                    newChapterJson.put("id", chapterId);
+                    newChapterJson.put("frames", new JSONObject());
+                    formattedCatalog.put(chapterId, newChapterJson);
+                }
+                JSONObject framesJson = formattedCatalog.getJSONObject(chapterId).getJSONObject("frames");
+
+                // parse questions
+                JSONArray questionsJson = item.getJSONArray("cq");
+                for(int j = 0; j < questionsJson.length(); j ++) {
+                    try {
+                        JSONObject question = questionsJson.getJSONObject(j);
+                        String questionId = Security.md5(question.getString("q").trim().toLowerCase());
+                        question.put("id", questionId);
+
+                        JSONArray referencesJson = question.getJSONArray("ref");
+                        for (int k = 0; k < referencesJson.length(); k++) {
+                            String[] complexId = referencesJson.getString(k).split("-");
+                            String frameId = complexId[1];
+
+                            // build frame
+                            if (!framesJson.has(frameId)) {
+                                JSONObject newFrameJson = new JSONObject();
+                                newFrameJson.put("id", frameId);
+                                newFrameJson.put("items", new JSONArray());
+                                framesJson.put(frameId, newFrameJson);
+                            }
+
+                            // add questions
+                            framesJson.getJSONObject(frameId).getJSONArray("items").put(question);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        // repackage as json array
+        Iterator x = formattedCatalog.keys();
+        JSONArray jsonArray = new JSONArray();
+        while (x.hasNext()){
+            String chapterKey = (String) x.next();
+            try {
+                JSONObject chapter = formattedCatalog.getJSONObject(chapterKey);
+                JSONArray frames = new JSONArray();
+                Iterator y = chapter.getJSONObject("frames").keys();
+                while(y.hasNext()) {
+                    String frameKey = (String) y.next();
+                    try {
+                        frames.put(chapter.getJSONObject("frames").get(frameKey));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                chapter.put("frames", frames);
+                jsonArray.put(chapter);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        catalog = jsonArray.toString();
+        //KLUDGE: end modify v2
+
         String catalogApiUrl = getUrlFromObject(getResource(translation), "checking_questions");
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
             String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Questions, catalog);
+            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
         }
         return false;
     }
@@ -685,12 +766,7 @@ public class Indexer {
      * @return
      */
     public String[] getQuestions(SourceTranslation translation, String chapterId, String frameId) {
-        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "checking_questions.link");
-        if(md5hash == null) {
-            return null;
-        }
-        // TODO: 8/26/2015 Finish implimenting this. This depends on indexing the questions
-        return new String[0];
+        return getItemsArray(getResource(translation), "checking_questions", chapterId + "/" + frameId);
     }
 
     /**
