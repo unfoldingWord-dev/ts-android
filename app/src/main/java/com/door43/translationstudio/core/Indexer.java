@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import com.door43.util.Security;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -185,7 +186,7 @@ public class Indexer {
                 try {
                     JSONObject item = items.getJSONObject(i);
                     if(item.has("slug")) {
-                        String itemPath = md5Path + "/" + item.getString("slug") + ".json";
+                        String itemPath = md5Path + "/" + item.getString("slug");
                         saveFile(itemPath, item.toString());
                     }
                 } catch (JSONException e) {
@@ -208,7 +209,7 @@ public class Indexer {
                                     JSONObject note = notes.getJSONObject(noteIndex);
                                     String noteId = note.getString("id");
                                     // save note
-                                    String itemPath = md5Path + "/" + chapterId + "/" + frameId + "/" + noteId + ".json";
+                                    String itemPath = md5Path + "/" + chapterId + "/" + frameId + "/" + noteId;
                                     saveFile(itemPath, note.toString());
                                 } catch(JSONException e) {
                                     e.printStackTrace();
@@ -240,11 +241,10 @@ public class Indexer {
                         for (int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
                             try {
                                 JSONObject frame = frames.getJSONObject(frameIndex);
-                                String frameId = frame.getString("id").replaceFirst("/[0-9]+\\-/", "");
-                                if(!frameId.isEmpty()) {
-                                    String framePath = md5Path + "/" + chapterId + "/" + frameId + ".json";
-                                    saveFile(framePath, frame.toString());
-                                }
+                                String[] complexId = frame.getString("id").split("-");
+                                String frameId = complexId[1];
+                                String framePath = md5Path + "/" + chapterId + "/" + frameId;
+                                saveFile(framePath, frame.toString());
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -293,7 +293,8 @@ public class Indexer {
                 items = itemDir.list(new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String filename) {
-                        return !filename.equals("meta.json") && !filename.equals("chapter.json") && !filename.equals(".") && !filename.equals("..");
+                        String ext = FilenameUtils.getExtension(filename);
+                        return !ext.equalsIgnoreCase("json") && !filename.equals(".") && !filename.equals("..");
                     }
                 });
                 if(items == null) {
@@ -353,7 +354,7 @@ public class Indexer {
         String md5hash = readFile(resourceCatalogPath);
         if(md5hash != null) {
             String md5path = mDataPath + "/" + md5hash;
-            String resourcePath = md5path + "/" + translation.resourceId  + ".json";
+            String resourcePath = md5path + "/" + translation.resourceId;
             deleteFile(resourcePath);
 
             // delete empty resource catalog
@@ -779,7 +780,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + projectId + ".json");
+        return readJSON(mDataPath + "/" + md5hash + "/" + projectId);
     }
 
     /**
@@ -793,7 +794,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + sourcLanguageId + ".json");
+        return readJSON(mDataPath + "/" + md5hash + "/" + sourcLanguageId);
     }
 
     /**
@@ -806,7 +807,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + translation.resourceId + ".json");
+        return readJSON(mDataPath + "/" + md5hash + "/" + translation.resourceId);
     }
 
     /**
@@ -835,7 +836,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + ".json");
+        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId);
     }
 
     /**
@@ -851,7 +852,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + questionId + ".json");
+        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + questionId);
     }
 
     /**
@@ -867,6 +868,6 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + noteId + ".json");
+        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + noteId);
     }
 }

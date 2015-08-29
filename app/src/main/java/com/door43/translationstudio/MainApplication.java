@@ -135,7 +135,6 @@ public class MainApplication extends Application {
 
     /**
      * Sends a new local notification
-     * @deprecated
      */
 //    public void sendNotification(int notificationId, int titleResourceId, String message) {
 //        // keep track of all the notifications

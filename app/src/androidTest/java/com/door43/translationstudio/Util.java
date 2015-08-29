@@ -1,5 +1,7 @@
 package com.door43.translationstudio;
 
+import android.content.Context;
+
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
@@ -8,6 +10,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -57,5 +61,23 @@ public class Util {
             }
         }
         return sb.toString();
+    }
+
+    public static void copyStreamToCache(Context context, InputStream is, File output) throws Exception{
+        output.getParentFile().mkdirs();
+        try {
+            FileOutputStream outputStream = new FileOutputStream(output);
+            try {
+                byte[] buf = new byte[1024];
+                int len;
+                while ((len = is.read(buf)) > 0) {
+                    outputStream.write(buf, 0, len);
+                }
+            } finally {
+                outputStream.close();
+            }
+        } finally {
+            is.close();
+        }
     }
 }

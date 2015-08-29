@@ -6,6 +6,12 @@ import android.test.ActivityInstrumentationTestCase2;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.Zip;
+
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.InputStream;
 
 /**
  * Created by joel on 8/27/2015.
@@ -14,6 +20,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
 
     private Indexer mIndex;
     private Context mContext;
+    private File mIndexRoot;
 
     public IndexerTest() {
         super(MainActivity.class);
@@ -22,12 +29,13 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
     @Override
     protected void setUp() throws Exception {
         MainApplication app = AppContext.context();
-        mIndex = new Indexer("app", app.getCacheIndexDir());
+        mIndexRoot = new File(app.getCacheDir(), "test_index");
+        mIndex = new Indexer("app", mIndexRoot);
         mContext = getInstrumentation().getContext();
     }
 
     public void test1IndexProjects() throws Exception {
-        mIndex.destroy();
+        FileUtils.deleteQuietly(mIndexRoot);
         String catalog = Util.readStream(mContext.getAssets().open("indexer/catalog.json"));
         assertTrue(mIndex.indexProjects(catalog));
         assertTrue(mIndex.getProjects().length > 0);
@@ -97,5 +105,19 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         String[] questionIds = mIndex.getQuestions(translation, "01", "01");
         assertTrue(questionIds.length > 0);
         assertNotNull(mIndex.getQuestion(translation, "01", "01", questionIds[0]));
+    }
+
+    public void test8LoadExistingIndex() throws Exception {
+        InputStream is = mContext.getAssets().open("indexer/sample_index.zip");
+        File asset = new File(AppContext.context().getCacheDir(), "indexer/sample_index.zip");
+        Util.copyStreamToCache(mContext, is, asset);
+        File indexDir = asset.getParentFile();
+        Zip.unzip(asset, indexDir);
+        Indexer index = new Indexer("sample_index", indexDir);
+        assertTrue(index.getProjects().length > 0);
+    }
+
+    public void test999999Cleanup() throws Exception {
+        FileUtils.deleteQuietly(mIndexRoot);
     }
 }
