@@ -24,6 +24,14 @@ public class Downloader {
     }
 
     /**
+     * Returns the downloader's index
+     * @return
+     */
+    public Indexer getIndex() {
+        return mIndex;
+    }
+
+    /**
      * Returns the url from an object
      * @param json
      * @param urlProperty

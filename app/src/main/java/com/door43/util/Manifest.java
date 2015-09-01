@@ -64,6 +64,15 @@ public class Manifest {
     }
 
     /**
+     * Checks if the key exists in the manifest
+     * @param key
+     * @return
+     */
+    public Boolean has(String key) {
+        return mManifest.has(key);
+    }
+
+    /**
      *
      * @param key
      * @return
