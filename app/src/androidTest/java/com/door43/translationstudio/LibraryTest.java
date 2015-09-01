@@ -51,10 +51,14 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
         FileUtils.deleteQuietly(mIndexRoot);
 
         // extract library index
-        File libraryArchive = new File(AppContext.context().getCacheDir(), "library.zip");
-        Util.copyStreamToCache(AppContext.context(), AppContext.context().getAssets().open("library.zip"), libraryArchive);
-        Zip.unzip(libraryArchive, mIndexRoot);
-        FileUtils.deleteQuietly(libraryArchive);
+        try {
+            File libraryArchive = new File(AppContext.context().getCacheDir(), "library.zip");
+            Util.copyStreamToCache(AppContext.context(), AppContext.context().getAssets().open("library.zip"), libraryArchive);
+            Zip.unzip(libraryArchive, mIndexRoot);
+            FileUtils.deleteQuietly(libraryArchive);
+        } catch (Exception e) {
+            // if the asset doesn't exist just continue
+        }
 
         // pre-populate download index with shallow copy
         mDownloadIndex.mergeIndex(mAppIndex, true);

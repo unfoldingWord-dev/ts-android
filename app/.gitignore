@@ -1,2 +1,4 @@
 /build
 src/main/res/values/strings_private_app_pref.xml
+src/androidTest/assets/library.zip
+src/main/assets/library.zip
