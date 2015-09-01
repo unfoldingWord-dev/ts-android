@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import android.util.Log;
+
 import com.door43.util.Zip;
 
 import org.json.JSONException;
@@ -102,13 +104,16 @@ public class Library {
      * Downloads updates from the server
      * @param updates
      */
-    public Boolean downloadUpdates(LibraryUpdates updates) {
+    public Boolean downloadUpdates(LibraryUpdates updates) throws Exception {
         boolean success = true;
         for(String projectId:updates.getUpdatedProjects()) {
             boolean projectDownloadSuccess = true;
             for(String sourceLanguageId:updates.getUpdatedSourceLanguages(projectId)) {
                 for(String resourceId:updates.getUpdatedResources(projectId, sourceLanguageId)) {
                     projectDownloadSuccess = downloadSourceTranslationWithoutMerging(new SourceTranslation(projectId, sourceLanguageId, resourceId)) ? projectDownloadSuccess : false;
+                    if(!projectDownloadSuccess) {
+                        throw new Exception("Failed to download " + projectId + " " + sourceLanguageId + " " + resourceId);
+                    }
                 }
             }
             success = projectDownloadSuccess ? success : false;
@@ -141,9 +146,9 @@ public class Library {
     private Boolean downloadSourceTranslationWithoutMerging(SourceTranslation translation) {
         boolean success = true;
         success = mDownloader.downloadSource(translation) ? success : false;
-        success = mDownloader.downloadTerms(translation) ? success : false;
-        success = mDownloader.downloadNotes(translation) ? success : false;
-        success = mDownloader.downloadCheckingQuestions(translation) ? success : false;
+        mDownloader.downloadTerms(translation); // optional to success of download
+        mDownloader.downloadNotes(translation); // optional to success of download
+        mDownloader.downloadCheckingQuestions(translation); // optional to success of download
         return success;
     }
 

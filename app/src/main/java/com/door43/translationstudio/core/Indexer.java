@@ -890,10 +890,31 @@ public class Indexer {
      * @return
      */
     public Boolean indexTerms(SourceTranslation translation, String catalog) {
+        //KLUDGE: modify v2 questions catalogJson to match expected catalogJson format
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+        for (int i = 0; i < items.length(); i ++) {
+            try {
+                JSONObject item = items.getJSONObject(i);
+                String termId = Security.md5(item.getString("term").trim().toLowerCase());
+                item.put("slug", termId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        catalog = items.toString();
+        //KLUDGE: end modify v2
+
         String md5hash = generateTermsLink(translation);
         if(md5hash != null) {
-            return indexItems(md5hash, CatalogType.Terms, catalog);
+            return indexItems(md5hash, CatalogType.Simple, catalog);
         }
+
         return false;
     }
 
@@ -1050,7 +1071,7 @@ public class Indexer {
     }
 
     /**
-     * Returns an array of translationWord ids
+     * Returns an array of translationWord ids for a single frame
      * @param translation
      * @param chapterId
      * @param frameId
@@ -1061,8 +1082,31 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        // TODO: 8/26/2015 Finish implimenting this. This depends on indexing the terms
+        // TODO: 8/26/2015 Finish implimenting this. This depends on an update on the api.
         return new String[0];
+    }
+
+    /**
+     * Returns an array of translationWords for the sourceTranslation
+     * @param translation
+     * @return
+     */
+    public String[] getTerms(SourceTranslation translation) {
+        return getItemsArray(getResource(translation), "terms");
+    }
+
+    /**
+     * Returns a single translatonWord
+     * @param translation
+     * @param termId
+     * @return
+     */
+    public JSONObject getTerm(SourceTranslation translation, String termId) {
+        String md5hash = readTermsLink(translation);
+        if(md5hash != null) {
+            return readJSON(mDataPath + "/" + md5hash + "/" + termId);
+        }
+        return null;
     }
 
     /**

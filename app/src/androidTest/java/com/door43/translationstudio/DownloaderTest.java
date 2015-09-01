@@ -9,6 +9,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.util.AppContext;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 
 import java.io.File;
 
@@ -64,8 +65,12 @@ public class DownloaderTest extends ActivityInstrumentationTestCase2<MainActivit
     public void test5DownloadTerms() throws Exception {
         SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         assertTrue(mDownloader.downloadTerms(translation));
-        String[] termsIds = mIndex.getTerms(translation, "01", "01");
-        assertTrue(termsIds.length > 0);
+        String[] allTermIds = mIndex.getTerms(translation);
+        assertTrue(allTermIds.length > 0);
+        assertNotNull(mIndex.getTerm(translation, allTermIds[0]));
+        // TODO: 9/1/2015 This method has not been implemented yet
+//        String[] termsIds = mIndex.getTerms(translation, "01", "01");
+//        assertTrue(termsIds.length > 0);
     }
 
     public void test6DownloadNotes() throws Exception {

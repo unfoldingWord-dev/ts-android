@@ -47,7 +47,7 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
 
     public void test1CheckForAvailableUpdates() throws Exception {
         FileUtils.deleteQuietly(mTempIndexRoot);
-//        FileUtils.deleteQuietly(mIndexRoot);
+        FileUtils.deleteQuietly(mIndexRoot);
         LibraryUpdates updates = mLibrary.getAvailableLibraryUpdates();
 
         // cache updates

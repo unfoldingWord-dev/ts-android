@@ -94,8 +94,12 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
         assertTrue(mIndex.indexTerms(translation, catalog));
-        String[] termIds = mIndex.getTerms(translation, "01", "01");
-        assertTrue(termIds.length > 0);
+        String[] allTermIds = mIndex.getTerms(translation);
+        assertTrue(allTermIds.length > 0);
+        assertNotNull(mIndex.getTerm(translation, allTermIds[0]));
+        // TODO: 9/1/2015 This method has not been implemented yet
+//        String[] termIds = mIndex.getTerms(translation, "01", "01");
+//        assertTrue(termIds.length > 0);
     }
 
     public void test07IndexQuestions() throws Exception {
