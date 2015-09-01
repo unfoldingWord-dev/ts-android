@@ -144,7 +144,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
         assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
         assertTrue(mergedIndex.getResources("obs", "en").length == 1);
-        assertTrue(mergedIndex.getResources("gen", "en").length == 1);
+        assertTrue(mergedIndex.getResources("gen", "en").length > 0);
         SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
         SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
@@ -179,7 +179,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(mergedIndex.getProjects().length == 1);
         assertNotNull(mergedIndex.getProject("gen"));
         assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
-        assertTrue(mergedIndex.getResources("gen", "en").length == 1);
+        assertTrue(mergedIndex.getResources("gen", "en").length > 0);
         SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
     }

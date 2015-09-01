@@ -670,25 +670,25 @@ public class Indexer {
         // import new content
         File sourceDir = index.getDataDir(index.readSourceLink(translation));
         File destSourceDir = getDataDir(readSourceLink(translation));
-        if(sourceDir.exists()) {
+        if(sourceDir != null && sourceDir.exists()) {
             FileUtils.copyDirectory(sourceDir, destSourceDir);
         }
 
         File notesDir = index.getDataDir(index.readNotesLink(translation));
         File destNotesDir = getDataDir(readNotesLink(translation));
-        if(notesDir.exists()) {
+        if(notesDir != null && notesDir.exists()) {
             FileUtils.copyDirectory(notesDir, destNotesDir);
         }
 
         File questionsDir = index.getDataDir(index.readQuestionsLink(translation));
         File destQuestionsDir = getDataDir(readQuestionsLink(translation));
-        if(questionsDir.exists()) {
+        if(questionsDir != null && questionsDir.exists()) {
             FileUtils.copyDirectory(questionsDir, destQuestionsDir);
         }
 
         File termsDir = index.getDataDir(index.readTermsLink(translation));
         File destTermsDir = getDataDir(readTermsLink(translation));
-        if(termsDir.exists()) {
+        if(termsDir != null && termsDir.exists()) {
             FileUtils.copyDirectory(termsDir, destTermsDir);
         }
     }
@@ -1180,7 +1180,7 @@ public class Indexer {
     /**
      * Returns a file pointing to a specific set of data
      * @param md5hash the data to retrieve
-     * @return
+     * @return the file to the data dir or null if the hash is null
      */
     public File getDataDir (String md5hash) {
         if(md5hash == null) {
@@ -1189,18 +1189,38 @@ public class Indexer {
         return new File(mIndexDir, mDataPath + "/" + md5hash);
     }
 
+    /**
+     * Reads the data key from the source link
+     * @param translation
+     * @return
+     */
     public String readSourceLink(SourceTranslation translation) {
         return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link");
     }
 
+    /**
+     * Reads the data key from the questions link
+     * @param translation
+     * @return
+     */
     public String readQuestionsLink(SourceTranslation translation) {
         return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link");
     }
 
+    /**
+     * Reads the data key from the terms link
+     * @param translation
+     * @return
+     */
     public String readTermsLink(SourceTranslation translation) {
         return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link");
     }
 
+    /**
+     * Reads the data key from the notes link
+     * @param translation
+     * @return
+     */
     public String readNotesLink(SourceTranslation translation) {
         return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link");
     }
