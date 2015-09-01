@@ -153,4 +153,5 @@ dependencies {
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')
+    androidTestCompile 'com.jayway.android.robotium:robotium-solo:5.2.1'
 }
