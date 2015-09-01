@@ -34,14 +34,14 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         mContext = getInstrumentation().getContext();
     }
 
-    public void test1IndexProjects() throws Exception {
+    public void test01IndexProjects() throws Exception {
         FileUtils.deleteQuietly(mIndexRoot);
         String catalog = Util.readStream(mContext.getAssets().open("indexer/catalog.json"));
         assertTrue(mIndex.indexProjects(catalog));
         assertTrue(mIndex.getProjects().length > 0);
     }
 
-    public void test2IndexSourceLanguages() throws Exception {
+    public void test02IndexSourceLanguages() throws Exception {
         String genCatalog = Util.readStream(mContext.getAssets().open("indexer/gen/languages.json"));
         assertTrue(mIndex.indexSourceLanguages("gen", genCatalog));
         assertTrue(mIndex.getSourceLanguages("gen").length > 0);
@@ -51,7 +51,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(mIndex.getSourceLanguages("obs").length > 0);
     }
 
-    public void test3IndexResources() throws Exception {
+    public void test03IndexResources() throws Exception {
         String genCatalog = Util.readStream(mContext.getAssets().open("indexer/gen/en/resources.json"));
         assertTrue(mIndex.indexResources("gen", "en", genCatalog));
         assertTrue(mIndex.getResources("gen", "en").length > 0);
@@ -61,7 +61,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(mIndex.getResources("obs", "en").length > 0);
     }
 
-    public void test4IndexSource() throws Exception {
+    public void test04IndexSource() throws Exception {
         SourceTranslation bibleTranslation = new SourceTranslation("gen", "en", "ulb");
         String genCatalog = Util.readStream(mContext.getAssets().open("indexer/gen/en/ulb/source.json"));
         assertTrue(mIndex.indexSource(bibleTranslation, genCatalog));
@@ -81,7 +81,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         }
     }
 
-    public void test5IndexNotes() throws Exception {
+    public void test05IndexNotes() throws Exception {
         SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/notes.json"));
         assertTrue(mIndex.indexNotes(translation, catalog));
@@ -90,7 +90,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertNotNull(mIndex.getNote(translation, "01", "01", noteIds[0]));
     }
 
-    public void test6IndexTerms() throws Exception {
+    public void test06IndexTerms() throws Exception {
         SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
         assertTrue(mIndex.indexTerms(translation, catalog));
@@ -98,7 +98,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(termIds.length > 0);
     }
 
-    public void test7IndexQuestions() throws Exception {
+    public void test07IndexQuestions() throws Exception {
         SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/checking_questions.json"));
         assertTrue(mIndex.indexQuestions(translation, catalog));
@@ -107,7 +107,7 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertNotNull(mIndex.getQuestion(translation, "01", "01", questionIds[0]));
     }
 
-    public void test8LoadExistingIndex() throws Exception {
+    public void test08LoadExistingIndex() throws Exception {
         InputStream is = mContext.getAssets().open("indexer/sample_index.zip");
         File asset = new File(AppContext.context().getCacheDir(), "indexer/sample_index.zip");
         Util.copyStreamToCache(mContext, is, asset);
@@ -115,6 +115,73 @@ public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> 
         Zip.unzip(asset, indexDir);
         Indexer index = new Indexer("sample_index", indexDir);
         assertTrue(index.getProjects().length > 0);
+    }
+
+    public void test09MergeIndexShallow() throws Exception {
+        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        mergedIndex.destroy();
+        mergedIndex.mergeIndex(mIndex, true);
+        assertTrue(mergedIndex.getProjects().length > 0);
+        assertNotNull(mergedIndex.getProject("obs"));
+        assertNotNull(mergedIndex.getProject("gen"));
+        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
+        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+        assertTrue(mergedIndex.getResources("gen", "en").length > 1);
+        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
+        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
+        assertTrue(mergedIndex.getChapters(genTranslation).length == 0);
+    }
+
+    public void test10MergeIndexDeep() throws Exception {
+        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        mergedIndex.destroy();
+        mergedIndex.mergeIndex(mIndex);
+        assertTrue(mergedIndex.getProjects().length  > 1);
+        assertNotNull(mergedIndex.getProject("obs"));
+        assertNotNull(mergedIndex.getProject("gen"));
+        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
+        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+        assertTrue(mergedIndex.getResources("gen", "en").length == 1);
+        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
+        assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
+        assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
+    }
+
+    public void test11MergeIndexProjectShallow() throws Exception {
+        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        mergedIndex.destroy();
+        mergedIndex.mergeProject("obs", mIndex, true);
+        assertTrue(mergedIndex.getProjects().length == 1);
+        assertNotNull(mergedIndex.getProject("obs"));
+        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
+    }
+
+    public void test12MergeIndexProjectDeep() throws Exception {
+        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        mergedIndex.destroy();
+        mergedIndex.mergeProject("obs", mIndex);
+        assertTrue(mergedIndex.getProjects().length == 1);
+        assertNotNull(mergedIndex.getProject("obs"));
+        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
+
+        mergedIndex.destroy();
+        mergedIndex.mergeProject("gen", mIndex);
+        assertTrue(mergedIndex.getProjects().length == 1);
+        assertNotNull(mergedIndex.getProject("gen"));
+        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
+        assertTrue(mergedIndex.getResources("gen", "en").length == 1);
+        SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
+        assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
     }
 
     public void test999999Cleanup() throws Exception {

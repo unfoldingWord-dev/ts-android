@@ -141,7 +141,7 @@ public class Library {
     private Boolean downloadSourceTranslationWithoutMerging(SourceTranslation translation) {
         boolean success = true;
         success = mDownloader.downloadSource(translation) ? success : false;
-//        success = mDownloader.downloadTerms(translation) ? success : false;
+        success = mDownloader.downloadTerms(translation) ? success : false;
         success = mDownloader.downloadNotes(translation) ? success : false;
         success = mDownloader.downloadCheckingQuestions(translation) ? success : false;
         return success;

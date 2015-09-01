@@ -1,7 +1,5 @@
 package com.door43.translationstudio.core;
 
-import android.support.v7.widget.RecyclerView;
-
 import com.door43.util.Manifest;
 import com.door43.util.Security;
 
@@ -21,7 +19,7 @@ import java.util.Iterator;
  * Created by joel on 8/26/2015.
  */
 public class Indexer {
-    private final Manifest manifest;
+    private Manifest mManifest;
     private final String mId;
     private final File mIndexDir;
     private final String mDataPath = "data";
@@ -44,13 +42,14 @@ public class Indexer {
     public Indexer(String name, File rootDir) {
         mId = name;
         mIndexDir = new File(rootDir, name);
-        manifest = init();
+        mManifest = init();
     }
 
     /**
      * Prepares the index for first use
      */
     private Manifest init() {
+        mIndexDir.mkdirs();
         Manifest m = Manifest.generate(mIndexDir);
         if(!m.has("version")) {
             m.put("version", 1);
@@ -64,7 +63,7 @@ public class Indexer {
      */
     public int getVersion() {
         try {
-            return manifest.getInt("version");
+            return mManifest.getInt("version");
         } catch (JSONException e) {
             e.printStackTrace();
             return -1;
@@ -76,6 +75,7 @@ public class Indexer {
      */
     public void destroy() {
         FileUtils.deleteQuietly(mIndexDir);
+        mManifest = init();
     }
 
     /**
@@ -156,7 +156,8 @@ public class Indexer {
             }
             json.put(md5hash, json.getInt(md5hash) + 1);
             try {
-                return saveFile(mLinksPath, json.toString());
+                saveFile(mLinksPath, json.toString());
+                return true;
             } catch (IOException e) {
                 e.printStackTrace();
                 return false;
@@ -200,22 +201,86 @@ public class Indexer {
         return false;
     }
 
-    private Boolean indexItems (String md5hash, String catalogLinkFile, CatalogType type, String jsonString) {
+    /**
+     * Creates a new link file
+     * @param md5hash
+     * @param linkPath
+     * @return
+     */
+    private Boolean createLink (String md5hash, String linkPath) {
+        try {
+            if(saveFile(linkPath, md5hash)) {
+                incrementLink(md5hash);
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Generates a source link for the source translation
+     * @param translation
+     * @return
+     */
+    private String generateSourceLink (SourceTranslation translation) {
+        return generateResourceFieldLink(translation, "source");
+    }
+
+    /**
+     * Generates a notes link for the source translation
+     * @param translation
+     * @return
+     */
+    private String generateNotesLink (SourceTranslation translation) {
+        return generateResourceFieldLink(translation, "notes");
+    }
+
+    /**
+     * Generate a terms link for the source translation
+     * @param translation
+     * @return
+     */
+    private String generateTermsLink (SourceTranslation translation) {
+        return generateResourceFieldLink(translation, "terms");
+    }
+
+    /**
+     * Generates a questions link for the source translation
+     * @param translation
+     * @return
+     */
+    private String generateQuestionsLink (SourceTranslation translation) {
+        return generateResourceFieldLink(translation, "checking_questions");
+    }
+
+    /**
+     * Generates a link for a field in the resources catalog.
+     * For example, the "source", or "notes"
+     *
+     * @param translation
+     * @param field
+     * @return
+     */
+    private String generateResourceFieldLink (SourceTranslation translation, String field) {
+        String catalogApiUrl = getUrlFromObject(getResource(translation), field);
+        if(catalogApiUrl != null) {
+            String md5hash = Security.md5(catalogApiUrl);
+            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/" + field + ".link";
+            if(createLink(md5hash, catalogLinkFile)) {
+                return md5hash;
+            }
+        }
+        return null;
+    }
+
+    private Boolean indexItems (String md5hash, CatalogType type, String jsonString) {
         String md5Path = mDataPath + "/" + md5hash;
         JSONArray items;
         try {
             items = new JSONArray(jsonString);
         } catch (JSONException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        // save link file
-        try {
-            if(saveFile(catalogLinkFile, md5hash)) {
-                incrementLink(md5hash);
-            }
-        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -310,6 +375,10 @@ public class Indexer {
                     e.printStackTrace();
                 }
             }
+        } else if(type == CatalogType.Terms) {
+            // TODO: eventually we'll index the terms dictionary here
+        } else if(type == CatalogType.Questions) {
+            // TODO: eventually we'll index the checking question dictionary here
         }
         return true;
     }
@@ -592,22 +661,36 @@ public class Indexer {
         deleteNotes(translation);
         deleteSource(translation);
 
+        // re-create links
+        generateSourceLink(translation);
+        generateNotesLink(translation);
+        generateQuestionsLink(translation);
+        generateTermsLink(translation);
+
         // import new content
         File sourceDir = index.getDataDir(index.readSourceLink(translation));
         File destSourceDir = getDataDir(readSourceLink(translation));
-        FileUtils.copyDirectory(sourceDir, destSourceDir);
+        if(sourceDir.exists()) {
+            FileUtils.copyDirectory(sourceDir, destSourceDir);
+        }
 
         File notesDir = index.getDataDir(index.readNotesLink(translation));
         File destNotesDir = getDataDir(readNotesLink(translation));
-        FileUtils.copyDirectory(notesDir, destNotesDir);
+        if(notesDir.exists()) {
+            FileUtils.copyDirectory(notesDir, destNotesDir);
+        }
 
         File questionsDir = index.getDataDir(index.readQuestionsLink(translation));
         File destQuestionsDir = getDataDir(readQuestionsLink(translation));
-        FileUtils.copyDirectory(questionsDir, destQuestionsDir);
+        if(questionsDir.exists()) {
+            FileUtils.copyDirectory(questionsDir, destQuestionsDir);
+        }
 
         File termsDir = index.getDataDir(index.readTermsLink(translation));
         File destTermsDir = getDataDir(readTermsLink(translation));
-        FileUtils.copyDirectory(termsDir, destTermsDir);
+        if(termsDir.exists()) {
+            FileUtils.copyDirectory(termsDir, destTermsDir);
+        }
     }
 
     /**
@@ -636,7 +719,9 @@ public class Indexer {
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
             String catalogLinkFile = mSourcePath + "/projects_catalog.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Simple, catalog);
+            if(createLink(md5hash, catalogLinkFile)) {
+                return indexItems(md5hash, CatalogType.Simple, catalog);
+            }
         }
         return false;
     }
@@ -677,7 +762,9 @@ public class Indexer {
         if (catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
             String catalogLinkFile = mSourcePath + "/" + projectId + "/languages_catalog.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Simple, catalog);
+            if(createLink(md5hash, catalogLinkFile)) {
+                return indexItems(md5hash, CatalogType.Simple, catalog);
+            }
         }
         return false;
     }
@@ -694,7 +781,9 @@ public class Indexer {
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
             String catalogLinkFile = mSourcePath + "/" + projectId + "/" + sourceLanguageId + "/resources_catalog.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Simple, catalog);
+            if(createLink(md5hash, catalogLinkFile)) {
+                return indexItems(md5hash, CatalogType.Simple, catalog);
+            }
         }
         return false;
     }
@@ -716,22 +805,23 @@ public class Indexer {
         }
         //KLUDGE: end modify v2
 
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "source");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Source, catalog);
+        String md5hash = generateSourceLink(translation);
+        if(md5hash != null) {
+            return indexItems(md5hash, CatalogType.Source, catalog);
         }
         return false;
     }
 
     /**
      * Builds a notes index from json
+     *
      * @param translation
      * @param catalog
      * @return
      */
     public Boolean indexNotes(SourceTranslation translation, String catalog) {
+        // TODO: 9/1/2015 eventually this catalog will include the terms and questions. We'll probably rename it at that point.
+
         //KLUDGE: modify v2 notes catalogJson to match expected catalogJson format
         JSONArray items;
         try {
@@ -786,11 +876,9 @@ public class Indexer {
         catalog = jsonArray.toString();
         //KLUDGE: end modify v2
 
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "notes");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
+        String md5hash = generateNotesLink(translation);
+        if(md5hash != null) {
+            return indexItems(md5hash, CatalogType.Advanced, catalog);
         }
         return false;
     }
@@ -802,11 +890,9 @@ public class Indexer {
      * @return
      */
     public Boolean indexTerms(SourceTranslation translation, String catalog) {
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "terms");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Terms, catalog);
+        String md5hash = generateTermsLink(translation);
+        if(md5hash != null) {
+            return indexItems(md5hash, CatalogType.Terms, catalog);
         }
         return false;
     }
@@ -899,11 +985,9 @@ public class Indexer {
         catalog = jsonArray.toString();
         //KLUDGE: end modify v2
 
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "checking_questions");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link";
-            return indexItems(md5hash, catalogLinkFile, CatalogType.Advanced, catalog);
+        String md5hash = generateQuestionsLink(translation);
+        if(md5hash != null) {
+            return indexItems(md5hash, CatalogType.Advanced, catalog);
         }
         return false;
     }
@@ -1099,6 +1183,9 @@ public class Indexer {
      * @return
      */
     public File getDataDir (String md5hash) {
+        if(md5hash == null) {
+            return null;
+        }
         return new File(mIndexDir, mDataPath + "/" + md5hash);
     }
 
