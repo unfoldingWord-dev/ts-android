@@ -8,6 +8,7 @@ import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 
@@ -37,9 +38,9 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
         MainApplication app = AppContext.context();
         mTempIndexRoot = new File(app.getCacheDir(), "library_temp_test_index");
         mIndexRoot = new File(app.getCacheDir(), "library_test_index");
+        mAppIndex = new Indexer("app", mIndexRoot);
         mDownloadIndex = new Indexer("downloads", mTempIndexRoot);
         mServerIndex = new Indexer("server", mTempIndexRoot);
-        mAppIndex = new Indexer("app", mIndexRoot);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         mDownloader = new Downloader(mDownloadIndex, server + app.getResources().getString(R.string.root_catalog_api));
         mLibrary = new Library(mDownloader, mServerIndex, mAppIndex);
@@ -48,6 +49,16 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
     public void test1CheckForAvailableUpdates() throws Exception {
         FileUtils.deleteQuietly(mTempIndexRoot);
         FileUtils.deleteQuietly(mIndexRoot);
+
+        // extract library index
+        File libraryArchive = new File(AppContext.context().getCacheDir(), "library.zip");
+        Util.copyStreamToCache(AppContext.context(), AppContext.context().getAssets().open("library.zip"), libraryArchive);
+        Zip.unzip(libraryArchive, mIndexRoot);
+        FileUtils.deleteQuietly(libraryArchive);
+
+        // pre-populate download index with shallow copy
+        mDownloadIndex.mergeIndex(mAppIndex, true);
+
         LibraryUpdates updates = mLibrary.getAvailableLibraryUpdates();
 
         // cache updates
@@ -57,11 +68,12 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
         os.close();
         fos.close();
 
-        assertTrue(updates.getUpdatedProjects().length > 0);
-        String pid = updates.getUpdatedProjects()[0];
-        assertTrue(updates.getUpdatedSourceLanguages(pid).length > 0);
-        String lid = updates.getUpdatedSourceLanguages(pid)[0];
-        assertTrue(updates.getUpdatedResources(pid, lid).length > 0);
+        if(updates.getUpdatedProjects().length > 0) {
+            String pid = updates.getUpdatedProjects()[0];
+            assertTrue(updates.getUpdatedSourceLanguages(pid).length > 0);
+            String lid = updates.getUpdatedSourceLanguages(pid)[0];
+            assertTrue(updates.getUpdatedResources(pid, lid).length > 0);
+        }
     }
 
     public void test2DownloadUpdates() throws Exception {
@@ -82,6 +94,6 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
 
     public void test999999Cleanup() throws Exception {
         FileUtils.deleteQuietly(mTempIndexRoot);
-//        FileUtils.deleteQuietly(mIndexRoot);
+        FileUtils.deleteQuietly(mIndexRoot);
     }
 }
