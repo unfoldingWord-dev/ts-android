@@ -1874,6 +1874,9 @@ public class ProjectManager {
                             if(p.getSelectedChapter() != null) {
                                 IndexStore.loadFrames(p, p.getSelectedSourceLanguage(), p.getSelectedSourceLanguage().getSelectedResource(), p.getSelectedChapter());
                             }
+                            // load terms
+                            String terms = mDataStore.pullTerms(p.getId(), p.getSelectedSourceLanguage().getId(), p.getSelectedSourceLanguage().getSelectedResource().getId(), false, false);
+                            loadTerms(terms, p);
                         }
                     }
 
