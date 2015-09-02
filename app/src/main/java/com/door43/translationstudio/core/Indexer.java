@@ -42,13 +42,13 @@ public class Indexer {
     public Indexer(String name, File rootDir) {
         mId = name;
         mIndexDir = new File(rootDir, name);
-        mManifest = init();
+        mManifest = reload();
     }
 
     /**
-     * Prepares the index for first use
+     * Loads the index manifest and prepares the index for use.
      */
-    private Manifest init() {
+    public Manifest reload() {
         mIndexDir.mkdirs();
         Manifest m = Manifest.generate(mIndexDir);
         if(!m.has("version")) {
@@ -75,7 +75,7 @@ public class Indexer {
      */
     public void destroy() {
         FileUtils.deleteQuietly(mIndexDir);
-        mManifest = init();
+        mManifest = reload();
     }
 
     /**

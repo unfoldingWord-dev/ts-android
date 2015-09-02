@@ -2,11 +2,13 @@ package com.door43.translationstudio;
 
 import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.AndroidTestCase;
 
 import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
+import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.Zip;
 
@@ -21,7 +23,7 @@ import java.io.ObjectOutputStream;
 /**
  * Created by joel on 8/31/2015.
  */
-public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> {
+public class LibraryTest extends AndroidTestCase {
     private Library mLibrary;
     private Indexer mDownloadIndex;
     private Downloader mDownloader;
@@ -29,10 +31,6 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
     private Indexer mAppIndex;
     private File mIndexRoot;
     private File mTempIndexRoot;
-
-    public LibraryTest() {
-        super(MainActivity.class);
-    }
 
     protected void setUp() throws Exception {
         MainApplication app = AppContext.context();
@@ -43,23 +41,20 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
         mServerIndex = new Indexer("server", mTempIndexRoot);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         mDownloader = new Downloader(mDownloadIndex, server + app.getResources().getString(R.string.root_catalog_api));
-        mLibrary = new Library(mDownloader, mServerIndex, mAppIndex);
+        mLibrary = new Library(app, mDownloader, mServerIndex, mAppIndex);
     }
 
-    public void test1CheckForAvailableUpdates() throws Exception {
+    public void test01Clean() throws Exception {
         FileUtils.deleteQuietly(mTempIndexRoot);
         FileUtils.deleteQuietly(mIndexRoot);
+    }
 
-        // extract library index
-        try {
-            File libraryArchive = new File(AppContext.context().getCacheDir(), "library.zip");
-            Util.copyStreamToCache(AppContext.context(), AppContext.context().getAssets().open("library.zip"), libraryArchive);
-            Zip.unzip(libraryArchive, mIndexRoot);
-            FileUtils.deleteQuietly(libraryArchive);
-        } catch (Exception e) {
-            // if the asset doesn't exist just continue
-        }
+    public void test02ExtractLibrary() throws Exception {
+        // NOTE: the default library is large so we don't include in the repo. So this test should always fall through
+        mLibrary.extractDefaultLibrary();
+    }
 
+    public void test03CheckForAvailableUpdates() throws Exception {
         // pre-populate download index with shallow copy
         mDownloadIndex.mergeIndex(mAppIndex, true);
 
@@ -80,7 +75,7 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
         }
     }
 
-    public void test2DownloadUpdates() throws Exception {
+    public void test04DownloadUpdates() throws Exception {
         FileInputStream fis = AppContext.context().openFileInput("library_updates");
         ObjectInputStream is = new ObjectInputStream(fis);
         LibraryUpdates updates = (LibraryUpdates) is.readObject();
@@ -90,10 +85,16 @@ public class LibraryTest extends ActivityInstrumentationTestCase2<MainActivity> 
         assertTrue(mLibrary.downloadUpdates(updates));
     }
 
-    public void test3Export() throws Exception {
+    public void test05Export() throws Exception {
         File archive = mLibrary.export(AppContext.getPublicDownloadsDirectory());
         assertNotNull(archive);
         assertTrue(archive.exists());
+    }
+
+    public void test06LoadTargetLanguages() throws Exception {
+        TargetLanguage[] languages = mLibrary.getTargetLanguages();
+        assertNotNull(languages);
+        assertTrue(languages.length > 0);
     }
 
     public void test999999Cleanup() throws Exception {

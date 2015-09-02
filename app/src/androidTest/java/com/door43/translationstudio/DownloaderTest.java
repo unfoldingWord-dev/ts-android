@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.AndroidTestCase;
 
 import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Indexer;
@@ -16,14 +17,10 @@ import java.io.File;
 /**
  * Created by joel on 8/27/2015.
  */
-public class DownloaderTest extends ActivityInstrumentationTestCase2<MainActivity> {
+public class DownloaderTest extends AndroidTestCase {
     private Downloader mDownloader;
     private Indexer mIndex;
     private File mIndexRoot;
-
-    public DownloaderTest() {
-        super(MainActivity.class);
-    }
 
     @Override
     protected void setUp() throws Exception {

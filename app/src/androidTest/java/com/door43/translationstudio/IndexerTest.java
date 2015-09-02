@@ -2,6 +2,7 @@ package com.door43.translationstudio;
 
 import android.content.Context;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -16,15 +17,11 @@ import java.io.InputStream;
 /**
  * Created by joel on 8/27/2015.
  */
-public class IndexerTest extends ActivityInstrumentationTestCase2<MainActivity> {
+public class IndexerTest extends InstrumentationTestCase {
 
     private Indexer mIndex;
     private Context mContext;
     private File mIndexRoot;
-
-    public IndexerTest() {
-        super(MainActivity.class);
-    }
 
     @Override
     protected void setUp() throws Exception {

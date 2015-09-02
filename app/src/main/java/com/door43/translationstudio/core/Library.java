@@ -1,16 +1,20 @@
 package com.door43.translationstudio.core;
 
-import android.util.Log;
+import android.content.Context;
 
 import com.door43.util.Zip;
 
+import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by joel on 8/29/2015.
@@ -19,12 +23,36 @@ public class Library {
     private final Downloader mDownloader;
     private final Indexer mServerIndex;
     private final Indexer mAppIndex;
+    private final Context mContext;
     private LibraryUpdates mLibraryUpdates = new LibraryUpdates();
+    private static TargetLanguage[] mTargetLanguages;
 
-    public Library(Downloader downloader, Indexer serverIndex, Indexer appIndex) {
+    public Library(Context context, Downloader downloader, Indexer serverIndex, Indexer appIndex) {
+        mContext = context;
         mDownloader = downloader;
         mServerIndex = serverIndex;
         mAppIndex = appIndex;
+    }
+
+    /**
+     * Extracts the default library replacing anything that already existed
+     * This will remove any existing app index before copying the zipped library
+     * into the assets dir and extracting it.
+     *
+     */
+    public Boolean extractDefaultLibrary() {
+        mAppIndex.destroy();
+        try {
+            File libraryArchive = new File(mContext.getCacheDir(), "library.zip");
+            Util.writeStream(mContext.getAssets().open("library.zip"), libraryArchive);
+            Zip.unzip(libraryArchive, mAppIndex.getIndexDir().getParentFile());
+            FileUtils.deleteQuietly(libraryArchive);
+            mAppIndex.reload();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private void downloadResourceList(String projectId, String sourceLanguageId) {
@@ -168,5 +196,35 @@ public class Library {
             return null;
         }
         return destFile;
+    }
+
+    /**
+     * Returns an array of target languages
+     * @return
+     */
+    public TargetLanguage[] getTargetLanguages() {
+        if(mTargetLanguages == null) {
+            List<TargetLanguage> languages = new ArrayList<>();
+            try {
+                String catalog = Util.readStream(mContext.getAssets().open("languages.json"));
+                JSONArray json = new JSONArray(catalog);
+                for (int i = 0; i < json.length(); i++) {
+                    JSONObject item = json.getJSONObject(i);
+                    TargetLanguage lang = TargetLanguage.Generate(item);
+                    if (lang != null) {
+                        languages.add(lang);
+                    }
+                }
+                mTargetLanguages = languages.toArray(new TargetLanguage[languages.size()]);
+                return mTargetLanguages;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            return mTargetLanguages;
+        }
+        return null;
     }
 }
