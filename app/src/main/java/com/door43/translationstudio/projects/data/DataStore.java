@@ -8,6 +8,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.Security;
 import com.door43.util.network.ServerUtilities;
@@ -39,7 +40,7 @@ public class DataStore {
     private static SharedPreferences mSettings;
     private static final int API_VERSION = 2;
     // this is used so we can force a cache reset between versions of the app if we make changes to api implimentation
-    private static final int API_VERSION_INTERNAL = 11;
+    private static final int API_VERSION_INTERNAL = 12;
 
     public DataStore(MainApplication context) {
         mContext = context;
@@ -372,6 +373,7 @@ public class DataStore {
                 return key;
             } catch (IOException e) {
                 // This is common. The file was not found
+                e.printStackTrace();
             }
         } else {
             Logger.e(DataStore.class.getName(), "received a null packaged asset link");
@@ -619,7 +621,7 @@ public class DataStore {
      * @return the uri to the project catalog on the server
      */
     public static Uri projectCatalogUri() {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/catalog.json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/catalog.json");
     }
 
     /**
@@ -688,7 +690,7 @@ public class DataStore {
      * @return
      */
     public static Uri sourceLanguageCatalogUri(String projectId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/languages.json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/" + projectId + "/languages.json");
     }
 
     /**
@@ -746,7 +748,7 @@ public class DataStore {
      * @return
      */
     public static Uri resourceCatalogUri(String projectId, String languageId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/resources.json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/resources.json");
     }
 
     /**
@@ -819,7 +821,7 @@ public class DataStore {
      * @return
      */
     public static Uri termsUri(String projectId, String languageId, String resourceId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/terms.json");
     }
 
     /**
@@ -935,7 +937,7 @@ public class DataStore {
      * @return
      */
     public static Uri notesUri(String projectId, String languageId, String resourceId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/notes.json");
     }
 
     /**
@@ -947,7 +949,7 @@ public class DataStore {
      */
     public static Uri checkingQuestionsUri(String projectId, String languageId, String resourceId) {
         // TODO: The checking questions are not located here at the moment. We need to get this updated.
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/checking_questions.json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/checking_questions.json");
     }
 
     /**
@@ -1021,7 +1023,7 @@ public class DataStore {
      * @return
      */
     public static Uri sourceUri(String projectId, String languageId, String resourceId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/source.json");
     }
 
     /**
@@ -1032,7 +1034,7 @@ public class DataStore {
      * @return
      */
     public static Uri questionsUri(String projectId, String languageId, String resourceId) {
-        return Uri.parse("https://api.unfoldingword.org/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/CQ-" + languageId + ".json");
+        return Uri.parse(AppContext.getMediaServer() + "/ts/txt/" + API_VERSION + "/" + projectId + "/" + languageId + "/" + resourceId + "/CQ-" + languageId + ".json");
     }
 
     /**

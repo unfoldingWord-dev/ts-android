@@ -148,7 +148,7 @@ public class ModelItemAdapter extends BaseAdapter {
         // set title and description
         holder.title.setText(getItem(position).getTitle());
         holder.description.setText(getItem(position).getDescription());
-        if(getItem(position).getDescription().equals("")) {
+        if(getItem(position).getDescription() == null || getItem(position).getDescription().equals("")) {
             holder.description.setVisibility(View.GONE);
         } else {
             holder.description.setVisibility(View.VISIBLE);
