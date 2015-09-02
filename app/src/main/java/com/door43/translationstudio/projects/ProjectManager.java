@@ -1446,7 +1446,7 @@ public class ProjectManager {
         try {
             jsonTerms = new JSONArray(jsonString);
         } catch (JSONException e) {
-            Logger.e(this.getClass().getName(), "malformed terms for project "+p.getId(), e);
+            Logger.e(this.getClass().getName(), "malformed terms for project " + p.getId() + " " + p.getSelectedSourceLanguage().getId(), e);
             return;
         }
 
