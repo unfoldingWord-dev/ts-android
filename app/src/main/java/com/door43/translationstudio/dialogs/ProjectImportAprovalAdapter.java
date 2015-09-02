@@ -169,17 +169,19 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
 
         // display group confirm all layout
         if(childPosition == 0) {
-            final ImportRequestInterface group = getGroup(groupPosition);
-            holder.confirmAllLayout.setVisibility(View.VISIBLE);
-            holder.confirmAllSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    group.setIsApproved(b);
-                    notifyDataSetChanged();
-                }
-            });
-            // indicate group is approved
-            holder.confirmAllSwitch.silentlySetChecked(group.isApproved());
+//            final ImportRequestInterface group = getGroup(groupPosition);
+//            holder.confirmAllLayout.setVisibility(View.VISIBLE);
+//            holder.confirmAllSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//                @Override
+//                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+//                    group.setIsApproved(b);
+//                    notifyDataSetChanged();
+//                }
+//            });
+//            // indicate group is approved
+//            holder.confirmAllSwitch.silentlySetChecked(group.isApproved());
+            holder.confirmAllLayout.setVisibility(View.GONE);
+            holder.confirmAllSwitch.setOnCheckedChangeListener(null);
         } else {
             holder.confirmAllLayout.setVisibility(View.GONE);
             holder.confirmAllSwitch.setOnCheckedChangeListener(null);
