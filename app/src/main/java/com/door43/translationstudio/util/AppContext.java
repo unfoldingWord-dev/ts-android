@@ -15,6 +15,7 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
+import com.door43.translationstudio.spannables.Char;
 import com.door43.util.StorageUtils;
 import com.squareup.otto.Bus;
 import com.squareup.otto.ThreadEnforcer;
@@ -271,5 +272,21 @@ public class AppContext {
                 });
             }
         }
+    }
+
+    /**
+     * Returns the address for the media server
+     * @return
+     */
+    public static String getMediaServer() {
+        String url = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, AppContext.context().getResources().getString(R.string.pref_default_media_server));
+        return ltrim(url, '/');
+    }
+
+    private static String ltrim(String str, char target) {
+        if (str.length() > 0 && str.charAt(str.length()-1)==target) {
+            str = str.substring(0, str.length()-1);
+        }
+        return str;
     }
 }
