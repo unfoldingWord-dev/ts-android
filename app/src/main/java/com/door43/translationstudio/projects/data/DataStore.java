@@ -373,6 +373,7 @@ public class DataStore {
                 return key;
             } catch (IOException e) {
                 // This is common. The file was not found
+                e.printStackTrace();
             }
         } else {
             Logger.e(DataStore.class.getName(), "received a null packaged asset link");

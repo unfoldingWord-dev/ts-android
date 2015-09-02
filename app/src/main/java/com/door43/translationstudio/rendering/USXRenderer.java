@@ -58,6 +58,7 @@ public class USXRenderer extends RenderingEngine {
         out = renderPoeticLine(out);
         out = renderVerse(out);
         out = renderNote(out);
+        out = renderChapterLabel(out);
 
         return out;
     }
@@ -230,6 +231,29 @@ public class USXRenderer extends RenderingEngine {
         while(matcher.find()) {
             if(isStopped()) return in;
             out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), "\n\n");
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Renders a chapter label
+     * @param in
+     * @return
+     */
+    public CharSequence renderChapterLabel(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = paraPattern("cl");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while (matcher.find()) {
+            if(isStopped()) return in;
+
+            SpannableString span = new SpannableString(in.subSequence(matcher.start(1), matcher.end(1)));
+            span.setSpan(new StyleSpan(Typeface.BOLD), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            out = TextUtils.concat(out,  in.subSequence(lastIndex, matcher.start()), span);
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));

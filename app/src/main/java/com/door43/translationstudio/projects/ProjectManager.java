@@ -1049,7 +1049,7 @@ public class ProjectManager {
                     List<SourceLanguage> languages = loadSourceLanguageCatalog(p);
                     // validate project has languages
                     if(languages.size() == 0) {
-                        Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
+                        Logger.e(this.getClass().getName(), "loadProjects: the source languages could not be loaded for the project "+p.getId());
                         importedProjects.remove(p);
                         deleteProject(p);
                         removeProjectListEntry(p);
@@ -1170,7 +1170,7 @@ public class ProjectManager {
                     List<SourceLanguage> languages = loadSourceLanguageCatalog(p);
                     // validate project has languages
                     if(languages.size() == 0) {
-                        Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
+                        Logger.e(this.getClass().getName(), "initProjects: the source languages could not be loaded for the project "+p.getId());
                         importedProjects.remove(p);
                         deleteProject(p);
                         removeProjectListEntry(p);
@@ -1197,6 +1197,7 @@ public class ProjectManager {
 
         List<SourceLanguage> importedLanguages = new ArrayList<>();
         if(catalog == null) {
+            Logger.i(ProjectManager.class.getName(), "loadSourceLanguageCatalog: the catalog was empty for project " + p.getId());
             return importedLanguages;
         }
         // parse source languages
@@ -1204,7 +1205,7 @@ public class ProjectManager {
         try {
             json = new JSONArray(catalog);
         } catch (Exception e) {
-            Logger.e(ProjectManager.class.getName(), "malformed source language catalog", e);
+            Logger.e(ProjectManager.class.getName(), "loadSourceLanguageCatalog: malformed source language catalog", e);
             return new ArrayList<>();
         }
 
@@ -1862,7 +1863,7 @@ public class ProjectManager {
 
                         // validate project has languages
                         if(languages.size() == 0) {
-                            Logger.e(this.getClass().getName(), "the source languages could not be loaded for the project "+p.getId());
+                            Logger.e(this.getClass().getName(), "reloadProject: the source languages could not be loaded for the project "+p.getId());
                             deleteProject(p);
                             removeProjectListEntry(p);
                         }
