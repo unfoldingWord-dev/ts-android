@@ -1,16 +1,17 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.slow;
 
 import android.content.Context;
-import android.test.ActivityInstrumentationTestCase2;
 import android.test.AndroidTestCase;
 
+import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 

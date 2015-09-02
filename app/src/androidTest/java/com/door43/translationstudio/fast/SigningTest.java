@@ -1,7 +1,9 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.fast;
 
 import android.test.ActivityInstrumentationTestCase2;
 
+import com.door43.translationstudio.MainActivity;
+import com.door43.translationstudio.Util;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.signing.Crypto;
 import com.door43.util.signing.SigningEntity;

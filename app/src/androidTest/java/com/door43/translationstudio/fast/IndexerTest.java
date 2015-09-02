@@ -1,9 +1,10 @@
-package com.door43.translationstudio;
+package com.door43.translationstudio.fast;
 
 import android.content.Context;
-import android.test.ActivityInstrumentationTestCase2;
 import android.test.InstrumentationTestCase;
 
+import com.door43.translationstudio.MainApplication;
+import com.door43.translationstudio.Util;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.util.AppContext;
