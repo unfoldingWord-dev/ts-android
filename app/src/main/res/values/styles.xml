@@ -60,12 +60,37 @@
         <item name="background">?attr/colorPrimary</item>
     </style>
 
+    <style name="AppActionBar.Light">
+        <item name="android:titleTextStyle">@style/AppActionBarTitleText.Light</item>
+        <item name="android:background">@color/shadow</item>
+
+        <!-- Support library compatability-->
+        <item name="titleTextStyle">@style/AppActionBarTitleText.Light</item>
+        <item name="background">@color/shadow</item>
+    </style>
+
     <style name="AppActionBarTitleText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
         <item name="android:textColor">@color/light_primary_text</item>
     </style>
 
+    <style name="AppActionBarTitleText.Light">
+        <item name="android:textColor">@color/dark_primary_text</item>
+    </style>
+
     <style name="AppActionBarTabText" parent="@style/Widget.AppCompat.Light.ActionBar.TabText">
         <item name="android:textColor">@color/light_primary_text</item>
+    </style>
+
+    <style name="Widget.CardContent" parent="android:Widget">
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingTop">24dp</item>
+        <item name="android:paddingBottom">24dp</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="Widget.CardContent.Horizontal">
+        <item name="android:orientation">horizontal</item>
     </style>
 
     <!-- Deprecated styles -->

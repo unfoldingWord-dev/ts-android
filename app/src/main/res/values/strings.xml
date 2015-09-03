@@ -313,4 +313,12 @@
     <string name="apk_update_available">A new version of the app is available</string>
     <string name="download_update">Download Update</string>
     <string name="upload_report_or_download_latest_apk">Downloading this update may fix your problem, continue?</string>
+    <string name="welcome">Welcome to translationStudio</string>
+    <string name="please_wait">Please wait</string>
+    <string name="updating_app">Performing updates</string>
+    <string name="preparing_for_first_use">Preparing app for first use. This may take a minute.</string>
+    <string name="loading_languages">Preparing languages</string>
+    <string name="title_activity_target_translations">Your Translation Projects</string>
+
+    <string name="hello_world">Hello world!</string>
 </resources>

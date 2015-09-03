@@ -12,21 +12,6 @@ public class LoadTargetLanguagesTask extends ManagedTask {
 
     @Override
     public void start() {
-        AppContext.projectManager().loadTargetLanguages(new ProjectManager.OnProgressListener() {
-            @Override
-            public void onProgress(double progress, String message) {
-                publishProgress(progress, message);
-            }
-
-            @Override
-            public void onSuccess() {
-
-            }
-        });
-    }
-
-    @Override
-    public int maxProgress() {
-        return 1000;
+        AppContext.getLibrary().getTargetLanguages();
     }
 }

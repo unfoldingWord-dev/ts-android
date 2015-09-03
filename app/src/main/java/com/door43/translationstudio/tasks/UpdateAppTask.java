@@ -11,7 +11,7 @@ import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;
 
 /**
- * Created by joel on 5/4/2015.
+ * This tasks performs any upgrades that need to occure between app versions
  */
 public class UpdateAppTask extends ManagedTask {
     public static final String TASK_ID = "update_app";

@@ -21,18 +21,18 @@ public abstract class TranslatorBaseActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         // make sure the projects were correctly loaded
-        String className = this.getClass().getName();
-        if(!className.equals(TermsActivity.class.getName()) &&
-            !className.equals(SplashScreenActivity.class.getName()) &&
-            !className.equals(CrashReporterActivity.class.getName()) &&
-            !className.equals(BugReporterActivity.class.getName()) &&
-            AppContext.projectManager().getProjects().length == 0) {
-
-            AppContext.projectManager().reset();
-            Intent intent = new Intent(this, SplashScreenActivity.class);
-            startActivity(intent);
-            finish();
-        }
+//        String className = this.getClass().getName();
+//        if(!className.equals(TermsActivity.class.getName()) &&
+//            !className.equals(SplashScreenActivity.class.getName()) &&
+//            !className.equals(CrashReporterActivity.class.getName()) &&
+//            !className.equals(BugReporterActivity.class.getName()) &&
+//            AppContext.projectManager().getProjects().length == 0) {
+//
+//            AppContext.projectManager().reset();
+//            Intent intent = new Intent(this, SplashScreenActivity.class);
+//            startActivity(intent);
+//            finish();
+//        }
     }
 
     protected void onResume() {

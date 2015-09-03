@@ -73,6 +73,16 @@ public class Library {
     }
 
     /**
+     * Checks if the library exists
+     * The app index and the target languages file must exist for this to return true
+     * @return
+     */
+    public boolean exists() {
+        File languagesFile = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
+        return languagesFile.exists() && mAppIndex.getProjects().length > 0;
+    }
+
+    /**
      * Performs a shallow merge from the app index to the download index to make downloads more efficient
      * @return
      */

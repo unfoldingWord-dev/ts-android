@@ -23,20 +23,26 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
-        <service android:name=".service.BackupService"
-            android:label="Backup Manager">
+
+        <service
+            android:name=".service.BackupService"
+            android:label="Backup Manager" >
         </service>
-        <service android:name=".service.BroadcastService"
-            android:label="Services Broadcaster">
+        <service
+            android:name=".service.BroadcastService"
+            android:label="Services Broadcaster" >
         </service>
-        <service android:name=".service.BroadcastListenerService"
-            android:label="Services Listener">
+        <service
+            android:name=".service.BroadcastListenerService"
+            android:label="Services Listener" >
         </service>
-        <service android:name=".service.ExportingService"
-            android:label="Exporting Service">
+        <service
+            android:name=".service.ExportingService"
+            android:label="Exporting Service" >
         </service>
-        <service android:name=".service.ImportingService"
-            android:label="Importing Service">
+        <service
+            android:name=".service.ImportingService"
+            android:label="Importing Service" >
         </service>
 
         <activity
@@ -155,17 +161,19 @@
         <activity
             android:name=".library.ProjectLibraryListActivity"
             android:label="@string/title_activity_project_library"
-            android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
-            android:parentActivityName=".GetMoreProjectsActivity" >
+            android:parentActivityName=".GetMoreProjectsActivity"
+            android:theme="@style/AppTheme.NoActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".GetMoreProjectsActivity" />
             <meta-data
                 android:name="android.app.searchable"
-                android:resource="@xml/searchable"/>
+                android:resource="@xml/searchable" />
+
             <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
+                <action android:name="android.intent.action.SEARCH" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
@@ -176,6 +184,11 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".library.ProjectLibraryListActivity" />
+        </activity>
+        <activity
+            android:name=".TargetTranslationsActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/title_activity_target_translations" >
         </activity>
     </application>
 
