@@ -7,7 +7,6 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Downloader;
-import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.TargetLanguage;
@@ -26,38 +25,28 @@ import java.io.ObjectOutputStream;
  */
 public class LibraryTest extends AndroidTestCase {
     private Library mLibrary;
-    private Indexer mDownloadIndex;
-    private Downloader mDownloader;
-    private Indexer mServerIndex;
-    private Indexer mAppIndex;
-    private File mIndexRoot;
-    private File mTempIndexRoot;
+    private File mLibraryDir;
 
     protected void setUp() throws Exception {
         MainApplication app = AppContext.context();
-        mTempIndexRoot = new File(app.getCacheDir(), "library_temp_test_index");
-        mIndexRoot = new File(app.getCacheDir(), "library_test_index");
-        mAppIndex = new Indexer("app", mIndexRoot);
-        mDownloadIndex = new Indexer("downloads", mTempIndexRoot);
-        mServerIndex = new Indexer("server", mTempIndexRoot);
+        mLibraryDir = new File(app.getFilesDir(), "test_library");
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
-        mDownloader = new Downloader(mDownloadIndex, server + app.getResources().getString(R.string.root_catalog_api));
-        mLibrary = new Library(app, mDownloader, mServerIndex, mAppIndex);
+        String rootApi = server + app.getResources().getString(R.string.root_catalog_api);
+        mLibrary = new Library(app, mLibraryDir, rootApi);
     }
 
     public void test01Clean() throws Exception {
-        FileUtils.deleteQuietly(mTempIndexRoot);
-        FileUtils.deleteQuietly(mIndexRoot);
+        FileUtils.deleteQuietly(mLibraryDir);
     }
 
     public void test02ExtractLibrary() throws Exception {
         // NOTE: the default library is large so we don't include in the repo. So this test should always fall through
-        mLibrary.extractDefaultLibrary();
+        mLibrary.deployDefaultLibrary();
     }
 
     public void test03CheckForAvailableUpdates() throws Exception {
         // pre-populate download index with shallow copy
-        mDownloadIndex.mergeIndex(mAppIndex, true);
+        mLibrary.seedDownloadIndex();
 
         LibraryUpdates updates = mLibrary.getAvailableLibraryUpdates();
 
@@ -99,7 +88,6 @@ public class LibraryTest extends AndroidTestCase {
     }
 
     public void test999999Cleanup() throws Exception {
-        FileUtils.deleteQuietly(mTempIndexRoot);
-        FileUtils.deleteQuietly(mIndexRoot);
+        FileUtils.deleteQuietly(mLibraryDir);
     }
 }

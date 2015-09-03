@@ -1,6 +1,8 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 import com.door43.util.Zip;
 
@@ -20,18 +22,26 @@ import java.util.List;
  * Created by joel on 8/29/2015.
  */
 public class Library {
-    private final Downloader mDownloader;
+    public static final String TARGET_LANGUAGES_FILE = "languages.json";
+    public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private final Indexer mServerIndex;
     private final Indexer mAppIndex;
+    private final File mLibraryDir;
+    private final Indexer mDownloaderIndex;
+    private final File mIndexDir;
     private final Context mContext;
     private LibraryUpdates mLibraryUpdates = new LibraryUpdates();
     private static TargetLanguage[] mTargetLanguages;
+    private Downloader mDownloader;
 
-    public Library(Context context, Downloader downloader, Indexer serverIndex, Indexer appIndex) {
+    public Library(Context context, File libraryDir, String rootApiUrl) {
         mContext = context;
-        mDownloader = downloader;
-        mServerIndex = serverIndex;
-        mAppIndex = appIndex;
+        mLibraryDir = libraryDir;
+        mIndexDir = new File(libraryDir, "index");
+        mDownloaderIndex = new Indexer("downloads", mIndexDir);
+        mServerIndex = new Indexer("server", mIndexDir);
+        mAppIndex = new Indexer("app", mIndexDir);
+        mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
     }
 
     /**
@@ -40,11 +50,18 @@ public class Library {
      * into the assets dir and extracting it.
      *
      */
-    public Boolean extractDefaultLibrary() {
-        mAppIndex.destroy();
+    public Boolean deployDefaultLibrary() {
         try {
-            File libraryArchive = new File(mContext.getCacheDir(), "library.zip");
-            Util.writeStream(mContext.getAssets().open("library.zip"), libraryArchive);
+            // languages
+            File languagesFile = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
+            Util.writeStream(mContext.getAssets().open(TARGET_LANGUAGES_FILE), languagesFile);
+
+            // library index
+            File libraryArchive = new File(mLibraryDir, DEFAULT_LIBRARY_ZIP);
+            Util.writeStream(mContext.getAssets().open(DEFAULT_LIBRARY_ZIP), libraryArchive);
+            FileUtils.deleteQuietly(mAppIndex.getIndexDir());
+            mAppIndex.getIndexDir().mkdirs();
+            // TODO: we should update the library export to not include the root folder so we are not dependent on the name.
             Zip.unzip(libraryArchive, mAppIndex.getIndexDir().getParentFile());
             FileUtils.deleteQuietly(libraryArchive);
             mAppIndex.reload();
@@ -55,6 +72,25 @@ public class Library {
         return false;
     }
 
+    /**
+     * Performs a shallow merge from the app index to the download index to make downloads more efficient
+     * @return
+     */
+    public Boolean seedDownloadIndex() {
+        try {
+            mDownloaderIndex.mergeIndex(mAppIndex, true);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Downloads the resource catalog from the server
+     * @param projectId
+     * @param sourceLanguageId
+     */
     private void downloadResourceList(String projectId, String sourceLanguageId) {
         if(mDownloader.downloadResourceList(projectId, sourceLanguageId)) {
             for(String resourceId:mDownloader.getIndex().getResources(projectId, sourceLanguageId)) {
@@ -77,6 +113,10 @@ public class Library {
         }
     }
 
+    /**
+     * Downloads the source language catalog from the server
+     * @param projectId
+     */
     private void downloadSourceLanguageList(String projectId) {
         if(mDownloader.downloadSourceLanguageList(projectId)) {
             for(String sourceLanguageId:mDownloader.getIndex().getSourceLanguages(projectId)) {
@@ -98,7 +138,7 @@ public class Library {
     }
 
     /**
-     * Returns a list of update that are available on the server
+     * Returns a list of updates that are available on the server
      * @return
      */
     public LibraryUpdates getAvailableLibraryUpdates() {
@@ -157,6 +197,11 @@ public class Library {
         return success;
     }
 
+    /**
+     * Downloads a source translation from the server and merges it into the app index
+     * @param translation
+     * @return
+     */
     public Boolean downloadSourceTranslation(SourceTranslation translation) {
         if(downloadSourceTranslationWithoutMerging(translation)) {
             try {
@@ -171,6 +216,11 @@ public class Library {
         }
     }
 
+    /**
+     * Downloads a source translation from the server without merging into the app index
+     * @param translation
+     * @return
+     */
     private Boolean downloadSourceTranslationWithoutMerging(SourceTranslation translation) {
         boolean success = true;
         success = mDownloader.downloadSource(translation) ? success : false;
@@ -206,7 +256,8 @@ public class Library {
         if(mTargetLanguages == null) {
             List<TargetLanguage> languages = new ArrayList<>();
             try {
-                String catalog = Util.readStream(mContext.getAssets().open("languages.json"));
+                File languagesFile = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
+                String catalog = FileUtils.readFileToString(languagesFile);
                 JSONArray json = new JSONArray(catalog);
                 for (int i = 0; i < json.length(); i++) {
                     JSONObject item = json.getJSONObject(i);

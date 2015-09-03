@@ -8,12 +8,10 @@ import java.io.File;
  * Created by joel on 8/29/2015.
  */
 public class Translator {
-    private final Indexer mIndex;
     private final SharedPreferences mPreferences;
     private final File mRootDir;
 
-    public Translator(Indexer index, SharedPreferences preferences, File rootDir) {
-        mIndex = index;
+    public Translator(SharedPreferences preferences, File rootDir) {
         mPreferences = preferences;
         mRootDir = rootDir;
     }

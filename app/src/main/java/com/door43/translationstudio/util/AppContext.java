@@ -90,6 +90,8 @@ public class AppContext {
         return Settings.Secure.getString(mContext.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
+
+
     /**
      * Returns the global event bus
      * @deprecated please use com.door43.util.threads.TaskManager instead
