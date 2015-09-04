@@ -124,15 +124,15 @@ public class LibraryProjectAdapter extends BaseAdapter {
                 // check if an update for this project exists
                 if(AppContext.projectManager().isProjectUpdateAvailable(getItem(i))) {
                     if(LibraryTempData.getEnableEditing()) {
-                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small_disabled));
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
                     } else {
-                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
                     }
                 } else {
                     if(LibraryTempData.getEnableEditing()) {
-                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                     } else {
-                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                        holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                     }
                 }
                 holder.downloadedImage.setVisibility(View.VISIBLE);

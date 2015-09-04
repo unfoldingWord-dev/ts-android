@@ -74,7 +74,7 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                 mBrowseDialog = new AlertDialog.Builder(GetMoreProjectsActivity.this)
                         .setTitle(R.string.update_projects)
                         .setMessage(R.string.use_internet_confirmation)
-                        .setIcon(R.drawable.ic_update_small)
+                        .setIcon(R.drawable.icon_update_cloud_blue)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {

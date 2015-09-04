@@ -76,7 +76,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/ic_project_status_audio_light"
+            android:background="@drawable/ic_project_status_blank"
             android:id="@+id/audioIcon" />
 
         <ImageView

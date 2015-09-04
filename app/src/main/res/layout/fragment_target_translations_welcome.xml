@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_height="wrap_content"
+        android:weightSum="1">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_weight=".8"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <android.support.v7.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/card_margin">
+                <LinearLayout
+                    style="@style/Widget.CardContent.Horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/translations_welcome"
+                        android:layout_weight="1"
+                        android:textColor="@color/dark_primary_text"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+
+                </LinearLayout>
+
+
+            </android.support.v7.widget.CardView>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start a new translation"
+                android:elevation="2dp"
+                android:translationZ="6dp"
+                style="@style/Widget.Button.Green"
+                android:id="@+id/extraAddTargetTranslationButton" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

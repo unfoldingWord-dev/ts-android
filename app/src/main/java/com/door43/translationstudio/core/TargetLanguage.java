@@ -8,11 +8,19 @@ import org.json.JSONObject;
  */
 public class TargetLanguage {
 
-    private final LanguageDirection direction;
-    private final Boolean isGatewayLanguage;
-    private final String region;
-    private final String name;
-    private final String code;
+    public final LanguageDirection direction;
+    public final Boolean isGatewayLanguage;
+    public final String region;
+    public final String name;
+    public final String code;
+
+    /**
+     * Returns the language code for the target language
+     * @return
+     */
+    public String getId() {
+        return code;
+    }
 
     public enum LanguageDirection {
         LeftToRight("ltr"),
@@ -26,6 +34,11 @@ public class TargetLanguage {
 
         public String getLabel() {
             return label;
+        }
+
+        @Override
+        public String toString() {
+            return getLabel();
         }
 
         /**

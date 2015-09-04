@@ -174,7 +174,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                 new AlertDialog.Builder(DeveloperToolsActivity.this)
                         .setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_all_confirmation)
-                        .setIcon(R.drawable.ic_download_small)
+                        .setIcon(R.drawable.icon_update_cloud_blue)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -257,7 +257,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         if(!isInterrupted()) {
                             new AlertDialog.Builder(DeveloperToolsActivity.this)
                                     .setTitle(R.string.success)
-                                    .setIcon(R.drawable.ic_check_small)
+                                    .setIcon(R.drawable.ic_done_black_24dp)
                                     .setMessage(R.string.source_export_complete)
                                     .setPositiveButton(R.string.menu_share, new DialogInterface.OnClickListener() {
                                         @Override
@@ -347,7 +347,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                             // the download is complete
                             new AlertDialog.Builder(DeveloperToolsActivity.this)
                                     .setTitle(R.string.success)
-                                    .setIcon(R.drawable.ic_check_small)
+                                    .setIcon(R.drawable.ic_done_black_24dp)
                                     .setMessage(R.string.download_complete)
                                     .setCancelable(false)
                                     .setPositiveButton(R.string.label_ok, null)
@@ -393,7 +393,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         mDownloadProgressDialog.setCanceledOnTouchOutside(false);
                         mDownloadProgressDialog.setOnCancelListener(DeveloperToolsActivity.this);
                         mDownloadProgressDialog.setMax(100);
-                        mDownloadProgressDialog.setIcon(R.drawable.ic_download_small);
+                        mDownloadProgressDialog.setIcon(R.drawable.icon_update_cloud_blue);
                         if(task instanceof DownloadAvailableProjectsTask) {
                             mDownloadProgressDialog.setTitle(getResources().getString(R.string.loading));
                         } else {

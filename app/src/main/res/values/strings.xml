@@ -319,6 +319,6 @@
     <string name="preparing_for_first_use">Preparing app for first use. This may take a minute.</string>
     <string name="loading_languages">Preparing languages</string>
     <string name="title_activity_target_translations">Your Translation Projects</string>
-
-    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_new_target_translation">New Translation</string>
+    <string name="translations_welcome"><![CDATA[Welcome!\nThis is your Home Screen. When you have translation projects on this device they will appear here.\n\nYou can start a new translatin any time by tapping the blue button in the top right.]]></string>
 </resources>

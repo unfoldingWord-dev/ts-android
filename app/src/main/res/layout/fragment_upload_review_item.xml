@@ -27,7 +27,7 @@
             android:layout_gravity="center_vertical"
             android:id="@+id/imageView"
             android:layout_marginLeft="5dp"
-            android:background="@drawable/ic_check_small_disabled"
+            android:background="@drawable/ic_done_black_24dp"
             android:adjustViewBounds="false" />
     </LinearLayout>
 

@@ -74,7 +74,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
                     mConfirmDialog = new AlertDialog.Builder(ProjectSettingsActivity.this)
                             .setTitle(R.string.import_draft)
                             .setMessage(R.string.import_draft_confirmation)
-                            .setIcon(R.drawable.ic_new_pencil_small)
+                            .setIcon(R.drawable.icon_edit_blue)
                             .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {

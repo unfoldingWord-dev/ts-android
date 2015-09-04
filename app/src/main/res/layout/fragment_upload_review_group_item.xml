@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/statusImage"
-                android:background="@drawable/ic_check_small_disabled"
+                android:background="@drawable/ic_done_black_24dp"
                 android:adjustViewBounds="false" />
         </LinearLayout>
     </RelativeLayout>

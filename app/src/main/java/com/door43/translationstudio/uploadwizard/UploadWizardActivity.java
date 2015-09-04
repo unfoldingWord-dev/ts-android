@@ -72,7 +72,7 @@ public class UploadWizardActivity extends WizardActivity implements GenericTaskW
         addStep(new ContactInfoFragment());
         addStep(new PreviewFragment());
 
-        mTaskWatcher = new GenericTaskWatcher(this, R.string.uploading, R.drawable.ic_cloud_small);
+        mTaskWatcher = new GenericTaskWatcher(this, R.string.uploading, R.drawable.icon_backup_blue);
         mTaskWatcher.setOnFinishedListener(this);
         // TODO: do we want to allow users to cancel their uploads?
 

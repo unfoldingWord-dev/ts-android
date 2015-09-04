@@ -3,16 +3,17 @@ package com.door43.translationstudio.core;
 import android.content.SharedPreferences;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 8/29/2015.
  */
 public class Translator {
-    private final SharedPreferences mPreferences;
     private final File mRootDir;
 
-    public Translator(SharedPreferences preferences, File rootDir) {
-        mPreferences = preferences;
+    public Translator(File rootDir) {
         mRootDir = rootDir;
     }
 
@@ -20,7 +21,7 @@ public class Translator {
      * Returns the translation that was last opened
      * @return
      */
-    public TargetTranslation getLastTranslation() {
+    public TargetTranslation getLastTargetTranslation() {
         return null;
     }
 
@@ -28,28 +29,39 @@ public class Translator {
      * Returns an array of all active translations
      * @return
      */
-    public TargetTranslation[] getTranslations() {
-        return null;
+    public TargetTranslation[] getTargetTranslations() {
+        final List<TargetTranslation> translations = new ArrayList<>();
+        mRootDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                File file = new File(dir, filename);
+                if(file.isDirectory()) {
+                    String[] complexId = filename.split("-", 3);
+                    if(complexId.length == 3) {
+                        String projectId = complexId[1];
+                        String targetLanguageId = complexId[2];
+                        translations.add(new TargetTranslation(targetLanguageId, projectId, file));
+                    }
+                }
+                return false;
+            }
+        });
+
+        return translations.toArray(new TargetTranslation[translations.size()]);
     }
 
     /**
-     * Returns a project
-     * @param translation
+     * Initializes a new target translation
+     * @param targetLanguage the target language the project will be translated into
+     * @param project the project that will be translated
      * @return
      */
-    public Project getProject(SourceTranslation translation) {
-        return null;
-    }
-
-    /**
-     * Returns the list of all available projects
-     * These projects are loaded with their source language set to one of the preferred locals
-     * so that the user can read them
-     *
-     * @param preferredLocales
-     * @return
-     */
-    public Project[] getProjects(String[] preferredLocales) {
+    public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, Project project) {
+        try {
+            return TargetTranslation.generate(targetLanguage, project, mRootDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
@@ -70,12 +82,4 @@ public class Translator {
         return null;
     }
 
-    /**
-     * Returns all the source languages available for the project
-     * @param project
-     * @return
-     */
-    public SourceLanguage[] getSourceLanguages(Project project) {
-        return null;
-    }
 }

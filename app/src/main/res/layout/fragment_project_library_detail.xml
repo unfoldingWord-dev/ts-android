@@ -79,7 +79,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Delete Project"
-            android:drawableLeft="@drawable/ic_close_small"
+            android:drawableLeft="@drawable/ic_delete_white_24dp"
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
             android:drawablePadding="-20sp"

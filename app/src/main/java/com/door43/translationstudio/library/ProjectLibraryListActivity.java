@@ -215,7 +215,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 mConfirmDialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_all_confirmation)
-                        .setIcon(R.drawable.ic_download_small)
+                        .setIcon(R.drawable.icon_update_cloud_blue)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -333,7 +333,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                 if(task != null && !task.isCanceled()) {
                      new AlertDialog.Builder(ProjectLibraryListActivity.this)
                              .setTitle(R.string.success)
-                             .setIcon(R.drawable.ic_check_small)
+                             .setIcon(R.drawable.ic_done_black_24dp)
                              .setMessage(R.string.download_complete)
                              .setCancelable(false)
                              .setPositiveButton(R.string.label_ok, null)
@@ -364,7 +364,7 @@ public class ProjectLibraryListActivity extends TranslatorBaseActivity implement
                         mDownloadProgressDialog.setCanceledOnTouchOutside(false);
                         mDownloadProgressDialog.setOnCancelListener(ProjectLibraryListActivity.this);
                         mDownloadProgressDialog.setMax(100);
-                        mDownloadProgressDialog.setIcon(R.drawable.ic_download_small);
+                        mDownloadProgressDialog.setIcon(R.drawable.icon_update_cloud_blue);
                         mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
                         mDownloadProgressDialog.setMessage("");
                     }

@@ -86,10 +86,10 @@ public class CheckingQuestionAdapter extends BaseExpandableListAdapter {
         }
 
         if(getChild(groupPosition, childPosition).isViewed()) {
-            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
             holder.answerLayout.setVisibility(View.VISIBLE);
         } else {
-            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
             holder.answerLayout.setVisibility(View.GONE);
         }
 
@@ -174,9 +174,9 @@ public class CheckingQuestionAdapter extends BaseExpandableListAdapter {
         holder.title.setText(String.format(mContext.getResources().getString(R.string.label_chapter_title_detailed), getGroup(groupPosition).getId()));
         // TODO: this will be expensive we need a better way to keep track of what's been viewed. perhaps we can check when the user clicks on an item and then cache the value. we could also cache the value when laoding the questions.
         if(getGroup(groupPosition).isViewedCached()) {
-            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
         } else {
-            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+            holder.imageView.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
         }
         return v;
     }

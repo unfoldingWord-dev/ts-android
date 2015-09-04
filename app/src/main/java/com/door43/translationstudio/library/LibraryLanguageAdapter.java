@@ -111,7 +111,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         holder.downloadTask = (DownloadLanguageTask)TaskManager.getTask(mTaskIdPrefix+mProjectId+"-"+getItem(i).getId());
         if(holder.downloadTask != null) {
             holder.downloadedImage.setVisibility(View.VISIBLE);
-            holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_download_small));
+            holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
             holder.downloadTask.addOnProgressListener(new ManagedTask.OnProgressListener() {
                 @Override
                 public void onProgress(ManagedTask task, final double progress, String message) {
@@ -139,9 +139,9 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                         public void run() {
                             staticHolder.progressBar.setVisibility(View.INVISIBLE);
                             if (LibraryTempData.getEnableEditing()) {
-                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                             } else {
-                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                             }
                             staticHolder.downloadedImage.setVisibility(View.VISIBLE);
                         }
@@ -164,15 +164,15 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                 }
                 if(hasUpdate) {
                     if(LibraryTempData.getEnableEditing()) {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small_disabled));
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
                     } else {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_update_small));
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
                     }
                 } else {
                     if(LibraryTempData.getEnableEditing()) {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small_disabled));
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                     } else {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_check_small));
+                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                     }
                 }
                 staticHolder.downloadedImage.setVisibility(View.VISIBLE);

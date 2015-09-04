@@ -67,11 +67,11 @@ public class UploadValidationAdapter extends BaseAdapter {
         // image
         ImageView imageView = (ImageView)itemView.findViewById(R.id.validationSuccessImage);
         if(getItem(i).getStatus() == UploadValidationItem.Status.ERROR) {
-            imageView.setBackgroundResource(R.drawable.ic_close_small);
+            imageView.setBackgroundResource(R.drawable.ic_clear_black_24dp);
         } else if(getItem(i).getStatus() == UploadValidationItem.Status.WARNING) {
             imageView.setBackgroundResource(R.drawable.ic_warning);
         } else {
-            imageView.setBackgroundResource(R.drawable.ic_check_small);
+            imageView.setBackgroundResource(R.drawable.ic_done_black_24dp);
         }
         return itemView;
     }

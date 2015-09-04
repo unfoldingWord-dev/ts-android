@@ -13,6 +13,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Navigator;
 import com.door43.translationstudio.projects.ProjectManager;
@@ -70,6 +71,14 @@ public class AppContext {
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
         String rootApiUrl = server + mContext.getResources().getString(R.string.root_catalog_api);
         return new Library(mContext, new File(mContext.getFilesDir(), "library"), rootApiUrl);
+    }
+
+    /**
+     * Returns an instance of the translator
+     * @return
+     */
+    public static Translator getTranslator() {
+        return new Translator(new File(mContext.getFilesDir(), "translations"));
     }
 
     /**

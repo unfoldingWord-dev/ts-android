@@ -279,12 +279,12 @@ public class ModelItemAdapter extends BaseAdapter {
                 if(staticIsSelected) {
                     if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.icon_edit_white);
                     if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global);
-                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio);
+//                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio);
                     if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes);
                 } else {
                     if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.icon_edit_blue);
                     if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global_light);
-                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio_light);
+//                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio_light);
                     if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes_light);
                 }
                 if(isTranslating || isTranslatingGlobal || hasAudio || isTranslatingNotes) {
