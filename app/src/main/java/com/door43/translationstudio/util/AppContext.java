@@ -13,6 +13,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Navigator;

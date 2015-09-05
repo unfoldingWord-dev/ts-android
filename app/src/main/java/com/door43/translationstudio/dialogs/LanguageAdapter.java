@@ -94,12 +94,12 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             v = inflater.inflate(R.layout.fragment_target_language_list_item, null);
-            TextView nameText = (TextView) v.findViewById(R.id.target_language_name);
-            TextView idText = (TextView) v.findViewById(R.id.target_language_id);
-            ImageView wrenchImage = (ImageView) v.findViewById(R.id.translationStatusIcon);
+            TextView nameText = (TextView) v.findViewById(R.id.languageName);
+            TextView idText = (TextView) v.findViewById(R.id.languageCode);
+//            ImageView wrenchImage = (ImageView) v.findViewById(R.id.translationStatusIcon);
             holder.languageNameView = nameText;
             holder.languageIdView = idText;
-            holder.translationStatusIcon = wrenchImage;
+//            holder.translationStatusIcon = wrenchImage;
             v.setTag(holder);
         } else {
             holder = (LanguageHolder)v.getTag();

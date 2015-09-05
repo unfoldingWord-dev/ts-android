@@ -3,31 +3,23 @@
     android:orientation="horizontal" android:layout_width="fill_parent"
     android:layout_height="@dimen/list_item_height"
     android:gravity="center_vertical"
-    android:padding="10dp">
+    android:padding="16dp">
 
-    <TextView android:id="@+id/target_language_name"
+    <TextView android:id="@+id/languageName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textStyle="bold"
         android:textSize="@dimen/title"
-        android:text="name"
-        android:textColor="@color/dark_primary_text"
-        android:paddingRight="10dp" />
+        android:text="English"
+        android:textColor="@color/dark_primary_text" />
 
-    <TextView android:id="@+id/target_language_id"
+    <TextView android:id="@+id/languageCode"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="id"
+        android:text="en"
         android:textColor="@color/dark_secondary_text"
         android:layout_weight="1"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp" />
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/translationStatusIcon"
-        android:background="@drawable/icon_edit_dark"
-        android:layout_gravity="center_vertical"
-        android:baselineAlignBottom="false"
-        android:paddingLeft="10dp" />
+        android:textSize="@dimen/body"
+        android:gravity="right"/>
+
 </LinearLayout>

@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by joel on 8/29/2015.
@@ -287,5 +289,114 @@ public class Library {
             return mTargetLanguages;
         }
         return null;
+    }
+
+    /**
+     * Returns a list of project categories
+     *
+     * @param languageId the preferred language in which the category names will be returned. The default is english
+     * @return
+     */
+    public ProjectCategory[] getProjectCategories(String languageId) {
+        // TODO: we need to update this to support multiple levels of categories. Right now it only suports ones.
+        // we may want to create a second method for retrieving sub categories.
+
+        Map<String, ProjectCategory> categories = new HashMap<>();
+
+        // TODO: we may need the index to generate this info for us for better performance
+        String[] projectIds = mAppIndex.getProjects();
+        for(String projectId:projectIds) {
+            JSONObject projectJson = mAppIndex.getProject(projectId);
+            try {
+                JSONArray metaJson = projectJson.getJSONArray("meta");
+                String categoryId = null;
+                JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, languageId);
+                JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
+                String title = projectLanguageJson.getString("name");
+                if(metaJson.length() > 0) {
+                    categoryId = metaJson.getString(0);
+                    JSONArray metaLanguageJson = projectLanguageJson.getJSONArray("meta");
+                    title = metaLanguageJson.getString(0);
+                }
+                // TODO: we need to provide the icon path
+                ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, languageId, 0);
+                if(!categories.containsKey(cat.getId())) {
+                    categories.put(cat.getId(), cat);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return categories.values().toArray(new ProjectCategory[categories.size()]);
+    }
+
+    /**
+     * Returns a list of project categories beneath the given category
+     * @param parentCategory
+     * @return
+     */
+    public ProjectCategory[] getProjectCategories(ProjectCategory parentCategory) {
+        Map<String, ProjectCategory> categories = new HashMap<>();
+
+        // TODO: we may need the index to generate this info for us for better performance
+        String[] projectIds = mAppIndex.getProjects();
+        for(String projectId:projectIds) {
+            JSONObject projectJson = mAppIndex.getProject(projectId);
+            try {
+                JSONArray metaJson = projectJson.getJSONArray("meta");
+
+                if(metaJson.length() > parentCategory.categoryDepth && metaJson.getString(parentCategory.categoryDepth + 1).equals(parentCategory.categoryId)) {
+                    String categoryId = null;
+                    JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, parentCategory.sourcelanguageId);
+                    JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
+                    String title = projectLanguageJson.getString("name");
+
+                    if(metaJson.length() > parentCategory.categoryDepth + 1) {
+                        categoryId = metaJson.getString(parentCategory.categoryDepth + 1);
+                        JSONArray metaLanguageJson = projectLanguageJson.getJSONArray("meta");
+                        title = metaLanguageJson.getString(parentCategory.categoryDepth + 1);
+                    }
+
+                    // TODO: we need to provide the icon path
+                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, parentCategory.sourcelanguageId, parentCategory.categoryDepth + 1);
+                    if(!categories.containsKey(cat.getId())) {
+                        categories.put(cat.getId(), cat);
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return categories.values().toArray(new ProjectCategory[categories.size()]);
+    }
+
+    /**
+     * Returns the preferred source language if it exists
+     *
+     * If the source language does not exist it will defaul to english.
+     * If english does not exist it will return the first available source language
+     * If no source language is available it will return null.
+     *
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    private JSONObject getPreferredSourceLanguage(String projectId, String sourceLanguageId) {
+        // preferred language
+        JSONObject sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, sourceLanguageId);
+        // default (en)
+        if(sourceLanguageJson == null) {
+            sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, "en");
+        }
+        // first available
+        if(sourceLanguageJson == null) {
+            String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+            if(sourceLanguageIds.length > 0) {
+                sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, sourceLanguageIds[0]);
+            }
+        }
+        return sourceLanguageJson;
     }
 }
