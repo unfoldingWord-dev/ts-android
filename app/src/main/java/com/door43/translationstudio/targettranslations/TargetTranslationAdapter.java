@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -77,7 +78,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
         public TextView mTitleView;
         public TextView mLanguageView;
         public ProgressPieView mProgressView;
-        public FloatingActionButton mInfoButton;
+        public ImageButton mInfoButton;
 
         public ViewHolder(View view) {
             mIconView = (ImageView) view.findViewById(R.id.projectIcon);
@@ -85,7 +86,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
             mLanguageView = (TextView) view.findViewById(R.id.targetLanguage);
             mProgressView = (ProgressPieView) view.findViewById(R.id.translationProgress);
             mProgressView.setMax(100);
-            mInfoButton = (FloatingActionButton) view.findViewById(R.id.infoButton);
+            mInfoButton = (ImageButton) view.findViewById(R.id.infoButton);
             view.setTag(this);
         }
     }
