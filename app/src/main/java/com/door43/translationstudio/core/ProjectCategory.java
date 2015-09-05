@@ -9,6 +9,7 @@ public class ProjectCategory {
     public final int categoryDepth;
     public final String title;
     public final String sourcelanguageId;
+    public final String sort;
 
     /**
      *
@@ -18,11 +19,12 @@ public class ProjectCategory {
      * @param sourceLanguageId
      * @param categoryDepth the depth of the category in the hierarchy of categories.
      */
-    public ProjectCategory(String title, String categoryId, String projectId, String sourceLanguageId, int categoryDepth) {
+    public ProjectCategory(String title, String categoryId, String projectId, String sourceLanguageId, String sort, int categoryDepth) {
         this.title = title;
         this.categoryId = categoryId;
         this.projectId = projectId;
         this.sourcelanguageId = sourceLanguageId;
+        this.sort = sort;
         this.categoryDepth = categoryDepth;
     }
 

@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -298,10 +300,7 @@ public class Library {
      * @return
      */
     public ProjectCategory[] getProjectCategories(String languageId) {
-        // TODO: we need to update this to support multiple levels of categories. Right now it only suports ones.
-        // we may want to create a second method for retrieving sub categories.
-
-        Map<String, ProjectCategory> categories = new HashMap<>();
+        Map<String, ProjectCategory> categoriesMap = new HashMap<>();
 
         // TODO: we may need the index to generate this info for us for better performance
         String[] projectIds = mAppIndex.getProjects();
@@ -313,22 +312,25 @@ public class Library {
                 JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, languageId);
                 JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
                 String title = projectLanguageJson.getString("name");
+                String sort = projectJson.getString("sort");
                 if(metaJson.length() > 0) {
                     categoryId = metaJson.getString(0);
                     JSONArray metaLanguageJson = projectLanguageJson.getJSONArray("meta");
                     title = metaLanguageJson.getString(0);
                 }
                 // TODO: we need to provide the icon path
-                ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, languageId, 0);
-                if(!categories.containsKey(cat.getId())) {
-                    categories.put(cat.getId(), cat);
+                ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, languageId, sort, 0);
+                if(!categoriesMap.containsKey(cat.getId())) {
+                    categoriesMap.put(cat.getId(), cat);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
 
-        return categories.values().toArray(new ProjectCategory[categories.size()]);
+        List<ProjectCategory> categories = new ArrayList<>(categoriesMap.values());
+        sortProjectCategories(categories);
+        return categories.toArray(new ProjectCategory[categories.size()]);
     }
 
     /**
@@ -337,7 +339,7 @@ public class Library {
      * @return
      */
     public ProjectCategory[] getProjectCategories(ProjectCategory parentCategory) {
-        Map<String, ProjectCategory> categories = new HashMap<>();
+        Map<String, ProjectCategory> categoriesMap = new HashMap<>();
 
         // TODO: we may need the index to generate this info for us for better performance
         String[] projectIds = mAppIndex.getProjects();
@@ -346,11 +348,12 @@ public class Library {
             try {
                 JSONArray metaJson = projectJson.getJSONArray("meta");
 
-                if(metaJson.length() > parentCategory.categoryDepth && metaJson.getString(parentCategory.categoryDepth + 1).equals(parentCategory.categoryId)) {
+                if(metaJson.length() > parentCategory.categoryDepth && metaJson.getString(parentCategory.categoryDepth).equals(parentCategory.categoryId)) {
                     String categoryId = null;
                     JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, parentCategory.sourcelanguageId);
                     JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
                     String title = projectLanguageJson.getString("name");
+                    String sort = projectJson.getString("sort");
 
                     if(metaJson.length() > parentCategory.categoryDepth + 1) {
                         categoryId = metaJson.getString(parentCategory.categoryDepth + 1);
@@ -359,17 +362,27 @@ public class Library {
                     }
 
                     // TODO: we need to provide the icon path
-                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, parentCategory.sourcelanguageId, parentCategory.categoryDepth + 1);
-                    if(!categories.containsKey(cat.getId())) {
-                        categories.put(cat.getId(), cat);
+                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, parentCategory.sourcelanguageId, sort, parentCategory.categoryDepth + 1);
+                    if(!categoriesMap.containsKey(cat.getId())) {
+                        categoriesMap.put(cat.getId(), cat);
                     }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+        List<ProjectCategory> categories = new ArrayList<>(categoriesMap.values());
+        sortProjectCategories(categories);
+        return categories.toArray(new ProjectCategory[categories.size()]);
+    }
 
-        return categories.values().toArray(new ProjectCategory[categories.size()]);
+    private static void sortProjectCategories(List<ProjectCategory> categories) {
+        Collections.sort(categories, new Comparator<ProjectCategory>() {
+            @Override
+            public int compare(ProjectCategory lhs, ProjectCategory rhs) {
+                return Integer.parseInt(lhs.sort) - Integer.parseInt(rhs.sort);
+            }
+        });
     }
 
     /**
