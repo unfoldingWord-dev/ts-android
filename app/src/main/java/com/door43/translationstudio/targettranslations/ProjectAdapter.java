@@ -58,6 +58,7 @@ public class ProjectAdapter extends BaseAdapter {
         } else {
             holder.mMoreImage.setVisibility(View.VISIBLE);
         }
+        // TODO: render icon
 
         return v;
     }

@@ -1,7 +1,5 @@
 package com.door43.translationstudio.core;
 
-import android.content.SharedPreferences;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -15,14 +13,6 @@ public class Translator {
 
     public Translator(File rootDir) {
         mRootDir = rootDir;
-    }
-
-    /**
-     * Returns the translation that was last opened
-     * @return
-     */
-    public TargetTranslation getLastTargetTranslation() {
-        return null;
     }
 
     /**
@@ -53,12 +43,12 @@ public class Translator {
     /**
      * Initializes a new target translation
      * @param targetLanguage the target language the project will be translated into
-     * @param project the project that will be translated
+     * @param projectId the id of the project that will be translated
      * @return
      */
-    public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, Project project) {
+    public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, String projectId) {
         try {
-            return TargetTranslation.generate(targetLanguage, project, mRootDir);
+            return TargetTranslation.generate(targetLanguage, projectId, mRootDir);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -66,20 +56,17 @@ public class Translator {
     }
 
     /**
-     * Returns a target language
-     * @param targetLanguageId
+     * Returns a target translation if it exists
+     * @param targetTranslationId
+     * @param projectId
      * @return
      */
-    public TargetLanguage getTargetLanguage(String targetLanguageId) {
-        return null;
+    public TargetTranslation getTargetTranslation(String targetTranslationId, String projectId) {
+        File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, projectId, mRootDir);
+        if(dir.exists()) {
+            return new TargetTranslation(targetTranslationId, projectId, mRootDir);
+        } else {
+            return null;
+        }
     }
-
-    /**
-     * Returns an array of all available target languages
-     * @return
-     */
-    public TargetLanguage[] getTargetLanguages() {
-        return null;
-    }
-
 }

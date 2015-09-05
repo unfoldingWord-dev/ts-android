@@ -22,6 +22,10 @@ public class TargetTranslationsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_target_translations);
+    }
+
+    public void onResume() {
+        super.onResume();
 
         mAdapter = new TargetTranslationAdapter(AppContext.getTranslator().getTargetTranslations());
 
@@ -30,7 +34,7 @@ public class TargetTranslationsActivity extends AppCompatActivity {
             FrameLayout containerView = (FrameLayout)findViewById(R.id.fragment_container);
             containerView.addView(welcomeView);
         } else {
-            ListView listView = (ListView)getLayoutInflater().inflate(R.layout.fragment_target_translation_list, null);
+            View listView = getLayoutInflater().inflate(R.layout.fragment_target_translation_list, null);
             FrameLayout containerView = (FrameLayout)findViewById(R.id.fragment_container);
             containerView.addView(listView);
         }

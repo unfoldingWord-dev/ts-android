@@ -4,13 +4,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.util.AppContext;
 
 public class NewTargetTranslationActivity extends AppCompatActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
     private TargetLanguage mSelectedTargetLanguage = null;
-    private String mSelectedProjectId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +42,15 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
 
     @Override
     public void onItemClick(String projectId) {
-        mSelectedProjectId = projectId;
-
-        // TODO: finish
+        Translator translator = AppContext.getTranslator();
+        TargetTranslation existingTranslation = translator.getTargetTranslation(mSelectedTargetLanguage.code, projectId);
+        if(existingTranslation == null) {
+            // create new target translation
+            TargetTranslation tranlsation = AppContext.getTranslator().createTargetTranslation(mSelectedTargetLanguage, projectId);
+        } else {
+            // that translation already exists
+            // TODO: display notice to user
+        }
+        finish();
     }
 }

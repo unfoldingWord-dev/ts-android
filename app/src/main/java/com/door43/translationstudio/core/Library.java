@@ -412,4 +412,43 @@ public class Library {
         }
         return sourceLanguageJson;
     }
+
+    /**
+     * Returns the project withh the information provided in the preferred source language
+     * If the source language does not exist it will use the default language
+     *
+     * @param projectId
+     * @param languageId the language in which the project information should be returned
+     * @return
+     */
+    public Project getProject(String projectId, String languageId) {
+        return Project.generate(mAppIndex.getProject(projectId), getPreferredSourceLanguage(projectId, languageId));
+    }
+
+    /**
+     * Calculates the progress of a target translation
+     * @param translation
+     * @return
+     */
+    public float getProgress(TargetTranslation translation) {
+        // TODO: calculate the progress
+        return 0.60f;
+    }
+
+    /**
+     * Returns an array of chapters for the source translation
+     * @return
+     */
+    public Chapter[] getChapters(SourceTranslation sourceTranslation) {
+        List<Chapter> chapters = new ArrayList<>();
+        String[] chapterIds = mAppIndex.getChapters(sourceTranslation);
+        for(String chapterId:chapterIds) {
+            Chapter chapter = Chapter.generate(mAppIndex.getChapter(sourceTranslation, chapterId));
+            if(chapter != null) {
+                chapters.add(chapter);
+            }
+        }
+        // TODO: sort by id
+        return chapters.toArray(new Chapter[chapters.size()]);
+    }
 }

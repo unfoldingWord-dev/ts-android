@@ -16,12 +16,20 @@ public class TargetTranslation {
     private static final String GLOBAL_PROJECT_ID = "uw";
     private final File mTranslationDirectory;
     private final Manifest mManifest;
+    private final String mName;
 
     public TargetTranslation(String targetLanguageId, String projectId, File translationDirectory) {
         mTargetLanguageId = targetLanguageId;
         mProjectId = projectId;
         mTranslationDirectory = translationDirectory;
         mManifest = Manifest.generate(translationDirectory);
+        String name = "";
+        try {
+            name = mManifest.getJSONObject("target_language").getString("name");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mName = name;
     }
 
     /**
@@ -30,6 +38,14 @@ public class TargetTranslation {
      */
     public String getId() {
         return generateTargetTranslationId(mTargetLanguageId, mProjectId);
+    }
+
+    /**
+     * Returns the name of the target language
+     * @return
+     */
+    public String getName() {
+        return mName;
     }
 
     /**
@@ -54,19 +70,18 @@ public class TargetTranslation {
      * If the target translation already exists the existing one will be returned
      *
      * @param targetLanguage the target language the project will be translated into
-     * @param project the project that will be translated
+     * @param projectId the id of the project that will be translated
      * @param mRootDir the parent directory in which the target translation directory will be created
      * @return
      */
-    public static TargetTranslation generate(TargetLanguage targetLanguage, Project project, File mRootDir) throws Exception {
+    public static TargetTranslation generate(TargetLanguage targetLanguage, String projectId, File mRootDir) throws Exception {
         // create folder
-        String targetTranslationId = generateTargetTranslationId(targetLanguage.getId(), project.getId());
-        File translationDir = new File(mRootDir, targetTranslationId);
+        File translationDir = generateTargetTranslationDir(targetLanguage.getId(), projectId, mRootDir);
 
         if(!translationDir.exists()) {
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
-            manifest.put("slug", project.getId());
+            manifest.put("slug", projectId);
             JSONObject targetLangaugeJson = new JSONObject();
             targetLangaugeJson.put("direction", targetLanguage.direction.toString());
             targetLangaugeJson.put("slug", targetLanguage.code);
@@ -76,7 +91,7 @@ public class TargetTranslation {
             manifest.put("target_language", targetLangaugeJson);
         }
 
-        return new TargetTranslation(targetLanguage.getId(), project.getId(), translationDir);
+        return new TargetTranslation(targetLanguage.getId(), projectId, translationDir);
     }
 
     /**
@@ -87,5 +102,18 @@ public class TargetTranslation {
      */
     private static String generateTargetTranslationId(String targetLanguageId, String projectId) {
         return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
+    }
+
+    /**
+     * Generates the file to the directory where the target translation is located
+     *
+     * @param targetLanguageId the language to which the project is being translated
+     * @param projectId the id of the project that is being translated
+     * @param rootDir the directory where the target translations are stored
+     * @return
+     */
+    public static File generateTargetTranslationDir(String targetLanguageId, String projectId, File rootDir) {
+        String targetTranslationId = generateTargetTranslationId(targetLanguageId, projectId);
+        return new File(rootDir, targetTranslationId);
     }
 }

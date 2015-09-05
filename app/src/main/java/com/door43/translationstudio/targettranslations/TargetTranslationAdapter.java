@@ -10,8 +10,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.util.AppContext;
 import com.filippudak.ProgressPieView.ProgressPieView;
+
+import java.util.Locale;
 
 /**
  * Created by joel on 9/3/2015.
@@ -56,7 +61,13 @@ public class TargetTranslationAdapter extends BaseAdapter {
         }
 
         // render view
-
+        TargetTranslation translation = getItem(position);
+        Library library = AppContext.getLibrary();
+        Project project = library.getProject(translation.getProjectId(), Locale.getDefault().getLanguage());
+        holder.mTitleView.setText(project.name);
+        holder.mLanguageView.setText(translation.getName());
+        holder.mProgressView.setProgress(Math.round(library.getProgress(translation) * 100));
+        // TODO: finish rendering
 
         return v;
     }
@@ -73,6 +84,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
             mTitleView = (TextView) view.findViewById(R.id.projectTitle);
             mLanguageView = (TextView) view.findViewById(R.id.targetLanguage);
             mProgressView = (ProgressPieView) view.findViewById(R.id.translationProgress);
+            mProgressView.setMax(100);
             mInfoButton = (FloatingActionButton) view.findViewById(R.id.infoButton);
             view.setTag(this);
         }
