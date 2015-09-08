@@ -3,63 +3,75 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:ppv="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:weightSum="3"
+    android:layout_height="match_parent"
+    android:weightSum="2"
     android:padding="16dp"
     android:gravity="center_vertical"
     android:descendantFocusability="blocksDescendants">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/projectIcon"
-        android:background="@drawable/icon_library_dark" />
-
-    <TextView
-        android:id="@+id/projectTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Info"
-        android:layout_marginLeft="16dp"
-        android:layout_weight="1"
-        android:textColor="@color/dark_primary_text"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-    <TextView
-        android:id="@+id/targetLanguage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginLeft="16dp"
-        android:gravity="right"
-        android:textColor="@color/dark_secondary_text"
-        android:text="this is some text" />
-
     <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginLeft="16dp"
-        android:gravity="right|center_vertical">
-
-        <com.filippudak.ProgressPieView.ProgressPieView
-            android:layout_margin="@dimen/fab_margin"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_gravity="center"
-            ppv:ppvStrokeWidth="0dp"
-            ppv:ppvStrokeColor="@android:color/transparent"
-            ppv:ppvProgressColor="@color/accent"
-            ppv:ppvBackgroundColor="@color/graph_background"
-            android:id="@+id/translationProgress"/>
-
-        <ImageButton
-            android:id="@+id/infoButton"
+        android:layout_weight="1">
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/ic_info_black_36dp"
-            android:layout_marginLeft="@dimen/fab_margin"/>
+            android:id="@+id/projectIcon"
+            android:background="@drawable/icon_library_dark" />
+
+        <TextView
+            android:id="@+id/projectTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Info"
+            android:layout_marginLeft="16dp"
+            android:textColor="@color/dark_primary_text"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/targetLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:gravity="right"
+            android:textAlignment="gravity"
+            android:textColor="@color/dark_secondary_text"
+            android:text="this is some text" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_weight="1"
+            android:gravity="right|center_vertical">
+
+            <com.filippudak.ProgressPieView.ProgressPieView
+                android:layout_margin="@dimen/fab_margin"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                ppv:ppvStrokeWidth="0dp"
+                ppv:ppvStrokeColor="@android:color/transparent"
+                ppv:ppvProgressColor="@color/accent"
+                ppv:ppvBackgroundColor="@color/graph_background"
+                android:id="@+id/translationProgress"/>
+
+            <ImageButton
+                android:id="@+id/infoButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/ic_info_black_36dp"
+                android:layout_marginLeft="@dimen/fab_margin"/>
+        </LinearLayout>
+    </LinearLayout>
+
 
 </LinearLayout>
