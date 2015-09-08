@@ -10,4 +10,10 @@
         android:layout_height="wrap_content"
         android:text="This is the translation information"
         android:id="@+id/textView12" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Delete translation"
+        android:id="@+id/deleteButton" />
 </LinearLayout>

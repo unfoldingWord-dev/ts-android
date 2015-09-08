@@ -1,7 +1,5 @@
 package com.door43.translationstudio.core;
 
-import com.door43.translationstudio.targettranslations.LanguageDirection;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

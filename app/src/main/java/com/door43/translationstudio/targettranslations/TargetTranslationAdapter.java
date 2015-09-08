@@ -25,7 +25,7 @@ import java.util.Locale;
  */
 public class TargetTranslationAdapter extends BaseAdapter {
 
-    private final TargetTranslation[] mTranslations;
+    private TargetTranslation[] mTranslations;
     private OnInfoClickListener mInfoClickListener = null;
 
     public TargetTranslationAdapter(TargetTranslation[] translations) {
@@ -91,6 +91,11 @@ public class TargetTranslationAdapter extends BaseAdapter {
 
 
         return v;
+    }
+
+    public void changeData(TargetTranslation[] targetTranslations) {
+        mTranslations = targetTranslations;
+        notifyDataSetChanged();
     }
 
     public interface OnInfoClickListener {

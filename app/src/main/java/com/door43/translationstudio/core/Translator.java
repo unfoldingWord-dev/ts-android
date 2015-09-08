@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -71,13 +73,32 @@ public class Translator {
      * @return
      */
     public TargetTranslation getTargetTranslation(String targetTranslationId) {
-        try {
-            String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
-            String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
-            return getTargetTranslation(targetLanguageId, projectId);
-        } catch (StringIndexOutOfBoundsException e) {
-            e.printStackTrace();
+        if(targetTranslationId != null) {
+            try {
+                String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
+                String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
+                return getTargetTranslation(targetLanguageId, projectId);
+            } catch (StringIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
         }
         return null;
+    }
+
+    /**
+     * Deletes a target translation
+     * @param targetTranslationId
+     */
+    public void deleteTargetTranslation(String targetTranslationId) {
+        if(targetTranslationId != null) {
+            try {
+                String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
+                String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
+                File dir = TargetTranslation.generateTargetTranslationDir(targetLanguageId, projectId, mRootDir);
+                FileUtils.deleteQuietly(dir);
+            } catch (StringIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

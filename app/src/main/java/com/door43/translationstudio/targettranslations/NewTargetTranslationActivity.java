@@ -109,7 +109,6 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
     public void onItemClick(SourceLanguage sourceLanguage) {
         // TODO: set tab setting in target translation
 
-        // open project when finished
         Intent data = new Intent();
         data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
         setResult(RESULT_OK, data);

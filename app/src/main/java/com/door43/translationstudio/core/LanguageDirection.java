@@ -1,4 +1,4 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.core;
 
 /**
  * Specifies the direction in which a language is read

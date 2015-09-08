@@ -25,89 +25,67 @@ import com.door43.translationstudio.util.AppContext;
 
 import java.util.Locale;
 
-public class TargetTranslationListActivity extends AppCompatActivity {
+public class TargetTranslationListActivity extends AppCompatActivity implements TargetTranslationWelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
-    private TargetTranslationAdapter mAdapter;
     private Library mLibrary;
     private Translator mTranslator;
+    private Fragment mFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_target_translations);
-    }
 
-    public void onResume() {
-        super.onResume();
-
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
-
-        mAdapter = new TargetTranslationAdapter(AppContext.getTranslator().getTargetTranslations());
-
-        if(mAdapter.getCount() == 0) {
-            View welcomeView = getLayoutInflater().inflate(R.layout.fragment_target_translations_welcome, null);
-            FrameLayout containerView = (FrameLayout)findViewById(R.id.fragment_container);
-            containerView.addView(welcomeView);
-        } else {
-            View listView = getLayoutInflater().inflate(R.layout.fragment_target_translation_list, null);
-            FrameLayout containerView = (FrameLayout)findViewById(R.id.fragment_container);
-            containerView.addView(listView);
-        }
-
-        // target translations list
-        ListView list = (ListView) findViewById(R.id.translationsList);
-        if(list != null) {
-            mAdapter.setOnInfoClickListener(new TargetTranslationAdapter.OnInfoClickListener() {
-                @Override
-                public void onClick(String targetTranslationId) {
-                    // move other dialogs to backstack
-                    FragmentTransaction ft = getFragmentManager().beginTransaction();
-                    Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-                    if (prev != null) {
-                        ft.remove(prev);
-                    }
-                    ft.addToBackStack(null);
-
-                    // target translation info
-                    TargetTranslationInfoDialog dialog = new TargetTranslationInfoDialog();
-                    Bundle args = new Bundle();
-                    args.putString(TargetTranslationInfoDialog.ARG_TARGET_TRANSLATION_ID, targetTranslationId);
-                    dialog.show(ft, "dialog");
-                }
-            });
-            list.setAdapter(mAdapter);
-            // open target translation detail
-            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
-                    intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, mAdapter.getItem(position).getId());
-                    startActivity(intent);
-                }
-            });
-        }
-
-        // new project FAB
         FloatingActionButton addTranslationButton = (FloatingActionButton) findViewById(R.id.addTargetTranslationButton);
         addTranslationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
-                startActivityForResult(intent, NEW_TARGET_TRANSLATION_REQUEST);
+                onCreateNewTargetTranslation();
             }
         });
 
-        // new project Button
-        Button extraAddTranslationButton = (Button) findViewById(R.id.extraAddTargetTranslationButton);
-        if(extraAddTranslationButton != null) {
-            extraAddTranslationButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
-                    startActivityForResult(intent, NEW_TARGET_TRANSLATION_REQUEST);
-                }
-            });
+        mLibrary = AppContext.getLibrary();
+        mTranslator = AppContext.getTranslator();
+
+        if(findViewById(R.id.fragment_container) != null) {
+            if(savedInstanceState != null) {
+                // use current fragment
+                mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
+                return;
+            }
+
+            if(mTranslator.getTargetTranslations().length > 0) {
+                mFragment = new TargetTranslationListFragment();
+                mFragment.setArguments(getIntent().getExtras());
+            } else {
+                mFragment = new TargetTranslationWelcomeFragment();
+                mFragment.setArguments(getIntent().getExtras());
+            }
+
+            getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
+            // TODO: animate
+        }
+    }
+
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        int numTranslations = mTranslator.getTargetTranslations().length;
+        if(numTranslations > 0 && mFragment instanceof TargetTranslationWelcomeFragment) {
+            // display target translations list
+            mFragment = new TargetTranslationListFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+            // TODO: animate
+        } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
+            // display welcome screen
+            mFragment = new TargetTranslationWelcomeFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+            // TODO: animate
         }
     }
 
@@ -136,6 +114,14 @@ public class TargetTranslationListActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
             if(resultCode == RESULT_OK) {
+                if(mFragment instanceof TargetTranslationWelcomeFragment) {
+                    // display target translations list
+                    mFragment = new TargetTranslationListFragment();
+                    mFragment.setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                }
+
                 Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
                 intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
@@ -143,12 +129,40 @@ public class TargetTranslationListActivity extends AppCompatActivity {
                 // display duplicate notice to user
                 String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
                 TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
-                Project project = mLibrary.getProject(existingTranslation.getProjectId(), Locale.getDefault().getLanguage());
-                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
-                TextView tv = (TextView) snack.getView().findViewById(android.support.design.R.id.snackbar_text);
-                tv.setTextColor(getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                if(existingTranslation != null) {
+                    Project project = mLibrary.getProject(existingTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                    Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
+                    TextView tv = (TextView) snack.getView().findViewById(android.support.design.R.id.snackbar_text);
+                    tv.setTextColor(getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         }
+    }
+
+    @Override
+    public void onCreateNewTargetTranslation() {
+        Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
+        startActivityForResult(intent, NEW_TARGET_TRANSLATION_REQUEST);
+    }
+
+    @Override
+    public void onItemDeleted(String targetTranslationId) {
+        if(mTranslator.getTargetTranslations().length > 0) {
+            ((TargetTranslationListFragment) mFragment).reloadList();
+        } else {
+            // display welcome screen
+            mFragment = new TargetTranslationWelcomeFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+            // TODO: animate
+        }
+    }
+
+    @Override
+    public void onItemClick(TargetTranslation targetTranslation) {
+        Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
+        intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+        startActivity(intent);
     }
 }
