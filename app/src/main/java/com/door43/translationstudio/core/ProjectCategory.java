@@ -16,7 +16,7 @@ public class ProjectCategory {
      * @param title
      * @param categoryId
      * @param projectId
-     * @param sourceLanguageId
+     * @param sourceLanguageId the id of the source languaged to which the project title belongs
      * @param categoryDepth the depth of the category in the hierarchy of categories.
      */
     public ProjectCategory(String title, String categoryId, String projectId, String sourceLanguageId, String sort, int categoryDepth) {

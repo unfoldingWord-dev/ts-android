@@ -1,6 +1,12 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.view.View;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,6 +55,22 @@ public class Util {
             }
         } finally {
             is.close();
+        }
+    }
+
+    /**
+     * Provides a backwards compatable way to tint drawables
+     * @param view the view who's background drawable will be tinted
+     * @param color the color that will be applied
+     */
+    public static void tintViewDrawable(View view, int color) {
+        final Drawable originalDrawable = view.getBackground();
+        final Drawable wrappedDrawable = DrawableCompat.wrap(originalDrawable);
+        DrawableCompat.setTintList(wrappedDrawable, ColorStateList.valueOf(color));
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            view.setBackground(wrappedDrawable);
+        } else {
+            view.setBackgroundDrawable(wrappedDrawable);
         }
     }
 }

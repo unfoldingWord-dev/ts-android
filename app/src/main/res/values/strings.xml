@@ -152,7 +152,6 @@
     <string name="title_activity_crash_reporter">Error Report</string>
     <string name="title_activity_bug_reporter">Bug Report</string>
     <string name="crash_details">What were you doing just before the app crashed?</string>
-    <string name="settings">Settings</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="export_to_device" translatable="false">Export to nearby device</string>
@@ -316,9 +315,12 @@
     <string name="welcome">Welcome to translationStudio</string>
     <string name="please_wait">Please wait</string>
     <string name="updating_app">Performing updates</string>
-    <string name="preparing_for_first_use">Preparing app for first use. This may take a minute.</string>
+    <string name="preparing_for_first_use">Preparing app for first use. This may take a few minutes.</string>
     <string name="loading_languages">Preparing languages</string>
     <string name="title_activity_target_translations">Your Translation Projects</string>
     <string name="title_activity_new_target_translation">New Translation</string>
     <string name="translations_welcome"><![CDATA[Welcome!\nThis is your Home Screen. When you have translation projects on this device they will appear here.\n\nYou can start a new translatin any time by tapping the blue button in the top right.]]></string>
+    <string name="title_activity_target_translation_detail">TargetTranslationDetailActivity</string>
+
+    <string name="hello_world">Hello world!</string>
 </resources>

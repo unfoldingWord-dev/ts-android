@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-    <!-- This is a dummy private token for issue integration. This allows automated builds to run -->
-<resources>
-    <string name="github_oauth2" translatable="false">blablablablabla</string>
-</resources>

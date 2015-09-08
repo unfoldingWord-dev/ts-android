@@ -6,7 +6,7 @@ import org.json.JSONObject;
 /**
  * Created by joel on 8/29/2015.
  */
-public class TargetLanguage {
+public class TargetLanguage implements Comparable {
 
     public final LanguageDirection direction;
     public final Boolean isGatewayLanguage;
@@ -20,6 +20,12 @@ public class TargetLanguage {
      */
     public String getId() {
         return code;
+    }
+
+    @Override
+    public int compareTo(Object another) {
+        String anotherCode = ((TargetLanguage)another).getId();
+        return code.compareToIgnoreCase(anotherCode);
     }
 
     public enum LanguageDirection {

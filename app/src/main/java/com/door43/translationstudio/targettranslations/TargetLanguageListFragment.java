@@ -11,24 +11,26 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.util.AppContext;
 
 /**
  * Created by joel on 9/4/2015.
  */
-public class TargetLanguageListFragment extends Fragment {
+public class TargetLanguageListFragment extends Fragment implements Searchable {
     private OnItemClickListener mListener;
+    private TargetLanguageAdapter mAdapter;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_target_language_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        final TargetLanguageAdapter adapter = new TargetLanguageAdapter(AppContext.getLibrary().getTargetLanguages());
-        list.setAdapter(adapter);
+        mAdapter = new TargetLanguageAdapter(AppContext.getLibrary().getTargetLanguages());
+        list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mListener.onItemClick(adapter.getItem(position));
+                mListener.onItemClick(mAdapter.getItem(position));
             }
         });
 
@@ -43,6 +45,13 @@ public class TargetLanguageListFragment extends Fragment {
             this.mListener = (OnItemClickListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString() + " must implement OnItemClickListener");
+        }
+    }
+
+    @Override
+    public void onSearchQuery(String query) {
+        if(mAdapter != null) {
+            mAdapter.getFilter().filter(query);
         }
     }
 

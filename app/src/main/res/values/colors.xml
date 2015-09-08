@@ -25,7 +25,7 @@
     <color name="light_disabled_text">#4cffffff</color>
 
     <color name="list_separator">#42000000</color>
-
+    <color name="graph_background">#12000000</color>
     <color name="icon_dark">#82000000</color>
 
     <color name="black_overlay">#66000000</color>

@@ -1,5 +1,7 @@
 package com.door43.translationstudio.targettranslations;
 
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +17,7 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 
-public class TargetTranslationsActivity extends AppCompatActivity {
+public class TargetTranslationListActivity extends AppCompatActivity {
     private TargetTranslationAdapter mAdapter;
 
     @Override
@@ -41,11 +43,30 @@ public class TargetTranslationsActivity extends AppCompatActivity {
 
         ListView list = (ListView) findViewById(R.id.translationsList);
         if(list != null) {
+            mAdapter.setOnInfoClickListener(new TargetTranslationAdapter.OnInfoClickListener() {
+                @Override
+                public void onClick(String targetTranslationId) {
+                    // move other dialogs to backstack
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+                    if (prev != null) {
+                        ft.remove(prev);
+                    }
+                    ft.addToBackStack(null);
+
+                    TargetTranslationInfoDialog dialog = new TargetTranslationInfoDialog();
+                    Bundle args = new Bundle();
+                    args.putString(TargetTranslationInfoDialog.ARG_TARGET_TRANSLATION_ID, targetTranslationId);
+                    dialog.show(ft, "dialog");
+                }
+            });
             list.setAdapter(mAdapter);
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    // TODO: open target translation activity
+                    Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
+                    intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, mAdapter.getItem(position).getId());
+                    startActivity(intent);
                 }
             });
         }
@@ -54,7 +75,7 @@ public class TargetTranslationsActivity extends AppCompatActivity {
         addTranslationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(TargetTranslationsActivity.this, NewTargetTranslationActivity.class);
+                Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
                 startActivity(intent);
             }
         });
@@ -64,7 +85,7 @@ public class TargetTranslationsActivity extends AppCompatActivity {
             extraAddTranslationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(TargetTranslationsActivity.this, NewTargetTranslationActivity.class);
+                    Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
                     startActivity(intent);
                 }
             });

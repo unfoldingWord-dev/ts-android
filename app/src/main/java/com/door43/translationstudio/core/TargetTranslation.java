@@ -105,6 +105,34 @@ public class TargetTranslation {
     }
 
     /**
+     * Returns the id of the project of the target translation
+     * @param targetTranslationId the target translation id
+     * @return
+     */
+    public static String getProjectIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException{
+        String[] complexId = targetTranslationId.split("-", 3);
+        if(complexId.length == 3) {
+            return complexId[1];
+        } else {
+            throw new StringIndexOutOfBoundsException("malformed target translation id" + targetTranslationId);
+        }
+    }
+
+    /**
+     * Returns the id of the target lanugage of the target translation
+     * @param targetTranslationId the target translation id
+     * @return
+     */
+    public static String getTargetLanguageIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
+        String[] complexId = targetTranslationId.split("-", 3);
+        if(complexId.length == 3) {
+            return complexId[2];
+        } else {
+            throw new StringIndexOutOfBoundsException("malformed target translation id" + targetTranslationId);
+        }
+    }
+
+    /**
      * Generates the file to the directory where the target translation is located
      *
      * @param targetLanguageId the language to which the project is being translated

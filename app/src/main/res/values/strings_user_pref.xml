@@ -1,5 +1,5 @@
 <resources>
-    <string name="title_activity_settings" translatable="false">@string/settings</string>
+    <string name="title_activity_settings" translatable="false">@string/action_settings</string>
 
     <!-- Section heading for general settings -->
     <string name="pref_header_general">General</string>

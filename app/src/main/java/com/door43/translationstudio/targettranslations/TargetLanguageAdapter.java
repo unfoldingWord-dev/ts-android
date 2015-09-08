@@ -4,25 +4,37 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Filter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.library.ProjectLibraryListFragment;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by joel on 9/4/2015.
  */
 public class TargetLanguageAdapter extends BaseAdapter {
     private TargetLanguage[] mTargetLanguages;
+    private TargetLanguage[] mFilteredTargetLanguages;
+    private TargetLanguageLanguageFilter mTargetLanguageLanguageFilter;
 
     public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
         mTargetLanguages = targetLanguages;
+        mFilteredTargetLanguages = targetLanguages;
     }
 
     @Override
     public int getCount() {
-        if(mTargetLanguages != null) {
-            return mTargetLanguages.length;
+        if(mFilteredTargetLanguages != null) {
+            return mFilteredTargetLanguages.length;
         } else {
             return 0;
         }
@@ -30,7 +42,7 @@ public class TargetLanguageAdapter extends BaseAdapter {
 
     @Override
     public TargetLanguage getItem(int position) {
-        return mTargetLanguages[position];
+        return mFilteredTargetLanguages[position];
     }
 
     @Override
@@ -57,6 +69,17 @@ public class TargetLanguageAdapter extends BaseAdapter {
         return v;
     }
 
+    /**
+     * Returns the target language filter
+     * @return
+     */
+    public Filter getFilter() {
+        if(mTargetLanguageLanguageFilter == null) {
+            mTargetLanguageLanguageFilter = new TargetLanguageLanguageFilter();
+        }
+        return mTargetLanguageLanguageFilter;
+    }
+
     public static class ViewHolder {
         public TextView mLanguageView;
         public TextView mCodeView;
@@ -66,5 +89,69 @@ public class TargetLanguageAdapter extends BaseAdapter {
             mCodeView = (TextView) view.findViewById(R.id.languageCode);
             view.setTag(this);
         }
+    }
+
+    private class TargetLanguageLanguageFilter extends Filter {
+
+        @Override
+        protected FilterResults performFiltering(CharSequence charSequence) {
+            FilterResults results = new FilterResults();
+            if(charSequence == null || charSequence.length() == 0) {
+                // no filter
+                results.values = Arrays.asList(mTargetLanguages);
+                results.count = mTargetLanguages.length;
+            } else {
+                // perform filter
+                List<TargetLanguage> filteredCategories = new ArrayList<>();
+                for(TargetLanguage language:mTargetLanguages) {
+                    // match the target language id
+                    boolean match = language.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    if(!match) {
+                        if (language.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                            // match the target language title
+                            match = true;
+                        }
+                    }
+                    if(match) {
+                        filteredCategories.add(language);
+                    }
+                }
+                results.values = filteredCategories;
+                results.count = filteredCategories.size();
+            }
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
+            List<TargetLanguage> filteredLanguages = (List<TargetLanguage>)filterResults.values;
+            sortTargetLanguages(filteredLanguages, charSequence);
+            mFilteredTargetLanguages = filteredLanguages.toArray(new TargetLanguage[filteredLanguages.size()]);
+            // sort
+            notifyDataSetChanged();
+        }
+    }
+
+    /**
+     * Sorts target languages by id
+     * @param languages
+     * @param referenceId languages are sorted according to the reference id
+     */
+    private static void sortTargetLanguages(List<TargetLanguage> languages, final CharSequence referenceId) {
+        Collections.sort(languages, new Comparator<TargetLanguage>() {
+            @Override
+            public int compare(TargetLanguage lhs, TargetLanguage rhs) {
+                String lhId = lhs.getId();
+                String rhId = rhs.getId();
+                // give priority to matches with the reference
+                if(lhId.startsWith(referenceId.toString().toLowerCase())) {
+                    lhId = "`" + lhId;
+                }
+                if(rhId.startsWith(referenceId.toString().toLowerCase())) {
+                    rhId = "`" + rhId;
+                }
+                return lhId.compareToIgnoreCase(rhId);
+            }
+        });
     }
 }

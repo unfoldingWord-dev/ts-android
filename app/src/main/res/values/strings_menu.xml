@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Application settings -->
-    <string name="menu_settings" translatable="false">@string/settings</string>
+    <string name="menu_settings" translatable="false">@string/action_settings</string>
     <!-- Translation uploader -->
     <string name="menu_upload" translatable="false">@string/backup_and_publish</string>
     <!-- Project sharing-->

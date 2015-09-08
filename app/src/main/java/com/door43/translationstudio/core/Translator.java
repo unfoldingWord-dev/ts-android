@@ -57,16 +57,32 @@ public class Translator {
 
     /**
      * Returns a target translation if it exists
-     * @param targetTranslationId
+     * @param targetLanguageId
      * @param projectId
      * @return
      */
-    public TargetTranslation getTargetTranslation(String targetTranslationId, String projectId) {
-        File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, projectId, mRootDir);
+    public TargetTranslation getTargetTranslation(String targetLanguageId, String projectId) {
+        File dir = TargetTranslation.generateTargetTranslationDir(targetLanguageId, projectId, mRootDir);
         if(dir.exists()) {
-            return new TargetTranslation(targetTranslationId, projectId, mRootDir);
+            return new TargetTranslation(targetLanguageId, projectId, mRootDir);
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns a target translation if it exists
+     * @param targetTranslationId
+     * @return
+     */
+    public TargetTranslation getTargetTranslation(String targetTranslationId) {
+        try {
+            String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
+            String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
+            return getTargetTranslation(targetLanguageId, projectId);
+        } catch (StringIndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
