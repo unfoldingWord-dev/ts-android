@@ -24,14 +24,9 @@ public class Translator {
         mRootDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                File file = new File(dir, filename);
-                if(file.isDirectory()) {
-                    String[] complexId = filename.split("-", 3);
-                    if(complexId.length == 3) {
-                        String projectId = complexId[1];
-                        String targetLanguageId = complexId[2];
-                        translations.add(new TargetTranslation(targetLanguageId, projectId, file));
-                    }
+                TargetTranslation translation = getTargetTranslation(filename);
+                if(translation != null) {
+                    translations.add(translation);
                 }
                 return false;
             }

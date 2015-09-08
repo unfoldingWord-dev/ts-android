@@ -23,7 +23,7 @@ public class TargetTranslation {
         mProjectId = projectId;
         mTargetTranslationDirectory = generateTargetTranslationDir(targetLanguageId, projectId, rootDir);;
         mManifest = Manifest.generate(mTargetTranslationDirectory);
-        String name = "";
+        String name = targetLanguageId;
         try {
             name = mManifest.getJSONObject("target_language").getString("name");
         } catch (JSONException e) {
