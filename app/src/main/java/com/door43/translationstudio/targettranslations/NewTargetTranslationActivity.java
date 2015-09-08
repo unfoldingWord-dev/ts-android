@@ -71,13 +71,16 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
             Intent data = new Intent();
             data.putExtra(EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
             setResult(RESULT_OK, data);
+
+            // display source language list (for first tab)
+            // TODO: display sl.
         } else {
             // that translation already exists
             Intent data = new Intent();
             data.putExtra(EXTRA_TARGET_TRANSLATION_ID, existingTranslation.getId());
             setResult(RESULT_DUPLICATE, data);
+            finish();
         }
-        finish();
     }
 
     @Override

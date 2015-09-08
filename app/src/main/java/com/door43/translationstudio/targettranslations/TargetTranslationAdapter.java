@@ -1,7 +1,6 @@
 package com.door43.translationstudio.targettranslations;
 
 
-import android.app.Fragment;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,7 +76,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
         Library library = AppContext.getLibrary();
         Project project = library.getProject(translation.getProjectId(), Locale.getDefault().getLanguage());
         holder.mTitleView.setText(project.name);
-        holder.mLanguageView.setText(translation.getName());
+        holder.mLanguageView.setText(translation.getTargetLanguageName());
         // TODO: read actual progress from project
         holder.mProgressView.setProgress(Math.round(library.getProgress(translation) * 100));
         // TODO: finish rendering project icon

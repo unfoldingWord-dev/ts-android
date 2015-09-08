@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,13 +14,22 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
+
+import java.util.Locale;
 
 public class TargetTranslationListActivity extends AppCompatActivity {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     private TargetTranslationAdapter mAdapter;
+    private Library mLibrary;
+    private Translator mTranslator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +39,9 @@ public class TargetTranslationListActivity extends AppCompatActivity {
 
     public void onResume() {
         super.onResume();
+
+        mLibrary = AppContext.getLibrary();
+        mTranslator = AppContext.getTranslator();
 
         mAdapter = new TargetTranslationAdapter(AppContext.getTranslator().getTargetTranslations());
 
@@ -127,7 +140,14 @@ public class TargetTranslationListActivity extends AppCompatActivity {
                 intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
             } else if(resultCode == NewTargetTranslationActivity.RESULT_DUPLICATE) {
-                // TODO: display snack noting the target translation already exists
+                // display duplicate notice to user
+                String targetTranslationId = data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID);
+                TargetTranslation existingTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+                Project project = mLibrary.getProject(existingTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
+                TextView tv = (TextView) snack.getView().findViewById(android.support.design.R.id.snackbar_text);
+                tv.setTextColor(getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }
     }

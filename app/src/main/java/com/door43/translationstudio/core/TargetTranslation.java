@@ -16,7 +16,7 @@ public class TargetTranslation {
     private static final String GLOBAL_PROJECT_ID = "uw";
     private final File mTranslationDirectory;
     private final Manifest mManifest;
-    private final String mName;
+    private final String mTargetTranslationName;
 
     public TargetTranslation(String targetLanguageId, String projectId, File translationDirectory) {
         mTargetLanguageId = targetLanguageId;
@@ -29,7 +29,7 @@ public class TargetTranslation {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        mName = name;
+        mTargetTranslationName = name;
     }
 
     /**
@@ -44,8 +44,8 @@ public class TargetTranslation {
      * Returns the name of the target language
      * @return
      */
-    public String getName() {
-        return mName;
+    public String getTargetLanguageName() {
+        return mTargetTranslationName;
     }
 
     /**

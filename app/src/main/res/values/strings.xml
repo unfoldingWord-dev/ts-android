@@ -323,4 +323,5 @@
     <string name="title_activity_target_translation_detail">TargetTranslationDetailActivity</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="duplicate_target_translation">You have already started translating <xliff:g id="project" example="Genesis">%1$s</xliff:g> into <xliff:g id="target_language" example="English">%2$s</xliff:g></string>
 </resources>
