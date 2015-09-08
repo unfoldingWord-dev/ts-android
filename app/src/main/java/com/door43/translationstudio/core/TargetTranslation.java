@@ -14,15 +14,15 @@ public class TargetTranslation {
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
-    private final File mTranslationDirectory;
+    private final File mTargetTranslationDirectory;
     private final Manifest mManifest;
     private final String mTargetTranslationName;
 
-    public TargetTranslation(String targetLanguageId, String projectId, File translationDirectory) {
+    public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
         mTargetLanguageId = targetLanguageId;
         mProjectId = projectId;
-        mTranslationDirectory = translationDirectory;
-        mManifest = Manifest.generate(translationDirectory);
+        mTargetTranslationDirectory = generateTargetTranslationDir(targetLanguageId, projectId, rootDir);;
+        mManifest = Manifest.generate(mTargetTranslationDirectory);
         String name = "";
         try {
             name = mManifest.getJSONObject("target_language").getString("name");
