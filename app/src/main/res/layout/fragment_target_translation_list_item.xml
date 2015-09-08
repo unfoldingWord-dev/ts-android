@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/projectIcon"
-            android:background="@drawable/icon_library_dark" />
+            android:background="@drawable/ic_library_books_black_24dp" />
 
         <TextView
             android:id="@+id/projectTitle"
@@ -66,8 +66,7 @@
                 android:id="@+id/infoButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_info_black_36dp"
-                android:layout_marginLeft="@dimen/fab_margin"/>
+                android:background="@drawable/ic_info_black_36dp"/>
         </LinearLayout>
     </LinearLayout>
 

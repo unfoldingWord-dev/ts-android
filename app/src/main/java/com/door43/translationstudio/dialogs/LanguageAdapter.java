@@ -35,7 +35,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
     private Map<String, Language> mSelectedItems = new HashMap<String, Language>();
 
     public LanguageAdapter(final List<Language> languageList, Context context, Boolean isSourceLanguages) {
-        super(context, R.layout.fragment_target_language_list_item, languageList);
+        super(context, R.layout.fragment_language_list_item, languageList);
         mIsSourceLanguages = isSourceLanguages;
         mContext = context;
         mOrigLanguageList = languageList;
@@ -93,7 +93,7 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
 
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.fragment_target_language_list_item, null);
+            v = inflater.inflate(R.layout.fragment_language_list_item, null);
             TextView nameText = (TextView) v.findViewById(R.id.languageName);
             TextView idText = (TextView) v.findViewById(R.id.languageCode);
 //            ImageView wrenchImage = (ImageView) v.findViewById(R.id.translationStatusIcon);

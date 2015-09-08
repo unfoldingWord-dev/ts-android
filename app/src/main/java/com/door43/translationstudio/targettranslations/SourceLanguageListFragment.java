@@ -26,7 +26,7 @@ public class SourceLanguageListFragment extends Fragment implements Searchable{
     private OnItemClickListener mListener;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_source_language_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
         Bundle args = getArguments();
         String projectId = args.getString(ARG_PROJECT_ID);

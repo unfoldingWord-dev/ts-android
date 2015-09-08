@@ -58,7 +58,7 @@ public class SourceLanguageAdapter extends BaseAdapter {
         ViewHolder holder;
 
         if(convertView == null) {
-            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_source_language_list_item, null);
+            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_language_list_item, null);
             holder = new ViewHolder(v);
         } else {
             holder = (ViewHolder)v.getTag();

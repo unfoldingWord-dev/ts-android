@@ -22,7 +22,7 @@ public class TargetLanguageListFragment extends Fragment implements Searchable {
     private TargetLanguageAdapter mAdapter;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_target_language_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
         mAdapter = new TargetLanguageAdapter(AppContext.getLibrary().getTargetLanguages());
