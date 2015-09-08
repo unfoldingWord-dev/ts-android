@@ -13,6 +13,8 @@ import com.door43.translationstudio.core.ProjectCategory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -24,8 +26,10 @@ public class ProjectAdapter extends BaseAdapter {
     private ProjectFilter mProjectFilter;
 
     public ProjectAdapter(ProjectCategory[] categories) {
-        mCategories = categories;
-        mFilteredCategories = categories;
+        List<ProjectCategory> categoriesList = Arrays.asList(categories);
+        Collections.sort(categoriesList);
+        mCategories = categoriesList.toArray(new ProjectCategory[categoriesList.size()]);
+        mFilteredCategories = mCategories;
     }
 
     @Override
@@ -128,12 +132,14 @@ public class ProjectAdapter extends BaseAdapter {
                             // match the project title in any language
                             match = true;
                         }
-//                        TODO: search the source language id as well. This requires an update to the project category.
+//                        TODO: search the source language title as well. This requires an update to the project category.
                         else if (category.sourcelanguageId.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the language id or name
                             match = true;
+                        } else if (category.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                            // match category id
+                            match = true;
                         }
-
                     }
                     if(match) {
                         filteredCategories.add(category);
@@ -147,8 +153,35 @@ public class ProjectAdapter extends BaseAdapter {
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            mFilteredCategories = ((List<ProjectCategory>)filterResults.values).toArray(new ProjectCategory[filterResults.count]);
+            List<ProjectCategory> filteredProjects = ((List<ProjectCategory>) filterResults.values);
+            if(charSequence != null && charSequence.length() > 0) {
+                sortProjectCategories(filteredProjects, charSequence);
+            }
+            mFilteredCategories = filteredProjects.toArray(new ProjectCategory[filterResults.count]);
             notifyDataSetChanged();
         }
+    }
+
+    /**
+     * Sorts target languages by id
+     * @param languages
+     * @param referenceId languages are sorted according to the reference id
+     */
+    private static void sortProjectCategories(List<ProjectCategory> languages, final CharSequence referenceId) {
+        Collections.sort(languages, new Comparator<ProjectCategory>() {
+            @Override
+            public int compare(ProjectCategory lhs, ProjectCategory rhs) {
+                String lhId = lhs.projectId;
+                String rhId = rhs.projectId;
+                // give priority to matches with the reference
+                if (lhId.startsWith(referenceId.toString().toLowerCase())) {
+                    lhId = "!" + lhId;
+                }
+                if (rhId.startsWith(referenceId.toString().toLowerCase())) {
+                    rhId = "!" + rhId;
+                }
+                return lhId.compareToIgnoreCase(rhId);
+            }
+        });
     }
 }

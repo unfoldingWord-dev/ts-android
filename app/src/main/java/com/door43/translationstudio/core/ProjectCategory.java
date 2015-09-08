@@ -3,7 +3,7 @@ package com.door43.translationstudio.core;
 /**
  * A project category can represent a project or a category of projects.
  */
-public class ProjectCategory {
+public class ProjectCategory implements Comparable {
     public final String projectId;
     public final String categoryId;
     public final int categoryDepth;
@@ -53,5 +53,10 @@ public class ProjectCategory {
      */
     public Boolean isProject() {
         return categoryId == null;
+    }
+
+    @Override
+    public int compareTo(Object another) {
+        return sort.compareToIgnoreCase(((ProjectCategory)another).sort);
     }
 }

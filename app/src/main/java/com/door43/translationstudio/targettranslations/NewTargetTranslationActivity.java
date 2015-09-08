@@ -51,10 +51,12 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
     public void onItemClick(TargetLanguage targetLanguage) {
         mSelectedTargetLanguage = targetLanguage;
 
+        // display project list
         mFragment = new ProjectListFragment();
         ((ProjectListFragment) mFragment).setArguments(getIntent().getExtras());
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ProjectListFragment) mFragment).commit();
         // TODO: animate
+        invalidateOptionsMenu();
     }
 
     @Override

@@ -27,8 +27,10 @@ public class TargetLanguageAdapter extends BaseAdapter {
     private TargetLanguageLanguageFilter mTargetLanguageLanguageFilter;
 
     public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
-        mTargetLanguages = targetLanguages;
-        mFilteredTargetLanguages = targetLanguages;
+        List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
+        Collections.sort(targetLanguagesList);
+        mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+        mFilteredTargetLanguages = mTargetLanguages;
     }
 
     @Override
@@ -125,9 +127,10 @@ public class TargetLanguageAdapter extends BaseAdapter {
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             List<TargetLanguage> filteredLanguages = (List<TargetLanguage>)filterResults.values;
-            sortTargetLanguages(filteredLanguages, charSequence);
+            if(charSequence != null && charSequence.length() > 0) {
+                sortTargetLanguages(filteredLanguages, charSequence);
+            }
             mFilteredTargetLanguages = filteredLanguages.toArray(new TargetLanguage[filteredLanguages.size()]);
-            // sort
             notifyDataSetChanged();
         }
     }
@@ -145,10 +148,10 @@ public class TargetLanguageAdapter extends BaseAdapter {
                 String rhId = rhs.getId();
                 // give priority to matches with the reference
                 if(lhId.startsWith(referenceId.toString().toLowerCase())) {
-                    lhId = "`" + lhId;
+                    lhId = "!" + lhId;
                 }
                 if(rhId.startsWith(referenceId.toString().toLowerCase())) {
-                    rhId = "`" + rhId;
+                    rhId = "!" + rhId;
                 }
                 return lhId.compareToIgnoreCase(rhId);
             }
