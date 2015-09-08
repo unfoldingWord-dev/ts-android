@@ -18,6 +18,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.util.AppContext;
 
 public class TargetTranslationListActivity extends AppCompatActivity {
+    private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     private TargetTranslationAdapter mAdapter;
 
     @Override
@@ -41,6 +42,7 @@ public class TargetTranslationListActivity extends AppCompatActivity {
             containerView.addView(listView);
         }
 
+        // target translations list
         ListView list = (ListView) findViewById(R.id.translationsList);
         if(list != null) {
             mAdapter.setOnInfoClickListener(new TargetTranslationAdapter.OnInfoClickListener() {
@@ -54,6 +56,7 @@ public class TargetTranslationListActivity extends AppCompatActivity {
                     }
                     ft.addToBackStack(null);
 
+                    // target translation info
                     TargetTranslationInfoDialog dialog = new TargetTranslationInfoDialog();
                     Bundle args = new Bundle();
                     args.putString(TargetTranslationInfoDialog.ARG_TARGET_TRANSLATION_ID, targetTranslationId);
@@ -61,6 +64,7 @@ public class TargetTranslationListActivity extends AppCompatActivity {
                 }
             });
             list.setAdapter(mAdapter);
+            // open target translation detail
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -71,22 +75,24 @@ public class TargetTranslationListActivity extends AppCompatActivity {
             });
         }
 
+        // new project FAB
         FloatingActionButton addTranslationButton = (FloatingActionButton) findViewById(R.id.addTargetTranslationButton);
         addTranslationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent, NEW_TARGET_TRANSLATION_REQUEST);
             }
         });
 
+        // new project Button
         Button extraAddTranslationButton = (Button) findViewById(R.id.extraAddTargetTranslationButton);
         if(extraAddTranslationButton != null) {
             extraAddTranslationButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
-                    startActivity(intent);
+                    startActivityForResult(intent, NEW_TARGET_TRANSLATION_REQUEST);
                 }
             });
         }
@@ -112,5 +118,17 @@ public class TargetTranslationListActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
+            if(resultCode == RESULT_OK) {
+                Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
+                intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
+                startActivity(intent);
+            } else if(resultCode == NewTargetTranslationActivity.RESULT_DUPLICATE) {
+                // TODO: display snack noting the target translation already exists
+            }
+        }
     }
 }

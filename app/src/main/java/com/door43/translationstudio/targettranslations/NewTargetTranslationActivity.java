@@ -20,6 +20,8 @@ import com.door43.translationstudio.util.AppContext;
 
 public class NewTargetTranslationActivity extends AppCompatActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
 
+    public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
+    public static final int RESULT_DUPLICATE = 2;
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
 
@@ -65,11 +67,15 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
         TargetTranslation existingTranslation = translator.getTargetTranslation(mSelectedTargetLanguage.code, projectId);
         if(existingTranslation == null) {
             // create new target translation
-            TargetTranslation tranlsation = AppContext.getTranslator().createTargetTranslation(mSelectedTargetLanguage, projectId);
-            // TODO: close this activity and open the new target translation
+            TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(mSelectedTargetLanguage, projectId);
+            Intent data = new Intent();
+            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+            setResult(RESULT_OK, data);
         } else {
             // that translation already exists
-            // TODO: display notice to user
+            Intent data = new Intent();
+            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, existingTranslation.getId());
+            setResult(RESULT_DUPLICATE, data);
         }
         finish();
     }
