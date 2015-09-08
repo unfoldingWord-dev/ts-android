@@ -324,4 +324,7 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="duplicate_target_translation">You are already translating <xliff:g id="project" example="Genesis">%1$s</xliff:g> into <xliff:g id="target_language" example="English">%2$s</xliff:g></string>
+    <string name="Project">Project</string>
+    <string name="language">Language</string>
+    <string name="progress">Progress</string>
 </resources>
