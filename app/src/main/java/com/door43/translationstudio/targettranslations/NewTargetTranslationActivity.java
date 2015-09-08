@@ -12,18 +12,22 @@ import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.util.AppContext;
 
-public class NewTargetTranslationActivity extends AppCompatActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener {
+public class NewTargetTranslationActivity extends AppCompatActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener, SourceLanguageListFragment.OnItemClickListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     public static final int RESULT_DUPLICATE = 2;
+    private static final String STATE_TARGET_TRANSLATION_ID = "state_target_translation_id";
+    private static final String STATE_TARGET_LANGUAGE_ID = "state_target_language_id";
     private TargetLanguage mSelectedTargetLanguage = null;
     private Searchable mFragment;
+    private String mNewTargetTranslationId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +43,17 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
             ((TargetLanguageListFragment) mFragment).setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().add(R.id.fragment_container, (TargetLanguageListFragment) mFragment).commit();
             // TODO: animate
+        }
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState != null) {
+            mNewTargetTranslationId = savedInstanceState.getString(STATE_TARGET_TRANSLATION_ID, null);
+            String targetLanguageId = savedInstanceState.getString(STATE_TARGET_LANGUAGE_ID, null);
+            if(targetLanguageId != null) {
+                mSelectedTargetLanguage = AppContext.getLibrary().getTargetLanguage(targetLanguageId);
+            }
         }
     }
 
@@ -64,16 +79,23 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
     @Override
     public void onItemClick(String projectId) {
         Translator translator = AppContext.getTranslator();
-        TargetTranslation existingTranslation = translator.getTargetTranslation(mSelectedTargetLanguage.code, projectId);
+        TargetTranslation existingTranslation = translator.getTargetTranslation(mSelectedTargetLanguage.getId(), projectId);
         if(existingTranslation == null) {
             // create new target translation
             TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(mSelectedTargetLanguage, projectId);
-            Intent data = new Intent();
-            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
-            setResult(RESULT_OK, data);
+            mNewTargetTranslationId = targetTranslation.getId();
 
             // display source language list (for first tab)
-            // TODO: display sl.
+            mFragment = new SourceLanguageListFragment();
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                extras = new Bundle();
+            }
+            extras.putString(SourceLanguageListFragment.ARG_PROJECT_ID, projectId);
+                    ((SourceLanguageListFragment) mFragment).setArguments(extras);
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, (SourceLanguageListFragment) mFragment).commit();
+            // TODO: animate
+            invalidateOptionsMenu();
         } else {
             // that translation already exists
             Intent data = new Intent();
@@ -81,6 +103,17 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
             setResult(RESULT_DUPLICATE, data);
             finish();
         }
+    }
+
+    @Override
+    public void onItemClick(SourceLanguage sourceLanguage) {
+        // TODO: set tab setting in target translation
+
+        // open project when finished
+        Intent data = new Intent();
+        data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+        setResult(RESULT_OK, data);
+        finish();
     }
 
     @Override
@@ -118,5 +151,20 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        if(mNewTargetTranslationId != null) {
+            outState.putSerializable(STATE_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+        } else {
+            outState.remove(STATE_TARGET_TRANSLATION_ID);
+        }
+        if(mSelectedTargetLanguage != null) {
+            outState.putString(STATE_TARGET_LANGUAGE_ID, mSelectedTargetLanguage.getId());
+        } else {
+            outState.remove(STATE_TARGET_LANGUAGE_ID);
+        }
+
+        super.onSaveInstanceState(outState);
     }
 }

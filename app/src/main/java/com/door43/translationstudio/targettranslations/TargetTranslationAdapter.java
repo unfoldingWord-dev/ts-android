@@ -65,7 +65,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
         ViewHolder holder;
 
         if(convertView == null) {
-            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_target_project_list_item, null);
+            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_target_translation_list_item, null);
             holder = new ViewHolder(v, parent.getContext());
         } else {
             holder = (ViewHolder)v.getTag();

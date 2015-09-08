@@ -1,10 +1,12 @@
 package com.door43.translationstudio.core;
 
+import com.door43.translationstudio.targettranslations.LanguageDirection;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Created by joel on 8/29/2015.
+ * Represents a language to which a project is translated
  */
 public class TargetLanguage implements Comparable {
 
@@ -28,40 +30,6 @@ public class TargetLanguage implements Comparable {
         return code.compareToIgnoreCase(anotherCode);
     }
 
-    public enum LanguageDirection {
-        LeftToRight("ltr"),
-        RightToLeft("rtl");
-
-        LanguageDirection(String label) {
-            this.label = label;
-        }
-
-        private String label;
-
-        public String getLabel() {
-            return label;
-        }
-
-        @Override
-        public String toString() {
-            return getLabel();
-        }
-
-        /**
-         * Returns a direction by it's label
-         * @param label
-         * @return
-         */
-        public static LanguageDirection get(String label) {
-            for (LanguageDirection l : LanguageDirection.values()) {
-                if (l.getLabel().equals(label.toLowerCase())) {
-                    return l;
-                }
-            }
-            return null;
-        }
-    }
-
     private TargetLanguage (String code, String name, String region, Boolean isGatewayLanguage, LanguageDirection direction) {
         this.code = code;
         this.name = name;
@@ -75,21 +43,16 @@ public class TargetLanguage implements Comparable {
      * @param json
      * @return
      */
-    public static TargetLanguage Generate(JSONObject json) {
+    public static TargetLanguage Generate(JSONObject json) throws JSONException {
         if(json == null) {
             return null;
         }
-        try {
-            return new TargetLanguage(
-                    json.getString("lc"),
-                    json.getString("ln"),
-                    json.getString("lr"),
-                    json.getBoolean("gw"),
-                    LanguageDirection.get(json.getString("ld"))
-            );
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return new TargetLanguage(
+                json.getString("lc"),
+                json.getString("ln"),
+                json.getString("lr"),
+                json.getBoolean("gw"),
+                LanguageDirection.get(json.getString("ld"))
+        );
     }
 }

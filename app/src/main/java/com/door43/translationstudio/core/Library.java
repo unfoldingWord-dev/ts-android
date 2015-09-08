@@ -35,7 +35,7 @@ public class Library {
     private final File mIndexDir;
     private final Context mContext;
     private LibraryUpdates mLibraryUpdates = new LibraryUpdates();
-    private static TargetLanguage[] mTargetLanguages;
+    private static Map<String, TargetLanguage> mTargetLanguages;
     private Downloader mDownloader;
 
     public Library(Context context, File libraryDir, String rootApiUrl) {
@@ -268,27 +268,31 @@ public class Library {
      */
     public TargetLanguage[] getTargetLanguages() {
         if(mTargetLanguages == null) {
-            List<TargetLanguage> languages = new ArrayList<>();
+            Map<String, TargetLanguage> languages = new HashMap<>();
             try {
                 File languagesFile = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
                 String catalog = FileUtils.readFileToString(languagesFile);
                 JSONArray json = new JSONArray(catalog);
                 for (int i = 0; i < json.length(); i++) {
                     JSONObject item = json.getJSONObject(i);
-                    TargetLanguage lang = TargetLanguage.Generate(item);
-                    if (lang != null) {
-                        languages.add(lang);
+                    try {
+                        TargetLanguage lang = TargetLanguage.Generate(item);
+                        if(lang != null && !languages.containsKey(lang.getId())) {
+                            languages.put(lang.getId(), lang);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 }
-                mTargetLanguages = languages.toArray(new TargetLanguage[languages.size()]);
-                return mTargetLanguages;
+                mTargetLanguages = languages;
+                return mTargetLanguages.values().toArray(new TargetLanguage[mTargetLanguages.size()]);
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
-            return mTargetLanguages;
+            return mTargetLanguages.values().toArray(new TargetLanguage[mTargetLanguages.size()]);
         }
         return null;
     }
@@ -414,6 +418,29 @@ public class Library {
     }
 
     /**
+     * Returns an array of source languages for the project
+     * @param projectId the id of the project who's source languages will be returned
+     * @return
+     */
+    public SourceLanguage[] getSourceLanguages(String projectId) {
+        List<SourceLanguage> sourceLanguages = new ArrayList<>();
+        String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+        for(String id:sourceLanguageIds) {
+            JSONObject sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, id);
+            try {
+                SourceLanguage lang = SourceLanguage.Generate(sourceLanguageJson);
+                if(lang != null) {
+                    sourceLanguages.add(lang);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]);
+    }
+
+    /**
      * Returns the project withh the information provided in the preferred source language
      * If the source language does not exist it will use the default language
      *
@@ -450,5 +477,18 @@ public class Library {
         }
         // TODO: sort by id
         return chapters.toArray(new Chapter[chapters.size()]);
+    }
+
+    /**
+     * Returns a single target language
+     * @param targetLanguageId
+     * @return
+     */
+    public TargetLanguage getTargetLanguage(String targetLanguageId) {
+        if(mTargetLanguages.containsKey(targetLanguageId)) {
+            return mTargetLanguages.get(targetLanguageId);
+        } else {
+            return null;
+        }
     }
 }
