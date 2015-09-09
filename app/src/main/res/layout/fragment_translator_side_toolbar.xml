@@ -5,8 +5,6 @@
     android:orientation="vertical" android:layout_width="?attr/actionBarSize"
     android:background="?attr/colorPrimary"
     android:fitsSystemWindows="true"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
     android:layout_height="match_parent">
 
      <!--top -->
@@ -20,31 +18,31 @@
             android:id="@+id/action_read"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/icon_study_active"/>
+            android:padding="16dp"
+            android:src="@drawable/icon_study_active"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <ImageButton
             android:id="@+id/action_translate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/icon_frame_active"/>
+            android:padding="16dp"
+            android:src="@drawable/icon_frame_active"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <ImageButton
             android:id="@+id/action_review"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/ic_assignment_turned_in_white_24dp"/>
+            android:padding="16dp"
+            android:src="@drawable/ic_assignment_turned_in_white_24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
     </LinearLayout>
 
     <!-- middle -->
     <FrameLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center">
@@ -52,25 +50,26 @@
         <com.door43.widget.VerticalSeekBar
             android:layout_height="match_parent"
             android:layout_width="wrap_content"
+            android:padding="16dp"
             android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
             android:thumbTint="@color/white"
-            android:progressTint="@color/white"
-            android:layout_marginBottom="16dp"/>
+            android:progressTint="@color/white"/>
     </FrameLayout>
 
     <!-- bottom -->
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom">
         <ImageButton
             android:id="@+id/action_more"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/ic_more_vert_white_24dp"/>
+            android:padding="16dp"
+            android:src="@drawable/ic_more_vert_white_24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
     </LinearLayout>
 
 

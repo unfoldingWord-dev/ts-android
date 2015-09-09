@@ -1,12 +1,13 @@
 package com.door43.translationstudio.targettranslations;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -105,6 +106,21 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
             // TODO: animate
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        // display confirmation before closing the app
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.exit_confirmation)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        TargetTranslationListActivity.super.onBackPressed();
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
     }
 
     @Override
