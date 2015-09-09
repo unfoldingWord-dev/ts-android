@@ -201,6 +201,7 @@
         <activity
             android:name=".targettranslations.TargetTranslationDetailActivity"
             android:label="@string/title_activity_target_translation_detail"
+            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".targettranslations.TargetTranslationListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
