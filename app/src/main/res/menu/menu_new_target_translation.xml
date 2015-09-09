@@ -8,11 +8,16 @@
         android:title="@string/action_search"
         android:icon="@drawable/ic_search_white_24dp"
         app:showAsAction="ifRoom"
-        app:actionViewClass="android.support.v7.widget.SearchView"
-        ></item>
+        app:actionViewClass="android.support.v7.widget.SearchView" />
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_update"
         android:orderInCategory="200"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:title="@string/menu_update"
+        android:icon="@drawable/ic_autorenew_white_24dp"
+        app:showAsAction="ifRoom"/>
+    <!--<item-->
+        <!--android:id="@+id/action_settings"-->
+        <!--android:orderInCategory="300"-->
+        <!--android:title="@string/action_settings"-->
+        <!--app:showAsAction="never" />-->
 </menu>

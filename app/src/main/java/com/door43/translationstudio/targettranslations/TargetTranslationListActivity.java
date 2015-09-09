@@ -50,19 +50,18 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
             if(savedInstanceState != null) {
                 // use current fragment
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
-                return;
-            }
-
-            if(mTranslator.getTargetTranslations().length > 0) {
-                mFragment = new TargetTranslationListFragment();
-                mFragment.setArguments(getIntent().getExtras());
             } else {
-                mFragment = new TargetTranslationWelcomeFragment();
-                mFragment.setArguments(getIntent().getExtras());
-            }
+                if (mTranslator.getTargetTranslations().length > 0) {
+                    mFragment = new TargetTranslationListFragment();
+                    mFragment.setArguments(getIntent().getExtras());
+                } else {
+                    mFragment = new TargetTranslationWelcomeFragment();
+                    mFragment.setArguments(getIntent().getExtras());
+                }
 
-            getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
-            // TODO: animate
+                getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
+                // TODO: animate
+            }
         }
 
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -123,28 +122,6 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                 .show();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_target_translations, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
             if(resultCode == RESULT_OK) {
@@ -155,6 +132,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
                     // TODO: animate
                 }
+                ((TargetTranslationListFragment) mFragment).reloadList();
 
                 Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
                 intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));

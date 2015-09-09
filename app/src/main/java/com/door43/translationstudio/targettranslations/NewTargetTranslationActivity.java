@@ -2,8 +2,10 @@ package com.door43.translationstudio.targettranslations;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
@@ -16,6 +18,7 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.library.ProjectLibraryListActivity;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.util.AppContext;
 
@@ -35,14 +38,12 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
         setContentView(R.layout.activity_new_target_translation);
 
         if(findViewById(R.id.fragment_container) != null) {
-            if(savedInstanceState != null) {
-                return;
+            if(savedInstanceState == null) {
+                mFragment = new TargetLanguageListFragment();
+                ((TargetLanguageListFragment) mFragment).setArguments(getIntent().getExtras());
+                getFragmentManager().beginTransaction().add(R.id.fragment_container, (TargetLanguageListFragment) mFragment).commit();
+                // TODO: animate
             }
-
-            mFragment = new TargetLanguageListFragment();
-            ((TargetLanguageListFragment) mFragment).setArguments(getIntent().getExtras());
-            getFragmentManager().beginTransaction().add(R.id.fragment_container, (TargetLanguageListFragment) mFragment).commit();
-            // TODO: animate
         }
     }
 
@@ -117,6 +118,12 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if(mFragment instanceof ProjectListFragment) {
+            menu.findItem(R.id.action_update).setVisible(true);
+        } else {
+            menu.findItem(R.id.action_update).setVisible(false);
+        }
         SearchManager searchManager = (SearchManager)getSystemService(Context.SEARCH_SERVICE);
         final MenuItem searchMenuItem = menu.findItem(R.id.action_search);
         final SearchView searchViewAction = (SearchView) MenuItemCompat.getActionView(searchMenuItem);
@@ -146,6 +153,22 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
                 startActivity(intent);
                 return true;
             case R.id.action_search:
+                return true;
+            case R.id.action_update:
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.update_projects)
+                        .setIcon(R.drawable.ic_autorenew_black_24dp)
+                        .setMessage(R.string.use_internet_confirmation)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(NewTargetTranslationActivity.this, ProjectLibraryListActivity.class);
+//                                intent.putExtra(ProjectLibraryListActivity.ARG_SHOW_UPDATES, true);
+                                startActivity(intent);
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
