@@ -16,8 +16,9 @@
 
         <LinearLayout
             style="@style/Widget.CardContent.Horizontal"
+            android:background="@drawable/paper_repeating"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:gravity="center_vertical">
 
             <TextView
@@ -44,7 +45,7 @@
             android:orientation="vertical"
             style="@style/Widget.CardContent.Horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:gravity="center_vertical">
 
             <TextView
