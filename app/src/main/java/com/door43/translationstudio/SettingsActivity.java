@@ -90,19 +90,6 @@ public class SettingsActivity extends PreferenceActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // ensure the projects loaded correctly. This may happen when the app recovers from an crash.
-        if(AppContext.projectManager().getProjects().length == 0) {
-            AppContext.projectManager().reset();
-            Intent intent = new Intent(this, SplashScreenActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
-
-    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 

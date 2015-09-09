@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    android:id="@+id/leftToolbar"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="?attr/actionBarSize"
+    android:background="?attr/colorPrimary"
+    android:fitsSystemWindows="true"
+    android:padding="16dp"
+    android:layout_height="match_parent">
+
+    <!-- top -->
+    <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center|top">-->
+        <!--<ImageButton-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@drawable/ic_more_vert_white_24dp"/>-->
+    <!--</LinearLayout>-->
+
+    <!--&lt;!&ndash; middle &ndash;&gt;-->
+    <!--<LinearLayout-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_gravity="center">-->
+        <!--<ImageButton-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@drawable/ic_more_vert_white_24dp"/>-->
+    <!--</LinearLayout>-->
+
+    <!-- bottom -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center|bottom">
+        <ImageButton
+            android:id="@+id/action_more"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_more_vert_white_24dp"/>
+    </LinearLayout>
+
+
+</android.support.design.widget.CoordinatorLayout>
