@@ -10,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -64,10 +66,18 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
     private void animateCards(final ViewHolder holder) {
         // TODO: apply animations to the correct cards
-
+        long duration = 2000;
+        final float scale = 0.5f;
         // animate bottom card up
-        Animation swap_up = AnimationUtils.loadAnimation(mContext, R.anim.swap_card_up);
-        swap_up.setAnimationListener(new Animation.AnimationListener() {
+        AnimationSet bottomSet = new AnimationSet(true);
+        Animation bottomShrink = new ScaleAnimation(1, scale, 1, scale, Animation.RELATIVE_TO_SELF, 1, Animation.RELATIVE_TO_SELF, 1);
+        bottomShrink.setDuration(duration);
+        bottomSet.setFillEnabled(true);
+        bottomSet.setFillAfter(true);
+        bottomSet.addAnimation(bottomShrink);
+
+//        Animation swap_up = AnimationUtils.loadAnimation(mContext, R.anim.swap_card_up);
+        bottomSet.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -75,17 +85,28 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                // elevation takes precedence for API 21+
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    holder.mSourceCard.setElevation(2);
-                    holder.mTargetCard.setElevation(3);
-                }
+//                int originalWidth = holder.mTargetCard.getWidth();
+//                int originalHeight = holder.mTargetCard.getHeight();
+//                float originalX = holder.mTargetCard.getX();
+//                float originalY = holder.mTargetCard.getY();
+//                holder.mTargetCard.setScaleX(scale);
+//                holder.mTargetCard.setScaleY(scale);
+//                holder.mTargetCard.setX(originalX + originalWidth - (scale * originalWidth));
+//                holder.mTargetCard.setY(originalY + originalHeight - (scale * originalHeight));
+//                ((View) holder.mTargetCard.getParent()).requestLayout();
+//                ((View) holder.mTargetCard.getParent()).invalidate();
 
-                holder.mTargetCard.setX(holder.mTargetCard.getX() - 48);
-                holder.mTargetCard.setY(holder.mTargetCard.getY() - 48);
-                holder.mTargetCard.bringToFront();
-                ((View)holder.mTargetCard.getParent()).requestLayout();
-                ((View)holder.mTargetCard.getParent()).invalidate();
+                // elevation takes precedence for API 21+
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                    holder.mSourceCard.setElevation(2);
+//                    holder.mTargetCard.setElevation(3);
+//                }
+//
+//                holder.mTargetCard.setX(holder.mTargetCard.getX() - 48);
+//                holder.mTargetCard.setY(holder.mTargetCard.getY() - 48);
+//                holder.mTargetCard.bringToFront();
+//                ((View) holder.mTargetCard.getParent()).requestLayout();
+//                ((View) holder.mTargetCard.getParent()).invalidate();
             }
 
             @Override
@@ -93,11 +114,17 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
             }
         });
-        holder.mTargetCard.startAnimation(swap_up);
+        holder.mTargetCard.startAnimation(bottomSet);
 
         // animate top card down
-        Animation swap_down = AnimationUtils.loadAnimation(mContext, R.anim.swap_card_down);
-        swap_down.setAnimationListener(new Animation.AnimationListener() {
+        AnimationSet topSet = new AnimationSet(true);
+        Animation topShrink = new ScaleAnimation(1, 0.5f, 1, 0.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        topSet.setFillEnabled(true);
+        topSet.setFillAfter(true);
+        topShrink.setDuration(duration);
+        topSet.addAnimation(topShrink);
+//        Animation swap_down = AnimationUtils.loadAnimation(mContext, R.anim.swap_card_down);
+        topSet.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -105,8 +132,16 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                holder.mSourceCard.setX(holder.mSourceCard.getX() + 48);
-                holder.mSourceCard.setY(holder.mSourceCard.getY() + 48);
+//                holder.mSourceCard.setScaleX(scale);
+//                holder.mSourceCard.setScaleY(scale);
+//
+//                ((View) holder.mSourceCard.getParent()).requestLayout();
+//                ((View) holder.mSourceCard.getParent()).invalidate();
+
+//                holder.mSourceCard.setX(0);
+//                holder.mSourceCard.setY(0);
+//                holder.mSourceCard.setX(holder.mSourceCard.getX() + 48);
+//                holder.mSourceCard.setY(holder.mSourceCard.getY() + 48);
             }
 
             @Override
@@ -114,7 +149,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
             }
         });
-        holder.mSourceCard.startAnimation(swap_down);
+        holder.mSourceCard.startAnimation(topSet);
     }
 
     @Override

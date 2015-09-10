@@ -6,29 +6,28 @@
         android:toXScale="0.5"
         android:fromYScale="1.0"
         android:toYScale="0.5"
-        android:pivotX="100%"
-        android:pivotY="100%"
-        android:duration="700"
-        android:fillAfter="true"/>
+        android:pivotX="100%p"
+        android:pivotY="100%p"
+        android:duration="2000"/>
 
     <set
         android:interpolator="@android:anim/accelerate_interpolator"
-        android:startOffset="700">
+        android:startOffset="2000">
         <translate
             android:fromXDelta="0"
-            android:toXDelta="-48"
+            android:toXDelta="0%p"
             android:fromYDelta="0"
-            android:toYDelta="-48"
-            android:duration="700"
+            android:toYDelta="0%p"
+            android:duration="2000"
             android:fillAfter="true"/>
         <scale
             android:fromXScale="1.0"
             android:toXScale="2.0"
             android:fromYScale="1.0"
             android:toYScale="2.0"
-            android:pivotX="100%"
-            android:pivotY="100%"
-            android:duration="700"
+            android:pivotX="100%p"
+            android:pivotY="100%p"
+            android:duration="2000"
             android:fillAfter="true"/>
     </set>
 </set>
