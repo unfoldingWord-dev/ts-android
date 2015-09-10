@@ -60,19 +60,8 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                 }
 
                 getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
-                // TODO: animate
             }
         }
-
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-//            @Override
-//            public boolean onMenuItemClick(MenuItem item) {
-//                // TODO: handle clicks
-//                return false;
-//            }
-//        });
-//        toolbar.inflateMenu(R.menu.left_menu);
 
         ImageButton moreButton = (ImageButton)findViewById(R.id.action_more);
         moreButton.setOnClickListener(new View.OnClickListener() {
@@ -97,13 +86,11 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
             mFragment = new TargetTranslationListFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-            // TODO: animate
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
             mFragment = new TargetTranslationWelcomeFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-            // TODO: animate
         }
     }
 
@@ -130,9 +117,9 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                     mFragment = new TargetTranslationListFragment();
                     mFragment.setArguments(getIntent().getExtras());
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-                    // TODO: animate
+                } else {
+                    ((TargetTranslationListFragment) mFragment).reloadList();
                 }
-                ((TargetTranslationListFragment) mFragment).reloadList();
 
                 Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
                 intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
@@ -167,7 +154,6 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
             mFragment = new TargetTranslationWelcomeFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-            // TODO: animate
         }
     }
 
