@@ -14,7 +14,7 @@ import com.door43.translationstudio.panes.left.tabs.ProjectsTab;
 import com.door43.translationstudio.util.TabsAdapter;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.door43.util.Screen;
+import com.door43.widget.ScreenUtil;
 
 /**
  * Created by joel on 8/26/2014.
@@ -51,7 +51,7 @@ public class LeftPaneFragment extends TranslatorBaseFragment {
         mSlidingTabLayout = (PagerSlidingTabStrip) mView.findViewById(R.id.left_sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
         mSlidingTabLayout.setTextColorResource(R.color.light_primary_text);
-        mSlidingTabLayout.setTextSize(Screen.dpToPx(getActivity(), 20));
+        mSlidingTabLayout.setTextSize(ScreenUtil.dpToPx(getActivity(), 20));
 
         selectTab(mDefaultPage);
 

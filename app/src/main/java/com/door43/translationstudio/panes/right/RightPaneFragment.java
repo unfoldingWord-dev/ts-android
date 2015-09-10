@@ -17,7 +17,7 @@ import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.util.TabsAdapter;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.door43.util.Screen;
+import com.door43.widget.ScreenUtil;
 
 /**
  * Created by joel on 8/26/2014.
@@ -70,7 +70,7 @@ public class RightPaneFragment extends TranslatorBaseFragment {
         mSlidingTabLayout = (PagerSlidingTabStrip) mView.findViewById(R.id.right_sliding_tabs);
         mSlidingTabLayout.setViewPager(mViewPager);
         mSlidingTabLayout.setTextColorResource(R.color.light_primary_text);
-        mSlidingTabLayout.setTextSize(Screen.dpToPx(getActivity(), 20));
+        mSlidingTabLayout.setTextSize(ScreenUtil.dpToPx(getActivity(), 20));
 
         mSlidingTabLayout.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
