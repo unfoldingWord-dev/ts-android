@@ -27,6 +27,24 @@ public class ReadModeFragment extends Fragment {
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
+//        final int indexOfFrontChild = 0;
+//        mRecyclerView.setChildDrawingOrderCallback(new RecyclerView.ChildDrawingOrderCallback() {
+//            private int nextChildIndexToRender;
+//
+//            @Override
+//            public int onGetChildDrawingOrder(int childCount, int i) {
+//                if(i == childCount - 1) {
+//                    nextChildIndexToRender = 0;
+//                    return indexOfFrontChild;
+//                } else {
+//                    if (nextChildIndexToRender == indexOfFrontChild) {
+//                        nextChildIndexToRender ++;
+//                    }
+//                    return nextChildIndexToRender++;
+//                }
+//            }
+//        });
+
         String[] dataset = new String[6];
         dataset[0] = "this is the first card";
         dataset[1] = "this is the second card";
@@ -34,7 +52,7 @@ public class ReadModeFragment extends Fragment {
         dataset[3] = "this is the forth card";
         dataset[4] = "this is the fifth card";
         dataset[5] = "this is the sixth card";
-        mAdapter = new ReadAdapter(dataset);
+        mAdapter = new ReadAdapter(this.getActivity(), dataset);
         mRecyclerView.setAdapter(mAdapter);
 
         return rootView;
