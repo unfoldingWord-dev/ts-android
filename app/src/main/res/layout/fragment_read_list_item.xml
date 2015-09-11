@@ -19,6 +19,7 @@
         android:clickable="true">
 
         <LinearLayout
+            android:orientation="vertical"
             style="@style/Widget.CardContent.Horizontal"
             android:background="@drawable/paper_repeating"
             android:layout_width="match_parent"

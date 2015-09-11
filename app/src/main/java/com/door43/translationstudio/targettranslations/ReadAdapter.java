@@ -30,6 +30,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
 //    private final String[] mDataset;
     private boolean[] mTargetStateOpen;
+    private CharSequence[] mRenderedBody;
     private final Context mContext;
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
@@ -38,7 +39,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
     private final Library mLibrary;
     private final Translator mTranslator;
     private Chapter[] mChapters;
-//    private final String mTargetTranslationId;
 
     public ReadAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
@@ -48,6 +48,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mTargetStateOpen = new boolean[mChapters.length];
+        mRenderedBody = new CharSequence[mChapters.length];
     }
 
     /**
@@ -58,6 +59,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mTargetStateOpen = new boolean[mChapters.length];
+        mRenderedBody = new CharSequence[mChapters.length];
         notifyDataSetChanged();
     }
 
@@ -70,8 +72,8 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        int margin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.card_margin));
-        int stackedMargin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.stacked_card_margin));
+//        int margin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.card_margin));
+//        int stackedMargin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.stacked_card_margin));
         if(mTargetStateOpen[position]) {
             // target on top
             // elevation takes precedence for API 21+
@@ -83,13 +85,13 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             ((View) holder.mTargetCard.getParent()).requestLayout();
             ((View) holder.mTargetCard.getParent()).invalidate();
 
-            CardView.LayoutParams layoutParamsBottom = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-            layoutParamsBottom.setMargins(margin, margin, stackedMargin, stackedMargin);
-            holder.mTargetCard.setLayoutParams(layoutParamsBottom);
-
-            CardView.LayoutParams layoutParamsTop = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-            layoutParamsTop.setMargins(stackedMargin, stackedMargin, margin, margin);
-            holder.mSourceCard.setLayoutParams(layoutParamsTop);
+//            CardView.LayoutParams layoutParamsBottom = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
+//            layoutParamsBottom.setMargins(margin, margin, stackedMargin, stackedMargin);
+//            holder.mTargetCard.setLayoutParams(layoutParamsBottom);
+//
+//            CardView.LayoutParams layoutParamsTop = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
+//            layoutParamsTop.setMargins(stackedMargin, stackedMargin, margin, margin);
+//            holder.mSourceCard.setLayoutParams(layoutParamsTop);
         } else {
             // source on top
             // elevation takes precedence for API 21+
@@ -100,14 +102,14 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             holder.mSourceCard.bringToFront();
             ((View) holder.mSourceCard.getParent()).requestLayout();
             ((View) holder.mSourceCard.getParent()).invalidate();
-
-            CardView.LayoutParams layoutParamsBottom = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-            layoutParamsBottom.setMargins(margin, margin, stackedMargin, stackedMargin);
-            holder.mSourceCard.setLayoutParams(layoutParamsBottom);
-
-            CardView.LayoutParams layoutParamsTop = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-            layoutParamsTop.setMargins(stackedMargin, stackedMargin, margin, margin);
-            holder.mTargetCard.setLayoutParams(layoutParamsTop);
+//
+//            CardView.LayoutParams layoutParamsBottom = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
+//            layoutParamsBottom.setMargins(margin, margin, stackedMargin, stackedMargin);
+//            holder.mSourceCard.setLayoutParams(layoutParamsBottom);
+//
+//            CardView.LayoutParams layoutParamsTop = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
+//            layoutParamsTop.setMargins(stackedMargin, stackedMargin, margin, margin);
+//            holder.mTargetCard.setLayoutParams(layoutParamsTop);
         }
 
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
@@ -135,6 +137,8 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         for(Frame frame:frames) {
             chapterBody +=  " " + frame.body;
         }
+        // TODO: set up rendering engine
+        // TODO: store rendered body
         holder.mSourceBody.setText(chapterBody);
         String chapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
