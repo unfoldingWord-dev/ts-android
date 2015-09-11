@@ -146,30 +146,30 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
     }
 
     private void animateCards(final CardView topView, final CardView bottomView) {
-        long duration = 400;
+        long duration = 700;
         final int stackedMargin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.stacked_card_margin));
         final int margin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.card_margin));
         final float scale = 0.4f;
 
         // animate bottom card up
-        Animation bottomShrink = new ScaleAnimation(1, scale, 1, scale, Animation.RELATIVE_TO_SELF, .9f, Animation.RELATIVE_TO_SELF, .9f);
-        bottomShrink.setDuration(duration);
+        Animation bottomOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        bottomOut.setDuration(duration);
 
-        Animation bottomGrow = new ScaleAnimation(1, 1 / scale, 1, 1 / scale, Animation.RELATIVE_TO_SELF, .9f, Animation.RELATIVE_TO_SELF, .9f);
-        bottomGrow.setDuration(duration);
+        Animation bottomIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        bottomIn.setDuration(duration);
         Animation bottomTranslate = new TranslateAnimation(0, margin-stackedMargin, 0, margin-stackedMargin);
         bottomTranslate.setDuration(duration);
 
         final AnimationSet bottomFinishSet = new AnimationSet(true);
         bottomFinishSet.setStartOffset(duration);
-        bottomFinishSet.addAnimation(bottomGrow);
+        bottomFinishSet.addAnimation(bottomIn);
         bottomFinishSet.addAnimation(bottomTranslate);
 
         AnimationSet bottomSet = new AnimationSet(true);
-        bottomSet.addAnimation(bottomShrink);
+        bottomSet.addAnimation(bottomOut);
         bottomSet.addAnimation(bottomFinishSet);
 
-        bottomShrink.setAnimationListener(new Animation.AnimationListener() {
+        bottomOut.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -219,21 +219,21 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         bottomView.startAnimation(bottomSet);
 
         // animate top card down
-        Animation topShrink = new ScaleAnimation(1, scale, 1, scale, Animation.RELATIVE_TO_SELF, .1f, Animation.RELATIVE_TO_SELF, .1f);
-        topShrink.setDuration(duration);
+        Animation topOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        topOut.setDuration(duration);
 
-        Animation topGrow = new ScaleAnimation(1, 1 / scale, 1, 1 / scale, Animation.RELATIVE_TO_SELF, .1f, Animation.RELATIVE_TO_SELF, .1f);
-        topGrow.setDuration(duration);
+        Animation topIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        topIn.setDuration(duration);
         Animation topTranslate = new TranslateAnimation(0, stackedMargin-margin, 0, stackedMargin-margin);
         topTranslate.setDuration(duration);
 
         AnimationSet topFinishSet = new AnimationSet(true);
         topFinishSet.setStartOffset(duration);
-        topFinishSet.addAnimation(topGrow);
+        topFinishSet.addAnimation(topIn);
         topFinishSet.addAnimation(topTranslate);
 
         AnimationSet topSet = new AnimationSet(true);
-        topSet.addAnimation(topShrink);
+        topSet.addAnimation(topOut);
         topSet.addAnimation(topFinishSet);
         topView.startAnimation(topSet);
     }
