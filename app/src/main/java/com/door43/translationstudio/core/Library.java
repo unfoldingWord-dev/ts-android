@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Source;
+
 /**
  * Created by joel on 8/29/2015.
  */
@@ -424,18 +426,29 @@ public class Library {
         List<SourceLanguage> sourceLanguages = new ArrayList<>();
         String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
         for(String id:sourceLanguageIds) {
-            JSONObject sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, id);
-            try {
-                SourceLanguage lang = SourceLanguage.Generate(sourceLanguageJson);
-                if(lang != null) {
-                    sourceLanguages.add(lang);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            SourceLanguage lang = getSourceLanguage(projectId, id);
+            if(lang != null) {
+                sourceLanguages.add(lang);
             }
         }
 
         return sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]);
+    }
+
+    /**
+     * Returns a source language in the project
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    public SourceLanguage getSourceLanguage(String projectId, String sourceLanguageId) {
+        JSONObject sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, sourceLanguageId);
+        try {
+            return SourceLanguage.generate(sourceLanguageJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

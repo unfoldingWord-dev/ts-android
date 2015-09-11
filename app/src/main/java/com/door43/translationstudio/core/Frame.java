@@ -10,9 +10,11 @@ public class Frame {
 
     public final String body;
     private final String mId;
+    private final TranslationFormat mFormat;
 
-    protected Frame(String body, String frameId) {
+    protected Frame(String body, String frameId, TranslationFormat format) {
         this.body = body;
+        mFormat = format;
         mId = frameId;
     }
 
@@ -25,16 +27,28 @@ public class Frame {
     }
 
     /**
+     * Returns the format of the text
+     * @return
+     */
+    public TranslationFormat getFormat() {
+        return mFormat;
+    }
+
+    /**
      * Generates a new frame from json
      * @param frame
      * @return
      */
     public static Frame generate(JSONObject frame) {
         try {
-            return new Frame(frame.getString("text"), frame.getString("id"));
+            return new Frame(
+                    frame.getString("text"),
+                    frame.getString("id"),
+                    TranslationFormat.get(frame.getString("format")));
         } catch (JSONException e) {
             e.printStackTrace();
         }
         return null;
     }
+
 }

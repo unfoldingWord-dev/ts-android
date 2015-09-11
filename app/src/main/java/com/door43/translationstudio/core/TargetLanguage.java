@@ -53,4 +53,8 @@ public class TargetLanguage implements Comparable {
                 LanguageDirection.get(json.getString("ld"))
         );
     }
+
+    public LanguageDirection getDirection() {
+        return direction;
+    }
 }

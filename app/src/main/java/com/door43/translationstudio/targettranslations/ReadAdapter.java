@@ -1,7 +1,10 @@
 package com.door43.translationstudio.targettranslations;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,26 +12,32 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
-import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.TranslationFormat;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.RenderingGroup;
+import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.widget.ScreenUtil;
 
 /**
  * Created by joel on 9/9/2015.
  */
 public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
-//    private final String[] mDataset;
+    private SourceLanguage mSourceLanguage;
+    private final TargetLanguage mTargetLanguage;
     private boolean[] mTargetStateOpen;
     private CharSequence[] mRenderedBody;
     private final Context mContext;
@@ -46,6 +55,9 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
+        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
+
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mTargetStateOpen = new boolean[mChapters.length];
         mRenderedBody = new CharSequence[mChapters.length];
@@ -57,23 +69,26 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
      */
     public void setSourceTranslation(String sourceTranslationId) {
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
+        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mTargetStateOpen = new boolean[mChapters.length];
         mRenderedBody = new CharSequence[mChapters.length];
+
         notifyDataSetChanged();
+        // TODO: make sure notifyDataSetChanged causes the ViewHolders to be regenerated.
+        // otherwise we won't be passing the correct source language to the typeface methods
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_read_list_item, parent, false);
-        ViewHolder vh = new ViewHolder(v);
+        ViewHolder vh = new ViewHolder(mContext, v, mSourceLanguage, mTargetLanguage);
         return vh;
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-//        int margin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.card_margin));
-//        int stackedMargin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.stacked_card_margin));
         if(mTargetStateOpen[position]) {
             // target on top
             // elevation takes precedence for API 21+
@@ -84,14 +99,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             holder.mTargetCard.bringToFront();
             ((View) holder.mTargetCard.getParent()).requestLayout();
             ((View) holder.mTargetCard.getParent()).invalidate();
-
-//            CardView.LayoutParams layoutParamsBottom = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-//            layoutParamsBottom.setMargins(margin, margin, stackedMargin, stackedMargin);
-//            holder.mTargetCard.setLayoutParams(layoutParamsBottom);
-//
-//            CardView.LayoutParams layoutParamsTop = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-//            layoutParamsTop.setMargins(stackedMargin, stackedMargin, margin, margin);
-//            holder.mSourceCard.setLayoutParams(layoutParamsTop);
         } else {
             // source on top
             // elevation takes precedence for API 21+
@@ -102,14 +109,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             holder.mSourceCard.bringToFront();
             ((View) holder.mSourceCard.getParent()).requestLayout();
             ((View) holder.mSourceCard.getParent()).invalidate();
-//
-//            CardView.LayoutParams layoutParamsBottom = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-//            layoutParamsBottom.setMargins(margin, margin, stackedMargin, stackedMargin);
-//            holder.mSourceCard.setLayoutParams(layoutParamsBottom);
-//
-//            CardView.LayoutParams layoutParamsTop = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-//            layoutParamsTop.setMargins(stackedMargin, stackedMargin, margin, margin);
-//            holder.mTargetCard.setLayoutParams(layoutParamsTop);
         }
 
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
@@ -132,29 +131,45 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         });
 
         Chapter chapter = mChapters[position];
-        Frame[] frames = mLibrary.getFrames(mSourceTranslation, chapter.getId());
-        String chapterBody = "";
-        for(Frame frame:frames) {
-            chapterBody +=  " " + frame.body;
+
+        // render the chapter body
+        if(mRenderedBody[position] == null) {
+            Frame[] frames = mLibrary.getFrames(mSourceTranslation, chapter.getId());
+            String chapterBody = "";
+            TranslationFormat bodyFormat = TranslationFormat.DEFAULT;
+            if(frames.length > 0) {
+                bodyFormat = frames[0].getFormat();
+            }
+            for (Frame frame : frames) {
+                chapterBody += " " + frame.body;
+            }
+            // TODO: set up rendering engine
+            RenderingGroup sourceRendering = new RenderingGroup();
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+//        Boolean highlightTerms = prefs.getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(mContext.getResources().getString(R.string.pref_default_highlight_key_terms)));
+            // TODO: identify key terms
+            if (bodyFormat == TranslationFormat.USX) {
+                // TODO: add click listeners
+                sourceRendering.addEngine(new USXRenderer(null, null));
+            } else {
+                sourceRendering.addEngine(new DefaultRenderer());
+            }
+            sourceRendering.init(chapterBody);
+            mRenderedBody[position] = sourceRendering.start();
         }
-        // TODO: set up rendering engine
-        // TODO: store rendered body
-        holder.mSourceBody.setText(chapterBody);
+
+        holder.mSourceBody.setText(mRenderedBody[position]);
         String chapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
-            chapterTitle = mSourceTranslation.getProjectTitle() + " " + chapter.getId();
+            chapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
         holder.mSourceTitle.setText(chapterTitle);
 
-        // TODO: load target translation
+        // TODO: load target translation text
     }
 
     private void animateCards(final CardView leftCard, final CardView rightCard, final boolean bringLeftCardToFront) {
         long duration = 700;
-//        final int stackedMargin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.stacked_card_margin));
-//        final int margin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.card_margin));
-//        final float scale = 0.4f;
-
         // animate bottom card up
         Animation bottomOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
         bottomOut.setDuration(duration);
@@ -232,7 +247,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         private final CardView mSourceCard;
         public TextView mSourceTitle;
         public TextView mSourceBody;
-        public ViewHolder(View v) {
+        public ViewHolder(Context context, View v, SourceLanguage source, TargetLanguage target) {
             super(v);
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
             mSourceTitle = (TextView)v.findViewById(R.id.source_translation_title);
@@ -240,6 +255,12 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (TextView)v.findViewById(R.id.target_translation_body);
+
+            // set up fonts
+            Typography.formatTitle(context, mSourceTitle, source.getId(), source.getDirection());
+            Typography.format(context, mSourceBody, source.getId(), source.getDirection());
+            Typography.formatTitle(context, mTargetTitle, target.getId(), target.getDirection());
+            Typography.format(context, mTargetBody, target.getId(), target.getDirection());
         }
     }
 }

@@ -23,13 +23,17 @@ public class SourceLanguage implements Comparable {
         return code;
     }
 
+    public LanguageDirection getDirection() {
+        return direction;
+    }
+
     /**
      * Generates a source language object from json
      * @param json
      * @return
      * @throws JSONException
      */
-    public static SourceLanguage Generate(JSONObject json) throws JSONException {
+    public static SourceLanguage generate(JSONObject json) throws JSONException {
         if(json == null) {
             return null;
         }
