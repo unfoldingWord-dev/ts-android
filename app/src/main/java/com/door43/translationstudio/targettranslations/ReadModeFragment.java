@@ -1,5 +1,6 @@
 package com.door43.translationstudio.targettranslations;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,11 +21,13 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 9/8/2015.
  */
-public class ReadModeFragment extends Fragment implements TargetTranslationDetailMode {
+public class ReadModeFragment extends Fragment implements TargetTranslationDetailActivityListener {
 
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
     private ReadAdapter mAdapter;
+    private boolean mFingerScroll = false;
+    private TargetTranslationDetailFragmentListener mListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -52,16 +55,44 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
         mAdapter = new ReadAdapter(this.getActivity(), targetTranslationId, sourceTranslation.getId());
         mRecyclerView.setAdapter(mAdapter);
 
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                mFingerScroll = true;
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if(mFingerScroll) {
+                    int position = mLayoutManager.findFirstVisibleItemPosition();
+                    float scroll = (float)position / (float)mAdapter.getItemCount();
+                    mListener.onScrollProgress(scroll);
+                }
+            }
+        });
+
         return rootView;
+    }
+
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            this.mListener = (TargetTranslationDetailFragmentListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement TargetTranslationDetailFragmentListener");
+        }
     }
 
     @Override
     public void onScrollProgressUpdate(float scrollProgress) {
         float position = mAdapter.getItemCount() * scrollProgress;
-        int scrollPosition = (int)Math.floor(position);
-        if(scrollPosition <= 0) {
-            scrollPosition = 1;
+        int scrollPosition = (int) Math.floor(position);
+        if (scrollPosition < 0) {
+            scrollPosition = 0;
         }
-        mRecyclerView.smoothScrollToPosition(scrollPosition);
+        mFingerScroll = false;
+        mRecyclerView.scrollToPosition(scrollPosition);
     }
 }

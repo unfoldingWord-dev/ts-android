@@ -10,10 +10,11 @@ import android.widget.SeekBar;
 import com.door43.translationstudio.R;
 import com.door43.widget.VerticalSeekBar;
 
-public class TargetTranslationDetailActivity extends AppCompatActivity {
+public class TargetTranslationDetailActivity extends AppCompatActivity implements TargetTranslationDetailFragmentListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
-    private TargetTranslationDetailMode mFragment;
+    private TargetTranslationDetailActivityListener mFragment;
+    private VerticalSeekBar mSeekBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,7 +23,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity {
 
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
-                mFragment = (TargetTranslationDetailMode)getFragmentManager().findFragmentById(R.id.fragment_container);
+                mFragment = (TargetTranslationDetailActivityListener)getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
                 // TODO: remember and restore last mode
                 mFragment = new ReadModeFragment();
@@ -34,10 +35,10 @@ public class TargetTranslationDetailActivity extends AppCompatActivity {
         }
 
         // TODO: set up menu items
-        VerticalSeekBar seekBar = (VerticalSeekBar)findViewById(R.id.action_seek);
-        seekBar.setMax(100);
-        seekBar.setProgress(100);
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mSeekBar = (VerticalSeekBar)findViewById(R.id.action_seek);
+        mSeekBar.setMax(100);
+        mSeekBar.setProgress(100);
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mFragment.onScrollProgressUpdate((100 - progress) / 100.0f);
@@ -75,5 +76,10 @@ public class TargetTranslationDetailActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onScrollProgress(float progress) {
+        mSeekBar.setProgress(mSeekBar.getMax() - Math.round(mSeekBar.getMax() * Math.round(progress * 10.0f) / 10.0f));
     }
 }
