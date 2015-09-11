@@ -1,8 +1,6 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 import com.door43.util.Zip;
 
@@ -108,7 +106,7 @@ public class Library {
     private void downloadResourceList(String projectId, String sourceLanguageId) {
         if(mDownloader.downloadResourceList(projectId, sourceLanguageId)) {
             for(String resourceId:mDownloader.getIndex().getResources(projectId, sourceLanguageId)) {
-                SourceTranslation sourceTranslation = new SourceTranslation(projectId, sourceLanguageId, resourceId);
+                SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
                 try {
                     int latestResourceModified = mDownloader.getIndex().getResource(sourceTranslation).getInt("date_modified");
                     JSONObject localResource = mAppIndex.getResource(sourceTranslation);
@@ -118,7 +116,7 @@ public class Library {
                     }
                     if(localResourceModified == -1 || localResourceModified < latestResourceModified) {
                         // build update list
-                        mLibraryUpdates.addUpdate(new SourceTranslation(projectId, sourceLanguageId, resourceId));
+                        mLibraryUpdates.addUpdate(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -192,7 +190,7 @@ public class Library {
             boolean projectDownloadSuccess = true;
             for(String sourceLanguageId:updates.getUpdatedSourceLanguages(projectId)) {
                 for(String resourceId:updates.getUpdatedResources(projectId, sourceLanguageId)) {
-                    projectDownloadSuccess = downloadSourceTranslationWithoutMerging(new SourceTranslation(projectId, sourceLanguageId, resourceId)) ? projectDownloadSuccess : false;
+                    projectDownloadSuccess = downloadSourceTranslationWithoutMerging(SourceTranslation.simple(projectId, sourceLanguageId, resourceId)) ? projectDownloadSuccess : false;
                     if(!projectDownloadSuccess) {
                         throw new Exception("Failed to download " + projectId + " " + sourceLanguageId + " " + resourceId);
                     }
@@ -441,6 +439,17 @@ public class Library {
     }
 
     /**
+     * Returns an array of resources for the source language
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    public Resource[] getResources(String projectId, String sourceLanguageId) {
+        // TODO: return an array of resources
+        return new Resource[0];
+    }
+
+    /**
      * Returns the project withh the information provided in the preferred source language
      * If the source language does not exist it will use the default language
      *
@@ -480,6 +489,25 @@ public class Library {
     }
 
     /**
+     * Returns an array of frames in the chapter
+     * @param sourceTranslation
+     * @param chapterId
+     * @return
+     */
+    public Frame[] getFrames(SourceTranslation sourceTranslation, String chapterId) {
+        List<Frame> frames = new ArrayList<>();
+        String[] frameIds = mAppIndex.getFrames(sourceTranslation, chapterId);
+        for(String frameId:frameIds) {
+            Frame frame = Frame.generate(mAppIndex.getFrame(sourceTranslation, chapterId, frameId));
+            if(frame != null) {
+                frames.add(frame);
+            }
+        }
+        // TODO: sort by id
+        return frames.toArray(new Frame[frames.size()]);
+    }
+
+    /**
      * Returns a single target language
      * @param targetLanguageId
      * @return
@@ -490,5 +518,41 @@ public class Library {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns the source translation by it's id
+     * @param sourceTranslationId
+     * @return null if the source translation does not exist
+     */
+    public SourceTranslation getSourceTranslation(String sourceTranslationId) {
+        if(sourceTranslationId != null) {
+            String projectId = SourceTranslation.getProjectIdFromId(sourceTranslationId);
+            String sourceLanguageId = SourceTranslation.getSourceLanguageIdFromId(sourceTranslationId);
+            String resourceId = SourceTranslation.getResourceIdFromId(sourceTranslationId);
+            return getSourceTranslation(projectId, sourceLanguageId, resourceId);
+        }
+        return null;
+    }
+
+    /**
+     * Returns the source translation
+     * @param projectId
+     * @param sourceLanguageId
+     * @param resourceId
+     * @return null if the source translation does not exist
+     */
+    public SourceTranslation getSourceTranslation(String projectId, String sourceLanguageId, String resourceId) {
+        SourceTranslation simpleTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
+        JSONObject resourceJson = mAppIndex.getResource(simpleTranslation);
+        if(resourceJson != null) {
+            JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, sourceLanguageId);
+            try {
+                return SourceTranslation.generate(projectId, sourceLanguageJson, resourceJson);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }

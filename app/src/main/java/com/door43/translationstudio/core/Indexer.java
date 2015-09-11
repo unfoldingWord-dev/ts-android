@@ -485,7 +485,7 @@ public class Indexer {
      */
     public void deleteSourceLanguage (String projectId, String sourceLanguageId) {
         for(String resourceId:getResources(projectId, sourceLanguageId)) {
-            deleteResource(new SourceTranslation(projectId, sourceLanguageId, resourceId));
+            deleteResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
         }
 
         String catalogApiUrl = getUrlFromObject(getProject(projectId), "lang_catalog");
@@ -625,7 +625,7 @@ public class Indexer {
                     indexSourceLanguages(projectId, sourceLanguageJson.toString());
 
                     for(String resourceId:index.getResources(projectId, sourceLanguageId)) {
-                        SourceTranslation translation = new SourceTranslation(projectId, sourceLanguageId, resourceId);
+                        SourceTranslation translation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
                         JSONObject newResource = index.getResource(translation);
                         if(newResource != null) {
                             JSONArray resourceJson = new JSONArray();

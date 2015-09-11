@@ -9,11 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.util.AppContext;
+
+import java.security.InvalidParameterException;
 
 /**
  * Created by joel on 9/8/2015.
  */
-public class ReadModeFragment extends Fragment {
+public class ReadModeFragment extends Fragment implements TargetTranslationDetailMode {
 
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
@@ -23,38 +30,38 @@ public class ReadModeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_read_mode, container, false);
 
+        Bundle args = getArguments();
+        String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        TargetTranslation translation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        if(translation == null) {
+            throw new InvalidParameterException("a valid target translation id is required");
+        }
+
+        // TODO: retreive source translation id of selected tab
+        String projectId = translation.getProjectId();
+        SourceLanguage[] sourceLanguages = AppContext.getLibrary().getSourceLanguages(projectId);
+        String sourceLanguageId = sourceLanguages[0].getId();
+        Resource[] resources = AppContext.getLibrary().getResources(projectId, sourceLanguageId);
+        String resourceId = resources[0].getId();
+        SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(projectId, sourceLanguageId, resourceId);
+
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-//        final int indexOfFrontChild = 0;
-//        mRecyclerView.setChildDrawingOrderCallback(new RecyclerView.ChildDrawingOrderCallback() {
-//            private int nextChildIndexToRender;
-//
-//            @Override
-//            public int onGetChildDrawingOrder(int childCount, int i) {
-//                if(i == childCount - 1) {
-//                    nextChildIndexToRender = 0;
-//                    return indexOfFrontChild;
-//                } else {
-//                    if (nextChildIndexToRender == indexOfFrontChild) {
-//                        nextChildIndexToRender ++;
-//                    }
-//                    return nextChildIndexToRender++;
-//                }
-//            }
-//        });
-
-        String[] dataset = new String[6];
-        dataset[0] = "this is the first card";
-        dataset[1] = "this is the second card";
-        dataset[2] = "this is the third card";
-        dataset[3] = "this is the forth card";
-        dataset[4] = "this is the fifth card";
-        dataset[5] = "this is the sixth card";
-        mAdapter = new ReadAdapter(this.getActivity(), dataset);
+        mAdapter = new ReadAdapter(this.getActivity(), targetTranslationId, sourceTranslation.getId());
         mRecyclerView.setAdapter(mAdapter);
 
         return rootView;
+    }
+
+    @Override
+    public void onScrollProgressUpdate(float scrollProgress) {
+        float position = mAdapter.getItemCount() * scrollProgress;
+        int scrollPosition = (int)Math.floor(position);
+        if(scrollPosition <= 0) {
+            scrollPosition = 1;
+        }
+        mRecyclerView.smoothScrollToPosition(scrollPosition);
     }
 }

@@ -60,7 +60,7 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test04IndexSource() throws Exception {
-        SourceTranslation bibleTranslation = new SourceTranslation("gen", "en", "ulb");
+        SourceTranslation bibleTranslation = SourceTranslation.simple("gen", "en", "ulb");
         String genCatalog = Util.readStream(mContext.getAssets().open("indexer/gen/en/ulb/source.json"));
         assertTrue(mIndex.indexSource(bibleTranslation, genCatalog));
         String[] bibleChapterIds = mIndex.getChapters(bibleTranslation);
@@ -69,7 +69,7 @@ public class IndexerTest extends InstrumentationTestCase {
             assertTrue(mIndex.getFrames(bibleTranslation, id).length > 0);
         }
 
-        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
         String obsCatalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/source.json"));
         assertTrue(mIndex.indexSource(obsTranslation, obsCatalog));
         String[] obsChapterIds = mIndex.getChapters(obsTranslation);
@@ -80,7 +80,7 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test05IndexNotes() throws Exception {
-        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/notes.json"));
         assertTrue(mIndex.indexNotes(translation, catalog));
         String[] noteIds = mIndex.getNotes(translation, "01", "01");
@@ -89,7 +89,7 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test06IndexTerms() throws Exception {
-        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
         assertTrue(mIndex.indexTerms(translation, catalog));
         String[] allTermIds = mIndex.getTerms(translation);
@@ -101,7 +101,7 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test07IndexQuestions() throws Exception {
-        SourceTranslation translation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/checking_questions.json"));
         assertTrue(mIndex.indexQuestions(translation, catalog));
         String[] questionIds = mIndex.getQuestions(translation, "01", "01");
@@ -130,8 +130,8 @@ public class IndexerTest extends InstrumentationTestCase {
         assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
         assertTrue(mergedIndex.getResources("obs", "en").length == 1);
         assertTrue(mergedIndex.getResources("gen", "en").length > 1);
-        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
-        SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
+        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
+        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
         assertTrue(mergedIndex.getChapters(genTranslation).length == 0);
     }
@@ -147,8 +147,8 @@ public class IndexerTest extends InstrumentationTestCase {
         assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
         assertTrue(mergedIndex.getResources("obs", "en").length == 1);
         assertTrue(mergedIndex.getResources("gen", "en").length > 0);
-        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
-        SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
+        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
+        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
         assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
     }
@@ -161,7 +161,7 @@ public class IndexerTest extends InstrumentationTestCase {
         assertNotNull(mergedIndex.getProject("obs"));
         assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
         assertTrue(mergedIndex.getResources("obs", "en").length == 1);
-        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
         assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
     }
 
@@ -173,7 +173,7 @@ public class IndexerTest extends InstrumentationTestCase {
         assertNotNull(mergedIndex.getProject("obs"));
         assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
         assertTrue(mergedIndex.getResources("obs", "en").length == 1);
-        SourceTranslation obsTranslation = new SourceTranslation("obs", "en", "obs");
+        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
         assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
 
         mergedIndex.destroy();
@@ -182,7 +182,7 @@ public class IndexerTest extends InstrumentationTestCase {
         assertNotNull(mergedIndex.getProject("gen"));
         assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
         assertTrue(mergedIndex.getResources("gen", "en").length > 0);
-        SourceTranslation genTranslation = new SourceTranslation("gen", "en", "ulb");
+        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
     }
 

@@ -14,6 +14,13 @@ import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.Frame;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ScreenUtil;
 
 /**
@@ -21,16 +28,37 @@ import com.door43.widget.ScreenUtil;
  */
 public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
-    private final String[] mDataset;
-    private final boolean[] mTargetStateOpen;
+//    private final String[] mDataset;
+    private boolean[] mTargetStateOpen;
     private final Context mContext;
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
+    private final TargetTranslation mTargetTranslation;
+    private SourceTranslation mSourceTranslation;
+    private final Library mLibrary;
+    private final Translator mTranslator;
+    private Chapter[] mChapters;
+//    private final String mTargetTranslationId;
 
-    public ReadAdapter(Context context, String[] dataset) {
+    public ReadAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
+        mLibrary = AppContext.getLibrary();
+        mTranslator = AppContext.getTranslator();
         mContext = context;
-        mDataset = dataset;
-        mTargetStateOpen = new boolean[mDataset.length];
+        mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
+        mChapters = mLibrary.getChapters(mSourceTranslation);
+        mTargetStateOpen = new boolean[mChapters.length];
+    }
+
+    /**
+     * Updates the source translation displayed
+     * @param sourceTranslationId
+     */
+    public void setSourceTranslation(String sourceTranslationId) {
+        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
+        mChapters = mLibrary.getChapters(mSourceTranslation);
+        mTargetStateOpen = new boolean[mChapters.length];
+        notifyDataSetChanged();
     }
 
     @Override
@@ -101,9 +129,20 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             }
         });
 
-        // TODO: populate the rest of the card info
-        // TODO: set up tabs
-        holder.mSourceBody.setText(mDataset[position]);
+        Chapter chapter = mChapters[position];
+        Frame[] frames = mLibrary.getFrames(mSourceTranslation, chapter.getId());
+        String chapterBody = "";
+        for(Frame frame:frames) {
+            chapterBody +=  " " + frame.body;
+        }
+        holder.mSourceBody.setText(chapterBody);
+        String chapterTitle = chapter.title;
+        if(chapter.title.isEmpty()) {
+            chapterTitle = mSourceTranslation.getProjectTitle() + " " + chapter.getId();
+        }
+        holder.mSourceTitle.setText(chapterTitle);
+
+        // TODO: load target translation
     }
 
     private void animateCards(final CardView topView, final CardView bottomView) {
@@ -201,7 +240,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return mDataset.length;
+        return mChapters.length;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
