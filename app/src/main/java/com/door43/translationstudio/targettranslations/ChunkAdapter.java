@@ -33,7 +33,7 @@ import com.door43.translationstudio.util.AppContext;
 /**
  * Created by joel on 9/9/2015.
  */
-public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
+public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> {
 
     private final CharSequence[] mRenderedTargetBody;
     private SourceLanguage mSourceLanguage;
@@ -49,7 +49,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
     private final Translator mTranslator;
     private Chapter[] mChapters;
 
-    public ReadAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
+    public ChunkAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -62,6 +62,8 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         mTargetStateOpen = new boolean[mChapters.length];
         mRenderedSourceBody = new CharSequence[mChapters.length];
         mRenderedTargetBody = new CharSequence[mChapters.length];
+
+        // TODO: update this adapter to display lists of frames not chapters
     }
 
     /**

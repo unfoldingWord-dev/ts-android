@@ -31,7 +31,7 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_read_mode, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_stacked_card_list, container, false);
 
         Bundle args = getArguments();
         String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
