@@ -445,8 +445,20 @@ public class Library {
      * @return
      */
     public Resource[] getResources(String projectId, String sourceLanguageId) {
-        // TODO: return an array of resources
-        return new Resource[0];
+        List<Resource> resources = new ArrayList<>();
+        String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
+        for(String id:resourceIds) {
+            JSONObject resourceJson = mAppIndex.getResource(SourceTranslation.simple(projectId, sourceLanguageId, id));
+            try {
+                Resource res = Resource.generate(resourceJson);
+                if(res != null) {
+                    resources.add(res);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return resources.toArray(new Resource[resources.size()]);
     }
 
     /**
