@@ -115,7 +115,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             public void onClick(View v) {
                 if(!mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = true;
-                    animateCards(holder.mSourceCard, holder.mTargetCard);
+                    animateCards(holder.mSourceCard, holder.mTargetCard, false);
                 }
             }
         });
@@ -124,7 +124,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             public void onClick(View v) {
                 if(mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = false;
-                    animateCards(holder.mTargetCard, holder.mSourceCard);
+                    animateCards(holder.mSourceCard, holder.mTargetCard, true);
                 }
             }
         });
@@ -145,11 +145,11 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         // TODO: load target translation
     }
 
-    private void animateCards(final CardView topView, final CardView bottomView) {
+    private void animateCards(final CardView leftCard, final CardView rightCard, final boolean bringLeftCardToFront) {
         long duration = 700;
-        final int stackedMargin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.stacked_card_margin));
-        final int margin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.card_margin));
-        final float scale = 0.4f;
+//        final int stackedMargin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.stacked_card_margin));
+//        final int margin = ScreenUtil.dpToPx(mContext, mContext.getResources().getDimension(R.dimen.card_margin));
+//        final float scale = 0.4f;
 
         // animate bottom card up
         Animation bottomOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
@@ -157,13 +157,10 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
         Animation bottomIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
         bottomIn.setDuration(duration);
-        Animation bottomTranslate = new TranslateAnimation(0, margin-stackedMargin, 0, margin-stackedMargin);
-        bottomTranslate.setDuration(duration);
 
         final AnimationSet bottomFinishSet = new AnimationSet(true);
         bottomFinishSet.setStartOffset(duration);
         bottomFinishSet.addAnimation(bottomIn);
-        bottomFinishSet.addAnimation(bottomTranslate);
 
         AnimationSet bottomSet = new AnimationSet(true);
         bottomSet.addAnimation(bottomOut);
@@ -179,12 +176,21 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             public void onAnimationEnd(Animation animation) {
                 // elevation takes precedence for API 21+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    topView.setElevation(BOTTOM_ELEVATION);
-                    bottomView.setElevation(TOP_ELEVATION);
+                    if(bringLeftCardToFront) {
+                        leftCard.setElevation(TOP_ELEVATION);
+                        rightCard.setElevation(BOTTOM_ELEVATION);
+                    } else {
+                        leftCard.setElevation(BOTTOM_ELEVATION);
+                        rightCard.setElevation(TOP_ELEVATION);
+                    }
                 }
-                bottomView.bringToFront();
-                ((View) bottomView.getParent()).requestLayout();
-                ((View) bottomView.getParent()).invalidate();
+                if(bringLeftCardToFront) {
+                    leftCard.bringToFront();
+                } else {
+                    rightCard.bringToFront();
+                }
+                ((View) rightCard.getParent()).requestLayout();
+                ((View) rightCard.getParent()).invalidate();
             }
 
             @Override
@@ -192,31 +198,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
             }
         });
-        bottomSet.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                bottomView.clearAnimation();
-                CardView.LayoutParams layoutParamsBottom = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-                layoutParamsBottom.setMargins(margin, margin, stackedMargin, stackedMargin);
-                bottomView.setLayoutParams(layoutParamsBottom);
-
-                topView.clearAnimation();
-                CardView.LayoutParams layoutParamsTop = new CardView.LayoutParams(CardView.LayoutParams.MATCH_PARENT, CardView.LayoutParams.MATCH_PARENT);
-                layoutParamsTop.setMargins(stackedMargin, stackedMargin, margin, margin);
-                topView.setLayoutParams(layoutParamsTop);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        bottomView.startAnimation(bottomSet);
+        rightCard.startAnimation(bottomSet);
 
         // animate top card down
         Animation topOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
@@ -224,18 +206,14 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
         Animation topIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
         topIn.setDuration(duration);
-        Animation topTranslate = new TranslateAnimation(0, stackedMargin-margin, 0, stackedMargin-margin);
-        topTranslate.setDuration(duration);
-
         AnimationSet topFinishSet = new AnimationSet(true);
         topFinishSet.setStartOffset(duration);
         topFinishSet.addAnimation(topIn);
-        topFinishSet.addAnimation(topTranslate);
 
         AnimationSet topSet = new AnimationSet(true);
         topSet.addAnimation(topOut);
         topSet.addAnimation(topFinishSet);
-        topView.startAnimation(topSet);
+        leftCard.startAnimation(topSet);
     }
 
     @Override
