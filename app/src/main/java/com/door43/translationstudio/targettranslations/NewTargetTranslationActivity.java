@@ -38,7 +38,9 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
         setContentView(R.layout.activity_new_target_translation);
 
         if(findViewById(R.id.fragment_container) != null) {
-            if(savedInstanceState == null) {
+            if(savedInstanceState != null) {
+                mFragment = (Searchable)getFragmentManager().findFragmentById(R.id.fragment_container);
+            } else {
                 mFragment = new TargetLanguageListFragment();
                 ((TargetLanguageListFragment) mFragment).setArguments(getIntent().getExtras());
                 getFragmentManager().beginTransaction().add(R.id.fragment_container, (TargetLanguageListFragment) mFragment).commit();

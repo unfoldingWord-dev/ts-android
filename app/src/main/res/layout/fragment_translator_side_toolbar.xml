@@ -23,7 +23,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <ImageButton
-            android:id="@+id/action_translate"
+            android:id="@+id/action_chunk"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="16dp"

@@ -180,7 +180,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         if(chapter.title.isEmpty()) {
             targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
-        holder.mSourceTitle.setText(targetChapterTitle);
+        holder.mTargetTitle.setText(targetChapterTitle);
 
     }
 

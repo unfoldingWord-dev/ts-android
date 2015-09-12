@@ -178,7 +178,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         if(chapter.title.isEmpty()) {
             targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
-        holder.mSourceTitle.setText(targetChapterTitle);
+        holder.mTargetTitle.setText(targetChapterTitle);
 
     }
 

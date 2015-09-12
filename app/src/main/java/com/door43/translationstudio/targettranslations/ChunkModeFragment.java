@@ -3,6 +3,7 @@ package com.door43.translationstudio.targettranslations;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -23,7 +24,7 @@ import java.security.InvalidParameterException;
  * TODO: the only difference between this fragment and the ReadModeFragment is the adapter.
  * we could probably abstract most of this away to make it easier to maintain
  */
-public class TranslateModeFragment extends Fragment implements TargetTranslationDetailActivityListener {
+public class ChunkModeFragment extends Fragment implements TargetTranslationDetailActivityListener {
 
     private RecyclerView mRecyclerView;
     private TargetTranslationDetailFragmentListener mListener;
@@ -53,10 +54,10 @@ public class TranslateModeFragment extends Fragment implements TargetTranslation
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         mAdapter = new ChunkAdapter(this.getActivity(), targetTranslationId, sourceTranslation.getId());
         mRecyclerView.setAdapter(mAdapter);
-
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
