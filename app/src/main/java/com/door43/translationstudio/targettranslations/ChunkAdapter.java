@@ -167,12 +167,12 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
 
         Chapter chapter = mLibrary.getChapter(mSourceTranslation, frame.getChapterId());
-        String chapterTitle = chapter.title;
+        String sourceChapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
-            chapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            sourceChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
-        chapterTitle += ":" + frame.getTitle();
-        holder.mSourceTitle.setText(chapterTitle);
+        sourceChapterTitle += ":" + frame.getTitle();
+        holder.mSourceTitle.setText(sourceChapterTitle);
 
         // render the target frame body
         if(mRenderedTargetBody[position] == null) {
@@ -186,6 +186,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         if(chapter.title.isEmpty()) {
             targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
+        targetChapterTitle += ":" + frame.getTitle();
         holder.mTargetTitle.setText(targetChapterTitle);
 
     }
