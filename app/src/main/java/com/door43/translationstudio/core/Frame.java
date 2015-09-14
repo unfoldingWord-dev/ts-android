@@ -41,10 +41,14 @@ public class Frame {
      */
     public static Frame generate(JSONObject frame) {
         try {
+            TranslationFormat format = TranslationFormat.DEFAULT;
+            if(frame.has("format")) {
+                format = TranslationFormat.get(frame.getString("format"));
+            }
             return new Frame(
                     frame.getString("text"),
                     frame.getString("id"),
-                    TranslationFormat.get(frame.getString("format")));
+                    format);
         } catch (JSONException e) {
             e.printStackTrace();
         }
