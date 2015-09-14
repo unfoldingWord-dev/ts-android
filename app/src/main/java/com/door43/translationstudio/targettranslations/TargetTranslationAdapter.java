@@ -78,7 +78,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
         holder.mTitleView.setText(project.name);
         holder.mLanguageView.setText(translation.getTargetLanguageName());
         // TODO: read actual progress from project
-        holder.mProgressView.setProgress(Math.round(library.getProgress(translation) * 100));
+        holder.mProgressView.setProgress(Math.round(library.getTranslationProgress(translation) * 100));
         // TODO: finish rendering project icon
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override

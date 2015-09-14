@@ -42,11 +42,19 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         // set up menu items
         mSeekBar = (VerticalSeekBar)findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
-        mSeekBar.setProgress(100);
+        mSeekBar.setProgress(mSeekBar.getMax());
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mFragment.onScrollProgressUpdate((100 - progress) / 100.0f);
+                int position;
+                if(progress < 0) {
+                    position = seekBar.getMax();
+                } else if(progress <= seekBar.getMax()) {
+                    position = Math.abs(progress - seekBar.getMax());
+                } else {
+                    position = 0;
+                }
+                mFragment.onScrollProgressUpdate(position);
             }
 
             @Override
@@ -129,7 +137,13 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
     }
 
     @Override
-    public void onScrollProgress(float progress) {
-        mSeekBar.setProgress(mSeekBar.getMax() - Math.round(mSeekBar.getMax() * Math.round(progress * 10.0f) / 10.0f));
+    public void onScrollProgress(int progress) {
+        mSeekBar.setProgress(mSeekBar.getMax() - progress);
+    }
+
+    @Override
+    public void onItemCountChanged(int itemCount, int progress) {
+        mSeekBar.setMax(itemCount);
+        mSeekBar.setProgress(itemCount - progress);
     }
 }

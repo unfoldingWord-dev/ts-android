@@ -66,13 +66,14 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                if(mFingerScroll) {
+                if (mFingerScroll) {
                     int position = mLayoutManager.findFirstVisibleItemPosition();
-                    float scroll = (float)position / (float)mAdapter.getItemCount();
-                    mListener.onScrollProgress(scroll);
+                    mListener.onScrollProgress(position);
                 }
             }
         });
+
+        mListener.onItemCountChanged(mAdapter.getItemCount(), 0);
 
         return rootView;
     }
@@ -87,13 +88,8 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
     }
 
     @Override
-    public void onScrollProgressUpdate(float scrollProgress) {
-        float position = mAdapter.getItemCount() * scrollProgress;
-        int scrollPosition = (int) Math.floor(position);
-        if (scrollPosition < 0) {
-            scrollPosition = 0;
-        }
+    public void onScrollProgressUpdate(int scrollProgress) {
         mFingerScroll = false;
-        mRecyclerView.scrollToPosition(scrollPosition);
+        mRecyclerView.scrollToPosition(scrollProgress);
     }
 }

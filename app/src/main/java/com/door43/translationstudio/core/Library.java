@@ -488,29 +488,41 @@ public class Library {
 
     /**
      * Calculates the progress of a target translation
-     * @param translation
+     * @param targetTranslation
      * @return
      */
-    public float getProgress(TargetTranslation translation) {
+    public float getTranslationProgress(TargetTranslation targetTranslation) {
         // TODO: calculate the progress
         return 0.60f;
     }
 
     /**
      * Returns an array of chapters for the source translation
+     * @param sourceTranslation
      * @return
      */
     public Chapter[] getChapters(SourceTranslation sourceTranslation) {
         List<Chapter> chapters = new ArrayList<>();
         String[] chapterIds = mAppIndex.getChapters(sourceTranslation);
         for(String chapterId:chapterIds) {
-            Chapter chapter = Chapter.generate(mAppIndex.getChapter(sourceTranslation, chapterId));
+            Chapter chapter = getChapter(sourceTranslation, chapterId);
             if(chapter != null) {
                 chapters.add(chapter);
             }
         }
         // TODO: sort by id
         return chapters.toArray(new Chapter[chapters.size()]);
+    }
+
+    /**
+     * Returns a single chapter
+     * @param sourceTranslation
+     * @param chapterId
+     * @return
+     */
+    public Chapter getChapter(SourceTranslation sourceTranslation, String chapterId) {
+        JSONObject chapterJson = mAppIndex.getChapter(sourceTranslation, chapterId);
+        return Chapter.generate(chapterJson);
     }
 
     /**
@@ -523,7 +535,7 @@ public class Library {
         List<Frame> frames = new ArrayList<>();
         String[] frameIds = mAppIndex.getFrames(sourceTranslation, chapterId);
         for(String frameId:frameIds) {
-            Frame frame = Frame.generate(mAppIndex.getFrame(sourceTranslation, chapterId, frameId));
+            Frame frame = Frame.generate(chapterId, mAppIndex.getFrame(sourceTranslation, chapterId, frameId));
             if(frame != null) {
                 frames.add(frame);
             }

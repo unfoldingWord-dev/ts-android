@@ -9,9 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -29,6 +26,7 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.widget.ViewUtil;
 
 /**
  * Created by joel on 9/9/2015.
@@ -115,18 +113,18 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!mTargetStateOpen[position]) {
+                if (!mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = true;
-                    animateCards(holder.mSourceCard, holder.mTargetCard, false);
+                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
                 }
             }
         });
         holder.mSourceCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mTargetStateOpen[position]) {
+                if (mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = false;
-                    animateCards(holder.mSourceCard, holder.mTargetCard, true);
+                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
                 }
             }
         });
@@ -180,73 +178,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         }
         holder.mTargetTitle.setText(targetChapterTitle);
 
-    }
-
-    private void animateCards(final CardView leftCard, final CardView rightCard, final boolean bringLeftCardToFront) {
-        long duration = 700;
-        // animate bottom card up
-        Animation bottomOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        bottomOut.setDuration(duration);
-
-        Animation bottomIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        bottomIn.setDuration(duration);
-
-        final AnimationSet bottomFinishSet = new AnimationSet(true);
-        bottomFinishSet.setStartOffset(duration);
-        bottomFinishSet.addAnimation(bottomIn);
-
-        AnimationSet bottomSet = new AnimationSet(true);
-        bottomSet.addAnimation(bottomOut);
-        bottomSet.addAnimation(bottomFinishSet);
-
-        bottomOut.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                // elevation takes precedence for API 21+
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    if(bringLeftCardToFront) {
-                        leftCard.setElevation(TOP_ELEVATION);
-                        rightCard.setElevation(BOTTOM_ELEVATION);
-                    } else {
-                        leftCard.setElevation(BOTTOM_ELEVATION);
-                        rightCard.setElevation(TOP_ELEVATION);
-                    }
-                }
-                if(bringLeftCardToFront) {
-                    leftCard.bringToFront();
-                } else {
-                    rightCard.bringToFront();
-                }
-                ((View) rightCard.getParent()).requestLayout();
-                ((View) rightCard.getParent()).invalidate();
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        rightCard.startAnimation(bottomSet);
-
-        // animate top card down
-        Animation topOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        topOut.setDuration(duration);
-
-        Animation topIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        topIn.setDuration(duration);
-        AnimationSet topFinishSet = new AnimationSet(true);
-        topFinishSet.setStartOffset(duration);
-        topFinishSet.addAnimation(topIn);
-
-        AnimationSet topSet = new AnimationSet(true);
-        topSet.addAnimation(topOut);
-        topSet.addAnimation(topFinishSet);
-        leftCard.startAnimation(topSet);
     }
 
     @Override

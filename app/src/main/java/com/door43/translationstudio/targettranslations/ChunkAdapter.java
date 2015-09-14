@@ -9,9 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationSet;
-import android.view.animation.TranslateAnimation;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -29,13 +26,18 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.widget.ViewUtil;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by joel on 9/9/2015.
  */
 public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> {
 
-    private final CharSequence[] mRenderedTargetBody;
+    private CharSequence[] mRenderedTargetBody;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
     private boolean[] mTargetStateOpen;
@@ -47,7 +49,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
     private SourceTranslation mSourceTranslation;
     private final Library mLibrary;
     private final Translator mTranslator;
-    private Chapter[] mChapters;
+    private Frame[] mFrames;
 
     public ChunkAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
@@ -58,12 +60,16 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
         mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
 
-        mChapters = mLibrary.getChapters(mSourceTranslation);
-        mTargetStateOpen = new boolean[mChapters.length];
-        mRenderedSourceBody = new CharSequence[mChapters.length];
-        mRenderedTargetBody = new CharSequence[mChapters.length];
-
-        // TODO: update this adapter to display lists of frames not chapters
+        Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
+        List<Frame> frames = new ArrayList<>();
+        for(Chapter c:chapters) {
+            Frame[] chapterFrames = mLibrary.getFrames(mSourceTranslation, c.getId());
+            frames.addAll(Arrays.asList(chapterFrames));
+        }
+        mFrames = frames.toArray(new Frame[frames.size()]);
+        mTargetStateOpen = new boolean[mFrames.length];
+        mRenderedSourceBody = new CharSequence[mFrames.length];
+        mRenderedTargetBody = new CharSequence[mFrames.length];
     }
 
     /**
@@ -74,9 +80,16 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
 
-        mChapters = mLibrary.getChapters(mSourceTranslation);
-        mTargetStateOpen = new boolean[mChapters.length];
-        mRenderedSourceBody = new CharSequence[mChapters.length];
+        Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
+        List<Frame> frames = new ArrayList<>();
+        for(Chapter c:chapters) {
+            Frame[] chapterFrames = mLibrary.getFrames(mSourceTranslation, c.getId());
+            frames.addAll(Arrays.asList(chapterFrames));
+        }
+        mFrames = frames.toArray(new Frame[frames.size()]);
+        mTargetStateOpen = new boolean[mFrames.length];
+        mRenderedSourceBody = new CharSequence[mFrames.length];
+        mRenderedTargetBody = new CharSequence[mFrames.length];
 
         notifyDataSetChanged();
         // TODO: make sure notifyDataSetChanged causes the ViewHolders to be regenerated.
@@ -85,7 +98,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_read_list_item, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_chunk_list_item, parent, false);
         ViewHolder vh = new ViewHolder(mContext, v, mSourceLanguage, mTargetLanguage);
         return vh;
     }
@@ -119,7 +132,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             public void onClick(View v) {
                 if(!mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = true;
-                    animateCards(holder.mSourceCard, holder.mTargetCard, false);
+                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
                 }
             }
         });
@@ -128,47 +141,40 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             public void onClick(View v) {
                 if(mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = false;
-                    animateCards(holder.mSourceCard, holder.mTargetCard, true);
+                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
                 }
             }
         });
 
-        Chapter chapter = mChapters[position];
+        Frame frame = mFrames[position];
 
-        // render the source chapter body
+        // render the source frame body
         if(mRenderedSourceBody[position] == null) {
-            Frame[] frames = mLibrary.getFrames(mSourceTranslation, chapter.getId());
-            String chapterBody = "";
-            TranslationFormat bodyFormat = TranslationFormat.DEFAULT;
-            if(frames.length > 0) {
-                bodyFormat = frames[0].getFormat();
-            }
-            for (Frame frame : frames) {
-                chapterBody += " " + frame.body;
-            }
-            // TODO: set up rendering engine
             RenderingGroup sourceRendering = new RenderingGroup();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 //        Boolean highlightTerms = prefs.getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(mContext.getResources().getString(R.string.pref_default_highlight_key_terms)));
             // TODO: identify key terms
-            if (bodyFormat == TranslationFormat.USX) {
+            if (frame.getFormat() == TranslationFormat.USX) {
                 // TODO: add click listeners
                 sourceRendering.addEngine(new USXRenderer(null, null));
             } else {
                 sourceRendering.addEngine(new DefaultRenderer());
             }
-            sourceRendering.init(chapterBody);
+            sourceRendering.init(frame.body);
             mRenderedSourceBody[position] = sourceRendering.start();
         }
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
+
+        Chapter chapter = mLibrary.getChapter(mSourceTranslation, frame.getChapterId());
         String chapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
             chapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
+        chapterTitle += ":" + frame.getTitle();
         holder.mSourceTitle.setText(chapterTitle);
 
-        // render the target chapter body
+        // render the target frame body
         if(mRenderedTargetBody[position] == null) {
             mRenderedTargetBody[position] = "";
             // TODO: load the frames from the target translation
@@ -184,76 +190,9 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
 
     }
 
-    private void animateCards(final CardView leftCard, final CardView rightCard, final boolean bringLeftCardToFront) {
-        long duration = 700;
-        // animate bottom card up
-        Animation bottomOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        bottomOut.setDuration(duration);
-
-        Animation bottomIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        bottomIn.setDuration(duration);
-
-        final AnimationSet bottomFinishSet = new AnimationSet(true);
-        bottomFinishSet.setStartOffset(duration);
-        bottomFinishSet.addAnimation(bottomIn);
-
-        AnimationSet bottomSet = new AnimationSet(true);
-        bottomSet.addAnimation(bottomOut);
-        bottomSet.addAnimation(bottomFinishSet);
-
-        bottomOut.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                // elevation takes precedence for API 21+
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    if(bringLeftCardToFront) {
-                        leftCard.setElevation(TOP_ELEVATION);
-                        rightCard.setElevation(BOTTOM_ELEVATION);
-                    } else {
-                        leftCard.setElevation(BOTTOM_ELEVATION);
-                        rightCard.setElevation(TOP_ELEVATION);
-                    }
-                }
-                if(bringLeftCardToFront) {
-                    leftCard.bringToFront();
-                } else {
-                    rightCard.bringToFront();
-                }
-                ((View) rightCard.getParent()).requestLayout();
-                ((View) rightCard.getParent()).invalidate();
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        rightCard.startAnimation(bottomSet);
-
-        // animate top card down
-        Animation topOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        topOut.setDuration(duration);
-
-        Animation topIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        topIn.setDuration(duration);
-        AnimationSet topFinishSet = new AnimationSet(true);
-        topFinishSet.setStartOffset(duration);
-        topFinishSet.addAnimation(topIn);
-
-        AnimationSet topSet = new AnimationSet(true);
-        topSet.addAnimation(topOut);
-        topSet.addAnimation(topFinishSet);
-        leftCard.startAnimation(topSet);
-    }
-
     @Override
     public int getItemCount() {
-        return mChapters.length;
+        return mFrames.length;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -273,9 +212,9 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             mTargetBody = (TextView)v.findViewById(R.id.target_translation_body);
 
             // set up fonts
-            Typography.formatTitle(context, mSourceTitle, source.getId(), source.getDirection());
+            Typography.formatSubTitle(context, mSourceTitle, source.getId(), source.getDirection());
             Typography.format(context, mSourceBody, source.getId(), source.getDirection());
-            Typography.formatTitle(context, mTargetTitle, target.getId(), target.getDirection());
+            Typography.formatSubTitle(context, mTargetTitle, target.getId(), target.getDirection());
             Typography.format(context, mTargetBody, target.getId(), target.getDirection());
         }
     }

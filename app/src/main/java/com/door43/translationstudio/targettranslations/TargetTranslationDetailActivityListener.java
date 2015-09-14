@@ -8,5 +8,5 @@ public interface TargetTranslationDetailActivityListener {
      *
      * @param scrollProgress the percent progress of the scroll
      */
-    void onScrollProgressUpdate(float scrollProgress);
+    void onScrollProgressUpdate(int scrollProgress);
 }
