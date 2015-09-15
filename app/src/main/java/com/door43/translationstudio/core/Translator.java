@@ -20,6 +20,7 @@ import java.util.List;
  */
 public class Translator {
     private static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations";
+    private static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_id";
     private final File mRootDir;
     private final Context mContext;
     private static final String PREFERENCES_NAME = "translator";
@@ -98,7 +99,7 @@ public class Translator {
     }
 
     /**
-     * Deletes a target translation
+     * Deletes a target translation from the device
      * @param targetTranslationId
      */
     public void deleteTargetTranslation(String targetTranslationId) {
@@ -108,6 +109,8 @@ public class Translator {
                 String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
                 File dir = TargetTranslation.generateTargetTranslationDir(targetLanguageId, projectId, mRootDir);
                 FileUtils.deleteQuietly(dir);
+
+                clearTargetTranslationSettings(targetTranslationId);
             } catch (StringIndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
@@ -150,6 +153,7 @@ public class Translator {
                     tabsJson.put(sourceTranslation.getId());
                     m.put(targetTranslationId, json);
                 }
+                setSelectedSourceTranslation(targetTranslationId, sourceTranslation.getId());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -175,5 +179,41 @@ public class Translator {
             e.printStackTrace();
         }
         return new String[0];
+    }
+
+    /**
+     * Resets all the user settings and configurations for a target translation
+     * @param targetTranslationId
+     */
+    private void clearTargetTranslationSettings(String targetTranslationId) {
+        Manifest m = Manifest.generate(mRootDir);
+        m.remove(targetTranslationId);
+
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId);
+    }
+
+    /**
+     * Sets the source translation that is current selected for a target translation.
+     * This is effectivelly the currently selected tab
+     *
+     * @param targetTranslationId
+     * @param sourceTranslationId
+     */
+    public void setSelectedSourceTranslation(String targetTranslationId, String sourceTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, sourceTranslationId);
+    }
+
+    /**
+     * Returns the id of the selected source translation for the target translation
+     * @param targetTranslationId
+     * @return null if no source translation is selected
+     */
+    public String getSelectedSourceTranslationId(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, null);
     }
 }

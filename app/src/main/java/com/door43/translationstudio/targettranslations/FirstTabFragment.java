@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -28,12 +30,20 @@ public class FirstTabFragment extends Fragment implements TargetTranslationDetai
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        // TODO: set up view for adding a new first tab
+        ImageButton newTabButton = (ImageButton) rootView.findViewById(R.id.newTabButton);
+        LinearLayout secondaryNewTabButton = (LinearLayout) rootView.findViewById(R.id.secondaryNewTabButton);
 
-        // TODO: ask the user to add a tab.
-        // we will probably notify the actvity to swap out the fragments and display one
-        // for creating a new first tab
-        // then it should redirect back to the last open mode
+        View.OnClickListener clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: open ui for adding new tab
+                // TODO: once the tab is created we should be redirect back to the previous mode
+            }
+        };
+
+        newTabButton.setOnClickListener(clickListener);
+        secondaryNewTabButton.setOnClickListener(clickListener);
+
 
         return rootView;
     }

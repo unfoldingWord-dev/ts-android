@@ -5,7 +5,6 @@
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:id="@+id/main_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
@@ -13,7 +12,6 @@
         android:clipChildren="false">
 
         <android.support.v7.widget.CardView
-            android:id="@+id/target_translation_card"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="@dimen/stacked_card_margin"
@@ -31,7 +29,6 @@
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
-            android:id="@+id/source_translation_card"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             card_view:cardElevation="3dp"
@@ -52,7 +49,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textSize="@dimen/body"
-                    android:textColor="@color/dark_disabled_text"
+                    android:textColor="@color/dark_secondary_text"
                     android:textStyle="bold"
                     android:layout_weight="1"
                     android:text="Project: John - Afaraf"
@@ -63,17 +60,20 @@
                     android:layout_height="wrap_content"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/icon_tabedit_normal"
-                    android:id="@+id/imageButton" />
+                    android:id="@+id/newTabButton" />
             </LinearLayout>
         </android.support.v7.widget.CardView>
 
     </FrameLayout>
 
     <LinearLayout
+        android:id="@+id/secondaryNewTabButton"
         android:orientation="vertical"
         android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -83,15 +83,12 @@
             android:gravity="center"
             android:textColor="@color/dark_secondary_text"
             android:layout_marginTop="@dimen/card_margin"
-            android:layout_marginBottom="@dimen/card_margin"
-            android:id="@+id/textView13" />
+            android:layout_marginBottom="@dimen/card_margin" />
 
-        <ImageButton
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/icon_tabedit_normal"
-            android:id="@+id/imageButton2" />
+            android:background="@drawable/icon_tabedit_normal" />
     </LinearLayout>
 
 </LinearLayout>
