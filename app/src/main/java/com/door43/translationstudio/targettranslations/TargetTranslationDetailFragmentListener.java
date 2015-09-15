@@ -7,4 +7,6 @@ public interface TargetTranslationDetailFragmentListener {
     void onScrollProgress(int progress);
 
     void onItemCountChanged(int itemCount, int progress);
+
+    void onNoSourceTranslations(String targetTranslationId);
 }

@@ -79,7 +79,7 @@ public class AppContext {
      * @return
      */
     public static Translator getTranslator() {
-        return new Translator(new File(mContext.getFilesDir(), "translations"));
+        return new Translator(mContext, new File(mContext.getFilesDir(), "translations"));
     }
 
     /**

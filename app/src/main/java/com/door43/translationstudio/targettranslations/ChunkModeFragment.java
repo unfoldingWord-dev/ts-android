@@ -38,44 +38,50 @@ public class ChunkModeFragment extends Fragment implements TargetTranslationDeta
 
         Bundle args = getArguments();
         String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
-        TargetTranslation translation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
-        if(translation == null) {
+        TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        if(targetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        // TODO: retreive source translation id of selected tab
-        String projectId = translation.getProjectId();
-        SourceLanguage[] sourceLanguages = AppContext.getLibrary().getSourceLanguages(projectId);
-        String sourceLanguageId = sourceLanguages[0].getId();
-        Resource[] resources = AppContext.getLibrary().getResources(projectId, sourceLanguageId);
-        String resourceId = resources[0].getId();
-        SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(projectId, sourceLanguageId, resourceId);
-
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
-        mLayoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-
-        mAdapter = new ChunkAdapter(this.getActivity(), targetTranslationId, sourceTranslation.getId());
-        mRecyclerView.setAdapter(mAdapter);
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                mFingerScroll = true;
-                super.onScrollStateChanged(recyclerView, newState);
+        // open first tab
+        String[] sourceTranslationIds = AppContext.getTranslator().getSourceTranslations(targetTranslation.getId());
+        String sourceTranslationId = null;
+        if(sourceTranslationIds.length > 0) {
+            SourceTranslation sourceTranslation = AppContext.getLibrary().getSourceTranslation(sourceTranslationIds[0]);
+            if(sourceTranslation != null) {
+                sourceTranslationId = sourceTranslation.getId();
             }
+        }
 
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                if (mFingerScroll) {
-                    int position = mLayoutManager.findFirstVisibleItemPosition();
-                    mListener.onScrollProgress(position);
+        if(sourceTranslationId == null) {
+            mListener.onNoSourceTranslations(targetTranslationId);
+        } else {
+            mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
+            mLayoutManager = new LinearLayoutManager(getActivity());
+            mRecyclerView.setLayoutManager(mLayoutManager);
+            mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+
+            mAdapter = new ChunkAdapter(this.getActivity(), targetTranslationId, sourceTranslationId);
+            mRecyclerView.setAdapter(mAdapter);
+            mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                    mFingerScroll = true;
+                    super.onScrollStateChanged(recyclerView, newState);
                 }
-            }
-        });
 
-        mListener.onItemCountChanged(mAdapter.getItemCount(), 0);
+                @Override
+                public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    if (mFingerScroll) {
+                        int position = mLayoutManager.findFirstVisibleItemPosition();
+                        mListener.onScrollProgress(position);
+                    }
+                }
+            });
+
+            mListener.onItemCountChanged(mAdapter.getItemCount(), 0);
+        }
 
         return rootView;
     }

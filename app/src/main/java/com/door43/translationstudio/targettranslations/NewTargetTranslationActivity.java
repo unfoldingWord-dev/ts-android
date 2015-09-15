@@ -14,7 +14,10 @@ import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -111,10 +114,21 @@ public class NewTargetTranslationActivity extends AppCompatActivity implements T
     @Override
     public void onItemClick(SourceLanguage sourceLanguage) {
         // TODO: set tab setting in target translation
-
-        Intent data = new Intent();
-        data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-        setResult(RESULT_OK, data);
+        Library library = AppContext.getLibrary();
+        Translator translator = AppContext.getTranslator();
+        TargetTranslation targetTranslation = translator.getTargetTranslation(mNewTargetTranslationId);
+        if(targetTranslation != null) {
+            Resource[] resources = library.getResources(targetTranslation.getProjectId(), sourceLanguage.getId());
+            if(resources.length > 0) {
+                SourceTranslation sourceTranslation = library.getSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId(), resources[0].getId());
+                if(sourceTranslation != null) {
+                    translator.addSourceTranslation(mNewTargetTranslationId, sourceTranslation);
+                }
+            }
+            Intent data = new Intent();
+            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
+            setResult(RESULT_OK, data);
+        }
         finish();
     }
 

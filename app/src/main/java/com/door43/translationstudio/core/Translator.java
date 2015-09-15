@@ -1,6 +1,14 @@
 package com.door43.translationstudio.core;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+
+import com.door43.util.Manifest;
+
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -11,9 +19,13 @@ import java.util.List;
  * Created by joel on 8/29/2015.
  */
 public class Translator {
+    private static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations";
     private final File mRootDir;
+    private final Context mContext;
+    private static final String PREFERENCES_NAME = "translator";
 
-    public Translator(File rootDir) {
+    public Translator(Context context, File rootDir) {
+        mContext = context;
         mRootDir = rootDir;
     }
 
@@ -100,5 +112,68 @@ public class Translator {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Adds a source translation to a target translation
+     * This effectively adds a tab to the source translation card. It also updates the target
+     * translation manifest to include it under the source translations used.
+     *
+     * @param targetTranslationId
+     * @param sourceTranslation
+     */
+    public void addSourceTranslation(String targetTranslationId, SourceTranslation sourceTranslation) {
+        TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
+        if(targetTranslation != null) {
+            try {
+                targetTranslation.addSourceTranslation(sourceTranslation);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            Manifest m = Manifest.generate(mRootDir);
+            JSONObject json = m.getJSONObject(targetTranslationId);
+            try {
+                if(!json.has(OPEN_SOURCE_TRANSLATIONS)) {
+                    json.put(OPEN_SOURCE_TRANSLATIONS, new JSONArray());
+                }
+                JSONArray tabsJson = json.getJSONArray(OPEN_SOURCE_TRANSLATIONS);
+                boolean exists = false;
+                for(int i = 0; i < tabsJson.length(); i ++) {
+                    String id = tabsJson.getString(i);
+                    if(id.equals(sourceTranslation.getId())) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if(!exists) {
+                    tabsJson.put(sourceTranslation.getId());
+                    m.put(targetTranslationId, json);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Returns an array of source translation id's that are open in the target translation
+     * @param targetTranslationId
+     * @return
+     */
+    public String[] getSourceTranslations(String targetTranslationId) {
+        Manifest m = Manifest.generate(mRootDir);
+        JSONObject json = m.getJSONObject(targetTranslationId);
+        try {
+            JSONArray tabsJson = json.getJSONArray(OPEN_SOURCE_TRANSLATIONS);
+            List<String> sourceTranslationIds = new ArrayList<>();
+            for(int i = 0; i < tabsJson.length(); i ++) {
+                sourceTranslationIds.add(tabsJson.getString(i));
+            }
+            return sourceTranslationIds.toArray(new String[sourceTranslationIds.size()]);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new String[0];
     }
 }

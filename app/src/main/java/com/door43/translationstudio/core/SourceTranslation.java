@@ -14,8 +14,10 @@ public class SourceTranslation {
     private final String mResourceTitle;
     private final int mCheckingLevel;
     private final String mSourceLanguageTitle;
+    private final int mDateModified;
+    private final String mVersion;
 
-    private SourceTranslation(String projectId, String sourceLanguageId, String resourceId, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel) {
+    private SourceTranslation(String projectId, String sourceLanguageId, String resourceId, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel, int dateModified, String version) {
         this.projectId = projectId;
         this.sourceLanguageId = sourceLanguageId;
         this.resourceId = resourceId;
@@ -23,6 +25,8 @@ public class SourceTranslation {
         mSourceLanguageTitle = sourceLanguageTitle;
         mResourceTitle = resourceTitle;
         mCheckingLevel = checkingLevel;
+        mDateModified = dateModified;
+        mVersion = version;
     }
 
     /**
@@ -43,7 +47,9 @@ public class SourceTranslation {
         String resourceId = resourceJson.getString("slug");
         JSONObject statusJson = resourceJson.getJSONObject("status");
         int checkingLevel = statusJson.getInt("checking_level");
-        return new SourceTranslation(projectId, sourceLanguageId, resourceId, projectTitle, sourceLanguageTitle, resourceTitle, checkingLevel);
+        int dateModified = sourceLanguageJson.getInt("date_modified");
+        String version = statusJson.getString("version");
+        return new SourceTranslation(projectId, sourceLanguageId, resourceId, projectTitle, sourceLanguageTitle, resourceTitle, checkingLevel, dateModified, version);
     }
 
     /**
@@ -63,6 +69,8 @@ public class SourceTranslation {
         mSourceLanguageTitle = "";
         mResourceTitle = "";
         mCheckingLevel = 0;
+        mDateModified = 0;
+        mVersion = "0.0.0";
     }
 
     /**
@@ -77,6 +85,14 @@ public class SourceTranslation {
      */
     public static SourceTranslation simple(String projectId, String sourceLanguageId, String resourceId) {
         return new SourceTranslation(projectId, sourceLanguageId, resourceId);
+    }
+
+    /**
+     * Returns the date on which the source translation was last modified
+     * @return
+     */
+    public int getDateModified() {
+        return mDateModified;
     }
 
     /**
@@ -159,5 +175,13 @@ public class SourceTranslation {
         } else {
             throw new StringIndexOutOfBoundsException("malformed source translation id" + sourceTranslationId);
         }
+    }
+
+    /**
+     * Returns the version of the source translation
+     * @return
+     */
+    public String getVersion() {
+        return mVersion;
     }
 }

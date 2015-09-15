@@ -146,4 +146,13 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         mSeekBar.setMax(itemCount);
         mSeekBar.setProgress(itemCount - progress);
     }
+
+    @Override
+    public void onNoSourceTranslations(String targetTranslationId) {
+        mFragment = new FirstTabFragment();
+        ((FirstTabFragment) mFragment).setArguments(getIntent().getExtras());
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, (FirstTabFragment) mFragment).commit();
+        // TODO: animate
+        // TODO: udpate menu
+    }
 }

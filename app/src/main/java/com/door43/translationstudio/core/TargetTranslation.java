@@ -144,4 +144,20 @@ public class TargetTranslation {
         String targetTranslationId = generateTargetTranslationId(targetLanguageId, projectId);
         return new File(rootDir, targetTranslationId);
     }
+
+    /**
+     * Adds a source translation to the list of used sources
+     * This is used for tracking what source translations are used to create a target translation
+     *
+     * @param sourceTranslation
+     * @throws JSONException
+     */
+    public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
+        JSONObject sourceTranslationsJson = mManifest.getJSONObject("source_translations");
+        JSONObject translationJson = new JSONObject();
+        translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
+        translationJson.put("date_modified", sourceTranslation.getDateModified());
+        translationJson.put("version", sourceTranslation.getVersion());
+        sourceTranslationsJson.put(sourceTranslation.getId(), translationJson);
+    }
 }
