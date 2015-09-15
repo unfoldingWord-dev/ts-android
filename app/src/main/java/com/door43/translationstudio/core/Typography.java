@@ -51,16 +51,16 @@ public class Typography {
 
     /**
      * Formats the text in the text view using the users preferences.
-     * Sub titles are a little larger than normal text but smaller than title text
+     * Sub text is a little smaller than normal text
      *
      * @param context
      * @param view
      * @param langaugeCode the spoken language of the text
      * @param direction the reading direction of the text
      */
-    public static void formatSubTitle(Context context, TextView view, String langaugeCode, LanguageDirection direction) {
+    public static void formatSub(Context context, TextView view, String langaugeCode, LanguageDirection direction) {
         Typeface typeface = getTypeface(context, langaugeCode, direction);
-        float fontSize = getFontSize(context) * 1.25f;
+        float fontSize = getFontSize(context) * .8f;
 
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
     }

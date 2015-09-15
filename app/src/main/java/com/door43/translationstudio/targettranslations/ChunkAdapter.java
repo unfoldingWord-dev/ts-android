@@ -213,9 +213,9 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             mTargetBody = (TextView)v.findViewById(R.id.target_translation_body);
 
             // set up fonts
-            Typography.formatSubTitle(context, mSourceTitle, source.getId(), source.getDirection());
+            Typography.formatSub(context, mSourceTitle, source.getId(), source.getDirection());
             Typography.format(context, mSourceBody, source.getId(), source.getDirection());
-            Typography.formatSubTitle(context, mTargetTitle, target.getId(), target.getDirection());
+            Typography.formatSub(context, mTargetTitle, target.getId(), target.getDirection());
             Typography.format(context, mTargetBody, target.getId(), target.getDirection());
         }
     }
