@@ -58,6 +58,7 @@
                 <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:paddingLeft="16dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/icon_tabedit_normal"
                     android:id="@+id/newTabButton" />
@@ -78,7 +79,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/choose_source_translation"
+            android:text="@string/choose_first_source_translation"
             android:textSize="@dimen/title"
             android:gravity="center"
             android:textColor="@color/dark_secondary_text"

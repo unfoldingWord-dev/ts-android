@@ -326,5 +326,9 @@
     <string name="Project">Project</string>
     <string name="language">Language</string>
     <string name="progress">Progress</string>
-    <string name="choose_source_translation">Choose source translation(s) to begin reading and translating</string>
+    <string name="choose_first_source_translation">Choose source translation(s) to begin reading and translating</string>
+    <string name="choose_source_translations">Choose source translations</string>
+    <string name="confirm">Confirm</string>
+    <string name="selected">Selected</string>
+    <string name="available">Available</string>
 </resources>

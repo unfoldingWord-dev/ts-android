@@ -57,20 +57,4 @@ public class Util {
             is.close();
         }
     }
-
-    /**
-     * Provides a backwards compatable way to tint drawables
-     * @param view the view who's background drawable will be tinted
-     * @param color the color that will be applied
-     */
-    public static void tintViewDrawable(View view, int color) {
-        final Drawable originalDrawable = view.getBackground();
-        final Drawable wrappedDrawable = DrawableCompat.wrap(originalDrawable);
-        DrawableCompat.setTintList(wrappedDrawable, ColorStateList.valueOf(color));
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            view.setBackground(wrappedDrawable);
-        } else {
-            view.setBackgroundDrawable(wrappedDrawable);
-        }
-    }
 }

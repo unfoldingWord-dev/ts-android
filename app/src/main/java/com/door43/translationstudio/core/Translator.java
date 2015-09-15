@@ -127,7 +127,7 @@ public class Translator {
      */
     public void addSourceTranslation(String targetTranslationId, SourceTranslation sourceTranslation) {
         TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
-        if(targetTranslation != null) {
+        if(targetTranslation != null && sourceTranslation != null) {
             try {
                 targetTranslation.addSourceTranslation(sourceTranslation);
             } catch (JSONException e) {
@@ -156,6 +156,36 @@ public class Translator {
                 setSelectedSourceTranslation(targetTranslationId, sourceTranslation.getId());
             } catch (JSONException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Removes a source translation from the open source translations for the target translation.
+     * This does not remove it from the list of source languages used but effectively removes it as a tab.
+     * @param targetTranslationId
+     * @param sourceTranslationId
+     */
+    public void removeSourceTranslation(String targetTranslationId, String sourceTranslationId) {
+        TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
+        if(targetTranslation != null) {
+            Manifest m = Manifest.generate(mRootDir);
+            JSONObject json = m.getJSONObject(targetTranslationId);
+            if(json.has(OPEN_SOURCE_TRANSLATIONS)) {
+                try {
+                    JSONArray tabsJson = json.getJSONArray(OPEN_SOURCE_TRANSLATIONS);
+                    JSONArray newTabsJson = new JSONArray();
+                    for (int i = 0; i < tabsJson.length(); i++) {
+                        String id = tabsJson.getString(i);
+                        if (!id.equals(sourceTranslationId)) {
+                            newTabsJson.put(id);
+                        }
+                    }
+                    json.put(OPEN_SOURCE_TRANSLATIONS, newTabsJson);
+                    m.put(targetTranslationId, json);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

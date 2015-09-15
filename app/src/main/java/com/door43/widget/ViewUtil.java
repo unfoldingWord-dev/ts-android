@@ -1,6 +1,9 @@
 package com.door43.widget;
 
+import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.CardView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +19,21 @@ import android.view.animation.TranslateAnimation;
 public class ViewUtil {
 
     /**
+     * Provides a backwards compatable way to tint drawables
+     * @param view the view who's background drawable will be tinted
+     * @param color the color that will be applied
+     */
+    public static void tintViewDrawable(View view, int color) {
+        final Drawable originalDrawable = view.getBackground();
+        final Drawable wrappedDrawable = DrawableCompat.wrap(originalDrawable);
+        DrawableCompat.setTintList(wrappedDrawable, ColorStateList.valueOf(color));
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            view.setBackground(wrappedDrawable);
+        } else {
+            view.setBackgroundDrawable(wrappedDrawable);
+        }
+    }
+    /**
      * Performs a stacked card animation that brings a bottom card to the front
      * In preperation two views should be stacked on top of each other with appropriate margin
      * so that the bottom card sticks out on the bottom and the right.
@@ -27,7 +45,7 @@ public class ViewUtil {
      * @param bringLeftCardToFront
      */
     public static void animateCards(final View topCard, final View bottomCard, final int topCardElevation, final int bottomCardElevation, final boolean bringLeftCardToFront) {
-        long duration = 700;
+        long duration = 400;
         float xMargin = topCard.getX() - bottomCard.getX();
         float yMargin = topCard.getY() - bottomCard.getY();
 

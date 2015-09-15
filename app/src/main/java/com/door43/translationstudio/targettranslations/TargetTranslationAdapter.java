@@ -16,6 +16,7 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
 import java.util.Locale;
@@ -116,7 +117,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
             mProgressView = (ProgressPieView) view.findViewById(R.id.translationProgress);
             mProgressView.setMax(100);
             mInfoButton = (ImageButton) view.findViewById(R.id.infoButton);
-            Util.tintViewDrawable(mInfoButton, context.getResources().getColor(R.color.dark_disabled_text));
+            ViewUtil.tintViewDrawable(mInfoButton, context.getResources().getColor(R.color.dark_disabled_text));
             view.setTag(this);
         }
     }

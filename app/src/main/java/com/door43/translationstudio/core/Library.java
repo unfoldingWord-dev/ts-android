@@ -592,4 +592,23 @@ public class Library {
         }
         return null;
     }
+
+    /**
+     * Returns an array of source translations in a project
+     * @param projectId
+     */
+    public SourceTranslation[] getSourceTranslations(String projectId) {
+        List<SourceTranslation> sourceTranslations = new ArrayList<>();
+        String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+        for(String sourceLanguageId:sourceLanguageIds) {
+            String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
+            for(String resourceId:resourceIds) {
+                SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
+                if(sourceTranslation != null) {
+                    sourceTranslations.add(sourceTranslation);
+                }
+            }
+        }
+        return sourceTranslations.toArray(new SourceTranslation[sourceTranslations.size()]);
+    }
 }

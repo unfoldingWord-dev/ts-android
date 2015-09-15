@@ -52,6 +52,10 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         return v;
     }
 
+    /**
+     * Assigns a listener for this dialog
+     * @param listener
+     */
     public void setOnDeleteListener(OnDeleteListener listener) {
         mListener = listener;
     }

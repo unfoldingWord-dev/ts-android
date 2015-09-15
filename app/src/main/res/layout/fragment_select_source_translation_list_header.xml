@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/shadow_dark"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textAllCaps="true"
+    android:text="Selected"
+    android:textSize="@dimen/title"
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:textColor="@color/dark_secondary_text"
+    android:id="@+id/title" />
