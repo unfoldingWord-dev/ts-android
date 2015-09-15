@@ -3,4 +3,95 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/main_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true"
+        android:descendantFocusability="blocksDescendants"
+        android:clipChildren="false">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/target_translation_card"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="@dimen/stacked_card_margin"
+            android:layout_marginTop="@dimen/stacked_card_margin"
+            android:layout_marginRight="@dimen/card_margin"
+            android:layout_marginBottom="@dimen/card_margin">
+
+            <LinearLayout
+                android:orientation="vertical"
+                style="@style/Widget.CardContent.Horizontal"
+                android:background="@drawable/paper_repeating"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical" />
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/source_translation_card"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            card_view:cardElevation="3dp"
+            android:layout_marginLeft="@dimen/card_margin"
+            android:layout_marginTop="@dimen/card_margin"
+            android:layout_marginRight="@dimen/stacked_card_margin"
+            android:layout_marginBottom="@dimen/stacked_card_margin"
+            android:clickable="true">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                style="@style/Widget.CardContent.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/body"
+                    android:textColor="@color/dark_disabled_text"
+                    android:textStyle="bold"
+                    android:layout_weight="1"
+                    android:text="Project: John - Afaraf"
+                    android:id="@+id/source_translation_title" />
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/icon_tabedit_normal"
+                    android:id="@+id/imageButton" />
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_source_translation"
+            android:textSize="@dimen/title"
+            android:gravity="center"
+            android:textColor="@color/dark_secondary_text"
+            android:layout_marginTop="@dimen/card_margin"
+            android:layout_marginBottom="@dimen/card_margin"
+            android:id="@+id/textView13" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/icon_tabedit_normal"
+            android:id="@+id/imageButton2" />
+    </LinearLayout>
+
 </LinearLayout>
