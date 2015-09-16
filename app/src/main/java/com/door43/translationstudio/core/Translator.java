@@ -237,6 +237,7 @@ public class Translator {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.remove(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId);
+        editor.apply();
     }
 
     /**
@@ -254,6 +255,7 @@ public class Translator {
         } else {
             editor.remove(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId);
         }
+        editor.apply();
     }
 
     /**
