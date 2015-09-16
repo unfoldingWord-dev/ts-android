@@ -81,8 +81,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         mRenderedSourceBody = new CharSequence[mChapters.length];
 
         notifyDataSetChanged();
-        // TODO: make sure notifyDataSetChanged causes the ViewHolders to be regenerated.
-        // otherwise we won't be passing the correct source language to the typeface methods
     }
 
     @Override
@@ -148,7 +146,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             for (Frame frame : frames) {
                 chapterBody += " " + frame.body;
             }
-            // TODO: set up rendering engine
             RenderingGroup sourceRendering = new RenderingGroup();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 //        Boolean highlightTerms = prefs.getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(mContext.getResources().getString(R.string.pref_default_highlight_key_terms)));

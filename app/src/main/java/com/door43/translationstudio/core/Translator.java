@@ -272,6 +272,7 @@ public class Translator {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         String selectedSourceTranslationId = prefs.getString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, null);
         if(selectedSourceTranslationId == null) {
+            // default to first tab
             String[] openSourceTranslationIds = getSourceTranslations(targetTranslationId);
             if(openSourceTranslationIds.length > 0) {
                 selectedSourceTranslationId = openSourceTranslationIds[0];

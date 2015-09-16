@@ -85,7 +85,9 @@
                     android:id="@+id/new_tab_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
                     android:layout_gravity="right|center_vertical"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/icon_tabedit_normal"/>

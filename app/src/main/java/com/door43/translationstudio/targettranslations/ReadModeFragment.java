@@ -49,17 +49,7 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
         }
 
         // open selected tab
-        String[] sourceTranslationIds = mTranslator.getSourceTranslations(mTargetTranslation.getId());
         String sourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
-        if(sourceTranslationId == null) {
-            // open first tab
-            if (sourceTranslationIds.length > 0) {
-                SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(sourceTranslationIds[0]);
-                if (sourceTranslation != null) {
-                    sourceTranslationId = sourceTranslation.getId();
-                }
-            }
-        }
 
         if(sourceTranslationId == null) {
             mListener.onNoSourceTranslations(targetTranslationId);

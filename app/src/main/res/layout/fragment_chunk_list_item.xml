@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/tools"
     android:id="@+id/main_content"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -66,14 +67,39 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical">
 
+            <FrameLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin">
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/source_translation_tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="44dp"
+                    android:layout_marginLeft="44dp"
+                    android:layout_gravity="center_vertical|center_horizontal"
+                    app:layout_scrollFlags="scroll|enterAlways"/>
+                <ImageButton
+                    android:id="@+id/new_tab_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="10dp"
+                    android:layout_gravity="right|center_vertical"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/icon_tabedit_normal"/>
+            </FrameLayout>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
                 android:textSize="@dimen/body"
-                android:layout_marginBottom="@dimen/stacked_card_margin"
+                android:layout_gravity="right|center_vertical"
                 android:textColor="@color/dark_secondary_text"
                 android:text="John 1:1-3"
+                android:layout_marginBottom="@dimen/stacked_card_margin"
                 android:id="@+id/source_translation_title" />
 
             <TextView
