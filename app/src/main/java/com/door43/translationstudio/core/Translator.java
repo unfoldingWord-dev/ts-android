@@ -21,6 +21,7 @@ import java.util.List;
 public class Translator {
     private static final String OPEN_SOURCE_TRANSLATIONS = "open_source_translations";
     private static final String SELECTED_SOURCE_TRANSLATION = "selected_source_translation_id";
+    private static final String TRANSLATION_VIEW_MODE = "tranlsation_view_mode";
     private final File mRootDir;
     private final Context mContext;
     private static final String PREFERENCES_NAME = "translator";
@@ -278,5 +279,29 @@ public class Translator {
             }
         }
         return selectedSourceTranslationId;
+    }
+
+    /**
+     * Returns the current view mode for the target translation
+     * @param targetTranslationId
+     */
+    public TranslationViewMode getViewMode(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        TranslationViewMode viewMode = TranslationViewMode.get(prefs.getString(TRANSLATION_VIEW_MODE + "-" + targetTranslationId, null));
+        if(viewMode == null) {
+            return TranslationViewMode.READ;
+        }
+        return viewMode;
+    }
+
+    /**
+     * Sets the current view mode for the target translation
+     * @param targetTranslationId
+     * @param viewMode
+     */
+    public void setViewMode(String targetTranslationId, TranslationViewMode viewMode) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(TRANSLATION_VIEW_MODE + "-" + targetTranslationId, viewMode.toString());
     }
 }

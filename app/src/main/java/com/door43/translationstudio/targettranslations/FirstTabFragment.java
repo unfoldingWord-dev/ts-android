@@ -1,5 +1,6 @@
 package com.door43.translationstudio.targettranslations;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
@@ -10,7 +11,10 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
 
 import java.security.InvalidParameterException;
@@ -20,13 +24,20 @@ import java.security.InvalidParameterException;
  */
 public class FirstTabFragment extends Fragment implements TargetTranslationDetailActivityListener, ChooseSourceTranslationDialog.OnClickListener {
 
+    private Translator mTranslator;
+    private Library mLibrary;
+    private TargetTranslationDetailFragmentListener mListener;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_first_tab, container, false);
 
+        mTranslator = AppContext.getTranslator();
+        mLibrary = AppContext.getLibrary();
+
         Bundle args = getArguments();
         final String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
-        TargetTranslation translation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
+        TargetTranslation translation = mTranslator.getTargetTranslation(targetTranslationId);
         if(translation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
         }
@@ -67,6 +78,15 @@ public class FirstTabFragment extends Fragment implements TargetTranslationDetai
         return rootView;
     }
 
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            this.mListener = (TargetTranslationDetailFragmentListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement TargetTranslationDetailFragmentListener");
+        }
+    }
+
     @Override
     public void onScrollProgressUpdate(int scrollProgress) {
 
@@ -79,6 +99,19 @@ public class FirstTabFragment extends Fragment implements TargetTranslationDetai
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        // TODO: make sure we have at least one tab and then redirect back to previous mode
+        if(sourceTranslationIds.length > 0) {
+            // save open source language tabs
+            String[] oldSourceTranslationIds = mTranslator.getSourceTranslations(targetTranslationId);
+            for(String id:oldSourceTranslationIds) {
+                mTranslator.removeSourceTranslation(targetTranslationId, id);
+            }
+            for(String id:sourceTranslationIds) {
+                SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
+                mTranslator.addSourceTranslation(targetTranslationId, sourceTranslation);
+            }
+            
+            // redirect back to previous mode
+            mListener.invalidateViewMode();
+        }
     }
 }

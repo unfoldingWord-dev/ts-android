@@ -9,4 +9,9 @@ public interface TargetTranslationDetailFragmentListener {
     void onItemCountChanged(int itemCount, int progress);
 
     void onNoSourceTranslations(String targetTranslationId);
+
+    /**
+     * causes the activity to re-evaluate the view mode navigation
+     */
+    void invalidateViewMode();
 }
