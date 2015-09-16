@@ -103,6 +103,7 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
 
     @Override
     public void onTabClick(String sourceTranslationId) {
+        mTranslator.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
         mAdapter.setSourceTranslation(sourceTranslationId);
     }
 

@@ -105,6 +105,7 @@ public class ChunkModeFragment extends Fragment implements TargetTranslationDeta
 
     @Override
     public void onTabClick(String sourceTranslationId) {
+        mTranslator.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
         mAdapter.setSourceTranslation(sourceTranslationId);
     }
 

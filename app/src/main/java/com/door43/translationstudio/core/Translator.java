@@ -193,16 +193,6 @@ public class Translator {
                     e.printStackTrace();
                 }
             }
-
-            // change the selected source translation if we are removing it
-            if(selectedSourceTranslation.equals(sourceTranslationId)) {
-                String[] sourceTranslationIds = getSourceTranslations(targetTranslationId);
-                if(sourceTranslationIds.length > 0) {
-                    setSelectedSourceTranslation(targetTranslationId, sourceTranslationIds[0]);
-                } else {
-                    setSelectedSourceTranslation(targetTranslationId, null);
-                }
-            }
         }
     }
 
