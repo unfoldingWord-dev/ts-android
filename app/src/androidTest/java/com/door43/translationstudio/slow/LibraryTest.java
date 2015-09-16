@@ -136,15 +136,6 @@ public class LibraryTest extends AndroidTestCase {
         assertEquals("obs", p.getId());
     }
 
-    public void test12GetChapters() throws Exception {
-        SourceTranslation sourceTranslation = SourceTranslation.simple("obs", "en", "obs");
-        Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
-        assertTrue(chapters.length > 0);
-        Chapter chapter = mLibrary.getChapter(sourceTranslation, chapters[0].getId());
-        assertNotNull(chapter);
-        assertEquals(chapters[0].getId(), chapter.getId());
-    }
-
     public void test13GetTargetLanguage() throws Exception {
         TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
         assertEquals("en", targetLanguage.getId());
