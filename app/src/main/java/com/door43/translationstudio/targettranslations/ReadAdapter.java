@@ -3,12 +3,16 @@ package com.door43.translationstudio.targettranslations;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -28,6 +32,7 @@ import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
 
+
 /**
  * Created by joel on 9/9/2015.
  */
@@ -46,6 +51,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
     private final Library mLibrary;
     private final Translator mTranslator;
     private Chapter[] mChapters;
+    private OnClickListener mListener;
 
     public ReadAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
@@ -176,8 +182,71 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         if(chapter.title.isEmpty()) {
             targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
-        holder.mTargetTitle.setText(targetChapterTitle);
+        holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
+        // load tabs
+        holder.mTabLayout.setOnTabSelectedListener(null);
+        holder.mTabLayout.removeAllTabs();
+        String[] sourceTranslationIds = mTranslator.getSourceTranslations(mTargetTranslation.getId());
+        for(String id:sourceTranslationIds) {
+            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
+            if(sourceTranslation != null) {
+                TabLayout.Tab tab = holder.mTabLayout.newTab();
+                // include the resource id if there are more than one
+                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
+                    tab.setText(sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
+                } else {
+                    tab.setText(sourceTranslation.getSourceLanguageTitle());
+                }
+                tab.setTag(sourceTranslation.getId());
+                holder.mTabLayout.addTab(tab);
+            }
+        }
+
+        // select correct tab
+        for(int i = 0; i < holder.mTabLayout.getTabCount(); i ++) {
+            TabLayout.Tab tab = holder.mTabLayout.getTabAt(i);
+            if(tab.getTag().equals(mSourceTranslation.getId())) {
+                tab.select();
+                break;
+            }
+        }
+
+        // hook up listener
+        holder.mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                final String sourceTranslationId = (String)tab.getTag();
+                if(mListener != null) {
+                    Handler hand = new Handler(Looper.getMainLooper());
+                    hand.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mListener.onTabClick(sourceTranslationId);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        holder.mNewTabButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mListener != null) {
+                    mListener.onNewTabClick();
+                }
+            }
+        });
     }
 
     @Override
@@ -190,8 +259,11 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         private final TextView mTargetBody;
         private final CardView mTargetCard;
         private final CardView mSourceCard;
+        private final ImageButton mNewTabButton;
         public TextView mSourceTitle;
         public TextView mSourceBody;
+        public TabLayout mTabLayout;
+
         public ViewHolder(Context context, View v, SourceLanguage source, TargetLanguage target) {
             super(v);
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
@@ -200,6 +272,9 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (TextView)v.findViewById(R.id.target_translation_body);
+            mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
+            mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
+            mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
 
             // set up fonts
             Typography.formatTitle(context, mSourceTitle, source.getId(), source.getDirection());
@@ -207,5 +282,14 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             Typography.formatTitle(context, mTargetTitle, target.getId(), target.getDirection());
             Typography.format(context, mTargetBody, target.getId(), target.getDirection());
         }
+    }
+
+    public void setOnClickListener(OnClickListener listener) {
+        mListener = listener;
+    }
+
+    public interface OnClickListener {
+        void onTabClick(String sourceTranslationId);
+        void onNewTabClick();
     }
 }

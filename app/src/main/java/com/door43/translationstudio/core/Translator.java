@@ -169,6 +169,9 @@ public class Translator {
     public void removeSourceTranslation(String targetTranslationId, String sourceTranslationId) {
         TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
         if(targetTranslation != null) {
+            String selectedSourceTranslation = getSelectedSourceTranslationId(targetTranslationId);
+
+            // remove tab
             Manifest m = Manifest.generate(mRootDir);
             JSONObject json = m.getJSONObject(targetTranslationId);
             if(json.has(OPEN_SOURCE_TRANSLATIONS)) {
@@ -185,6 +188,16 @@ public class Translator {
                     m.put(targetTranslationId, json);
                 } catch (JSONException e) {
                     e.printStackTrace();
+                }
+            }
+
+            // change the selected source translation if we are removing it
+            if(selectedSourceTranslation.equals(sourceTranslationId)) {
+                String[] sourceTranslationIds = getSourceTranslations(targetTranslationId);
+                if(sourceTranslationIds.length > 0) {
+                    setSelectedSourceTranslation(targetTranslationId, sourceTranslationIds[0]);
+                } else {
+                    setSelectedSourceTranslation(targetTranslationId, null);
                 }
             }
         }
@@ -229,21 +242,37 @@ public class Translator {
      * This is effectivelly the currently selected tab
      *
      * @param targetTranslationId
-     * @param sourceTranslationId
+     * @param sourceTranslationId if null then the setting will be removed
      */
     public void setSelectedSourceTranslation(String targetTranslationId, String sourceTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, sourceTranslationId);
+        if(sourceTranslationId != null) {
+            editor.putString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, sourceTranslationId);
+        } else {
+            editor.remove(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId);
+        }
     }
 
     /**
      * Returns the id of the selected source translation for the target translation
+     *
+     * If no source translation has been selected it will choose the first available
+     * source translation
+     *
      * @param targetTranslationId
-     * @return null if no source translation is selected
+     * @return
      */
     public String getSelectedSourceTranslationId(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
-        return prefs.getString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, null);
+        String selectedSourceTranslationId = prefs.getString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, null);
+        if(selectedSourceTranslationId == null) {
+            String[] openSourceTranslationIds = getSourceTranslations(targetTranslationId);
+            if(openSourceTranslationIds.length > 0) {
+                selectedSourceTranslationId = openSourceTranslationIds[0];
+                setSelectedSourceTranslation(targetTranslationId, selectedSourceTranslationId);
+            }
+        }
+        return selectedSourceTranslationId;
     }
 }

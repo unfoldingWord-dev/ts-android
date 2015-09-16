@@ -91,7 +91,10 @@
     </style>
 
     <style name="Widget.CardContent.Horizontal">
-        <item name="android:padding">@dimen/stacked_card_margin</item>
+        <item name="android:paddingLeft">@dimen/stacked_card_margin</item>
+        <item name="android:paddingRight">@dimen/stacked_card_margin</item>
+        <item name="android:paddingTop">@dimen/card_margin</item>
+        <item name="android:paddingBottom">@dimen/stacked_card_margin</item>
         <item name="android:orientation">horizontal</item>
     </style>
 

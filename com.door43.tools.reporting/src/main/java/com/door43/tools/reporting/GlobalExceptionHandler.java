@@ -1,5 +1,7 @@
 package com.door43.tools.reporting;
 
+import android.os.Process;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -83,6 +85,10 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
         }
 
         defaultUEH.uncaughtException(t, e);
+
+        // force shut down so we don't end up with un-initialized objects
+        Process.killProcess(Process.myPid());
+        System.exit(0);
     }
 
     /**

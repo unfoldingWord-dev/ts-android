@@ -78,7 +78,7 @@ public class FirstTabFragment extends Fragment implements TargetTranslationDetai
     }
 
     @Override
-    public void onConfirmTabsDialog(String targetTranslationId) {
+    public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
         // TODO: make sure we have at least one tab and then redirect back to previous mode
     }
 }

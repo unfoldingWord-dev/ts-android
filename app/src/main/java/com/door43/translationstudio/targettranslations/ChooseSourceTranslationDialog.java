@@ -20,6 +20,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -103,20 +104,22 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // save changes
+                // collect selected source translations
                 int count = mAdapter.getCount();
+                List<String> sourceTranslationIds = new ArrayList<>();
                 for(int i = 0; i < count; i ++) {
                     if(mAdapter.getItemViewType(i) == SourceLanguageTabAdapter.TYPE_ITEM) {
                         SourceLanguageTabAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
-                            mTranslator.addSourceTranslation(mTargetTranslation.getId(), mLibrary.getSourceTranslation(item.id));
-                        } else {
-                            mTranslator.removeSourceTranslation(mTargetTranslation.getId(), item.id);
+                            sourceTranslationIds.add(item.id);
+//                            mTranslator.addSourceTranslation(mTargetTranslation.getId(), mLibrary.getSourceTranslation(item.id));
+//                        } else {
+//                            mTranslator.removeSourceTranslation(mTargetTranslation.getId(), item.id);
                         }
                     }
                 }
                 if(mListener != null) {
-                    mListener.onConfirmTabsDialog(mTargetTranslation.getId());
+                    mListener.onConfirmTabsDialog(mTargetTranslation.getId(), sourceTranslationIds.toArray(new String[sourceTranslationIds.size()]));
                 }
                 dismiss();
             }
@@ -135,6 +138,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
     public interface OnClickListener {
         void onCancelTabsDialog(String targetTranslationId);
-        void onConfirmTabsDialog(String targetTranslationId);
+        void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds);
     }
 }
