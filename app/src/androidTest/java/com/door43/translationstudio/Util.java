@@ -26,8 +26,8 @@ public class Util {
      * @return
      * @throws Exception
      */
-    public static String loadSig(String sig) throws Exception {
-        InputStream sigStream = AppContext.context().getAssets().open(sig);
+    public static String loadSig(Context context, String sig) throws Exception {
+        InputStream sigStream = context.getAssets().open(sig);
         String sigJson = FileUtilities.convertStreamToString(sigStream);
         JSONArray json = new JSONArray(sigJson);
         JSONObject sigObj = json.getJSONObject(0);

@@ -1,8 +1,7 @@
 package com.door43.translationstudio.fast;
 
-import android.test.ActivityInstrumentationTestCase2;
+import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.Util;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
@@ -16,11 +15,7 @@ import com.door43.util.FileUtilities;
 
 import java.io.File;
 
-public class TranslationImportTest extends ActivityInstrumentationTestCase2<MainActivity> {
-
-    public TranslationImportTest() {
-        super(MainActivity.class);
-    }
+public class TranslationImportTest extends InstrumentationTestCase {
 
     @Override
     protected void setUp() throws Exception {
