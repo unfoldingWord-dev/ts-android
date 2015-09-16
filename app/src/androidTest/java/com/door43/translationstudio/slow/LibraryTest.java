@@ -6,9 +6,14 @@ import android.test.AndroidTestCase;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.core.Downloader;
+import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
+import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.ProjectCategory;
+import com.door43.translationstudio.core.Resource;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.util.AppContext;
 
@@ -41,7 +46,9 @@ public class LibraryTest extends AndroidTestCase {
 
     public void test02ExtractLibrary() throws Exception {
         // NOTE: the default library is large so we don't include in the repo. So this test should always fall through
+        assertFalse(mLibrary.exists());
         mLibrary.deployDefaultLibrary();
+        assertTrue(mLibrary.exists());
     }
 
     public void test03CheckForAvailableUpdates() throws Exception {
@@ -85,6 +92,72 @@ public class LibraryTest extends AndroidTestCase {
         TargetLanguage[] languages = mLibrary.getTargetLanguages();
         assertNotNull(languages);
         assertTrue(languages.length > 0);
+    }
+
+    public void test07DownloadSourceTranslation() throws Exception {
+        SourceTranslation sourceTranslation = mLibrary.getSourceTranslations("obs")[0];
+        assertTrue(mLibrary.downloadSourceTranslation(sourceTranslation));
+    }
+
+    public void test08GetProjectCategories() throws Exception {
+        ProjectCategory[] projectCategories = mLibrary.getProjectCategories("en");
+        // for now we just have obs, nt, and ot
+        assertEquals(3, projectCategories.length);
+        ProjectCategory category = null;
+        for(ProjectCategory projectCategory:projectCategories) {
+            if(!projectCategory.isProject()) {
+                category = projectCategory;
+                break;
+            }
+        }
+        assertNotNull(category);
+        ProjectCategory[] subCategories = mLibrary.getProjectCategories(category);
+        assertTrue(subCategories.length > 0);
+
+    }
+
+    public void test09GetSourceLanguages() throws Exception {
+        SourceLanguage[] sourceLanguages = mLibrary.getSourceLanguages("obs");
+        assertTrue(sourceLanguages.length > 0);
+
+        SourceLanguage sourceLanguage = mLibrary.getSourceLanguage("obs", "en");
+        assertNotNull(sourceLanguage);
+        assertEquals("en", sourceLanguage.getId());
+    }
+
+    public void test10GetResources() throws Exception {
+        Resource[] resources = mLibrary.getResources("obs", "en");
+        assertTrue(resources.length > 0);
+    }
+
+    public void test11GetProject() throws Exception {
+        Project p = mLibrary.getProject("obs", "en");
+        assertNotNull(p);
+        assertEquals("obs", p.getId());
+    }
+
+    public void test12GetChapters() throws Exception {
+        SourceTranslation sourceTranslation = SourceTranslation.simple("obs", "en", "obs");
+        Chapter[] chapters = mLibrary.getChapters(sourceTranslation);
+        assertTrue(chapters.length > 0);
+        Chapter chapter = mLibrary.getChapter(sourceTranslation, chapters[0].getId());
+        assertNotNull(chapter);
+        assertEquals(chapters[0].getId(), chapter.getId());
+    }
+
+    public void test13GetTargetLanguage() throws Exception {
+        TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
+        assertEquals("en", targetLanguage.getId());
+    }
+
+    public void test14GetSourceTranslation() throws Exception {
+        SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations("obs");
+        SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(sourceTranslations[0].getId());
+        assertNotNull(sourceTranslation);
+        assertEquals(sourceTranslations[0].getId(), sourceTranslation.getId());
+
+        SourceTranslation anotherSourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
+        assertNotNull(anotherSourceTranslation);
     }
 
     public void test999999Cleanup() throws Exception {

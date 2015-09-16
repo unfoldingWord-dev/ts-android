@@ -306,7 +306,6 @@ public class Library {
     public ProjectCategory[] getProjectCategories(String languageId) {
         Map<String, ProjectCategory> categoriesMap = new HashMap<>();
 
-        // TODO: we may need the index to generate this info for us for better performance
         String[] projectIds = mAppIndex.getProjects();
         for(String projectId:projectIds) {
             JSONObject projectJson = mAppIndex.getProject(projectId);
@@ -345,7 +344,6 @@ public class Library {
     public ProjectCategory[] getProjectCategories(ProjectCategory parentCategory) {
         Map<String, ProjectCategory> categoriesMap = new HashMap<>();
 
-        // TODO: we may need the index to generate this info for us for better performance
         String[] projectIds = mAppIndex.getProjects();
         for(String projectId:projectIds) {
             JSONObject projectJson = mAppIndex.getProject(projectId);
