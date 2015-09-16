@@ -112,7 +112,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
                         SourceLanguageTabAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
                             sourceTranslationIds.add(item.id);
-//                            mTranslator.addSourceTranslation(mTargetTranslation.getId(), mLibrary.getSourceTranslation(item.id));
+//                            mTranslator.addSourceTranslation(mTargetTranslation.getId(), mLibrary.getSourceTranslations(item.id));
 //                        } else {
 //                            mTranslator.removeSourceTranslation(mTargetTranslation.getId(), item.id);
                         }

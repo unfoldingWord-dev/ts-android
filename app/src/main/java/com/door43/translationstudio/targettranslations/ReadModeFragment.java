@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,12 +13,9 @@ import android.view.ViewGroup;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.util.AppContext;
 
 import java.security.InvalidParameterException;

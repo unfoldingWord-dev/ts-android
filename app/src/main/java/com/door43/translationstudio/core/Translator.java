@@ -153,7 +153,6 @@ public class Translator {
                     tabsJson.put(sourceTranslation.getId());
                     m.put(targetTranslationId, json);
                 }
-                setSelectedSourceTranslation(targetTranslationId, sourceTranslation.getId());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -170,6 +169,9 @@ public class Translator {
         TargetTranslation targetTranslation = getTargetTranslation(targetTranslationId);
         if(targetTranslation != null) {
             String selectedSourceTranslation = getSelectedSourceTranslationId(targetTranslationId);
+            if(selectedSourceTranslation.equals(sourceTranslationId)) {
+                setSelectedSourceTranslation(targetTranslationId, null);
+            }
 
             // remove tab
             Manifest m = Manifest.generate(mRootDir);
