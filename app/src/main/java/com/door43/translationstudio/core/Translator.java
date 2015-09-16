@@ -303,5 +303,6 @@ public class Translator {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(TRANSLATION_VIEW_MODE + "-" + targetTranslationId, viewMode.toString());
+        editor.apply();
     }
 }

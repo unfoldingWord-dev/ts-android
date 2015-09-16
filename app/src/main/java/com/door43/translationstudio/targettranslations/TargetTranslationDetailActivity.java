@@ -109,8 +109,8 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                 if(mFragment instanceof ReadModeFragment == false) {
                     mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
                     mFragment = new ReadModeFragment();
-                    ((ReadModeFragment) mFragment).setArguments(getIntent().getExtras());
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ReadModeFragment) mFragment).commit();
+                    ((Fragment) mFragment).setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
                     // TODO: animate
                     // TODO: udpate menu
                 }
@@ -124,8 +124,8 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                 if(mFragment instanceof  ChunkModeFragment == false) {
                     mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
                     mFragment = new ChunkModeFragment();
-                    ((ChunkModeFragment) mFragment).setArguments(getIntent().getExtras());
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, (ChunkModeFragment) mFragment).commit();
+                    ((Fragment) mFragment).setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
                     // TODO: animate
                     // TODO: udpate menu
                 }
@@ -180,7 +180,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
     public void onNoSourceTranslations(String targetTranslationId) {
         mFragment = new FirstTabFragment();
         ((FirstTabFragment) mFragment).setArguments(getIntent().getExtras());
-        getFragmentManager().beginTransaction().replace(R.id.fragment_container, (FirstTabFragment) mFragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
         // TODO: animate
         // TODO: udpate menu
     }
@@ -198,7 +198,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
             // TODO: set up fragment
         }
 
-        getFragmentManager().beginTransaction().replace(R.id.fragment_container, (FirstTabFragment) mFragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
         // TODO: animate
         // TODO: update menu
     }

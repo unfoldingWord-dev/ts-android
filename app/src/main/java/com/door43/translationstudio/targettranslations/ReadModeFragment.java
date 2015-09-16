@@ -140,12 +140,13 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
+        String[] oldSourceTranslationIds = mTranslator.getSourceTranslations(targetTranslationId);
+        for(String id:oldSourceTranslationIds) {
+            mTranslator.removeSourceTranslation(targetTranslationId, id);
+        }
+
         if(sourceTranslationIds.length > 0) {
             // save open source language tabs
-            String[] oldSourceTranslationIds = mTranslator.getSourceTranslations(targetTranslationId);
-            for(String id:oldSourceTranslationIds) {
-                mTranslator.removeSourceTranslation(targetTranslationId, id);
-            }
             for(String id:sourceTranslationIds) {
                 SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
                 mTranslator.addSourceTranslation(targetTranslationId, sourceTranslation);
