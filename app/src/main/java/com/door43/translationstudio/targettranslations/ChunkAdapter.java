@@ -8,10 +8,8 @@ import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +17,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
@@ -38,8 +35,6 @@ import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
-
-import org.eclipse.jgit.diff.Edit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +59,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
     private final Translator mTranslator;
     private Frame[] mFrames;
     private OnClickListener mListener;
+    private int mLayoutBuildNumber = 0;
 
     public ChunkAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
@@ -111,7 +107,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_chunk_list_item, parent, false);
-        ViewHolder vh = new ViewHolder(mContext, v, mSourceLanguage, mTargetLanguage);
+        ViewHolder vh = new ViewHolder(v);
         return vh;
     }
 
@@ -321,6 +317,23 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             }
         };
         holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+
+        // set up fonts
+        if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
+            holder.mLayoutBuildNumber = mLayoutBuildNumber;
+            Typography.formatSub(mContext, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+        }
+    }
+
+    /**
+     * Trigers some aspects of the children views to be rebuilt
+     */
+    public void rebuild() {
+        mLayoutBuildNumber ++;
+        notifyDataSetChanged();
     }
 
     private CharSequence renderText(String text, TranslationFormat format) {
@@ -342,6 +355,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
         public final EditText mTargetBody;
@@ -351,7 +365,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         public final ImageButton mNewTabButton;
         public TextView mSourceTitle;
         public TextView mSourceBody;
-        public ViewHolder(Context context, View v, SourceLanguage source, TargetLanguage target) {
+        public ViewHolder(View v) {
             super(v);
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
             mSourceTitle = (TextView)v.findViewById(R.id.source_translation_title);
@@ -362,12 +376,6 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
-
-            // set up fonts
-            Typography.formatSub(context, mSourceTitle, source.getId(), source.getDirection());
-            Typography.format(context, mSourceBody, source.getId(), source.getDirection());
-            Typography.formatSub(context, mTargetTitle, target.getId(), target.getDirection());
-            Typography.format(context, mTargetBody, target.getId(), target.getDirection());
         }
     }
 

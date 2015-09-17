@@ -53,6 +53,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
     private final Translator mTranslator;
     private Chapter[] mChapters;
     private OnClickListener mListener;
+    private int mLayoutBuildNumber = 0;
 
     public ReadAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
@@ -87,7 +88,7 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_read_list_item, parent, false);
-        ViewHolder vh = new ViewHolder(mContext, v, mSourceLanguage, mTargetLanguage);
+        ViewHolder vh = new ViewHolder(v);
         return vh;
     }
 
@@ -275,11 +276,25 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
                 }
             }
         });
+
+        // set up fonts
+        if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
+            holder.mLayoutBuildNumber = mLayoutBuildNumber;
+            Typography.formatTitle(mContext, holder.mSourceTitle, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+            Typography.formatTitle(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+        }
     }
 
     @Override
     public int getItemCount() {
         return mChapters.length;
+    }
+
+    public void rebuild() {
+        mLayoutBuildNumber ++;
+        notifyDataSetChanged();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -291,8 +306,9 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         public TextView mSourceTitle;
         public TextView mSourceBody;
         public TabLayout mTabLayout;
+        public int mLayoutBuildNumber = -1;
 
-        public ViewHolder(Context context, View v, SourceLanguage source, TargetLanguage target) {
+        public ViewHolder(View v) {
             super(v);
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
             mSourceTitle = (TextView)v.findViewById(R.id.source_translation_title);
@@ -303,12 +319,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
-
-            // set up fonts
-            Typography.formatTitle(context, mSourceTitle, source.getId(), source.getDirection());
-            Typography.format(context, mSourceBody, source.getId(), source.getDirection());
-            Typography.formatTitle(context, mTargetTitle, target.getId(), target.getDirection());
-            Typography.format(context, mTargetBody, target.getId(), target.getDirection());
         }
     }
 
