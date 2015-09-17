@@ -26,8 +26,9 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="@string/title_cancel"
-            android:textColor="?attr/colorAccent"
+            android:textColor="@color/dark_secondary_text"
             android:padding="16dp"
+            android:textSize="@dimen/button"
             android:background="?attr/selectableItemBackgroundBorderless"/>
 
         <Button
@@ -37,6 +38,7 @@
             android:text="@string/confirm"
             android:textColor="?attr/colorAccent"
             android:padding="16dp"
+            android:textSize="@dimen/button"
             android:background="?attr/selectableItemBackgroundBorderless"/>
     </LinearLayout>
 </RelativeLayout>

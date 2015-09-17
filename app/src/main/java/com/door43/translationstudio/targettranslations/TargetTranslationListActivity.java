@@ -2,6 +2,7 @@ package com.door43.translationstudio.targettranslations;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -18,8 +19,10 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.door43.translationstudio.BugReporterActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.SharingActivity;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -79,6 +82,30 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch(item.getItemId()) {
+                            case R.id.action_publish:
+                                // TODO: need new ui
+                                return true;
+                            case R.id.action_backup:
+                                // TODO: need new ui
+                                return true;
+                            case R.id.action_share:
+                                Intent shareIntent = new Intent(TargetTranslationListActivity.this, SharingActivity.class);
+                                startActivity(shareIntent);
+                                return true;
+                            case R.id.action_bug:
+                                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                                if (prev != null) {
+                                    ft.remove(prev);
+                                }
+                                ft.addToBackStack(null);
+
+                                ReportBugDialog dialog = new ReportBugDialog();
+                                dialog.show(ft, "bugDialog");
+
+//                                Intent bugIntent = new Intent(TargetTranslationListActivity.this, BugReporterActivity.class);
+//                                startActivity(bugIntent);
+                                return true;
                             case R.id.action_settings:
                                 Intent intent = new Intent(TargetTranslationListActivity.this, SettingsActivity.class);
                                 startActivity(intent);

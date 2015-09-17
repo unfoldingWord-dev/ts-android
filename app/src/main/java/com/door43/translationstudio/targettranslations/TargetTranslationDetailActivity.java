@@ -11,8 +11,10 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
 
+import com.door43.translationstudio.BugReporterActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.SharingActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -109,9 +111,23 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                             case R.id.action_translations:
                                 finish();
                                 return true;
+                            case R.id.action_publish:
+                                // TODO: need new ui
+                                return true;
+                            case R.id.action_backup:
+                                // TODO: need new ui
+                                return true;
+                            case R.id.action_share:
+                                Intent shareIntent = new Intent(TargetTranslationDetailActivity.this, SharingActivity.class);
+                                startActivity(shareIntent);
+                                return true;
+                            case R.id.action_bug:
+                                Intent bugIntent = new Intent(TargetTranslationDetailActivity.this, BugReporterActivity.class);
+                                startActivity(bugIntent);
+                                return true;
                             case R.id.action_settings:
-                                Intent intent = new Intent(TargetTranslationDetailActivity.this, SettingsActivity.class);
-                                startActivity(intent);
+                                Intent settingsIntent = new Intent(TargetTranslationDetailActivity.this, SettingsActivity.class);
+                                startActivity(settingsIntent);
                                 return true;
                         }
                         return false;

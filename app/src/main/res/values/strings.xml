@@ -334,4 +334,5 @@
     <string name="action_translations">My Translations</string>
     <string name="publish">Publish</string>
     <string name="backup">Backup</string>
+    <string name="attached_files">Attached files</string>
 </resources>
