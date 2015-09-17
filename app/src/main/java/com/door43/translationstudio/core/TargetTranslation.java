@@ -236,20 +236,27 @@ public class TargetTranslation {
      * @param translatedText
      */
     public void applyFrameTranslation(final FrameTranslation frameTranslation, final String translatedText) {
-        if(mApplyFrameTimer != null) {
-            mApplyFrameTimer.cancel();
+        // testing this performance. it will make a lot of things eaiser if we don't have to use a timeout for performance.
+        try {
+            commitFrameTranslation(frameTranslation, translatedText);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        mApplyFrameTimer = new Timer();
-        mApplyFrameTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    commitFrameTranslation(frameTranslation, translatedText);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, COMMIT_DELAY);
+
+//        if(mApplyFrameTimer != null) {
+//            mApplyFrameTimer.cancel();
+//        }
+//        mApplyFrameTimer = new Timer();
+//        mApplyFrameTimer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                try {
+//                    commitFrameTranslation(frameTranslation, translatedText);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }, COMMIT_DELAY);
     }
 
     /**

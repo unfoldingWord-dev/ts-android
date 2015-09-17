@@ -107,6 +107,14 @@ public class Frame {
     }
 
     /**
+     * Returns the range of verses that the body spans
+     * @return
+     */
+    public int[] getVerseRange() {
+        return getVerseRange(body);
+    }
+
+    /**
      * Returns the range of verses that a chunk of text spans
      *
      * @param text

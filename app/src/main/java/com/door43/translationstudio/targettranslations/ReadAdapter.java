@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -92,6 +93,8 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+        int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
+        int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
         if(mTargetStateOpen[position]) {
             // target on top
             // elevation takes precedence for API 21+
@@ -100,6 +103,12 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
                 holder.mTargetCard.setElevation(TOP_ELEVATION);
             }
             holder.mTargetCard.bringToFront();
+            CardView.LayoutParams targetParams = (CardView.LayoutParams)holder.mTargetCard.getLayoutParams();
+            targetParams.setMargins(cardMargin, cardMargin, stackedCardMargin, stackedCardMargin);
+            holder.mTargetCard.setLayoutParams(targetParams);
+            CardView.LayoutParams sourceParams = (CardView.LayoutParams)holder.mSourceCard.getLayoutParams();
+            sourceParams.setMargins(stackedCardMargin, stackedCardMargin, cardMargin, cardMargin);
+            holder.mSourceCard.setLayoutParams(sourceParams);
             ((View) holder.mTargetCard.getParent()).requestLayout();
             ((View) holder.mTargetCard.getParent()).invalidate();
         } else {
@@ -110,6 +119,12 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
                 holder.mSourceCard.setElevation(TOP_ELEVATION);
             }
             holder.mSourceCard.bringToFront();
+            CardView.LayoutParams sourceParams = (CardView.LayoutParams)holder.mSourceCard.getLayoutParams();
+            sourceParams.setMargins(cardMargin, cardMargin, stackedCardMargin, stackedCardMargin);
+            holder.mSourceCard.setLayoutParams(sourceParams);
+            CardView.LayoutParams targetParams = (CardView.LayoutParams)holder.mTargetCard.getLayoutParams();
+            targetParams.setMargins(stackedCardMargin, stackedCardMargin, cardMargin, cardMargin);
+            holder.mTargetCard.setLayoutParams(targetParams);
             ((View) holder.mSourceCard.getParent()).requestLayout();
             ((View) holder.mSourceCard.getParent()).invalidate();
         }
@@ -147,8 +162,6 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
                 chapterBody += " " + frame.body;
             }
             RenderingGroup sourceRendering = new RenderingGroup();
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-//        Boolean highlightTerms = prefs.getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(mContext.getResources().getString(R.string.pref_default_highlight_key_terms)));
             // TODO: identify key terms
             if (bodyFormat == TranslationFormat.USX) {
                 // TODO: add click listeners
@@ -169,8 +182,26 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
 
         // render the target chapter body
         if(mRenderedTargetBody[position] == null) {
-            mRenderedTargetBody[position] = "";
-            // TODO: load the frames from the target translation
+            Frame[] frames = mLibrary.getFrames(mSourceTranslation, chapter.getId());
+            String chapterBody = "";
+            TranslationFormat bodyFormat = TranslationFormat.DEFAULT;
+            if(frames.length > 0) {
+                bodyFormat = frames[0].getFormat();
+            }
+            for (Frame frame : frames) {
+                FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
+                chapterBody += " " + frameTranslation.body;
+            }
+            RenderingGroup targetRendering = new RenderingGroup();
+            // TODO: identify key terms
+            if (bodyFormat == TranslationFormat.USX) {
+                // TODO: add click listeners
+                targetRendering.addEngine(new USXRenderer(null, null));
+            } else {
+                targetRendering.addEngine(new DefaultRenderer());
+            }
+            targetRendering.init(chapterBody);
+            mRenderedTargetBody[position] = targetRendering.start();
         }
 
         // TODO: get the translations of the title

@@ -44,7 +44,8 @@
                 android:textSize="@dimen/body"
                 android:focusable="true"
                 android:gravity="top"
-                android:inputType="textNoSuggestions|textMultiLine"
+                android:imeOptions="flagNoExtractUi"
+                android:inputType="textNoSuggestions|text|textMultiLine"
                 android:focusableInTouchMode="true"
                 android:background="@null"
                 android:textColor="@color/dark_primary_text"/>

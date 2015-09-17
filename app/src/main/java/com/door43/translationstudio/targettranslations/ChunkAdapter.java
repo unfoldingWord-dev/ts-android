@@ -117,6 +117,8 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+        int cardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.card_margin);
+        int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
         if(mTargetStateOpen[position]) {
             // target on top
             // elevation takes precedence for API 21+
@@ -125,6 +127,12 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
                 holder.mTargetCard.setElevation(TOP_ELEVATION);
             }
             holder.mTargetCard.bringToFront();
+            CardView.LayoutParams targetParams = (CardView.LayoutParams)holder.mTargetCard.getLayoutParams();
+            targetParams.setMargins(cardMargin, cardMargin, stackedCardMargin, stackedCardMargin);
+            holder.mTargetCard.setLayoutParams(targetParams);
+            CardView.LayoutParams sourceParams = (CardView.LayoutParams)holder.mSourceCard.getLayoutParams();
+            sourceParams.setMargins(stackedCardMargin, stackedCardMargin, cardMargin, cardMargin);
+            holder.mSourceCard.setLayoutParams(sourceParams);
             ((View) holder.mTargetCard.getParent()).requestLayout();
             ((View) holder.mTargetCard.getParent()).invalidate();
         } else {
@@ -135,6 +143,12 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
                 holder.mSourceCard.setElevation(TOP_ELEVATION);
             }
             holder.mSourceCard.bringToFront();
+            CardView.LayoutParams sourceParams = (CardView.LayoutParams)holder.mSourceCard.getLayoutParams();
+            sourceParams.setMargins(cardMargin, cardMargin, stackedCardMargin, stackedCardMargin);
+            holder.mSourceCard.setLayoutParams(sourceParams);
+            CardView.LayoutParams targetParams = (CardView.LayoutParams)holder.mTargetCard.getLayoutParams();
+            targetParams.setMargins(stackedCardMargin, stackedCardMargin, cardMargin, cardMargin);
+            holder.mTargetCard.setLayoutParams(targetParams);
             ((View) holder.mSourceCard.getParent()).requestLayout();
             ((View) holder.mSourceCard.getParent()).invalidate();
         }
@@ -163,18 +177,6 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         // render the source frame body
         if(mRenderedSourceBody[position] == null) {
             mRenderedSourceBody[position] = renderText(frame.body, frame.getFormat());
-//            RenderingGroup sourceRendering = new RenderingGroup();
-////            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-////        Boolean highlightTerms = prefs.getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(mContext.getResources().getString(R.string.pref_default_highlight_key_terms)));
-//            // TODO: identify key terms
-//            if (frame.getFormat() == TranslationFormat.USX) {
-//                // TODO: add click listeners for verses and notes
-//                sourceRendering.addEngine(new USXRenderer(null, null));
-//            } else {
-//                sourceRendering.addEngine(new DefaultRenderer());
-//            }
-//            sourceRendering.init(frame.body);
-//            mRenderedSourceBody[position] = sourceRendering.start();
         }
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
@@ -191,18 +193,6 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         if(mRenderedTargetBody[position] == null) {
             FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
             mRenderedTargetBody[position] = renderText(frameTranslation.body, frameTranslation.getFormat());
-
-//            RenderingGroup targetRendering = new RenderingGroup();
-//            if (frame.getFormat() == TranslationFormat.USX) {
-//                // TODO: add click listeners for verses and notes
-//                targetRendering.addEngine(new USXRenderer(null, null));
-//            } else {
-//                // TODO: add note click listener
-//                targetRendering.addEngine(new DefaultRenderer(null));
-//            }
-//            FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
-//            targetRendering.init(frameTranslation.body);
-//            mRenderedTargetBody[position] = targetRendering.start();
         }
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
@@ -211,11 +201,12 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
 
         ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
         String targetChapterTitle = chapterTranslation.title;
-        if(targetChapterTitle.isEmpty()) {
-            targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
-        }
         final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
-        targetChapterTitle += ":" + frameTranslation.getTitle();
+        if(!targetChapterTitle.isEmpty()) {
+            targetChapterTitle += ":" + frameTranslation.getTitle();
+        } else {
+            targetChapterTitle = sourceChapterTitle;
+        }
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
         // load tabs
@@ -300,14 +291,13 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
                 // TODO: we either need to force the translation to save when the view leaves the window (so we have it if they come back before it was saved)
                 // or just always save immediately
 
-//                TODO: call this in a thread so we don't slow things down
+                mRenderedTargetBody[position] = renderText(translation, frameTranslation.getFormat());
+
                 // update view
                 // TRICKY: anything worth updating will need to change by at least 7 characters
                 // <a></a> <-- at least 7 characters are required to create a tag for rendering.
                 int minDeviation = 7;
                 if(count - before > minDeviation) {
-                    mRenderedTargetBody[position] = renderText(translation, frameTranslation.getFormat());
-
                     int scrollX = holder.mTargetBody.getScrollX();
                     int scrollY = holder.mTargetBody.getScrollX();
                     int selection = holder.mTargetBody.getSelectionStart();
