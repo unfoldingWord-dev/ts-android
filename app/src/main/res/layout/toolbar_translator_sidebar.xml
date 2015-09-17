@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/icon_study_active"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackground"/>
 
         <ImageButton
             android:id="@+id/action_chunk"
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/icon_frame_active"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackground"/>
 
         <ImageButton
             android:id="@+id/action_review"
@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/ic_assignment_turned_in_white_24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
 
     <!-- middle -->
@@ -70,7 +70,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/ic_more_vert_white_24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
 
 

@@ -89,7 +89,7 @@
                     android:paddingBottom="10dp"
                     android:paddingLeft="10dp"
                     android:layout_gravity="right|center_vertical"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:background="?attr/selectableItemBackground"
                     android:src="@drawable/icon_tabedit_normal"/>
             </FrameLayout>
 

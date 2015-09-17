@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/ic_more_vert_white_24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
 
 
