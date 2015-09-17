@@ -331,4 +331,5 @@
     <string name="confirm">Confirm</string>
     <string name="selected">Selected</string>
     <string name="available">Available</string>
+    <string name="action_translations">My Translations</string>
 </resources>

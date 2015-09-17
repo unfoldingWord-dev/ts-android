@@ -86,6 +86,12 @@ public class ReadModeFragment extends Fragment implements TargetTranslationDetai
         return rootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mAdapter.notifyDataSetChanged();
+    }
+
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {

@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.SeekBar;
 
 import com.door43.translationstudio.R;
@@ -97,9 +98,24 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         moreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: we need to display a custom popup menu
-                Intent intent = new Intent(TargetTranslationDetailActivity.this, SettingsActivity.class);
-                startActivity(intent);
+                PopupMenu moreMenu = new PopupMenu(TargetTranslationDetailActivity.this, v);
+                moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
+                moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch(item.getItemId()) {
+                            case R.id.action_translations:
+                                finish();
+                                return true;
+                            case R.id.action_settings:
+                                Intent intent = new Intent(TargetTranslationDetailActivity.this, SettingsActivity.class);
+                                startActivity(intent);
+                                return true;
+                        }
+                        return false;
+                    }
+                });
+                moreMenu.show();
             }
         });
         ImageButton readButton = (ImageButton)findViewById(R.id.action_read);

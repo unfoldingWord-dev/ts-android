@@ -88,6 +88,12 @@ public class ChunkModeFragment extends Fragment implements TargetTranslationDeta
         return rootView;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        mAdapter.notifyDataSetChanged();
+    }
+
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
