@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
 
     <TextView
         android:layout_width="match_parent"
@@ -13,17 +16,40 @@
         android:id="@+id/textView13" />
 
     <LinearLayout
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/textView13"
-        android:layout_above="@+id/linearLayout15">
-
-        <android.support.v7.widget.CardView
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingEnd="16dp"
+        android:paddingRight="16dp"
+        android:gravity="center">
+        <ImageView
+            android:id="@+id/wifi_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/card_margin"
-            android:layout_marginRight="@dimen/card_margin">
+            android:layout_marginRight="5dp"
+            android:layout_marginEnd="5dp"
+            android:background="@drawable/ic_wifi_black_18dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/caption"
+            android:layout_gravity="center"
+            android:textColor="@color/dark_secondary_text"
+            android:text="@string/requires_internet"/>
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/cardView1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            card_view:cardElevation="2dp"
+            android:layout_margin="@dimen/card_margin">
             <LinearLayout
                 style="@style/Widget.CardContent"
                 android:background="@color/white"
@@ -31,7 +57,33 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical">
 
-                <RelativeLayout
+                <LinearLayout
+                    android:visibility="gone"
+                    android:orientation="vertical"
+                    android:id="@+id/loadingLayout"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="@string/please_wait"/>
+
+                    <ProgressBar
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"
+                        android:id="@+id/progressBar2" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:id="@+id/formLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                     <EditText
@@ -39,54 +91,60 @@
                         android:layout_height="wrap_content"
                         android:hint="@string/bug_report"
                         android:gravity="top"
+                        android:scrollbars="vertical"
+                        android:maxLines="10"
+                        android:inputType="textMultiLine"
+                        android:background="@drawable/edit_text_bordered"
                         android:paddingBottom="16dp"
+                        android:layout_marginBottom="16dp"
                         android:id="@+id/editText" />
 
                     <Button
-                        android:id="@+id/include_log_button"
+                        android:id="@+id/log_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/attached_files"
                         android:drawableLeft="@drawable/ic_insert_drive_file_black_24dp"
+                        android:drawableStart="@drawable/ic_insert_drive_file_black_24dp"
                         android:textColor="@color/dark_secondary_text"
                         android:textSize="@dimen/button"
                         android:padding="16dp"
                         android:drawablePadding="10dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:layout_below="@+id/editText" />
-                </RelativeLayout>
+                        android:background="?attr/selectableItemBackground" />
+                </LinearLayout>
 
             </LinearLayout>
 
         </android.support.v7.widget.CardView>
 
-    </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right|end"
+            android:id="@+id/controlsLayout"
+            android:layout_below="@+id/cardView1">
+            <Button
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/title_cancel"
+                android:textColor="@color/dark_secondary_text"
+                android:textSize="@dimen/button"
+                android:padding="16dp"
+                android:background="?attr/selectableItemBackground"/>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="right"
-        android:id="@+id/linearLayout15">
-        <Button
-            android:id="@+id/cancelButton"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/title_cancel"
-            android:textColor="@color/dark_secondary_text"
-            android:textSize="@dimen/button"
-            android:padding="16dp"
-            android:background="?attr/selectableItemBackground"/>
+            <Button
+                android:id="@+id/confirmButton"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/confirm"
+                android:textColor="?attr/colorAccent"
+                android:padding="16dp"
+                android:textSize="@dimen/button"
+                android:background="?attr/selectableItemBackground"/>
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/confirmButton"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="@string/confirm"
-            android:textColor="?attr/colorAccent"
-            android:padding="16dp"
-            android:textSize="@dimen/button"
-            android:background="?attr/selectableItemBackground"/>
-    </LinearLayout>
-</RelativeLayout>
+    </RelativeLayout>
+
+</LinearLayout>

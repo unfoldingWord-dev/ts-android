@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/include"
-        android:layout_above="@+id/linearLayout15" />
+        android:layout_above="@+id/controlsLayout" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:gravity="right"
-        android:id="@+id/linearLayout15">
+        android:id="@+id/controlsLayout">
         <Button
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
@@ -29,7 +29,7 @@
             android:textColor="@color/dark_secondary_text"
             android:padding="16dp"
             android:textSize="@dimen/button"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackground"/>
 
         <Button
             android:id="@+id/confirmButton"
@@ -39,6 +39,6 @@
             android:textColor="?attr/colorAccent"
             android:padding="16dp"
             android:textSize="@dimen/button"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
+            android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
 </RelativeLayout>

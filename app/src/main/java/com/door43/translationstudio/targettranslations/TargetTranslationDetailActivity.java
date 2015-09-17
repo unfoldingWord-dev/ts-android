@@ -1,6 +1,7 @@
 package com.door43.translationstudio.targettranslations;
 
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -122,8 +123,15 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                                 startActivity(shareIntent);
                                 return true;
                             case R.id.action_bug:
-                                Intent bugIntent = new Intent(TargetTranslationDetailActivity.this, BugReporterActivity.class);
-                                startActivity(bugIntent);
+                                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                                Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                                if (prev != null) {
+                                    ft.remove(prev);
+                                }
+                                ft.addToBackStack(null);
+
+                                ReportBugDialog dialog = new ReportBugDialog();
+                                dialog.show(ft, "bugDialog");
                                 return true;
                             case R.id.action_settings:
                                 Intent settingsIntent = new Intent(TargetTranslationDetailActivity.this, SettingsActivity.class);

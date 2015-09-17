@@ -102,9 +102,6 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
 
                                 ReportBugDialog dialog = new ReportBugDialog();
                                 dialog.show(ft, "bugDialog");
-
-//                                Intent bugIntent = new Intent(TargetTranslationListActivity.this, BugReporterActivity.class);
-//                                startActivity(bugIntent);
                                 return true;
                             case R.id.action_settings:
                                 Intent intent = new Intent(TargetTranslationListActivity.this, SettingsActivity.class);
@@ -176,8 +173,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                 if(existingTranslation != null) {
                     Project project = mLibrary.getProject(existingTranslation.getProjectId(), Locale.getDefault().getLanguage());
                     Snackbar snack = Snackbar.make(findViewById(android.R.id.content), String.format(getResources().getString(R.string.duplicate_target_translation), project.name, existingTranslation.getTargetLanguageName()), Snackbar.LENGTH_LONG);
-                    TextView tv = (TextView) snack.getView().findViewById(android.support.design.R.id.snackbar_text);
-                    tv.setTextColor(getResources().getColor(R.color.light_primary_text));
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 }
             }

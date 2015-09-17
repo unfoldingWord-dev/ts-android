@@ -335,4 +335,6 @@
     <string name="publish">Publish</string>
     <string name="backup">Backup</string>
     <string name="attached_files">Attached files</string>
+    <string name="requires_internet">This will use your internet connection</string>
+    <string name="input_required">Input cannot be empty</string>
 </resources>

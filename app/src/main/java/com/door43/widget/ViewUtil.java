@@ -3,6 +3,7 @@ package com.door43.widget;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.design.widget.Snackbar;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.CardView;
 import android.view.View;
@@ -13,6 +14,10 @@ import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.widget.PopupMenu;
+import android.widget.TextView;
+
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.util.AppContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -21,6 +26,16 @@ import java.lang.reflect.Method;
  * This class provides utilities for views
  */
 public class ViewUtil {
+
+    /**
+     * Sets the color of the snackbar text
+     * @param snack
+     * @param color
+     */
+    public static void setSnackBarTextColor(Snackbar snack, int color) {
+        TextView tv = (TextView) snack.getView().findViewById(android.support.design.R.id.snackbar_text);
+        tv.setTextColor(color);
+    }
 
     /**
      * Provides a backwards compatable way to tint drawables
