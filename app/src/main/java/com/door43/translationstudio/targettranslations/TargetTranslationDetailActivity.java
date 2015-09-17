@@ -18,6 +18,7 @@ import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.VerticalSeekBar;
+import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
 
@@ -99,6 +100,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
             @Override
             public void onClick(View v) {
                 PopupMenu moreMenu = new PopupMenu(TargetTranslationDetailActivity.this, v);
+                ViewUtil.forcePopupMenuIcons(moreMenu);
                 moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override

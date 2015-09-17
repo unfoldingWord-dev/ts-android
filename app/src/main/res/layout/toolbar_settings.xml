@@ -12,4 +12,4 @@
     android:elevation="4dp"
     app:navigationContentDescription="@string/abc_action_bar_up_description"
     app:navigationIcon="?attr/homeAsUpIndicator"
-    app:title="@string/settings"/>
+    app:title="@string/title_activity_settings"/>

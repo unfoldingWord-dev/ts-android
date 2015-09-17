@@ -4,14 +4,18 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -21,6 +25,7 @@ import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.widget.ViewUtil;
 
 import java.util.Locale;
 
@@ -67,9 +72,22 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
         moreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: we need to display a custom popup menu
-                Intent intent = new Intent(TargetTranslationListActivity.this, SettingsActivity.class);
-                startActivity(intent);
+                PopupMenu moreMenu = new PopupMenu(TargetTranslationListActivity.this, v);
+                ViewUtil.forcePopupMenuIcons(moreMenu);
+                moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_list, moreMenu.getMenu());
+                moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch(item.getItemId()) {
+                            case R.id.action_settings:
+                                Intent intent = new Intent(TargetTranslationListActivity.this, SettingsActivity.class);
+                                startActivity(intent);
+                                return true;
+                        }
+                        return false;
+                    }
+                });
+                moreMenu.show();
             }
         });
     }

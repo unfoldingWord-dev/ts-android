@@ -12,6 +12,10 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
+import android.widget.PopupMenu;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * This class provides utilities for views
@@ -154,5 +158,29 @@ public class ViewUtil {
         topSet.addAnimation(topOutSet);
         topSet.addAnimation(topInSet);
         topCard.startAnimation(topSet);
+    }
+
+    /**
+     * Forces a popup menu to display it's icons
+     * @param popup
+     */
+    public static void forcePopupMenuIcons(PopupMenu popup) {
+        try {
+            Field[] fields = popup.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                if ("mPopup".equals(field.getName())) {
+                    field.setAccessible(true);
+                    Object menuPopupHelper = field.get(popup);
+                    Class<?> classPopupHelper = Class.forName(menuPopupHelper
+                            .getClass().getName());
+                    Method setForceIcons = classPopupHelper.getMethod(
+                            "setForceShowIcon", boolean.class);
+                    setForceIcons.invoke(menuPopupHelper, true);
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
