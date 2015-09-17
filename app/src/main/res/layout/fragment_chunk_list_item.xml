@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fitsSystemWindows="true"
-    android:descendantFocusability="blocksDescendants"
     android:clipChildren="false">
 
     <android.support.v7.widget.CardView
@@ -37,14 +36,18 @@
                 android:text="John 1:1-3"
                 android:id="@+id/target_translation_title" />
 
-            <TextView
+            <EditText
                 android:id="@+id/target_translation_body"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="this is the top ca\nsdf\nsdf\ndf\nsdfrd\nlsjdflkjsd\nlksjdflksjdflksd\nlkjsdlfkjsdlkjsfdl\nlksjdlfkjsd"
                 android:textSize="@dimen/body"
-                android:textColor="@color/dark_primary_text"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+                android:focusable="true"
+                android:gravity="top"
+                android:inputType="textNoSuggestions|textMultiLine"
+                android:focusableInTouchMode="true"
+                android:background="@null"
+                android:textColor="@color/dark_primary_text"/>
 
         </LinearLayout>
     </android.support.v7.widget.CardView>

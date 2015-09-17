@@ -1,22 +1,29 @@
 package com.door43.translationstudio.targettranslations;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.SpannedString;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
+import com.door43.translationstudio.core.ChapterTranslation;
+import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -31,6 +38,8 @@ import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
+
+import org.eclipse.jgit.diff.Edit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -153,18 +162,19 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
 
         // render the source frame body
         if(mRenderedSourceBody[position] == null) {
-            RenderingGroup sourceRendering = new RenderingGroup();
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-//        Boolean highlightTerms = prefs.getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(mContext.getResources().getString(R.string.pref_default_highlight_key_terms)));
-            // TODO: identify key terms
-            if (frame.getFormat() == TranslationFormat.USX) {
-                // TODO: add click listeners
-                sourceRendering.addEngine(new USXRenderer(null, null));
-            } else {
-                sourceRendering.addEngine(new DefaultRenderer());
-            }
-            sourceRendering.init(frame.body);
-            mRenderedSourceBody[position] = sourceRendering.start();
+            mRenderedSourceBody[position] = renderText(frame.body, frame.getFormat());
+//            RenderingGroup sourceRendering = new RenderingGroup();
+////            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+////        Boolean highlightTerms = prefs.getBoolean(SettingsActivity.KEY_PREF_HIGHLIGHT_KEY_TERMS, Boolean.parseBoolean(mContext.getResources().getString(R.string.pref_default_highlight_key_terms)));
+//            // TODO: identify key terms
+//            if (frame.getFormat() == TranslationFormat.USX) {
+//                // TODO: add click listeners for verses and notes
+//                sourceRendering.addEngine(new USXRenderer(null, null));
+//            } else {
+//                sourceRendering.addEngine(new DefaultRenderer());
+//            }
+//            sourceRendering.init(frame.body);
+//            mRenderedSourceBody[position] = sourceRendering.start();
         }
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
@@ -179,17 +189,33 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
 
         // render the target frame body
         if(mRenderedTargetBody[position] == null) {
-            mRenderedTargetBody[position] = "";
-            // TODO: load the frames from the target translation
-        }
+            FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
+            mRenderedTargetBody[position] = renderText(frameTranslation.body, frameTranslation.getFormat());
 
-        // TODO: get the translations of the title
-        holder.mTargetBody.setText(mRenderedTargetBody[position]);
-        String targetChapterTitle = chapter.title;
-        if(chapter.title.isEmpty()) {
+//            RenderingGroup targetRendering = new RenderingGroup();
+//            if (frame.getFormat() == TranslationFormat.USX) {
+//                // TODO: add click listeners for verses and notes
+//                targetRendering.addEngine(new USXRenderer(null, null));
+//            } else {
+//                // TODO: add note click listener
+//                targetRendering.addEngine(new DefaultRenderer(null));
+//            }
+//            FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
+//            targetRendering.init(frameTranslation.body);
+//            mRenderedTargetBody[position] = targetRendering.start();
+        }
+        if(holder.mTextWatcher != null) {
+            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
+        }
+        holder.mTargetBody.setText(TextUtils.concat(mRenderedTargetBody[position], "\n"));
+
+        ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
+        String targetChapterTitle = chapterTranslation.title;
+        if(targetChapterTitle.isEmpty()) {
             targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
         }
-        targetChapterTitle += ":" + frame.getTitle();
+        final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
+        targetChapterTitle += ":" + frameTranslation.getTitle();
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
         // load tabs
@@ -224,8 +250,8 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         holder.mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                final String sourceTranslationId = (String)tab.getTag();
-                if(mListener != null) {
+                final String sourceTranslationId = (String) tab.getTag();
+                if (mListener != null) {
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
                         @Override
@@ -255,6 +281,69 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
                 }
             }
         });
+
+        holder.mTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // save
+//                TODO: do this so we don't have to wait for compiling
+//                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
+
+                String translation = Translator.compileTranslation((Editable)s);
+                mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
+
+                // TODO: we either need to force the translation to save when the view leaves the window (so we have it if they come back before it was saved)
+                // or just always save immediately
+
+//                TODO: call this in a thread so we don't slow things down
+                // update view
+                // TRICKY: anything worth updating will need to change by at least 7 characters
+                // <a></a> <-- at least 7 characters are required to create a tag for rendering.
+                int minDeviation = 7;
+                if(count - before > minDeviation) {
+                    mRenderedTargetBody[position] = renderText(translation, frameTranslation.getFormat());
+
+                    int scrollX = holder.mTargetBody.getScrollX();
+                    int scrollY = holder.mTargetBody.getScrollX();
+                    int selection = holder.mTargetBody.getSelectionStart();
+
+                    holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
+                    holder.mTargetBody.setText(TextUtils.concat(mRenderedTargetBody[position], "\n"));
+                    holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+
+                    holder.mTargetBody.scrollTo(scrollX, scrollY);
+                    if(selection > holder.mTargetBody.length()) {
+                        selection = holder.mTargetBody.length();
+                    }
+                    holder.mTargetBody.setSelection(selection);
+                    holder.mTargetBody.clearFocus();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+    }
+
+    private CharSequence renderText(String text, TranslationFormat format) {
+        RenderingGroup renderingGroup = new RenderingGroup();
+        if (format == TranslationFormat.USX) {
+            // TODO: add click listeners for verses and notes
+            renderingGroup.addEngine(new USXRenderer(null, null));
+        } else {
+            // TODO: add note click listener
+            renderingGroup.addEngine(new DefaultRenderer(null));
+        }
+        renderingGroup.init(text);
+        return renderingGroup.start();
     }
 
     @Override
@@ -263,12 +352,13 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView mTargetTitle;
-        private final TextView mTargetBody;
-        private final CardView mTargetCard;
-        private final CardView mSourceCard;
-        private final TabLayout mTabLayout;
-        private final ImageButton mNewTabButton;
+        public TextWatcher mTextWatcher;
+        public final TextView mTargetTitle;
+        public final EditText mTargetBody;
+        public final CardView mTargetCard;
+        public final CardView mSourceCard;
+        public final TabLayout mTabLayout;
+        public final ImageButton mNewTabButton;
         public TextView mSourceTitle;
         public TextView mSourceBody;
         public ViewHolder(Context context, View v, SourceLanguage source, TargetLanguage target) {
@@ -278,7 +368,7 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
-            mTargetBody = (TextView)v.findViewById(R.id.target_translation_body);
+            mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);

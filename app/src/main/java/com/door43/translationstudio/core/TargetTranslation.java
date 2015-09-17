@@ -1,22 +1,31 @@
 package com.door43.translationstudio.core;
 
+import android.text.Editable;
+import android.text.SpannedString;
+
 import com.door43.util.Manifest;
 
+import org.apache.commons.io.FileUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by joel on 8/29/2015.
  */
 public class TargetTranslation {
+    private static final long COMMIT_DELAY = 5000;
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
     private final File mTargetTranslationDirectory;
     private final Manifest mManifest;
     private final String mTargetTranslationName;
+    private Timer mApplyFrameTimer;
 
     public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
         mTargetLanguageId = targetLanguageId;
@@ -159,5 +168,98 @@ public class TargetTranslation {
         translationJson.put("date_modified", sourceTranslation.getDateModified());
         translationJson.put("version", sourceTranslation.getVersion());
         sourceTranslationsJson.put(sourceTranslation.getId(), translationJson);
+    }
+
+    /**
+     * Returns the translation of a frame
+     *
+     * @param frame
+     * @return
+     */
+    public FrameTranslation getFrameTranslation(Frame frame) {
+        File frameFile = new File(mTargetTranslationDirectory, frame.getChapterId() + "/" + frame.getId() + ".txt");
+        if(frameFile.exists()) {
+            try {
+                String body = FileUtils.readFileToString(frameFile);
+                return new FrameTranslation(frame.getId(), frame.getChapterId(), body, frame.getFormat());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        // give empty translation
+        return new FrameTranslation(frame.getId(), frame.getChapterId(), "", frame.getFormat());
+    }
+
+    /**
+     * Returns the translation of a chapter
+     * This includes the chapter title and reference
+     *
+     * @param chapter
+     * @return
+     */
+    public ChapterTranslation getChapterTranslation(Chapter chapter) {
+        File referenceFile = new File(mTargetTranslationDirectory, chapter.getId() + "/reference.txt");
+        File titleFile = new File(mTargetTranslationDirectory, chapter.getId() + "/title.txt");
+        String reference = "";
+        String title = "";
+        if(referenceFile.exists()) {
+            try {
+                reference = FileUtils.readFileToString(referenceFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if(titleFile.exists()) {
+            try {
+                title = FileUtils.readFileToString(titleFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return new ChapterTranslation(title, reference, chapter.getId());
+    }
+
+    /**
+     * Returns the translation of a project
+     * This is just for the project title
+     *
+     * @return
+     */
+    public ProjectTranslation getProjectTranslation() {
+        // TODO: this is not supported yet but we need to be able to provide the translation of the project title
+        return null;
+    }
+
+    /**
+     * Stages a frame translation to be saved
+     * @param frameTranslation
+     * @param translatedText
+     */
+    public void applyFrameTranslation(final FrameTranslation frameTranslation, final String translatedText) {
+        if(mApplyFrameTimer != null) {
+            mApplyFrameTimer.cancel();
+        }
+        mApplyFrameTimer = new Timer();
+        mApplyFrameTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    commitFrameTranslation(frameTranslation, translatedText);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, COMMIT_DELAY);
+    }
+
+    /**
+     * Saves a frame translation to the disk
+     * @param frameTranslation
+     * @param translatedText
+     */
+    public void commitFrameTranslation(FrameTranslation frameTranslation, String translatedText) throws IOException {
+        File frameFile = new File(mTargetTranslationDirectory, frameTranslation.getChapterId() + "/" + frameTranslation.getId() + ".txt");
+        frameFile.getParentFile().mkdirs();
+        FileUtils.write(frameFile, translatedText);
     }
 }
