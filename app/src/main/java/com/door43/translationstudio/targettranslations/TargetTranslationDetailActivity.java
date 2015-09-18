@@ -23,12 +23,14 @@ import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 
+import org.apache.commons.io.input.ReversedLinesFileReader;
+
 import java.security.InvalidParameterException;
 
-public class TargetTranslationDetailActivity extends AppCompatActivity implements TargetTranslationDetailFragmentListener {
+public class TargetTranslationDetailActivity extends AppCompatActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
-    private TargetTranslationDetailActivityListener mFragment;
+    private Fragment mFragment;
     private VerticalSeekBar mSeekBar;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
@@ -51,20 +53,18 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         // inject fragments
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
-                mFragment = (TargetTranslationDetailActivityListener)getFragmentManager().findFragmentById(R.id.fragment_container);
+                mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
                 TranslationViewMode viewMode = mTranslator.getViewMode(mTargetTranslation.getId());
                 if(viewMode == TranslationViewMode.READ) {
                     mFragment = new ReadModeFragment();
-                    ((Fragment)mFragment).setArguments(getIntent().getExtras());
                 } else if(viewMode == TranslationViewMode.CHUNK) {
                     mFragment = new ChunkModeFragment();
-                    ((ChunkModeFragment) mFragment).setArguments(getIntent().getExtras());
                 } else if(viewMode == TranslationViewMode.REVIEW) {
-                    // TODO: set up fragment
+                    mFragment = new ReviewModeFragment();
                 }
-
-                getFragmentManager().beginTransaction().add(R.id.fragment_container, (Fragment) mFragment).commit();
+                mFragment.setArguments(getIntent().getExtras());
+                getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
                 // TODO: animate
                 // TODO: udpate menu
             }
@@ -85,7 +85,9 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                 } else {
                     position = 0;
                 }
-                mFragment.onScrollProgressUpdate(position);
+                if(mFragment instanceof ViewModeFragment) {
+                    ((ViewModeFragment)mFragment).onScrollProgressUpdate(position);
+                }
             }
 
             @Override
@@ -151,8 +153,8 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                 if(mFragment instanceof ReadModeFragment == false) {
                     mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
                     mFragment = new ReadModeFragment();
-                    ((Fragment) mFragment).setArguments(getIntent().getExtras());
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
+                    mFragment.setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
                     // TODO: animate
                     // TODO: udpate menu
                 }
@@ -166,8 +168,8 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                 if(mFragment instanceof  ChunkModeFragment == false) {
                     mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
                     mFragment = new ChunkModeFragment();
-                    ((Fragment) mFragment).setArguments(getIntent().getExtras());
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
+                    mFragment.setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
                     // TODO: animate
                     // TODO: udpate menu
                 }
@@ -178,33 +180,16 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         reviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
-                // TODO: swap fragments
-                // TODO: udpate menu
+                if(mFragment instanceof  ReviewModeFragment == false) {
+                    mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
+                    mFragment = new ReviewModeFragment();
+                    mFragment.setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                    // TODO: udpate menu
+                }
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_target_translation_detail, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -220,28 +205,29 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
 
     @Override
     public void onNoSourceTranslations(String targetTranslationId) {
-        mFragment = new FirstTabFragment();
-        ((FirstTabFragment) mFragment).setArguments(getIntent().getExtras());
-        getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
-        // TODO: animate
-        // TODO: udpate menu
+        if(mFragment instanceof FirstTabFragment == false) {
+            mFragment = new FirstTabFragment();
+            mFragment.setArguments(getIntent().getExtras());
+            getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+            // TODO: animate
+            // TODO: udpate menu
+        }
     }
 
     @Override
-    public void invalidateViewMode() {
+    public void onHasSourceTranslations() {
         TranslationViewMode viewMode = mTranslator.getViewMode(mTargetTranslation.getId());
         if(viewMode == TranslationViewMode.READ) {
             mFragment = new ReadModeFragment();
-            ((Fragment)mFragment).setArguments(getIntent().getExtras());
         } else if(viewMode == TranslationViewMode.CHUNK) {
             mFragment = new ChunkModeFragment();
-            ((ChunkModeFragment) mFragment).setArguments(getIntent().getExtras());
         } else if(viewMode == TranslationViewMode.REVIEW) {
-            // TODO: set up fragment
+            mFragment = new ReviewModeFragment();
         }
-
+        mFragment.setArguments(getIntent().getExtras());
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, (Fragment) mFragment).commit();
         // TODO: animate
         // TODO: update menu
     }
+
 }

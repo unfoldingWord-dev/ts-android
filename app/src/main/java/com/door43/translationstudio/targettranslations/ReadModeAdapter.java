@@ -1,11 +1,9 @@
 package com.door43.translationstudio.targettranslations;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -37,7 +35,7 @@ import com.door43.widget.ViewUtil;
 /**
  * Created by joel on 9/9/2015.
  */
-public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
+public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder> {
 
     private final CharSequence[] mRenderedTargetBody;
     private SourceLanguage mSourceLanguage;
@@ -52,10 +50,9 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
     private final Library mLibrary;
     private final Translator mTranslator;
     private Chapter[] mChapters;
-    private OnClickListener mListener;
     private int mLayoutBuildNumber = 0;
 
-    public ReadAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
+    public ReadModeAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -246,12 +243,12 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 final String sourceTranslationId = (String)tab.getTag();
-                if(mListener != null) {
+                if(getListener() != null) {
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
-                            mListener.onTabClick(sourceTranslationId);
+                            getListener().onTabClick(sourceTranslationId);
                         }
                     });
                 }
@@ -271,8 +268,8 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
         holder.mNewTabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mListener != null) {
-                    mListener.onNewTabClick();
+                if(getListener() != null) {
+                    getListener().onNewTabClick();
                 }
             }
         });
@@ -320,14 +317,5 @@ public class ReadAdapter extends RecyclerView.Adapter<ReadAdapter.ViewHolder> {
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }
-    }
-
-    public void setOnClickListener(OnClickListener listener) {
-        mListener = listener;
-    }
-
-    public interface OnClickListener {
-        void onTabClick(String sourceTranslationId);
-        void onNewTabClick();
     }
 }

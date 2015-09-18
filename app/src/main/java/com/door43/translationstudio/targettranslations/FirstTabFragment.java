@@ -22,11 +22,11 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 9/14/2015.
  */
-public class FirstTabFragment extends Fragment implements TargetTranslationDetailActivityListener, ChooseSourceTranslationDialog.OnClickListener {
+public class FirstTabFragment extends Fragment implements ChooseSourceTranslationDialog.OnClickListener {
 
     private Translator mTranslator;
     private Library mLibrary;
-    private TargetTranslationDetailFragmentListener mListener;
+    private OnEventListener mListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -81,15 +81,10 @@ public class FirstTabFragment extends Fragment implements TargetTranslationDetai
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            this.mListener = (TargetTranslationDetailFragmentListener) activity;
+            this.mListener = (OnEventListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement TargetTranslationDetailFragmentListener");
+            throw new ClassCastException(activity.toString() + " must implement FirstTabFragment.OnEventListener");
         }
-    }
-
-    @Override
-    public void onScrollProgressUpdate(int scrollProgress) {
-
     }
 
     @Override
@@ -112,7 +107,11 @@ public class FirstTabFragment extends Fragment implements TargetTranslationDetai
             }
 
             // redirect back to previous mode
-            mListener.invalidateViewMode();
+            mListener.onHasSourceTranslations();
         }
+    }
+
+    public interface OnEventListener {
+        void onHasSourceTranslations();
     }
 }

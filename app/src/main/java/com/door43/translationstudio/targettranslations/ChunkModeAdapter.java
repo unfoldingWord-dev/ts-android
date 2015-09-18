@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * Created by joel on 9/9/2015.
  */
-public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> {
+public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolder> {
 
     private CharSequence[] mRenderedTargetBody;
     private SourceLanguage mSourceLanguage;
@@ -58,10 +58,9 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
     private final Library mLibrary;
     private final Translator mTranslator;
     private Frame[] mFrames;
-    private OnClickListener mListener;
     private int mLayoutBuildNumber = 0;
 
-    public ChunkAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
+    public ChunkModeAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -238,12 +237,12 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 final String sourceTranslationId = (String) tab.getTag();
-                if (mListener != null) {
+                if (getListener() != null) {
                     Handler hand = new Handler(Looper.getMainLooper());
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
-                            mListener.onTabClick(sourceTranslationId);
+                            getListener().onTabClick(sourceTranslationId);
                         }
                     });
                 }
@@ -263,8 +262,8 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
         holder.mNewTabButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onNewTabClick();
+                if (getListener() != null) {
+                    getListener().onNewTabClick();
                 }
             }
         });
@@ -377,14 +376,5 @@ public class ChunkAdapter extends RecyclerView.Adapter<ChunkAdapter.ViewHolder> 
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }
-    }
-
-    public void setOnClickListener(OnClickListener listener) {
-        mListener = listener;
-    }
-
-    public interface OnClickListener {
-        void onTabClick(String sourceTranslationId);
-        void onNewTabClick();
     }
 }
