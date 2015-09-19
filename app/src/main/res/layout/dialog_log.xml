@@ -29,55 +29,11 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical">
 
-            <LinearLayout
-                android:visibility="gone"
-                android:orientation="vertical"
-                android:id="@+id/loadingLayout"
-                android:gravity="center"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/title"
-                    android:textColor="@color/dark_secondary_text"
-                    android:text="@string/please_wait"/>
-
-                <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:indeterminate="true"
-                    android:id="@+id/progressBar2" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="vertical"
-                android:id="@+id/formLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <ListView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/log_list"
-                    android:layout_above="@+id/linearLayout9" />
-
-                <Button
-                    android:id="@+id/log_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/attached_files"
-                    android:drawableLeft="@drawable/ic_insert_drive_file_black_24dp"
-                    android:drawableStart="@drawable/ic_insert_drive_file_black_24dp"
-                    android:textColor="@color/dark_secondary_text"
-                    android:textSize="@dimen/button"
-                    android:padding="16dp"
-                    android:drawablePadding="10dp"
-                    android:background="?attr/selectableItemBackground" />
-            </LinearLayout>
+            <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/log_list"
+                android:layout_above="@+id/linearLayout9" />
 
         </LinearLayout>
 

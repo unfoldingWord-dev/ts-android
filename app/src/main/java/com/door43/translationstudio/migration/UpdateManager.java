@@ -73,7 +73,7 @@ public class UpdateManager {
                 FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_database"));
                 FileUtilities.deleteRecursive(new File(pInfo.applicationInfo.dataDir, "app_webview")); // this technically deletes 2.x stuff too, but it will be rebuilt automatically
             } else {
-                Logger.e(this.getClass().getName(), "The database from version 1.x could not be found at " + db.getAbsolutePath());
+                Logger.i(this.getClass().getName(), "The database from version 1.x could not be found at " + db.getAbsolutePath());
             }
         }
 
