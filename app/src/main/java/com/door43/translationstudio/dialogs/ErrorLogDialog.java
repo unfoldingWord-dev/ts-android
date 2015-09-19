@@ -27,7 +27,8 @@ import java.util.List;
  */
 public class ErrorLogDialog  extends DialogFragment{
 
-    private ErrorLogAdapter mAdapter;
+    public static final String ARG_LOG_TEXT = "arg_log_text";
+    private LogAdapter mAdapter;
     private ThreadableUI mThread;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -35,7 +36,7 @@ public class ErrorLogDialog  extends DialogFragment{
         View v = inflater.inflate(R.layout.dialog_error_log, container, false);
 
         ListView list = (ListView)v.findViewById(R.id.errorLogListView);
-        mAdapter = new ErrorLogAdapter(getActivity());
+        mAdapter = new LogAdapter();
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

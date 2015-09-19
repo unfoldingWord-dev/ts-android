@@ -28,6 +28,11 @@
     <color name="graph_background">#12000000</color>
     <color name="icon_dark">#82000000</color>
 
+    <color name="danger">#c5452c</color>
+    <color name="warning">#ffbf24</color>
+    <color name="info">#42000000</color>
+
+    <!-- old colors-->
     <color name="black_overlay">#66000000</color>
     <color name="light_green">#ff9fc564</color>
     <color name="lighter_blue">#baeeff</color>
@@ -38,7 +43,7 @@
     <color name="light_purple">#ffe175ff</color>
     <color name="light_red">#ffff7f65</color>
     <color name="red">#ffc55f4c</color>
-    <color name="yellow">#fffffe50</color>
+    <color name="yellow">#ffbf24</color>
     <color name="white">#ffffff</color>
     <color name="clear_gray">#45919191</color>
     <color name="black">#000000</color>

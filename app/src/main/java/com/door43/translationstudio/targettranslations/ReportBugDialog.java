@@ -3,6 +3,8 @@ package com.door43.translationstudio.targettranslations;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -73,20 +75,23 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
         if(logFile.exists()) {
             try {
                 final String log = FileUtils.readFileToString(logFile);
-                if(log.trim().isEmpty()) {
-                    logButton.setVisibility(View.GONE);
+                if(!log.trim().isEmpty()) {
+                    logButton.setVisibility(View.VISIBLE);
                     logButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            showLog(log);
+                            showLog();
                         }
                     });
                 } else {
-                    logButton.setVisibility(View.VISIBLE);
+                    logButton.setVisibility(View.GONE);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                logButton.setVisibility(View.GONE);
             }
+        } else {
+            logButton.setVisibility(View.GONE);
         }
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -130,8 +135,16 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
         return v;
     }
 
-    private static void showLog(String log) {
-        // TODO: display the log in another dialog
+    private void showLog() {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("logDialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
+        ft.addToBackStack(null);
+
+        LogDialog dialog = new LogDialog();
+        dialog.show(ft, "logDialog");
     }
 
     private void notifyInputRequired() {

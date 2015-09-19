@@ -337,4 +337,5 @@
     <string name="attached_files">Attached files</string>
     <string name="requires_internet">This will use your internet connection</string>
     <string name="input_required">Input cannot be empty</string>
+    <string name="dismiss">Dismiss</string>
 </resources>

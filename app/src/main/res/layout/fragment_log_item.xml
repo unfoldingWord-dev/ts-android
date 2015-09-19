@@ -1,38 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="20dp"
-        android:layout_height="match_parent"
-        android:text="E"
-        android:id="@+id/logLevelTextView"
-        android:gravity="center"
-        android:background="@color/lighter_blue"
-        android:textColor="@color/dark_gray" />
-
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:padding="2dp">
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:paddingBottom="5dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/log_icon"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/ic_info_black_18dp"/>
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="non-critical exception"
-            android:id="@+id/logTitleTextView"
-            android:textSize="@dimen/h4"
-            android:textColor="@color/dark_gray" />
+            android:text="non-critical exception that is realy long so it will have ellipsize"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:id="@+id/log_title"
+            android:textSize="@dimen/body"
+            android:textColor="@color/dark_primary_text" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="com.door43.translationstudio.MainApplication"
-            android:id="@+id/logClassTextView"
-            android:textColor="@color/gray"
-            android:textSize="@dimen/h5" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="com.door43.translationstudio.MainApplication that is realy long so it will have ellipsize"
+        android:id="@+id/log_namespace"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="@color/dark_secondary_text"
+        android:textSize="@dimen/caption" />
 
 </LinearLayout>
