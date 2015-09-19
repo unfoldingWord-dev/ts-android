@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -34,6 +35,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
     private Library mLibrary;
+    private String mSourceTranslationId;
 
     /**
      * Returns an instance of the adapter
@@ -59,16 +61,16 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
         }
 
         // open selected tab
-        String sourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
+        mSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
 
-        if(sourceTranslationId == null) {
+        if(mSourceTranslationId == null) {
             mListener.onNoSourceTranslations(targetTranslationId);
         } else {
             mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mAdapter = getAdapter(this.getActivity(), targetTranslationId, sourceTranslationId);
+            mAdapter = getAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId);
             mRecyclerView.setAdapter(mAdapter);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -199,8 +201,12 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
         int first = mLayoutManager.findFirstVisibleItemPosition();
         int last = mLayoutManager.findLastVisibleItemPosition();
         for(int i = first; i <= last; i ++) {
-            View child = mLayoutManager.getChildAt(i);
-            mAdapter.coordinateChild(getActivity(), child);
+            View child = mLayoutManager.findViewByPosition(i);
+            if(child != null) {
+                mAdapter.coordinateChild(getActivity(), child);
+            } else {
+                Logger.w("ViewModeFragment.onCoordinateVisible", "The RecylerView child was null at " + i + " for " + mTargetTranslation.getId() + ":" + mSourceTranslationId);
+            }
         }
     }
 }
