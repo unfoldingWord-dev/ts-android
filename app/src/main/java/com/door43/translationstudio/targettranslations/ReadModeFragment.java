@@ -8,7 +8,7 @@ import android.content.Context;
 public class ReadModeFragment extends ViewModeFragment {
 
     @Override
-    ViewModeAdapter getAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
+    ViewModeAdapter generateAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
         return new ReadModeAdapter(context, targetTranslationId, sourceTranslationId);
     }
 }

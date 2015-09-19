@@ -5,14 +5,13 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
 
-import com.door43.translationstudio.BugReporterActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.SharingActivity;
@@ -22,8 +21,6 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
-
-import org.apache.commons.io.input.ReversedLinesFileReader;
 
 import java.security.InvalidParameterException;
 
@@ -230,4 +227,16 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         // TODO: update menu
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if(mFragment instanceof ViewModeFragment) {
+            if(!((ViewModeFragment)mFragment).onTouchEvent(event)) {
+                return super.dispatchTouchEvent(event);
+            } else {
+                return true;
+            }
+        } else {
+            return super.dispatchTouchEvent(event);
+        }
+    }
 }

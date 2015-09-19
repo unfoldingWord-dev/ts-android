@@ -83,12 +83,12 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     }
 
     @Override
-    void coordinateChild(Context context, View view) {
+    void onCoordinate(ViewHolder holder) {
 
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_read_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;

@@ -105,11 +105,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    void coordinateChild(Context context, View view) {
+    void onCoordinate(final ViewHolder holder) {
         int durration = 400;
         float openWeight = 1f;
         float closedWeight = 0.765f;
-        final ReviewModeAdapter.ViewHolder holder = new ViewHolder(context, view);
         ObjectAnimator anim;
         if(mResourcesOpened) {
             anim = ObjectAnimator.ofFloat(holder.mMainContent, "weightSum", openWeight, closedWeight);
@@ -127,7 +126,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item, parent, false);
         ViewHolder vh = new ViewHolder(parent.getContext(), v);
         return vh;
@@ -301,25 +300,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }
 
-        holder.mResourceCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                if(!mResourcesOpened) {
-                    mResourcesOpened = !mResourcesOpened;
-                    if(getListener() != null) {
-                        getListener().onCoordinateVisible();
-                    }
-//                }
-            }
-        });
-
         if(mResourcesOpened) {
             holder.mMainContent.setWeightSum(.765f);
         } else {
             holder.mMainContent.setWeightSum(1f);
         }
-
-        // TODO: set up swipe listener
     }
 
     private CharSequence renderText(String text, TranslationFormat format) {
@@ -338,6 +323,26 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public int getItemCount() {
         return mFrames.length;
+    }
+
+    /**
+     * opens the resources view
+     */
+    public void openResources() {
+        if(!mResourcesOpened) {
+            mResourcesOpened = true;
+            coordinateViewHolders();
+        }
+    }
+
+    /**
+     * closes the resources view
+     */
+    public void closeResources() {
+        if(mResourcesOpened) {
+            mResourcesOpened = false;
+            coordinateViewHolders();
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

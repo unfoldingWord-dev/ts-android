@@ -104,12 +104,12 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
-    void coordinateChild(Context context, View view) {
+    void onCoordinate(ViewHolder holder) {
 
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_chunk_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;

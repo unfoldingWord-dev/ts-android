@@ -9,6 +9,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -21,6 +22,8 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 9/18/2015.
@@ -44,7 +47,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
      * @param sourceTranslationId
      * @return
      */
-    abstract ViewModeAdapter getAdapter(Context context, String targetTranslationId, String sourceTranslationId);
+    abstract ViewModeAdapter generateAdapter(Context context, String targetTranslationId, String sourceTranslationId);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -70,7 +73,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mAdapter = getAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId);
+            mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId);
             mRecyclerView.setAdapter(mAdapter);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -94,7 +97,18 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
             mAdapter.setOnClickListener(this);
         }
 
+        // let child classes modify the view
+        onPrepareView(rootView);
+
         return rootView;
+    }
+
+    protected void onPrepareView(View rootView) {
+        // place holder so child classes can modify the view
+    }
+
+    protected ViewModeAdapter getAdapter() {
+        return mAdapter;
     }
 
     @Override
@@ -173,6 +187,18 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
         }
     }
 
+    /**
+     * Receives touch events directly from the activity
+     * Some times click events can get consumed by a list view or some other object.
+     * Receiving events directly from the activity avoids these issues
+     *
+     * @param event
+     * @return
+     */
+    public boolean onTouchEvent(MotionEvent event) {
+        return false;
+    }
+
     public interface OnEventListener {
 
         /**
@@ -194,19 +220,5 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
          */
         void onNoSourceTranslations(String targetTranslationId);
 
-    }
-
-    @Override
-    public void onCoordinateVisible() {
-        int first = mLayoutManager.findFirstVisibleItemPosition();
-        int last = mLayoutManager.findLastVisibleItemPosition();
-        for(int i = first; i <= last; i ++) {
-            View child = mLayoutManager.findViewByPosition(i);
-            if(child != null) {
-                mAdapter.coordinateChild(getActivity(), child);
-            } else {
-                Logger.w("ViewModeFragment.onCoordinateVisible", "The RecylerView child was null at " + i + " for " + mTargetTranslation.getId() + ":" + mSourceTranslationId);
-            }
-        }
     }
 }
