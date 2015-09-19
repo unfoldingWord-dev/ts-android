@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/tools"
+    android:id="@+id/main_content"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fitsSystemWindows="true"
+    android:weightSum="1"
+    android:clipChildren="false">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/source_translation_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        card_view:cardElevation="2dp"
+        android:layout_weight="0.255"
+        android:layout_marginLeft="@dimen/card_margin"
+        android:layout_marginRight="@dimen/card_margin"
+        android:layout_marginTop="@dimen/card_margin"
+        android:layout_marginBottom="@dimen/card_margin"
+        android:clickable="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical">
+
+            <FrameLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin">
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/source_translation_tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="44dp"
+                    android:layout_gravity="center_vertical"
+                    app:layout_scrollFlags="scroll|enterAlways"/>
+                <ImageButton
+                    android:id="@+id/new_tab_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:layout_gravity="right|center_vertical"
+                    android:background="?attr/selectableItemBackground"
+                    android:src="@drawable/icon_tabedit_normal"/>
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/source_translation_body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="this is the top ca\nsdf\nsdf\ndf\nsdfrd\nlsjdflkjsd\nlksjdflksjdflksd\nlkjsdlfkjsdlkjsfdl\nlksjdlfkjsd"
+                android:textSize="@dimen/body"
+                android:textColor="@color/dark_primary_text"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/target_translation_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.255"
+        card_view:cardElevation="2dp"
+        android:layout_marginRight="@dimen/card_margin"
+        android:layout_marginTop="@dimen/card_margin"
+        android:layout_marginBottom="@dimen/card_margin"
+        android:clickable="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical">
+
+            <FrameLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/card_margin">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="@dimen/title"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="44dp"
+                    android:textColor="@color/dark_secondary_text"
+                    android:text="John 1:1-3 - Afaraf"
+                    android:id="@+id/target_translation_title" />
+
+                <ImageButton
+                    android:id="@+id/edit_translation_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="10dp"
+                    android:layout_gravity="right|center_vertical"
+                    android:background="@drawable/ic_mode_edit_black_24dp"/>
+            </FrameLayout>
+
+            <EditText
+                android:id="@+id/target_translation_body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="this is the tflkjsd\nlks\nlksjs\nlksjs\nlksjs\nlksjdflksd\nlkjsdlfkjsdlkjsfdl\nlksjdlfkjsd"
+                android:textSize="@dimen/body"
+                android:focusable="true"
+                android:gravity="top"
+                android:imeOptions="flagNoExtractUi"
+                android:inputType="textNoSuggestions|text|textMultiLine"
+                android:focusableInTouchMode="true"
+                android:background="@null"
+                android:textColor="@color/dark_primary_text"/>
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/resources_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight=".255"
+        card_view:cardElevation="2dp"
+        android:layout_marginTop="@dimen/card_margin"
+        android:layout_marginBottom="@dimen/card_margin"
+        android:layout_marginRight="@dimen/card_margin"
+        android:clickable="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            style="@style/Widget.CardContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical">
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/resource_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="44dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginBottom="@dimen/card_margin"
+                app:layout_scrollFlags="scroll|enterAlways"/>
+
+            <TextView
+                android:id="@+id/resource_body"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Resources comming soon!"
+                android:textSize="@dimen/body"
+                android:gravity="top"
+                android:background="@null"
+                android:textColor="@color/dark_primary_text"/>
+
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

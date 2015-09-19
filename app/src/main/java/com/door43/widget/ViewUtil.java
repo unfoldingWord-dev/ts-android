@@ -1,5 +1,7 @@
 package com.door43.widget;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -12,6 +14,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.Transformation;
 import android.view.animation.TranslateAnimation;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -63,7 +66,7 @@ public class ViewUtil {
      * @param bottomCardElevation
      * @param bringLeftCardToFront
      */
-    public static void animateCards(final View topCard, final View bottomCard, final int topCardElevation, final int bottomCardElevation, final boolean bringLeftCardToFront) {
+    public static void animateSwapCards(final View topCard, final View bottomCard, final int topCardElevation, final int bottomCardElevation, final boolean bringLeftCardToFront) {
         long duration = 400;
         float xMargin = topCard.getX() - bottomCard.getX();
         float yMargin = topCard.getY() - bottomCard.getY();

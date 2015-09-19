@@ -104,6 +104,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
+    void coordinateChild(Context context, View view) {
+
+    }
+
+    @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_chunk_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
@@ -153,7 +158,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             public void onClick(View v) {
                 if(!mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = true;
-                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
+                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
                 }
             }
         });
@@ -162,7 +167,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             public void onClick(View v) {
                 if(mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = false;
-                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
+                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
                 }
             }
         });
@@ -176,6 +181,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
 
+        // render source frame title
         Chapter chapter = mLibrary.getChapter(mSourceTranslation, frame.getChapterId());
         String sourceChapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
@@ -194,6 +200,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         }
         holder.mTargetBody.setText(TextUtils.concat(mRenderedTargetBody[position], "\n"));
 
+        // render target frame title
         ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
         String targetChapterTitle = chapterTranslation.title;
         final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);

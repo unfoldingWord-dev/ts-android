@@ -11,7 +11,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewManager;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
@@ -25,7 +24,7 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 9/18/2015.
  */
-public abstract class ViewModeFragment extends Fragment implements ViewModeAdapter.OnClickListener, ChooseSourceTranslationDialog.OnClickListener {
+public abstract class ViewModeFragment extends Fragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
 
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;
@@ -192,5 +191,16 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
          * @param targetTranslationId
          */
         void onNoSourceTranslations(String targetTranslationId);
+
+    }
+
+    @Override
+    public void onCoordinateVisible() {
+        int first = mLayoutManager.findFirstVisibleItemPosition();
+        int last = mLayoutManager.findLastVisibleItemPosition();
+        for(int i = first; i <= last; i ++) {
+            View child = mLayoutManager.getChildAt(i);
+            mAdapter.coordinateChild(getActivity(), child);
+        }
     }
 }

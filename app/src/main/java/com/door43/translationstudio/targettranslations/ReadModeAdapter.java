@@ -83,6 +83,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     }
 
     @Override
+    void coordinateChild(Context context, View view) {
+
+    }
+
+    @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_read_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
@@ -132,7 +137,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             public void onClick(View v) {
                 if (!mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = true;
-                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
+                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
                 }
             }
         });
@@ -141,7 +146,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             public void onClick(View v) {
                 if (mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = false;
-                    ViewUtil.animateCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
+                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
                 }
             }
         });
