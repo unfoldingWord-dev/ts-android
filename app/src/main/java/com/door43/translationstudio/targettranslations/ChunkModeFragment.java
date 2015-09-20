@@ -27,7 +27,7 @@ import java.security.InvalidParameterException;
 public class ChunkModeFragment extends ViewModeFragment {
 
     @Override
-    ViewModeAdapter generateAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
-        return new ChunkModeAdapter(context, targetTranslationId, sourceTranslationId);
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId) {
+        return new ChunkModeAdapter(activity, targetTranslationId, sourceTranslationId);
     }
 }

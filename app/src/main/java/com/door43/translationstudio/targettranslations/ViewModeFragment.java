@@ -42,12 +42,12 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
 
     /**
      * Returns an instance of the adapter
-     * @param context
+     * @param activity
      * @param targetTranslationId
      * @param sourceTranslationId
      * @return
      */
-    abstract ViewModeAdapter generateAdapter(Context context, String targetTranslationId, String sourceTranslationId);
+    abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

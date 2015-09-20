@@ -1,5 +1,6 @@
 package com.door43.translationstudio.targettranslations;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
@@ -42,7 +43,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private final TargetLanguage mTargetLanguage;
     private boolean[] mTargetStateOpen;
     private CharSequence[] mRenderedSourceBody;
-    private final Context mContext;
+    private final Activity mContext;
     private static final int BOTTOM_ELEVATION = 2;
     private static final int TOP_ELEVATION = 3;
     private final TargetTranslation mTargetTranslation;
@@ -52,7 +53,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
 
-    public ReadModeAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
+    public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;

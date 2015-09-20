@@ -274,6 +274,7 @@ public class TargetTranslation {
             frameFile.getParentFile().mkdirs();
             FileUtils.write(frameFile, translatedText);
         }
+        // TODO: add and commit git
     }
 
     /**
@@ -292,6 +293,9 @@ public class TargetTranslation {
      * @return returns true if the translation actually exists and the updated was successful
      */
     public boolean finishFrame(Frame frame) {
+        // TODO: we may want to change this to just have a list of "finished_frames"
+        // rather than having a multi level json object. Then we could just check to see if the
+        // frame id exist in the json array.
         File file = getFrameFile(frame.getChapterId(), frame.getId());
         if(file.exists()) {
             JSONObject framesJson = mManifest.getJSONObject("frames");

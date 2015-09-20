@@ -1,5 +1,6 @@
 package com.door43.translationstudio.targettranslations;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -13,8 +14,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     private GestureDetector mGesture;
 
     @Override
-    ViewModeAdapter generateAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
-        return new ReviewModeAdapter(context, targetTranslationId, sourceTranslationId);
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId) {
+        return new ReviewModeAdapter(activity, targetTranslationId, sourceTranslationId);
     }
 
     @Override

@@ -339,4 +339,5 @@
     <string name="input_required">Input cannot be empty</string>
     <string name="dismiss">Dismiss</string>
     <string name="done">Done</string>
+    <string name="translate_first">Please provide a translation first</string>
 </resources>

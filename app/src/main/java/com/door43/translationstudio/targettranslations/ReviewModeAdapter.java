@@ -2,9 +2,11 @@ package com.door43.translationstudio.targettranslations;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -52,7 +54,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private final Library mLibrary;
     private final Translator mTranslator;
-    private final Context mContext;
+    private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
     private SourceTranslation mSourceTranslation;
     private SourceLanguage mSourceLanguage;
@@ -63,7 +65,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
 
-    public ReviewModeAdapter(Context context, String targetTranslationId, String sourceTranslationId) {
+    public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -335,18 +337,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onClick(View v) {
                 // TODO: display confirmation dialog
-                holder.mDoneButton.setVisibility(View.GONE);
-                holder.mDoneFlag.setVisibility(View.VISIBLE);
-                mTargetTranslation.finishFrame(frame);
+                if(mTargetTranslation.finishFrame(frame)) {
+                    holder.mDoneButton.setVisibility(View.GONE);
+                    holder.mDoneFlag.setVisibility(View.VISIBLE);
+                } else {
+                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         });
         holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: display confirmation dialog
-                holder.mDoneButton.setVisibility(View.VISIBLE);
-                holder.mDoneFlag.setVisibility(View.GONE);
-                mTargetTranslation.reopenFrame(frame);
+                if(mTargetTranslation.reopenFrame(frame)) {
+                    // TODO: display confirmation dialog
+                    holder.mDoneButton.setVisibility(View.VISIBLE);
+                    holder.mDoneFlag.setVisibility(View.GONE);
+                }
             }
         });
         if(frameTranslation.isFinished()) {
