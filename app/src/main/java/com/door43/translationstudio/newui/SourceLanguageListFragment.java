@@ -1,4 +1,4 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.newui;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -10,23 +10,30 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.util.AppContext;
 
 /**
- * Created by joel on 9/4/2015.
+ * Created by joel on 9/7/2015.
  */
-public class TargetLanguageListFragment extends Fragment implements Searchable {
-    private OnItemClickListener mListener;
-    private TargetLanguageAdapter mAdapter;
+public class SourceLanguageListFragment extends Fragment implements Searchable{
 
-    @Override
+    public static final String ARG_PROJECT_ID = "extra_project_id";
+    private Library mLibrary;
+    private SourceLanguageAdapter mAdapter;
+    private OnItemClickListener mListener;
+
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
+        Bundle args = getArguments();
+        String projectId = args.getString(ARG_PROJECT_ID);
+        mLibrary = AppContext.getLibrary();
+
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new TargetLanguageAdapter(AppContext.getLibrary().getTargetLanguages());
+        mAdapter = new SourceLanguageAdapter(mLibrary.getSourceLanguages(projectId));
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -34,8 +41,6 @@ public class TargetLanguageListFragment extends Fragment implements Searchable {
                 mListener.onItemClick(mAdapter.getItem(position));
             }
         });
-
-        // TODO: set up search
 
         return rootView;
     }
@@ -57,6 +62,6 @@ public class TargetLanguageListFragment extends Fragment implements Searchable {
     }
 
     public interface OnItemClickListener {
-        void onItemClick(TargetLanguage targetLanguage);
+        void onItemClick(SourceLanguage sourceLanguageId);
     }
 }

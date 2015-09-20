@@ -1,4 +1,4 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.newui;
 
 import android.app.DialogFragment;
 import android.os.Bundle;

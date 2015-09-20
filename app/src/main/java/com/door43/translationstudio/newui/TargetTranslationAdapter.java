@@ -1,4 +1,4 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.newui;
 
 
 import android.content.Context;
@@ -14,7 +14,6 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;

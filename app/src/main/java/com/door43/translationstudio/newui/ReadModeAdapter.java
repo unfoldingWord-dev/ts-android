@@ -1,7 +1,6 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.newui;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;

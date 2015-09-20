@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:background="@color/shadow_light"
-    tools:context="com.door43.translationstudio.targettranslations.TargetTranslationListActivity">
+    tools:context="com.door43.translationstudio.newui.TargetTranslationListActivity">
 
     <LinearLayout
         android:orientation="horizontal"

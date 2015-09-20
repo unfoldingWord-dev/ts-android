@@ -1,4 +1,4 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.newui;
 
 /**
  * Created by joel on 9/19/2015.

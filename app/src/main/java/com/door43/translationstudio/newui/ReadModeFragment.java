@@ -1,7 +1,6 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.newui;
 
 import android.app.Activity;
-import android.content.Context;
 
 /**
  * Created by joel on 9/8/2015.

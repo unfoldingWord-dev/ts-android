@@ -1,4 +1,4 @@
-package com.door43.translationstudio.targettranslations;
+package com.door43.translationstudio.newui;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -10,44 +10,32 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.ProjectCategory;
+import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.util.AppContext;
-
-import java.util.Locale;
 
 /**
  * Created by joel on 9/4/2015.
  */
-public class ProjectListFragment extends Fragment implements Searchable {
+public class TargetLanguageListFragment extends Fragment implements Searchable {
     private OnItemClickListener mListener;
-    private Library mLibrary;
-    private ProjectAdapter mAdapter;
+    private TargetLanguageAdapter mAdapter;
 
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_project_list, container, false);
-
-        mLibrary = AppContext.getLibrary();
+        View rootView = inflater.inflate(R.layout.fragment_language_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new ProjectAdapter(mLibrary.getProjectCategories(Locale.getDefault().getLanguage()));
+        mAdapter = new TargetLanguageAdapter(AppContext.getLibrary().getTargetLanguages());
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ProjectCategory category = mAdapter.getItem(position);
-                if(category.isProject()) {
-                    mListener.onItemClick(category.projectId);
-                } else {
-                    // TODO: we need to display another back arrow to back up a level in the categories
-                    mAdapter.changeData(mLibrary.getProjectCategories(category));
-                }
+                mListener.onItemClick(mAdapter.getItem(position));
             }
         });
 
-        // TODO: set up update button
+        // TODO: set up search
 
         return rootView;
     }
@@ -69,6 +57,6 @@ public class ProjectListFragment extends Fragment implements Searchable {
     }
 
     public interface OnItemClickListener {
-        void onItemClick(String projectId);
+        void onItemClick(TargetLanguage targetLanguage);
     }
 }

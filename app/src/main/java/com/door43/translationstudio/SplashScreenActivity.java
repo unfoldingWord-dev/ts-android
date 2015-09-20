@@ -8,7 +8,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
-import com.door43.translationstudio.targettranslations.TargetTranslationListActivity;
+import com.door43.translationstudio.newui.TargetTranslationListActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
