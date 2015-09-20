@@ -140,6 +140,8 @@ public class Translator {
                 e.printStackTrace();
             }
 
+            // we can't add arrays to shared preferences, but this will allow the chosen source
+            // translation to persist between sharing
             Manifest m = Manifest.generate(mRootDir);
             JSONObject json = m.getJSONObject(targetTranslationId);
             try {

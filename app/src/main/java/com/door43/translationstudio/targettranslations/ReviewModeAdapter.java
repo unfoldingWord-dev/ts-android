@@ -14,6 +14,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -136,7 +137,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        Frame frame = mFrames[position];
+        final Frame frame = mFrames[position];
 
         // render the source frame body
         if(mRenderedSourceBody[position] == null) {
@@ -328,6 +329,33 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mResourceLayout.setVisibility(View.VISIBLE);
         }
+
+        // done buttons
+        holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: display confirmation dialog
+                holder.mDoneButton.setVisibility(View.GONE);
+                holder.mDoneFlag.setVisibility(View.VISIBLE);
+                mTargetTranslation.finishFrame(frame);
+            }
+        });
+        holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: display confirmation dialog
+                holder.mDoneButton.setVisibility(View.VISIBLE);
+                holder.mDoneFlag.setVisibility(View.GONE);
+                mTargetTranslation.reopenFrame(frame);
+            }
+        });
+        if(frameTranslation.isFinished()) {
+            holder.mDoneButton.setVisibility(View.GONE);
+            holder.mDoneFlag.setVisibility(View.VISIBLE);
+        } else {
+            holder.mDoneButton.setVisibility(View.VISIBLE);
+            holder.mDoneFlag.setVisibility(View.GONE);
+        }
     }
 
     private CharSequence renderText(String text, TranslationFormat format) {
@@ -369,10 +397,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final ImageButton mEditButton;
-        private final CardView mResourceCard;
-        private final LinearLayout mMainContent;
-        private final LinearLayout mResourceLayout;
+        public final ImageButton mEditButton;
+        public final CardView mResourceCard;
+        public final LinearLayout mMainContent;
+        public final LinearLayout mResourceLayout;
+        public final Button mDoneButton;
+        private final LinearLayout mDoneFlag;
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
@@ -394,6 +424,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
+            mDoneButton = (Button)v.findViewById(R.id.done_button);
+            mDoneFlag = (LinearLayout)v.findViewById(R.id.done_flag);
             ViewUtil.tintViewDrawable(mEditButton, context.getResources().getColor(R.color.dark_disabled_text));
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);

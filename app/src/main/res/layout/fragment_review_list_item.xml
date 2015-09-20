@@ -7,6 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fitsSystemWindows="true"
+    android:animateLayoutChanges="true"
     android:weightSum=".765"
     android:clipChildren="false">
 
@@ -115,7 +116,7 @@
                     android:id="@+id/target_translation_body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="this is the tflkjsklnlklks\nlklks\nlklks\nlklks\nlklks\nlksjs\nlksjs\nlksjs\nlksjdflksd\nlkjsdlfkjsdlkjsfdl\nlksjdlfkjsd"
+                    android:text="this is the tflkjlksjsd\nlkjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdlkjsfdl\nlksjdlfkjsd"
                     android:textSize="@dimen/body"
                     android:focusable="true"
                     android:gravity="top"
@@ -123,45 +124,51 @@
                     android:inputType="textNoSuggestions|text|textMultiLine"
                     android:focusableInTouchMode="true"
                     android:background="@null"
+                    android:layout_marginBottom="@dimen/card_margin"
                     android:textColor="@color/dark_primary_text"/>
+            </LinearLayout>
 
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="bottom">
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:text="@string/done"
                     android:textAllCaps="true"
-                    android:style="@style/Widget.Button.Blue"
+                    style="@style/Widget.Button.Blue"
                     android:textSize="@dimen/title"
                     android:id="@+id/done_button"
-                    android:elevation="2dp"
-                    android:layout_marginTop="@dimen/card_margin" />
-            </LinearLayout>
+                    android:elevation="2dp" />
 
-
-            <LinearLayout
-                android:id="@+id/done_flag"
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="15dp"
-                android:gravity="center"
-                android:background="@color/green">
-
-                <ImageView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:visibility="gone"
+                    android:id="@+id/done_flag"
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/ic_done_white_24dp"/>
+                    android:padding="10dp"
+                    android:gravity="center"
+                    android:background="@color/green">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:textAllCaps="true"
-                    android:textSize="@dimen/title"
-                    android:textColor="@color/white"
-                    android:text="@string/done"/>
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ic_done_white_24dp"/>
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:textAllCaps="true"
+                        android:textSize="@dimen/title"
+                        android:textColor="@color/white"
+                        android:text="@string/done"/>
+
+                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
@@ -208,7 +215,7 @@
                     android:gravity="center"
                     android:textSize="@dimen/title"
                     android:textColor="@color/dark_secondary_text"
-                    android:text="Resources comming soon" />
+                    android:text="Resources coming soon" />
 
                 <!-- TODO: place resource content here -->
 

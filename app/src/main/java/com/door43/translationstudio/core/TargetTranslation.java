@@ -177,17 +177,18 @@ public class TargetTranslation {
      * @return
      */
     public FrameTranslation getFrameTranslation(Frame frame) {
-        File frameFile = new File(mTargetTranslationDirectory, frame.getChapterId() + "/" + frame.getId() + ".txt");
+
+        File frameFile = getFrameFile(frame.getChapterId(), frame.getId());
         if(frameFile.exists()) {
             try {
                 String body = FileUtils.readFileToString(frameFile);
-                return new FrameTranslation(frame.getId(), frame.getChapterId(), body, frame.getFormat());
+                return new FrameTranslation(frame.getId(), frame.getChapterId(), body, frame.getFormat(), isFrameFinished(frame));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         // give empty translation
-        return new FrameTranslation(frame.getId(), frame.getChapterId(), "", frame.getFormat());
+        return new FrameTranslation(frame.getId(), frame.getChapterId(), "", frame.getFormat(), false);
     }
 
     /**
@@ -261,12 +262,92 @@ public class TargetTranslation {
 
     /**
      * Saves a frame translation to the disk
+     * if the translated text is null the frame will be removed
      * @param frameTranslation
      * @param translatedText
      */
     public void commitFrameTranslation(FrameTranslation frameTranslation, String translatedText) throws IOException {
-        File frameFile = new File(mTargetTranslationDirectory, frameTranslation.getChapterId() + "/" + frameTranslation.getId() + ".txt");
-        frameFile.getParentFile().mkdirs();
-        FileUtils.write(frameFile, translatedText);
+        File frameFile = getFrameFile(frameTranslation.getChapterId(), frameTranslation.getId());
+        if(translatedText.isEmpty()) {
+            frameFile.delete();
+        } else {
+            frameFile.getParentFile().mkdirs();
+            FileUtils.write(frameFile, translatedText);
+        }
+    }
+
+    /**
+     * Returns the frame file
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    private File getFrameFile(String chapterId, String frameId) {
+        return new File(mTargetTranslationDirectory, chapterId + "/" + frameId + ".txt");
+    }
+
+    /**
+     * Marks the translation of a frame as complete
+     * @param frame
+     * @return returns true if the translation actually exists and the updated was successful
+     */
+    public boolean finishFrame(Frame frame) {
+        File file = getFrameFile(frame.getChapterId(), frame.getId());
+        if(file.exists()) {
+            JSONObject framesJson = mManifest.getJSONObject("frames");
+            try {
+                if (!framesJson.has(frame.getComplexId())) {
+                    framesJson.put(frame.getComplexId(), new JSONObject());
+                }
+                JSONObject frameJson = framesJson.getJSONObject(frame.getComplexId());
+                frameJson.put("finished", true);
+                mManifest.put("frames", framesJson);
+                return true;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Marks the translation of a frame as not complete
+     * @param frame
+     * @return
+     */
+    public boolean reopenFrame(Frame frame) {
+        JSONObject framesJson = mManifest.getJSONObject("frames");
+        try {
+            if (!framesJson.has(frame.getComplexId())) {
+                framesJson.put(frame.getComplexId(), new JSONObject());
+            }
+            JSONObject frameJson = framesJson.getJSONObject(frame.getComplexId());
+            frameJson.put("finished", false);
+            mManifest.put("frames", framesJson);
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Check if the translation of a frame is complete
+     * @param frame
+     * @return
+     */
+    private boolean isFrameFinished(Frame frame) {
+        JSONObject framesJson = mManifest.getJSONObject("frames");
+        if(framesJson.has(frame.getComplexId())) {
+            try {
+                JSONObject frameJson = framesJson.getJSONObject(frame.getComplexId());
+                if(frameJson.has("finished")) {
+                    return frameJson.getBoolean("finished");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 }

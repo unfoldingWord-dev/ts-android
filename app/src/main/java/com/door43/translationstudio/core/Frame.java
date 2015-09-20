@@ -156,4 +156,12 @@ public class Frame {
             return new int[]{startVerse, endVerse};
         }
     }
+
+    /**
+     * Returns the complex chapter-frame id
+     * @return
+     */
+    public String getComplexId() {
+        return mChapterId + "-" + mId;
+    }
 }

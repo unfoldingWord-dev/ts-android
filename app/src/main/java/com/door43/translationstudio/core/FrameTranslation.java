@@ -6,16 +6,18 @@ package com.door43.translationstudio.core;
 public class FrameTranslation {
     public final String body;
     private final String mChapterId;
+    private final boolean mFinished;
     private TranslationFormat mFormat;
     private int[] mVerses;
     private String mTitle;
     private String mId;
 
-    public FrameTranslation(String frameId, String chapterId, String body, TranslationFormat format) {
+    public FrameTranslation(String frameId, String chapterId, String body, TranslationFormat format, boolean finished) {
         mChapterId = chapterId;
         this.body = body;
         mFormat = format;
         mId = frameId;
+        mFinished = finished;
     }
 
     public String getTitle() {
@@ -44,6 +46,14 @@ public class FrameTranslation {
     }
 
     /**
+     * Returns the complex chapter-frame id
+     * @return
+     */
+    public String getComplexId() {
+        return mChapterId + "-" + mId;
+    }
+
+    /**
      * Returns the id of the chapter to which this frame belongs
      * @return
      */
@@ -57,6 +67,14 @@ public class FrameTranslation {
      */
     public TranslationFormat getFormat() {
         return mFormat;
+    }
+
+    /**
+     * Checks if the translation is finished
+     * @return
+     */
+    public boolean isFinished() {
+        return mFinished;
     }
 
 }
