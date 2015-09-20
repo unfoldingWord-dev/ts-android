@@ -1,8 +1,7 @@
 package com.door43.translationstudio.core;
 
-import android.text.Editable;
-import android.text.SpannedString;
-
+import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -12,7 +11,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by joel on 8/29/2015.
@@ -239,7 +237,7 @@ public class TargetTranslation {
     public void applyFrameTranslation(final FrameTranslation frameTranslation, final String translatedText) {
         // testing this performance. it will make a lot of things eaiser if we don't have to use a timeout for performance.
         try {
-            commitFrameTranslation(frameTranslation, translatedText);
+            saveFrameTranslation(frameTranslation, translatedText);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -252,7 +250,7 @@ public class TargetTranslation {
 //            @Override
 //            public void run() {
 //                try {
-//                    commitFrameTranslation(frameTranslation, translatedText);
+//                    saveFrameTranslation(frameTranslation, translatedText);
 //                } catch (IOException e) {
 //                    e.printStackTrace();
 //                }
@@ -266,7 +264,7 @@ public class TargetTranslation {
      * @param frameTranslation
      * @param translatedText
      */
-    public void commitFrameTranslation(FrameTranslation frameTranslation, String translatedText) throws IOException {
+    private void saveFrameTranslation(FrameTranslation frameTranslation, String translatedText) throws IOException {
         File frameFile = getFrameFile(frameTranslation.getChapterId(), frameTranslation.getId());
         if(translatedText.isEmpty()) {
             frameFile.delete();
@@ -353,5 +351,15 @@ public class TargetTranslation {
             }
         }
         return false;
+    }
+
+    /**
+     * Commits any outstanding changes to the git repository
+     * @param callback an optional callback
+     */
+    public void commit(CommitTask.OnAddComplete callback) {
+        Repo repo = new Repo(mTargetTranslationDirectory.getAbsolutePath());
+        CommitTask commit = new CommitTask(repo, ".", callback);
+        commit.executeTask();
     }
 }

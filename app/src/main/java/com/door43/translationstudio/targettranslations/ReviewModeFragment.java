@@ -1,7 +1,6 @@
 package com.door43.translationstudio.targettranslations;
 
 import android.app.Activity;
-import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;

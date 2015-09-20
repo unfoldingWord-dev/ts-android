@@ -12,25 +12,31 @@ import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.SharingActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class TargetTranslationDetailActivity extends AppCompatActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
+    private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
     private Fragment mFragment;
     private VerticalSeekBar mSeekBar;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
+    private Timer mCommitTimer = new Timer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +47,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
 
         // validate parameters
         Bundle args = getIntent().getExtras();
-        String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
@@ -187,6 +193,24 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                 }
             }
         });
+
+        // schedule translation commits
+        mCommitTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                mTargetTranslation.commit(new CommitTask.OnAddComplete() {
+                    @Override
+                    public void success() {
+                        Logger.i(TargetTranslationDetailActivity.class.getName(), "Committed the latest translation for " + targetTranslationId);
+                    }
+
+                    @Override
+                    public void error(Throwable e) {
+                        Logger.e(TargetTranslationDetailActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
+                    }
+                });
+            }
+        }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
 
     @Override
@@ -238,5 +262,12 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         } else {
             return super.dispatchTouchEvent(event);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        mCommitTimer.cancel();
+        mTargetTranslation.commit(null);
+        super.onDestroy();
     }
 }
