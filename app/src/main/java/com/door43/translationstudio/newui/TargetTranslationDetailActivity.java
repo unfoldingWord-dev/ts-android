@@ -118,7 +118,8 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                                 finish();
                                 return true;
                             case R.id.action_publish:
-                                // TODO: need new ui
+                                Intent publishIntent = new Intent(TargetTranslationDetailActivity.this, PublishActivity.class);
+                                startActivity(publishIntent);
                                 return true;
                             case R.id.action_backup:
                                 // TODO: need new ui

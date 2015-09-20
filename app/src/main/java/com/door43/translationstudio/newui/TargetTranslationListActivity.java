@@ -77,7 +77,8 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                     public boolean onMenuItemClick(MenuItem item) {
                         switch(item.getItemId()) {
                             case R.id.action_publish:
-                                // TODO: need new ui
+                                Intent publishIntent = new Intent(TargetTranslationListActivity.this, PublishActivity.class);
+                                startActivity(publishIntent);
                                 return true;
                             case R.id.action_backup:
                                 // TODO: need new ui

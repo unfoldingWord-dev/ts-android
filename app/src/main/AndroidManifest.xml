@@ -201,11 +201,16 @@
         <activity
             android:name=".newui.TargetTranslationDetailActivity"
             android:label="@string/title_activity_target_translation_detail"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".newui.TargetTranslationListActivity" >
+            android:parentActivityName=".newui.TargetTranslationListActivity"
+            android:theme="@style/AppTheme.NoActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".newui.TargetTranslationListActivity" />
+        </activity>
+        <activity
+            android:name=".newui.PublishActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/title_activity_publish" >
         </activity>
     </application>
 
