@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.Source;
-
 /**
  * Created by joel on 8/29/2015.
  */
@@ -608,5 +606,43 @@ public class Library {
             }
         }
         return sourceTranslations.toArray(new SourceTranslation[sourceTranslations.size()]);
+    }
+
+    /**
+     * Returns an array of notes in the frame
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public TranslationNote[] getTranslationNotes(SourceTranslation sourceTranslation, String chapterId, String frameId) {
+        List<TranslationNote> notes = new ArrayList<>();
+        String[] noteIds = mAppIndex.getNotes(sourceTranslation, chapterId, frameId);
+        for(String noteId:noteIds) {
+            TranslationNote note = TranslationNote.generate(chapterId, frameId, mAppIndex.getNote(sourceTranslation, chapterId, frameId, noteId));
+            if(note != null) {
+                notes.add(note);
+            }
+        }
+        return notes.toArray(new TranslationNote[notes.size()]);
+    }
+
+    /**
+     * Returns an array of translation words in the frame
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public TranslationWord[] getTranslationWords(SourceTranslation sourceTranslation, String chapterId, String frameId) {
+        List<TranslationWord> words = new ArrayList<>();
+        String[] wordIds = mAppIndex.getWords(sourceTranslation, chapterId, frameId);
+        for(String wordId:wordIds) {
+            TranslationWord note = TranslationWord.generate(mAppIndex.getWord(sourceTranslation, wordId));
+            if(note != null) {
+                words.add(note);
+            }
+        }
+        return words.toArray(new TranslationWord[words.size()]);
     }
 }

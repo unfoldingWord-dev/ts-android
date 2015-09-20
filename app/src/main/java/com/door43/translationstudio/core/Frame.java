@@ -57,16 +57,16 @@ public class Frame {
      * Note: we receive the chapter id rather than parsing it from the frame id to keep things future proof
      *
      * @param chapterId
-     * @param frame
+     * @param json
      * @return
      */
-    public static Frame generate(String chapterId, JSONObject frame) {
+    public static Frame generate(String chapterId, JSONObject json) {
         try {
             TranslationFormat format = TranslationFormat.DEFAULT;
-            if(frame.has("format")) {
-                format = TranslationFormat.get(frame.getString("format"));
+            if(json.has("format")) {
+                format = TranslationFormat.get(json.getString("format"));
             }
-            String[] complexId = frame.getString("id").split("-");
+            String[] complexId = json.getString("id").split("-");
             String frameId;
             if(complexId.length > 1) {
                 frameId = complexId[1];
@@ -77,7 +77,7 @@ public class Frame {
             return new Frame(
                     frameId,
                     chapterId,
-                    frame.getString("text"),
+                    json.getString("text"),
                     format);
         } catch (JSONException e) {
             e.printStackTrace();

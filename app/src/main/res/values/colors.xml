@@ -32,6 +32,8 @@
     <color name="warning">#ffbf24</color>
     <color name="info">#42000000</color>
 
+    <color name="green">#01c853</color>
+
     <!-- old colors-->
     <color name="black_overlay">#66000000</color>
     <color name="light_green">#ff9fc564</color>

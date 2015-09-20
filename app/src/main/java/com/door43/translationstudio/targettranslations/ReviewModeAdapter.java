@@ -25,11 +25,13 @@ import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
+import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -305,6 +307,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mMainContent.setWeightSum(1f);
         }
+
+        // resources tabs
+        TranslationNote[] notes = mLibrary.getTranslationNotes(mSourceTranslation, frame.getChapterId(), frame.getId());
+        if(notes.length > 0) {
+            // TODO: add notes tab
+        } else {
+            // TODO: remove notes tab
+        }
+
+        TranslationWord[] words = mLibrary.getTranslationWords(mSourceTranslation, frame.getChapterId(), frame.getId());
+        if(words.length > 0) {
+            // TODO: add words tab
+        } else {
+            // TODO: remove words tab
+        }
+
+        if(notes.length == 0 && words.length == 0) {
+            holder.mResourceLayout.setVisibility(View.GONE);
+        } else {
+            holder.mResourceLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private CharSequence renderText(String text, TranslationFormat format) {
@@ -349,6 +372,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final ImageButton mEditButton;
         private final CardView mResourceCard;
         private final LinearLayout mMainContent;
+        private final LinearLayout mResourceLayout;
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
@@ -364,6 +388,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
             mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
             mResourceCard = (CardView)v.findViewById(R.id.resources_card);
+            mResourceLayout = (LinearLayout)v.findViewById(R.id.resources_layout);
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);

@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fitsSystemWindows="true"
-    android:weightSum="1"
+    android:weightSum=".765"
     android:clipChildren="false">
 
     <android.support.v7.widget.CardView
@@ -76,48 +76,93 @@
 
         <LinearLayout
             android:orientation="vertical"
-            style="@style/Widget.CardContent"
+            style="@style/Widget.CardContent.Skinny"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical">
 
-            <FrameLayout
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/card_margin"
+                android:layout_marginLeft="@dimen/card_margin">
+                <FrameLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/card_margin">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="44dp"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="John 1:1-3 - Afaraf"
+                        android:id="@+id/target_translation_title" />
+
+                    <ImageButton
+                        android:id="@+id/edit_translation_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="10dp"
+                        android:layout_gravity="right|center_vertical"
+                        android:background="@drawable/ic_mode_edit_black_24dp"/>
+                </FrameLayout>
+
+                <EditText
+                    android:id="@+id/target_translation_body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="this is the tflkjsklnlklks\nlklks\nlklks\nlklks\nlklks\nlksjs\nlksjs\nlksjs\nlksjdflksd\nlkjsdlfkjsdlkjsfdl\nlksjdlfkjsd"
+                    android:textSize="@dimen/body"
+                    android:focusable="true"
+                    android:gravity="top"
+                    android:imeOptions="flagNoExtractUi"
+                    android:inputType="textNoSuggestions|text|textMultiLine"
+                    android:focusableInTouchMode="true"
+                    android:background="@null"
+                    android:textColor="@color/dark_primary_text"/>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/done"
+                    android:textAllCaps="true"
+                    android:style="@style/Widget.Button.Blue"
+                    android:textSize="@dimen/title"
+                    android:id="@+id/done_button"
+                    android:elevation="2dp"
+                    android:layout_marginTop="@dimen/card_margin" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/done_flag"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/card_margin">
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="@dimen/title"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginRight="44dp"
-                    android:textColor="@color/dark_secondary_text"
-                    android:text="John 1:1-3 - Afaraf"
-                    android:id="@+id/target_translation_title" />
+                android:padding="15dp"
+                android:gravity="center"
+                android:background="@color/green">
 
-                <ImageButton
-                    android:id="@+id/edit_translation_button"
+                <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:layout_gravity="right|center_vertical"
-                    android:background="@drawable/ic_mode_edit_black_24dp"/>
-            </FrameLayout>
+                    android:background="@drawable/ic_done_white_24dp"/>
 
-            <EditText
-                android:id="@+id/target_translation_body"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="this is the tflkjsd\nlks\nlksjs\nlksjs\nlksjs\nlksjdflksd\nlkjsdlfkjsdlkjsfdl\nlksjdlfkjsd"
-                android:textSize="@dimen/body"
-                android:focusable="true"
-                android:gravity="top"
-                android:imeOptions="flagNoExtractUi"
-                android:inputType="textNoSuggestions|text|textMultiLine"
-                android:focusableInTouchMode="true"
-                android:background="@null"
-                android:textColor="@color/dark_primary_text"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:textAllCaps="true"
+                    android:textSize="@dimen/title"
+                    android:textColor="@color/white"
+                    android:text="@string/done"/>
+
+            </LinearLayout>
 
         </LinearLayout>
     </android.support.v7.widget.CardView>
@@ -140,24 +185,34 @@
             android:layout_height="match_parent"
             android:gravity="center_vertical">
 
-            <android.support.design.widget.TabLayout
-                android:id="@+id/resource_tabs"
+            <LinearLayout
+                android:visibility="visible"
+                android:orientation="vertical"
+                android:id="@+id/resources_layout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="44dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginBottom="@dimen/card_margin"
-                app:layout_scrollFlags="scroll|enterAlways"/>
+                android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/resource_body"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Resources comming soon!"
-                android:textSize="@dimen/body"
-                android:gravity="top"
-                android:background="@null"
-                android:textColor="@color/dark_primary_text"/>
+                <android.support.design.widget.TabLayout
+                    android:id="@+id/resource_tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="44dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/card_margin"
+                    app:layout_scrollFlags="scroll|enterAlways"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="@dimen/title"
+                    android:textColor="@color/dark_secondary_text"
+                    android:text="Resources comming soon" />
+
+                <!-- TODO: place resource content here -->
+
+            </LinearLayout>
 
         </LinearLayout>
     </android.support.v7.widget.CardView>

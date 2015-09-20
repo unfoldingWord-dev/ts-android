@@ -92,11 +92,11 @@ public class IndexerTest extends InstrumentationTestCase {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
         assertTrue(mIndex.indexTerms(translation, catalog));
-        String[] allTermIds = mIndex.getTerms(translation);
+        String[] allTermIds = mIndex.getWords(translation);
         assertTrue(allTermIds.length > 0);
-        assertNotNull(mIndex.getTerm(translation, allTermIds[0]));
+        assertNotNull(mIndex.getWord(translation, allTermIds[0]));
         // TODO: 9/1/2015 This method has not been implemented yet
-//        String[] termIds = mIndex.getTerms(translation, "01", "01");
+//        String[] termIds = mIndex.getWords(translation, "01", "01");
 //        assertTrue(termIds.length > 0);
     }
 

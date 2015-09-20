@@ -62,11 +62,11 @@ public class DownloaderTest extends AndroidTestCase {
     public void test5DownloadTerms() throws Exception {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         assertTrue(mDownloader.downloadTerms(translation));
-        String[] allTermIds = mIndex.getTerms(translation);
+        String[] allTermIds = mIndex.getWords(translation);
         assertTrue(allTermIds.length > 0);
-        assertNotNull(mIndex.getTerm(translation, allTermIds[0]));
+        assertNotNull(mIndex.getWord(translation, allTermIds[0]));
         // TODO: 9/1/2015 This method has not been implemented yet
-//        String[] termsIds = mIndex.getTerms(translation, "01", "01");
+//        String[] termsIds = mIndex.getWords(translation, "01", "01");
 //        assertTrue(termsIds.length > 0);
     }
 

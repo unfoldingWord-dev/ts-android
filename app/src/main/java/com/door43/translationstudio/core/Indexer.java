@@ -686,8 +686,8 @@ public class Indexer {
             FileUtils.copyDirectory(questionsDir, destQuestionsDir);
         }
 
-        File termsDir = index.getDataDir(index.readTermsLink(translation));
-        File destTermsDir = getDataDir(readTermsLink(translation));
+        File termsDir = index.getDataDir(index.readWordsLink(translation));
+        File destTermsDir = getDataDir(readWordsLink(translation));
         if(termsDir != null && termsDir.exists()) {
             FileUtils.copyDirectory(termsDir, destTermsDir);
         }
@@ -1077,8 +1077,8 @@ public class Indexer {
      * @param frameId
      * @return
      */
-    public String[] getTerms(SourceTranslation translation, String chapterId, String frameId) {
-        String md5hash = readTermsLink(translation);
+    public String[] getWords(SourceTranslation translation, String chapterId, String frameId) {
+        String md5hash = readWordsLink(translation);
         if(md5hash == null) {
             return null;
         }
@@ -1091,7 +1091,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public String[] getTerms(SourceTranslation translation) {
+    public String[] getWords(SourceTranslation translation) {
         return getItemsArray(getResource(translation), "terms");
     }
 
@@ -1101,8 +1101,8 @@ public class Indexer {
      * @param termId
      * @return
      */
-    public JSONObject getTerm(SourceTranslation translation, String termId) {
-        String md5hash = readTermsLink(translation);
+    public JSONObject getWord(SourceTranslation translation, String termId) {
+        String md5hash = readWordsLink(translation);
         if(md5hash != null) {
             return readJSON(mDataPath + "/" + md5hash + "/" + termId);
         }
@@ -1256,7 +1256,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public String readTermsLink(SourceTranslation translation) {
+    public String readWordsLink(SourceTranslation translation) {
         return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link");
     }
 
