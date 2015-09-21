@@ -11,7 +11,7 @@ import com.door43.translationstudio.util.AppContext;
 
 import java.security.InvalidParameterException;
 
-public class PublishActivity extends AppCompatActivity {
+public class PublishActivity extends AppCompatActivity implements PublishStepFragment.OnEventListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private PublishStepFragment mFragment;

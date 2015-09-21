@@ -31,6 +31,7 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
 //    private final SourceLanguage mSourceLanguage;
 //    private final TargetLanguage mTargetLanguage;
     private ValidationItem[] mValidations;
+    private OnClickListener mListener;
 
     public ValidationAdapter(Activity context) {
         mLibrary = AppContext.getLibrary();
@@ -53,7 +54,7 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        ValidationItem item = mValidations[position];
+        final ValidationItem item = mValidations[position];
 
         // margin
         ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) holder.mContainer.getLayoutParams();
@@ -99,10 +100,9 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
         holder.mReviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: handle review click
-                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), "Take me to back to review!", Snackbar.LENGTH_SHORT);
-                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                if(mListener != null) {
+                    mListener.onClickReview(item.getTargetTranslationId(), item.getChapterId(), item.getFrameId());
+                }
             }
         });
     }
@@ -115,6 +115,10 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
     public void setValidations(ValidationItem[] validations) {
         mValidations = validations;
         notifyDataSetChanged();
+    }
+
+    public void setOnClickListener(OnClickListener listener) {
+        mListener = listener;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -137,5 +141,9 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
             mBody = (TextView)v.findViewById(R.id.body);
             mContainer = (FrameLayout)v.findViewById(R.id.card_container);
         }
+    }
+
+    public interface OnClickListener {
+        void onClickReview(String targetTranslationId, String chapterId, String frameId);
     }
 }

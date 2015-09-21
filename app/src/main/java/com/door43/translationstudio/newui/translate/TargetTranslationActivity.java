@@ -34,6 +34,9 @@ public class TargetTranslationActivity extends AppCompatActivity implements View
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
+    public static final String EXTRA_CHAPTER_ID = "extra_chapter_id";
+    public static final String EXTRA_FRAME_ID = "extra_frame_id";
+    public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
     private Fragment mFragment;
     private VerticalSeekBar mSeekBar;
     private Translator mTranslator;
@@ -53,6 +56,12 @@ public class TargetTranslationActivity extends AppCompatActivity implements View
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
+        }
+
+        // manual location settings
+        String viewModeId = args.getString(TargetTranslationActivity.EXTRA_VIEW_MODE, null);
+        if(viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
+            mTranslator.setViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
         // inject fragments

@@ -43,7 +43,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
      * @param sourceTranslationId
      * @return
      */
-    abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId);
+    abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -59,6 +59,9 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
+        String chapterId = args.getString(TargetTranslationActivity.EXTRA_CHAPTER_ID, null);
+        String frameId = args.getString(TargetTranslationActivity.EXTRA_FRAME_ID, null);
+
         // open selected tab
         mSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
 
@@ -69,7 +72,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId);
+            mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId);
             mRecyclerView.setAdapter(mAdapter);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -91,6 +94,10 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
             mListener.onItemCountChanged(mAdapter.getItemCount(), 0);
 
             mAdapter.setOnClickListener(this);
+
+            if(savedInstanceState == null) {
+                mLayoutManager.scrollToPosition(mAdapter.getListStartPosition());
+            }
         }
 
         // let child classes modify the view

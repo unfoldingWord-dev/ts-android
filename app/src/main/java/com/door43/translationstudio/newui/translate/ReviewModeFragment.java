@@ -13,8 +13,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     private GestureDetector mGesture;
 
     @Override
-    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId) {
-        return new ReviewModeAdapter(activity, targetTranslationId, sourceTranslationId);
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
+        return new ReviewModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId);
     }
 
     @Override

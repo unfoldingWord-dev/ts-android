@@ -21,7 +21,7 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 9/20/2015.
  */
-public class ValidationFragment extends PublishStepFragment implements ManagedTask.OnFinishedListener {
+public class ValidationFragment extends PublishStepFragment implements ManagedTask.OnFinishedListener, ValidationAdapter.OnClickListener {
     private LinearLayout mLoadingLayout;
     private RecyclerView mRecyclerView;
     private ValidationAdapter mValidationAdapter;
@@ -44,6 +44,7 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mValidationAdapter = new ValidationAdapter(getActivity());
+        mValidationAdapter.setOnClickListener(this);
         mRecyclerView.setAdapter(mValidationAdapter);
         mLoadingLayout = (LinearLayout)rootView.findViewById(R.id.loading_layout);
 
@@ -78,5 +79,16 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
                 // TODO: animate
             }
         });
+    }
+
+    @Override
+    public void onClickReview(String targetTranslationId, String chapterId, String frameId) {
+        openReview(targetTranslationId, chapterId, frameId);
+    }
+
+    @Override
+    public void onDestroy() {
+        mValidationAdapter.setOnClickListener(null);
+        super.onDestroy();
     }
 }

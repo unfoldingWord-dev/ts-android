@@ -9,6 +9,9 @@ public class ValidationItem {
     private final boolean mRange;
     private final boolean mValid;
     private final boolean mIsFrame;
+    private String mTargetTranslationId;
+    private String mChapterId;
+    private String mFrameId;
 
     private ValidationItem(String title, String body, boolean range, boolean valid, boolean isFrame) {
         mTitle = title;
@@ -44,9 +47,12 @@ public class ValidationItem {
      * @param body
      * @return
      */
-    public static ValidationItem generateInvalidFrame(String title, String body) {
-        return new ValidationItem(title, body, false, false, true);
-
+    public static ValidationItem generateInvalidFrame(String title, String body, String targetTranslationId, String chapterId, String frameId) {
+        ValidationItem item = new ValidationItem(title, body, false, false, true);
+        item.mTargetTranslationId = targetTranslationId;
+        item.mChapterId = chapterId;
+        item.mFrameId = frameId;
+        return item;
     }
     /**
      * Generates a new invalid item
@@ -97,5 +103,29 @@ public class ValidationItem {
      */
     public boolean isFrame() {
         return mIsFrame;
+    }
+
+    /**
+     * Returns the target translation id
+     * @return
+     */
+    public String getTargetTranslationId() {
+        return mTargetTranslationId;
+    }
+
+    /**
+     * Returns the chapter id
+     * @return
+     */
+    public String getChapterId() {
+        return mChapterId;
+    }
+
+    /**
+     * Returns the frame id
+     * @return
+     */
+    public String getFrameId() {
+        return mFrameId;
     }
 }

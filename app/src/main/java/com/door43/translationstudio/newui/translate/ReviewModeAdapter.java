@@ -65,7 +65,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
 
-    public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId) {
+    public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -78,6 +78,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         List<Frame> frames = new ArrayList<>();
         for(Chapter c:chapters) {
             Frame[] chapterFrames = mLibrary.getFrames(mSourceTranslation, c.getId());
+            if(chapterId != null && c.getId().equals(chapterId) && chapterFrames.length > 0) {
+                // identify starting selection
+                setListStartPosition(frames.size());
+                if(frameId != null) {
+                    for(Frame frame:chapterFrames) {
+                        if(frame.getId().equals(frameId)) {
+                            setListStartPosition(frames.size());
+                        }
+                        frames.add(frame);
+                    }
+                    continue;
+                }
+            }
             frames.addAll(Arrays.asList(chapterFrames));
         }
         mFrames = frames.toArray(new Frame[frames.size()]);

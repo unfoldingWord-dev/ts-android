@@ -24,11 +24,11 @@ public class ValidationTask extends ManagedTask {
     public void start() {
         // TODO: perform some real validation here
 
-        mValidations.add(ValidationItem.generateValidGroup("John 1-2", true));
-        mValidations.add(ValidationItem.generateInvalidGroup("John 3"));
-        mValidations.add(ValidationItem.generateValidFrame("John 3:1-3", false));
-        mValidations.add(ValidationItem.generateInvalidFrame("John 3:4-5", "All life is in the Word, so he could give life to everything and everyone. The Word was God's light that shone on..."));
-        mValidations.add(ValidationItem.generateValidFrame("John 3:6-30", true));
+        mValidations.add(ValidationItem.generateValidGroup("John 1-3", true));
+        mValidations.add(ValidationItem.generateInvalidGroup("John 4"));
+        mValidations.add(ValidationItem.generateValidFrame("John 4:1-3", false));
+        mValidations.add(ValidationItem.generateInvalidFrame("John 4:4-5", "All life is in the Word, so he could give life to everything and everyone. The Word was God's light that shone on...", mTargetTranslationId, "04", "01"));
+        mValidations.add(ValidationItem.generateValidFrame("John 4:6-30", true));
     }
 
     /**
