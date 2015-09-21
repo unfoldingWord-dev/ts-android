@@ -135,7 +135,7 @@ public class ValidationTask extends ManagedTask {
         }
 
         // close validations
-        if(chapterValidations.size() > 0) {
+        if(chapterValidations.size() > 1) {
             mValidations.addAll(chapterValidations);
         } else {
             mValidations.add(ValidationItem.generateValidGroup(sourceTranslation.getProjectTitle(), true));
