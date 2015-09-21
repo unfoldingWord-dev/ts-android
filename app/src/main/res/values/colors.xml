@@ -28,8 +28,8 @@
     <color name="graph_background">#12000000</color>
     <color name="icon_dark">#82000000</color>
 
-    <color name="danger">#c5452c</color>
-    <color name="warning">#ffbf24</color>
+    <color name="danger">#ae2109</color>
+    <color name="warning">#f1913d</color>
     <color name="info">#42000000</color>
 
     <color name="green">#01c853</color>

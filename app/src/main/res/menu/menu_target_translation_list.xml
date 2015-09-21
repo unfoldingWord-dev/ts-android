@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.door43.translationstudio.newui.home.HomeActivity">
 
-    <item android:id="@+id/action_publish"
-        android:title="@string/publish"
-        android:orderInCategory="100"
-        android:icon="@drawable/ic_cloud_done_black_24dp"
-        app:showAsAction="never" />
+    <!--<item android:id="@+id/action_publish"-->
+        <!--android:title="@string/publish"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:icon="@drawable/ic_cloud_done_black_24dp"-->
+        <!--app:showAsAction="never" />-->
 
     <item android:id="@+id/action_backup"
         android:title="@string/backup"

@@ -18,7 +18,7 @@ import java.util.TreeSet;
 /**
  * Created by joel on 9/15/2015.
  */
-public class SourceLanguageTabAdapter extends BaseAdapter {
+public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static final int TYPE_ITEM = 0;
     public static final int TYPE_SEPARATOR = 1;
     private final Context mContext;
@@ -26,7 +26,7 @@ public class SourceLanguageTabAdapter extends BaseAdapter {
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
 
-    public SourceLanguageTabAdapter(Context context) {
+    public ChooseSourceTranslationAdapter(Context context) {
         mContext = context;
     }
 
@@ -89,13 +89,13 @@ public class SourceLanguageTabAdapter extends BaseAdapter {
         // TODO: sort lists
 
         // build list
-        ViewItem selectedHeader = new SourceLanguageTabAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false);
+        ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(ViewItem item:selectedItems) {
             mSortedData.add(item);
         }
-        ViewItem availableHeader = new SourceLanguageTabAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false);
+        ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
         for(ViewItem item:availableItems) {

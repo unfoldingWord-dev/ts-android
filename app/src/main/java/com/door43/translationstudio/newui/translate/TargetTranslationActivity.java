@@ -121,6 +121,7 @@ public class TargetTranslationActivity extends AppCompatActivity implements View
                                 return true;
                             case R.id.action_publish:
                                 Intent publishIntent = new Intent(TargetTranslationActivity.this, PublishActivity.class);
+                                publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                                 startActivity(publishIntent);
                                 return true;
                             case R.id.action_backup:

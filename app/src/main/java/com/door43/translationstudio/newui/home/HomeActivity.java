@@ -80,10 +80,10 @@ public class HomeActivity extends AppCompatActivity implements WelcomeFragment.O
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch(item.getItemId()) {
-                            case R.id.action_publish:
-                                Intent publishIntent = new Intent(HomeActivity.this, PublishActivity.class);
-                                startActivity(publishIntent);
-                                return true;
+//                            case R.id.action_publish:
+//                                Intent publishIntent = new Intent(HomeActivity.this, PublishActivity.class);
+//                                startActivity(publishIntent);
+//                                return true;
                             case R.id.action_backup:
                                 // TODO: need new ui
                                 return true;

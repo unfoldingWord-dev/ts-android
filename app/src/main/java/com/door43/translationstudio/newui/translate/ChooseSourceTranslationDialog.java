@@ -31,7 +31,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private OnClickListener mListener;
-    private SourceLanguageTabAdapter mAdapter;
+    private ChooseSourceTranslationAdapter mAdapter;
     private Library mLibrary;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -60,21 +60,21 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);
         // TODO: set up search
 
-        mAdapter = new SourceLanguageTabAdapter(getActivity());
+        mAdapter = new ChooseSourceTranslationAdapter(getActivity());
         // add selected
         String[] sourceTranslationIds = mTranslator.getSourceTranslations(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
                 String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
-                mAdapter.addItem(new SourceLanguageTabAdapter.ViewItem(title, sourceTranslation.getId(), true));
+                mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), true));
             }
         }
         // add available (duplicates are filtered by the adapter)
         SourceTranslation[] availableSourceTranslations = mLibrary.getSourceTranslations(mTargetTranslation.getProjectId());
         for(SourceTranslation sourceTranslation:availableSourceTranslations) {
             String title = sourceTranslation.getSourceLanguageTitle() + " - " + sourceTranslation.getResourceTitle();
-            mAdapter.addItem(new SourceLanguageTabAdapter.ViewItem(title, sourceTranslation.getId(), false));
+            mAdapter.addItem(new ChooseSourceTranslationAdapter.ViewItem(title, sourceTranslation.getId(), false));
         }
         mAdapter.sort();
 
@@ -83,7 +83,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(mAdapter.getItemViewType(position) == SourceLanguageTabAdapter.TYPE_ITEM) {
+                if(mAdapter.getItemViewType(position) == ChooseSourceTranslationAdapter.TYPE_ITEM) {
                     mAdapter.getItem(position).selected = !mAdapter.getItem(position).selected;
                     mAdapter.sort();
                 }
@@ -108,8 +108,8 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
                 int count = mAdapter.getCount();
                 List<String> sourceTranslationIds = new ArrayList<>();
                 for(int i = 0; i < count; i ++) {
-                    if(mAdapter.getItemViewType(i) == SourceLanguageTabAdapter.TYPE_ITEM) {
-                        SourceLanguageTabAdapter.ViewItem item = mAdapter.getItem(i);
+                    if(mAdapter.getItemViewType(i) == ChooseSourceTranslationAdapter.TYPE_ITEM) {
+                        ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
                             sourceTranslationIds.add(item.id);
 //                            mTranslator.addSourceTranslation(mTargetTranslation.getId(), mLibrary.getSourceTranslations(item.id));
