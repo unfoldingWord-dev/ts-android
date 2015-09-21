@@ -75,7 +75,7 @@
     <!-- Indicates that a number of frames have not been translated. e.g. 3 frames have not been translated -->
     <string name="error_frames_not_translated"><xliff:g id="number" example="5">%1$s</xliff:g> frames have not been translated.</string>
     <string name="dialog_validation_warnings">Validation Warnings</string>
-    <string name="validation_warnings">Unresolved warnings. Are you sure you want to upload?</string>
+    <string name="validation_warnings">There are unresolved warnings. Continue?</string>
     <string name="no_translated_chapters">Nothing has been translated</string>
     <string name="title_chapters">Chapter</string>
     <!-- Notifies the user that they are viewing a frame within a chapter. e.g. Viewing frame 01 in chapter 1. The Creation -->
@@ -343,4 +343,5 @@
     <string name="title_activity_publish">Publish Translation</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="next_step">Next step</string>
 </resources>

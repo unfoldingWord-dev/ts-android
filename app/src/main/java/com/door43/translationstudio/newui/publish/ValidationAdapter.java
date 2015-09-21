@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -17,6 +18,9 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by joel on 9/20/2015.
@@ -54,62 +58,86 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final ValidationItem item = mValidations[position];
+        if(position == getItemCount() - 1) {
+            holder.mNextLayout.setVisibility(View.VISIBLE);
+            holder.mContainer.setVisibility(View.GONE);
+            // next button
 
-        // margin
-        ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) holder.mContainer.getLayoutParams();
-        int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
-        if(item.isFrame()) {
-            p.setMargins(stackedCardMargin, 0, 0, 0);
-        } else {
-            p.setMargins(0, 0, 0, 0);
-        }
-        holder.mContainer.requestLayout();
-
-        // title
-        holder.mTitle.setText(item.getTitle());
-
-        // icon
-        if(item.isValid()) {
-            holder.mIcon.setBackgroundResource(R.drawable.ic_done_black_24dp);
-            ViewUtil.tintViewDrawable(holder.mIcon, mContext.getResources().getColor(R.color.green));
-        } else {
-            holder.mIcon.setBackgroundResource(R.drawable.ic_report_black_24dp);
-            ViewUtil.tintViewDrawable(holder.mIcon, mContext.getResources().getColor(R.color.warning));
-        }
-
-        // stack
-        if(item.isRange()) {
-            holder.mStackedCard.setVisibility(View.VISIBLE);
-        } else {
-            holder.mStackedCard.setVisibility(View.GONE);
-        }
-
-        // body
-        if(item.isFrame() && !item.isValid()) {
-            holder.mIcon.setVisibility(View.GONE);
-            holder.mReviewButton.setVisibility(View.VISIBLE);
-            holder.mBody.setVisibility(View.VISIBLE);
-            holder.mBody.setText(item.getBody());
-        } else {
-            holder.mBody.setVisibility(View.GONE);
-            holder.mReviewButton.setVisibility(View.GONE);
-            holder.mIcon.setVisibility(View.VISIBLE);
-        }
-
-        holder.mReviewButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mListener != null) {
-                    mListener.onClickReview(item.getTargetTranslationId(), item.getChapterId(), item.getFrameId());
+            holder.mNextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(mListener != null) {
+                        mListener.onClickNext();
+                    }
                 }
+            });
+        } else {
+            holder.mNextLayout.setVisibility(View.GONE);
+            holder.mContainer.setVisibility(View.VISIBLE);
+
+            // validation item
+            final ValidationItem item = mValidations[position];
+
+            // margin
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) holder.mContainer.getLayoutParams();
+            int stackedCardMargin = mContext.getResources().getDimensionPixelSize(R.dimen.stacked_card_margin);
+            if (item.isFrame()) {
+                p.setMargins(stackedCardMargin, 0, 0, 0);
+            } else {
+                p.setMargins(0, 0, 0, 0);
             }
-        });
+            holder.mContainer.requestLayout();
+
+            // title
+            holder.mTitle.setText(item.getTitle());
+
+            // icon
+            if (item.isValid()) {
+                holder.mIcon.setBackgroundResource(R.drawable.ic_done_black_24dp);
+                ViewUtil.tintViewDrawable(holder.mIcon, mContext.getResources().getColor(R.color.green));
+            } else {
+                holder.mIcon.setBackgroundResource(R.drawable.ic_report_black_24dp);
+                ViewUtil.tintViewDrawable(holder.mIcon, mContext.getResources().getColor(R.color.warning));
+            }
+
+            // stack
+            if (item.isRange()) {
+                holder.mStackedCard.setVisibility(View.VISIBLE);
+            } else {
+                holder.mStackedCard.setVisibility(View.GONE);
+            }
+
+            // body
+            if (item.isFrame() && !item.isValid()) {
+                holder.mIcon.setVisibility(View.GONE);
+                holder.mReviewButton.setVisibility(View.VISIBLE);
+                holder.mBody.setVisibility(View.VISIBLE);
+                holder.mBody.setText(item.getBody());
+            } else {
+                holder.mBody.setVisibility(View.GONE);
+                holder.mReviewButton.setVisibility(View.GONE);
+                holder.mIcon.setVisibility(View.VISIBLE);
+            }
+
+            holder.mReviewButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        mListener.onClickReview(item.getTargetTranslationId(), item.getChapterId(), item.getFrameId());
+                    }
+                }
+            });
+        }
     }
 
     @Override
     public int getItemCount() {
-        return mValidations.length;
+        if(mValidations != null && mValidations.length > 0) {
+            // leave room for the next button
+            return mValidations.length + 1;
+        } else {
+            return 0;
+        }
     }
 
     public void setValidations(ValidationItem[] validations) {
@@ -129,6 +157,8 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
         private final ImageView mIcon;
         private final TextView mBody;
         private final FrameLayout mContainer;
+        private final LinearLayout mNextLayout;
+        private final Button mNextButton;
 
         public ViewHolder(View v) {
             super(v);
@@ -140,10 +170,13 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
             mIcon = (ImageView)v.findViewById(R.id.icon);
             mBody = (TextView)v.findViewById(R.id.body);
             mContainer = (FrameLayout)v.findViewById(R.id.card_container);
+            mNextLayout = (LinearLayout)v.findViewById(R.id.next_layout);
+            mNextButton = (Button)v.findViewById(R.id.next_button);
         }
     }
 
     public interface OnClickListener {
         void onClickReview(String targetTranslationId, String chapterId, String frameId);
+        void onClickNext();
     }
 }

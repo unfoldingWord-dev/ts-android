@@ -21,6 +21,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.ReportBugDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
@@ -30,7 +31,7 @@ import com.door43.widget.ViewUtil;
 
 import java.util.Locale;
 
-public class HomeActivity extends AppCompatActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     private Library mLibrary;
     private Translator mTranslator;

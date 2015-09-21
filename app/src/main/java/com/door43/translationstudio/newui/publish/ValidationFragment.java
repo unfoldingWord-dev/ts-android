@@ -1,5 +1,7 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,6 +15,7 @@ import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.tasks.ValidationTask;
+import com.door43.util.DummyDialogListener;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
@@ -84,6 +87,29 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
     @Override
     public void onClickReview(String targetTranslationId, String chapterId, String frameId) {
         openReview(targetTranslationId, chapterId, frameId);
+    }
+
+    @Override
+    public void onClickNext() {
+        if(mValidationAdapter.getItemCount() > 2) {
+            // when there are more than two items (success card and next button) there were validation issues
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.dialog_validation_warnings)
+                    .setMessage(R.string.validation_warnings)
+                    .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            nextStep();
+                        }
+                    })
+                    .setNegativeButton(R.string.title_cancel, new DummyDialogListener()).show();
+        } else {
+            nextStep();
+        }
+    }
+
+    private void nextStep() {
+        // TODO: proceed to the next step
     }
 
     @Override

@@ -3,15 +3,17 @@ package com.door43.translationstudio.newui.publish;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.util.AppContext;
 
 import java.security.InvalidParameterException;
 
-public class PublishActivity extends AppCompatActivity implements PublishStepFragment.OnEventListener {
+public class PublishActivity extends BaseActivity implements PublishStepFragment.OnEventListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private PublishStepFragment mFragment;
@@ -52,5 +54,13 @@ public class PublishActivity extends AppCompatActivity implements PublishStepFra
         }
 
         // TODO: set up progress menu
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return true;
     }
 }

@@ -3,7 +3,6 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -25,12 +24,13 @@ import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
+import com.door43.translationstudio.newui.BaseActivity;
 
 import java.security.InvalidParameterException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TargetTranslationActivity extends AppCompatActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
+public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
@@ -60,6 +60,8 @@ public class TargetTranslationActivity extends AppCompatActivity implements View
 
         // manual location settings
         String viewModeId = args.getString(TargetTranslationActivity.EXTRA_VIEW_MODE, null);
+        String chapterId = args.getString(TargetTranslationActivity.EXTRA_CHAPTER_ID, null);
+        String frameId = args.getString(TargetTranslationActivity.EXTRA_FRAME_ID, null);
         if(viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
             mTranslator.setViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
