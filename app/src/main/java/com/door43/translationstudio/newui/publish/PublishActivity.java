@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.publish;
 
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;

@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.home;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -21,12 +21,16 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
+import com.door43.translationstudio.newui.ReportBugDialog;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
 
 import java.util.Locale;
 
-public class TargetTranslationListActivity extends AppCompatActivity implements TargetTranslationWelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
+public class HomeActivity extends AppCompatActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
     private static final int NEW_TARGET_TRANSLATION_REQUEST = 1;
     private Library mLibrary;
     private Translator mTranslator;
@@ -35,7 +39,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_target_translations);
+        setContentView(R.layout.activity_home);
 
         FloatingActionButton addTranslationButton = (FloatingActionButton) findViewById(R.id.addTargetTranslationButton);
         addTranslationButton.setOnClickListener(new View.OnClickListener() {
@@ -57,7 +61,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                     mFragment = new TargetTranslationListFragment();
                     mFragment.setArguments(getIntent().getExtras());
                 } else {
-                    mFragment = new TargetTranslationWelcomeFragment();
+                    mFragment = new WelcomeFragment();
                     mFragment.setArguments(getIntent().getExtras());
                 }
 
@@ -69,7 +73,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
         moreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PopupMenu moreMenu = new PopupMenu(TargetTranslationListActivity.this, v);
+                PopupMenu moreMenu = new PopupMenu(HomeActivity.this, v);
                 ViewUtil.forcePopupMenuIcons(moreMenu);
                 moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_list, moreMenu.getMenu());
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -77,14 +81,14 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                     public boolean onMenuItemClick(MenuItem item) {
                         switch(item.getItemId()) {
                             case R.id.action_publish:
-                                Intent publishIntent = new Intent(TargetTranslationListActivity.this, PublishActivity.class);
+                                Intent publishIntent = new Intent(HomeActivity.this, PublishActivity.class);
                                 startActivity(publishIntent);
                                 return true;
                             case R.id.action_backup:
                                 // TODO: need new ui
                                 return true;
                             case R.id.action_share:
-                                Intent shareIntent = new Intent(TargetTranslationListActivity.this, SharingActivity.class);
+                                Intent shareIntent = new Intent(HomeActivity.this, SharingActivity.class);
                                 startActivity(shareIntent);
                                 return true;
                             case R.id.action_bug:
@@ -99,7 +103,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                                 dialog.show(ft, "bugDialog");
                                 return true;
                             case R.id.action_settings:
-                                Intent intent = new Intent(TargetTranslationListActivity.this, SettingsActivity.class);
+                                Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);
                                 startActivity(intent);
                                 return true;
                         }
@@ -118,14 +122,14 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
         super.onResume();
 
         int numTranslations = mTranslator.getTargetTranslations().length;
-        if(numTranslations > 0 && mFragment instanceof TargetTranslationWelcomeFragment) {
+        if(numTranslations > 0 && mFragment instanceof WelcomeFragment) {
             // display target translations list
             mFragment = new TargetTranslationListFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
         } else if(numTranslations == 0 && mFragment instanceof TargetTranslationListFragment) {
             // display welcome screen
-            mFragment = new TargetTranslationWelcomeFragment();
+            mFragment = new WelcomeFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
         }
@@ -139,7 +143,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        TargetTranslationListActivity.super.onBackPressed();
+                        HomeActivity.super.onBackPressed();
                     }
                 })
                 .setNegativeButton(R.string.no, null)
@@ -149,7 +153,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == NEW_TARGET_TRANSLATION_REQUEST) {
             if(resultCode == RESULT_OK) {
-                if(mFragment instanceof TargetTranslationWelcomeFragment) {
+                if(mFragment instanceof WelcomeFragment) {
                     // display target translations list
                     mFragment = new TargetTranslationListFragment();
                     mFragment.setArguments(getIntent().getExtras());
@@ -158,8 +162,8 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
                     ((TargetTranslationListFragment) mFragment).reloadList();
                 }
 
-                Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
-                intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
+                Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
+                intent.putExtra(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, data.getStringExtra(NewTargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID));
                 startActivity(intent);
             } else if(resultCode == NewTargetTranslationActivity.RESULT_DUPLICATE) {
                 // display duplicate notice to user
@@ -177,7 +181,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
 
     @Override
     public void onCreateNewTargetTranslation() {
-        Intent intent = new Intent(TargetTranslationListActivity.this, NewTargetTranslationActivity.class);
+        Intent intent = new Intent(HomeActivity.this, NewTargetTranslationActivity.class);
         startActivityForResult(intent, NEW_TARGET_TRANSLATION_REQUEST);
     }
 
@@ -187,7 +191,7 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
             ((TargetTranslationListFragment) mFragment).reloadList();
         } else {
             // display welcome screen
-            mFragment = new TargetTranslationWelcomeFragment();
+            mFragment = new WelcomeFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
         }
@@ -195,8 +199,8 @@ public class TargetTranslationListActivity extends AppCompatActivity implements 
 
     @Override
     public void onItemClick(TargetTranslation targetTranslation) {
-        Intent intent = new Intent(TargetTranslationListActivity.this, TargetTranslationDetailActivity.class);
-        intent.putExtra(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+        Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
+        intent.putExtra(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
         startActivity(intent);
     }
 }

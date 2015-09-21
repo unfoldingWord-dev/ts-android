@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -13,6 +13,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.library.Searchable;
+import com.door43.translationstudio.newui.newtranslation.ProjectAdapter;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.Locale;

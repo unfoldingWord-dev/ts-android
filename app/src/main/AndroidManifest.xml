@@ -186,29 +186,29 @@
                 android:value=".library.ProjectLibraryListActivity" />
         </activity>
         <activity
-            android:name=".newui.TargetTranslationListActivity"
+            android:name=".newui.home.HomeActivity"
             android:label="@string/title_activity_target_translations"
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
         <activity
-            android:name=".newui.NewTargetTranslationActivity"
+            android:name=".newui.newtranslation.NewTargetTranslationActivity"
             android:label="@string/title_activity_new_target_translation"
-            android:parentActivityName=".newui.TargetTranslationListActivity" >
+            android:parentActivityName=".newui.home.HomeActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".newui.TargetTranslationListActivity" />
+                android:value=".newui.home.HomeActivity" />
         </activity>
         <activity
-            android:name=".newui.TargetTranslationDetailActivity"
+            android:name=".newui.translate.TargetTranslationActivity"
             android:label="@string/title_activity_target_translation_detail"
-            android:parentActivityName=".newui.TargetTranslationListActivity"
+            android:parentActivityName=".newui.home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".newui.TargetTranslationListActivity" />
+                android:value=".newui.home.HomeActivity" />
         </activity>
         <activity
-            android:name=".newui.PublishActivity"
+            android:name=".newui.publish.PublishActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:label="@string/title_activity_publish" >
         </activity>

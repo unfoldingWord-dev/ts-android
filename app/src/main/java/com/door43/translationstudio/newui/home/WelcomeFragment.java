@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.home;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -13,7 +13,7 @@ import com.door43.translationstudio.R;
 /**
  * Displays a welcome message with instructions about creating target translations
  */
-public class TargetTranslationWelcomeFragment extends Fragment {
+public class WelcomeFragment extends Fragment {
 
     private OnCreateNewTargetTranslation mListener;
 

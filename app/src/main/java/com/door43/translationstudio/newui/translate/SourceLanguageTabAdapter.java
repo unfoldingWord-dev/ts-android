@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.translate;
 
 import android.content.Context;
 import android.view.LayoutInflater;

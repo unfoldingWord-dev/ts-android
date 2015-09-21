@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -53,7 +53,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
         mTranslator = AppContext.getTranslator();
 
         Bundle args = getArguments();
-        String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");

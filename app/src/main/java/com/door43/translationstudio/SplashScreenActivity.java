@@ -8,7 +8,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
-import com.door43.translationstudio.newui.TargetTranslationListActivity;
+import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
@@ -152,7 +152,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
 
     private void openMainActivity() {
         AppContext.setLoaded(true);
-        Intent intent = new Intent(this, TargetTranslationListActivity.class);
+        Intent intent = new Intent(this, HomeActivity.class);
         startActivity(intent);
         finish();
     }

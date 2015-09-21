@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -36,7 +36,7 @@ public class FirstTabFragment extends Fragment implements ChooseSourceTranslatio
         mLibrary = AppContext.getLibrary();
 
         Bundle args = getArguments();
-        final String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
         TargetTranslation translation = mTranslator.getTargetTranslation(targetTranslationId);
         if(translation == null) {
             throw new InvalidParameterException("a valid target translation id is required");

@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.newtranslation;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +8,7 @@ import android.widget.Filter;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.TargetLanguage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,34 +17,32 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Created by joel on 9/7/2015.
+ * Created by joel on 9/4/2015.
  */
-public class SourceLanguageAdapter extends BaseAdapter {
+public class TargetLanguageAdapter extends BaseAdapter {
+    private TargetLanguage[] mTargetLanguages;
+    private TargetLanguage[] mFilteredTargetLanguages;
+    private TargetLanguageFilter mTargetLanguageFilter;
 
-    private SourceLanguage[] mLanguages;
-    private SourceLanguage[] mFilteredLanguages;
-    private SourceLanguageFilter mSourceLanguageFilter;
-
-
-    public SourceLanguageAdapter(SourceLanguage[] languages) {
-        List<SourceLanguage> languagesList = Arrays.asList(languages);
-        // TODO: sort
-        mLanguages = languagesList.toArray(new SourceLanguage[languagesList.size()]);
-        mFilteredLanguages = mLanguages;
+    public TargetLanguageAdapter(TargetLanguage[] targetLanguages) {
+        List<TargetLanguage> targetLanguagesList = Arrays.asList(targetLanguages);
+        Collections.sort(targetLanguagesList);
+        mTargetLanguages = targetLanguagesList.toArray(new TargetLanguage[targetLanguagesList.size()]);
+        mFilteredTargetLanguages = mTargetLanguages;
     }
 
     @Override
     public int getCount() {
-        if(mFilteredLanguages != null) {
-            return mFilteredLanguages.length;
+        if(mFilteredTargetLanguages != null) {
+            return mFilteredTargetLanguages.length;
         } else {
             return 0;
         }
     }
 
     @Override
-    public SourceLanguage getItem(int position) {
-        return mFilteredLanguages[position];
+    public TargetLanguage getItem(int position) {
+        return mFilteredTargetLanguages[position];
     }
 
     @Override
@@ -72,14 +70,14 @@ public class SourceLanguageAdapter extends BaseAdapter {
     }
 
     /**
-     * Returns the source language filter
+     * Returns the target language filter
      * @return
      */
     public Filter getFilter() {
-        if(mSourceLanguageFilter == null) {
-            mSourceLanguageFilter = new SourceLanguageFilter();
+        if(mTargetLanguageFilter == null) {
+            mTargetLanguageFilter = new TargetLanguageFilter();
         }
-        return mSourceLanguageFilter;
+        return mTargetLanguageFilter;
     }
 
     public static class ViewHolder {
@@ -93,27 +91,24 @@ public class SourceLanguageAdapter extends BaseAdapter {
         }
     }
 
-    /**
-     * A filter for projects
-     */
-    private class SourceLanguageFilter extends Filter {
+    private class TargetLanguageFilter extends Filter {
 
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             FilterResults results = new FilterResults();
             if(charSequence == null || charSequence.length() == 0) {
                 // no filter
-                results.values = Arrays.asList(mLanguages);
-                results.count = mLanguages.length;
+                results.values = Arrays.asList(mTargetLanguages);
+                results.count = mTargetLanguages.length;
             } else {
                 // perform filter
-                List<SourceLanguage> filteredCategories = new ArrayList<>();
-                for(SourceLanguage language:mLanguages) {
-                    // match the source language id
+                List<TargetLanguage> filteredCategories = new ArrayList<>();
+                for(TargetLanguage language:mTargetLanguages) {
+                    // match the target language id
                     boolean match = language.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     if(!match) {
                         if (language.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
-                            // match the source language name
+                            // match the target language name
                             match = true;
                         }
                     }
@@ -129,11 +124,11 @@ public class SourceLanguageAdapter extends BaseAdapter {
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            List<SourceLanguage> filteredLanguages = ((List<SourceLanguage>) filterResults.values);
+            List<TargetLanguage> filteredLanguages = (List<TargetLanguage>)filterResults.values;
             if(charSequence != null && charSequence.length() > 0) {
-                sortSourceLanguages(filteredLanguages, charSequence);
+                sortTargetLanguages(filteredLanguages, charSequence);
             }
-            mFilteredLanguages = filteredLanguages.toArray(new SourceLanguage[filterResults.count]);
+            mFilteredTargetLanguages = filteredLanguages.toArray(new TargetLanguage[filteredLanguages.size()]);
             notifyDataSetChanged();
         }
     }
@@ -143,17 +138,17 @@ public class SourceLanguageAdapter extends BaseAdapter {
      * @param languages
      * @param referenceId languages are sorted according to the reference id
      */
-    private static void sortSourceLanguages(List<SourceLanguage> languages, final CharSequence referenceId) {
-        Collections.sort(languages, new Comparator<SourceLanguage>() {
+    private static void sortTargetLanguages(List<TargetLanguage> languages, final CharSequence referenceId) {
+        Collections.sort(languages, new Comparator<TargetLanguage>() {
             @Override
-            public int compare(SourceLanguage lhs, SourceLanguage rhs) {
+            public int compare(TargetLanguage lhs, TargetLanguage rhs) {
                 String lhId = lhs.getId();
                 String rhId = rhs.getId();
                 // give priority to matches with the reference
-                if (lhId.startsWith(referenceId.toString().toLowerCase())) {
+                if(lhId.startsWith(referenceId.toString().toLowerCase())) {
                     lhId = "!" + lhId;
                 }
-                if (rhId.startsWith(referenceId.toString().toLowerCase())) {
+                if(rhId.startsWith(referenceId.toString().toLowerCase())) {
                     rhId = "!" + rhId;
                 }
                 return lhId.compareToIgnoreCase(rhId);

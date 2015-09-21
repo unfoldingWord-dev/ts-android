@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.translate;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -20,6 +20,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
+import com.door43.translationstudio.newui.ReportBugDialog;
+import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
@@ -28,7 +30,7 @@ import java.security.InvalidParameterException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TargetTranslationDetailActivity extends AppCompatActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
+public class TargetTranslationActivity extends AppCompatActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
@@ -47,7 +49,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
 
         // validate parameters
         Bundle args = getIntent().getExtras();
-        final String targetTranslationId = args.getString(TargetTranslationDetailActivity.EXTRA_TARGET_TRANSLATION_ID, null);
+        final String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
@@ -107,7 +109,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
         moreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                PopupMenu moreMenu = new PopupMenu(TargetTranslationDetailActivity.this, v);
+                PopupMenu moreMenu = new PopupMenu(TargetTranslationActivity.this, v);
                 ViewUtil.forcePopupMenuIcons(moreMenu);
                 moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_detail, moreMenu.getMenu());
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -118,14 +120,14 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                                 finish();
                                 return true;
                             case R.id.action_publish:
-                                Intent publishIntent = new Intent(TargetTranslationDetailActivity.this, PublishActivity.class);
+                                Intent publishIntent = new Intent(TargetTranslationActivity.this, PublishActivity.class);
                                 startActivity(publishIntent);
                                 return true;
                             case R.id.action_backup:
                                 // TODO: need new ui
                                 return true;
                             case R.id.action_share:
-                                Intent shareIntent = new Intent(TargetTranslationDetailActivity.this, SharingActivity.class);
+                                Intent shareIntent = new Intent(TargetTranslationActivity.this, SharingActivity.class);
                                 startActivity(shareIntent);
                                 return true;
                             case R.id.action_bug:
@@ -140,7 +142,7 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                                 dialog.show(ft, "bugDialog");
                                 return true;
                             case R.id.action_settings:
-                                Intent settingsIntent = new Intent(TargetTranslationDetailActivity.this, SettingsActivity.class);
+                                Intent settingsIntent = new Intent(TargetTranslationActivity.this, SettingsActivity.class);
                                 startActivity(settingsIntent);
                                 return true;
                         }
@@ -202,12 +204,12 @@ public class TargetTranslationDetailActivity extends AppCompatActivity implement
                 mTargetTranslation.commit(new CommitTask.OnAddComplete() {
                     @Override
                     public void success() {
-                        Logger.i(TargetTranslationDetailActivity.class.getName(), "Committed the latest translation for " + targetTranslationId);
+                        Logger.i(TargetTranslationActivity.class.getName(), "Committed the latest translation for " + targetTranslationId);
                     }
 
                     @Override
                     public void error(Throwable e) {
-                        Logger.e(TargetTranslationDetailActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
+                        Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
                     }
                 });
             }

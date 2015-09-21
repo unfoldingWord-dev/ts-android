@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.Activity;
 import android.app.Fragment;

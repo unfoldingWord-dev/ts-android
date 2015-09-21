@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.SearchManager;
 import android.content.Context;
