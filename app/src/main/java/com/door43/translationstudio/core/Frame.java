@@ -18,7 +18,7 @@ public class Frame {
     private final TranslationFormat mFormat;
     private final String mChapterId;
     private String mTitle;
-    private int[] mVerses;
+    private int[] mVerses = null;
 
     private Frame(String frameId, String chapterId, String body, TranslationFormat format) {
         mChapterId = chapterId;
@@ -92,11 +92,11 @@ public class Frame {
     public String getTitle() {
         if(mFormat == TranslationFormat.USX) {
             // get verse range
-            mVerses = getVerseRange(body);
-            if(mVerses.length == 1) {
-                mTitle = mVerses[0] + "";
-            } else if(mVerses.length == 2) {
-                mTitle = mVerses[0] + "-" + mVerses[1];
+            int[] verses = getVerseRange();
+            if(verses.length == 1) {
+                mTitle = verses[0] + "";
+            } else if(verses.length == 2) {
+                mTitle = verses[0] + "-" + verses[1];
             } else {
                 mTitle = Integer.parseInt(mId) + "";
             }
@@ -107,11 +107,46 @@ public class Frame {
     }
 
     /**
+     * Returns the formatted beginning verse in this frame.
+     * @return
+     */
+    public String getStartVerse() {
+        if(mFormat == TranslationFormat.USX) {
+            // get verse range
+            int[] verses = getVerseRange();
+            if(verses.length > 0) {
+                return verses[0] + "";
+            }
+        }
+        return Integer.parseInt(mId) + "";
+    }
+
+    /**
+     * Returns the formatted ending verse for this frame.
+     * @return
+     */
+    public String getEndVerse() {
+        if(mFormat == TranslationFormat.USX) {
+            // get verse range
+            int[] verses = getVerseRange();
+            if(verses.length == 1) {
+                return verses[0] + "";
+            } else if(verses.length == 2) {
+                return verses[1] + "";
+            }
+        }
+        return Integer.parseInt(mId) + "";
+    }
+
+    /**
      * Returns the range of verses that the body spans
      * @return
      */
     public int[] getVerseRange() {
-        return getVerseRange(body);
+        if(mVerses == null) {
+            mVerses = getVerseRange(body);
+        }
+        return mVerses;
     }
 
     /**
