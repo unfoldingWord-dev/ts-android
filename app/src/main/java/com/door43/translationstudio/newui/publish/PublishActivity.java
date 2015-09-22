@@ -102,25 +102,25 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         mValidationIndicator.mButtonLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToStep(STEP_VALIDATE);
+                goToStep(STEP_VALIDATE, false);
             }
         });
         mProfileIndicator.mButtonLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToStep(STEP_PROFILE);
+                goToStep(STEP_PROFILE, false);
             }
         });
         mReviewIndicator.mButtonLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToStep(STEP_REVIEW);
+                goToStep(STEP_REVIEW, false);
             }
         });
         mPublishIndicator.mButtonLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToStep(STEP_PUBLISH);
+                goToStep(STEP_PUBLISH, false);
             }
         });
     }
@@ -135,7 +135,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
 
     @Override
     public void nextStep() {
-        goToStep(mCurrentStep + 1);
+        goToStep(mCurrentStep + 1, true);
     }
 
     /**
@@ -143,30 +143,57 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
      * @param step
      * @return
      */
-    private boolean validateStep(int step) {
+    private boolean validateStep(int step, boolean force) {
         if(step > STEP_PUBLISH) {
             step = STEP_PUBLISH;
         }
-        while(step > 0) {
-            step --;
+        if(force) {
+            // allow users to open this step if all of the previous steps have been visited
+            while (step > 0) {
+                step--;
+                switch (step) {
+                    case STEP_VALIDATE:
+                        if (!mValidationIndicator.isVisited()) {
+                            return false;
+                        }
+                        break;
+                    case STEP_PROFILE:
+                        if (!mProfileIndicator.isVisited()) {
+                            return false;
+                        }
+                        break;
+                    case STEP_REVIEW:
+                        if (!mReviewIndicator.isVisited()) {
+                            return false;
+                        }
+                        break;
+                    case STEP_PUBLISH:
+                        // never gets called
+                        break;
+                }
+            }
+        } else {
+            // allow the user to open a previously opened step
             switch (step) {
                 case STEP_VALIDATE:
-                    if(!mValidationIndicator.isVisited()) {
+                    if (!mValidationIndicator.isVisited()) {
                         return false;
                     }
                     break;
                 case STEP_PROFILE:
-                    if(!mProfileIndicator.isVisited()) {
+                    if (!mProfileIndicator.isVisited()) {
                         return false;
                     }
                     break;
                 case STEP_REVIEW:
-                    if(!mReviewIndicator.isVisited()) {
+                    if (!mReviewIndicator.isVisited()) {
                         return false;
                     }
                     break;
                 case STEP_PUBLISH:
-                    // never gets called
+                    if (!mPublishIndicator.isVisited()) {
+                        return false;
+                    }
                     break;
             }
         }
@@ -176,14 +203,17 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     /**
      * Moves to the a stage in the publish process
      * @param step
+     * @param force forces the step to be opened even if it has never been opened before
      */
-    private void goToStep(int step) {
-        if(!validateStep(step)) {
+    private void goToStep(int step, boolean force) {
+        if(!validateStep(step, force) || step == mCurrentStep) {
             return;
         }
 
         if(step > STEP_PUBLISH) {
             mCurrentStep = STEP_PUBLISH;
+            // mark the publish step as done
+            mPublishIndicator.setDone(true);
         } else {
             mCurrentStep = step;
         }

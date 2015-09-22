@@ -94,7 +94,7 @@
                         android:scrollbars="vertical"
                         android:maxLines="10"
                         android:inputType="textMultiLine"
-                        android:background="@drawable/edit_text_bordered"
+                        android:background="@drawable/edit_text"
                         android:paddingBottom="16dp"
                         android:layout_marginBottom="16dp"
                         android:id="@+id/editText" />

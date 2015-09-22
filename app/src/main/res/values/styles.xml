@@ -105,7 +105,8 @@
 
     <style name="Widget.Button" parent="android:Widget.Button">
         <item name="android:padding">10dp</item>
-        <item name="android:textSize">@dimen/title</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/button</item>
     </style>
 
     <style name="Widget.Button.Blue">
