@@ -1,5 +1,8 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -12,6 +15,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
 
@@ -25,6 +29,8 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     public static final int STEP_PUBLISH = 3;
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private static final String STATE_STEP = "state_step";
+    private static final String STATE_PUBLISH_FINISHED = "state_publish_finished";
+    public static final String EXTRA_CALLING_ACTIVITY = "extra_calling_activity";
     private PublishStepFragment mFragment;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
@@ -33,6 +39,10 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     private ViewHolder mProfileIndicator;
     private ViewHolder mReviewIndicator;
     private ViewHolder mPublishIndicator;
+    public static final int ACTIVITY_HOME = 1001;
+    public static final int ACTIVITY_TRANSLATION = 1002;
+    private boolean mPublishFinished = false;
+    private int mCallingActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +61,12 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         if(mTargetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
+        }
+
+        // identify calling activity
+        mCallingActivity = args.getInt(EXTRA_CALLING_ACTIVITY, 0);
+        if(mCallingActivity == 0) {
+            throw new InvalidParameterException("you must specify the calling activity");
         }
 
         // stage indicators
@@ -81,6 +97,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
 
         if(savedInstanceState != null) {
             mCurrentStep = savedInstanceState.getInt(STATE_STEP, 0);
+            mPublishFinished = savedInstanceState.getBoolean(STATE_PUBLISH_FINISHED, false);
         }
         updateIndicatorsForStep(mCurrentStep);
 
@@ -128,10 +145,34 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == android.R.id.home) {
+            if(mCallingActivity == ACTIVITY_TRANSLATION) {
+                // TRICKY: the translation activity is finished after opening the publish activity
+                // because we may have to go back and forth and don't want to fill up the stack
+                Intent intent = new Intent(this, TargetTranslationActivity.class);
+                Bundle args = new Bundle();
+                args.putString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                intent.putExtras(args);
+                startActivity(intent);
+            }
             finish();
         }
         return true;
     }
+
+    @Override
+    public void onBackPressed() {
+        // TRICKY: the translation activity is finished after opening the publish activity
+        // because we may have to go back and forth and don't want to fill up the stack
+        if(mCallingActivity == ACTIVITY_TRANSLATION) {
+            Intent intent = new Intent(this, TargetTranslationActivity.class);
+            Bundle args = new Bundle();
+            args.putString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+            intent.putExtras(args);
+            startActivity(intent);
+        }
+        finish();
+    }
+
 
     @Override
     public void nextStep() {
@@ -141,6 +182,8 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
     @Override
     public void finishPublishing() {
         mPublishIndicator.setDone(true);
+        mPublishIndicator.setActive(true);
+        mPublishFinished = true;
     }
 
     /**
@@ -242,6 +285,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         Bundle args = getIntent().getExtras();
         String sourceTranslationId = mTranslator.getSelectedSourceTranslationId(mTargetTranslation.getId());
         args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);
+        args.putBoolean(PublishStepFragment.ARG_PUBLISH_FINISHED, mPublishFinished);
         mFragment.setArguments(args);
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
         // TODO: animate
@@ -253,10 +297,17 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
      */
     private void updateIndicatorsForStep(int step) {
         // reset
-        mValidationIndicator.setVisited(false);
-        mProfileIndicator.setVisited(false);
-        mReviewIndicator.setVisited(false);
-        mPublishIndicator.setVisited(false);
+        if(mPublishFinished) {
+            mValidationIndicator.setDone(true);
+            mProfileIndicator.setDone(true);
+            mReviewIndicator.setDone(true);
+            mPublishIndicator.setDone(true);
+        } else {
+            mValidationIndicator.setVisited(false);
+            mProfileIndicator.setVisited(false);
+            mReviewIndicator.setVisited(false);
+            mPublishIndicator.setVisited(false);
+        }
 
         switch (step) {
             case STEP_VALIDATE:
@@ -384,6 +435,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
 
     public void onSaveInstanceState(Bundle out) {
         out.putInt(STATE_STEP, mCurrentStep);
+        out.putBoolean(STATE_PUBLISH_FINISHED, mPublishFinished);
 
         super.onSaveInstanceState(out);
     }

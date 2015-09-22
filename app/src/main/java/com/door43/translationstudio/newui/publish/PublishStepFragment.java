@@ -13,6 +13,7 @@ import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
  */
 public abstract class PublishStepFragment extends Fragment {
     public static final String ARG_SOURCE_TRANSLATION_ID = "arg_source_translation_id";
+    public static final String ARG_PUBLISH_FINISHED = "arg_publish_finished";
     private OnEventListener mListener;
 
     public void onAttach(Activity activity) {

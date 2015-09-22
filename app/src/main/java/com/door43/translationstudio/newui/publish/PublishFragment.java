@@ -3,10 +3,12 @@ package com.door43.translationstudio.newui.publish;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -15,6 +17,7 @@ import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
+import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
 
@@ -26,6 +29,7 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
     private static final String STATE_UPLOADED = "state_uploaded";
     private boolean mUploaded = false;
     private Button mUploadButton;
+    private LinearLayout mUploadSuccess;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_publish_publish, container, false);
@@ -40,13 +44,32 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
+        // receive uploaded status from activity (overrides save state from fragment)
+        mUploaded = args.getBoolean(ARG_PUBLISH_FINISHED, mUploaded);
+
         final TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
 
+        mUploadSuccess = (LinearLayout)rootView.findViewById(R.id.upload_success);
         mUploadButton = (Button)rootView.findViewById(R.id.upload_button);
+
         if(mUploaded) {
-            mUploadButton.setBackgroundColor(getResources().getColor(R.color.green));
-            // TODO: add done icon
+            mUploadButton.setVisibility(View.GONE);
+            mUploadSuccess.setVisibility(View.VISIBLE);
+        } else {
+            mUploadButton.setVisibility(View.VISIBLE);
+            mUploadSuccess.setVisibility(View.GONE);
         }
+
+        // give the user some happy feedback in case they feel like clicking again
+        mUploadSuccess.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_SHORT);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
+            }
+        });
+
         mUploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,8 +100,11 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
         hand.post(new Runnable() {
             @Override
             public void run() {
-                mUploadButton.setBackgroundColor(getResources().getColor(R.color.green));
-                // TODO: add done icon
+                mUploadButton.setVisibility(View.GONE);
+                mUploadSuccess.setVisibility(View.VISIBLE);
+                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_SHORT);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         });
     }

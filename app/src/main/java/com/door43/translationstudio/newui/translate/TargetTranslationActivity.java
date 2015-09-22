@@ -133,7 +133,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                             case R.id.action_publish:
                                 Intent publishIntent = new Intent(TargetTranslationActivity.this, PublishActivity.class);
                                 publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_TRANSLATION);
                                 startActivity(publishIntent);
+                                // TRICKY: we may move back and forth between the publisher and translation activites
+                                // so we finish to avoid filling the stack.
+                                finish();
                                 return true;
                             case R.id.action_backup:
                                 // TODO: need new ui
