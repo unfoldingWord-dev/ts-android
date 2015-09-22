@@ -199,10 +199,21 @@ public class Manifest {
      * Reads the manifest file from the disk
      */
     private void load() {
+        String contents = "";
         try {
-            mManifest = new JSONObject(FileUtils.readFileToString(mManifestFile));
-        } catch (Exception e) {
+            contents = FileUtils.readFileToString(mManifestFile);
+        } catch (IOException e) {
             e.printStackTrace();
+        }
+        if(contents.isEmpty()) {
+            mManifest = new JSONObject();
+        } else {
+            try {
+                mManifest = new JSONObject(contents);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                mManifest = new JSONObject();
+            }
         }
     }
 }

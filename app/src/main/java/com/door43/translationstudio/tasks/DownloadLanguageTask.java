@@ -1,6 +1,7 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;

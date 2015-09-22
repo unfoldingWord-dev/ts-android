@@ -1,5 +1,7 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
@@ -22,6 +24,13 @@ public class DownloadAvailableProjectsTask extends ManagedTask {
 
     @Override
     public void start() {
+
+        // new code
+        Library library = AppContext.getLibrary();
+        LibraryTempData.setAvailableUpdates(library.getAvailableLibraryUpdates());
+
+        // old code
+
         // download (or load from cache) the project list
         List<Project> projects = AppContext.projectManager().downloadProjectList(mIgnoreCache);
 

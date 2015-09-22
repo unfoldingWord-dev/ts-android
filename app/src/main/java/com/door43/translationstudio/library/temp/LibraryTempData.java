@@ -1,5 +1,6 @@
 package com.door43.translationstudio.library.temp;
 
+import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.ProjectManager;
 import com.door43.translationstudio.util.AppContext;
@@ -20,6 +21,7 @@ public class LibraryTempData {
     private static Boolean mShowNewProjects = false;
     private static Boolean mShowProjectUpdates = false;
     private static boolean mEnableEditing = false;
+    private static LibraryUpdates mAvailableLibraryUpdates;
 
     public static void setAvailableProjects(List<Project> projects) {
         setProjects(projects);
@@ -129,5 +131,13 @@ public class LibraryTempData {
      */
     public static boolean getEnableEditing() {
         return mEnableEditing;
+    }
+
+    public static void setAvailableUpdates(LibraryUpdates availableLibraryUpdates) {
+        mAvailableLibraryUpdates = availableLibraryUpdates;
+    }
+
+    public static LibraryUpdates getAvailableUpdates() {
+        return mAvailableLibraryUpdates;
     }
 }

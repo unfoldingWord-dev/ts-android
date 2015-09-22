@@ -187,23 +187,25 @@ public class Library {
      */
     public Boolean downloadUpdates(LibraryUpdates updates) throws Exception {
         boolean success = true;
-        for(String projectId:updates.getUpdatedProjects()) {
-            boolean projectDownloadSuccess = true;
-            for(String sourceLanguageId:updates.getUpdatedSourceLanguages(projectId)) {
-                for(String resourceId:updates.getUpdatedResources(projectId, sourceLanguageId)) {
-                    projectDownloadSuccess = downloadSourceTranslationWithoutMerging(SourceTranslation.simple(projectId, sourceLanguageId, resourceId)) ? projectDownloadSuccess : false;
-                    if(!projectDownloadSuccess) {
-                        throw new Exception("Failed to download " + projectId + " " + sourceLanguageId + " " + resourceId);
+        if(updates != null) {
+            for (String projectId : updates.getUpdatedProjects()) {
+                boolean projectDownloadSuccess = true;
+                for (String sourceLanguageId : updates.getUpdatedSourceLanguages(projectId)) {
+                    for (String resourceId : updates.getUpdatedResources(projectId, sourceLanguageId)) {
+                        projectDownloadSuccess = downloadSourceTranslationWithoutMerging(SourceTranslation.simple(projectId, sourceLanguageId, resourceId)) ? projectDownloadSuccess : false;
+                        if (!projectDownloadSuccess) {
+                            throw new Exception("Failed to download " + projectId + " " + sourceLanguageId + " " + resourceId);
+                        }
                     }
                 }
-            }
-            success = projectDownloadSuccess ? success : false;
-            if(projectDownloadSuccess) {
-                try {
-                    mAppIndex.mergeProject(projectId, mDownloader.getIndex());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    success = false;
+                success = projectDownloadSuccess ? success : false;
+                if (projectDownloadSuccess) {
+                    try {
+                        mAppIndex.mergeProject(projectId, mDownloader.getIndex());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        success = false;
+                    }
                 }
             }
         }

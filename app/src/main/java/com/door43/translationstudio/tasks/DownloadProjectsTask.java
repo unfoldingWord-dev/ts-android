@@ -1,6 +1,9 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.library.temp.LibraryTempData;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Resource;
 import com.door43.translationstudio.projects.SourceLanguage;
@@ -39,6 +42,15 @@ public class DownloadProjectsTask extends ManagedTask {
         // download projects
         publishProgress(-1, "");
 
+        // new download code
+        Library library = AppContext.getLibrary();
+        try {
+            library.downloadUpdates(LibraryTempData.getAvailableUpdates());
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to download the updates", e);
+        }
+
+        // old download code
         for(int i = 0; i < mProjects.size(); i ++) {
             if(interrupted()) return;
             Project p = mProjects.get(i);
