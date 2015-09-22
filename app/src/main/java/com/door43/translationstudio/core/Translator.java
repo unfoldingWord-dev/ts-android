@@ -334,4 +334,15 @@ public class Translator {
         compiledString.append(text.toString().substring(lastIndex, text.length()));
         return compiledString.toString().trim();
     }
+
+    /**
+     * Exports a target translation in .tstudio
+     * @param t
+     * @param outputFile
+     */
+    public void export(TargetTranslation t, File outputFile) {
+        // TODO: perform export
+        // manifest
+        // translation
+    }
 }

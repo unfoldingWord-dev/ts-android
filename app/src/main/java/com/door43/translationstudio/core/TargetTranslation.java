@@ -1,10 +1,13 @@
 package com.door43.translationstudio.core;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.git.Repo;
+import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -374,5 +377,28 @@ public class TargetTranslation {
      */
     public Repo getRepo() {
         return new Repo(mTargetTranslationDirectory.getAbsolutePath());
+    }
+
+    /**
+     * Returns the commit hash of the repo HEAD
+     * @return
+     * @throws Exception
+     */
+    public String commitHash() throws Exception {
+        Repo repo = getRepo();
+        String tag = null;
+        Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+        RevCommit commit = null;
+        for(RevCommit c : commits) {
+            commit = c;
+        }
+        if(commit != null) {
+            String[] pieces = commit.toString().split(" ");
+            tag = pieces[1];
+        } else {
+            tag = null;
+        }
+
+        return tag;
     }
 }

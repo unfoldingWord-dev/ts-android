@@ -15,6 +15,8 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
@@ -107,119 +109,60 @@ public class BackupService extends Service {
      * Performs the backup if nessesary
      */
     private void runBackup() {
-        // TODO: we need to look in the settings for the project repo path and manually check if a backup is required
-        File projectsRoot = new File(AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/");
-        String projectDirs[] = projectsRoot.list();
-        boolean backedUpTranslations = false;
-        if(projectDirs != null) {
-            for (String filename : projectDirs) {
-                if(!filename.equals("profile")) {
-                    File translationDir = new File(projectsRoot, filename);
-                    if (translationDir.isDirectory()) {
-                        // load the project and target language from the manifest
-                        Manifest manifest = Manifest.generate(translationDir);
-                        Language targetLanguage;
-                        JSONObject targetJson = manifest.getJSONObject("target_language");
+        boolean backupPerformed = false;
+        Translator translator = AppContext.getTranslator();
+        TargetTranslation[] targetTranslations = translator.getTargetTranslations();
+        for(TargetTranslation t:targetTranslations) {
+
+            // retreive commit hash
+            String tag;
+            try {
+                tag = t.commitHash();
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to read commit hash", e);
+                continue;
+            }
+
+            // check if backup is required
+            if(tag != null) {
+                File primaryBackupDir = new File(AppContext.getPublicDirectory(), "backups/" + t.getId() + "/");
+                File primaryBackupFile = new File(primaryBackupDir, tag + "." + Project.PROJECT_EXTENSION);
+                File downloadBackupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + t.getId() + "/");
+                File downloadBackupFile = new File(downloadBackupDir, tag + "." + Project.PROJECT_EXTENSION);
+                // e.g. ../../backups/uw-obs-de/[commit hash].tstudio
+                if (!downloadBackupFile.exists()) {
+
+                    // peform backup
+                    File archive = new File(AppContext.getPublicDownloadsDirectory(), t.getId() + ".temp." + Project.PROJECT_EXTENSION);
+                    translator.export(t, archive);
+                    if(archive.exists() && archive.isFile()) {
+                        // move into backup
+                        FileUtils.deleteQuietly(downloadBackupDir);
+                        FileUtils.deleteQuietly(primaryBackupDir);
+                        downloadBackupDir.mkdirs();
+                        primaryBackupDir.mkdirs();
                         try {
-                            String targetLanguageId = targetJson.getString("slug");
-                            // the name and direction are optional because the backup doesn't need them
-                            String targetLanguageName = "";
-                            if (targetJson.has("name")) {
-                                targetLanguageName = targetJson.getString("name");
-                            }
-                            String targetLanguageDirection = "";
-                            if (targetJson.has("direction")) {
-                                targetLanguageDirection = targetJson.getString("direction");
-                            }
-                            Language.Direction direction = Language.Direction.get(targetLanguageDirection);
-                            if (direction == null) {
-                                direction = Language.Direction.LeftToRight;
-                            }
-                            targetLanguage = new Language(targetLanguageId, targetLanguageName, direction);
-                        } catch (JSONException e) {
-                            Logger.e(this.getClass().getName(), "Failed to load the target language for " + filename, e);
-                            continue;
+                            // backup to downloads directory
+                            FileUtils.copyFile(archive, downloadBackupFile);
+                            // backup to a slightly less public area (used for auto restore)
+                            FileUtils.copyFile(archive, primaryBackupFile);
+                            backupPerformed = true;
+                        } catch (IOException e) {
+                            Logger.e(this.getClass().getName(), "Failed to copy the backup archive for target translation: " + t.getId(), e);
                         }
-                        Project p = ProjectManager.getProject(manifest);
-
-                        if (p != null) {
-                            // check if backup is required
-                            String tag = getRepoHeadTag(translationDir);
-                            if (tag != null) {
-                                File primaryBackupDir = new File(AppContext.getPublicDirectory(), "backups/" + translationDir.getName() + "/");
-                                File primaryBackupFile = new File(primaryBackupDir, tag + "." + Project.PROJECT_EXTENSION);
-                                File downloadBackupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + translationDir.getName() + "/");
-                                File downloadBackupFile = new File(downloadBackupDir, tag + "." + Project.PROJECT_EXTENSION);
-
-                                if (!downloadBackupFile.exists()) {
-                                    // export
-                                    String archivePath;
-                                    try {
-                                        archivePath = Sharing.export(p, new SourceLanguage[]{}, new Language[]{targetLanguage});
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                        continue;
-                                    }
-                                    File archiveFile = new File(archivePath);
-                                    if (archiveFile.exists()) {
-                                        // replace existing backup
-                                        FileUtilities.deleteRecursive(downloadBackupDir);
-                                        FileUtilities.deleteRecursive(primaryBackupDir);
-                                        downloadBackupDir.mkdirs();
-                                        primaryBackupDir.mkdirs();
-                                        try {
-                                            // backup to downloads directory
-                                            FileUtils.copyFile(archiveFile, downloadBackupFile);
-                                            // backup to a slightly less public area
-                                            FileUtils.copyFile(archiveFile, primaryBackupFile);
-                                            backedUpTranslations = true;
-                                        } catch (IOException e) {
-                                            Logger.e(this.getClass().getName(), "Failed to copy the backup archive for " + filename, e);
-                                        }
-                                        archiveFile.delete();
-                                    } else {
-                                        Logger.w(this.getClass().getName(), "Failed to export the project translation " + filename);
-                                    }
-                                }
-                            } else {
-                                Logger.w(this.getClass().getName(), "Failed to get the git HEAD tag for " + filename);
-                            }
-                        } else {
-                            Logger.w(this.getClass().getName(), "Failed to load the project at " + filename);
-                        }
+                        archive.delete();
+                    } else {
+                        Logger.w(this.getClass().getName(), "Failed to export the target translation: " + t.getId());
                     }
                 }
+            } else {
+                Logger.w(this.getClass().getName(), "Could not find the commit hash");
             }
         }
-        if(backedUpTranslations) {
+
+        if(backupPerformed) {
             onBackupComplete();
         }
-    }
-
-    /**
-     * Returns the commit tag for the repo HEAD
-     * @param translationDir
-     * @return
-     */
-    private static String getRepoHeadTag(File translationDir) {
-        Repo repo = new Repo(translationDir.getAbsolutePath());
-        String tag = null;
-        try {
-            Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
-            RevCommit commit = null;
-            for(RevCommit c : commits) {
-                commit = c;
-            }
-            if(commit != null) {
-                String[] pieces = commit.toString().split(" ");
-                tag = pieces[1];
-            } else {
-                tag = null;
-            }
-        } catch (Exception e) {
-            Logger.e(BackupService.class.getName(), "Failed to backup the translation " + translationDir.getName() + ". Missing commit tag", e);
-        }
-        return tag;
     }
 
     /**
