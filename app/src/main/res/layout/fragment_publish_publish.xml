@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="3">
+
+        <android.support.v7.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:layout_margin="@dimen/card_margin">
+
+            <LinearLayout
+                style="@style/Widget.CardContent"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@drawable/ic_unfolding_word_logo_large"/>
+                <TextView
+                    android:layout_margin="@dimen/card_margin"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:textColor="@color/dark_secondary_text"
+                    android:textSize="@dimen/title"
+                    android:text="Explaination of the publishing process will appear here!"/>
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/card_margin"
+            android:layout_marginBottom="@dimen/card_margin"
+            android:layout_marginRight="@dimen/card_margin">
+
+            <LinearLayout
+                style="@style/Widget.CardContent.Skinny"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/card_margin"
+                    android:paddingBottom="@dimen/card_margin"
+                    android:background="@drawable/dark_bottom_border"
+                    android:paddingRight="@dimen/card_margin">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/dark_primary_text"
+                        android:textSize="@dimen/headline"
+                        android:text="@string/publish_to_unfoldingword"/>
+
+                    <Button
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.Button.Blue"
+                        android:id="@+id/upload_button"
+                        android:layout_marginTop="@dimen/card_margin"
+                        android:text="@string/title_upload"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="@dimen/card_margin"
+                    android:paddingLeft="@dimen/card_margin"
+                    android:paddingRight="@dimen/card_margin"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/body"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="You may also share and distribute your project using these options."/>
+
+
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/export_to_sdcard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/export_to_sd"
+                    android:textColor="?attr/colorAccent"
+                    android:gravity="left"
+                    android:padding="@dimen/card_margin"
+                    android:textSize="@dimen/button"
+                    android:background="?attr/selectableItemBackground"/>
+
+                <Button
+                    android:id="@+id/export_to_bluetooth"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/export_to_device"
+                    android:textColor="?attr/colorAccent"
+                    android:padding="@dimen/card_margin"
+                    android:gravity="left"
+                    android:textSize="@dimen/button"
+                    android:background="?attr/selectableItemBackground"/>
+
+                <Button
+                    android:id="@+id/export_to_app"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/export_to_app"
+                    android:gravity="left"
+                    android:textColor="?attr/colorAccent"
+                    android:padding="@dimen/card_margin"
+                    android:textSize="@dimen/button"
+                    android:background="?attr/selectableItemBackground"/>
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+    </LinearLayout>
+</LinearLayout>

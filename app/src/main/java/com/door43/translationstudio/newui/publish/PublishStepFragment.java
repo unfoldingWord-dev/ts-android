@@ -48,5 +48,7 @@ public abstract class PublishStepFragment extends Fragment {
 
     public interface OnEventListener {
         void nextStep();
+
+        void finishPublishing();
     }
 }

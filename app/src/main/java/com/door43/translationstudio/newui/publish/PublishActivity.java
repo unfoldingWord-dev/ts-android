@@ -138,6 +138,11 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         goToStep(mCurrentStep + 1, true);
     }
 
+    @Override
+    public void finishPublishing() {
+        mPublishIndicator.setDone(true);
+    }
+
     /**
      * checks if the user can go to this step yet
      * @param step
@@ -375,5 +380,11 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 ViewUtil.tintViewDrawable(mCircleView, getResources().getColor(R.color.light_secondary_text));
             }
         }
+    }
+
+    public void onSaveInstanceState(Bundle out) {
+        out.putInt(STATE_STEP, mCurrentStep);
+
+        super.onSaveInstanceState(out);
     }
 }
