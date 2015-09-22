@@ -82,9 +82,8 @@ public class TargetTranslation {
      * @return
      */
     public static TargetTranslation generate(TargetLanguage targetLanguage, String projectId, File mRootDir) throws Exception {
-        // create folder
+        // generate new target translation if it does not exist
         File translationDir = generateTargetTranslationDir(targetLanguage.getId(), projectId, mRootDir);
-
         if(!translationDir.exists()) {
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
@@ -97,8 +96,8 @@ public class TargetTranslation {
             // also the target language should have a toJson method that will do all of this.
             manifest.put("target_language", targetLangaugeJson);
         }
-
-        return new TargetTranslation(targetLanguage.getId(), projectId, translationDir);
+        // load the target translation (new or otherwise)
+        return new TargetTranslation(targetLanguage.getId(), projectId, mRootDir);
     }
 
     /**
@@ -135,7 +134,7 @@ public class TargetTranslation {
         if(complexId.length >= 3) {
             // TRICKY: target language id's can have dashes in them.
             String targetLanguageId = complexId[2];
-            for(int i = 3; i < complexId.length - 1; i ++) {
+            for(int i = 3; i < complexId.length; i ++) {
                 targetLanguageId += "-" + complexId[i];
             }
             return targetLanguageId;

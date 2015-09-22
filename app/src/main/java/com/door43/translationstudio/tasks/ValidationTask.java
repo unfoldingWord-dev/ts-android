@@ -54,14 +54,14 @@ public class ValidationTask extends ManagedTask {
                 Frame frame = frames[j];
                 FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
                 // TODO: also validate the checking questions
-                if(lastValidFrameIndex == -1 && frameTranslation.isFinished()) {
+                if(lastValidFrameIndex == -1 && (frameTranslation.isFinished() || frame.body.isEmpty())) {
                     // start new valid range
                     lastValidFrameIndex = j;
-                } else if(!frameTranslation.isFinished() || frameTranslation.isFinished() && j == frames.length - 1){
+                } else if(!(frameTranslation.isFinished() || frame.body.isEmpty()) || (frameTranslation.isFinished() || frame.body.isEmpty()) && j == frames.length - 1){
                     // close valid range
                     if(lastValidFrameIndex > -1) {
                         int previousFrameIndex = j - 1;
-                        if(frameTranslation.isFinished()) {
+                        if(frameTranslation.isFinished() || frame.body.isEmpty()) {
                             previousFrameIndex = j;
                         }
                         if(lastValidFrameIndex < previousFrameIndex) {
@@ -84,7 +84,7 @@ public class ValidationTask extends ManagedTask {
                     }
 
                     // add invalid frame
-                    if(!frameTranslation.isFinished()) {
+                    if(!(frameTranslation.isFinished() || frame.body.isEmpty())) {
                         chapterIsValid = false;
                         String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
                         frameTitle += ":" + frame.getStartVerse();
