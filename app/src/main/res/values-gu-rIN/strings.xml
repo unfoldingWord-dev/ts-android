@@ -62,7 +62,7 @@
   <string name="choose_target_language">લક્ષ્ય ભાષા પસંદ કરો</string>
   <string name="search_language">એક ભાષા માટે શોધ</string>
   <string name="loading">લોડ કરી રહ્યું છે ...</string>
-  <string name="view_license">જુઓ લાઈસન્સ</string>
+  <string name="view_license_agreement">જુઓ લાઈસન્સ</string>
   <string name="license_deny">કોઈ આભાર</string>
   <string name="license_accept">હું સ્વીકારું છું</string>
   <string name="label_note_phrase">પસંદ શબ્દસમૂહ:</string>

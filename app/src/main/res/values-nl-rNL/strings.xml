@@ -62,7 +62,7 @@
   <string name="choose_target_language">Kies De Doeltaal</string>
   <string name="search_language">Zoeken naar een taal</string>
   <string name="loading">Bezig met laden...</string>
-  <string name="view_license">Bekijk Licentie</string>
+  <string name="view_license_agreement">Bekijk Licentie</string>
   <string name="license_deny">Nee, Bedankt</string>
   <string name="license_accept">Ik Ga Akkoord</string>
   <string name="label_note_phrase">Geselecteerde uitdrukking:</string>

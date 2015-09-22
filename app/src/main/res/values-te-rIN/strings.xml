@@ -62,7 +62,7 @@
   <string name="choose_target_language">టార్గెట్ భాషా ఎంచుకోండి</string>
   <string name="search_language">ఒక భాష శోధించు</string>
   <string name="loading">లోడ్ ...</string>
-  <string name="view_license">చూడండి లైసెన్సు</string>
+  <string name="view_license_agreement">చూడండి లైసెన్సు</string>
   <string name="license_deny">ధన్యవాదములు</string>
   <string name="license_accept">నేను అంగీకరిస్తున్నాను</string>
   <string name="label_note_phrase">ఎంపిక పదబంధం:</string>

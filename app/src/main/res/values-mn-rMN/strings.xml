@@ -62,7 +62,7 @@
   <string name="choose_target_language">Орчуулах хэлийг сонгоно уу</string>
   <string name="search_language">Хэл хайх</string>
   <string name="loading">Ачаалж байна ...</string>
-  <string name="view_license">Тусгай зөвшөөрлийг харах</string>
+  <string name="view_license_agreement">Тусгай зөвшөөрлийг харах</string>
   <string name="license_deny">Үгүй. Баярлалаа</string>
   <string name="license_accept">Би зөвшөөрч байна</string>
   <string name="label_note_phrase">Сонгосон өгүүлбэр:</string>

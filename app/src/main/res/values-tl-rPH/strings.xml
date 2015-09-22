@@ -56,7 +56,7 @@
   <string name="choose_target_language">Pilliin ang Target na Wika</string>
   <string name="search_language">Maghanap ng wika</string>
   <string name="loading">Naglo-load...</string>
-  <string name="view_license">Tingnan ang Lisensya</string>
+  <string name="view_license_agreement">Tingnan ang Lisensya</string>
   <string name="license_deny">Huwag na Salamat</string>
   <string name="license_accept">Sumasang-ayon ako</string>
   <string name="label_note_phrase">Napiling mga parirala:</string>

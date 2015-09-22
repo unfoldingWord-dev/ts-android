@@ -65,7 +65,7 @@
   <string name="choose_target_language">ഉദ്ദിഷ്ട ഭാഷ തിരഞ്ഞെടുക്കുക</string>
   <string name="search_language">ഒരു ഭാഷ തിരയുക</string>
   <string name="loading">ലോഡ് ചെയ്യുന്നു</string>
-  <string name="view_license">ലൈസന്‍സ് കാണുക</string>
+  <string name="view_license_agreement">ലൈസന്‍സ് കാണുക</string>
   <string name="license_deny">വേണ്ട, നന്ദി</string>
   <string name="license_accept">ഞാന്‍ അംഗീകരിക്കുന്നു</string>
   <string name="label_note_phrase">തിരഞ്ഞെടുക്കപ്പെട്ട  വാക്യം</string>

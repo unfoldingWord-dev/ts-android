@@ -62,7 +62,7 @@
   <string name="choose_target_language">Memilih bahasa Target</string>
   <string name="search_language">Mencari bahasa</string>
   <string name="loading">Memuat...</string>
-  <string name="view_license">Lihat lisensi</string>
+  <string name="view_license_agreement">Lihat lisensi</string>
   <string name="license_deny">Tidak terima kasih</string>
   <string name="license_accept">Saya setuju</string>
   <string name="label_note_phrase">Frasa yang dipilih:</string>

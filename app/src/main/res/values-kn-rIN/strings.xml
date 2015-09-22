@@ -62,7 +62,7 @@
   <string name="choose_target_language">ಟಾರ್ಗೆಟ್ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆ</string>
   <string name="search_language">ಒಂದು ಭಾಷೆ ಹುಡುಕಿ</string>
   <string name="loading">ಲೋಡ್ ಆಗುತ್ತಿದೆ ...</string>
-  <string name="view_license">ವೀಕ್ಷಿಸಿ ಪರವಾನಗಿ</string>
+  <string name="view_license_agreement">ವೀಕ್ಷಿಸಿ ಪರವಾನಗಿ</string>
   <string name="license_deny">ಇಲ್ಲ, ಧನ್ಯವಾದಗಳು</string>
   <string name="license_accept">ನಾನು ಒಪ್ಪುತ್ತೇನೆ</string>
   <string name="label_note_phrase">ಆಯ್ದ ನುಡಿಗಟ್ಟು:</string>

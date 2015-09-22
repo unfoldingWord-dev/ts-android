@@ -62,7 +62,7 @@
   <string name="choose_target_language">ជ្រើសយកភាសាគោលដៅ</string>
   <string name="search_language">ស្វែងរកមើលភាសាមួយ</string>
   <string name="loading">កំពុងផ្ទុក...</string>
-  <string name="view_license">មើលឯកសារអនុញ្ញាត (អាជ្ញាប័ណ្ណ)</string>
+  <string name="view_license_agreement">មើលឯកសារអនុញ្ញាត (អាជ្ញាប័ណ្ណ)</string>
   <string name="license_deny">ទេ! អរគុណច្រើន</string>
   <string name="license_accept">ខ្ញុំយល់ព្រមទទួលយក</string>
   <string name="label_note_phrase">ឃ្លាដែលបានជ្រើសរើស:</string>

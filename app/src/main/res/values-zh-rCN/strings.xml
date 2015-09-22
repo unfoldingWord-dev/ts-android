@@ -62,7 +62,7 @@
   <string name="choose_target_language">选择目标语言</string>
   <string name="search_language">一种语言的搜索</string>
   <string name="loading">加载</string>
-  <string name="view_license">查看许可证</string>
+  <string name="view_license_agreement">查看许可证</string>
   <string name="license_deny">不，谢谢</string>
   <string name="license_accept">我同意</string>
   <string name="label_note_phrase">选定的短语：</string>

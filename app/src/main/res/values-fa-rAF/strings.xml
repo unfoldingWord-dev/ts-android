@@ -62,7 +62,7 @@
   <string name="choose_target_language">لسان مقصد را انتخاب کنید</string>
   <string name="search_language">جستجو برای یک زبان</string>
   <string name="loading">بارگذاری...</string>
-  <string name="view_license">مشاهده لایسنس</string>
+  <string name="view_license_agreement">مشاهده لایسنس</string>
   <string name="license_deny">خیر با تشکر</string>
   <string name="license_accept">موافقم</string>
   <string name="label_note_phrase">عبارت انتخاب شده:</string>

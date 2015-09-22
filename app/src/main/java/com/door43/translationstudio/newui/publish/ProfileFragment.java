@@ -8,14 +8,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.widget.ViewUtil;
 
-import java.security.InvalidParameterException;
+//import java.security.InvalidParameterException;
 
 /**
  * Created by joel on 9/20/2015.
@@ -25,15 +24,15 @@ public class ProfileFragment extends PublishStepFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_publish_profile, container, false);
 
-        Bundle args = getArguments();
-        String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID);
-        String sourceTranslationId = args.getString(ARG_SOURCE_TRANSLATION_ID);
-        if (targetTranslationId == null) {
-            throw new InvalidParameterException("a valid target translation id is required");
-        }
-        if (sourceTranslationId == null) {
-            throw new InvalidParameterException("a valid source translation id is required");
-        }
+//        Bundle args = getArguments();
+//        String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID);
+//        String sourceTranslationId = args.getString(ARG_SOURCE_TRANSLATION_ID);
+//        if (targetTranslationId == null) {
+//            throw new InvalidParameterException("a valid target translation id is required");
+//        }
+//        if (sourceTranslationId == null) {
+//            throw new InvalidParameterException("a valid source translation id is required");
+//        }
 
         final EditText nameText = (EditText)rootView.findViewById(R.id.name_edittext);
         final EditText emailText = (EditText)rootView.findViewById(R.id.email_edittext);

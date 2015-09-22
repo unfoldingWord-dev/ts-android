@@ -62,7 +62,7 @@
   <string name="choose_target_language">የተቀባዩን ቋንቋ ይምረጡ</string>
   <string name="search_language">ቋንቋ ፈልግ</string>
   <string name="loading">እየጫነ ነው</string>
-  <string name="view_license">ፈቃዱን አሳይ</string>
+  <string name="view_license_agreement">ፈቃዱን አሳይ</string>
   <string name="license_deny">አመሰግናለሁ አልፈልግም</string>
   <string name="license_accept">እስማማለሁ</string>
   <string name="label_note_phrase">የተመረጠው ሀረግ፤</string>

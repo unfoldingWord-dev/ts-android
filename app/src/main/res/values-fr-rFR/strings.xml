@@ -62,7 +62,7 @@
   <string name="choose_target_language">Choisissez La Langue Cible</string>
   <string name="search_language">Rechercher une langue</string>
   <string name="loading">Chargement...</string>
-  <string name="view_license">Vue De Licence</string>
+  <string name="view_license_agreement">Vue De Licence</string>
   <string name="license_deny">Non Merci</string>
   <string name="license_accept">Je Suis D\'Accord</string>
   <string name="label_note_phrase">Phrase:</string>

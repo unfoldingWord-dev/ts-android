@@ -62,7 +62,7 @@
   <string name="choose_target_language">زبان کا انتخاب کریں</string>
   <string name="search_language">ایک زبان کے لئے تلاش کریں</string>
   <string name="loading">لوڈ کر رہا ہے...</string>
-  <string name="view_license">منظر لائسنس</string>
+  <string name="view_license_agreement">منظر لائسنس</string>
   <string name="license_deny">نہيں شکريہ</string>
   <string name="license_accept">ميں مانتی ہوں</string>
   <string name="label_note_phrase">منتخب جملہ:</string>

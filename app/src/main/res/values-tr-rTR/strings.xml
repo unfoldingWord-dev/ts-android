@@ -62,7 +62,7 @@
   <string name="choose_target_language">Hedef Dili Seçin </string>
   <string name="search_language">Bir dil için ara</string>
   <string name="loading">Yükleniyor...</string>
-  <string name="view_license">Görünüm Lisans</string>
+  <string name="view_license_agreement">Görünüm Lisans</string>
   <string name="license_deny">Hayır Teşekkürler</string>
   <string name="license_accept">Katılıyorum</string>
   <string name="label_note_phrase">Seçilen ifade:</string>

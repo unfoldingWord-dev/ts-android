@@ -62,7 +62,7 @@
   <string name="choose_target_language">लक्ष्य भाषा छान्नुहोस्</string>
   <string name="search_language">भाषा खोज्नुहोस्</string>
   <string name="loading">लोड हुँदै ...</string>
-  <string name="view_license">लाइसेन्स हेर्नुहोस्</string>
+  <string name="view_license_agreement">लाइसेन्स हेर्नुहोस्</string>
   <string name="license_deny">होइन धन्यवाद</string>
   <string name="license_accept">म सहमत छु</string>
   <string name="label_note_phrase">चयन गरिएको वाक्यांश:</string>

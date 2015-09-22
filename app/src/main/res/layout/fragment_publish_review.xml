@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="24dp">
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/card_margin">
+
+            <LinearLayout
+                style="@style/Widget.CardContent.Skinny"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:paddingBottom="@dimen/card_margin"
+                    android:paddingRight="@dimen/card_margin"
+                    android:paddingLeft="@dimen/card_margin"
+                    android:background="@drawable/dark_bottom_border"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/project_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:layout_weight="1"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="Project: John - Afaraf"/>
+
+                    <ImageView
+                        android:id="@+id/project_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:background="@drawable/ic_done_black_24dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:padding="@dimen/card_margin"
+                    android:background="@drawable/dark_bottom_border"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/profile_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:layout_weight="1"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="@string/profile"/>
+
+                    <ImageView
+                        android:id="@+id/profile_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:background="@drawable/ic_done_black_24dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:padding="@dimen/card_margin"
+                    android:background="@drawable/dark_bottom_border"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/license_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:layout_weight="1"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="@string/view_license_agreement"/>
+
+                    <ImageView
+                        android:id="@+id/license_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:background="@drawable/ic_done_black_24dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:padding="@dimen/card_margin"
+                    android:background="@drawable/dark_bottom_border"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/guidelines_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:layout_weight="1"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="@string/view_translation_guidelines"/>
+
+                    <ImageView
+                        android:id="@+id/guidelines_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:background="@drawable/ic_done_black_24dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:paddingLeft="@dimen/card_margin"
+                    android:paddingRight="@dimen/card_margin"
+                    android:paddingTop="@dimen/card_margin"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:id="@+id/faith_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:layout_weight="1"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="@string/view_statement_of_faith"/>
+
+                    <ImageView
+                        android:id="@+id/faith_icon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:background="@drawable/ic_done_black_24dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <Button
+            android:id="@+id/next_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            style="@style/Widget.Button.Blue"
+            android:text="@string/next_step"/>
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>

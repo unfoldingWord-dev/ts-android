@@ -62,7 +62,7 @@
   <string name="choose_target_language">اختيار اللغة الهدف</string>
   <string name="search_language">بحث عن اللغة</string>
   <string name="loading">تحميل...</string>
-  <string name="view_license">عرض الترخيص</string>
+  <string name="view_license_agreement">عرض الترخيص</string>
   <string name="license_deny">لا شكرا</string>
   <string name="license_accept">أوافق</string>
   <string name="label_note_phrase">العبارة المختارة:</string>

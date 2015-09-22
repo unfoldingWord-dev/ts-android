@@ -62,7 +62,7 @@
   <string name="choose_target_language">Zabi harshen Karba</string>
   <string name="search_language">Bincika harshe</string>
   <string name="loading">Saukar da aiki</string>
-  <string name="view_license">Duba lasisi</string>
+  <string name="view_license_agreement">Duba lasisi</string>
   <string name="license_deny">A a madalla</string>
   <string name="license_accept">Na amince</string>
   <string name="label_note_phrase">Zababbin fannoni</string>

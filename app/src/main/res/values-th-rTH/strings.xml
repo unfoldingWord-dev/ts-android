@@ -62,7 +62,7 @@
   <string name="choose_target_language">เลือกภาษาเป้าหมาย</string>
   <string name="search_language">ค้นหาภาษา</string>
   <string name="loading">กำลังโหลด...</string>
-  <string name="view_license">ดูใบอนุญาต</string>
+  <string name="view_license_agreement">ดูใบอนุญาต</string>
   <string name="license_deny">ไม่ล่ะขอบใจ</string>
   <string name="license_accept">ฉันเห็นด้วย</string>
   <string name="label_note_phrase">เลือกวลี:</string>

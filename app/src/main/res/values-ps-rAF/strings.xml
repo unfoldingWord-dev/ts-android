@@ -56,7 +56,7 @@
   <string name="choose_target_language">د ژبې غوره هدف </string>
   <string name="search_language"> جست و جوي د يوه ژبه ده</string>
   <string name="loading">باروله …</string>
-  <string name="view_license">ملا حظه كوي اجازه ليک </string>
+  <string name="view_license_agreement">ملا حظه كوي اجازه ليک </string>
   <string name="license_deny">شكر نه </string>
   <string name="license_accept">زه دا منم </string>
   <string name="label_note_phrase">انتخاب و كړو عبارت:</string>

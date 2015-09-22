@@ -2,13 +2,13 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:state_pressed="true"
-        android:drawable="@drawable/edit_text_focused"
+        android:drawable="@drawable/blue_bottom_border"
         /> <!-- pressed -->
     <item
         android:state_focused="true"
-        android:drawable="@drawable/edit_text_focused"
+        android:drawable="@drawable/blue_bottom_border"
         /> <!-- focused -->
     <item
-        android:drawable="@drawable/edit_text_standard"
+        android:drawable="@drawable/dark_bottom_border"
         /> <!-- default -->
 </selector>

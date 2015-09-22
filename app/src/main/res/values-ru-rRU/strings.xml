@@ -62,7 +62,7 @@
   <string name="choose_target_language">Выбрать Целевой Язык</string>
   <string name="search_language">Поиск по языку</string>
   <string name="loading">Загрузка...</string>
-  <string name="view_license">Вид Лицензии</string>
+  <string name="view_license_agreement">Вид Лицензии</string>
   <string name="license_deny">Нет, Спасибо</string>
   <string name="license_accept">Я Согласен</string>
   <string name="label_note_phrase">Выбранные фразы:</string>

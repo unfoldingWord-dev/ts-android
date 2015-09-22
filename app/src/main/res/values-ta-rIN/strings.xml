@@ -62,7 +62,7 @@
   <string name="choose_target_language">இலக்கு மொழி தேர்வு</string>
   <string name="search_language">ஒரு மொழி தேடல்</string>
   <string name="loading">ஏற்றுகிறது ...</string>
-  <string name="view_license">காண்க உரிமம்</string>
+  <string name="view_license_agreement">காண்க உரிமம்</string>
   <string name="license_deny">இல்லை நன்றி</string>
   <string name="license_accept">நான் ஏற்கிறேன்</string>
   <string name="label_note_phrase">தேர்ந்தெடுக்கப்பட்ட சொற்றொடர்:</string>

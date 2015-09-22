@@ -62,7 +62,7 @@
   <string name="choose_target_language">ターゲット言語を選択します。</string>
   <string name="search_language">言語を検索する</string>
   <string name="loading">読み込んでいます.</string>
-  <string name="view_license">ビューのライセンス</string>
+  <string name="view_license_agreement">ビューのライセンス</string>
   <string name="license_deny">遠慮します</string>
   <string name="license_accept">賛成です</string>
   <string name="label_note_phrase">選択した語句:</string>

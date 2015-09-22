@@ -62,7 +62,7 @@
   <string name="choose_target_language">लक्ष्य भाषा निवडा</string>
   <string name="search_language">भाषेकरिता शोघ घ्या</string>
   <string name="loading">लोड करत आहे...</string>
-  <string name="view_license">लायसेन्स पाहा</string>
+  <string name="view_license_agreement">लायसेन्स पाहा</string>
   <string name="license_deny">नको आभार</string>
   <string name="license_accept">मला मान्य आहे</string>
   <string name="label_note_phrase">निवडलेली फ्रेज:</string>

@@ -62,7 +62,7 @@
   <string name="choose_target_language">Chọn ngôn ngữ mục tiêu</string>
   <string name="search_language">Tìm kiếm một ngôn ngữ</string>
   <string name="loading">Đang tải...</string>
-  <string name="view_license">Xem giấy phép</string>
+  <string name="view_license_agreement">Xem giấy phép</string>
   <string name="license_deny">Không, cảm ơn</string>
   <string name="license_accept">Tôi đồng ý</string>
   <string name="label_note_phrase">Cụm từ được chọn:</string>

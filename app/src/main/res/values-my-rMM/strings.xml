@@ -62,7 +62,7 @@
   <string name="choose_target_language">ရည္ရြယ္သည့္ ဘာသာစကားကိုေရြးပါ</string>
   <string name="search_language">ဘာသာစကားရွာပါ</string>
   <string name="loading">တင္ေနသည္...</string>
-  <string name="view_license">လိုင္စင္ၾကည့္ပါ</string>
+  <string name="view_license_agreement">လိုင္စင္ၾကည့္ပါ</string>
   <string name="license_deny">ရပါျပီ၊ ေက်းဇူးတင္ပါတယ္</string>
   <string name="license_accept">ကၽြႏု္ပ္ သေဘာတူသည္</string>
   <string name="label_note_phrase">ေရြးထားသည့္ စကားစု:</string>

@@ -62,7 +62,7 @@
   <string name="choose_target_language">টার্গেট ভাষা বেছে নিন</string>
   <string name="search_language">একটি ভাষা জন্য অনুসন্ধান করুন</string>
   <string name="loading">লোড হচ্ছে ...</string>
-  <string name="view_license">দেখুন লাইসেন্সের</string>
+  <string name="view_license_agreement">দেখুন লাইসেন্সের</string>
   <string name="license_deny">না ধন্যবাদ</string>
   <string name="license_accept">আমি রাজি</string>
   <string name="label_note_phrase">সিলেক্টেড ফ্রেজ:</string>
