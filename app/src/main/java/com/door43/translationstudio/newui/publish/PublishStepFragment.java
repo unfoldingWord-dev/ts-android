@@ -42,7 +42,11 @@ public abstract class PublishStepFragment extends Fragment {
         getActivity().finish();
     }
 
+    protected OnEventListener getListener() {
+        return mListener;
+    }
+
     public interface OnEventListener {
-        // TODO: this is here in case we need it
+        void nextStep();
     }
 }

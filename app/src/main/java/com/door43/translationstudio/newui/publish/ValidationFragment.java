@@ -110,6 +110,7 @@ public class ValidationFragment extends PublishStepFragment implements ManagedTa
 
     private void nextStep() {
         // TODO: proceed to the next step
+        getListener().nextStep();
     }
 
     @Override

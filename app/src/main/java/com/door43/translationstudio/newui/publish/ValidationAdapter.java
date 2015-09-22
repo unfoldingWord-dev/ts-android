@@ -1,7 +1,6 @@
 package com.door43.translationstudio.newui.publish;
 
 import android.app.Activity;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,38 +13,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by joel on 9/20/2015.
  */
 public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.ViewHolder> {
-
-    private final Library mLibrary;
-    private final Translator mTranslator;
     private final Activity mContext;
-//    private final TargetTranslation mTargetTranslation;
-//    private final SourceTranslation mSourceTranslation;
-//    private final SourceLanguage mSourceLanguage;
-//    private final TargetLanguage mTargetLanguage;
     private ValidationItem[] mValidations;
     private OnClickListener mListener;
 
     public ValidationAdapter(Activity context) {
-        mLibrary = AppContext.getLibrary();
-        mTranslator = AppContext.getTranslator();
         mContext = context;
-//        mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
-//        mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-//        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
-//        mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
-
         mValidations = new ValidationItem[0];
     }
 
@@ -93,7 +72,11 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
 
             // icon
             if (item.isValid()) {
-                holder.mIcon.setBackgroundResource(R.drawable.ic_done_black_24dp);
+                if(item.isRange()) {
+                    holder.mIcon.setBackgroundResource(R.drawable.ic_done_all_black_24dp);
+                } else {
+                    holder.mIcon.setBackgroundResource(R.drawable.ic_done_black_24dp);
+                }
                 ViewUtil.tintViewDrawable(holder.mIcon, mContext.getResources().getColor(R.color.green));
             } else {
                 holder.mIcon.setBackgroundResource(R.drawable.ic_report_black_24dp);

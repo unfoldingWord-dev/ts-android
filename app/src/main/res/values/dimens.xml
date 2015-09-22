@@ -27,5 +27,5 @@
     <dimen name="card_margin">16dp</dimen>
     <dimen name="stacked_card_margin">48dp</dimen>
     <dimen name="stacked_card_thin_margin">25dp</dimen>
-    <dimen name="publish_backdrop_height">128dp</dimen>
+    <dimen name="publish_backdrop_height">110dp</dimen>
 </resources>
