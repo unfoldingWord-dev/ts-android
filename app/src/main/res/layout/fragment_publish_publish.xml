@@ -68,6 +68,31 @@
                         android:layout_marginBottom="@dimen/card_margin"
                         android:text="@string/publish_to_unfoldingword"/>
 
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="16dp"
+                        android:paddingEnd="16dp"
+                        android:layout_marginBottom="@dimen/card_margin"
+                        android:paddingRight="16dp"
+                        android:gravity="center">
+                        <ImageView
+                            android:id="@+id/wifi_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginRight="5dp"
+                            android:layout_marginEnd="5dp"
+                            android:background="@drawable/ic_wifi_black_18dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="@dimen/caption"
+                            android:layout_gravity="center"
+                            android:textColor="@color/dark_secondary_text"
+                            android:text="@string/requires_internet"/>
+                    </LinearLayout>
+
                     <Button
                         android:visibility="visible"
                         android:layout_width="wrap_content"

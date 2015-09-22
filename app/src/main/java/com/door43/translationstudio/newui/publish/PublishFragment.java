@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
@@ -73,15 +75,24 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
         mUploadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // marks the publish step as done
-                getListener().finishPublishing();
-                // begin upload
-                UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
-                task.addOnFinishedListener(PublishFragment.this);
-                TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
-                // TODO: display progress dialog
+                if(AppContext.context().isNetworkAvailable()) {
+                    // marks the publish step as done
+                    getListener().finishPublishing();
+                    // begin upload
+                    UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
+                    task.addOnFinishedListener(PublishFragment.this);
+                    TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
+                    // TODO: display progress dialog
+                } else {
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         });
+
+        ImageView wifiIcon = (ImageView)rootView.findViewById(R.id.wifi_icon);
+        ViewUtil.tintViewDrawable(wifiIcon, getResources().getColor(R.color.dark_secondary_text));
 
         UploadTargetTranslationTask task = (UploadTargetTranslationTask)TaskManager.getTask(UploadTargetTranslationTask.TASK_ID);
         if(task != null) {

@@ -358,8 +358,17 @@ public class TargetTranslation {
      * @param callback an optional callback
      */
     public void commit(CommitTask.OnAddComplete callback) {
-        Repo repo = new Repo(mTargetTranslationDirectory.getAbsolutePath());
+        // TODO: don't use a callback but perform on the same thread.
+        Repo repo = getRepo();
         CommitTask commit = new CommitTask(repo, ".", callback);
         commit.executeTask();
+    }
+
+    /**
+     * Returns the repository for this target translation
+     * @return
+     */
+    public Repo getRepo() {
+        return new Repo(mTargetTranslationDirectory.getAbsolutePath());
     }
 }
