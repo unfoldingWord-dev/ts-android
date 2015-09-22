@@ -196,11 +196,12 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
     @Override
     public void onDestroy() {
         // save position state
-        int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
-        String chapterId = mAdapter.getFocusedChapterId(lastItemPosition);
-        String frameId = mAdapter.getFocusedFrameId(lastItemPosition);
-        AppContext.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
-
+        if(mLayoutManager != null) {
+            int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
+            String chapterId = mAdapter.getFocusedChapterId(lastItemPosition);
+            String frameId = mAdapter.getFocusedFrameId(lastItemPosition);
+            AppContext.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
+        }
         super.onDestroy();
     }
 
