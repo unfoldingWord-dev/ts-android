@@ -99,6 +99,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
 
             if(savedInstanceState == null) {
                 mLayoutManager.scrollToPosition(mAdapter.getListStartPosition());
+                mListener.onScrollProgress(mAdapter.getListStartPosition());
             }
         }
 
