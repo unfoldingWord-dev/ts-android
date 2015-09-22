@@ -1,5 +1,10 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.app.AlertDialog;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,25 +18,32 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.newui.ReportBugDialog;
 import com.door43.translationstudio.tasks.UploadProjectTask;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.util.AppContext;
+import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
 
+
 /**
  * Created by joel on 9/20/2015.
  */
-public class PublishFragment extends PublishStepFragment implements ManagedTask.OnFinishedListener {
+public class PublishFragment extends PublishStepFragment implements GenericTaskWatcher.OnFinishedListener {
 
     private static final String STATE_UPLOADED = "state_uploaded";
     private boolean mUploaded = false;
     private Button mUploadButton;
+    private GenericTaskWatcher mTaskWatcher;
     private LinearLayout mUploadSuccess;
+    private ProgressDialog mProgressDialog;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_publish_publish, container, false);
@@ -46,8 +58,13 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
+        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
+        mTaskWatcher.setOnFinishedListener(this);
+
         // receive uploaded status from activity (overrides save state from fragment)
-        mUploaded = args.getBoolean(ARG_PUBLISH_FINISHED, mUploaded);
+        if(savedInstanceState == null) {
+            mUploaded = args.getBoolean(ARG_PUBLISH_FINISHED, mUploaded);
+        }
 
         final TargetTranslation targetTranslation = AppContext.getTranslator().getTargetTranslation(targetTranslationId);
 
@@ -76,11 +93,9 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
             @Override
             public void onClick(View v) {
                 if(AppContext.context().isNetworkAvailable()) {
-                    // marks the publish step as done
-                    getListener().finishPublishing();
                     // begin upload
                     UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
-                    task.addOnFinishedListener(PublishFragment.this);
+                    mTaskWatcher.watch(task);
                     TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
                     // TODO: display progress dialog
                 } else {
@@ -96,7 +111,7 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
 
         UploadTargetTranslationTask task = (UploadTargetTranslationTask)TaskManager.getTask(UploadTargetTranslationTask.TASK_ID);
         if(task != null) {
-            task.addOnFinishedListener(this);
+            mTaskWatcher.watch(task);
             // TODO: display progress dialog
         }
 
@@ -105,24 +120,86 @@ public class PublishFragment extends PublishStepFragment implements ManagedTask.
 
     @Override
     public void onFinished(ManagedTask task) {
-        TaskManager.clearTask(task);
-        mUploaded = true;
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                mUploadButton.setVisibility(View.GONE);
-                mUploadSuccess.setVisibility(View.VISIBLE);
-                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_SHORT);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
-            }
-        });
+        mTaskWatcher.stop();
+
+        if(((UploadTargetTranslationTask)task).uploadSucceeded()) {
+            final String response = ((UploadTargetTranslationTask)task).getResponse();
+            mUploaded = true;
+            // marks the publish step as done
+            getListener().finishPublishing();
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if(mProgressDialog != null && mProgressDialog.isShowing()) {
+                        mProgressDialog.dismiss();
+                    }
+                    mUploadButton.setVisibility(View.GONE);
+                    mUploadSuccess.setVisibility(View.VISIBLE);
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(R.string.success).setMessage(R.string.git_push_success).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //
+                        }
+                    }).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setTitle(R.string.git_push_success).setMessage(response).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //
+                                }
+                            }).show();
+                        }
+                    }).show();
+                }
+            });
+        } else {
+            final TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
+            final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(R.string.success)
+                    .setMessage(R.string.upload_failed)
+                    .setPositiveButton(R.string.label_ok, null)
+                    .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+
+                            // open bug report dialog
+                            FragmentTransaction ft = getFragmentManager().beginTransaction();
+                            Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                            if (prev != null) {
+                                ft.remove(prev);
+                            }
+                            ft.addToBackStack(null);
+
+                            ReportBugDialog dialog = new ReportBugDialog();
+                            Bundle args = new Bundle();
+                            String message = "Failed to publish the translation of " +
+                                    project.name + " into " +
+                                    targetTranslation.getTargetLanguageName()
+                                    + ".\ntargetTranslation: " + targetTranslation.getId() +
+                                    "\n--------\n\n";
+                            args.putString(ReportBugDialog.ARG_MESSAGE, message);
+                            dialog.setArguments(args);
+                            dialog.show(ft, "bugDialog");
+                        }
+                    }).show();
+        }
     }
 
     @Override
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_UPLOADED, mUploaded);
         super.onSaveInstanceState(out);
+    }
+
+    public void onDestroy() {
+        mTaskWatcher.stop();
+        super.onDestroy();
     }
 }

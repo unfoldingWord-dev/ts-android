@@ -42,6 +42,7 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
 
     private static final String STATE_LATEST_RELEASE = "latest_release";
     private static final String STATE_NOTES = "bug_notes";
+    public static final String ARG_MESSAGE = "arg_message";
     private static String mMessage = "";
     private CheckForLatestReleaseTask.Release mLatestRelease;
     private LinearLayout mLoadingLayout;
@@ -59,6 +60,12 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_report_bug, container, false);
 
+        if(savedInstanceState == null) {
+            Bundle args = getArguments();
+            if (args != null) {
+                mMessage = args.getString(ARG_MESSAGE, "");
+            }
+        }
 
         mLoadingLayout = (LinearLayout)v.findViewById(R.id.loadingLayout);
         mFormLayout = (LinearLayout)v.findViewById(R.id.formLayout);
@@ -70,6 +77,8 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
         Button cancelButton = (Button)v.findViewById(R.id.cancelButton);
         Button confirmButton = (Button)v.findViewById(R.id.confirmButton);
         final EditText editText = (EditText)v.findViewById(R.id.editText);
+        editText.setText(mMessage);
+        editText.setSelection(editText.getText().length());
 
         File logFile = Logger.getLogFile();
         if(logFile.exists()) {

@@ -26,6 +26,7 @@ import java.util.Map;
 public class Library {
     public static final String TARGET_LANGUAGES_FILE = "languages.json";
     public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
+    private static final int SOURCE_TRANSLATION_MIN_CHECKING_LEVEL = 3;
     private final Indexer mServerIndex;
     private final Indexer mAppIndex;
     private final File mLibraryDir;
@@ -600,7 +601,7 @@ public class Library {
             String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null) {
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
                     sourceTranslations.add(sourceTranslation);
                 }
             }

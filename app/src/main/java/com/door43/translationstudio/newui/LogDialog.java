@@ -50,8 +50,8 @@ public class LogDialog extends DialogFragment {
                         text.setPadding(10, 0, 10, 0);
                         text.setMovementMethod(ScrollingMovementMethod.getInstance());
                         text.canScrollVertically(View.SCROLL_AXIS_VERTICAL);
-                        dialog.setContentView(text);
                         dialog.requestWindowFeature(STYLE_NO_TITLE);
+                        dialog.setContentView(text);
                         dialog.show();
                     }
                 }

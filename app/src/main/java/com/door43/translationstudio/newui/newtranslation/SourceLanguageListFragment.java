@@ -12,8 +12,12 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.util.AppContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 9/7/2015.
@@ -33,7 +37,15 @@ public class SourceLanguageListFragment extends Fragment implements Searchable{
         mLibrary = AppContext.getLibrary();
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new SourceLanguageAdapter(mLibrary.getSourceLanguages(projectId));
+
+        // TRICKY: we convert the source translations to source languages so we only get
+        // languages that meet the minimum checking level
+        SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations(projectId);
+        List<SourceLanguage> sourceLanguages = new ArrayList<>();
+        for(SourceTranslation sourceTranslation:sourceTranslations) {
+            sourceLanguages.add(mLibrary.getSourceLanguage(projectId, sourceTranslation.sourceLanguageId));
+        }
+        mAdapter = new SourceLanguageAdapter(sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]));
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

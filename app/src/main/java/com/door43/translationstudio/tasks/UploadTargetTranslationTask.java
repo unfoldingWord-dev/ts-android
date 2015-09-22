@@ -89,7 +89,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
      */
     private void upload() {
         publishProgress(-1, AppContext.context().getResources().getString(R.string.publishing_translation));
-        
+
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
         String targetTranslationRemoteRepository = server + ":tS/" + AppContext.udid() + "/uw-" + mTargetTranslation.getProjectId() + "-" + mTargetTranslation.getTargetLanguageId();
 
@@ -338,5 +338,9 @@ public class UploadTargetTranslationTask extends ManagedTask {
             Logger.e(this.getClass().getName(), "Failed to parse response from keys server", e);
             mUploadSucceeded = false;
         }
+    }
+
+    public TargetTranslation getTargetTranslation() {
+        return mTargetTranslation;
     }
 }
