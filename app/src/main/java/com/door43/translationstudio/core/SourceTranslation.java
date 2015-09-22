@@ -155,9 +155,14 @@ public class SourceTranslation {
      * @return
      */
     public static String getSourceLanguageIdFromId(String sourceTranslationId) {
-        String[] complexId = sourceTranslationId.split("-", 3);
-        if(complexId.length == 3) {
-            return complexId[1];
+        String[] complexId = sourceTranslationId.split("-");
+        if(complexId.length >= 3) {
+            // TRICKY: source language id's can have dashes in them.
+            String sourceLanguageId = complexId[1];
+            for(int i = 2; i < complexId.length - 1; i ++) {
+                sourceLanguageId += "-" + complexId[i];
+            }
+            return sourceLanguageId;
         } else {
             throw new StringIndexOutOfBoundsException("malformed source translation id" + sourceTranslationId);
         }
@@ -169,9 +174,9 @@ public class SourceTranslation {
      * @return
      */
     public static String getResourceIdFromId(String sourceTranslationId) {
-        String[] complexId = sourceTranslationId.split("-", 3);
-        if(complexId.length == 3) {
-            return complexId[2];
+        String[] complexId = sourceTranslationId.split("-");
+        if(complexId.length >= 3) {
+            return complexId[complexId.length - 1];
         } else {
             throw new StringIndexOutOfBoundsException("malformed source translation id" + sourceTranslationId);
         }

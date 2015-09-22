@@ -131,9 +131,14 @@ public class TargetTranslation {
      * @return
      */
     public static String getTargetLanguageIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
-        String[] complexId = targetTranslationId.split("-", 3);
-        if(complexId.length == 3) {
-            return complexId[2];
+        String[] complexId = targetTranslationId.split("-");
+        if(complexId.length >= 3) {
+            // TRICKY: target language id's can have dashes in them.
+            String targetLanguageId = complexId[2];
+            for(int i = 3; i < complexId.length - 1; i ++) {
+                targetLanguageId += "-" + complexId[i];
+            }
+            return targetLanguageId;
         } else {
             throw new StringIndexOutOfBoundsException("malformed target translation id" + targetTranslationId);
         }
