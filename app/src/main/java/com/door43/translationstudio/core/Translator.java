@@ -294,6 +294,7 @@ public class Translator {
 
     /**
      * Sets the current view mode for the target translation
+     * TODO: this really doesn't belong here.
      * @param targetTranslationId
      * @param viewMode
      */

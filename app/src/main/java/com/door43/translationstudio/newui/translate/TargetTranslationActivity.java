@@ -60,8 +60,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
         // manual location settings
         String viewModeId = args.getString(TargetTranslationActivity.EXTRA_VIEW_MODE, null);
-        String chapterId = args.getString(TargetTranslationActivity.EXTRA_CHAPTER_ID, null);
-        String frameId = args.getString(TargetTranslationActivity.EXTRA_FRAME_ID, null);
         if(viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
             mTranslator.setViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }

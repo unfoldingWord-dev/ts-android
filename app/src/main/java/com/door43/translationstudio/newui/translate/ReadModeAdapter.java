@@ -52,7 +52,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
 
-    public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId) {
+    public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -62,6 +62,16 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
 
         mChapters = mLibrary.getChapters(mSourceTranslation);
+        if(chapterId != null) {
+            // identify starting selection
+            for (int i = 0; i < mChapters.length; i ++) {
+                Chapter c = mChapters[i];
+                if (c.getId().equals(chapterId)) {
+                    setListStartPosition(i);
+                    break;
+                }
+            }
+        }
         mTargetStateOpen = new boolean[mChapters.length];
         mRenderedSourceBody = new CharSequence[mChapters.length];
         mRenderedTargetBody = new CharSequence[mChapters.length];
@@ -86,6 +96,21 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     void onCoordinate(ViewHolder holder) {
 
     }
+
+    @Override
+    public String getFocusedFrameId(int position) {
+        return null;
+    }
+
+    @Override
+    public String getFocusedChapterId(int position) {
+        if(position >= 0 && position < mChapters.length) {
+            return mChapters[position].getId();
+        } else {
+            return null;
+        }
+    }
+
 
     @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {

@@ -1,5 +1,7 @@
 package com.door43.translationstudio.util;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +34,7 @@ import java.io.IOException;
  * This class provides global access to the application context as well as other important tools
  */
 public class AppContext {
+    private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
     private static MainThreadBus mEventBus;
     private static MainApplication mContext;
     private static Navigator mNavigator;
@@ -262,6 +265,34 @@ public class AppContext {
 
     public static void setLoaded(boolean loaded) {
         AppContext.loaded = loaded;
+    }
+
+    public static void setLastFocus(String targetTranslationId, String chapterId, String frameId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("last_focus_chapter_" + targetTranslationId, chapterId);
+        editor.putString("last_focus_frame_" + targetTranslationId, frameId);
+        editor.apply();
+    }
+
+    /**
+     * Returns the id of the chapter that was last in focus for this target translation
+     * @param targetTranslationId
+     * @return
+     */
+    public static String getLastFocusChapterId(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("last_focus_chapter_" + targetTranslationId, null);
+    }
+
+    /**
+     * Returns the id of the frame that was last in focus for this target translation
+     * @param targetTranslationId
+     * @return
+     */
+    public static String getLastFocusFrameId(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getString("last_focus_frame_" + targetTranslationId, null);
     }
 
     private static class MainThreadBus extends Bus {

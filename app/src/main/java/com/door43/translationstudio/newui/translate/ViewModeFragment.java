@@ -3,6 +3,8 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -59,8 +61,8 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        String chapterId = args.getString(TargetTranslationActivity.EXTRA_CHAPTER_ID, null);
-        String frameId = args.getString(TargetTranslationActivity.EXTRA_FRAME_ID, null);
+        String chapterId = args.getString(TargetTranslationActivity.EXTRA_CHAPTER_ID, AppContext.getLastFocusChapterId(targetTranslationId));
+        String frameId = args.getString(TargetTranslationActivity.EXTRA_FRAME_ID, AppContext.getLastFocusFrameId(targetTranslationId));
 
         // open selected tab
         mSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
@@ -188,6 +190,17 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
         } else {
             mListener.onNoSourceTranslations(targetTranslationId);
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        // save position state
+        int lastItemPosition = mLayoutManager.findFirstVisibleItemPosition();
+        String chapterId = mAdapter.getFocusedChapterId(lastItemPosition);
+        String frameId = mAdapter.getFocusedFrameId(lastItemPosition);
+        AppContext.setLastFocus(mTargetTranslation.getId(), chapterId, frameId);
+
+        super.onDestroy();
     }
 
     /**

@@ -9,6 +9,6 @@ public class ChunkModeFragment extends ViewModeFragment {
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
-        return new ChunkModeAdapter(activity, targetTranslationId, sourceTranslationId);
+        return new ChunkModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId);
     }
 }

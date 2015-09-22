@@ -87,6 +87,20 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         }
     }
 
+    /**
+     * returns the frame at the given position
+     * @param position
+     * @return
+     */
+    public abstract String getFocusedFrameId(int position);
+
+    /**
+     * returns the frame at the given position
+     * @param position
+     * @return
+     */
+    public abstract String getFocusedChapterId(int position);
+
     public interface OnEventListener {
         void onTabClick(String sourceTranslationId);
         void onNewTabClick();

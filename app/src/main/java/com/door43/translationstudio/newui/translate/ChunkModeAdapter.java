@@ -60,7 +60,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private Frame[] mFrames;
     private int mLayoutBuildNumber = 0;
 
-    public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId) {
+    public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -73,6 +73,19 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         List<Frame> frames = new ArrayList<>();
         for(Chapter c:chapters) {
             Frame[] chapterFrames = mLibrary.getFrames(mSourceTranslation, c.getId());
+            if(chapterId != null && c.getId().equals(chapterId) && chapterFrames.length > 0) {
+                // identify starting selection
+                setListStartPosition(frames.size());
+                if(frameId != null) {
+                    for(Frame frame:chapterFrames) {
+                        if(frame.getId().equals(frameId)) {
+                            setListStartPosition(frames.size());
+                        }
+                        frames.add(frame);
+                    }
+                    continue;
+                }
+            }
             frames.addAll(Arrays.asList(chapterFrames));
         }
         mFrames = frames.toArray(new Frame[frames.size()]);
@@ -106,6 +119,22 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     @Override
     void onCoordinate(ViewHolder holder) {
 
+    }
+
+    @Override
+    public String getFocusedFrameId(int position) {
+        if(position >= 0 && position < mFrames.length) {
+            return mFrames[position].getId();
+        }
+        return null;
+    }
+
+    @Override
+    public String getFocusedChapterId(int position) {
+        if(position >= 0 && position < mFrames.length) {
+            return mFrames[position].getChapterId();
+        }
+        return null;
     }
 
     @Override
