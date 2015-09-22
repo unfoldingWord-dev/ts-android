@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -139,10 +140,16 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 return true;
                             case R.id.action_backup:
                                 // TODO: need new ui
+                                Snackbar snackBackup = Snackbar.make(findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
+                                ViewUtil.setSnackBarTextColor(snackBackup, getResources().getColor(R.color.light_primary_text));
+                                snackBackup.show();
                                 return true;
                             case R.id.action_share:
-                                Intent shareIntent = new Intent(TargetTranslationActivity.this, SharingActivity.class);
-                                startActivity(shareIntent);
+//                                Intent shareIntent = new Intent(TargetTranslationActivity.this, SharingActivity.class);
+//                                startActivity(shareIntent);
+                                Snackbar snackShare = Snackbar.make(findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
+                                ViewUtil.setSnackBarTextColor(snackShare, getResources().getColor(R.color.light_primary_text));
+                                snackShare.show();
                                 return true;
                             case R.id.action_bug:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();

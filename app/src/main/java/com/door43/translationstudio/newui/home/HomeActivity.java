@@ -81,16 +81,12 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch(item.getItemId()) {
-//                            case R.id.action_publish:
-//                                Intent publishIntent = new Intent(HomeActivity.this, PublishActivity.class);
-//                                startActivity(publishIntent);
-//                                return true;
-                            case R.id.action_backup:
-                                // TODO: need new ui
-                                return true;
                             case R.id.action_share:
-                                Intent shareIntent = new Intent(HomeActivity.this, SharingActivity.class);
-                                startActivity(shareIntent);
+                                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
+                                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                                snack.show();
+//                                Intent shareIntent = new Intent(HomeActivity.this, SharingActivity.class);
+//                                startActivity(shareIntent);
                                 return true;
                             case R.id.action_bug:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();

@@ -156,7 +156,7 @@
                     android:background="?attr/selectableItemBackground"/>
 
                 <Button
-                    android:id="@+id/export_to_bluetooth"
+                    android:id="@+id/export_to_device"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/export_to_device"
