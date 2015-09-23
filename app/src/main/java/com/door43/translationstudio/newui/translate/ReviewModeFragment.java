@@ -5,6 +5,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.door43.tools.reporting.Logger;
+
 /**
  * Created by joel on 9/8/2015.
  */
@@ -71,6 +73,11 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return mGesture.onTouchEvent(event);
+        if(mGesture != null) {
+            return mGesture.onTouchEvent(event);
+        } else {
+            Logger.w(this.getClass().getName(), "The gesture dectector was not initialized so the touch was not handled");
+            return false;
+        }
     }
 }
