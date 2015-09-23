@@ -432,7 +432,9 @@ public class MainApplication extends Application {
 
         try{
             KeyPair kpair=KeyPair.genKeyPair(jsch, type);
+            new File(privateKeyPath).createNewFile();
             kpair.writePrivateKey(privateKeyPath);
+            new File(publicKeyPath).createNewFile();
             kpair.writePublicKey(publicKeyPath, AppContext.udid());
             kpair.dispose();
         }
