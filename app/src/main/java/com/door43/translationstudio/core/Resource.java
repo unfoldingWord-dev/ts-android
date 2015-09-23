@@ -10,11 +10,13 @@ public class Resource {
     private final int mCheckingLevel;
     private final String mTitle;
     private final String mId;
+    private final String mVersion;
 
-    private Resource(String title, String id, int checkingLevel) {
+    private Resource(String title, String id, int checkingLevel, String version) {
         mTitle = title;
         mId = id;
         mCheckingLevel = checkingLevel;
+        mVersion = version;
     }
 
     /**
@@ -31,19 +33,40 @@ public class Resource {
         return new Resource(
             json.getString("name"),
             json.getString("slug"),
-            statusJson.getInt("checking_level")
+            statusJson.getInt("checking_level"),
+            statusJson.getString("version")
         );
     }
 
+    /**
+     * Returns the id of the resource
+     * @return
+     */
     public String getId() {
         return mId;
     }
 
+    /**
+     * Returns the checking level of the resource
+     * @return
+     */
     public int getCheckingLevel() {
         return mCheckingLevel;
     }
 
+    /**
+     * Returns the title of the resource
+     * @return
+     */
     public String getTitle() {
         return mTitle;
+    }
+
+    /**
+     * Returns the version of the resource
+     * @return
+     */
+    public String getVersion() {
+        return mVersion;
     }
 }

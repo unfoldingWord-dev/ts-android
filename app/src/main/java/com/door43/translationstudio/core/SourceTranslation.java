@@ -53,6 +53,28 @@ public class SourceTranslation {
     }
 
     /**
+     * Generates a new source translation from json
+     *
+     * @param projectId
+     * @param sourceLanguageJson
+     * @param resource
+     * @return
+     * @throws JSONException
+     */
+    public static SourceTranslation generate(String projectId, JSONObject sourceLanguageJson, Resource resource) throws JSONException {
+        String sourceLanguageTitle = sourceLanguageJson.getString("name");
+        String sourceLanguageId = sourceLanguageJson.getString("slug");
+        JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
+        String projectTitle = projectLanguageJson.getString("name");
+        String resourceTitle = resource.getTitle();
+        String resourceId = resource.getId();
+        int checkingLevel = resource.getCheckingLevel();
+        int dateModified = sourceLanguageJson.getInt("date_modified");
+        String version = resource.getVersion();
+        return new SourceTranslation(projectId, sourceLanguageId, resourceId, projectTitle, sourceLanguageTitle, resourceTitle, checkingLevel, dateModified, version);
+    }
+
+    /**
      * Creates a new simple source translation
      *
      * This object will not contain any extra information about the translation other than the ids

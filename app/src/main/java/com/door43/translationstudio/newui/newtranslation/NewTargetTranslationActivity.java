@@ -114,17 +114,14 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 
     @Override
     public void onItemClick(SourceLanguage sourceLanguage) {
-        // TODO: set tab setting in target translation
         Library library = AppContext.getLibrary();
         Translator translator = AppContext.getTranslator();
+
         TargetTranslation targetTranslation = translator.getTargetTranslation(mNewTargetTranslationId);
         if(targetTranslation != null) {
-            Resource[] resources = library.getResources(targetTranslation.getProjectId(), sourceLanguage.getId());
-            if(resources.length > 0) {
-                SourceTranslation sourceTranslation = library.getSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId(), resources[0].getId());
-                if(sourceTranslation != null) {
-                    translator.addSourceTranslation(mNewTargetTranslationId, sourceTranslation);
-                }
+            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
+            if(sourceTranslation != null) {
+                translator.addSourceTranslation(mNewTargetTranslationId, sourceTranslation);
             }
             Intent data = new Intent();
             data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);

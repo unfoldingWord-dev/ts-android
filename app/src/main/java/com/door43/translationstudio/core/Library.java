@@ -27,6 +27,7 @@ public class Library {
     public static final String TARGET_LANGUAGES_FILE = "languages.json";
     public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final int SOURCE_TRANSLATION_MIN_CHECKING_LEVEL = 3;
+    private static final String DEFAULT_RESOURCE_ID = "ulb";
     private final Indexer mServerIndex;
     private final Indexer mAppIndex;
     private final File mLibraryDir;
@@ -585,6 +586,36 @@ public class Library {
             JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, sourceLanguageId);
             try {
                 return SourceTranslation.generate(projectId, sourceLanguageJson, resourceJson);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the source translation with the default resource.
+     * If the default resource does not exist it will use the first available resource
+     *
+     * @param projectId
+     * @param sourceLanguageId
+     * @return null if the source translation does not exist
+     */
+    public SourceTranslation getDefaultSourceTranslation(String projectId, String sourceLanguageId) {
+        Resource[] resources = getResources(projectId, sourceLanguageId);
+        if(resources.length > 0) {
+            // start with first resource
+            Resource defaultResource = resources[0];
+            // try default resource
+            for (Resource resource : resources) {
+                if (resource.getId().toLowerCase().equals(DEFAULT_RESOURCE_ID)) {
+                    defaultResource = resource;
+                }
+            }
+            // load source translation
+            JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, sourceLanguageId);
+            try {
+                return SourceTranslation.generate(projectId, sourceLanguageJson, defaultResource);
             } catch (JSONException e) {
                 e.printStackTrace();
             }

@@ -17,7 +17,9 @@ import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by joel on 9/7/2015.
@@ -41,11 +43,15 @@ public class SourceLanguageListFragment extends Fragment implements Searchable{
         // TRICKY: we convert the source translations to source languages so we only get
         // languages that meet the minimum checking level
         SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations(projectId);
-        List<SourceLanguage> sourceLanguages = new ArrayList<>();
+        Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
         for(SourceTranslation sourceTranslation:sourceTranslations) {
-            sourceLanguages.add(mLibrary.getSourceLanguage(projectId, sourceTranslation.sourceLanguageId));
+            SourceLanguage sourceLanguage = mLibrary.getSourceLanguage(projectId, sourceTranslation.sourceLanguageId);
+            // TRICKY: a source language could be represented several times due to multiple resources
+            if(!sourceLanguages.containsKey(sourceLanguage.getId())) {
+                sourceLanguages.put(sourceLanguage.getId(), sourceLanguage);
+            }
         }
-        mAdapter = new SourceLanguageAdapter(sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]));
+        mAdapter = new SourceLanguageAdapter(sourceLanguages.values().toArray(new SourceLanguage[sourceLanguages.size()]));
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
