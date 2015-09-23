@@ -6,12 +6,13 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.door43.translationstudio.core.TranslationViewMode;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 
 /**
  * Created by joel on 9/20/2015.
  */
-public abstract class PublishStepFragment extends Fragment {
+public abstract class PublishStepFragment extends BaseFragment {
     public static final String ARG_SOURCE_TRANSLATION_ID = "arg_source_translation_id";
     public static final String ARG_PUBLISH_FINISHED = "arg_publish_finished";
     private OnEventListener mListener;

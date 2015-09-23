@@ -12,12 +12,13 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.library.Searchable;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
 
 /**
  * Created by joel on 9/4/2015.
  */
-public class TargetLanguageListFragment extends Fragment implements Searchable {
+public class TargetLanguageListFragment extends BaseFragment implements Searchable {
     private OnItemClickListener mListener;
     private TargetLanguageAdapter mAdapter;
 

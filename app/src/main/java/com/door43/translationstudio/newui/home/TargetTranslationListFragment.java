@@ -12,12 +12,13 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
 
 /**
  * Displays a list of target translations
  */
-public class TargetTranslationListFragment extends Fragment implements TargetTranslationInfoDialog.OnDeleteListener {
+public class TargetTranslationListFragment extends BaseFragment implements TargetTranslationInfoDialog.OnDeleteListener {
 
     private TargetTranslationAdapter mAdapter;
     private OnItemClickListener mListener;

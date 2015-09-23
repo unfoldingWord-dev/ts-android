@@ -13,6 +13,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.library.Searchable;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.newui.newtranslation.ProjectAdapter;
 import com.door43.translationstudio.util.AppContext;
 
@@ -21,7 +22,7 @@ import java.util.Locale;
 /**
  * Created by joel on 9/4/2015.
  */
-public class ProjectListFragment extends Fragment implements Searchable {
+public class ProjectListFragment extends BaseFragment implements Searchable {
     private OnItemClickListener mListener;
     private Library mLibrary;
     private ProjectAdapter mAdapter;

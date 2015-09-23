@@ -9,11 +9,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.newui.BaseFragment;
 
 /**
  * Displays a welcome message with instructions about creating target translations
  */
-public class WelcomeFragment extends Fragment {
+public class WelcomeFragment extends BaseFragment {
 
     private OnCreateNewTargetTranslation mListener;
 

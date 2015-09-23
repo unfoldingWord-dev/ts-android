@@ -17,6 +17,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
 
 import java.security.InvalidParameterException;
@@ -24,7 +25,7 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 9/18/2015.
  */
-public abstract class ViewModeFragment extends Fragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
+public abstract class ViewModeFragment extends BaseFragment implements ViewModeAdapter.OnEventListener, ChooseSourceTranslationDialog.OnClickListener {
 
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mLayoutManager;

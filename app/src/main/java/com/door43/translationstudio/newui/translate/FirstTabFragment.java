@@ -15,6 +15,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
 
 import java.security.InvalidParameterException;
@@ -22,7 +23,7 @@ import java.security.InvalidParameterException;
 /**
  * Created by joel on 9/14/2015.
  */
-public class FirstTabFragment extends Fragment implements ChooseSourceTranslationDialog.OnClickListener {
+public class FirstTabFragment extends BaseFragment implements ChooseSourceTranslationDialog.OnClickListener {
 
     private Translator mTranslator;
     private Library mLibrary;

@@ -1,10 +1,9 @@
 package com.door43.translationstudio.newui;
 
+import android.app.Fragment;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
-import com.door43.translationstudio.CrashReporterActivity;
 import com.door43.translationstudio.SplashScreenActivity;
 import com.door43.translationstudio.util.AppContext;
 
@@ -15,20 +14,20 @@ import java.io.File;
  * activities such as recovery from crashes.
  *
  */
-public abstract class BaseActivity extends AppCompatActivity {
+public class BaseFragment extends Fragment {
 
     @Override
     public void onResume() {
         super.onResume();
 
         // check if we crashed
-        File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
+        File dir = new File(getActivity().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
         String[] files = GlobalExceptionHandler.getStacktraces(dir);
         if (files.length > 0) {
             // restart
-            Intent intent = new Intent(this, SplashScreenActivity.class);
+            Intent intent = new Intent(getActivity(), SplashScreenActivity.class);
             startActivity(intent);
-            finish();
+            getActivity().finish();
         }
     }
 }

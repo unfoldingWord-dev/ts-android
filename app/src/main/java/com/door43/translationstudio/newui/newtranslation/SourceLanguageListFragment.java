@@ -14,6 +14,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.library.Searchable;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.Map;
 /**
  * Created by joel on 9/7/2015.
  */
-public class SourceLanguageListFragment extends Fragment implements Searchable{
+public class SourceLanguageListFragment extends BaseFragment implements Searchable{
 
     public static final String ARG_PROJECT_ID = "extra_project_id";
     private Library mLibrary;
