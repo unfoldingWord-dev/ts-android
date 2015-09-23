@@ -72,6 +72,7 @@ public class TranslatorTest extends InstrumentationTestCase {
         TargetTranslation[] targetTranslations = mTranslator.getTargetTranslations();
 
         mTranslator.deleteTargetTranslation(targetTranslation.getId());
+        AppContext.clearTargetTranslationSettings(targetTranslation.getId());
         TargetTranslation deletedTargetTranslation = mTranslator.getTargetTranslation(targetTranslation.getId());
         assertNull(deletedTargetTranslation);
 
@@ -86,14 +87,16 @@ public class TranslatorTest extends InstrumentationTestCase {
 
         SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations(targetTranslation.getProjectId());
 
-        mTranslator.addSourceTranslation(targetTranslation.getId(), sourceTranslations[0]);
-        mTranslator.addSourceTranslation(targetTranslation.getId(), sourceTranslations[1]);
+        AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslations[0].getId());
+        targetTranslation.useSourceTranslation(sourceTranslations[0]);
+        AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslations[1].getId());
+        targetTranslation.useSourceTranslation(sourceTranslations[1]);
 
-        String[] sourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslation.getId());
+        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslation.getId());
         assertEquals(2, sourceTranslationIds.length);
 
         // set/get selected translation
-        String selectedSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslation.getId());
+        String selectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslation.getId());
         assertNotNull(selectedSourceTranslationId);
         assertTrue(selectedSourceTranslationId.equals(sourceTranslationIds[0]) || selectedSourceTranslationId.equals(sourceTranslationIds[1]));
     }
@@ -103,8 +106,8 @@ public class TranslatorTest extends InstrumentationTestCase {
         TargetLanguage targetLanguage = targetLanguages[1];
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetLanguage.getId(), "obs");
 
-        String selectedSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslation.getId());
-        String[] sourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslation.getId());
+        String selectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslation.getId());
+        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslation.getId());
 
         // the loop below requires two items
         assertEquals(2, sourceTranslationIds.length);
@@ -113,19 +116,19 @@ public class TranslatorTest extends InstrumentationTestCase {
         String newSelectedSourceTranslationId = null;
         for(String id:sourceTranslationIds) {
             if(id.equals(selectedSourceTranslationId)) {
-                mTranslator.removeSourceTranslation(targetTranslation.getId(), id);
+                AppContext.removeOpenSourceTranslation(targetTranslation.getId(), id);
             } else {
                 newSelectedSourceTranslationId = id;
             }
         }
-        String[] updatedSourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslation.getId());
+        String[] updatedSourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslation.getId());
         assertEquals(1, updatedSourceTranslationIds.length);
         // should auto select the next source translation
-        String actualNewSelectedSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslation.getId());
+        String actualNewSelectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslation.getId());
         assertEquals(newSelectedSourceTranslationId, actualNewSelectedSourceTranslationId);
         // finish emptying
-        mTranslator.removeSourceTranslation(targetTranslation.getId(), newSelectedSourceTranslationId);
-        assertEquals(0, mTranslator.getSourceTranslationIds(targetTranslation.getId()).length);
+        AppContext.removeOpenSourceTranslation(targetTranslation.getId(), newSelectedSourceTranslationId);
+        assertEquals(0, AppContext.getOpenSourceTranslationIds(targetTranslation.getId()).length);
     }
 
     public void test07SetSelectedSourceTranslation() throws Exception {
@@ -133,17 +136,17 @@ public class TranslatorTest extends InstrumentationTestCase {
         TargetLanguage targetLanguage = targetLanguages[1];
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetLanguage.getId(), "obs");
 
-        String selectedSourceTranslationid = mTranslator.getSelectedSourceTranslationId(targetTranslation.getId());
+        String selectedSourceTranslationid = AppContext.getSelectedSourceTranslationId(targetTranslation.getId());
         assertNull(selectedSourceTranslationid);
 
         // set dummy source translation
         String dummySourceTranslationid = "dummy_id";
-        mTranslator.setSelectedSourceTranslation(targetTranslation.getId(), dummySourceTranslationid);
-        String newSelectedSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslation.getId());
+        AppContext.setSelectedSourceTranslation(targetTranslation.getId(), dummySourceTranslationid);
+        String newSelectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslation.getId());
         assertEquals(dummySourceTranslationid, newSelectedSourceTranslationId);
 
         // remove dummy source translation
-        mTranslator.setSelectedSourceTranslation(targetTranslation.getId(), null);
-        assertNull(mTranslator.getSelectedSourceTranslationId(targetTranslation.getId()));
+        AppContext.setSelectedSourceTranslation(targetTranslation.getId(), null);
+        assertNull(AppContext.getSelectedSourceTranslationId(targetTranslation.getId()));
     }
 }

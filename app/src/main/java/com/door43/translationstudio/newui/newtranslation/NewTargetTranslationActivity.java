@@ -6,16 +6,15 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
@@ -25,6 +24,8 @@ import com.door43.translationstudio.library.ProjectLibraryListActivity;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.util.AppContext;
+
+import org.json.JSONException;
 
 public class NewTargetTranslationActivity extends BaseActivity implements TargetLanguageListFragment.OnItemClickListener, ProjectListFragment.OnItemClickListener, SourceLanguageListFragment.OnItemClickListener {
 
@@ -121,7 +122,12 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
         if(targetTranslation != null) {
             SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
             if(sourceTranslation != null) {
-                translator.addSourceTranslation(mNewTargetTranslationId, sourceTranslation);
+                AppContext.addOpenSourceTranslation(mNewTargetTranslationId, sourceTranslation.getId());
+                try {
+                    targetTranslation.useSourceTranslation(sourceTranslation);
+                } catch (JSONException e) {
+                    Logger.w(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                }
             }
             Intent data = new Intent();
             data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);

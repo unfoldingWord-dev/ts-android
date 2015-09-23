@@ -16,6 +16,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Navigator;
@@ -267,6 +268,40 @@ public class AppContext {
         AppContext.loaded = loaded;
     }
 
+    /**
+     * Sets the last opened view mode for a target translation
+     * @param targetTranslationId
+     * @param viewMode
+     */
+    public static void setLastViewMode(String targetTranslationId, TranslationViewMode viewMode) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("last_view_mode_" + targetTranslationId, viewMode.toString());
+        editor.apply();
+    }
+
+    /**
+     * Returns the last view mode of the target translation.
+     * The default view mode will be returned if there is no recorded last view mode
+     *
+     * @param targetTranslationId
+     * @return
+     */
+    public static TranslationViewMode getLastViewMode(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        TranslationViewMode viewMode = TranslationViewMode.get(prefs.getString("last_view_mode_" + targetTranslationId, null));
+        if(viewMode == null) {
+            return TranslationViewMode.READ;
+        }
+        return viewMode;
+    }
+
+    /**
+     * Sets the last focused chapter and frame for a target translation
+     * @param targetTranslationId
+     * @param chapterId
+     * @param frameId
+     */
     public static void setLastFocus(String targetTranslationId, String chapterId, String frameId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -293,6 +328,122 @@ public class AppContext {
     public static String getLastFocusFrameId(String targetTranslationId) {
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         return prefs.getString("last_focus_frame_" + targetTranslationId, null);
+    }
+
+    /**
+     * Adds a source translation to the list of open tabs on a target translation
+     * @param targetTranslationId
+     * @param sourceTranslationId
+     */
+    public static void addOpenSourceTranslation(String targetTranslationId, String sourceTranslationId) {
+        if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
+            SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            String[] sourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
+            String newIdSet = sourceTranslationId;
+            for (String id : sourceTranslationIds) {
+                if (!id.equals(sourceTranslationId)) {
+                    newIdSet += "|" + id;
+                }
+            }
+            editor.putString("open_source_translations_" + targetTranslationId, newIdSet);
+            editor.apply();
+        }
+    }
+
+    /**
+     * Removes a source translation from the list of open tabs on a target translation
+     * @param targetTranslationId
+     * @param sourceTranslationId
+     */
+    public static void removeOpenSourceTranslation(String targetTranslationId, String sourceTranslationId) {
+        if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
+            SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            String[] sourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
+            String newIdSet = "";
+            for (String id : sourceTranslationIds) {
+                if (!id.equals(sourceTranslationId)) {
+                    if (newIdSet.isEmpty()) {
+                        newIdSet = id;
+                    } else {
+                        newIdSet += "|" + id;
+                    }
+                }
+            }
+            editor.putString("open_source_translations_" + targetTranslationId, newIdSet);
+            editor.apply();
+        }
+    }
+
+    /**
+     * Returns an array of open source translation tabs on a target translation
+     * @param targetTranslationId
+     * @return
+     */
+    public static String[] getOpenSourceTranslationIds(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        String idSet = prefs.getString("open_source_translations_" + targetTranslationId, "").trim();
+        if(idSet.isEmpty()) {
+            return new String[0];
+        } else {
+            return idSet.split("\\|");
+        }
+    }
+
+    /**
+     * Sets or removes the selected open source translation tab on a target translation
+     * @param targetTranslationId
+     * @param sourceTranslationId if null the selection will be unset
+     */
+    public static void setSelectedSourceTranslation(String targetTranslationId, String sourceTranslationId) {
+        if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
+            addOpenSourceTranslation(targetTranslationId, sourceTranslationId);
+        }
+
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
+            editor.putString("selected_source_translation_" + targetTranslationId, sourceTranslationId);
+        } else {
+            editor.remove("selected_source_translation_"  + targetTranslationId);
+        }
+        editor.apply();
+    }
+
+    /**
+     * Returns the selected open source translation tab on the target translation
+     * If there is no selection the first open tab will be set as the selected tab
+     * @param targetTranslationId
+     * @return
+     */
+    public static String getSelectedSourceTranslationId(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        String selectedSourceTranslationId = prefs.getString("selected_source_translation_" + targetTranslationId, null);
+        if(selectedSourceTranslationId == null || selectedSourceTranslationId.isEmpty()) {
+            // default to first tab
+            String[] openSourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
+            if(openSourceTranslationIds.length > 0) {
+                selectedSourceTranslationId = openSourceTranslationIds[0];
+                setSelectedSourceTranslation(targetTranslationId, selectedSourceTranslationId);
+            }
+        }
+        return selectedSourceTranslationId;
+    }
+
+    /**
+     * Removes all settings for a target translation
+     * @param targetTranslationId
+     */
+    public static void clearTargetTranslationSettings(String targetTranslationId) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove("selected_source_translation_" + targetTranslationId);
+        editor.remove("open_source_translations_" + targetTranslationId);
+        editor.remove("last_focus_frame_" + targetTranslationId);
+        editor.remove("last_focus_chapter_" + targetTranslationId);
+        editor.remove("last_view_mode_" + targetTranslationId);
+        editor.apply();
     }
 
     private static class MainThreadBus extends Bus {

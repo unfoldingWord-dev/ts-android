@@ -107,7 +107,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
                 mFragment = (PublishStepFragment)getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
                 mFragment = new ValidationFragment();
-                String sourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
+                String sourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
                 args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);
                 mFragment.setArguments(args);
                 getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
@@ -283,7 +283,7 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
         }
 
         Bundle args = getIntent().getExtras();
-        String sourceTranslationId = mTranslator.getSelectedSourceTranslationId(mTargetTranslation.getId());
+        String sourceTranslationId = AppContext.getSelectedSourceTranslationId(mTargetTranslation.getId());
         args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);
         args.putBoolean(PublishStepFragment.ARG_PUBLISH_FINISHED, mPublishFinished);
         mFragment.setArguments(args);

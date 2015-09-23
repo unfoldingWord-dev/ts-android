@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -19,6 +20,8 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
+
+import org.json.JSONException;
 
 import java.security.InvalidParameterException;
 
@@ -64,7 +67,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         String frameId = args.getString(TargetTranslationActivity.EXTRA_FRAME_ID, AppContext.getLastFocusFrameId(targetTranslationId));
 
         // open selected tab
-        mSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
+        mSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
 
         if(mSourceTranslationId == null) {
             mListener.onNoSourceTranslations(targetTranslationId);
@@ -146,7 +149,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     @Override
     public void onTabClick(String sourceTranslationId) {
-        mTranslator.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
+        AppContext.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
         mAdapter.setSourceTranslation(sourceTranslationId);
     }
 
@@ -174,18 +177,27 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        String[] oldSourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslationId);
+        String[] oldSourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
-            mTranslator.removeSourceTranslation(targetTranslationId, id);
+            AppContext.removeOpenSourceTranslation(targetTranslationId, id);
         }
 
         if(sourceTranslationIds.length > 0) {
             // save open source language tabs
             for(String id:sourceTranslationIds) {
                 SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-                mTranslator.addSourceTranslation(targetTranslationId, sourceTranslation);
+                AppContext.addOpenSourceTranslation(targetTranslationId, sourceTranslation.getId());
+                TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+                if(targetTranslation != null) {
+                    try {
+                        targetTranslation.useSourceTranslation(sourceTranslation);
+                    } catch (JSONException e) {
+                        Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
+                    }
+                }
+
             }
-            String selectedSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslationId);
+            String selectedSourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
             mAdapter.setSourceTranslation(selectedSourceTranslationId);
         } else {
             mListener.onNoSourceTranslations(targetTranslationId);

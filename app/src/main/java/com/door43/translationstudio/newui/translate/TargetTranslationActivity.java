@@ -62,7 +62,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         // manual location settings
         String viewModeId = args.getString(TargetTranslationActivity.EXTRA_VIEW_MODE, null);
         if(viewModeId != null && TranslationViewMode.get(viewModeId) != null) {
-            mTranslator.setViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
+            AppContext.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
         // inject fragments
@@ -70,7 +70,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             if(savedInstanceState != null) {
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                TranslationViewMode viewMode = mTranslator.getViewMode(mTargetTranslation.getId());
+                TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
                 if(viewMode == TranslationViewMode.READ) {
                     mFragment = new ReadModeFragment();
                 } else if(viewMode == TranslationViewMode.CHUNK) {
@@ -178,7 +178,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 if(mFragment instanceof ReadModeFragment == false) {
-                    mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
+                    AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
                     mFragment = new ReadModeFragment();
                     mFragment.setArguments(getIntent().getExtras());
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
@@ -193,7 +193,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 if(mFragment instanceof  ChunkModeFragment == false) {
-                    mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
+                    AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
                     mFragment = new ChunkModeFragment();
                     mFragment.setArguments(getIntent().getExtras());
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
@@ -208,7 +208,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 if(mFragment instanceof  ReviewModeFragment == false) {
-                    mTranslator.setViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
+                    AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
                     mFragment = new ReviewModeFragment();
                     mFragment.setArguments(getIntent().getExtras());
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
@@ -261,7 +261,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void onHasSourceTranslations() {
-        TranslationViewMode viewMode = mTranslator.getViewMode(mTargetTranslation.getId());
+        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
         if(viewMode == TranslationViewMode.READ) {
             mFragment = new ReadModeFragment();
         } else if(viewMode == TranslationViewMode.CHUNK) {

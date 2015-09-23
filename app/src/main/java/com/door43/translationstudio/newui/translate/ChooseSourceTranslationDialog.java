@@ -62,7 +62,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
         mAdapter = new ChooseSourceTranslationAdapter(getActivity());
         // add selected
-        String[] sourceTranslationIds = mTranslator.getSourceTranslationIds(mTargetTranslation.getId());
+        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {

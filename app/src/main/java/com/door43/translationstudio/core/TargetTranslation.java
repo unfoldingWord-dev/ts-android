@@ -166,7 +166,7 @@ public class TargetTranslation {
      * @param sourceTranslation
      * @throws JSONException
      */
-    public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
+    public void useSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
         JSONObject sourceTranslationsJson = mManifest.getJSONObject("source_translations");
         JSONObject translationJson = new JSONObject();
         translationJson.put("checking_level", sourceTranslation.getCheckingLevel());

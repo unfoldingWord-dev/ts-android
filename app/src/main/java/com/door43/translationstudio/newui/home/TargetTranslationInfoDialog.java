@@ -42,6 +42,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             public void onClick(View v) {
                 if(mTargetTranslation != null) {
                     mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
+                    AppContext.clearTargetTranslationSettings(mTargetTranslation.getId());
                 }
                 if(mListener != null) {
                     mListener.onDeleteTargetTranslation(mTargetTranslation.getId());
@@ -59,7 +60,6 @@ public class TargetTranslationInfoDialog extends DialogFragment {
     public void setOnDeleteListener(OnDeleteListener listener) {
         mListener = listener;
     }
-
 
     public interface OnDeleteListener {
         void onDeleteTargetTranslation(String targetTranslationId);
