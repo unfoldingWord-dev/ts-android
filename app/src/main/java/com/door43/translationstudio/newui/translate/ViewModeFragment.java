@@ -3,8 +3,6 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -175,7 +173,7 @@ public abstract class ViewModeFragment extends Fragment implements ViewModeAdapt
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        String[] oldSourceTranslationIds = mTranslator.getSourceTranslations(targetTranslationId);
+        String[] oldSourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
             mTranslator.removeSourceTranslation(targetTranslationId, id);
         }

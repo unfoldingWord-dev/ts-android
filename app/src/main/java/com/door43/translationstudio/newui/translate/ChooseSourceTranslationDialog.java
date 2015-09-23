@@ -62,7 +62,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
         mAdapter = new ChooseSourceTranslationAdapter(getActivity());
         // add selected
-        String[] sourceTranslationIds = mTranslator.getSourceTranslations(mTargetTranslation.getId());
+        String[] sourceTranslationIds = mTranslator.getSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
@@ -112,9 +112,6 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
                         ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(i);
                         if(item.selected) {
                             sourceTranslationIds.add(item.id);
-//                            mTranslator.addSourceTranslation(mTargetTranslation.getId(), mLibrary.getSourceTranslations(item.id));
-//                        } else {
-//                            mTranslator.removeSourceTranslation(mTargetTranslation.getId(), item.id);
                         }
                     }
                 }

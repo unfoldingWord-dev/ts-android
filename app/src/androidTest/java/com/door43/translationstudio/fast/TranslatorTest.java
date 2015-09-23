@@ -89,7 +89,7 @@ public class TranslatorTest extends InstrumentationTestCase {
         mTranslator.addSourceTranslation(targetTranslation.getId(), sourceTranslations[0]);
         mTranslator.addSourceTranslation(targetTranslation.getId(), sourceTranslations[1]);
 
-        String[] sourceTranslationIds = mTranslator.getSourceTranslations(targetTranslation.getId());
+        String[] sourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslation.getId());
         assertEquals(2, sourceTranslationIds.length);
 
         // set/get selected translation
@@ -104,7 +104,7 @@ public class TranslatorTest extends InstrumentationTestCase {
         TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetLanguage.getId(), "obs");
 
         String selectedSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslation.getId());
-        String[] sourceTranslationIds = mTranslator.getSourceTranslations(targetTranslation.getId());
+        String[] sourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslation.getId());
 
         // the loop below requires two items
         assertEquals(2, sourceTranslationIds.length);
@@ -118,14 +118,14 @@ public class TranslatorTest extends InstrumentationTestCase {
                 newSelectedSourceTranslationId = id;
             }
         }
-        String[] updatedSourceTranslationIds = mTranslator.getSourceTranslations(targetTranslation.getId());
+        String[] updatedSourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslation.getId());
         assertEquals(1, updatedSourceTranslationIds.length);
         // should auto select the next source translation
         String actualNewSelectedSourceTranslationId = mTranslator.getSelectedSourceTranslationId(targetTranslation.getId());
         assertEquals(newSelectedSourceTranslationId, actualNewSelectedSourceTranslationId);
         // finish emptying
         mTranslator.removeSourceTranslation(targetTranslation.getId(), newSelectedSourceTranslationId);
-        assertEquals(0, mTranslator.getSourceTranslations(targetTranslation.getId()).length);
+        assertEquals(0, mTranslator.getSourceTranslationIds(targetTranslation.getId()).length);
     }
 
     public void test07SetSelectedSourceTranslation() throws Exception {

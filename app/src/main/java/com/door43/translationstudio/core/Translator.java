@@ -5,9 +5,6 @@ import android.content.SharedPreferences;
 import android.text.Editable;
 import android.text.SpannedString;
 
-import com.door43.translationstudio.rendering.DefaultRenderer;
-import com.door43.translationstudio.rendering.RenderingGroup;
-import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -208,7 +205,7 @@ public class Translator {
      * @param targetTranslationId
      * @return
      */
-    public String[] getSourceTranslations(String targetTranslationId) {
+    public String[] getSourceTranslationIds(String targetTranslationId) {
         Manifest m = Manifest.generate(mRootDir);
         JSONObject json = m.getJSONObject(targetTranslationId);
         try {
@@ -270,7 +267,7 @@ public class Translator {
         String selectedSourceTranslationId = prefs.getString(SELECTED_SOURCE_TRANSLATION + "-" + targetTranslationId, null);
         if(selectedSourceTranslationId == null) {
             // default to first tab
-            String[] openSourceTranslationIds = getSourceTranslations(targetTranslationId);
+            String[] openSourceTranslationIds = getSourceTranslationIds(targetTranslationId);
             if(openSourceTranslationIds.length > 0) {
                 selectedSourceTranslationId = openSourceTranslationIds[0];
                 setSelectedSourceTranslation(targetTranslationId, selectedSourceTranslationId);

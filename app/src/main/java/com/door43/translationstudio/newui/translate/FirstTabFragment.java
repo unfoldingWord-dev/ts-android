@@ -94,7 +94,7 @@ public class FirstTabFragment extends Fragment implements ChooseSourceTranslatio
 
     @Override
     public void onConfirmTabsDialog(String targetTranslationId, String[] sourceTranslationIds) {
-        String[] oldSourceTranslationIds = mTranslator.getSourceTranslations(targetTranslationId);
+        String[] oldSourceTranslationIds = mTranslator.getSourceTranslationIds(targetTranslationId);
         for(String id:oldSourceTranslationIds) {
             mTranslator.removeSourceTranslation(targetTranslationId, id);
         }

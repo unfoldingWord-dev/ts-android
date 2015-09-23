@@ -209,7 +209,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // load tabs
         holder.mTabLayout.setOnTabSelectedListener(null);
         holder.mTabLayout.removeAllTabs();
-        String[] sourceTranslationIds = mTranslator.getSourceTranslations(mTargetTranslation.getId());
+        String[] sourceTranslationIds = mTranslator.getSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
