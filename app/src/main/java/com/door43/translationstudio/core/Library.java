@@ -1,7 +1,9 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
+import android.util.Log;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
@@ -71,7 +73,7 @@ public class Library {
             mAppIndex.reload();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to deploy the library", e);
         }
         return false;
     }
@@ -95,7 +97,7 @@ public class Library {
             mDownloaderIndex.mergeIndex(mAppIndex, true);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.w(this.getClass().getName(), "Failed to seed the download index", e);
         }
         return false;
     }
@@ -121,7 +123,7 @@ public class Library {
                         mLibraryUpdates.addUpdate(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.w(this.getClass().getName(), "Failed to process the downloaded resource in " + sourceTranslation.getId(), e);
                 }
             }
         }
@@ -145,7 +147,7 @@ public class Library {
                         downloadResourceList(projectId, sourceLanguageId);
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.w(this.getClass().getName(), "Failed to process the downloaded source language " + sourceLanguageId + " in project " + projectId, e);
                 }
             }
         }
@@ -170,14 +172,14 @@ public class Library {
                         downloadSourceLanguageList(projectId);
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.w(this.getClass().getName(), "Failed to process the downloaded project " + projectId, e);
                 }
             }
         }
         try {
             mServerIndex.mergeIndex(mDownloader.getIndex(), true);
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to merge the download index into the sever index", e);
         }
         return mLibraryUpdates;
     }
@@ -204,7 +206,7 @@ public class Library {
                     try {
                         mAppIndex.mergeProject(projectId, mDownloader.getIndex());
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
                         success = false;
                     }
                 }
@@ -223,7 +225,7 @@ public class Library {
             try {
                 mAppIndex.mergeSourceTranslation(translation, mDownloader.getIndex());
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to merge the source translation " + translation.getId() + " from the download index into the app index", e);
                 return false;
             }
             return true;
@@ -258,7 +260,7 @@ public class Library {
         try {
             Zip.zip(mAppIndex.getIndexDir().getPath(), destFile.getPath());
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to export the library", e);
             return null;
         }
         return destFile;
@@ -283,15 +285,15 @@ public class Library {
                             languages.put(lang.getId(), lang);
                         }
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        Logger.e(this.getClass().getName(), "Failed to parse the target language " + item.toString() , e);
                     }
                 }
                 mTargetLanguages = languages;
                 return mTargetLanguages.values().toArray(new TargetLanguage[mTargetLanguages.size()]);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to parse the target languages file", e);
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to open the target languages file", e);
             }
         } else {
             return mTargetLanguages.values().toArray(new TargetLanguage[mTargetLanguages.size()]);
@@ -315,21 +317,26 @@ public class Library {
                 JSONArray metaJson = projectJson.getJSONArray("meta");
                 String categoryId = null;
                 JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, languageId);
-                JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
-                String title = projectLanguageJson.getString("name");
-                String sort = projectJson.getString("sort");
-                if(metaJson.length() > 0) {
-                    categoryId = metaJson.getString(0);
-                    JSONArray metaLanguageJson = projectLanguageJson.getJSONArray("meta");
-                    title = metaLanguageJson.getString(0);
-                }
-                // TODO: we need to provide the icon path
-                ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, languageId, sort, 0);
-                if(!categoriesMap.containsKey(cat.getId())) {
-                    categoriesMap.put(cat.getId(), cat);
+                if(sourceLanguageJson != null) {
+                    JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
+                    String title = projectLanguageJson.getString("name");
+                    String sort = projectJson.getString("sort");
+                    if(metaJson.length() > 0) {
+                        categoryId = metaJson.getString(0);
+                        JSONArray metaLanguageJson = projectLanguageJson.getJSONArray("meta");
+                        title = metaLanguageJson.getString(0);
+                    }
+                    // TODO: we need to provide the icon path
+                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, languageId, sort, 0);
+                    if(!categoriesMap.containsKey(cat.getId())) {
+                        categoriesMap.put(cat.getId(), cat);
+                    }
+                } else {
+                    // TODO: pass error to logger. missing source translations for project
+                    Logger.w(this.getClass().getName(), "Could not find any source languages for " + projectId);
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to parse project " + projectId, e);
             }
         }
 
@@ -372,7 +379,7 @@ public class Library {
                     }
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to parse project " + projectId, e);
             }
         }
         List<ProjectCategory> categories = new ArrayList<>(categoriesMap.values());
@@ -398,7 +405,7 @@ public class Library {
      *
      * @param projectId
      * @param sourceLanguageId
-     * @return
+     * @return null if no source langauges exist for the project
      */
     private JSONObject getPreferredSourceLanguage(String projectId, String sourceLanguageId) {
         // preferred language
@@ -446,7 +453,7 @@ public class Library {
         try {
             return SourceLanguage.generate(sourceLanguageJson);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Failed to parse source language " + sourceLanguageId + " for project " + projectId, e);
         }
         return null;
     }
@@ -468,7 +475,7 @@ public class Library {
                     resources.add(res);
                 }
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to parse the resource " + id + " in source language " + sourceLanguageId + " in project " + projectId, e);
             }
         }
         return resources.toArray(new Resource[resources.size()]);
@@ -587,7 +594,7 @@ public class Library {
             try {
                 return SourceTranslation.generate(projectId, sourceLanguageJson, resourceJson);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to parse source translation " + simpleTranslation.getId(), e);
             }
         }
         return null;
@@ -617,7 +624,7 @@ public class Library {
             try {
                 return SourceTranslation.generate(projectId, sourceLanguageJson, defaultResource);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to parse the source translation " + SourceTranslation.simple(projectId, sourceLanguageId, defaultResource.getId()).getId(), e);
             }
         }
         return null;
