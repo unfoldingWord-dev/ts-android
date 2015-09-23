@@ -65,7 +65,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
 
-    public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
+    public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, boolean resourcesOpened) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -73,6 +73,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
         mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
         mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
+        mResourcesOpened = resourcesOpened;
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<Frame> frames = new ArrayList<>();
@@ -393,6 +394,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mDoneButton.setVisibility(View.VISIBLE);
             holder.mDoneFlag.setVisibility(View.GONE);
         }
+
+        // TODO: add click to open for resources
     }
 
     private CharSequence renderText(String text, TranslationFormat format) {
@@ -431,6 +434,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mResourcesOpened = false;
             coordinateViewHolders();
         }
+    }
+
+    /**
+     * Checks if the resources are open
+     * @return
+     */
+    public boolean isResourcesOpen() {
+        return mResourcesOpened;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

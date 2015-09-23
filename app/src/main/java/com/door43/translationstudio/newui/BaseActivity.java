@@ -25,7 +25,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private OrientationEventListener mOrientationEventListener;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // log orientation changes to help with debugging rotation bugs

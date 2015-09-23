@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,11 +13,13 @@ import com.door43.tools.reporting.Logger;
  */
 public class ReviewModeFragment extends ViewModeFragment {
 
+    private static final String STATE_RESOURCES_OPEN = "state_resources_open";
     private GestureDetector mGesture;
+    private boolean mResourcesOpen = false;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
-        return new ReviewModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId);
+        return new ReviewModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId, mResourcesOpen);
     }
 
     @Override
@@ -79,5 +82,19 @@ public class ReviewModeFragment extends ViewModeFragment {
             Logger.w(this.getClass().getName(), "The gesture dectector was not initialized so the touch was not handled");
             return false;
         }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if(savedInstanceState != null) {
+            mResourcesOpen = savedInstanceState.getBoolean(STATE_RESOURCES_OPEN, false);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+        out.putBoolean(STATE_RESOURCES_OPEN, ((ReviewModeAdapter) getAdapter()).isResourcesOpen());
+        super.onSaveInstanceState(out);
     }
 }
