@@ -43,7 +43,7 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
     private static final String STATE_LATEST_RELEASE = "latest_release";
     private static final String STATE_NOTES = "bug_notes";
     public static final String ARG_MESSAGE = "arg_message";
-    private static String mMessage = "";
+    private String mMessage = "";
     private CheckForLatestReleaseTask.Release mLatestRelease;
     private LinearLayout mLoadingLayout;
     private LinearLayout mFormLayout;
