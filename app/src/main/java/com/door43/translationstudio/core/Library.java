@@ -319,6 +319,8 @@ public class Library {
                 JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, languageId);
                 if(sourceLanguageJson != null) {
                     JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
+                    // TRICKY: getPreferredSourceLanguage can return a different language that was was requested
+                    languageId = sourceLanguageJson.getString("slug");
                     String title = projectLanguageJson.getString("name");
                     String sort = projectJson.getString("sort");
                     if(metaJson.length() > 0) {
