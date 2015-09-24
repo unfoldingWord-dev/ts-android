@@ -308,43 +308,7 @@ public class Library {
      * @return
      */
     public ProjectCategory[] getProjectCategories(String languageId) {
-        Map<String, ProjectCategory> categoriesMap = new HashMap<>();
-
-        String[] projectIds = mAppIndex.getProjects();
-        for(String projectId:projectIds) {
-            JSONObject projectJson = mAppIndex.getProject(projectId);
-            try {
-                JSONArray metaJson = projectJson.getJSONArray("meta");
-                String categoryId = null;
-                JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, languageId);
-                if(sourceLanguageJson != null) {
-                    JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
-                    // TRICKY: getPreferredSourceLanguage can return a different language that was was requested
-                    languageId = sourceLanguageJson.getString("slug");
-                    String title = projectLanguageJson.getString("name");
-                    String sort = projectJson.getString("sort");
-                    if(metaJson.length() > 0) {
-                        categoryId = metaJson.getString(0);
-                        JSONArray metaLanguageJson = projectLanguageJson.getJSONArray("meta");
-                        title = metaLanguageJson.getString(0);
-                    }
-                    // TODO: we need to provide the icon path
-                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, languageId, sort, 0);
-                    if(!categoriesMap.containsKey(cat.getId())) {
-                        categoriesMap.put(cat.getId(), cat);
-                    }
-                } else {
-                    // TODO: pass error to logger. missing source translations for project
-                    Logger.w(this.getClass().getName(), "Could not find any source languages for " + projectId);
-                }
-            } catch (JSONException e) {
-                Logger.e(this.getClass().getName(), "Failed to parse project " + projectId, e);
-            }
-        }
-
-        List<ProjectCategory> categories = new ArrayList<>(categoriesMap.values());
-        sortProjectCategories(categories);
-        return categories.toArray(new ProjectCategory[categories.size()]);
+        return getProjectCategories(new ProjectCategory(null, null, null, languageId, null, -1));
     }
 
     /**
@@ -361,24 +325,34 @@ public class Library {
             try {
                 JSONArray metaJson = projectJson.getJSONArray("meta");
 
-                if(metaJson.length() > parentCategory.categoryDepth && metaJson.getString(parentCategory.categoryDepth).equals(parentCategory.categoryId)) {
-                    String categoryId = null;
-                    JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, parentCategory.sourcelanguageId);
+                if(parentCategory.categoryId != null && (metaJson.length() <= parentCategory.categoryDepth || !metaJson.getString(parentCategory.categoryDepth).equals(parentCategory.categoryId))) {
+                    continue;
+                }
+
+                String categoryId = null;
+                JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, parentCategory.sourcelanguageId);
+                if(sourceLanguageJson != null) {
+
+                    // TRICKY: getPreferredSourceLanguage can return a different language than what was requested
+                    String categoryLanguageId = sourceLanguageJson.getString("slug");
                     JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
                     String title = projectLanguageJson.getString("name");
                     String sort = projectJson.getString("sort");
 
-                    if(metaJson.length() > parentCategory.categoryDepth + 1) {
+                    if (metaJson.length() > parentCategory.categoryDepth + 1) {
                         categoryId = metaJson.getString(parentCategory.categoryDepth + 1);
                         JSONArray metaLanguageJson = projectLanguageJson.getJSONArray("meta");
                         title = metaLanguageJson.getString(parentCategory.categoryDepth + 1);
                     }
 
                     // TODO: we need to provide the icon path
-                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, parentCategory.sourcelanguageId, sort, parentCategory.categoryDepth + 1);
-                    if(!categoriesMap.containsKey(cat.getId())) {
+                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, categoryLanguageId, sort, parentCategory.categoryDepth + 1);
+                    if (!categoriesMap.containsKey(cat.getId()) || cat.sourcelanguageId.equals(parentCategory.sourcelanguageId)) {
+                        // insert new categories or those with better language matches
                         categoriesMap.put(cat.getId(), cat);
                     }
+                } else {
+                    Logger.w(this.getClass().getName(), "Could not find any source languages for " + projectId);
                 }
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "Failed to parse project " + projectId, e);
