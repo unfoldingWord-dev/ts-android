@@ -12,7 +12,9 @@ import com.door43.translationstudio.R;
 import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 
 /**
@@ -22,7 +24,9 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public static final int TYPE_ITEM = 0;
     public static final int TYPE_SEPARATOR = 1;
     private final Context mContext;
-    private List<ViewItem> mData = new ArrayList<>();
+    private Map<String, ViewItem> mData = new HashMap<>();
+    private List<String> mSelected = new ArrayList<>();
+    private List<String> mAvailable = new ArrayList<>();
     private List<ViewItem> mSortedData = new ArrayList<>();
     private TreeSet<Integer> mSectionHeader = new TreeSet<>();
 
@@ -41,12 +45,14 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
      * @param item
      */
     public void addItem(final ViewItem item) {
-        for(ViewItem existingItem:mData) {
-            if(existingItem.id.equals(item.id)) {
-                return;
+        if(!mData.containsKey(item.id)) {
+            mData.put(item.id, item);
+            if(item.selected) {
+                mSelected.add(item.id);
+            } else {
+                mAvailable.add(item.id);
             }
         }
-        mData.add(item);
     }
 
     @Override
@@ -75,31 +81,19 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
     public void sort() {
         mSortedData = new ArrayList<>();
         mSectionHeader = new TreeSet<>();
-        List<ViewItem> selectedItems = new ArrayList<>();
-        List<ViewItem> availableItems = new ArrayList<>();
-
-        for(ViewItem item:mData) {
-            if (item.selected) {
-                selectedItems.add(item);
-            } else {
-                availableItems.add(item);
-            }
-        }
-
-        // TODO: sort lists
 
         // build list
         ViewItem selectedHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.selected), null, false);
         mSortedData.add(selectedHeader);
         mSectionHeader.add(mSortedData.size() - 1);
-        for(ViewItem item:selectedItems) {
-            mSortedData.add(item);
+        for(String id:mSelected) {
+            mSortedData.add(mData.get(id));
         }
         ViewItem availableHeader = new ChooseSourceTranslationAdapter.ViewItem(mContext.getResources().getString(R.string.available), null, false);
         mSortedData.add(availableHeader);
         mSectionHeader.add(mSortedData.size() - 1);
-        for(ViewItem item:availableItems) {
-            mSortedData.add(item);
+        for(String id:mAvailable) {
+            mSortedData.add(mData.get(id));
         }
         notifyDataSetChanged();
     }
@@ -129,7 +123,6 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
 
-        // TODO: populate data
         holder.titleView.setText(getItem(position).title);
         if(rowType == TYPE_ITEM) {
             if (getItem(position).selected) {
@@ -144,6 +137,22 @@ public class ChooseSourceTranslationAdapter extends BaseAdapter {
         }
 
         return v;
+    }
+
+    public void select(int position) {
+        ViewItem item = getItem(position);
+        item.selected = true;
+        mSelected.remove(item.id);
+        mAvailable.remove(item.id);
+        mSelected.add(item.id);
+    }
+
+    public void deselect(int position) {
+        ViewItem item = getItem(position);
+        item.selected = false;
+        mSelected.remove(item.id);
+        mAvailable.remove(item.id);
+        mAvailable.add(item.id);
     }
 
     public static class ViewHolder {

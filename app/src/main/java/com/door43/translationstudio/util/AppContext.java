@@ -340,12 +340,13 @@ public class AppContext {
             SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             String[] sourceTranslationIds = getOpenSourceTranslationIds(targetTranslationId);
-            String newIdSet = sourceTranslationId;
+            String newIdSet = "";
             for (String id : sourceTranslationIds) {
                 if (!id.equals(sourceTranslationId)) {
-                    newIdSet += "|" + id;
+                    newIdSet += id + "|";
                 }
             }
+            newIdSet += sourceTranslationId;
             editor.putString("open_source_translations_" + targetTranslationId, newIdSet);
             editor.apply();
         }
@@ -369,6 +370,9 @@ public class AppContext {
                     } else {
                         newIdSet += "|" + id;
                     }
+                } else if(id.equals(getSelectedSourceTranslationId(targetTranslationId))) {
+                    // unset the selected tab if it is removed
+                    setSelectedSourceTranslation(targetTranslationId, null);
                 }
             }
             editor.putString("open_source_translations_" + targetTranslationId, newIdSet);
@@ -397,10 +401,6 @@ public class AppContext {
      * @param sourceTranslationId if null the selection will be unset
      */
     public static void setSelectedSourceTranslation(String targetTranslationId, String sourceTranslationId) {
-        if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {
-            addOpenSourceTranslation(targetTranslationId, sourceTranslationId);
-        }
-
         SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         if(sourceTranslationId != null && !sourceTranslationId.isEmpty()) {

@@ -84,7 +84,12 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(mAdapter.getItemViewType(position) == ChooseSourceTranslationAdapter.TYPE_ITEM) {
-                    mAdapter.getItem(position).selected = !mAdapter.getItem(position).selected;
+                    ChooseSourceTranslationAdapter.ViewItem item = mAdapter.getItem(position);
+                    if(item.selected) {
+                        mAdapter.deselect(position);
+                    } else {
+                        mAdapter.select(position);
+                    }
                     mAdapter.sort();
                 }
             }
