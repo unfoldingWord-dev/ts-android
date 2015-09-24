@@ -164,6 +164,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mSourceCard.setLayoutParams(sourceParams);
             ((View) holder.mTargetCard.getParent()).requestLayout();
             ((View) holder.mTargetCard.getParent()).invalidate();
+
+            // disable new tab button so we don't accidently open it
+            holder.mNewTabButton.setEnabled(false);
         } else {
             // source on top
             // elevation takes precedence for API 21+
@@ -180,6 +183,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mTargetCard.setLayoutParams(targetParams);
             ((View) holder.mSourceCard.getParent()).requestLayout();
             ((View) holder.mSourceCard.getParent()).invalidate();
+
+            // re-enable new tab button
+            holder.mNewTabButton.setEnabled(true);
         }
 
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
@@ -188,6 +194,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 if(!mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = true;
                     ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
+
+                    // disable new tab button so we don't accidently open it
+                    holder.mNewTabButton.setEnabled(false);
                 }
             }
         });
@@ -197,6 +206,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 if(mTargetStateOpen[position]) {
                     mTargetStateOpen[position] = false;
                     ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
+
+                    // re-enable new tab button
+                    holder.mNewTabButton.setEnabled(true);
                 }
             }
         });

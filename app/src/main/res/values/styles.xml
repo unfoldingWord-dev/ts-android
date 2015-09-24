@@ -95,6 +95,18 @@
         <item name="android:paddingRight">0dp</item>
     </style>
 
+    <style name="Widget.CardContent.Stacked">
+        <item name="android:paddingLeft">@dimen/stacked_card_margin</item>
+        <item name="android:paddingRight">@dimen/stacked_card_margin</item>
+        <item name="android:paddingTop">@dimen/card_margin</item>
+        <item name="android:paddingBottom">@dimen/stacked_card_margin</item>
+    </style>
+
+    <style name="Widget.CardContent.Stacked.Skinny">
+        <item name="android:paddingLeft">0dp</item>
+        <item name="android:paddingRight">0dp</item>
+    </style>
+
     <style name="Widget.CardContent.Horizontal">
         <item name="android:paddingLeft">@dimen/stacked_card_margin</item>
         <item name="android:paddingRight">@dimen/stacked_card_margin</item>
