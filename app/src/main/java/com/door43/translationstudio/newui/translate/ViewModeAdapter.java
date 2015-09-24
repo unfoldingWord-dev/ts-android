@@ -104,5 +104,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
     public interface OnEventListener {
         void onTabClick(String sourceTranslationId);
         void onNewTabClick();
+        void closeKeyboard();
     }
 }
