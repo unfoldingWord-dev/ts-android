@@ -76,8 +76,10 @@
         android:clickable="true">
 
         <LinearLayout
+            android:id="@+id/target_translation_inner_card"
             android:orientation="vertical"
             style="@style/Widget.CardContent.Skinny"
+            android:background="@drawable/paper_repeating"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical">

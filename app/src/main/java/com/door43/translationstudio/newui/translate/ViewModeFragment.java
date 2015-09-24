@@ -125,7 +125,9 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onResume() {
         super.onResume();
-        mAdapter.rebuild();
+        if(mAdapter != null) {
+            mAdapter.rebuild();
+        }
     }
 
     /**

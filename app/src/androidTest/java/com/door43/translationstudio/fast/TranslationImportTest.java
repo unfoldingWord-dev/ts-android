@@ -99,7 +99,7 @@ public class TranslationImportTest extends InstrumentationTestCase {
 //        assertTrue(projects.length > 0);
 //        for(ProjectImport p:projects) {
 //            assertTrue(Sharing.importProject(p));
-        }
+//        }
 
         // TODO: verify content imported correctly
     }

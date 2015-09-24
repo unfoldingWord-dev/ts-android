@@ -370,6 +370,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if(mTargetTranslation.finishFrame(frame)) {
                     holder.mDoneButton.setVisibility(View.GONE);
                     holder.mDoneFlag.setVisibility(View.VISIBLE);
+//                    holder.mTargetInnerCard.setBackgroundColor(mContext.getResources().getColor(R.color.white));
+                    holder.mTargetInnerCard.setBackgroundResource(R.color.white);
                 } else {
                     Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
@@ -384,15 +386,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     // TODO: display confirmation dialog
                     holder.mDoneButton.setVisibility(View.VISIBLE);
                     holder.mDoneFlag.setVisibility(View.GONE);
+                    holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
                 }
             }
         });
         if(frameTranslation.isFinished()) {
             holder.mDoneButton.setVisibility(View.GONE);
             holder.mDoneFlag.setVisibility(View.VISIBLE);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
             holder.mDoneButton.setVisibility(View.VISIBLE);
             holder.mDoneFlag.setVisibility(View.GONE);
+            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
         }
 
         // TODO: add click to open for resources
@@ -451,6 +456,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final LinearLayout mResourceLayout;
         public final Button mDoneButton;
         private final LinearLayout mDoneFlag;
+        private final LinearLayout mTargetInnerCard;
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
@@ -468,6 +474,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mResourceCard = (CardView)v.findViewById(R.id.resources_card);
             mResourceLayout = (LinearLayout)v.findViewById(R.id.resources_layout);
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
+            mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
