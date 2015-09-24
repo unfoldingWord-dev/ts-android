@@ -10,6 +10,12 @@
         android:icon="@drawable/ic_share_black_24dp"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_update"
+        android:title="@string/menu_update"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_autorenew_black_24dp"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_bug"
         android:title="@string/menu_bug"
         android:orderInCategory="100"

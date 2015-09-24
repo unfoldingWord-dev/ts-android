@@ -21,6 +21,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.library.ProjectLibraryListActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.ReportBugDialog;
@@ -87,6 +88,21 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 snack.show();
 //                                Intent shareIntent = new Intent(HomeActivity.this, SharingActivity.class);
 //                                startActivity(shareIntent);
+                                return true;
+                            case R.id.action_update:
+                                new android.support.v7.app.AlertDialog.Builder(HomeActivity.this)
+                                        .setTitle(R.string.update_projects)
+                                        .setIcon(R.drawable.ic_autorenew_black_24dp)
+                                        .setMessage(R.string.use_internet_confirmation)
+                                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent intent = new Intent(HomeActivity.this, ProjectLibraryListActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        })
+                                        .setNegativeButton(R.string.no, null)
+                                        .show();
                                 return true;
                             case R.id.action_bug:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
