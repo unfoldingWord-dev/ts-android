@@ -139,7 +139,7 @@ public class SourceLanguageAdapter extends BaseAdapter {
     }
 
     /**
-     * Sorts target languages by id
+     * Sorts source languages by id
      * @param languages
      * @param referenceId languages are sorted according to the reference id
      */

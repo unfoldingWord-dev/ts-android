@@ -33,22 +33,6 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * An activity representing a list of Projects. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link ProjectLibraryDetailActivity} representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
- * <p/>
- * The activity makes heavy use of fragments. The list of items is a
- * {@link ServerLibraryFragment} and the item details
- * (if present) is a {@link ProjectLibraryDetailFragment}.
- * <p/>
- * This activity also implements the required
- * {@link ServerLibraryFragment.OnClickListener} interface
- * to listen for item selections.
- */
 public class ServerLibraryActivity extends BaseActivity implements ServerLibraryFragment.OnClickListener, TranslationDraftsTab.Callbacks, LibraryCallbacks, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
 
     public static final String ARG_SHOW_UPDATES = "only_show_updates";
@@ -119,28 +103,22 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
      * indicating that the item with the given ID was selected.
      */
     @Override
-    public void onItemSelected(String id) {
-        if(id != null) {
-            // TODO: fix two pane
+    public void onProjectCategorySelected(String projectCategoryId) {
+        if(projectCategoryId != null) {
             if (mTwoPane) {
-                // In two-pane mode, show the detail view in this activity by
-                // adding or replacing the detail fragment using a
-                // fragment transaction.
-
                 Bundle arguments = getIntent().getExtras();
                 if(arguments == null) {
                     arguments = new Bundle();
                 }
-                arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
-                ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
+                arguments.putString(ServerLibraryDetailFragment.ARG_PROJECT_ID, projectCategoryId);
+                // TODO: animate the card fading in and out.
+                ServerLibraryDetailFragment fragment = (ServerLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
                 if(fragment == null) {
-                    fragment = new ProjectLibraryDetailFragment();
-                    if (arguments != null) {
-                        fragment.setArguments(arguments);
-                    }
+                    fragment = new ServerLibraryDetailFragment();
+                    fragment.setArguments(arguments);
                     getFragmentManager().beginTransaction().replace(R.id.detail_container, fragment).commit();
                 } else {
-                    fragment.setProjectId(id);
+                    fragment.setProjectCategoryId(projectCategoryId);
                 }
             } else {
                 // In single-pane mode, simply start the detail activity
@@ -153,7 +131,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 if (arguments != null) {
                     detailIntent.putExtras(arguments);
                 }
-                detailIntent.putExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID, id);
+                detailIntent.putExtra(ServerLibraryDetailFragment.ARG_PROJECT_ID, projectCategoryId);
                 startActivity(detailIntent);
             }
         } else {
@@ -163,7 +141,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
     @Override
     public void onEmptyDraftsList() {
-        ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
+        ServerLibraryDetailFragment fragment = (ServerLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
         if(fragment != null) {
             fragment.hideDraftsTab();
         }

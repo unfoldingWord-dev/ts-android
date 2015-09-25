@@ -8,9 +8,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsAdapterNotification;
@@ -26,36 +26,36 @@ import java.util.List;
  */
 public class LanguagesTab extends TranslatorBaseFragment implements TabsAdapterNotification {
     private LibraryLanguageAdapter mAdapter;
-    private Project mProject;
     public static final String DOWNLOAD_LANGUAGE_PREFIX = "download-language-";
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_project_library_languages, container, false);
         mAdapter = new LibraryLanguageAdapter(AppContext.context(), DOWNLOAD_LANGUAGE_PREFIX, false);
 
-        if (getArguments().containsKey(ProjectLibraryDetailFragment.ARG_ITEM_ID)) {
-            String id = getArguments().getString(ProjectLibraryDetailFragment.ARG_ITEM_ID);
-            setProject(id);
-        }
+//        if (getArguments().containsKey(ServerLibraryDetailFragment.ARG_PROJECT_ID)) {
+//            String id = getArguments().getString(ServerLibraryDetailFragment.ARG_PROJECT_ID);
+//            setLanguages(id);
+//        }
 
         ListView list = (ListView)view.findViewById(R.id.listView);
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(ServerLibraryCache.getEnableEditing()) {
-                    // TODO: place all of this in a task
-                    SourceLanguage lang = mAdapter.getItem(i);
-                    AppContext.projectManager().deleteSourceLanguage(mProject.getId(), lang.getId());
-                    ServerLibraryCache.organizeProjects();
-                    mAdapter.notifyDataSetChanged();
-                    if(!AppContext.projectManager().isProjectDownloaded(mProject.getId()) && getActivity() != null && getActivity() instanceof LibraryCallbacks) {
-                        ((LibraryCallbacks)getActivity()).refreshUI();
-                    }
-                } else {
-                    SourceLanguage lang = mAdapter.getItem(i);
-                    connectDownloadTask(lang);
-                }
+                // TODO: download on click
+//                if(ServerLibraryCache.getEnableEditing()) {
+//                    // TODO: place all of this in a task
+//                    SourceLanguage lang = mAdapter.getItem(i);
+//                    AppContext.projectManager().deleteSourceLanguage(mProject.getId(), lang.getId());
+//                    ServerLibraryCache.organizeProjects();
+//                    mAdapter.notifyDataSetChanged();
+//                    if(!AppContext.projectManager().isProjectDownloaded(mProject.getId()) && getActivity() != null && getActivity() instanceof LibraryCallbacks) {
+//                        ((LibraryCallbacks)getActivity()).refreshUI();
+//                    }
+//                } else {
+//                    SourceLanguage lang = mAdapter.getItem(i);
+//                    connectDownloadTask(lang);
+//                }
             }
         });
 
@@ -64,61 +64,22 @@ public class LanguagesTab extends TranslatorBaseFragment implements TabsAdapterN
         return view;
     }
 
-    /**
-     * Begins a new download if one is not already in progress
-     * @param language
-     */
-    private void connectDownloadTask(SourceLanguage language) {
-        String taskId = DOWNLOAD_LANGUAGE_PREFIX +mProject.getId()+"-"+language.getId();
-        DownloadLanguageTask task = (DownloadLanguageTask) TaskManager.getTask(taskId);
-        if(task == null) {
-            // start new download
-            task = new DownloadLanguageTask(mProject, language);
-            TaskManager.addTask(task, taskId);
-            // NOTE: the LibraryLanguageAdapter handles the onProgress and onFinish events
-            mAdapter.notifyDataSetChanged();
-        }
-    }
-
-    private void populateList() {
-        // filter languages
-        // TODO: it would be safer to put this in the task manager
-        new ThreadableUI(getActivity()) {
-            List<SourceLanguage> languages = new ArrayList<>();
-            @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                if(mProject != null) {
-                    for(SourceLanguage l: mProject.getSourceLanguages()) {
-                        if(l.checkingLevel() >= AppContext.context().getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                            if(ServerLibraryCache.getShowNewProjects() && !ServerLibraryCache.getShowProjectUpdates()) {
-                                if(!AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
-                                    languages.add(l);
-                                }
-                            } else if(ServerLibraryCache.getShowProjectUpdates() && !ServerLibraryCache.getShowNewProjects()) {
-                                if(AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
-                                    languages.add(l);
-                                }
-                            } else {
-                                languages.add(l);
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onPostExecute() {
-                if(mAdapter != null) {
-                    mAdapter.changeDataSet(languages);
-                }
-            }
-        }.start();
-    }
+//    /**
+//     * Begins a new download if one is not already in progress
+//     * @param language
+//     */
+//    private void connectDownloadTask(SourceLanguage language) {
+//        String taskId = DOWNLOAD_LANGUAGE_PREFIX +mProject.getId()+"-"+language.getId();
+//        DownloadLanguageTask task = (DownloadLanguageTask) TaskManager.getTask(taskId);
+//        if(task == null) {
+//            // TODO: start download
+//            // start new download
+////            task = new DownloadLanguageTask(mProject, language);
+////            TaskManager.addTask(task, taskId);
+//            // NOTE: the LibraryLanguageAdapter handles the onProgress and onFinish events
+//            mAdapter.notifyDataSetChanged();
+//        }
+//    }
 
     @Override
     public void NotifyAdapterDataSetChanged() {
@@ -127,10 +88,7 @@ public class LanguagesTab extends TranslatorBaseFragment implements TabsAdapterN
         }
     }
 
-    public void setProject(String projectId) {
-        mProject = ServerLibraryCache.getProject(projectId);
-        mAdapter.setProjectId(projectId);
-        populateList();
-        mAdapter.notifyDataSetChanged();
+    public void setLanguages(List<SourceLanguage> sourceLanguages) {
+        mAdapter.changeDataSet(sourceLanguages);
     }
 }

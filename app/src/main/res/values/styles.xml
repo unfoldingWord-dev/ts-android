@@ -116,9 +116,15 @@
     </style>
 
     <style name="Widget.Button" parent="android:Widget.Button">
-        <item name="android:padding">10dp</item>
+        <item name="android:padding">14dp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">@dimen/button</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textColor">?attr/colorAccent</item>
+    </style>
+
+    <style name="Widget.Button.Secondary">
+        <item name="android:textColor">@color/dark_secondary_text</item>
     </style>
 
     <style name="Widget.Button.Blue">
@@ -138,6 +144,13 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
+    <style name="Widget.Button.Danger">
+        <item name="android:background">@drawable/btn_red</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+
+
     <!-- Deprecated styles -->
 
     <style name="Widget.Button.Primary" parent="android:Widget">
@@ -146,17 +159,13 @@
         <item name="android:textSize">@dimen/h4</item>
     </style>
 
-    <style name="Widget.Button.Secondary" parent="android:Widget">
-        <item name="android:background">@drawable/btn_gray</item>
-        <item name="android:textColor">@color/dark_gray</item>
-        <item name="android:textSize">@dimen/h4</item>
-    </style>
+    <!--<style name="Widget.Button.Secondary" parent="android:Widget">-->
+        <!--<item name="android:background">@drawable/btn_gray</item>-->
+        <!--<item name="android:textColor">@color/dark_gray</item>-->
+        <!--<item name="android:textSize">@dimen/h4</item>-->
+    <!--</style>-->
 
-    <style name="Widget.Button.Danger" parent="android:Widget">
-        <item name="android:background">@drawable/btn_red</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="android:textSize">@dimen/h4</item>
-    </style>
+
 
 
     <!--<style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">-->

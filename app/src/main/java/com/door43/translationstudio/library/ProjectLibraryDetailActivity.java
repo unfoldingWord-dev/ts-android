@@ -15,7 +15,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * in a {@link ServerLibraryActivity}.
  * <p/>
  * This activity is mostly just a 'shell' activity containing nothing
- * more than a {@link ProjectLibraryDetailFragment}.
+ * more than a {@link ServerLibraryDetailFragment}.
  */
 public class ProjectLibraryDetailActivity extends TranslatorBaseActivity implements TranslationDraftsTab.Callbacks, LibraryCallbacks {
 
@@ -43,9 +43,9 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity impleme
             if(getIntent().getExtras() != null) {
                 arguments = getIntent().getExtras();
             }
-            arguments.putString(ProjectLibraryDetailFragment.ARG_ITEM_ID,
-                    getIntent().getStringExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID));
-            ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
+            arguments.putString(ServerLibraryDetailFragment.ARG_PROJECT_ID,
+                    getIntent().getStringExtra(ServerLibraryDetailFragment.ARG_PROJECT_ID));
+            ServerLibraryDetailFragment fragment = new ServerLibraryDetailFragment();
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction().add(R.id.detail_container, fragment).commit();
         }
@@ -76,7 +76,7 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity impleme
 
     @Override
     public void onEmptyDraftsList() {
-        ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
+        ServerLibraryDetailFragment fragment = (ServerLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
         fragment.hideDraftsTab();
     }
 

@@ -15,7 +15,8 @@ import java.util.Map;
  * This class handles the temporary list of available projects
  */
 public class ServerLibraryCache {
-    private static final int CACHE_TTL = 5 * 60 * 1000; // the cache will expire every 5 minutes.
+    // TODO: this should be a setting in the user preferences
+    private static final int CACHE_TTL = 10 * 60 * 1000; // the cache will expire every 10 minutes.
     private static Map<String, Integer> mProjectIds = new HashMap<>();
     private static List<Project> mProjects = new ArrayList<>();
     private static List<Project> mNewProjects = new ArrayList<>();

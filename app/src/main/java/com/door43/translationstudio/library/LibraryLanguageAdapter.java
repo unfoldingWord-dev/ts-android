@@ -12,19 +12,19 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.library.temp.ServerLibraryCache;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
-import com.door43.util.tasks.ThreadableUI;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.ListIterator;
 
 /**
  * This adpater handles the display of source languages in the server library
@@ -33,23 +33,27 @@ public class LibraryLanguageAdapter extends BaseAdapter {
     private final Context mContext;
     private String mProjectId = null;
     private final String mTaskIdPrefix;
-    private final boolean mIsDrafts;
-    private List<SourceLanguage> mLanguages = new ArrayList<>();
+    private final boolean mDrafts;
+    private SourceLanguage[] mLanguages;
 
-    public LibraryLanguageAdapter(Context context, String taskIdPrefix, boolean isDrafts) {
+    public LibraryLanguageAdapter(Context context, String taskIdPrefix, boolean drafts) {
         mContext = context;
         mTaskIdPrefix = taskIdPrefix;
-        mIsDrafts = isDrafts;
+        mDrafts = drafts;
     }
 
     @Override
     public int getCount() {
-        return mLanguages.size();
+        if(mLanguages == null) {
+            return 0;
+        } else {
+            return mLanguages.length;
+        }
     }
 
     @Override
     public SourceLanguage getItem(int i) {
-        return mLanguages.get(i);
+        return mLanguages[i];
     }
 
     @Override
@@ -77,7 +81,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        holder.name.setText(getItem(i).getName());
+        holder.name.setText(getItem(i).name);
         holder.downloadedImage.setVisibility(View.INVISIBLE);
 
         if(ServerLibraryCache.getEnableEditing()) {
@@ -86,16 +90,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
             holder.deleteImage.setVisibility(View.GONE);
         }
 
-        // set graphite fontface
-//        if(!holder.hasFont) {
-            holder.hasFont = true;
-            Typeface typeface = AppContext.graphiteTypeface(getItem(i));
-            holder.name.setTypeface(typeface, 0);
-//        }
-
-        // set font size
-        float fontsize = AppContext.typefaceSize();
-        holder.name.setTextSize(fontsize);
+        Typography.format(mContext, holder.name, getItem(i).getId(), getItem(i).direction);
 
         final Handler hand = new Handler(Looper.getMainLooper());
         final ViewHolder staticHolder = holder;
@@ -103,6 +98,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         holder.progressBar.setVisibility(View.INVISIBLE);
         holder.progressBar.setProgress(0);
 
+        // TODO: hook up task
         // connect download task
         if(holder.downloadTask != null) {
             holder.downloadTask.destroy();
@@ -148,36 +144,37 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                 }
             });
         } else {
-            boolean isDownloaded;
-            if(mIsDrafts) {
-                isDownloaded = AppContext.projectManager().isSourceLanguageDraftDownloaded(mProjectId, getItem(i).getId());
-            } else {
-                isDownloaded = AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId());
-            }
-            if(isDownloaded) {
-                boolean hasUpdate;
-                if(mIsDrafts) {
-                    hasUpdate = AppContext.projectManager().isSourceLanguageDraftUpdateAvailable(mProjectId, getItem(i));
-                } else {
-                    hasUpdate = AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i));
-                }
-                if(hasUpdate) {
-                    if(ServerLibraryCache.getEnableEditing()) {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
-                    } else {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
-                    }
-                } else {
-                    if(ServerLibraryCache.getEnableEditing()) {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
-                    } else {
-                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
-                    }
-                }
-                staticHolder.downloadedImage.setVisibility(View.VISIBLE);
-            } else {
-                staticHolder.downloadedImage.setVisibility(View.INVISIBLE);
-            }
+            // TODO: hook thisup
+//            boolean isDownloaded;
+//            if(mDrafts) {
+//                isDownloaded = AppContext.projectManager().isSourceLanguageDraftDownloaded(mProjectId, getItem(i).getId());
+//            } else {
+//                isDownloaded = AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId());
+//            }
+//            if(isDownloaded) {
+//                boolean hasUpdate;
+//                if(mDrafts) {
+//                    hasUpdate = AppContext.projectManager().isSourceLanguageDraftUpdateAvailable(mProjectId, getItem(i));
+//                } else {
+//                    hasUpdate = AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i));
+//                }
+//                if(hasUpdate) {
+//                    if(ServerLibraryCache.getEnableEditing()) {
+//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
+//                    } else {
+//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
+//                    }
+//                } else {
+//                    if(ServerLibraryCache.getEnableEditing()) {
+//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
+//                    } else {
+//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
+//                    }
+//                }
+//                staticHolder.downloadedImage.setVisibility(View.VISIBLE);
+//            } else {
+//                staticHolder.downloadedImage.setVisibility(View.INVISIBLE);
+//            }
         }
         return v;
     }
@@ -187,41 +184,32 @@ public class LibraryLanguageAdapter extends BaseAdapter {
      * @param languages
      */
     public void changeDataSet(List<SourceLanguage> languages) {
-        mLanguages = languages;
-
-        if(mLanguages != null) {
-            Logger.i(this.getClass().getName(), "Loaded " + mLanguages.size() + " languages into the adapter");
-        }
+        sortSourceLanguages(languages, "");
+        mLanguages = languages.toArray(new SourceLanguage[languages.size()]);
         notifyDataSetChanged();
-        sortAndFilter();
     }
 
-    private void sortAndFilter() {
-        new ThreadableUI(mContext) {
-
+    /**
+     * Sorts source languages by id
+     * @param languages
+     * @param referenceId languages are sorted according to the reference id
+     */
+    private static void sortSourceLanguages(List<SourceLanguage> languages, final CharSequence referenceId) {
+        Collections.sort(languages, new Comparator<SourceLanguage>() {
             @Override
-            public void onStop() {
-
-            }
-
-            @Override
-            public void run() {
-                List<SourceLanguage> tempList = new ArrayList<>();
-
-                // sort alphabetically
-                ListIterator<SourceLanguage> li = mLanguages.listIterator();
-                while(li.hasNext()) {
-                    SourceLanguage l = li.next();
-                    tempList.add(l);
+            public int compare(SourceLanguage lhs, SourceLanguage rhs) {
+                String lhId = lhs.getId();
+                String rhId = rhs.getId();
+                // give priority to matches with the reference
+                if (lhId.startsWith(referenceId.toString().toLowerCase())) {
+                    lhId = "!" + lhId;
                 }
-                mLanguages = tempList;
+                if (rhId.startsWith(referenceId.toString().toLowerCase())) {
+                    rhId = "!" + rhId;
+                }
+                return lhId.compareToIgnoreCase(rhId);
             }
-
-            @Override
-            public void onPostExecute() {
-                LibraryLanguageAdapter.this.notifyDataSetChanged();
-            }
-        }.start();
+        });
     }
 
     public void setProjectId(String projectId) {
@@ -234,6 +222,5 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         public ProgressBar progressBar;
         public ImageView downloadedImage;
         public ImageView deleteImage;
-        public boolean hasFont;
     }
 }

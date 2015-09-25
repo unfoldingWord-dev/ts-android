@@ -55,7 +55,7 @@ public class LibraryTest extends AndroidTestCase {
         // pre-populate download index with shallow copy
         mLibrary.seedDownloadIndex();
 
-        LibraryUpdates updates = mLibrary.getAvailableLibraryUpdates();
+        LibraryUpdates updates = mLibrary.getAvailableLibraryUpdates(null);
 
         // cache updates
         FileOutputStream fos = AppContext.context().openFileOutput("library_updates", Context.MODE_PRIVATE);

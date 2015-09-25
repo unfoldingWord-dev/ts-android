@@ -9,7 +9,6 @@ import android.widget.ListView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.newui.newtranslation.ProjectCategoryAdapter;
 import com.door43.translationstudio.projects.Project;
 
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.List;
  * A list fragment representing a list of Projects. This fragment
  * also supports tablet devices by allowing list items to be given an
  * 'activated' state upon selection. This helps indicate which item is
- * currently being viewed in a {@link ProjectLibraryDetailFragment}.
+ * currently being viewed in a {@link ServerLibraryDetailFragment}.
  * <p/>
  * Activities containing this fragment MUST implement the {@link OnClickListener}
  * interface.
@@ -38,7 +37,7 @@ public class ServerLibraryFragment extends ListFragment {
     private int mActivatedPosition = ListView.INVALID_POSITION;
     private static OnClickListener sDummyOnClickListener = new OnClickListener() {
         @Override
-        public void onItemSelected(String id) {
+        public void onProjectCategorySelected(String id) {
         }
     };
 
@@ -142,7 +141,7 @@ public class ServerLibraryFragment extends ListFragment {
         mAdapter.setSelected(position);
         mActivatedPosition = position;
         mAdapter.notifyDataSetChanged();
-        mOnClickListener.onItemSelected(mAdapter.getItem(position).getId());
+        mOnClickListener.onProjectCategorySelected(mAdapter.getItem(position).projectId);
     }
 
     @Override
@@ -189,6 +188,6 @@ public class ServerLibraryFragment extends ListFragment {
     }
 
     public interface OnClickListener {
-        void onItemSelected(String id);
+        void onProjectCategorySelected(String projectCategoryId);
     }
 }

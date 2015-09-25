@@ -10,13 +10,23 @@ public class Project {
     public final int dateModified;
     public final String description;
     public final String name;
+    public final String sourceLanguageId;
     private String mId;
 
-    protected Project(String projectId, String name, String description, int dateModified) {
+    /**
+     *
+     * @param projectId The id of the project
+     * @param sourceLanguageId The id of the source language used for the name and description
+     * @param name the name of the project
+     * @param description the description of the project
+     * @param dateModified the date the project was last modified
+     */
+    private Project(String projectId, String sourceLanguageId, String name, String description, int dateModified) {
         mId = projectId;
         this.name = name;
         this.description = description;
         this.dateModified = dateModified;
+        this.sourceLanguageId = sourceLanguageId;
     }
 
     /**
@@ -36,11 +46,12 @@ public class Project {
         try {
             String projectId = project.getString("slug");
             int dateModified = project.getInt("date_modified");
+            String sourceLanguageId = sourceLanguage.getString("slug");
             JSONObject projectLanguageJson = sourceLanguage.getJSONObject("project");
             String name = projectLanguageJson.getString("name");
             String description = projectLanguageJson.getString("desc");
 
-            return new Project(projectId, name, description, dateModified);
+            return new Project(projectId, sourceLanguageId, name, description, dateModified);
         } catch (JSONException e) {
             e.printStackTrace();
         }

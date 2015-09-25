@@ -703,7 +703,7 @@ public class Library {
     }
 
     /**
-     * Returns an array of source translations in a project
+     * Returns an array of source translations in a project that have met the minimum checking level
      * @param projectId
      */
     public SourceTranslation[] getSourceTranslations(String projectId) {
@@ -719,6 +719,25 @@ public class Library {
             }
         }
         return sourceTranslations.toArray(new SourceTranslation[sourceTranslations.size()]);
+    }
+
+    /**
+     * Returns an array of source translations in a project that have not yet met the minimum checking level
+     * @param projectId
+     */
+    public SourceTranslation[] getDraftTranslations(String projectId) {
+        List<SourceTranslation> draftTranslations = new ArrayList<>();
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
+        for(String sourceLanguageId:sourceLanguageIds) {
+            String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
+            for(String resourceId:resourceIds) {
+                SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
+                    draftTranslations.add(sourceTranslation);
+                }
+            }
+        }
+        return draftTranslations.toArray(new SourceTranslation[draftTranslations.size()]);
     }
 
     /**
