@@ -32,7 +32,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-public class ServerLibraryActivity extends BaseActivity implements ServerLibraryFragment.OnClickListener, DraftLanguagesTab.Callbacks, LibraryCallbacks, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
+public class ServerLibraryActivity extends BaseActivity implements ServerLibraryFragment.OnClickListener, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
 
     public static final String ARG_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_SHOW_NEW = "only_show_new";
@@ -139,14 +139,6 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onEmptyDraftsList() {
-        ServerLibraryDetailFragment fragment = (ServerLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
-        if(fragment != null) {
-            fragment.hideDraftsTab();
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_server_library, menu);
@@ -192,10 +184,6 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-//            case R.id.action_filter:
-//                // TODO: display a dialog that will provide filter options. We might want these to be user settings.
-//                // e.g. only show projects from a certain language, new projects, updates, etc.
-//                return true;
             case R.id.action_download_all:
                 mConfirmDialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.action_download_all)
@@ -281,11 +269,6 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
      */
     private void search(String query) {
         mListFragment.filter(query);
-    }
-
-    @Override
-    public void refreshUI() {
-        reload(false);
     }
 
     @Override

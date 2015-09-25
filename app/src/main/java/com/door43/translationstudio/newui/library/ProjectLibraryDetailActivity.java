@@ -17,7 +17,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * This activity is mostly just a 'shell' activity containing nothing
  * more than a {@link ServerLibraryDetailFragment}.
  */
-public class ProjectLibraryDetailActivity extends TranslatorBaseActivity implements DraftLanguagesTab.Callbacks, LibraryCallbacks {
+public class ProjectLibraryDetailActivity extends TranslatorBaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,18 +72,5 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity impleme
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onEmptyDraftsList() {
-        ServerLibraryDetailFragment fragment = (ServerLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
-        fragment.hideDraftsTab();
-    }
-
-    @Override
-    public void refreshUI() {
-        // NOTE: right now this is only called when a project has been deleted
-//        NavUtils.navigateUpFromSameTask(this);
-        finish();
     }
 }

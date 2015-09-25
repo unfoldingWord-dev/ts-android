@@ -71,4 +71,17 @@ public class LibraryUpdates implements Serializable {
             return new String[0];
         }
     }
+
+    /**
+     * Checks if an update is available for a source language
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    public boolean hasSourceLanguageUpdate(String projectId, String sourceLanguageId) {
+        if(mUpdates.containsKey(projectId)) {
+            return mUpdates.get(projectId).containsKey(sourceLanguageId);
+        }
+        return false;
+    }
 }

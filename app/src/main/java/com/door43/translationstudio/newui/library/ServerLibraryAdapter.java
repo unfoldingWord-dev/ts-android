@@ -92,6 +92,8 @@ public class ServerLibraryAdapter extends BaseAdapter {
             } else {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
             }
+        } else {
+            holder.mStatus.setBackgroundResource(0);
         }
 
         // indicate updates

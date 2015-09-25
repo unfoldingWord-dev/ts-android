@@ -798,6 +798,23 @@ public class Library {
         return false;
     }
 
+    /**
+     * Checks if the source language has any source downloaded
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    public boolean sourceLanguageHasSource(String projectId, String sourceLanguageId) {
+        String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
+        for(String resourceId:resourceIds) {
+            String[] chapterIds = mAppIndex.getChapters(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
+            if(chapterIds.length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public interface OnProgressListener {
         /**
          * Provides the progress on an operation between 0.0 and 1.0
