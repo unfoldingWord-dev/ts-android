@@ -1,24 +1,18 @@
 package com.door43.translationstudio.library;
 
 import android.app.Activity;
-import android.content.Context;
-import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.AppContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;

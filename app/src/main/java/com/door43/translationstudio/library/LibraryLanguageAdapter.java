@@ -1,7 +1,6 @@
 package com.door43.translationstudio.library;
 
 import android.content.Context;
-import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -15,13 +14,10 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;

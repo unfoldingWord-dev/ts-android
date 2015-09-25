@@ -9,16 +9,10 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.SourceLanguage;
-import com.door43.translationstudio.library.temp.ServerLibraryCache;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TabsAdapterNotification;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
-import com.door43.util.tasks.TaskManager;
-import com.door43.util.tasks.ThreadableUI;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

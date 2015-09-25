@@ -20,7 +20,6 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadAllUpdatesTask;

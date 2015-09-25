@@ -1,4 +1,4 @@
-package com.door43.translationstudio.library.temp;
+package com.door43.translationstudio.library;
 
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.projects.Project;
