@@ -8,7 +8,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.library.temp.LibraryTempData;
+import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
@@ -43,11 +43,11 @@ public class LanguagesTab extends TranslatorBaseFragment implements TabsAdapterN
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(LibraryTempData.getEnableEditing()) {
+                if(ServerLibraryCache.getEnableEditing()) {
                     // TODO: place all of this in a task
                     SourceLanguage lang = mAdapter.getItem(i);
                     AppContext.projectManager().deleteSourceLanguage(mProject.getId(), lang.getId());
-                    LibraryTempData.organizeProjects();
+                    ServerLibraryCache.organizeProjects();
                     mAdapter.notifyDataSetChanged();
                     if(!AppContext.projectManager().isProjectDownloaded(mProject.getId()) && getActivity() != null && getActivity() instanceof LibraryCallbacks) {
                         ((LibraryCallbacks)getActivity()).refreshUI();
@@ -95,11 +95,11 @@ public class LanguagesTab extends TranslatorBaseFragment implements TabsAdapterN
                 if(mProject != null) {
                     for(SourceLanguage l: mProject.getSourceLanguages()) {
                         if(l.checkingLevel() >= AppContext.context().getResources().getInteger(R.integer.min_source_lang_checking_level)) {
-                            if(LibraryTempData.getShowNewProjects() && !LibraryTempData.getShowProjectUpdates()) {
+                            if(ServerLibraryCache.getShowNewProjects() && !ServerLibraryCache.getShowProjectUpdates()) {
                                 if(!AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
                                     languages.add(l);
                                 }
-                            } else if(LibraryTempData.getShowProjectUpdates() && !LibraryTempData.getShowNewProjects()) {
+                            } else if(ServerLibraryCache.getShowProjectUpdates() && !ServerLibraryCache.getShowNewProjects()) {
                                 if(AppContext.projectManager().isSourceLanguageDownloaded(mProject.getId(), l.getId())) {
                                     languages.add(l);
                                 }
@@ -128,7 +128,7 @@ public class LanguagesTab extends TranslatorBaseFragment implements TabsAdapterN
     }
 
     public void setProject(String projectId) {
-        mProject = LibraryTempData.getProject(projectId);
+        mProject = ServerLibraryCache.getProject(projectId);
         mAdapter.setProjectId(projectId);
         populateList();
         mAdapter.notifyDataSetChanged();

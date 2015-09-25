@@ -15,7 +15,7 @@ import android.widget.TextView;
 import com.astuetz.PagerSlidingTabStrip;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.library.temp.LibraryTempData;
+import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.util.AnimationUtilities;
@@ -28,7 +28,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 /**
  * A fragment representing a single Project detail screen.
- * This fragment is either contained in a {@link ProjectLibraryListActivity}
+ * This fragment is either contained in a {@link ServerLibraryActivity}
  * in two-pane mode (on tablets) or a {@link ProjectLibraryDetailActivity}
  * on handsets.
  */
@@ -56,7 +56,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             String id = getArguments().getString(ARG_ITEM_ID);
-            mProject = LibraryTempData.getProject(id);
+            mProject = ServerLibraryCache.getProject(id);
         }
     }
 
@@ -92,7 +92,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
 
         // delete project
         Button deleteButton = (Button)rootView.findViewById(R.id.deleteProjectButton);
-        if(LibraryTempData.getEnableEditing()) {
+        if(ServerLibraryCache.getEnableEditing()) {
             deleteButton.setVisibility(View.VISIBLE);
             deleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -100,7 +100,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
                     // TODO: place this in a task
                     Logger.i(ProjectLibraryDetailFragment.class.getName(), "Deleting project " + mProject.getId());
                     AppContext.projectManager().deleteProject(mProject.getId());
-                    LibraryTempData.organizeProjects();
+                    ServerLibraryCache.organizeProjects();
                     if(getActivity() != null && getActivity() instanceof LibraryCallbacks) {
                         ((LibraryCallbacks)getActivity()).refreshUI();
                     }
@@ -199,7 +199,7 @@ public class ProjectLibraryDetailFragment extends TranslatorBaseFragment impleme
 
     public void setProjectId(String projectId) {
         // TODO: this is rather ugly we need to clean this up.
-        mProject = LibraryTempData.getProject(projectId);
+        mProject = ServerLibraryCache.getProject(projectId);
 
         // update project info
         View rootView = getView();

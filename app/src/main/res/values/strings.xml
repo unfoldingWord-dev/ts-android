@@ -350,4 +350,5 @@
     <string name="profile">Profile</string>
     <string name="project_title_complex">Project: <xliff:g id="project" example="Genesis">%1$s</xliff:g></string>
     <string name="publish_to_unfoldingword">Publish your project directly to unfoldingWord</string>
+    <string name="checking_for_updates">Checking for updates</string>
 </resources>

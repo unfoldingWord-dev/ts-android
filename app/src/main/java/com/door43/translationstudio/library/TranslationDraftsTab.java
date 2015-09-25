@@ -8,7 +8,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.library.temp.LibraryTempData;
+import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
@@ -43,7 +43,7 @@ public class TranslationDraftsTab extends TranslatorBaseFragment implements Tabs
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(LibraryTempData.getEnableEditing()) {
+                if(ServerLibraryCache.getEnableEditing()) {
                     // TODO: place this in a task
                     SourceLanguage lang = mAdapter.getItem(i);
                     AppContext.projectManager().deleteSourceLanguage(mProject.getId(), lang.getId());
@@ -121,7 +121,7 @@ public class TranslationDraftsTab extends TranslatorBaseFragment implements Tabs
     }
 
     public void setProject(String projectId) {
-        mProject = LibraryTempData.getProject(projectId);
+        mProject = ServerLibraryCache.getProject(projectId);
         mAdapter.setProjectId(projectId);
         populateList();
     }

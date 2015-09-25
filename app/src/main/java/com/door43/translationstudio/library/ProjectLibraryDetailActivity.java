@@ -12,7 +12,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * An activity representing a single Project detail screen. This
  * activity is only used on handset devices. On tablet-size devices,
  * item details are presented side-by-side with a list of items
- * in a {@link ProjectLibraryListActivity}.
+ * in a {@link ServerLibraryActivity}.
  * <p/>
  * This activity is mostly just a 'shell' activity containing nothing
  * more than a {@link ProjectLibraryDetailFragment}.
@@ -47,7 +47,7 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity impleme
                     getIntent().getStringExtra(ProjectLibraryDetailFragment.ARG_ITEM_ID));
             ProjectLibraryDetailFragment fragment = new ProjectLibraryDetailFragment();
             fragment.setArguments(arguments);
-            getFragmentManager().beginTransaction().add(R.id.project_detail_container, fragment).commit();
+            getFragmentManager().beginTransaction().add(R.id.detail_container, fragment).commit();
         }
 
 
@@ -64,7 +64,7 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity impleme
             //
             // http://developer.android.com/design/patterns/navigation.html#up-vs-back
             //
-            Intent intent = new Intent(this, ProjectLibraryListActivity.class);
+            Intent intent = new Intent(this, ServerLibraryActivity.class);
             if(getIntent().getExtras() != null) {
                 intent.putExtras(getIntent().getExtras());
             }
@@ -76,7 +76,7 @@ public class ProjectLibraryDetailActivity extends TranslatorBaseActivity impleme
 
     @Override
     public void onEmptyDraftsList() {
-        ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.project_detail_container);
+        ProjectLibraryDetailFragment fragment = (ProjectLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
         fragment.hideDraftsTab();
     }
 

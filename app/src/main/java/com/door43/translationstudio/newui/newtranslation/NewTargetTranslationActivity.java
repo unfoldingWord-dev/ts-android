@@ -20,7 +20,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.library.ProjectLibraryListActivity;
+import com.door43.translationstudio.library.ServerLibraryActivity;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.util.AppContext;
@@ -182,8 +182,8 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Intent intent = new Intent(NewTargetTranslationActivity.this, ProjectLibraryListActivity.class);
-//                                intent.putExtra(ProjectLibraryListActivity.ARG_SHOW_UPDATES, true);
+                                Intent intent = new Intent(NewTargetTranslationActivity.this, ServerLibraryActivity.class);
+//                                intent.putExtra(ServerLibraryActivity.ARG_SHOW_UPDATES, true);
                                 startActivity(intent);
                             }
                         })

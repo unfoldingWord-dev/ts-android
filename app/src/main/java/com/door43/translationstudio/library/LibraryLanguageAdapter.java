@@ -14,8 +14,7 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.library.temp.LibraryTempData;
-import com.door43.translationstudio.projects.Project;
+import com.door43.translationstudio.library.temp.ServerLibraryCache;
 import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.tasks.DownloadLanguageTask;
 import com.door43.translationstudio.util.AppContext;
@@ -81,7 +80,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
         holder.name.setText(getItem(i).getName());
         holder.downloadedImage.setVisibility(View.INVISIBLE);
 
-        if(LibraryTempData.getEnableEditing()) {
+        if(ServerLibraryCache.getEnableEditing()) {
             holder.deleteImage.setVisibility(View.VISIBLE);
         } else {
             holder.deleteImage.setVisibility(View.GONE);
@@ -138,7 +137,7 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                         @Override
                         public void run() {
                             staticHolder.progressBar.setVisibility(View.INVISIBLE);
-                            if (LibraryTempData.getEnableEditing()) {
+                            if (ServerLibraryCache.getEnableEditing()) {
                                 staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                             } else {
                                 staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
@@ -163,13 +162,13 @@ public class LibraryLanguageAdapter extends BaseAdapter {
                     hasUpdate = AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i));
                 }
                 if(hasUpdate) {
-                    if(LibraryTempData.getEnableEditing()) {
+                    if(ServerLibraryCache.getEnableEditing()) {
                         staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
                     } else {
                         staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
                     }
                 } else {
-                    if(LibraryTempData.getEnableEditing()) {
+                    if(ServerLibraryCache.getEnableEditing()) {
                         staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
                     } else {
                         staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));

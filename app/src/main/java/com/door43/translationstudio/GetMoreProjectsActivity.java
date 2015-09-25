@@ -9,7 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
-import com.door43.translationstudio.library.ProjectLibraryListActivity;
+import com.door43.translationstudio.library.ServerLibraryActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
@@ -59,8 +59,8 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
 //                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 //                            @Override
 //                            public void onClick(DialogInterface dialogInterface, int i) {
-//                                Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
-//                                intent.putExtra(ProjectLibraryListActivity.ARG_SHOW_NEW, true);
+//                                Intent intent = new Intent(GetMoreProjectsActivity.this, ServerLibraryActivity.class);
+//                                intent.putExtra(ServerLibraryActivity.ARG_SHOW_NEW, true);
 //                                startActivity(intent);
 //                            }
 //                        })
@@ -78,8 +78,8 @@ public class GetMoreProjectsActivity extends TranslatorBaseActivity {
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                Intent intent = new Intent(GetMoreProjectsActivity.this, ProjectLibraryListActivity.class);
-//                                intent.putExtra(ProjectLibraryListActivity.ARG_SHOW_UPDATES, true);
+                                Intent intent = new Intent(GetMoreProjectsActivity.this, ServerLibraryActivity.class);
+//                                intent.putExtra(ServerLibraryActivity.ARG_SHOW_UPDATES, true);
                                 startActivity(intent);
                             }
                         })

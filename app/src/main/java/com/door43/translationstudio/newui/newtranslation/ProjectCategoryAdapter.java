@@ -20,12 +20,12 @@ import java.util.List;
 /**
  * Created by joel on 9/4/2015.
  */
-public class ProjectAdapter extends BaseAdapter {
+public class ProjectCategoryAdapter extends BaseAdapter {
     private ProjectCategory[] mCategories;
     private ProjectCategory[] mFilteredCategories;
-    private ProjectFilter mProjectFilter;
+    private ProjectCategoryFilter mProjectFilter;
 
-    public ProjectAdapter(ProjectCategory[] categories) {
+    public ProjectCategoryAdapter(ProjectCategory[] categories) {
         List<ProjectCategory> categoriesList = Arrays.asList(categories);
         Collections.sort(categoriesList);
         mCategories = categoriesList.toArray(new ProjectCategory[categoriesList.size()]);
@@ -91,7 +91,7 @@ public class ProjectAdapter extends BaseAdapter {
      */
     public Filter getFilter() {
         if(mProjectFilter == null) {
-            mProjectFilter = new ProjectFilter();
+            mProjectFilter = new ProjectCategoryFilter();
         }
         return mProjectFilter;
     }
@@ -112,7 +112,7 @@ public class ProjectAdapter extends BaseAdapter {
     /**
      * A filter for projects
      */
-    private class ProjectFilter extends Filter {
+    private class ProjectCategoryFilter extends Filter {
 
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
@@ -163,12 +163,12 @@ public class ProjectAdapter extends BaseAdapter {
     }
 
     /**
-     * Sorts target languages by id
-     * @param languages
-     * @param referenceId languages are sorted according to the reference id
+     * Sorts project categories by id
+     * @param categories
+     * @param referenceId categories are sorted according to the reference id
      */
-    private static void sortProjectCategories(List<ProjectCategory> languages, final CharSequence referenceId) {
-        Collections.sort(languages, new Comparator<ProjectCategory>() {
+    private static void sortProjectCategories(List<ProjectCategory> categories, final CharSequence referenceId) {
+        Collections.sort(categories, new Comparator<ProjectCategory>() {
             @Override
             public int compare(ProjectCategory lhs, ProjectCategory rhs) {
                 String lhId = lhs.projectId;

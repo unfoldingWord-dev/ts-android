@@ -15,9 +15,9 @@
         android:background="?attr/colorPrimary"/>
 
     <fragment
-        android:name="com.door43.translationstudio.library.ProjectLibraryListFragment"
+        android:name="com.door43.translationstudio.library.ServerLibraryFragment"
         android:id="@+id/project_list"
         android:layout_width="match_parent" android:layout_height="match_parent"
-        tools:context="com.door43.translationstudio.library.ProjectLibraryListActivity"
+        tools:context="com.door43.translationstudio.library.ServerLibraryActivity"
         tools:layout="@android:layout/list_content" />
 </LinearLayout>

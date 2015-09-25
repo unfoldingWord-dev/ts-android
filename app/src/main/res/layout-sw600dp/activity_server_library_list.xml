@@ -3,7 +3,7 @@
     android:layout_height="match_parent"  android:baselineAligned="false"
     android:orientation="vertical"
     android:background="@color/white"
-    tools:context="com.door43.translationstudio.library.ProjectLibraryListActivity">
+    tools:context="com.door43.translationstudio.library.ServerLibraryActivity">
 
     <android.support.v7.widget.Toolbar
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -28,7 +28,7 @@
 
             <LinearLayout>
                 <fragment android:id="@+id/project_list"
-                    android:name="com.door43.translationstudio.library.ProjectLibraryListFragment"
+                    android:name="com.door43.translationstudio.library.ServerLibraryFragment"
                     android:layout_width="300dp" android:layout_height="match_parent"
                     tools:layout="@android:layout/list_content" />
             </LinearLayout>
@@ -39,7 +39,7 @@
                 android:layout_height="fill_parent"
                 android:background="@color/accent"></LinearLayout>
             <LinearLayout>
-                <FrameLayout android:id="@+id/project_detail_container" android:layout_width="match_parent"
+                <FrameLayout android:id="@+id/detail_container" android:layout_width="match_parent"
                     android:layout_height="match_parent" />
             </LinearLayout>
         </TableRow>

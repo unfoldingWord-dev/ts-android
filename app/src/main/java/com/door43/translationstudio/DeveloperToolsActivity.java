@@ -22,8 +22,8 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.tasks.DownloadAvailableProjectsTask;
-import com.door43.translationstudio.tasks.DownloadProjectsTask;
+import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
+import com.door43.translationstudio.tasks.DownloadAllUpdatesTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
@@ -178,11 +178,11 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                DownloadAvailableProjectsTask prepTask = (DownloadAvailableProjectsTask) TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-                                DownloadProjectsTask task = (DownloadProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+                                GetLibraryUpdatesTask prepTask = (GetLibraryUpdatesTask) TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
+                                DownloadAllUpdatesTask task = (DownloadAllUpdatesTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
                                 if(task == null && prepTask == null) {
                                     // create new prep task
-                                    prepTask = new DownloadAvailableProjectsTask(true);
+                                    prepTask = new GetLibraryUpdatesTask();
                                     prepTask.addOnProgressListener(DeveloperToolsActivity.this);
                                     prepTask.addOnFinishedListener(DeveloperToolsActivity.this);
                                     TaskManager.addTask(prepTask, TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
@@ -306,8 +306,8 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
      * Connects to an existing task
      */
     public void connectDownloadAllTask() {
-        DownloadAvailableProjectsTask prepTask = (DownloadAvailableProjectsTask)TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-        DownloadProjectsTask task = (DownloadProjectsTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+        GetLibraryUpdatesTask prepTask = (GetLibraryUpdatesTask)TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
+        DownloadAllUpdatesTask task = (DownloadAllUpdatesTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
         if(prepTask != null) {
             // connect to existing task
             prepTask.addOnProgressListener(this);
@@ -337,12 +337,13 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                     }
 
                     if(!task.isCanceled()) {
-                        if (task instanceof DownloadAvailableProjectsTask) {
+                        if (task instanceof GetLibraryUpdatesTask) {
                             // start task to download projects
-                            DownloadProjectsTask downloadTask = new DownloadProjectsTask(((DownloadAvailableProjectsTask) task).getProjects(), true);
-                            downloadTask.addOnProgressListener(DeveloperToolsActivity.this);
-                            downloadTask.addOnFinishedListener(DeveloperToolsActivity.this);
-                            TaskManager.addTask(downloadTask, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+                            // TODO: finish updating this
+//                            DownloadAllUpdatesTask downloadTask = new DownloadAllUpdatesTask(((GetLibraryUpdatesTask) task).getProjects(), true);
+//                            downloadTask.addOnProgressListener(DeveloperToolsActivity.this);
+//                            downloadTask.addOnFinishedListener(DeveloperToolsActivity.this);
+//                            TaskManager.addTask(downloadTask, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
                         } else {
                             // the download is complete
                             new AlertDialog.Builder(DeveloperToolsActivity.this)
@@ -394,7 +395,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         mDownloadProgressDialog.setOnCancelListener(DeveloperToolsActivity.this);
                         mDownloadProgressDialog.setMax(100);
                         mDownloadProgressDialog.setIcon(R.drawable.icon_update_cloud_blue);
-                        if(task instanceof DownloadAvailableProjectsTask) {
+                        if(task instanceof GetLibraryUpdatesTask) {
                             mDownloadProgressDialog.setTitle(getResources().getString(R.string.loading));
                         } else {
                             mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
@@ -412,7 +413,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         mDownloadProgressDialog.setProgress((int) Math.ceil(progress * 100));
                     }
                     if (!message.isEmpty()) {
-                        if(task instanceof DownloadAvailableProjectsTask) {
+                        if(task instanceof GetLibraryUpdatesTask) {
                             mDownloadProgressDialog.setMessage(message);
                         } else {
                             mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
@@ -429,7 +430,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
     public void onCancel(DialogInterface dialogInterface) {
         // the download dialog was canceled
         mDownloadProgressDialog = null;
-        DownloadProjectsTask task = (DownloadProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+        DownloadAllUpdatesTask task = (DownloadAllUpdatesTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
         if(task != null) {
             TaskManager.cancelTask(task);
         }

@@ -1,7 +1,6 @@
 package com.door43.translationstudio.newui.newtranslation;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,6 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.newui.newtranslation.ProjectAdapter;
 import com.door43.translationstudio.util.AppContext;
 
 import java.util.Locale;
@@ -25,7 +23,7 @@ import java.util.Locale;
 public class ProjectListFragment extends BaseFragment implements Searchable {
     private OnItemClickListener mListener;
     private Library mLibrary;
-    private ProjectAdapter mAdapter;
+    private ProjectCategoryAdapter mAdapter;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_project_list, container, false);
@@ -33,7 +31,7 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
         mLibrary = AppContext.getLibrary();
 
         ListView list = (ListView) rootView.findViewById(R.id.list);
-        mAdapter = new ProjectAdapter(mLibrary.getProjectCategories(Locale.getDefault().getLanguage()));
+        mAdapter = new ProjectCategoryAdapter(mLibrary.getProjectCategories(Locale.getDefault().getLanguage()));
         list.setAdapter(mAdapter);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

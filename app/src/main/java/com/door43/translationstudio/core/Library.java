@@ -1,7 +1,6 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Zip;
@@ -36,9 +35,30 @@ public class Library {
     private final Indexer mDownloaderIndex;
     private final File mIndexDir;
     private final Context mContext;
+    private final boolean mAsServerLibrary;
+    private final String mRootApiUrl;
     private LibraryUpdates mLibraryUpdates = new LibraryUpdates();
     private static Map<String, TargetLanguage> mTargetLanguages;
     private Downloader mDownloader;
+
+    /**
+     *
+     * @param context
+     * @param libraryDir
+     * @param rootApiUrl
+     * @param server when true will cause the library to operate off of the server index (just for reading)
+     */
+    private Library(Context context, File libraryDir, String rootApiUrl, boolean server) {
+        mContext = context;
+        mLibraryDir = libraryDir;
+        mIndexDir = new File(libraryDir, "index");
+        mDownloaderIndex = new Indexer("downloads", mIndexDir);
+        mServerIndex = new Indexer("server", mIndexDir);
+        mAppIndex = new Indexer("app", mIndexDir);
+        mRootApiUrl = rootApiUrl;
+        mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
+        mAsServerLibrary = server;
+    }
 
     public Library(Context context, File libraryDir, String rootApiUrl) {
         mContext = context;
@@ -47,7 +67,25 @@ public class Library {
         mDownloaderIndex = new Indexer("downloads", mIndexDir);
         mServerIndex = new Indexer("server", mIndexDir);
         mAppIndex = new Indexer("app", mIndexDir);
+        mRootApiUrl = rootApiUrl;
         mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
+        mAsServerLibrary = false;
+    }
+
+    /**
+     * Returns a new library instance that represents the server
+     * @return
+     */
+    public Library getServerLibrary() {
+        return new Library(mContext, mLibraryDir, mRootApiUrl, true);
+    }
+
+    /**
+     * Checks if this library is operating as the server library or the local library
+     * @return
+     */
+    public boolean isServerLibrary() {
+        return mAsServerLibrary;
     }
 
     /**
@@ -76,6 +114,20 @@ public class Library {
             Logger.e(this.getClass().getName(), "Failed to deploy the library", e);
         }
         return false;
+    }
+
+    /**
+     * Returns the active index.
+     * This allows us to switch between the app index and the server index
+     *
+     * @return
+     */
+    private Indexer getActiveIndex() {
+        if(mAsServerLibrary) {
+            return mServerIndex;
+        } else {
+            return mAppIndex;
+        }
     }
 
     /**
@@ -155,12 +207,15 @@ public class Library {
 
     /**
      * Returns a list of updates that are available on the server
+     * @param listener an optiona progress listener
      * @return
      */
-    public LibraryUpdates getAvailableLibraryUpdates() {
+    public LibraryUpdates getAvailableLibraryUpdates(OnProgressListener listener) {
         mLibraryUpdates = new LibraryUpdates();
         if(mDownloader.downloadProjectList()) {
-            for (String projectId : mDownloader.getIndex().getProjects()) {
+            String[] projectIds = mDownloader.getIndex().getProjects();
+            for (int i = 0; i < projectIds.length; i ++) {
+                String projectId = projectIds[i];
                 try {
                     int latestProjectModified = mDownloader.getIndex().getProject(projectId).getInt("date_modified");
                     JSONObject lastProject = mServerIndex.getProject(projectId);
@@ -174,9 +229,15 @@ public class Library {
                 } catch (JSONException e) {
                     Logger.w(this.getClass().getName(), "Failed to process the downloaded project " + projectId, e);
                 }
+                if(listener != null) {
+                    listener.onProgress((i + 1), projectIds.length);
+                }
             }
         }
         try {
+            if(listener != null) {
+                listener.onIndeterminate();
+            }
             mServerIndex.mergeIndex(mDownloader.getIndex(), true);
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to merge the download index into the sever index", e);
@@ -258,7 +319,7 @@ public class Library {
         String date = s.format(new Date());
         File destFile = new File(destDir, "library_" + date + ".zip");
         try {
-            Zip.zip(mAppIndex.getIndexDir().getPath(), destFile.getPath());
+            Zip.zip(getActiveIndex().getIndexDir().getPath(), destFile.getPath());
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to export the library", e);
             return null;
@@ -302,6 +363,41 @@ public class Library {
     }
 
     /**
+     * Returns a list of all projects without nested categorization
+     * @param languageId the preferred language in which the category names will be returned. The default is english
+     * @return
+     */
+    public ProjectCategory[] getProjectCategoriesFlat(String languageId) {
+        List<ProjectCategory> categories = new ArrayList<>();
+
+        String[] projectIds = getActiveIndex().getProjects();
+        for(String projectId:projectIds) {
+            JSONObject projectJson = getActiveIndex().getProject(projectId);
+            try {
+                String categoryId = null;
+                JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, languageId);
+                if(sourceLanguageJson != null) {
+                    // TRICKY: getPreferredSourceLanguage can return a different language than what was requested
+                    String categoryLanguageId = sourceLanguageJson.getString("slug");
+                    JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
+                    String title = projectLanguageJson.getString("name");
+                    String sort = projectJson.getString("sort");
+
+                    // TODO: we need to provide the icon path
+                    ProjectCategory cat = new ProjectCategory(title, categoryId, projectId, categoryLanguageId, sort, -1);
+                    categories.add(cat);
+                } else {
+                    Logger.w(this.getClass().getName(), "Could not find any source languages for " + projectId);
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "Failed to parse project " + projectId, e);
+            }
+        }
+        sortProjectCategories(categories);
+        return categories.toArray(new ProjectCategory[categories.size()]);
+    }
+
+    /**
      * Returns a list of project categories
      *
      * @param languageId the preferred language in which the category names will be returned. The default is english
@@ -319,9 +415,9 @@ public class Library {
     public ProjectCategory[] getProjectCategories(ProjectCategory parentCategory) {
         Map<String, ProjectCategory> categoriesMap = new HashMap<>();
 
-        String[] projectIds = mAppIndex.getProjects();
+        String[] projectIds = getActiveIndex().getProjects();
         for(String projectId:projectIds) {
-            JSONObject projectJson = mAppIndex.getProject(projectId);
+            JSONObject projectJson = getActiveIndex().getProject(projectId);
             try {
                 JSONArray metaJson = projectJson.getJSONArray("meta");
 
@@ -375,7 +471,7 @@ public class Library {
     /**
      * Returns the preferred source language if it exists
      *
-     * If the source language does not exist it will defaul to english.
+     * If the source language does not exist it will default to english.
      * If english does not exist it will return the first available source language
      * If no source language is available it will return null.
      *
@@ -385,16 +481,16 @@ public class Library {
      */
     private JSONObject getPreferredSourceLanguage(String projectId, String sourceLanguageId) {
         // preferred language
-        JSONObject sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, sourceLanguageId);
+        JSONObject sourceLanguageJson = getActiveIndex().getSourceLanguage(projectId, sourceLanguageId);
         // default (en)
         if(sourceLanguageJson == null) {
-            sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, "en");
+            sourceLanguageJson = getActiveIndex().getSourceLanguage(projectId, "en");
         }
         // first available
         if(sourceLanguageJson == null) {
-            String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+            String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
             if(sourceLanguageIds.length > 0) {
-                sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, sourceLanguageIds[0]);
+                sourceLanguageJson = getActiveIndex().getSourceLanguage(projectId, sourceLanguageIds[0]);
             }
         }
         return sourceLanguageJson;
@@ -407,7 +503,7 @@ public class Library {
      */
     public SourceLanguage[] getSourceLanguages(String projectId) {
         List<SourceLanguage> sourceLanguages = new ArrayList<>();
-        String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
         for(String id:sourceLanguageIds) {
             SourceLanguage lang = getSourceLanguage(projectId, id);
             if(lang != null) {
@@ -425,7 +521,7 @@ public class Library {
      * @return
      */
     public SourceLanguage getSourceLanguage(String projectId, String sourceLanguageId) {
-        JSONObject sourceLanguageJson = mAppIndex.getSourceLanguage(projectId, sourceLanguageId);
+        JSONObject sourceLanguageJson = getActiveIndex().getSourceLanguage(projectId, sourceLanguageId);
         try {
             return SourceLanguage.generate(sourceLanguageJson);
         } catch (JSONException e) {
@@ -442,9 +538,9 @@ public class Library {
      */
     public Resource[] getResources(String projectId, String sourceLanguageId) {
         List<Resource> resources = new ArrayList<>();
-        String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
+        String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
         for(String id:resourceIds) {
-            JSONObject resourceJson = mAppIndex.getResource(SourceTranslation.simple(projectId, sourceLanguageId, id));
+            JSONObject resourceJson = getActiveIndex().getResource(SourceTranslation.simple(projectId, sourceLanguageId, id));
             try {
                 Resource res = Resource.generate(resourceJson);
                 if(res != null) {
@@ -466,7 +562,7 @@ public class Library {
      * @return
      */
     public Project getProject(String projectId, String languageId) {
-        return Project.generate(mAppIndex.getProject(projectId), getPreferredSourceLanguage(projectId, languageId));
+        return Project.generate(getActiveIndex().getProject(projectId), getPreferredSourceLanguage(projectId, languageId));
     }
 
     /**
@@ -486,7 +582,7 @@ public class Library {
      */
     public Chapter[] getChapters(SourceTranslation sourceTranslation) {
         List<Chapter> chapters = new ArrayList<>();
-        String[] chapterIds = mAppIndex.getChapters(sourceTranslation);
+        String[] chapterIds = getActiveIndex().getChapters(sourceTranslation);
         for(String chapterId:chapterIds) {
             Chapter chapter = getChapter(sourceTranslation, chapterId);
             if(chapter != null) {
@@ -504,7 +600,7 @@ public class Library {
      * @return
      */
     public Chapter getChapter(SourceTranslation sourceTranslation, String chapterId) {
-        JSONObject chapterJson = mAppIndex.getChapter(sourceTranslation, chapterId);
+        JSONObject chapterJson = getActiveIndex().getChapter(sourceTranslation, chapterId);
         return Chapter.generate(chapterJson);
     }
 
@@ -516,9 +612,9 @@ public class Library {
      */
     public Frame[] getFrames(SourceTranslation sourceTranslation, String chapterId) {
         List<Frame> frames = new ArrayList<>();
-        String[] frameIds = mAppIndex.getFrames(sourceTranslation, chapterId);
+        String[] frameIds = getActiveIndex().getFrames(sourceTranslation, chapterId);
         for(String frameId:frameIds) {
-            Frame frame = Frame.generate(chapterId, mAppIndex.getFrame(sourceTranslation, chapterId, frameId));
+            Frame frame = Frame.generate(chapterId, getActiveIndex().getFrame(sourceTranslation, chapterId, frameId));
             if(frame != null) {
                 frames.add(frame);
             }
@@ -564,7 +660,7 @@ public class Library {
      */
     public SourceTranslation getSourceTranslation(String projectId, String sourceLanguageId, String resourceId) {
         SourceTranslation simpleTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
-        JSONObject resourceJson = mAppIndex.getResource(simpleTranslation);
+        JSONObject resourceJson = getActiveIndex().getResource(simpleTranslation);
         if(resourceJson != null) {
             JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, sourceLanguageId);
             try {
@@ -612,9 +708,9 @@ public class Library {
      */
     public SourceTranslation[] getSourceTranslations(String projectId) {
         List<SourceTranslation> sourceTranslations = new ArrayList<>();
-        String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
+            String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
                 if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
@@ -634,9 +730,9 @@ public class Library {
      */
     public TranslationNote[] getTranslationNotes(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         List<TranslationNote> notes = new ArrayList<>();
-        String[] noteIds = mAppIndex.getNotes(sourceTranslation, chapterId, frameId);
+        String[] noteIds = getActiveIndex().getNotes(sourceTranslation, chapterId, frameId);
         for(String noteId:noteIds) {
-            TranslationNote note = TranslationNote.generate(chapterId, frameId, mAppIndex.getNote(sourceTranslation, chapterId, frameId, noteId));
+            TranslationNote note = TranslationNote.generate(chapterId, frameId, getActiveIndex().getNote(sourceTranslation, chapterId, frameId, noteId));
             if(note != null) {
                 notes.add(note);
             }
@@ -653,13 +749,26 @@ public class Library {
      */
     public TranslationWord[] getTranslationWords(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         List<TranslationWord> words = new ArrayList<>();
-        String[] wordIds = mAppIndex.getWords(sourceTranslation, chapterId, frameId);
+        String[] wordIds = getActiveIndex().getWords(sourceTranslation, chapterId, frameId);
         for(String wordId:wordIds) {
-            TranslationWord note = TranslationWord.generate(mAppIndex.getWord(sourceTranslation, wordId));
+            TranslationWord note = TranslationWord.generate(getActiveIndex().getWord(sourceTranslation, wordId));
             if(note != null) {
                 words.add(note);
             }
         }
         return words.toArray(new TranslationWord[words.size()]);
+    }
+
+    public interface OnProgressListener {
+        /**
+         * Provides the progress on an operation between 0.0 and 1.0
+         * @param progress
+         */
+        void onProgress(int progress, int max);
+
+        /**
+         * Identifes the current task as not quantifiable
+         */
+        void onIndeterminate();
     }
 }
