@@ -2,7 +2,7 @@ package com.door43.translationstudio.tasks;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.library.ServerLibraryCache;
+import com.door43.translationstudio.newui.library.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;

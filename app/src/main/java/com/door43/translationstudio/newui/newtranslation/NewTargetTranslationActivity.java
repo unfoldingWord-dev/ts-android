@@ -20,8 +20,8 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.library.ServerLibraryActivity;
-import com.door43.translationstudio.library.Searchable;
+import com.door43.translationstudio.newui.library.ServerLibraryActivity;
+import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.util.AppContext;
 

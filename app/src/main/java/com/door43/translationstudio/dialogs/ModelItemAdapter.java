@@ -132,7 +132,7 @@ public class ModelItemAdapter extends BaseAdapter {
             holder.description = (TextView)v.findViewById(R.id.modelDescription);
 
             // icons
-            holder.audioIcon = (ImageView)v.findViewById(R.id.audioIcon);
+//            holder.audioIcon = (ImageView)v.findViewById(R.id.audioIcon);
             holder.languagesIcon = (ImageView)v.findViewById(R.id.languagesIcon);
             holder.translationIcon = (ImageView)v.findViewById(R.id.translationIcon);
             holder.translationNotesIcon = (ImageView)v.findViewById(R.id.translationNotesIcon);
@@ -214,10 +214,10 @@ public class ModelItemAdapter extends BaseAdapter {
         holder.description.setTextSize((float) (fontsize * 0.7));
 
         // icons
-        holder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
-        holder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
-        holder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
-        holder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+//        holder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+//        holder.translationIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+//        holder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
+//        holder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
         holder.iconGroup.setVisibility(View.INVISIBLE);
 
         // load image
@@ -278,14 +278,14 @@ public class ModelItemAdapter extends BaseAdapter {
             public void onPostExecute() {
                 if(staticIsSelected) {
                     if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.icon_edit_white);
-                    if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global);
+//                    if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global);
 //                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio);
-                    if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes);
-                } else {
-                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.icon_edit_blue);
-                    if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global_light);
+//                    if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes);
+//                } else {
+//                    if(isTranslating) staticHolder.translationIcon.setBackgroundResource(R.drawable.icon_edit_blue);
+//                    if(isTranslatingGlobal) staticHolder.languagesIcon.setBackgroundResource(R.drawable.ic_project_status_global_light);
 //                    if(hasAudio) staticHolder.audioIcon.setBackgroundResource(R.drawable.ic_project_status_audio_light);
-                    if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes_light);
+//                    if(isTranslatingNotes) staticHolder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_translating_notes_light);
                 }
                 if(isTranslating || isTranslatingGlobal || hasAudio || isTranslatingNotes) {
                     staticHolder.iconGroup.setVisibility(View.VISIBLE);

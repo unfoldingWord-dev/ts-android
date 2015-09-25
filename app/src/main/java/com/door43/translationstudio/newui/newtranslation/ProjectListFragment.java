@@ -11,7 +11,7 @@ import android.widget.ListView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.library.Searchable;
+import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
 

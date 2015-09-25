@@ -30,6 +30,6 @@
             android:text="Dismiss"
             android:id="@+id/dismissButton"
             android:layout_weight="1"
-            style="@style/Widget.Button.Primary" />
+            style="@style/Widget.Button" />
     </LinearLayout>
 </RelativeLayout>

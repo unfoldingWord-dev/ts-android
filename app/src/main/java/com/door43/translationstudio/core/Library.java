@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Source;
+
 /**
  * Created by joel on 8/29/2015.
  */
@@ -37,7 +39,6 @@ public class Library {
     private final Context mContext;
     private final boolean mAsServerLibrary;
     private final String mRootApiUrl;
-    private LibraryUpdates mLibraryUpdates = new LibraryUpdates();
     private static Map<String, TargetLanguage> mTargetLanguages;
     private Downloader mDownloader;
 
@@ -155,33 +156,6 @@ public class Library {
     }
 
     /**
-     * Downloads the resource catalog from the server
-     * @param projectId
-     * @param sourceLanguageId
-     */
-    private void downloadResourceList(String projectId, String sourceLanguageId) {
-        if(mDownloader.downloadResourceList(projectId, sourceLanguageId)) {
-            for(String resourceId:mDownloader.getIndex().getResources(projectId, sourceLanguageId)) {
-                SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
-                try {
-                    int latestResourceModified = mDownloader.getIndex().getResource(sourceTranslation).getInt("date_modified");
-                    JSONObject localResource = mAppIndex.getResource(sourceTranslation);
-                    int localResourceModified = -1;
-                    if(localResource != null) {
-                        localResourceModified = localResource.getInt("date_modified");
-                    }
-                    if(localResourceModified == -1 || localResourceModified < latestResourceModified) {
-                        // build update list
-                        mLibraryUpdates.addUpdate(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
-                    }
-                } catch (JSONException e) {
-                    Logger.w(this.getClass().getName(), "Failed to process the downloaded resource in " + sourceTranslation.getId(), e);
-                }
-            }
-        }
-    }
-
-    /**
      * Downloads the source language catalog from the server
      * @param projectId
      */
@@ -196,7 +170,7 @@ public class Library {
                         lastSourceLanguageModified = lastSourceLanguage.getInt("date_modified");
                     }
                     if(lastSourceLanguageModified == -1 || lastSourceLanguageModified < latestSourceLanguageModified) {
-                        downloadResourceList(projectId, sourceLanguageId);
+                        mDownloader.downloadResourceList(projectId, sourceLanguageId);
                     }
                 } catch (JSONException e) {
                     Logger.w(this.getClass().getName(), "Failed to process the downloaded source language " + sourceLanguageId + " in project " + projectId, e);
@@ -207,11 +181,10 @@ public class Library {
 
     /**
      * Returns a list of updates that are available on the server
-     * @param listener an optiona progress listener
+     * @param listener an optional progress listener
      * @return
      */
     public LibraryUpdates getAvailableLibraryUpdates(OnProgressListener listener) {
-        mLibraryUpdates = new LibraryUpdates();
         if(mDownloader.downloadProjectList()) {
             String[] projectIds = mDownloader.getIndex().getProjects();
             for (int i = 0; i < projectIds.length; i ++) {
@@ -239,10 +212,37 @@ public class Library {
                 listener.onIndeterminate();
             }
             mServerIndex.mergeIndex(mDownloader.getIndex(), true);
+            return generateLibraryUpdates();
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to merge the download index into the sever index", e);
         }
-        return mLibraryUpdates;
+        return new LibraryUpdates();
+    }
+
+    /**
+     * Generates the available library updates from the server and app index.
+     * The network is not used durring this operation.
+     * @return
+     */
+    private LibraryUpdates generateLibraryUpdates() {
+        LibraryUpdates updates = new LibraryUpdates();
+        for(String projectId:mServerIndex.getProjects()) {
+            for(String sourceLanguageId:mServerIndex.getSourceLanguages(projectId)) {
+                for(String resourceId:mServerIndex.getResources(projectId, sourceLanguageId)) {
+                    SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
+                    try {
+                        int serverModified = mServerIndex.getResource(sourceTranslation).getInt("date_modified");
+                        JSONObject appResource = mAppIndex.getResource(sourceTranslation);
+                        if(appResource == null || appResource.getInt("date_modified") < serverModified) {
+                            updates.addUpdate(sourceTranslation);
+                        }
+                    } catch (JSONException e) {
+                        Logger.w(this.getClass().getName(), "Failed to process the resources for " + projectId + ":" + sourceLanguageId + ":" + resourceId, e);
+                    }
+                }
+            }
+        }
+        return updates;
     }
 
     /**
@@ -776,6 +776,26 @@ public class Library {
             }
         }
         return words.toArray(new TranslationWord[words.size()]);
+    }
+
+    /**
+     * Checks if the project has any source downloaded
+     *
+     * @param projectId
+     * @return
+     */
+    public boolean projectHasSource(String projectId) {
+        String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+        for(String sourceLanguageId:sourceLanguageIds) {
+            String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
+            for(String resourceId:resourceIds) {
+                String[] chapterIds = mAppIndex.getChapters(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
+                if(chapterIds.length > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public interface OnProgressListener {

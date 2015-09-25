@@ -9,7 +9,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
-import com.door43.translationstudio.library.ServerLibraryActivity;
+import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;

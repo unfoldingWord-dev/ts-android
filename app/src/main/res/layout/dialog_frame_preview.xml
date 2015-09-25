@@ -48,7 +48,7 @@
         android:text="@string/label_ok"
         android:id="@+id/okButton"
         android:layout_alignParentBottom="true"
-        style="@style/Widget.Button.Primary"
+        style="@style/Widget.Button"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 </RelativeLayout>

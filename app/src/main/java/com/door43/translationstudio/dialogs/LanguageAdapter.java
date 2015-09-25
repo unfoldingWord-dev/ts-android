@@ -117,12 +117,12 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
             v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             holder.languageNameView.setTextColor(Color.WHITE);
             holder.languageIdView.setTextColor(Color.WHITE);
-            holder.translationStatusIcon.setBackgroundResource(R.drawable.ic_project_status_translating);
+//            holder.translationStatusIcon.setBackgroundResource(R.drawable.ic_project_status_translating);
         } else {
             v.setBackgroundColor(Color.TRANSPARENT);
             holder.languageNameView.setTextColor(mContext.getResources().getColor(R.color.dark_gray));
             holder.languageIdView.setTextColor(mContext.getResources().getColor(R.color.gray));
-            holder.translationStatusIcon.setBackgroundResource(R.drawable.ic_project_status_translating_light);
+//            holder.translationStatusIcon.setBackgroundResource(R.drawable.ic_project_status_translating_light);
         }
         return v;
     }

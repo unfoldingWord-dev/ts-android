@@ -70,7 +70,7 @@
                 android:id="@+id/okButton"
                 android:clickable="true"
                 android:layout_weight="1"
-                style="@style/Widget.Button.Primary" />
+                style="@style/Widget.Button" />
 
         </LinearLayout>
     </LinearLayout>

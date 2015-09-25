@@ -119,7 +119,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/sublistImageView"
-            android:background="@drawable/ic_chevron_right_small"
+            android:background="@drawable/ic_chevron_right_black_24dp"
             android:layout_alignTop="@+id/linearLayout7"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"

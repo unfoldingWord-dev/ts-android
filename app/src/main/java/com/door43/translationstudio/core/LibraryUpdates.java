@@ -38,6 +38,15 @@ public class LibraryUpdates implements Serializable {
     }
 
     /**
+     * Checks if an update is available for a project
+     * @param projectId
+     * @return
+     */
+    public boolean hasProjectUpdate(String projectId) {
+        return mUpdates.containsKey(projectId);
+    }
+
+    /**
      * Returns an array of source language ids that have updates.
      * @return
      */

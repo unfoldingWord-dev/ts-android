@@ -86,15 +86,15 @@ public class ProjectImportAprovalAdapter extends BaseExpandableListAdapter {
         holder.headerTextView.setText(request.getTitle());
         if(request.isApproved()) {
             if(request.getWarning() != null) {
-                holder.statusImage.setBackgroundResource(R.drawable.ic_custom_selection);
+//                holder.statusImage.setBackgroundResource(R.drawable.ic_custom_selection);
             } else {
-                holder.statusImage.setBackgroundResource(R.drawable.ic_success_light);
+//                holder.statusImage.setBackgroundResource(R.drawable.ic_success_light);
             }
         } else {
             if(request.getError() != null) {
                 holder.statusImage.setBackgroundResource(R.drawable.ic_error);
             } else {
-                holder.statusImage.setBackgroundResource(R.drawable.ic_warning_light);
+//                holder.statusImage.setBackgroundResource(R.drawable.ic_warning_light);
             }
         }
 

@@ -145,7 +145,7 @@ public class ProjectSettingsActivity extends TranslatorBaseActivity implements G
         targetLanguageBtn.setText(AppContext.projectManager().getLanguage(targetId).getName());
         sourceLanguageBtn.setText(mProject.getSourceLanguage(sourceId).getName());
         if (AppContext.projectManager().getLanguage(targetId).isTranslating(mProject)) {
-            targetLanguageBtn.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_project_status_translating_light, 0);
+//            targetLanguageBtn.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_project_status_translating_light, 0);
         } else {
             targetLanguageBtn.setCompoundDrawables(null, null, null, null);
         }

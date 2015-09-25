@@ -37,6 +37,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        style="@style/Widget.Button.Primary"/>
+        style="@style/Widget.Button"/>
 
 </RelativeLayout>

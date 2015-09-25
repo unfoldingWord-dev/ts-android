@@ -159,7 +159,7 @@
                 android:value="com.door43.translationstudio.MainActivity" />
         </activity>
         <activity
-            android:name=".library.ServerLibraryActivity"
+            android:name=".newui.library.ServerLibraryActivity"
             android:label="@string/title_activity_project_library"
             android:launchMode="singleTop"
             android:parentActivityName=".GetMoreProjectsActivity"
@@ -178,12 +178,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".library.ProjectLibraryDetailActivity"
+            android:name=".newui.library.ProjectLibraryDetailActivity"
             android:label="@string/title_project_detail"
-            android:parentActivityName=".library.ServerLibraryActivity" >
+            android:parentActivityName=".newui.library.ServerLibraryActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".library.ServerLibraryActivity" />
+                android:value=".newui.library.ServerLibraryActivity" />
         </activity>
         <activity
             android:name=".newui.home.HomeActivity"

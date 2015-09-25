@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"  android:baselineAligned="false"
     android:orientation="vertical"
-    tools:context="com.door43.translationstudio.library.ServerLibraryActivity">
+    tools:context="com.door43.translationstudio.newui.library.ServerLibraryActivity">
 
     <android.support.v7.widget.Toolbar
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -26,7 +26,7 @@
             android:layout_weight=".75"
             android:background="@color/white">
             <fragment android:id="@+id/project_list"
-                android:name="com.door43.translationstudio.library.ServerLibraryFragment"
+                android:name="com.door43.translationstudio.newui.library.ServerLibraryFragment"
                 android:layout_width="match_parent" android:layout_height="match_parent"
                 tools:layout="@android:layout/list_content" />
         </LinearLayout>

@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:clickable="true"
-                style="@style/Widget.Button.Primary"
+                style="@style/Widget.Button"
                 android:id="@+id/chooseProjectButton"
                 android:layout_marginBottom="10dp"
                 android:gravity="center"
@@ -111,7 +111,7 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/Widget.Button.Primary"
+            style="@style/Widget.Button"
             android:text="@string/next"
             android:layout_weight="1"
             android:id="@+id/nextButton" />

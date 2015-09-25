@@ -76,14 +76,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/ic_project_status_blank"
-            android:id="@+id/audioIcon" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/languagesIcon"
-            android:background="@drawable/ic_project_status_global_light" />
+            android:id="@+id/languagesIcon" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -94,8 +87,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/translationNotesIcon"
-            android:background="@drawable/ic_project_status_translating_notes_light" />
+            android:id="@+id/translationNotesIcon" />
     </LinearLayout>
 
 </LinearLayout>

@@ -149,7 +149,7 @@
             android:text="@string/title_upload"
             android:id="@+id/uploadButton"
             android:layout_weight="1"
-            style="@style/Widget.Button.Primary"/>
+            style="@style/Widget.Button"/>
     </LinearLayout>
 
 </RelativeLayout>

@@ -48,6 +48,6 @@
             android:text="@string/next"
             android:id="@+id/upload_wizard_continue_btn"
             android:layout_weight="1"
-            style="@style/Widget.Button.Primary"/>
+            style="@style/Widget.Button"/>
     </LinearLayout>
 </RelativeLayout>
