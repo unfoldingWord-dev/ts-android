@@ -84,4 +84,27 @@ public class LibraryUpdates implements Serializable {
         }
         return false;
     }
+
+    /**
+     * Removes a source language update from the list of available updates
+     * If all the source languages in a project is removed it also will be removed
+     * @param projectId
+     * @param sourceLanguageId
+     */
+    public void removeSourceLanguageUpdate(String projectId, String sourceLanguageId) {
+        if(mUpdates.containsKey(projectId)) {
+            mUpdates.get(projectId).remove(sourceLanguageId);
+            if(mUpdates.get(projectId).size() == 0) {
+                mUpdates.remove(projectId);
+            }
+        }
+    }
+
+    /**
+     * Removes a project update from the list of available updates
+     * @param projectId
+     */
+    public void removeProjectUpdate(String projectId) {
+        mUpdates.remove(projectId);
+    }
 }

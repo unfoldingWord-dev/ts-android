@@ -22,7 +22,7 @@ public abstract class PublishStepFragment extends BaseFragment {
         try {
             this.mListener = (OnEventListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement OnItemClickListener");
+            throw new ClassCastException(activity.toString() + " must implement OnEventListener");
         }
     }
 

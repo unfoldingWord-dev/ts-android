@@ -1,6 +1,10 @@
 package com.door43.translationstudio.newui.library;
 
+import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.TabLayout;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,10 +22,11 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
+import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.tasks.ManagedTask;
-import com.door43.widget.ViewUtil;
+import com.door43.util.tasks.TaskManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,11 +39,13 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
     private static final String TAB_SOURCE_LANGUAGES = "tab_source_languages";
     private static final String TAB_DRAFT_LANGUAGES = "tab_draft_languages";
     private static final String STATE_SELECTED_TAB = "state_selected_tab";
+    public static final String DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP = "download_source_language_task";
     private Project mProject;
     private String mImagePath;
     private Library mServerLibrary;
     private ViewHolder mHolder;
     private String mSelectedTab = TAB_SOURCE_LANGUAGES;
+    private OnEventListener mListener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +76,13 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
     }
 
     public void rebuildLayout() {
+        // disconnect tasks listeners
+        List<ManagedTask> tasks = TaskManager.getGroupedTasks(ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+        for(ManagedTask task:tasks) {
+            task.removeAllOnFinishedListener();
+            task.removeAllOnProgressListener();
+        }
+
         if(mHolder != null) {
             // project info
             mHolder.mDateModified.setText("v. " + mProject.dateModified);
@@ -77,19 +91,24 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
             mHolder.mIcon.setBackgroundResource(R.drawable.ic_library_books_black_24dp);
 
             // delete project
-            // TODO: we need to finish providing support for deleting projects and then check if this project exists on the device
             if (AppContext.getLibrary().projectHasSource(mProject.getId())) {
                 mHolder.mDeleteButton.setVisibility(View.VISIBLE);
                 mHolder.mDeleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        // TODO: get this working and maybe place it in a task
-//                    Logger.i(ServerLibraryDetailFragment.class.getName(), "Deleting project " + mProject.getId());
-//                    AppContext.projectManager().deleteProject(mProject.getId());
-//                    ServerLibraryCache.organizeProjects();
-//                    if(getActivity() != null && getActivity() instanceof LibraryCallbacks) {
-//                        ((LibraryCallbacks)getActivity()).refreshUI();
-//                    }
+                        new android.support.v7.app.AlertDialog.Builder(getActivity())
+                                .setTitle(R.string.label_delete)
+                                .setIcon(R.drawable.ic_delete_black_24dp)
+                                .setMessage(R.string.confirm_delete_project)
+                                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        AppContext.getLibrary().deleteProject(mProject.getId());
+                                        mListener.onProjectDeleted(mProject.getId());
+                                    }
+                                })
+                                .setNegativeButton(R.string.no, null)
+                                .show();
                     }
                 });
             } else {
@@ -179,7 +198,34 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
             mHolder.mLanguageList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    // TODO: handle langauge clicks
+                    final SourceLanguage sourceLanguage = mHolder.mAdapter.getItem(position);
+                    boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProject.getId(), sourceLanguage.getId());
+                    if(!isDownloaded) {
+                        // just download the update
+                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), sourceLanguage.getId());
+                        task.addOnFinishedListener(ServerLibraryDetailFragment.this);
+                        TaskManager.addTask(task);
+                        TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+                        mHolder.mAdapter.notifyDataSetChanged();
+                    } else {
+                        // confirm with the user
+                        new android.support.v7.app.AlertDialog.Builder(getActivity())
+                                .setTitle(R.string.download)
+                                .setIcon(R.drawable.ic_refresh_black_24dp)
+                                .setMessage(R.string.source_language_already_downloaded)
+                                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), sourceLanguage.getId());
+                                        task.addOnFinishedListener(ServerLibraryDetailFragment.this);
+                                        TaskManager.addTask(task);
+                                        TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+                                        mHolder.mAdapter.notifyDataSetChanged();
+                                    }
+                                })
+                                .setNegativeButton(R.string.no, null)
+                                .show();
+                    }
                 }
             });
         }
@@ -188,6 +234,16 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
     public void onSaveInstanceState(Bundle out) {
         out.putString(STATE_SELECTED_TAB, mSelectedTab);
         super.onSaveInstanceState(out);
+    }
+
+    @Override
+    public void onDestroy() {
+        List<ManagedTask> tasks = TaskManager.getGroupedTasks(ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+        for(ManagedTask task:tasks) {
+            task.removeAllOnFinishedListener();
+            task.removeAllOnProgressListener();
+        }
+        super.onDestroy();
     }
 
     private List<SourceLanguage> getSourceLanguages() {
@@ -225,10 +281,34 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
      * @param task
      */
     @Override
-    public void onFinished(ManagedTask task) {
-        mImagePath = ((DownloadProjectImageTask)task).getImagePath();
-        // TODO: do we need to run this on the main thread?
-        loadImage();
+    public void onFinished(final ManagedTask task) {
+        TaskManager.clearTask(task);
+
+        if(task instanceof DownloadProjectImageTask) {
+            mImagePath = ((DownloadProjectImageTask) task).getImagePath();
+            // TODO: do we need to run this on the main thread?
+            loadImage();
+        } else if(task instanceof DownloadSourceLanguageTask) {
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (((DownloadSourceLanguageTask) task).getSuccess()) {
+                        ServerLibraryCache.getAvailableUpdates().removeSourceLanguageUpdate(((DownloadSourceLanguageTask) task).getProjectId(), ((DownloadSourceLanguageTask) task).getSourceLanguageId());
+                        mListener.onSourceLanguageDownloaded(((DownloadSourceLanguageTask) task).getProjectId(), ((DownloadSourceLanguageTask) task).getSourceLanguageId());
+                    }
+                }
+            });
+        }
+    }
+
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            this.mListener = (OnEventListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString() + " must implement OnEventListener");
+        }
     }
 
     /**
@@ -256,8 +336,6 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
     public void setProjectCategoryId(String projectId) {
         mProject = mServerLibrary.getProject(projectId, Locale.getDefault().getLanguage());
         // TODO: handle null project
-
-
         rebuildLayout();
     }
 
@@ -282,5 +360,10 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
             mIcon = (ImageView)v.findViewById(R.id.modelImage);
             mDeleteButton = (Button)v.findViewById(R.id.deleteProjectButton);
         }
+    }
+
+    public interface OnEventListener {
+        void onSourceLanguageDownloaded(String projectId, String sourceLanguageId);
+        void onProjectDeleted(String projectId);
     }
 }

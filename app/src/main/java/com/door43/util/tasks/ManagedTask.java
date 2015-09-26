@@ -235,11 +235,25 @@ public abstract class ManagedTask implements Runnable {
     }
 
     /**
+     * Removes all the on id changed listener
+     */
+    public final void removeAllOnIdChangedListener() {
+        mOnIdChangedListeners.clear();
+    }
+
+    /**
      * Removes the on progress listener
      * @param listener
      */
     public final void removeOnProgressListener(OnProgressListener listener) {
         mProgressListeners.remove(listener);
+    }
+
+    /**
+     * Removes all the on progress listener
+     */
+    public final void removeAllOnProgressListener() {
+        mProgressListeners.clear();
     }
 
     /**
@@ -268,6 +282,13 @@ public abstract class ManagedTask implements Runnable {
     }
 
     /**
+     * Removes all the on finished listener
+     */
+    public final void removeAllOnFinishedListener() {
+        mFinishListeners.clear();
+    }
+
+    /**
      * Sets the listener to be called when the task starts
      * @param listener
      */
@@ -283,6 +304,13 @@ public abstract class ManagedTask implements Runnable {
      */
     public final void removeOnStartListener(OnStartListener listener) {
         mStartListeners.remove(listener);
+    }
+
+    /**
+     * Removes all the on start listener
+     */
+    public final void removeAllOnStartListener() {
+        mStartListeners.clear();
     }
 
     /**

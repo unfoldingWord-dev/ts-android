@@ -86,7 +86,8 @@ public class ServerLibraryAdapter extends BaseAdapter {
         }
 
         // indicate downloaded
-        if(mLibrary.projectHasSource(getItem(position).projectId)) {
+        boolean isDownloaded = mLibrary.projectHasSource(getItem(position).projectId);
+        if(isDownloaded) {
             if(mSelectedIndex == position) {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_white_24dp);
             } else {
@@ -97,7 +98,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         }
 
         // indicate updates
-        if(mUpdates.hasProjectUpdate(getItem(position).projectId)) {
+        if(isDownloaded && mUpdates.hasProjectUpdate(getItem(position).projectId)) {
             if(mSelectedIndex == position) {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_white_24dp);
             } else {

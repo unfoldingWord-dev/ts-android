@@ -40,6 +40,7 @@ public class Library {
     private final boolean mAsServerLibrary;
     private final String mRootApiUrl;
     private static Map<String, TargetLanguage> mTargetLanguages;
+    private final File mCacheDir;
     private Downloader mDownloader;
 
     /**
@@ -49,24 +50,26 @@ public class Library {
      * @param rootApiUrl
      * @param server when true will cause the library to operate off of the server index (just for reading)
      */
-    private Library(Context context, File libraryDir, String rootApiUrl, boolean server) {
+    private Library(Context context, File libraryDir, File cacheDir, String rootApiUrl, boolean server) {
         mContext = context;
         mLibraryDir = libraryDir;
+        mCacheDir = cacheDir;
         mIndexDir = new File(libraryDir, "index");
-        mDownloaderIndex = new Indexer("downloads", mIndexDir);
-        mServerIndex = new Indexer("server", mIndexDir);
+        mDownloaderIndex = new Indexer("downloads", mCacheDir);
+        mServerIndex = new Indexer("server", mCacheDir);
         mAppIndex = new Indexer("app", mIndexDir);
         mRootApiUrl = rootApiUrl;
         mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
         mAsServerLibrary = server;
     }
 
-    public Library(Context context, File libraryDir, String rootApiUrl) {
+    public Library(Context context, File libraryDir, File cacheDir, String rootApiUrl) {
         mContext = context;
         mLibraryDir = libraryDir;
+        mCacheDir = cacheDir;
         mIndexDir = new File(libraryDir, "index");
-        mDownloaderIndex = new Indexer("downloads", mIndexDir);
-        mServerIndex = new Indexer("server", mIndexDir);
+        mDownloaderIndex = new Indexer("downloads", mCacheDir);
+        mServerIndex = new Indexer("server", mCacheDir);
         mAppIndex = new Indexer("app", mIndexDir);
         mRootApiUrl = rootApiUrl;
         mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
@@ -78,7 +81,7 @@ public class Library {
      * @return
      */
     public Library getServerLibrary() {
-        return new Library(mContext, mLibraryDir, mRootApiUrl, true);
+        return new Library(mContext, mLibraryDir, mCacheDir, mRootApiUrl, true);
     }
 
     /**
@@ -256,7 +259,7 @@ public class Library {
                 boolean projectDownloadSuccess = true;
                 for (String sourceLanguageId : updates.getUpdatedSourceLanguages(projectId)) {
                     for (String resourceId : updates.getUpdatedResources(projectId, sourceLanguageId)) {
-                        projectDownloadSuccess = downloadSourceTranslationWithoutMerging(SourceTranslation.simple(projectId, sourceLanguageId, resourceId)) ? projectDownloadSuccess : false;
+                        projectDownloadSuccess = downloadSourceTranslationWithoutMerging(SourceTranslation.simple(projectId, sourceLanguageId, resourceId), null) ? projectDownloadSuccess : false;
                         if (!projectDownloadSuccess) {
                             throw new Exception("Failed to download " + projectId + " " + sourceLanguageId + " " + resourceId);
                         }
@@ -281,9 +284,13 @@ public class Library {
      * @param translation
      * @return
      */
-    public Boolean downloadSourceTranslation(SourceTranslation translation) {
-        if(downloadSourceTranslationWithoutMerging(translation)) {
+    public Boolean downloadSourceTranslation(SourceTranslation translation, final OnProgressListener listener) {
+        if(downloadSourceTranslationWithoutMerging(translation, listener)) {
             try {
+                if(listener != null) {
+                    listener.onIndeterminate();
+                }
+                mAppIndex.mergeProjectShalow(translation.projectId, translation.sourceLanguageId, mDownloader.getIndex());
                 mAppIndex.mergeSourceTranslation(translation, mDownloader.getIndex());
             } catch (IOException e) {
                 Logger.e(this.getClass().getName(), "Failed to merge the source translation " + translation.getId() + " from the download index into the app index", e);
@@ -300,12 +307,24 @@ public class Library {
      * @param translation
      * @return
      */
-    private Boolean downloadSourceTranslationWithoutMerging(SourceTranslation translation) {
+    private Boolean downloadSourceTranslationWithoutMerging(SourceTranslation translation, OnProgressListener listener) {
         boolean success = true;
         success = mDownloader.downloadSource(translation) ? success : false;
+        if(listener != null) {
+            listener.onProgress(1, 4);
+        }
         mDownloader.downloadTerms(translation); // optional to success of download
+        if(listener != null) {
+            listener.onProgress(2, 4);
+        }
         mDownloader.downloadNotes(translation); // optional to success of download
+        if(listener != null) {
+            listener.onProgress(3, 4);
+        }
         mDownloader.downloadCheckingQuestions(translation); // optional to success of download
+        if(listener != null) {
+            listener.onProgress(4, 4);
+        }
         return success;
     }
 
@@ -813,6 +832,21 @@ public class Library {
             }
         }
         return false;
+    }
+
+    /**
+     * Deletes a project from the library
+     * @param projectId
+     */
+    public void deleteProject(String projectId) {
+        if(mAppIndex.getProject(projectId) != null) {
+            String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+            for(String sourceLanguageId:sourceLanguageIds) {
+                mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
+            }
+            mAppIndex.deleteProject(projectId);
+        }
+
     }
 
     public interface OnProgressListener {

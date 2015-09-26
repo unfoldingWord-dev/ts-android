@@ -37,7 +37,7 @@ public class LibraryTest extends AndroidTestCase {
         mLibraryDir = new File(app.getFilesDir(), "test_library");
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         String rootApi = server + app.getResources().getString(R.string.root_catalog_api);
-        mLibrary = new Library(app, mLibraryDir, rootApi);
+        mLibrary = new Library(app, mLibraryDir, mLibraryDir, rootApi);
     }
 
     public void test01Clean() throws Exception {
@@ -96,7 +96,7 @@ public class LibraryTest extends AndroidTestCase {
 
     public void test07DownloadSourceTranslation() throws Exception {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslations("obs")[0];
-        assertTrue(mLibrary.downloadSourceTranslation(sourceTranslation));
+        assertTrue(mLibrary.downloadSourceTranslation(sourceTranslation, null));
     }
 
     public void test08GetProjectCategories() throws Exception {

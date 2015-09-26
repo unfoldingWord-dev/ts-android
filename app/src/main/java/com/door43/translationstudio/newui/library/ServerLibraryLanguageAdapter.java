@@ -11,12 +11,11 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.astuetz.PagerSlidingTabStrip;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.tasks.DownloadLanguageTask;
+import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
@@ -70,17 +69,19 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        SourceLanguage item = getItem(position);
+        SourceLanguage sourceLanguage = getItem(position);
 
         // icon
-        if(AppContext.getLibrary().sourceLanguageHasSource(mProjectId, item.getId())) {
+        boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProjectId, sourceLanguage.getId());
+        holder.mStatus.setVisibility(View.VISIBLE);
+        if(isDownloaded) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
         } else {
             holder.mStatus.setBackgroundResource(0);
         }
 
         // identify updates
-        if(mUpdates.hasSourceLanguageUpdate(mProjectId, item.getId())) {
+        if(isDownloaded && mUpdates.hasSourceLanguageUpdate(mProjectId, sourceLanguage.getId())) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
         }
 
@@ -92,87 +93,64 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         // progress
         holder.mProgressBar.setVisibility(View.GONE);
 
-//        final Handler hand = new Handler(Looper.getMainLooper());
-//        final ViewHolder staticHolder = holder;
+        final ViewHolder staticHolder = holder;
 
-        // TODO: hook up task
-        // connect download task
-//        if(holder.downloadTask != null) {
-//            holder.downloadTask.destroy();
-//        }
-//        holder.downloadTask = (DownloadLanguageTask)TaskManager.getTask(mProjectId+"-"+getItem(i).getId());
-//        if(holder.downloadTask != null) {
-//            holder.downloadedImage.setVisibility(View.VISIBLE);
-//            holder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
-//            holder.downloadTask.addOnProgressListener(new ManagedTask.OnProgressListener() {
-//                @Override
-//                public void onProgress(ManagedTask task, final double progress, String message) {
-//                    hand.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            staticHolder.mProgressBar.setVisibility(View.VISIBLE);
-//                            if (progress == -1) {
-//                                staticHolder.mProgressBar.setIndeterminate(true);
-//                                staticHolder.mProgressBar.setProgress(staticHolder.mProgressBar.getMax());
-//                            } else {
-//                                staticHolder.mProgressBar.setIndeterminate(false);
-//                                staticHolder.mProgressBar.setProgress((int) (100 * progress));
-//                            }
-//                        }
-//                    });
-//                }
-//            });
-//            holder.downloadTask.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-//                @Override
-//                public void onFinished(ManagedTask task) {
-//                    TaskManager.clearTask(task.getTaskId());
-//                    hand.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            staticHolder.mProgressBar.setVisibility(View.INVISIBLE);
-//                            if (ServerLibraryCache.getEnableEditing()) {
-//                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
-//                            } else {
-//                                staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
-//                            }
-//                            staticHolder.downloadedImage.setVisibility(View.VISIBLE);
-//                        }
-//                    });
-//                }
-//            });
-//        } else {
-            // TODO: hook this up
-//            boolean isDownloaded;
-//            if(mDrafts) {
-//                isDownloaded = AppContext.projectManager().isSourceLanguageDraftDownloaded(mProjectId, getItem(i).getId());
-//            } else {
-//                isDownloaded = AppContext.projectManager().isSourceLanguageDownloaded(mProjectId, getItem(i).getId());
-//            }
-//            if(isDownloaded) {
-//                boolean hasUpdate;
-//                if(mDrafts) {
-//                    hasUpdate = AppContext.projectManager().isSourceLanguageDraftUpdateAvailable(mProjectId, getItem(i));
-//                } else {
-//                    hasUpdate = AppContext.projectManager().isSourceLanguageUpdateAvailable(mProjectId, getItem(i));
-//                }
-//                if(hasUpdate) {
-//                    if(ServerLibraryCache.getEnableEditing()) {
-//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
-//                    } else {
-//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.icon_update_cloud_blue));
-//                    }
-//                } else {
-//                    if(ServerLibraryCache.getEnableEditing()) {
-//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
-//                    } else {
-//                        staticHolder.downloadedImage.setImageDrawable(mContext.getResources().getDrawable(R.drawable.ic_done_black_24dp));
-//                    }
-//                }
-//                staticHolder.downloadedImage.setVisibility(View.VISIBLE);
-//            } else {
-//                staticHolder.downloadedImage.setVisibility(View.INVISIBLE);
-//            }
-//        }
+        // progress listener
+        ManagedTask.OnProgressListener progressListener = new ManagedTask.OnProgressListener() {
+            @Override
+            public void onProgress(final ManagedTask task, final double progress, String message) {
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        staticHolder.mProgressBar.setVisibility(View.VISIBLE);
+                        staticHolder.mProgressBar.setMax(task.maxProgress());
+                        if (progress == -1) {
+                            staticHolder.mProgressBar.setIndeterminate(true);
+                            staticHolder.mProgressBar.setProgress(staticHolder.mProgressBar.getMax());
+                        } else {
+                            staticHolder.mProgressBar.setIndeterminate(false);
+                            staticHolder.mProgressBar.setProgress((int)progress);
+                        }
+                    }
+                });
+            }
+        };
+
+        // finish listener
+        ManagedTask.OnFinishedListener finishedListener = new ManagedTask.OnFinishedListener() {
+            @Override
+            public void onFinished(final ManagedTask task) {
+                TaskManager.clearTask(task);
+                Handler hand = new Handler(Looper.getMainLooper());
+                hand.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        staticHolder.mProgressBar.setVisibility(View.GONE);
+                        staticHolder.mStatus.setVisibility(View.VISIBLE);
+                        if(((DownloadSourceLanguageTask)task).getSuccess()) {
+                            staticHolder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
+                        } else {
+                            // TODO: the download failed notify the user with option to report bug
+                            staticHolder.mStatus.setBackgroundResource(R.drawable.ic_warning_black_24dp);
+                        }
+                    }
+                });
+            }
+        };
+
+        // connect to tasks
+        List<ManagedTask> tasks = TaskManager.getGroupedTasks(ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+        for(ManagedTask task:tasks) {
+            DownloadSourceLanguageTask t = (DownloadSourceLanguageTask)task;
+            if(t.getProjectId().equals(mProjectId) && t.getSourceLanguageId().equals(sourceLanguage.getId())) {
+                holder.mStatus.setVisibility(View.GONE);
+                holder.mProgressBar.setVisibility(View.VISIBLE);
+                holder.mProgressBar.setIndeterminate(true);
+                t.addOnProgressListener(progressListener);
+                t.addOnFinishedListener(finishedListener);
+            }
+        }
         return v;
     }
 

@@ -86,7 +86,7 @@ public class ServerLibraryFragment extends ListFragment {
         if(scrollToTop) {
             getListView().smoothScrollToPosition(0);
         }
-//        mAdapter.changeDataSet(getProjectList(), ServerLibraryCache.getShowNewProjects(), mActivatedPosition);
+        mAdapter.notifyDataSetChanged();
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -129,6 +129,7 @@ public class ServerLibraryFragment extends ListFragment {
     @Override
     public void onListItemClick(ListView listView, View view, int position, long id) {
         super.onListItemClick(listView, view, position, id);
+        mAdapter.notifyDataSetChanged();
         notifyItemSelected(position);
     }
 

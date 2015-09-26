@@ -32,7 +32,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-public class ServerLibraryActivity extends BaseActivity implements ServerLibraryFragment.OnClickListener, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
+public class ServerLibraryActivity extends BaseActivity implements ServerLibraryDetailFragment.OnEventListener, ServerLibraryFragment.OnClickListener, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {
 
     public static final String ARG_SHOW_UPDATES = "only_show_updates";
     public static final String ARG_SHOW_NEW = "only_show_new";
@@ -372,5 +372,15 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         if(getLibraryUpdatesTask != null) {
             TaskManager.cancelTask(getLibraryUpdatesTask);
         }
+    }
+
+    @Override
+    public void onSourceLanguageDownloaded(String projectId, String sourceLanguageId) {
+        mListFragment.reload(false);
+    }
+
+    @Override
+    public void onProjectDeleted(String projectId) {
+        mListFragment.reload(false);
     }
 }

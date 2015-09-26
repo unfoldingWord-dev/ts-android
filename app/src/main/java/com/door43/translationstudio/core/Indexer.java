@@ -184,7 +184,7 @@ public class Indexer {
                 int count = json.getInt(md5hash) - 1;
                 if(count <= 0) {
                     count = 0;
-                    File indexedDataPath = new File(mDataPath, md5hash);
+//                    File indexedDataPath = new File(mDataPath, md5hash);
                     deleteFile(mDataPath + "/" + md5hash);
                 }
                 json.put(md5hash, count);
@@ -439,7 +439,7 @@ public class Indexer {
     private String getUrlFromObject(JSONObject json, String urlProperty) {
         if(json != null && json.has(urlProperty)) {
             try {
-                String[] list = json.getString(urlProperty).split("/\\?/");
+                String[] list = json.getString(urlProperty).split("\\?");
                 if (list.length > 0) {
                     return list[0];
                 }
@@ -488,12 +488,15 @@ public class Indexer {
             deleteResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
         }
 
-        String catalogApiUrl = getUrlFromObject(getProject(projectId), "lang_catalog");
-        if (catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            decrementLink(md5hash);
-            String catalogLinkFile = mSourcePath + "/" + projectId + "/languages_catalog.link";
-            deleteFile(catalogLinkFile);
+        // delete the language catalog when there are no more source languages
+        if(getSourceLanguages(projectId).length == 0) {
+            String catalogApiUrl = getUrlFromObject(getProject(projectId), "lang_catalog");
+            if (catalogApiUrl != null) {
+                String md5hash = Security.md5(catalogApiUrl);
+                decrementLink(md5hash);
+                String catalogLinkFile = mSourcePath + "/" + projectId + "/languages_catalog.link";
+                deleteFile(catalogLinkFile);
+            }
         }
     }
 
@@ -638,6 +641,43 @@ public class Indexer {
                                 mergeSourceTranslation(translation, index);
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Merges a project into the current index.
+     * This will only peform a shallow merge for a single source language
+     * @param projectId
+     * @param sourceLanguageId
+     * @param index
+     * @throws IOException
+     */
+    public void mergeProjectShalow(String projectId, String sourceLanguageId, Indexer index) throws IOException {
+        JSONObject newProject = index.getProject(projectId);
+        if(newProject != null) {
+            JSONArray projectJson = new JSONArray();
+            projectJson.put(newProject);
+            // update/add project
+            indexProjects(projectJson.toString());
+
+            JSONObject newSourceLanguage = index.getSourceLanguage(projectId, sourceLanguageId);
+            if(newSourceLanguage != null) {
+                JSONArray sourceLanguageJson = new JSONArray();
+                sourceLanguageJson.put(newSourceLanguage);
+                // update/add source language
+                indexSourceLanguages(projectId, sourceLanguageJson.toString());
+
+                for(String resourceId:index.getResources(projectId, sourceLanguageId)) {
+                    SourceTranslation translation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
+                    JSONObject newResource = index.getResource(translation);
+                    if(newResource != null) {
+                        JSONArray resourceJson = new JSONArray();
+                        resourceJson.put(newResource);
+                        // update/add resource
+                        indexResources(projectId, sourceLanguageId, resourceJson.toString());
                     }
                 }
             }

@@ -75,7 +75,7 @@ public class AppContext {
         // NOTE: rather than keeping the library around we rebuild it so that changes to the user settings will work
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
         String rootApiUrl = server + mContext.getResources().getString(R.string.root_catalog_api);
-        return new Library(mContext, new File(mContext.getFilesDir(), "library"), rootApiUrl);
+        return new Library(mContext, new File(mContext.getFilesDir(), "library"), new File(mContext.getCacheDir(), "library"), rootApiUrl);
     }
 
     /**
