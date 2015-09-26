@@ -123,6 +123,7 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
                                         public void onClick(DialogInterface dialog, int which) {
                                             AppContext.getLibrary().deleteProject(mProject.getId());
                                             mListener.onProjectDeleted(mProject.getId());
+                                            rebuildLayout();
                                         }
                                     })
                                     .setNegativeButton(R.string.no, null)
@@ -312,6 +313,7 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
             hand.post(new Runnable() {
                 @Override
                 public void run() {
+                    rebuildLayout();
                     if (((DownloadSourceLanguageTask) task).getSuccess()) {
                         ServerLibraryCache.getAvailableUpdates().removeSourceLanguageUpdate(((DownloadSourceLanguageTask) task).getProjectId(), ((DownloadSourceLanguageTask) task).getSourceLanguageId());
                         mListener.onSourceLanguageDownloaded(((DownloadSourceLanguageTask) task).getProjectId(), ((DownloadSourceLanguageTask) task).getSourceLanguageId());

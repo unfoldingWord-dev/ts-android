@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_search"
         android:orderInCategory="100"
@@ -13,11 +12,6 @@
         android:id="@+id/action_update"
         android:orderInCategory="200"
         android:title="@string/menu_update"
-        android:icon="@drawable/ic_refresh_black_24dp"
+        android:icon="@drawable/ic_local_library_white_24dp"
         app:showAsAction="ifRoom"/>
-    <!--<item-->
-        <!--android:id="@+id/action_settings"-->
-        <!--android:orderInCategory="300"-->
-        <!--android:title="@string/action_settings"-->
-        <!--app:showAsAction="never" />-->
 </menu>

@@ -44,7 +44,7 @@ public class DownloadAllUpdatesTask extends ManagedTask {
         Library library = AppContext.getLibrary();
         try {
             // TODO: attach a progress listener
-            library.downloadUpdates(ServerLibraryCache.getAvailableUpdates());
+            library.downloadUp2365dates(ServerLibraryCache.getAvailableUpdates());
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to download the updates", e);
         }
