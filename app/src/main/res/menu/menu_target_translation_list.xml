@@ -11,9 +11,9 @@
         app:showAsAction="never" />
 
     <item android:id="@+id/action_update"
-        android:title="@string/menu_update"
+        android:title="@string/menu_update_library"
         android:orderInCategory="100"
-        android:icon="@drawable/ic_refresh_black_24dp"
+        android:icon="@drawable/ic_local_library_black_24dp"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_bug"

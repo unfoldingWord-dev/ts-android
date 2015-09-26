@@ -87,19 +87,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 //                                startActivity(shareIntent);
                                 return true;
                             case R.id.action_update:
-                                new android.support.v7.app.AlertDialog.Builder(HomeActivity.this)
-                                        .setTitle(R.string.update_projects)
-                                        .setIcon(R.drawable.ic_autorenew_black_24dp)
-                                        .setMessage(R.string.use_internet_confirmation)
-                                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-                                                Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
-                                                startActivity(intent);
-                                            }
-                                        })
-                                        .setNegativeButton(R.string.no, null)
-                                        .show();
+                                openLibrary();
                                 return true;
                             case R.id.action_bug:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
@@ -125,7 +113,24 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
         });
     }
 
-
+    /**
+     * Triggers the process of opening the server library
+     */
+    private void openLibrary() {
+        new android.support.v7.app.AlertDialog.Builder(HomeActivity.this)
+                .setTitle(R.string.update_projects)
+                .setIcon(R.drawable.ic_local_library_black_24dp)
+                .setMessage(R.string.use_internet_confirmation)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Intent intent = new Intent(HomeActivity.this, ServerLibraryActivity.class);
+                        startActivity(intent);
+                    }
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
 
     @Override
     public void onResume() {
@@ -209,8 +214,23 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
     @Override
     public void onItemClick(TargetTranslation targetTranslation) {
-        Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
-        intent.putExtra(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
-        startActivity(intent);
+        // validate project (make sure it was downloaded)
+        Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        if(project == null) {
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.missing_project, Snackbar.LENGTH_LONG);
+            snack.setAction(R.string.download, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    openLibrary();
+                }
+            });
+            snack.setActionTextColor(getResources().getColor(R.color.light_primary_text));
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        } else {
+            Intent intent = new Intent(HomeActivity.this, TargetTranslationActivity.class);
+            intent.putExtra(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, targetTranslation.getId());
+            startActivity(intent);
+        }
     }
 }

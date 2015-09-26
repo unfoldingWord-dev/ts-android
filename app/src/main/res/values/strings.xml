@@ -271,7 +271,7 @@
     <string name="languages">Languages</string>
     <string name="drafts">Drafts</string>
     <string name="use_internet_confirmation">This will use your internet connection, continue?</string>
-    <string name="update_projects">Update Projects</string>
+    <string name="update_projects">Update Library</string>
     <string name="update_projects_description">View and download available updates from the server</string>
     <string name="action_download_all">Download all</string>
     <string name="title_activity_project_updates">Project Updates</string>
@@ -354,4 +354,7 @@
     <string name="download">Download</string>
     <string name="source_language_already_downloaded">Language already downloaded. Download again?</string>
     <string name="confirm_delete_project">Delete this project? You can download it again later.</string>
+    <string name="cannot_delete_project_with_translations">You cannot delete a project you are translating.</string>
+    <string name="missing_project">The project is missing</string>
+    <string name="menu_update_library">Update Library</string>
 </resources>

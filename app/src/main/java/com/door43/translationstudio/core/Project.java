@@ -39,21 +39,19 @@ public class Project {
 
     /**
      * Generates a new project object from json
-     * @param project
+     * @param json
      * @return
      */
-    public static Project generate(JSONObject project, JSONObject sourceLanguage) {
-        try {
-            String projectId = project.getString("slug");
-            int dateModified = project.getInt("date_modified");
+    public static Project generate(JSONObject json, JSONObject sourceLanguage) throws JSONException {
+        if(json != null) {
+            String projectId = json.getString("slug");
+            int dateModified = json.getInt("date_modified");
             String sourceLanguageId = sourceLanguage.getString("slug");
             JSONObject projectLanguageJson = sourceLanguage.getJSONObject("project");
             String name = projectLanguageJson.getString("name");
             String description = projectLanguageJson.getString("desc");
 
             return new Project(projectId, sourceLanguageId, name, description, dateModified);
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
         return null;
     }

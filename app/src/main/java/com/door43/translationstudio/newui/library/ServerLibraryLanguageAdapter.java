@@ -73,7 +73,6 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
 
         // icon
         boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProjectId, sourceLanguage.getId());
-        holder.mStatus.setVisibility(View.VISIBLE);
         if(isDownloaded) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
         } else {
@@ -103,6 +102,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
                 hand.post(new Runnable() {
                     @Override
                     public void run() {
+                        staticHolder.mStatus.setBackgroundResource(R.drawable.ic_cloud_download_black_24dp);
                         staticHolder.mProgressBar.setVisibility(View.VISIBLE);
                         staticHolder.mProgressBar.setMax(task.maxProgress());
                         if (progress == -1) {
@@ -127,7 +127,6 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
                     @Override
                     public void run() {
                         staticHolder.mProgressBar.setVisibility(View.GONE);
-                        staticHolder.mStatus.setVisibility(View.VISIBLE);
                         if(((DownloadSourceLanguageTask)task).getSuccess()) {
                             staticHolder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
                         } else {
@@ -144,7 +143,6 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         for(ManagedTask task:tasks) {
             DownloadSourceLanguageTask t = (DownloadSourceLanguageTask)task;
             if(t.getProjectId().equals(mProjectId) && t.getSourceLanguageId().equals(sourceLanguage.getId())) {
-                holder.mStatus.setVisibility(View.GONE);
                 holder.mProgressBar.setVisibility(View.VISIBLE);
                 holder.mProgressBar.setIndeterminate(true);
                 t.addOnProgressListener(progressListener);

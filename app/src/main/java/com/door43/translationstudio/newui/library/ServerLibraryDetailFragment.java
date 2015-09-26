@@ -20,6 +20,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
@@ -96,19 +97,37 @@ public class ServerLibraryDetailFragment extends TranslatorBaseFragment implemen
                 mHolder.mDeleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        new android.support.v7.app.AlertDialog.Builder(getActivity())
-                                .setTitle(R.string.label_delete)
-                                .setIcon(R.drawable.ic_delete_black_24dp)
-                                .setMessage(R.string.confirm_delete_project)
-                                .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        AppContext.getLibrary().deleteProject(mProject.getId());
-                                        mListener.onProjectDeleted(mProject.getId());
-                                    }
-                                })
-                                .setNegativeButton(R.string.no, null)
-                                .show();
+                        // TRICKY: we can't let users delete projects that have target Translations
+                        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+                        boolean projectHasTargetTranslations = false;
+                        for(TargetTranslation targetTranslation:targetTranslations){
+                            if(targetTranslation.getProjectId().equals(mProject.getId())) {
+                                projectHasTargetTranslations = true;
+                                break;
+                            }
+                        }
+                        if(projectHasTargetTranslations) {
+                            new android.support.v7.app.AlertDialog.Builder(getActivity())
+                                    .setTitle(R.string.label_delete)
+                                    .setIcon(R.drawable.ic_info_black_24dp)
+                                    .setMessage(R.string.cannot_delete_project_with_translations)
+                                    .setPositiveButton(R.string.dismiss, null)
+                                    .show();
+                        } else {
+                            new android.support.v7.app.AlertDialog.Builder(getActivity())
+                                    .setTitle(R.string.label_delete)
+                                    .setIcon(R.drawable.ic_delete_black_24dp)
+                                    .setMessage(R.string.confirm_delete_project)
+                                    .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            AppContext.getLibrary().deleteProject(mProject.getId());
+                                            mListener.onProjectDeleted(mProject.getId());
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.no, null)
+                                    .show();
+                        }
                     }
                 });
             } else {

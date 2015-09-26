@@ -581,7 +581,12 @@ public class Library {
      * @return
      */
     public Project getProject(String projectId, String languageId) {
-        return Project.generate(getActiveIndex().getProject(projectId), getPreferredSourceLanguage(projectId, languageId));
+        try {
+            return Project.generate(getActiveIndex().getProject(projectId), getPreferredSourceLanguage(projectId, languageId));
+        } catch (JSONException e) {
+            Logger.w(this.getClass().getName(), "Failed to parse the project " + projectId, e);
+        }
+        return null;
     }
 
     /**

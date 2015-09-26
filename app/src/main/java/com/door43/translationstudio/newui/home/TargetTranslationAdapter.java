@@ -72,13 +72,17 @@ public class TargetTranslationAdapter extends BaseAdapter {
         }
 
         // render view
-        TargetTranslation translation = getItem(position);
+        TargetTranslation targetTranslation = getItem(position);
         Library library = AppContext.getLibrary();
-        Project project = library.getProject(translation.getProjectId(), Locale.getDefault().getLanguage());
-        holder.mTitleView.setText(project.name);
-        holder.mLanguageView.setText(translation.getTargetLanguageName());
+        Project project = library.getProject(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        if(project != null) {
+            holder.mTitleView.setText(project.name);
+        } else {
+            holder.mTitleView.setText(targetTranslation.getProjectId());
+        }
+        holder.mLanguageView.setText(targetTranslation.getTargetLanguageName());
         // TODO: read actual progress from project
-        holder.mProgressView.setProgress(Math.round(library.getTranslationProgress(translation) * 100));
+        holder.mProgressView.setProgress(Math.round(library.getTranslationProgress(targetTranslation) * 100));
         // TODO: finish rendering project icon
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override

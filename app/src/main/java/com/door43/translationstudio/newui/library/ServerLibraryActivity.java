@@ -188,7 +188,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 mConfirmDialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_all_confirmation)
-                        .setIcon(R.drawable.icon_update_cloud_blue)
+                        .setIcon(R.drawable.ic_cloud_download_black_24dp)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
@@ -327,7 +327,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mProgressDialog.setCanceledOnTouchOutside(false);
                         mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
-                        mProgressDialog.setIcon(R.drawable.icon_update_cloud_dark);
+                        mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
                         if(task instanceof GetLibraryUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
                         } else if(task instanceof DownloadAllUpdatesTask) {
