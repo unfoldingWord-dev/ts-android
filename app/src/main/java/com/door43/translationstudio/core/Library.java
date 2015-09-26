@@ -382,7 +382,9 @@ public class Library {
     }
 
     /**
-     * Returns a list of all projects without nested categorization
+     * Returns a list of all projects without nested categorization.
+     * This also includes project without any local source
+     *
      * @param languageId the preferred language in which the category names will be returned. The default is english
      * @return
      */
@@ -418,6 +420,7 @@ public class Library {
 
     /**
      * Returns a list of project categories
+     * Only projects with source are included
      *
      * @param languageId the preferred language in which the category names will be returned. The default is english
      * @return
@@ -428,6 +431,8 @@ public class Library {
 
     /**
      * Returns a list of project categories beneath the given category
+     * Only projects with source are included
+     *
      * @param parentCategory
      * @return
      */
@@ -447,9 +452,14 @@ public class Library {
                 String categoryId = null;
                 JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, parentCategory.sourcelanguageId);
                 if(sourceLanguageJson != null) {
-
                     // TRICKY: getPreferredSourceLanguage can return a different language than what was requested
                     String categoryLanguageId = sourceLanguageJson.getString("slug");
+
+                    // ensure the project has source
+                    if(!sourceLanguageHasSource(projectId, categoryLanguageId)) {
+                        continue;
+                    }
+
                     JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
                     String title = projectLanguageJson.getString("name");
                     String sort = projectJson.getString("sort");
@@ -809,14 +819,10 @@ public class Library {
      * @return
      */
     public boolean projectHasSource(String projectId) {
-        String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
-            for(String resourceId:resourceIds) {
-                String[] chapterIds = mAppIndex.getChapters(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
-                if(chapterIds.length > 0) {
-                    return true;
-                }
+            if(sourceLanguageHasSource(projectId, sourceLanguageId)) {
+                return true;
             }
         }
         return false;
@@ -829,9 +835,9 @@ public class Library {
      * @return
      */
     public boolean sourceLanguageHasSource(String projectId, String sourceLanguageId) {
-        String[] resourceIds = mAppIndex.getResources(projectId, sourceLanguageId);
+        String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
-            String[] chapterIds = mAppIndex.getChapters(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
+            String[] chapterIds = getActiveIndex().getChapters(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
             if(chapterIds.length > 0) {
                 return true;
             }

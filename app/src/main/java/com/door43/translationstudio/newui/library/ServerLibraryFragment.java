@@ -47,6 +47,13 @@ public class ServerLibraryFragment extends ListFragment {
         super.onCreate(savedInstanceState);
         mAdapter = new ServerLibraryAdapter(getActivity());
         setListAdapter(mAdapter);
+
+        if (savedInstanceState != null) {
+            if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
+                mActivatedPosition = savedInstanceState.getInt(STATE_ACTIVATED_POSITION);
+                setActivatedPosition(mActivatedPosition);
+            }
+        }
     }
 
     public void filter(String query) {

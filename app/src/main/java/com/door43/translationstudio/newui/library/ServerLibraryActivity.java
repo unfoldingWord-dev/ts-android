@@ -83,6 +83,11 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
             }
         } else {
+            // populated cached data
+            Library serverLibrary = AppContext.getLibrary().getServerLibrary();
+            ProjectCategory[] categories = serverLibrary.getProjectCategoriesFlat(Locale.getDefault().getLanguage());
+            mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
+
             // connect to tasks
             DownloadAllUpdatesTask downloadAllTask = (DownloadAllUpdatesTask)TaskManager.getTask(DownloadAllUpdatesTask.TASK_ID);
             GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
@@ -94,6 +99,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 getUpdatesTask.addOnProgressListener(this);
                 getUpdatesTask.addOnFinishedListener(this);
             }
+
         }
     }
 
