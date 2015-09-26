@@ -51,7 +51,6 @@ public class ServerLibraryFragment extends ListFragment {
         if (savedInstanceState != null) {
             if(savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
                 mActivatedPosition = savedInstanceState.getInt(STATE_ACTIVATED_POSITION);
-                setActivatedPosition(mActivatedPosition);
             }
         }
     }
