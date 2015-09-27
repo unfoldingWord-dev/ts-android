@@ -43,19 +43,16 @@ public class DownloadAllProjectsTask extends ManagedTask {
                 @Override
                 public void onProgress(int progress, int max) {
                     float relativeProgress = (float)progress / (float)max * (float)mMaxProgress;
-//                    mSecondaryMaxProgress = max;
                     publishProgress(relativeProgress, "", true);
                 }
 
                 @Override
                 public void onIndeterminate() {
-//                    publishProgress(-1, "", true);
                 }
             });
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to download the updates", e);
         }
-        publishProgress(1, "");
     }
 
     @Override
