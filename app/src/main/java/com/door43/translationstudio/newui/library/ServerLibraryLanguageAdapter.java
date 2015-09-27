@@ -97,7 +97,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         // progress listener
         ManagedTask.OnProgressListener progressListener = new ManagedTask.OnProgressListener() {
             @Override
-            public void onProgress(final ManagedTask task, final double progress, String message) {
+            public void onProgress(final ManagedTask task, final double progress, String message, boolean secondary) {
                 Handler hand = new Handler(Looper.getMainLooper());
                 hand.post(new Runnable() {
                     @Override

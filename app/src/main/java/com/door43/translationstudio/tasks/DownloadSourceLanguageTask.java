@@ -16,6 +16,8 @@ import java.util.List;
  */
 public class DownloadSourceLanguageTask extends ManagedTask {
 
+    public static final String TASK_ID = "download_source_language_id";
+
     private final String mProjectId;
     private final String mSourceLanguageId;
     private final Library mLibrary;

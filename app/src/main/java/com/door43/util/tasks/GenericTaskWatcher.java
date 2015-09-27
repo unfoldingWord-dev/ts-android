@@ -162,7 +162,7 @@ public class GenericTaskWatcher implements ManagedTask.OnFinishedListener, Manag
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message) {
+    public void onProgress(final ManagedTask task, final double progress, final String message, boolean secondary) {
         if(!task.isFinished()) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {

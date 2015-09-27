@@ -23,7 +23,7 @@ import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
-import com.door43.translationstudio.tasks.DownloadAllUpdatesTask;
+import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
@@ -179,7 +179,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 GetLibraryUpdatesTask prepTask = (GetLibraryUpdatesTask) TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-                                DownloadAllUpdatesTask task = (DownloadAllUpdatesTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+                                DownloadAllProjectsTask task = (DownloadAllProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
                                 if(task == null && prepTask == null) {
                                     // create new prep task
                                     prepTask = new GetLibraryUpdatesTask();
@@ -307,7 +307,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
      */
     public void connectDownloadAllTask() {
         GetLibraryUpdatesTask prepTask = (GetLibraryUpdatesTask)TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-        DownloadAllUpdatesTask task = (DownloadAllUpdatesTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+        DownloadAllProjectsTask task = (DownloadAllProjectsTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
         if(prepTask != null) {
             // connect to existing task
             prepTask.addOnProgressListener(this);
@@ -340,7 +340,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         if (task instanceof GetLibraryUpdatesTask) {
                             // start task to download projects
                             // TODO: finish updating this
-//                            DownloadAllUpdatesTask downloadTask = new DownloadAllUpdatesTask(((GetLibraryUpdatesTask) task).getProjects(), true);
+//                            DownloadAllProjectsTask downloadTask = new DownloadAllProjectsTask(((GetLibraryUpdatesTask) task).getProjects(), true);
 //                            downloadTask.addOnProgressListener(DeveloperToolsActivity.this);
 //                            downloadTask.addOnFinishedListener(DeveloperToolsActivity.this);
 //                            TaskManager.addTask(downloadTask, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
@@ -374,7 +374,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message) {
+    public void onProgress(final ManagedTask task, final double progress, final String message, boolean secondary) {
         if(!task.isFinished()) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
@@ -430,7 +430,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
     public void onCancel(DialogInterface dialogInterface) {
         // the download dialog was canceled
         mDownloadProgressDialog = null;
-        DownloadAllUpdatesTask task = (DownloadAllUpdatesTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
+        DownloadAllProjectsTask task = (DownloadAllProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
         if(task != null) {
             TaskManager.cancelTask(task);
         }

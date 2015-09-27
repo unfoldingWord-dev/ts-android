@@ -22,7 +22,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.tasks.DownloadAllUpdatesTask;
+import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;
@@ -89,7 +89,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
 
             // connect to tasks
-            DownloadAllUpdatesTask downloadAllTask = (DownloadAllUpdatesTask)TaskManager.getTask(DownloadAllUpdatesTask.TASK_ID);
+            DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
             GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
             if(downloadAllTask != null) {
                 downloadAllTask.addOnProgressListener(this);
@@ -155,7 +155,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
      * Connects to an existing task
      */
     public void connectDownloadAllTask() {
-        DownloadAllUpdatesTask task = (DownloadAllUpdatesTask)TaskManager.getTask(DownloadAllUpdatesTask.TASK_ID);
+        DownloadAllProjectsTask task = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
         if(task != null) {
             // connect to existing task
             task.addOnProgressListener(this);
@@ -198,14 +198,13 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                DownloadAllUpdatesTask task = (DownloadAllUpdatesTask)TaskManager.getTask(DownloadAllUpdatesTask.TASK_ID);
+                                DownloadAllProjectsTask task = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
                                 if(task == null) {
-                                    // connect to existing task
-                                    List<Project> projects = mListFragment.getFilteredProjects();
-                                    task = new DownloadAllUpdatesTask(projects);
+                                    // start new task
+                                    task = new DownloadAllProjectsTask();
                                     task.addOnProgressListener(ServerLibraryActivity.this);
                                     task.addOnFinishedListener(ServerLibraryActivity.this);
-                                    TaskManager.addTask(task, DownloadAllUpdatesTask.TASK_ID);
+                                    TaskManager.addTask(task, DownloadAllProjectsTask.TASK_ID);
                                 } else {
                                     connectDownloadAllTask();
                                 }
@@ -240,10 +239,10 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         if(mProgressDialog != null) {
             mProgressDialog.dismiss();
         }
-        DownloadAllUpdatesTask downloadAllUpdatesTask = (DownloadAllUpdatesTask)TaskManager.getTask(DownloadAllUpdatesTask.TASK_ID);
-        if(downloadAllUpdatesTask != null) {
-            downloadAllUpdatesTask.removeOnFinishedListener(this);
-            downloadAllUpdatesTask.removeOnProgressListener(this);
+        DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+        if(downloadAllProjectsTask != null) {
+            downloadAllProjectsTask.removeOnFinishedListener(this);
+            downloadAllProjectsTask.removeOnProgressListener(this);
         }
         GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
         if(getLibraryUpdatesTask != null) {
@@ -296,8 +295,9 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {
                     mProgressDialog.dismiss();
                 }
+                mProgressDialog = null;
 
-                if(task instanceof DownloadAllUpdatesTask) {
+                if(task instanceof DownloadAllProjectsTask) {
                     if (!task.isCanceled()) {
                         new AlertDialog.Builder(ServerLibraryActivity.this)
                                 .setTitle(R.string.success)
@@ -313,7 +313,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message) {
+    public void onProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
         if(!task.isFinished()) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
@@ -336,7 +336,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
                         if(task instanceof GetLibraryUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
-                        } else if(task instanceof DownloadAllUpdatesTask) {
+                        } else if(task instanceof DownloadAllProjectsTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.downloading));
                         }
                         mProgressDialog.setMessage("");
@@ -352,11 +352,15 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         mProgressDialog.setProgressPercentFormat(null);
                     } else {
                         mProgressDialog.setIndeterminate(false);
-                        mProgressDialog.setProgress((int)progress);
+                        if(secondary) {
+                            mProgressDialog.setSecondaryProgress((int)progress);
+                        } else {
+                            mProgressDialog.setProgress((int) progress);
+                        }
                         mProgressDialog.setProgressNumberFormat("%1d/%2d");
                         mProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
                     }
-                    if (task instanceof DownloadAllUpdatesTask && !message.isEmpty()) {
+                    if (task instanceof DownloadAllProjectsTask && !message.isEmpty()) {
                         mProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
                     } else {
                         mProgressDialog.setMessage("");
@@ -370,9 +374,9 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     public void onCancel(DialogInterface dialogInterface) {
         // the dialog was canceled
         mProgressDialog = null;
-        DownloadAllUpdatesTask downloadAllUpdatesTask = (DownloadAllUpdatesTask) TaskManager.getTask(DownloadAllUpdatesTask.TASK_ID);
-        if(downloadAllUpdatesTask != null) {
-            TaskManager.cancelTask(downloadAllUpdatesTask);
+        DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask) TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+        if(downloadAllProjectsTask != null) {
+            TaskManager.cancelTask(downloadAllProjectsTask);
         }
         GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask) TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
         if(getLibraryUpdatesTask != null) {

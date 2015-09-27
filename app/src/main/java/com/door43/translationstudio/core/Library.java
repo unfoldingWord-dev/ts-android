@@ -249,12 +249,78 @@ public class Library {
     }
 
     /**
+     * Downloads all of the projects from the server
+     * Only resources that meet the minimum checking level are downloaded
+     * @param projectProgressListener
+     * @param sourceTranslationListener
+     * @return
+     */
+    public Boolean downloadAllProjects(OnProgressListener projectProgressListener, OnProgressListener sourceTranslationListener) {
+        boolean success = true;
+        int currentProject = 1;
+        int numProjects = mServerIndex.getProjects().length;
+
+        // download
+        for (String projectId : mServerIndex.getProjects()) {
+//            boolean projectDownloadSuccess = true;
+            for (String sourceLanguageId : mServerIndex.getSourceLanguages(projectId)) {
+                for(String resourceId : mServerIndex.getResources(projectId, sourceLanguageId)) {
+                    SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
+
+                    // only download resources that meet the minimum checking level
+                    Resource resource = getResource(sourceTranslation);
+                    if(resource != null && resource.getCheckingLevel() < SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
+                        continue;
+                    }
+
+                    boolean downloadSuccess = downloadSourceTranslation(sourceTranslation, sourceTranslationListener);
+                    if(!downloadSuccess) {
+                        Logger.w(this.getClass().getName(), "Failed to download " + sourceTranslation.getId());
+                        success = downloadSuccess;
+//                        projectDownloadSuccess = false;
+                    }
+                }
+            }
+            // merge successfully downloaded project
+//            if(projectDownloadSuccess) {
+//                try {
+//                    if(projectProgressListener != null) {
+//                        projectProgressListener.onIndeterminate();
+//                    }
+//                    // TODO: make sure the merge project works correctly
+//                    mAppIndex.mergeProject(projectId, mDownloader.getIndex());
+//                } catch (IOException e) {
+//                    Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
+//                    success = false;
+//                }
+//            }
+            if(projectProgressListener != null) {
+                projectProgressListener.onProgress(currentProject, numProjects);
+                currentProject ++;
+            }
+        }
+        return success;
+    }
+
+    /**
      * Downloads updates from the server
      * @param updates
      */
-    public Boolean downloadUpdates(LibraryUpdates updates) throws Exception {
+    public Boolean downloadUpdates(LibraryUpdates updates, OnProgressListener listener) throws Exception {
         boolean success = true;
         if(updates != null) {
+            // count updates
+            int numUpdates = 0;
+            if(listener != null) {
+                for (String pId : updates.getUpdatedProjects()) {
+                    for (String slId : updates.getUpdatedSourceLanguages(pId)) {
+                        numUpdates += updates.getUpdatedResources(pId, slId).length;
+                    }
+                }
+            }
+
+            // download updates
+            int currUpdate = 1;
             for (String projectId : updates.getUpdatedProjects()) {
                 boolean projectDownloadSuccess = true;
                 for (String sourceLanguageId : updates.getUpdatedSourceLanguages(projectId)) {
@@ -263,11 +329,18 @@ public class Library {
                         if (!projectDownloadSuccess) {
                             throw new Exception("Failed to download " + projectId + " " + sourceLanguageId + " " + resourceId);
                         }
+                        if(listener != null) {
+                            listener.onProgress(currUpdate, numUpdates);
+                            currUpdate++;
+                        }
                     }
                 }
                 success = projectDownloadSuccess ? success : false;
                 if (projectDownloadSuccess) {
                     try {
+                        if(listener != null) {
+                            listener.onIndeterminate();
+                        }
                         mAppIndex.mergeProject(projectId, mDownloader.getIndex());
                     } catch (IOException e) {
                         Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
@@ -568,18 +641,28 @@ public class Library {
     public Resource[] getResources(String projectId, String sourceLanguageId) {
         List<Resource> resources = new ArrayList<>();
         String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
-        for(String id:resourceIds) {
-            JSONObject resourceJson = getActiveIndex().getResource(SourceTranslation.simple(projectId, sourceLanguageId, id));
-            try {
-                Resource res = Resource.generate(resourceJson);
-                if(res != null) {
-                    resources.add(res);
-                }
-            } catch (JSONException e) {
-                Logger.e(this.getClass().getName(), "Failed to parse the resource " + id + " in source language " + sourceLanguageId + " in project " + projectId, e);
+        for(String resourceId:resourceIds) {
+            Resource res = getResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
+            if(res != null) {
+                resources.add(res);
             }
         }
         return resources.toArray(new Resource[resources.size()]);
+    }
+
+    /**
+     * Returns a resource
+     * @param sourceTranslation
+     * @return
+     */
+    private Resource getResource(SourceTranslation sourceTranslation) {
+        JSONObject resourceJson = getActiveIndex().getResource(SourceTranslation.simple(sourceTranslation.projectId, sourceTranslation.sourceLanguageId, sourceTranslation.resourceId));
+        try {
+            return Resource.generate(resourceJson);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "Failed to parse the resource " + sourceTranslation.getId(), e);
+        }
+        return null;
     }
 
     /**

@@ -79,7 +79,7 @@ public class LibraryTest extends AndroidTestCase {
         is.close();
         fis.close();
 
-        assertTrue(mLibrary.downloadUpdates(updates));
+        assertTrue(mLibrary.downloadUpdates(updates, null));
     }
 
     public void test05Export() throws Exception {

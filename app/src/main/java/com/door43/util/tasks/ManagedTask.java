@@ -176,14 +176,26 @@ public abstract class ManagedTask implements Runnable {
      * @param message the progress message
      */
     protected final void publishProgress(double progress, String message) {
-        mProgress = progress;
-        mProgressMessage = message;
+        publishProgress(progress, message, false);
+    }
+
+    /**
+     * Called when progress has been made.
+     * This method should be called manually by the implementing class to update the progress
+     * @param progress the progress being made between 1 and 0
+     * @param message the progress message
+     */
+    protected final void publishProgress(double progress, String message, boolean secondary) {
+        if(!secondary) {
+            mProgress = progress;
+            mProgressMessage = message;
+        }
         if(!isFinished()) {
             synchronized (mProgressListeners) {
                 Iterator<OnProgressListener> it = mProgressListeners.iterator();
                 while(it.hasNext()) {
                     try {
-                        it.next().onProgress(this, mProgress, mProgressMessage);
+                        it.next().onProgress(this, mProgress, mProgressMessage, secondary);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -201,7 +213,7 @@ public abstract class ManagedTask implements Runnable {
             mProgressListeners.add(listener);
             if(!isFinished()) {
                 try {
-                    listener.onProgress(this, mProgress, mProgressMessage);
+                    listener.onProgress(this, mProgress, mProgressMessage, false);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -328,6 +340,15 @@ public abstract class ManagedTask implements Runnable {
     }
 
     /**
+     * Returns the maximum secondary progress threshold
+     * Useful for setting up secondary progress bars
+     * @return
+     */
+    public int maxSecondaryProgress() {
+        return 100;
+    }
+
+    /**
      * Returns the thread on which this runnable is being executed
      * @return
      */
@@ -402,7 +423,7 @@ public abstract class ManagedTask implements Runnable {
     }
 
     public interface OnProgressListener {
-        void onProgress(ManagedTask task, double progress, String message);
+        void onProgress(ManagedTask task, double progress, String message, boolean secondary);
     }
 
     public interface OnStartListener {
