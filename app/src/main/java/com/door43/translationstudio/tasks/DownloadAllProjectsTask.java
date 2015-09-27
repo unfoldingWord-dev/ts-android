@@ -15,7 +15,6 @@ import java.util.List;
 public class DownloadAllProjectsTask extends ManagedTask {
     public static final String TASK_ID = "download_all_projects task";
     private int mMaxProgress = 100;
-//    private int mSecondaryMaxProgress = 100;
 
     /**
      * NOTE: the project, source language, and resources catalogs will have been downloaded when the
@@ -45,12 +44,12 @@ public class DownloadAllProjectsTask extends ManagedTask {
                 public void onProgress(int progress, int max) {
                     float relativeProgress = (float)progress / (float)max * (float)mMaxProgress;
 //                    mSecondaryMaxProgress = max;
-                    publishProgress(relativeProgress, "");
+                    publishProgress(relativeProgress, "", true);
                 }
 
                 @Override
                 public void onIndeterminate() {
-                    publishProgress(-1, "", true);
+//                    publishProgress(-1, "", true);
                 }
             });
         } catch (Exception e) {
@@ -63,9 +62,4 @@ public class DownloadAllProjectsTask extends ManagedTask {
     public int maxProgress() {
         return mMaxProgress;
     }
-
-//    @Override
-//    public int maxSecondaryProgress() {
-//        return mSecondaryMaxProgress;
-//    }
 }

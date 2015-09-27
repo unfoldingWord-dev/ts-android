@@ -195,7 +195,7 @@ public abstract class ManagedTask implements Runnable {
                 Iterator<OnProgressListener> it = mProgressListeners.iterator();
                 while(it.hasNext()) {
                     try {
-                        it.next().onProgress(this, mProgress, mProgressMessage, secondary);
+                        it.next().onProgress(this, progress, message, secondary);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -336,15 +336,6 @@ public abstract class ManagedTask implements Runnable {
      * @return
      */
     public int maxProgress() {
-        return 100;
-    }
-
-    /**
-     * Returns the maximum secondary progress threshold
-     * Useful for setting up secondary progress bars
-     * @return
-     */
-    public int maxSecondaryProgress() {
         return 100;
     }
 

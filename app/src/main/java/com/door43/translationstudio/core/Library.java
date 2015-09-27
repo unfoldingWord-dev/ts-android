@@ -77,6 +77,15 @@ public class Library {
     }
 
     /**
+     * Completely deletes all of the library indexes.
+     * This clears everything but the target languages.
+     */
+    public void destroyIndexes() {
+        FileUtils.deleteQuietly(mIndexDir);
+        FileUtils.deleteQuietly(mCacheDir);
+    }
+
+    /**
      * Returns a new library instance that represents the server
      * @return
      */
@@ -402,7 +411,7 @@ public class Library {
     }
 
     /**
-     * Exports the library
+     * Exports the library in a zipped archive
      * @param destDir the directory where the library will be exported
      * @return the path to the exported file
      */

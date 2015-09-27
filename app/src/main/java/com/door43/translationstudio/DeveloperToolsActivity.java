@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.view.View;
 import android.widget.AdapterView;
@@ -32,6 +33,7 @@ import com.door43.util.StringUtilities;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
+import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FileUtils;
 
@@ -110,7 +112,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ToolItem tool = mAdapter.getItem(i);
-                if(tool.isEnabled()) {
+                if (tool.isEnabled()) {
                     tool.getAction().run();
                 }
             }
@@ -201,7 +203,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                 final Handler handle = new Handler(Looper.getMainLooper());
                 final Project[] projects = AppContext.projectManager().getProjects();
                 final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
-                dialog.setCancelable(true);
+                dialog.setCancelable(false);
                 dialog.setCanceledOnTouchOutside(false);
                 dialog.setIndeterminate(true);
                 dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -210,7 +212,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
 
                 // TODO: this should be placed inside of a task instead.
                 final ThreadableUI thread = new ThreadableUI(DeveloperToolsActivity.this) {
-                    private File output;
+                    private File archive;
                     @Override
                     public void onStop() {
 
@@ -218,43 +220,13 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
 
                     @Override
                     public void run() {
-                        try {
-                            File archiveFile = new File(Sharing.exportSource(projects, new Sharing.OnProgressCallback() {
-                                @Override
-                                public void onProgress(final double progress, final String message) {
-                                    handle.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            dialog.setIndeterminate(false);
-                                            dialog.setMessage(message);
-                                            dialog.setProgress((int)Math.round(projects.length*progress));
-                                        }
-                                    });
-                                }
-
-                                @Override
-                                public void onSuccess() {
-
-                                }
-                            }));
-                            if(isInterrupted()) {
-                                archiveFile.delete();
-                                return;
-                            }
-                            if(archiveFile.exists()) {
-                                File internalDestDir = new File(getCacheDir(), "sharing/");
-                                output = new File(internalDestDir, archiveFile.getName());
-                                FileUtils.copyFile(archiveFile, output);
-                            }
-                        } catch (IOException e) {
-                            AppContext.context().showException(e);
-                            stop();
-                        }
+                        // TODO: add progress listener
+                        archive = AppContext.getLibrary().export(new File(getCacheDir(), "sharing/"));
                     }
 
                     @Override
                     public void onPostExecute() {
-                        if(!isInterrupted()) {
+                        if(archive != null && archive.exists()) {
                             new AlertDialog.Builder(DeveloperToolsActivity.this)
                                     .setTitle(R.string.success)
                                     .setIcon(R.drawable.ic_done_black_24dp)
@@ -262,13 +234,11 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                                     .setPositiveButton(R.string.menu_share, new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialogInterface, int i) {
-                                            if (output != null) {
-                                                Uri u = FileProvider.getUriForFile(DeveloperToolsActivity.this, "com.door43.translationstudio.fileprovider", output);
-                                                Intent intent = new Intent(Intent.ACTION_SEND);
-                                                intent.setType("application/zip");
-                                                intent.putExtra(Intent.EXTRA_STREAM, u);
-                                                startActivity(Intent.createChooser(intent, "Email:"));
-                                            }
+                                            Uri u = FileProvider.getUriForFile(DeveloperToolsActivity.this, "com.door43.translationstudio.fileprovider", archive);
+                                            Intent intent = new Intent(Intent.ACTION_SEND);
+                                            intent.setType("application/zip");
+                                            intent.putExtra(Intent.EXTRA_STREAM, u);
+                                            startActivity(Intent.createChooser(intent, "Email:"));
                                         }
                                     })
                                     .show();
@@ -276,14 +246,6 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
                         dialog.dismiss();
                     }
                 };
-
-                // allow the user to cancel the dialog
-                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialogInterface) {
-                        thread.stop();
-                    }
-                });
                 dialog.show();
 
                 thread.start();
@@ -293,6 +255,15 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
             @Override
             public void run() {
                 int killme = 1/0;
+            }
+        }));
+        mDeveloperTools.add(new ToolItem("Delete Library", "Completely deletes the library and all of it's indexes", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
+            @Override
+            public void run() {
+                AppContext.getLibrary().destroyIndexes();
+                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The library content was deleted", Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                snack.show();
             }
         }));
     }

@@ -329,7 +329,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
                     if (mProgressDialog == null) {
                         mProgressDialog = new ProgressDialog(ServerLibraryActivity.this);
-                        mProgressDialog.setCancelable(true);
+                        mProgressDialog.setCancelable(false); // TODO: need to update the download method to support cancelling
                         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mProgressDialog.setCanceledOnTouchOutside(false);
                         mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
