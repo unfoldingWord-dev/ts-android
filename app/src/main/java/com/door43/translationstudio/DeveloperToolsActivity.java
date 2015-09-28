@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
+import com.door43.translationstudio.newui.library.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
@@ -261,6 +262,7 @@ public class DeveloperToolsActivity extends TranslatorBaseActivity implements Ma
             @Override
             public void run() {
                 AppContext.getLibrary().destroyIndexes();
+                ServerLibraryCache.clear();
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The library content was deleted", Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                 snack.show();
