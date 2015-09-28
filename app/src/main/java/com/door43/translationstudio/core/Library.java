@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import android.content.Context;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.util.Tar;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
@@ -446,9 +447,12 @@ public class Library {
     public File export(File destDir) {
         SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String date = s.format(new Date());
-        File destFile = new File(destDir, "library_" + date + ".zip");
+        File destFile = new File(destDir, "library_" + date + ".tar");
+        destDir.mkdirs();
         try {
-            Zip.zip(getActiveIndex().getIndexDir().getPath(), destFile.getPath());
+            destFile.createNewFile();
+            Tar.tar(getActiveIndex().getIndexDir().getPath(), destFile.getPath());
+//            Zip.zip(getActiveIndex().getIndexDir().getPath(), destFile.getPath());
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to export the library", e);
             return null;
