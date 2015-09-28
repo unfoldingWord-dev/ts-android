@@ -274,7 +274,7 @@ public class Library {
             if(Thread.currentThread().isInterrupted()) {
                 return false;
             }
-            boolean projectDownloadSuccess = false;
+            boolean projectDownloadSuccess = true;
             for (String sourceLanguageId : mServerIndex.getSourceLanguages(projectId)) {
                 if(Thread.currentThread().isInterrupted()) {
                     return false;
