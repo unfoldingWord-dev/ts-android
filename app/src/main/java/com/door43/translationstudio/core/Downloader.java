@@ -1,5 +1,7 @@
 package com.door43.translationstudio.core;
 
+import com.door43.tools.reporting.Logger;
+
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -137,6 +139,8 @@ public class Downloader {
             String catalog = request(catalogApiUrl);
             if(catalog != null) {
                 return mIndex.indexSource(translation, catalog);
+            } else {
+                Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + catalogApiUrl);
             }
         }
         return false;

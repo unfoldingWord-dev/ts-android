@@ -291,7 +291,7 @@ public class Library {
 //                        continue;
 //                    }
 
-                    boolean downloadSuccess = downloadSourceTranslationWithoutMerging(sourceTranslation, sourceTranslationListener);
+                    boolean downloadSuccess = downloadSourceTranslation(sourceTranslation, sourceTranslationListener);
                     if(!downloadSuccess) {
                         Logger.w(this.getClass().getName(), "Failed to download " + sourceTranslation.getId());
                         success = downloadSuccess;
@@ -300,17 +300,17 @@ public class Library {
                 }
             }
             // merge the project
-            if (projectDownloadSuccess) {
-                try {
-                    if(projectProgressListener != null) {
-                        projectProgressListener.onIndeterminate();
-                    }
-                    mAppIndex.mergeProject(projectId, mDownloader.getIndex());
-                } catch (IOException e) {
-                    Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
-                    success = false;
-                }
-            }
+//            if (projectDownloadSuccess) {
+//                try {
+//                    if(projectProgressListener != null) {
+//                        projectProgressListener.onIndeterminate();
+//                    }
+//                    mAppIndex.mergeProject(projectId, mDownloader.getIndex());
+//                } catch (IOException e) {
+//                    Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
+//                    success = false;
+//                }
+//            }
             if(projectProgressListener != null) {
                 projectProgressListener.onProgress(currentProject, numProjects);
                 currentProject ++;

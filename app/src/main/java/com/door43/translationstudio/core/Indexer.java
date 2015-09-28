@@ -1,5 +1,6 @@
 package com.door43.translationstudio.core;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.util.Manifest;
 import com.door43.util.Security;
 
@@ -386,7 +387,7 @@ public class Indexer {
                         }
                     }
                 } catch (JSONException e) {
-                    e.printStackTrace();
+                    Logger.e(this.getClass().getName(), "Failed to process the source", e);
                 }
             }
         } else if(type == CatalogType.Terms) {
@@ -873,13 +874,14 @@ public class Indexer {
             JSONObject catalogJson = new JSONObject(catalog);
             catalog = catalogJson.getJSONArray("chapters").toString();
         } catch (JSONException e) {
-            e.printStackTrace();
+            Logger.e(this.getClass().getName(), "Invalid catalog json",e);
             return false;
         }
         //KLUDGE: end modify v2
 
         String md5hash = generateSourceLink(translation);
         if(md5hash != null) {
+            Logger.i(this.getClass().getName(), "indexing source for " + translation.getId());
             return indexItems(md5hash, CatalogType.Source, catalog);
         }
         return false;
