@@ -44,6 +44,9 @@ public class TranslationWord {
      * @throws JSONException
      */
     public static TranslationWord generate(JSONObject json) throws JSONException {
+        if(json == null) {
+            return null;
+        }
         JSONArray examplesJson = json.getJSONArray("ex");
         Example[] examples = new Example[examplesJson.length()];
         for(int i = 0; i < examplesJson.length(); i ++) {

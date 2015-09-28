@@ -6,5 +6,6 @@
     android:textSize="@dimen/title"
     android:paddingTop="@dimen/card_margin"
     android:paddingBottom="@dimen/card_margin"
+    android:clickable="true"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />

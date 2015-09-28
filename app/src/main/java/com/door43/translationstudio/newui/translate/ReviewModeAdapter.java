@@ -349,6 +349,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // resource tabs
+        holder.mResourceTabs.setOnTabSelectedListener(null);
         holder.mResourceTabs.removeAllTabs();
         final TranslationNote[] notes = mLibrary.getTranslationNotes(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length > 0) {

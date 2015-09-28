@@ -185,8 +185,7 @@
         card_view:cardElevation="2dp"
         android:layout_marginTop="@dimen/card_margin"
         android:layout_marginBottom="@dimen/card_margin"
-        android:layout_marginRight="@dimen/card_margin"
-        android:clickable="true">
+        android:layout_marginRight="@dimen/card_margin">
 
         <LinearLayout
             android:orientation="vertical"
@@ -199,7 +198,6 @@
                 android:visibility="visible"
                 android:orientation="vertical"
                 android:id="@+id/resources_layout"
-                android:animateLayoutChanges="true"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -214,7 +212,6 @@
                 <LinearLayout
                     android:orientation="vertical"
                     android:id="@+id/resources_list"
-                    android:animateLayoutChanges="true"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
