@@ -199,6 +199,7 @@
                 android:visibility="visible"
                 android:orientation="vertical"
                 android:id="@+id/resources_layout"
+                android:animateLayoutChanges="true"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
@@ -206,21 +207,16 @@
                     android:id="@+id/resource_tabs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="44dp"
                     android:layout_gravity="center_vertical"
                     android:layout_marginBottom="@dimen/card_margin"
                     app:layout_scrollFlags="scroll|enterAlways"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:textSize="@dimen/title"
-                    android:textColor="@color/dark_secondary_text"
-                    android:text="Resources coming soon" />
-
-                <!-- TODO: place resource content here -->
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:id="@+id/resources_list"
+                    android:animateLayoutChanges="true"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
 
             </LinearLayout>
 

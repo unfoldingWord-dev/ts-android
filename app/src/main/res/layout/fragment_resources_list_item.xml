@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:text="My Term"
+    android:textColor="?attr/colorAccent"
+    android:background="?attr/selectableItemBackground"
+    android:textSize="@dimen/title"
+    android:paddingTop="@dimen/card_margin"
+    android:paddingBottom="@dimen/card_margin"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />

@@ -43,6 +43,8 @@ import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +54,8 @@ import java.util.List;
  */
 public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHolder> {
 
+    private static final int TAB_NOTES = 0;
+    private static final int TAB_WORDS = 1;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -59,6 +63,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private SourceTranslation mSourceTranslation;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
+    private int[] mOpenResourceTab;
     private Frame[] mFrames;
     private CharSequence[] mRenderedSourceBody;
     private CharSequence[] mRenderedTargetBody;
@@ -95,6 +100,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             frames.addAll(Arrays.asList(chapterFrames));
         }
         mFrames = frames.toArray(new Frame[frames.size()]);
+        mOpenResourceTab = new int[mFrames.length];
         mRenderedSourceBody = new CharSequence[mFrames.length];
         mRenderedTargetBody = new CharSequence[mFrames.length];
     }
@@ -117,6 +123,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             frames.addAll(Arrays.asList(chapterFrames));
         }
         mFrames = frames.toArray(new Frame[frames.size()]);
+        mOpenResourceTab = new int[mFrames.length];
         mRenderedSourceBody = new CharSequence[mFrames.length];
         mRenderedTargetBody = new CharSequence[mFrames.length];
 
@@ -208,13 +215,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
         // load tabs
-        holder.mTabLayout.setOnTabSelectedListener(null);
-        holder.mTabLayout.removeAllTabs();
+        holder.mTranslationTabs.setOnTabSelectedListener(null);
+        holder.mTranslationTabs.removeAllTabs();
         String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
         for(String id:sourceTranslationIds) {
             SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
             if(sourceTranslation != null) {
-                TabLayout.Tab tab = holder.mTabLayout.newTab();
+                TabLayout.Tab tab = holder.mTranslationTabs.newTab();
                 // include the resource id if there are more than one
                 if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
                     tab.setText(sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
@@ -222,13 +229,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     tab.setText(sourceTranslation.getSourceLanguageTitle());
                 }
                 tab.setTag(sourceTranslation.getId());
-                holder.mTabLayout.addTab(tab);
+                holder.mTranslationTabs.addTab(tab);
             }
         }
 
         // select correct tab
-        for(int i = 0; i < holder.mTabLayout.getTabCount(); i ++) {
-            TabLayout.Tab tab = holder.mTabLayout.getTabAt(i);
+        for(int i = 0; i < holder.mTranslationTabs.getTabCount(); i ++) {
+            TabLayout.Tab tab = holder.mTranslationTabs.getTabAt(i);
             if(tab.getTag().equals(mSourceTranslation.getId())) {
                 tab.select();
                 break;
@@ -236,7 +243,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // hook up listener
-        holder.mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        holder.mTranslationTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 final String sourceTranslationId = (String) tab.getTag();
@@ -341,25 +348,60 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mMainContent.setWeightSum(1f);
         }
 
-        // resources tabs
-        TranslationNote[] notes = mLibrary.getTranslationNotes(mSourceTranslation, frame.getChapterId(), frame.getId());
+        // resource tabs
+        holder.mResourceTabs.removeAllTabs();
+        final TranslationNote[] notes = mLibrary.getTranslationNotes(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length > 0) {
-            // TODO: add notes tab
-        } else {
-            // TODO: remove notes tab
+            TabLayout.Tab tab = holder.mResourceTabs.newTab();
+            tab.setText(R.string.label_translation_notes);
+            tab.setTag(TAB_NOTES);
+            holder.mResourceTabs.addTab(tab);
+            if(mOpenResourceTab[position] == TAB_NOTES) {
+                tab.select();
+            }
         }
-
-        TranslationWord[] words = mLibrary.getTranslationWords(mSourceTranslation, frame.getChapterId(), frame.getId());
+        final TranslationWord[] words = mLibrary.getTranslationWords(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length > 0) {
-            // TODO: add words tab
-        } else {
-            // TODO: remove words tab
+            TabLayout.Tab tab = holder.mResourceTabs.newTab();
+            tab.setText(R.string.translation_words);
+            tab.setTag(TAB_WORDS);
+            holder.mResourceTabs.addTab(tab);
+            if(mOpenResourceTab[position] == TAB_WORDS) {
+                tab.select();
+            }
         }
 
+        holder.mResourceTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if((int) tab.getTag() == TAB_NOTES && mOpenResourceTab[position] != TAB_NOTES) {
+                    mOpenResourceTab[position] = TAB_NOTES;
+                    // render notes
+                    renderResources(holder, position, notes, words);
+                } else if((int) tab.getTag() == TAB_WORDS && mOpenResourceTab[position] != TAB_WORDS) {
+                    mOpenResourceTab[position] = TAB_WORDS;
+                    // render words
+                    renderResources(holder, position, notes, words);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        // resource list
         if(notes.length == 0 && words.length == 0) {
             holder.mResourceLayout.setVisibility(View.GONE);
         } else {
             holder.mResourceLayout.setVisibility(View.VISIBLE);
+            renderResources(holder, position, notes, words);
         }
 
         // done buttons
@@ -370,7 +412,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if(mTargetTranslation.finishFrame(frame)) {
                     holder.mDoneButton.setVisibility(View.GONE);
                     holder.mDoneFlag.setVisibility(View.VISIBLE);
-//                    holder.mTargetInnerCard.setBackgroundColor(mContext.getResources().getColor(R.color.white));
                     holder.mTargetInnerCard.setBackgroundResource(R.color.white);
                 } else {
                     Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
@@ -401,6 +442,29 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // TODO: add click to open for resources
+    }
+
+    private void renderResources(ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words) {
+        if(holder.mResourceList.getChildCount() > 0) {
+            holder.mResourceList.removeAllViews();
+        }
+        if(mOpenResourceTab[position] == TAB_NOTES) {
+            // render notes
+            for(TranslationNote note:notes) {
+                TextView noteView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
+                noteView.setText(note.getTitle());
+                // TODO: set click listener
+                holder.mResourceList.addView(noteView);
+            }
+        } else {
+            // render words
+            for(TranslationWord word:words) {
+                TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
+                wordView.setText(word.getTitle());
+                // TODO: set click listener
+                holder.mResourceList.addView(wordView);
+            }
+        }
     }
 
     private CharSequence renderText(String text, TranslationFormat format) {
@@ -457,13 +521,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final Button mDoneButton;
         private final LinearLayout mDoneFlag;
         private final LinearLayout mTargetInnerCard;
+        private final TabLayout mResourceTabs;
+        private final LinearLayout mResourceList;
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
         public final EditText mTargetBody;
         public final CardView mTargetCard;
         public final CardView mSourceCard;
-        public final TabLayout mTabLayout;
+        public final TabLayout mTranslationTabs;
         public final ImageButton mNewTabButton;
         public TextView mSourceBody;
         public ViewHolder(Context context, View v) {
@@ -473,16 +539,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
             mResourceCard = (CardView)v.findViewById(R.id.resources_card);
             mResourceLayout = (LinearLayout)v.findViewById(R.id.resources_layout);
+            mResourceTabs = (TabLayout)v.findViewById(R.id.resource_tabs);
+            mResourceTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
+            mResourceList = (LinearLayout)v.findViewById(R.id.resources_list);
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
             mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
-            mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
+            mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
             mDoneButton = (Button)v.findViewById(R.id.done_button);
             mDoneFlag = (LinearLayout)v.findViewById(R.id.done_flag);
             ViewUtil.tintViewDrawable(mEditButton, context.getResources().getColor(R.color.dark_disabled_text));
-            mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
+            mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }
     }

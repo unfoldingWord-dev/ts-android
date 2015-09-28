@@ -928,9 +928,14 @@ public class Library {
         List<TranslationWord> words = new ArrayList<>();
         String[] wordIds = getActiveIndex().getWords(sourceTranslation, chapterId, frameId);
         for(String wordId:wordIds) {
-            TranslationWord note = TranslationWord.generate(getActiveIndex().getWord(sourceTranslation, wordId));
-            if(note != null) {
-                words.add(note);
+            TranslationWord word;
+            try {
+                word = TranslationWord.generate(getActiveIndex().getWord(sourceTranslation, wordId));
+                if(word != null) {
+                    words.add(word);
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "Failed to parse the translationWord " + wordId + " in " + sourceTranslation.getId());
             }
         }
         return words.toArray(new TranslationWord[words.size()]);
