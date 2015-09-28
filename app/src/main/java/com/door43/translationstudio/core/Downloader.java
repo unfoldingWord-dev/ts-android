@@ -159,6 +159,22 @@ public class Downloader {
     }
 
     /**
+     * Downloads the translationWord assignments for a source translation from the server
+     * @param translation
+     * @return
+     */
+    public Boolean downloadTermAssignments(SourceTranslation translation) {
+        String catalogApiUrl = getUrlFromObject(mIndex.getResource(translation), "tw_cat");
+        if(catalogApiUrl != null) {
+            String catalog = request(catalogApiUrl);
+            if(catalog != null) {
+                return mIndex.indexTermAssignments(translation, catalog);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Downloads the translationNotes for a source translation from the server
      * @param translation
      * @return

@@ -1,10 +1,7 @@
 package com.door43.translationstudio.tasks;
 
-import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.Resource;
-import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;

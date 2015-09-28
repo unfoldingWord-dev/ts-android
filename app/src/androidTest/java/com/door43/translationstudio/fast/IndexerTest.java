@@ -95,9 +95,8 @@ public class IndexerTest extends InstrumentationTestCase {
         String[] allTermIds = mIndex.getWords(translation);
         assertTrue(allTermIds.length > 0);
         assertNotNull(mIndex.getWord(translation, allTermIds[0]));
-        // TODO: 9/1/2015 This method has not been implemented yet
-//        String[] termIds = mIndex.getWords(translation, "01", "01");
-//        assertTrue(termIds.length > 0);
+        String[] termIds = mIndex.getWords(translation, "01", "01");
+        assertTrue(termIds.length > 0);
     }
 
     public void test07IndexQuestions() throws Exception {

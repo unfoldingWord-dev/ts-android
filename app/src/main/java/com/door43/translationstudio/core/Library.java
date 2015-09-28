@@ -259,7 +259,7 @@ public class Library {
 
     /**
      * Downloads all of the projects from the server
-     * Only resources that meet the minimum checking level are downloaded
+     *
      * @param projectProgressListener
      * @param sourceTranslationListener
      * @return
@@ -271,38 +271,46 @@ public class Library {
 
         // download
         for (String projectId : mServerIndex.getProjects()) {
-//            boolean projectDownloadSuccess = true;
+            if(Thread.currentThread().isInterrupted()) {
+                return false;
+            }
+            boolean projectDownloadSuccess = false;
             for (String sourceLanguageId : mServerIndex.getSourceLanguages(projectId)) {
+                if(Thread.currentThread().isInterrupted()) {
+                    return false;
+                }
                 for(String resourceId : mServerIndex.getResources(projectId, sourceLanguageId)) {
+                    if(Thread.currentThread().isInterrupted()) {
+                        return false;
+                    }
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
 
                     // only download resources that meet the minimum checking level
-                    Resource resource = getResource(sourceTranslation);
-                    if(resource != null && resource.getCheckingLevel() < SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
-                        continue;
-                    }
+//                    Resource resource = getResource(sourceTranslation);
+//                    if(resource != null && resource.getCheckingLevel() < SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
+//                        continue;
+//                    }
 
-                    boolean downloadSuccess = downloadSourceTranslation(sourceTranslation, sourceTranslationListener);
+                    boolean downloadSuccess = downloadSourceTranslationWithoutMerging(sourceTranslation, sourceTranslationListener);
                     if(!downloadSuccess) {
                         Logger.w(this.getClass().getName(), "Failed to download " + sourceTranslation.getId());
                         success = downloadSuccess;
-//                        projectDownloadSuccess = false;
+                        projectDownloadSuccess = downloadSuccess;
                     }
                 }
             }
-            // merge successfully downloaded project
-//            if(projectDownloadSuccess) {
-//                try {
-//                    if(projectProgressListener != null) {
-//                        projectProgressListener.onIndeterminate();
-//                    }
-//                    // TODO: make sure the merge project works correctly
-//                    mAppIndex.mergeProject(projectId, mDownloader.getIndex());
-//                } catch (IOException e) {
-//                    Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
-//                    success = false;
-//                }
-//            }
+            // merge the project
+            if (projectDownloadSuccess) {
+                try {
+                    if(projectProgressListener != null) {
+                        projectProgressListener.onIndeterminate();
+                    }
+                    mAppIndex.mergeProject(projectId, mDownloader.getIndex());
+                } catch (IOException e) {
+                    Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
+                    success = false;
+                }
+            }
             if(projectProgressListener != null) {
                 projectProgressListener.onProgress(currentProject, numProjects);
                 currentProject ++;
@@ -313,6 +321,7 @@ public class Library {
 
     /**
      * Downloads updates from the server
+     * @deprecated
      * @param updates
      */
     public Boolean downloadUpdates(LibraryUpdates updates, OnProgressListener listener) throws Exception {
@@ -393,19 +402,38 @@ public class Library {
         boolean success = true;
         success = mDownloader.downloadSource(translation) ? success : false;
         if(listener != null) {
-            listener.onProgress(1, 4);
+            listener.onProgress(1, 5);
+        }
+        if(Thread.currentThread().isInterrupted()) {
+            return false;
         }
         mDownloader.downloadTerms(translation); // optional to success of download
         if(listener != null) {
-            listener.onProgress(2, 4);
+            listener.onProgress(2, 5);
+        }
+        if(Thread.currentThread().isInterrupted()) {
+            return false;
+        }
+        mDownloader.downloadTermAssignments(translation); // optional to success of download
+        if(listener != null) {
+            listener.onProgress(3, 5);
+        }
+        if(Thread.currentThread().isInterrupted()) {
+            return false;
         }
         mDownloader.downloadNotes(translation); // optional to success of download
         if(listener != null) {
-            listener.onProgress(3, 4);
+            listener.onProgress(4, 5);
+        }
+        if(Thread.currentThread().isInterrupted()) {
+            return false;
         }
         mDownloader.downloadCheckingQuestions(translation); // optional to success of download
         if(listener != null) {
-            listener.onProgress(4, 4);
+            listener.onProgress(5, 5);
+        }
+        if(Thread.currentThread().isInterrupted()) {
+            return false;
         }
         return success;
     }

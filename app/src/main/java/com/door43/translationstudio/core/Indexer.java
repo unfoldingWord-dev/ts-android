@@ -247,6 +247,15 @@ public class Indexer {
     }
 
     /**
+     * Generates a term assignments link for the source translation
+     * @param translation
+     * @return
+     */
+    private String generateTermAssignmentsLink (SourceTranslation translation) {
+        return generateResourceFieldLink(translation, "tw_cat");
+    }
+
+    /**
      * Generates a questions link for the source translation
      * @param translation
      * @return
@@ -290,8 +299,13 @@ public class Indexer {
             for(int i = 0; i < items.length(); i ++ ) {
                 try {
                     JSONObject item = items.getJSONObject(i);
-                    if(item.has("slug")) {
-                        String itemPath = md5Path + "/" + item.getString("slug");
+                    if(item.has("slug") || item.has("id")) {
+                        String itemPath;
+                        if(item.has("slug")) {
+                            itemPath = md5Path + "/" + item.getString("slug");
+                        } else {
+                            itemPath = md5Path + "/" + item.getString("id");
+                        }
                         try {
                             saveFile(itemPath, item.toString());
                         } catch (IOException e) {
@@ -506,6 +520,7 @@ public class Indexer {
      */
     private void deleteResource (SourceTranslation translation) {
         deleteTerms(translation);
+        deleteTermAssignments(translation);
         deleteQuestions(translation);
         deleteNotes(translation);
         deleteSource(translation);
@@ -557,6 +572,16 @@ public class Indexer {
             String md5hash = Security.md5(catalogApiUrl);
             decrementLink(md5hash);
             String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link";
+            deleteFile(catalogLinkFile);
+        }
+    }
+
+    private void deleteTermAssignments (SourceTranslation translation) {
+        String catalogApiUrl = getUrlFromObject(getResource(translation), "tw_cat");
+        if(catalogApiUrl != null) {
+            String md5hash = Security.md5(catalogApiUrl);
+            decrementLink(md5hash);
+            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link";
             deleteFile(catalogLinkFile);
         }
     }
@@ -697,6 +722,7 @@ public class Indexer {
     public void mergeSourceTranslation(SourceTranslation translation, Indexer index) throws IOException {
         // delete old content
         deleteTerms(translation);
+        deleteTermAssignments(translation);
         deleteQuestions(translation);
         deleteNotes(translation);
         deleteSource(translation);
@@ -706,6 +732,7 @@ public class Indexer {
         generateNotesLink(translation);
         generateQuestionsLink(translation);
         generateTermsLink(translation);
+        generateTermAssignmentsLink(translation);
 
         // import new content
         File sourceDir = index.getDataDir(index.readSourceLink(translation));
@@ -730,6 +757,12 @@ public class Indexer {
         File destTermsDir = getDataDir(readWordsLink(translation));
         if(termsDir != null && termsDir.exists()) {
             FileUtils.copyDirectory(termsDir, destTermsDir);
+        }
+
+        File termAssignmentsDir = index.getDataDir(index.readWordAssignmentsLink(translation));
+        File destTermAssignmentsDir = getDataDir(readWordAssignmentsLink(translation));
+        if(termAssignmentsDir != null && termAssignmentsDir.exists()) {
+            FileUtils.copyDirectory(termAssignmentsDir, destTermAssignmentsDir);
         }
     }
 
@@ -930,29 +963,34 @@ public class Indexer {
      * @return
      */
     public Boolean indexTerms(SourceTranslation translation, String catalog) {
+        String md5hash = generateTermsLink(translation);
+        if(md5hash != null) {
+            return indexItems(md5hash, CatalogType.Simple, catalog);
+        }
+
+        return false;
+    }
+
+    /**
+     * Builds a translationWord assignment index from json
+     * @param translation
+     * @param catalog
+     * @return
+     */
+    public boolean indexTermAssignments(SourceTranslation translation, String catalog) {
         //KLUDGE: modify v2 questions catalogJson to match expected catalogJson format
-        JSONArray items;
         try {
-            items = new JSONArray(catalog);
+            JSONObject items = new JSONObject(catalog);
+            catalog = items.getJSONArray("chapters").toString();
         } catch (JSONException e) {
             e.printStackTrace();
             return false;
         }
-        for (int i = 0; i < items.length(); i ++) {
-            try {
-                JSONObject item = items.getJSONObject(i);
-                String termId = Security.md5(item.getString("term").trim().toLowerCase());
-                item.put("slug", termId);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        catalog = items.toString();
-        //KLUDGE: end modify v2
+        //KLUDGE: end modify v2\
 
-        String md5hash = generateTermsLink(translation);
+        String md5hash = generateTermAssignmentsLink(translation);
         if(md5hash != null) {
-            return indexItems(md5hash, CatalogType.Simple, catalog);
+            return indexItems(md5hash, CatalogType.Advanced, catalog);
         }
 
         return false;
@@ -1118,12 +1156,7 @@ public class Indexer {
      * @return
      */
     public String[] getWords(SourceTranslation translation, String chapterId, String frameId) {
-        String md5hash = readWordsLink(translation);
-        if(md5hash == null) {
-            return null;
-        }
-        // TODO: 8/26/2015 Finish implimenting this. This depends on an update on the api.
-        return new String[0];
+        return getItemsArray(getResource(translation), "tw_cat", chapterId + "/" + frameId);
     }
 
     /**
@@ -1298,6 +1331,15 @@ public class Indexer {
      */
     public String readWordsLink(SourceTranslation translation) {
         return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link");
+    }
+
+    /**
+     * Reads the data key from the term assignments link
+     * @param translation
+     * @return
+     */
+    public String readWordAssignmentsLink(SourceTranslation translation) {
+        return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link");
     }
 
     /**
