@@ -95,6 +95,8 @@ public class IndexerTest extends InstrumentationTestCase {
         String[] allTermIds = mIndex.getWords(translation);
         assertTrue(allTermIds.length > 0);
         assertNotNull(mIndex.getWord(translation, allTermIds[0]));
+        String associationscatalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/tw_cat.json"));
+        assertTrue(mIndex.indexTermAssignments(translation, associationscatalog));
         String[] termIds = mIndex.getWords(translation, "01", "01");
         assertTrue(termIds.length > 0);
     }
