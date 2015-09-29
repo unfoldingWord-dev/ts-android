@@ -401,4 +401,31 @@ public class TargetTranslation {
 
         return tag;
     }
+
+    /**
+     * Sets whether or not this target translation is publishable
+     * @param publishable
+     */
+    public void setPublishable(boolean publishable) {
+        File readyFile = new File(mTargetTranslationDirectory, "READY");
+        if(publishable) {
+            try {
+                readyFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            readyFile.delete();
+        }
+        commit(null);
+    }
+
+    /**
+     * Checks if this target translation is publishable
+     * @return
+     */
+    public boolean getPublishable() {
+        File readyFile = new File(mTargetTranslationDirectory, "READY");
+        return readyFile.exists();
+    }
 }

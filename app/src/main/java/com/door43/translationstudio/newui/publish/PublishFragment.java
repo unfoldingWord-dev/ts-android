@@ -103,6 +103,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             @Override
             public void onClick(View v) {
                 if(AppContext.context().isNetworkAvailable()) {
+                    targetTranslation.setPublishable(true);
                     // begin upload
                     UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
                     mTaskWatcher.watch(task);
