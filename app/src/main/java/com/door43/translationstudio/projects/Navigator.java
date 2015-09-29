@@ -14,6 +14,7 @@ import com.squareup.otto.Bus;
  * e.g. switching between projects, chapter, frames etc.
  * Other features include history, undo, redo and more.
  */
+@Deprecated
 public class Navigator {
     private final ProjectManager mProjectManager;
     private final Context mContext;

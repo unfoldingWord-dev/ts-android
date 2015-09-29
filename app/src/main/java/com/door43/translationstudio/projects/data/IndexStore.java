@@ -23,6 +23,7 @@ import java.util.List;
 /**
  * Created by joel on 4/22/2015.
  */
+@Deprecated
 public class IndexStore {
     private final File sIndexDir;
 

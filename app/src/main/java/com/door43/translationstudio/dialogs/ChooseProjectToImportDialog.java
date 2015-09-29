@@ -22,6 +22,7 @@ import com.door43.util.tasks.TaskManager;
  * This is basically the same as the ChooseProjectDialog but with some alterations for importing projects.
  * These will probably diverge later on so we are spliting them now.
  */
+@Deprecated
 public class ChooseProjectToImportDialog extends DialogFragment {
     private ModelItemAdapter mModelItemAdapter;
     private Model[] mModelList = null;

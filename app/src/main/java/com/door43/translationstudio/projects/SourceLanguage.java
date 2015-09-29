@@ -16,6 +16,7 @@ import java.util.Map;
 /**
  * Created by joel on 12/15/2014.
  */
+@Deprecated
 public class SourceLanguage extends Language {
 //    private String mVariant;
     private int mDateModified = 0;

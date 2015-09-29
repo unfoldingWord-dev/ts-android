@@ -5,14 +5,10 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.media.Image;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,25 +17,16 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.newui.ReportBugDialog;
-import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.tasks.UploadProjectTask;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
-import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 
 

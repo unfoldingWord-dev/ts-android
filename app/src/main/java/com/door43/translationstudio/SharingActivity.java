@@ -18,13 +18,13 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.device2device.DeviceToDeviceActivity;
 import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.tasks.ThreadableUI;
 
 import org.apache.commons.io.FileUtils;
@@ -34,7 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
-public class SharingActivity extends TranslatorBaseActivity {
+public class SharingActivity extends BaseActivity {
     private ArrayList<ToolItem> mSharingTools = new ArrayList<ToolItem>();
     private ToolAdapter mAdapter;
     private static int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
@@ -61,7 +61,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     if (tool.isEnabled()) {
                         tool.getAction().run();
                     } else {
-                        app().showToastMessage(tool.getDisabledNotice());
+                        AppContext.context().showToastMessage(tool.getDisabledNotice());
                     }
                 }
             }
@@ -164,14 +164,14 @@ public class SharingActivity extends TranslatorBaseActivity {
                                     i.putExtra(Intent.EXTRA_STREAM, u);
                                     startActivity(Intent.createChooser(i, "Email:"));
                                 } else {
-                                    app().showToastMessage(R.string.project_archive_missing);
+                                    AppContext.context().showToastMessage(R.string.project_archive_missing);
                                 }
                             } else {
                                 // there is nothing to export
-                                app().showToastMessage(R.string.project_archive_missing);
+                                AppContext.context().showToastMessage(R.string.project_archive_missing);
                             }
                         } catch (IOException e) {
-                            app().showException(e);
+                            AppContext.context().showException(e);
                         }
                     }
 
@@ -266,7 +266,7 @@ public class SharingActivity extends TranslatorBaseActivity {
 
         // p2p sharing requires an active network connection.
         // TODO: Later we may need to adjust this since bluetooth and other services do not require an actual network.
-        boolean isNetworkAvailable = app().isNetworkAvailable();
+        boolean isNetworkAvailable = AppContext.context().isNetworkAvailable();
 
         // TODO: we should check to see if the user has any sharable content first.
         mSharingTools.add(new ToolItem(getResources().getString(R.string.export_to_device), "", R.drawable.icon_export_nearby_dark, new ToolItem.ToolAction() {
@@ -346,7 +346,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         ft.remove(prev);
                                     }
                                     ft.addToBackStack(null);
-                                    app().closeToastMessage();
+                                    AppContext.context().closeToastMessage();
                                     ProjectTranslationImportApprovalDialog newFragment = new ProjectTranslationImportApprovalDialog();
                                     newFragment.setImportRequests(importRequests);
                                     newFragment.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
@@ -385,11 +385,11 @@ public class SharingActivity extends TranslatorBaseActivity {
                                         Sharing.importProject(r);
                                     }
                                     Sharing.cleanImport(importRequests);
-                                    app().showToastMessage(R.string.success);
+                                    AppContext.context().showToastMessage(R.string.success);
                                 }
                             } else {
                                 Sharing.cleanImport(importRequests);
-                                app().showToastMessage(R.string.translation_import_failed);
+                                AppContext.context().showToastMessage(R.string.translation_import_failed);
                             }
                         }
 
@@ -415,9 +415,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                         @Override
                         public void run() {
                             if (Sharing.importDokuWikiArchive(file)) {
-                                app().showToastMessage(R.string.success);
+                                AppContext.context().showToastMessage(R.string.success);
                             } else {
-                                app().showToastMessage(R.string.translation_import_failed);
+                                AppContext.context().showToastMessage(R.string.translation_import_failed);
                             }
                         }
 
@@ -444,9 +444,9 @@ public class SharingActivity extends TranslatorBaseActivity {
                         @Override
                         public void run() {
                             if (Sharing.importDokuWiki(file)) {
-                                app().showToastMessage(R.string.success);
+                                AppContext.context().showToastMessage(R.string.success);
                             } else {
-                                app().showToastMessage(R.string.translation_import_failed);
+                                AppContext.context().showToastMessage(R.string.translation_import_failed);
                             }
                         }
 
@@ -457,7 +457,7 @@ public class SharingActivity extends TranslatorBaseActivity {
                     }.start();
                 }
             } else {
-                app().showToastMessage(R.string.missing_file);
+                AppContext.context().showToastMessage(R.string.missing_file);
             }
         } catch(Exception e) {
             Logger.e(this.getClass().getName(), "Failed to read file", e);

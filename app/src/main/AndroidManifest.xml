@@ -46,7 +46,7 @@
         </service>
 
         <activity
-            android:name=".TermsActivity"
+            android:name=".TermsOfUseActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
@@ -61,42 +61,12 @@
             android:theme="@style/AppTheme.NoActionBar" >
         </activity>
         <activity
-            android:name=".MainActivity"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustNothing|stateAlwaysHidden" >
-        </activity>
-        <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".newui.home.HomeActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.MainActivity" />
-        </activity>
-        <activity
-            android:name=".ChapterSettingActivity"
-            android:label="@string/title_activity_chapter_setting"
-            android:parentActivityName=".MainActivity"
-            android:windowSoftInputMode="stateAlwaysHidden" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.MainActivity" />
-        </activity>
-        <activity
-            android:name=".LanguageSelectorActivity"
-            android:label="@string/title_activity_language_selector" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.ChapterSettingActivity" />
-        </activity>
-        <activity
-            android:name=".SharingActivity"
-            android:label="@string/title_activity_sharing"
-            android:parentActivityName=".MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.MainActivity" />
+                android:value="com.door43.translationstudio.newui.home.HomeActivity" />
         </activity>
         <activity
             android:name=".filebrowser.FileBrowserActivity"
@@ -107,27 +77,8 @@
                 android:value="com.door43.translationstudio.SharingActivity" />
         </activity>
         <activity
-            android:name=".uploadwizard.UploadWizardActivity"
-            android:label="@string/backup_and_publish" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.MainActivity" />
-        </activity>
-        <activity
-            android:name=".ProjectSettingsActivity"
-            android:label="@string/title_project_settings"
-            android:parentActivityName=".MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.MainActivity" />
-        </activity>
-        <activity
             android:name=".CrashReporterActivity"
             android:label="@string/title_activity_crash_reporter" >
-        </activity>
-        <activity
-            android:name=".BugReporterActivity"
-            android:label="@string/title_activity_bug_reporter" >
         </activity>
         <activity
             android:name=".device2device.DeviceToDeviceActivity"
@@ -151,22 +102,14 @@
                 android:value="com.door43.translationstudio.SettingsActivity" />
         </activity>
         <activity
-            android:name=".GetMoreProjectsActivity"
-            android:label="@string/title_activity_get_more_projects"
-            android:parentActivityName=".MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.door43.translationstudio.MainActivity" />
-        </activity>
-        <activity
             android:name=".newui.library.ServerLibraryActivity"
             android:label="@string/title_activity_project_library"
             android:launchMode="singleTop"
-            android:parentActivityName=".GetMoreProjectsActivity"
+            android:parentActivityName=".newui.home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".GetMoreProjectsActivity" />
+                android:value=".newui.home.HomeActivity" />
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />

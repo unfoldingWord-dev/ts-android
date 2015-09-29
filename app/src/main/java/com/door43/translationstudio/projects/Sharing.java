@@ -47,6 +47,7 @@ import java.util.zip.ZipException;
  * This class handles all the features for importing and exporting projects.
  * TODO: we need to pull all of the existing import and export code into this class.
  */
+@Deprecated
 public class Sharing {
 
     /**

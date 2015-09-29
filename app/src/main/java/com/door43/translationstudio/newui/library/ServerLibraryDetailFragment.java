@@ -22,10 +22,10 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.tasks.DownloadProjectImageTask;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TranslatorBaseFragment;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class ServerLibraryDetailFragment extends TranslatorBaseFragment implements ManagedTask.OnFinishedListener {
+public class ServerLibraryDetailFragment extends BaseFragment implements ManagedTask.OnFinishedListener {
     public static final String ARG_PROJECT_ID = "item_id";
     private static final String TAB_SOURCE_LANGUAGES = "tab_source_languages";
     private static final String TAB_DRAFT_LANGUAGES = "tab_draft_languages";

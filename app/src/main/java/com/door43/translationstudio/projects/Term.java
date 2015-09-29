@@ -6,6 +6,7 @@ import java.util.List;
 /**
  * Created by joel on 10/27/2014.
  */
+@Deprecated
 public class Term {
     private final List<String> mAliases;
     private String mName;

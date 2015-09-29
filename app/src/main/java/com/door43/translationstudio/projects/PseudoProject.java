@@ -20,6 +20,7 @@ import java.util.Map;
  * real projects into categories. Meta projects are basically linked lists that may chain together
  * multiple meta projects before terminating at a real project.
  */
+@Deprecated
 public class PseudoProject implements Model {
     private final String mId;
     private ListMap<Model> mChildren = new ListMap<>();

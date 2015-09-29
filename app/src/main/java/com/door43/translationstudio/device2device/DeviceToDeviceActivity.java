@@ -27,6 +27,7 @@ import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDial
 import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.events.ChoseProjectToImportEvent;
 import com.door43.translationstudio.network.Peer;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
@@ -37,7 +38,6 @@ import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ExportingService;
 import com.door43.translationstudio.service.ImportingService;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.RSAEncryption;
 import com.squareup.otto.Subscribe;
 
@@ -51,7 +51,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class DeviceToDeviceActivity extends TranslatorBaseActivity implements ExportingService.Callbacks, ImportingService.Callbacks, BroadcastListenerService.Callbacks {
+public class DeviceToDeviceActivity extends BaseActivity implements ExportingService.Callbacks, ImportingService.Callbacks, BroadcastListenerService.Callbacks {
     private static final int REFRESH_FREQUENCY = 5000;
     private static final int SERVER_TTL = 5000; // time before a slient server is considered lost
     private boolean mStartAsServer = false;
@@ -361,7 +361,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
      * @param models an array of projects and sudo projects to choose from
      */
     private void showProjectSelectionDialog(Peer server, Model[] models) {
-        app().closeToastMessage();
+        AppContext.context().closeToastMessage();
         if(!isFinishing()) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
@@ -420,7 +420,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
             handle.post(new Runnable() {
                 @Override
                 public void run() {
-                    app().showException(e);
+                    AppContext.context().showException(e);
                 }
             });
         }
@@ -432,7 +432,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
      */
     private void showProjectLanguageSelectionDialog(Peer peer, Project p) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
-        app().closeToastMessage();
+        AppContext.context().closeToastMessage();
         // Create and show the dialog.
         ChooseProjectLanguagesToImportDialog newFragment = new ChooseProjectLanguagesToImportDialog();
         mPeerDialogs.put(peer.getIpAddress(), newFragment);
@@ -605,7 +605,7 @@ public class DeviceToDeviceActivity extends TranslatorBaseActivity implements Ex
                 Sharing.cleanImport(requests);
 //                file.delete();
                 hideProgress();
-                app().showToastMessage(R.string.success);
+                AppContext.context().showToastMessage(R.string.success);
                 // TODO: success dialog
             }
 

@@ -31,6 +31,7 @@ import java.net.URL;
  *
  * API specs can be found at https://door43.org/en/dev/api/translationstudio
  */
+@Deprecated
 public class DataStore {
     private static MainApplication mContext;
     private static String SOURCE_TRANSLATIONS_DIR = "sourceTranslations/";

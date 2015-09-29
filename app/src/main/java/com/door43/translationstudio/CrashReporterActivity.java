@@ -8,20 +8,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.ArchiveCrashReportTask;
 import com.door43.translationstudio.tasks.CheckForLatestReleaseTask;
 import com.door43.translationstudio.tasks.UploadCrashReportTask;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
-public class CrashReporterActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener {
+public class CrashReporterActivity extends BaseActivity implements ManagedTask.OnFinishedListener {
     private Button mOkButton;
     private Button mCancelButton;
     private ProgressDialog mLoadingDialog;

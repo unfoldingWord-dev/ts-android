@@ -9,6 +9,7 @@ import org.json.JSONObject;
  * Resources are content that is available for translation.
  * A resource is actually comprised of several different items: source, notes, and terms.
  */
+@Deprecated
 public class Resource {
     private final String mSlug;
     private final String mName;

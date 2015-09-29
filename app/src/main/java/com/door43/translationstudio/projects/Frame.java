@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 /**
  * Frames encapsulates a specific piece of translated work
  */
+@Deprecated
 public class Frame implements Model {
     private String mChapterFrameId;
     private String mText;

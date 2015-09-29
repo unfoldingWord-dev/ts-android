@@ -15,7 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by joel on 9/20/2015.
+ * Performs the validation on a target translation.
+ * This process should occure before a target translation is published.
  */
 public class ValidationTask extends ManagedTask {
     public static final String TASK_ID = "validation_task";

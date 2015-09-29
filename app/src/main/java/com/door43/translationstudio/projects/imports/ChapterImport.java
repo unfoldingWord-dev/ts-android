@@ -3,6 +3,7 @@ package com.door43.translationstudio.projects.imports;
 /**
  * This manages importing a chapter
  */
+@Deprecated
 public class ChapterImport extends ImportRequest {
     public final String chapterId;
     public final String chapterTitle;

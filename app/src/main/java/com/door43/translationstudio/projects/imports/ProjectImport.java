@@ -8,6 +8,7 @@ import java.io.File;
 /**
  * Created by joel on 1/19/2015.
  */
+@Deprecated
 public class ProjectImport extends ImportRequest {
     public final String projectId;
     public final File importDirectory;

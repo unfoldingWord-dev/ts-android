@@ -3,6 +3,7 @@ package com.door43.translationstudio.projects.imports;
 /**
  * This manages importing a frame
  */
+@Deprecated
 public class FrameImport extends ImportRequest {
     public final String frameId;
     public final String frameTitle;

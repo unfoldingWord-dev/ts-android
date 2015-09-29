@@ -30,6 +30,7 @@ import java.util.Map;
  * The project manager handles all of the projects within the app.
  * Created by joel on 8/29/2014.
  */
+@Deprecated
 public class ProjectManager {
     private static DataStore mDataStore;
 

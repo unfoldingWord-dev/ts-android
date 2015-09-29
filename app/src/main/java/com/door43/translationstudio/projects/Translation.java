@@ -3,6 +3,7 @@ package com.door43.translationstudio.projects;
 /**
  * Represents a piece of translated text
  */
+@Deprecated
 public class Translation {
     private Language mLanguage;
     private String mTranslationText;

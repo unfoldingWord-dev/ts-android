@@ -9,12 +9,13 @@ import android.view.View;
 import android.widget.Button;
 
 import com.door43.translationstudio.dialogs.LicenseDialog;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.util.AppContext;
 
 /**
  * This activity checks if the user has accepted the terms of use before continuing to load the app
  */
-public class TermsActivity extends TranslatorBaseActivity {
+public class TermsOfUseActivity extends BaseActivity {
     private LicenseDialog mLicenseDialog;
     private Boolean mDialogIsOpen = false;
 
@@ -22,7 +23,7 @@ public class TermsActivity extends TranslatorBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (app().hasAcceptedTerms()) {
+        if (AppContext.context().hasAcceptedTerms()) {
             // skip to the splash screen if they have already accepted the terms of use
             startSplashActivity();
         } else {
@@ -38,7 +39,7 @@ public class TermsActivity extends TranslatorBaseActivity {
             acceptBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    app().setHasAcceptedTerms(true);
+                    AppContext.context().setHasAcceptedTerms(true);
                     startSplashActivity();
                 }
             });

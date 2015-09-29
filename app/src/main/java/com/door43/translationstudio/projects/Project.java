@@ -30,6 +30,7 @@ import java.util.Map;
  * Projects encapsulate the source text for a specific translation effort regardless of language.
  * This source text is subdivided into Chapters and Frames.
  */
+@Deprecated
 public class Project implements Model {
     private ListMap<Chapter> mChapters = new ListMap<>();
     private ListMap<SourceLanguage> mSourceLanguages = new ListMap<>();

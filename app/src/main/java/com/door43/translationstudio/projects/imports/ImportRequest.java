@@ -5,6 +5,7 @@ import com.door43.util.ListMap;
 /**
  * This provides the base class for an import request.
  */
+@Deprecated
 public abstract class ImportRequest implements ImportRequestInterface {
     private String mError;
     private String mWarning;

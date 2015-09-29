@@ -12,6 +12,7 @@ import java.util.List;
 /**
  * Created by joel on 5/18/2015.
  */
+@Deprecated
 public class CheckingQuestionChapter {
     private static final String PREFERENCES_TAG = "com.door43.translationstudio.checking_questions";
     private final String mId;

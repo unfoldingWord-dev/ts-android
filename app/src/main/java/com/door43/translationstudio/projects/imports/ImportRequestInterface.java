@@ -5,6 +5,7 @@ import com.door43.util.ListMap;
 /**
  * Created by joel on 1/19/2015.
  */
+@Deprecated
 public interface ImportRequestInterface {
 
     /**

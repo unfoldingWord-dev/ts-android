@@ -19,6 +19,7 @@ import java.io.PrintStream;
 /**
  * Chapters encapsulate a specific set of translation Frames regardless of language. Chapters mostly act to organize the translation effort into sections for better navigation
  */
+@Deprecated
 public class Chapter implements Model {
     private static final String REFERENCE_FILE = "reference.txt";
     private static final String TITLE_FILE = "title.txt";

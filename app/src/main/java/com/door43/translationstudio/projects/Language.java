@@ -6,6 +6,7 @@ import java.io.FilenameFilter;
 /**
  * Created by joel on 9/5/2014.
  */
+@Deprecated
 public class Language {
     private final String mCode;
     private final String mName;

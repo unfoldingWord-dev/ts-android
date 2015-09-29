@@ -3,6 +3,7 @@ package com.door43.translationstudio.projects.imports;
 /**
  * This is used for manage importing the chapter title and reference
  */
+@Deprecated
 public class FileImport extends ImportRequest {
     public final String title;
     public final String id;

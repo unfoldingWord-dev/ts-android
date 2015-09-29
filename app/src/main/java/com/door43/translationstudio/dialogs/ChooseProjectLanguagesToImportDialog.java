@@ -28,6 +28,7 @@ import java.util.Arrays;
  * This dialog handles the final import step for projects downloaded from the server or from another device.
  *
  */
+@Deprecated
 public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
     private Project mProject = null;
     private Peer mPeer;

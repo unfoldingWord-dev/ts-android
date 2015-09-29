@@ -12,25 +12,15 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.MainActivity;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.git.Repo;
-import com.door43.translationstudio.projects.Language;
+import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.projects.SourceLanguage;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.util.FileUtilities;
-import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.revwalk.RevCommit;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,7 +162,8 @@ public class BackupService extends Service {
         CharSequence noticeText = "Translations backed up";
 
         // activity to open when clicked
-        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        // TODO: instead of the home activity we need a backup activity where the user can view their backups.
+        Intent notificationIntent = new Intent(getApplicationContext(), HomeActivity.class);
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent intent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
 

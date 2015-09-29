@@ -21,28 +21,24 @@ import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.library.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.StringUtilities;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-public class DeveloperToolsActivity extends TranslatorBaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
+public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
 
     private static final String TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS = "prep_force_download_all_projects";
     private ArrayList<ToolItem> mDeveloperTools = new ArrayList<>();

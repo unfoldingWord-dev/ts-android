@@ -6,7 +6,7 @@ import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
+import com.door43.translationstudio.newui.BaseActivity;
 
 /**
  * An activity representing a single Project detail screen. This
@@ -17,7 +17,7 @@ import com.door43.translationstudio.util.TranslatorBaseActivity;
  * This activity is mostly just a 'shell' activity containing nothing
  * more than a {@link ServerLibraryDetailFragment}.
  */
-public class ProjectLibraryDetailActivity extends TranslatorBaseActivity {
+public class ProjectLibraryDetailActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

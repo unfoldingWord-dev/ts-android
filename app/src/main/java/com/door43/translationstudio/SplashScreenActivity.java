@@ -8,12 +8,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
+import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
 import com.door43.translationstudio.util.AppContext;
-import com.door43.translationstudio.util.TranslatorBaseActivity;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
@@ -22,7 +22,7 @@ import java.io.File;
 /**
  * This activity initializes the app
  */
-public class SplashScreenActivity extends TranslatorBaseActivity implements ManagedTask.OnFinishedListener, ManagedTask.OnStartListener {
+public class SplashScreenActivity extends BaseActivity implements ManagedTask.OnFinishedListener, ManagedTask.OnStartListener {
     private TextView mProgressTextView;
     private ProgressBar mProgressBar;
 
@@ -41,7 +41,7 @@ public class SplashScreenActivity extends TranslatorBaseActivity implements Mana
         }
 
         // check if we crashed
-        File dir = new File(getExternalCacheDir(), app().STACKTRACE_DIR);
+        File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
         String[] files = GlobalExceptionHandler.getStacktraces(dir);
         if (files.length > 0) {
             Intent intent = new Intent(this, CrashReporterActivity.class);

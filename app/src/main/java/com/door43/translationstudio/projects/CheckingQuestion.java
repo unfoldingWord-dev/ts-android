@@ -13,6 +13,7 @@ import java.util.List;
 /**
  * Created by joel on 5/16/2015.
  */
+@Deprecated
 public class CheckingQuestion {
 
     public final String question;

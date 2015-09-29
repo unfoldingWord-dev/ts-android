@@ -6,6 +6,7 @@ import org.json.JSONObject;
 /**
  * Created by joel on 12/23/2014.
  */
+@Deprecated
 public interface Model {
     String getId();
     String getTitle();

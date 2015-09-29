@@ -2,19 +2,6 @@ package com.door43.translationstudio.fast;
 
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.Util;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.projects.imports.ProjectImport;
-import com.door43.translationstudio.tasks.IndexProjectsTask;
-import com.door43.translationstudio.tasks.LoadProjectsTask;
-import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
-import com.door43.translationstudio.util.AppContext;
-import com.door43.util.FileUtilities;
-
-import java.io.File;
-
 public class TranslationImportTest extends InstrumentationTestCase {
 
     @Override

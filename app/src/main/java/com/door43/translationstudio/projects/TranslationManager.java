@@ -28,6 +28,7 @@ import java.util.TimerTask;
 /**
  * This class handles the storage of translated content.
  */
+@Deprecated
 public class TranslationManager {
 //    private MainApplication mContext;
     private static final String TAG = "TranslationManager";

@@ -8,6 +8,7 @@ import java.io.File;
 /**
  * Created by joel on 1/19/2015.
  */
+@Deprecated
 public class TranslationImport extends ImportRequest {
     public final File translationDirectory;
     public final String languageId;

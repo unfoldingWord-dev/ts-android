@@ -22,6 +22,7 @@ import java.util.List;
  * A set of translation notes for a frame
  *
  */
+@Deprecated
 public class TranslationNote {
     private List<Note> mNotes = new ArrayList<Note>();
     private Frame mFrame;

@@ -35,7 +35,8 @@ import java.net.Socket;
 import java.util.Collection;
 
 /**
- * Created by joel on 9/21/2015.
+ * Performs the uploading of a translation to the server.
+ * This will upload a target translation as the user profile
  */
 public class UploadTargetTranslationTask extends ManagedTask {
     public static final String TASK_ID = "upload_target_translation";
