@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.text.Html;
 import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -22,6 +23,9 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
+import com.door43.translationstudio.projects.Translation;
+import com.door43.translationstudio.rendering.LinkRenderer;
+import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.TermSpan;
 import com.door43.translationstudio.util.AppContext;
@@ -60,6 +64,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         mCloseResourcesDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                mResourcesDrawerOpen = false;
                 // TODO: animate
                 ViewGroup.LayoutParams params = mResourcesDrawer.getLayoutParams();
                 params.width = 0;
@@ -116,6 +121,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     private void onRightSwipe() {
         if(mResourcesDrawerOpen) {
+            mResourcesDrawerOpen = false;
             // TODO: animate
             ViewGroup.LayoutParams params = mResourcesDrawer.getLayoutParams();
             params.width = 0;
@@ -158,8 +164,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     @Override
-    public void onTranslationNoteClick(TranslationNote note, int width) {
-        renderTranslationNote(note);
+    public void onTranslationNoteClick(String chapterId, String frameId, String translatioNoteId, int width) {
+        renderTranslationNote(chapterId, frameId, translatioNoteId);
         openResourcesDrawer(width);
     }
 
@@ -236,13 +242,39 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     /**
      * Prepares the resources drawer with the translation note
-     * @param note
+     * @param noteId
      */
-    private void renderTranslationNote(TranslationNote note) {
+    private void renderTranslationNote(String chapterId, String frameId, String noteId) {
+        final Library library = AppContext.getLibrary();
+        TranslationNote note = library.getTranslationNote(mSourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
+            mResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_note, null);
 
-            // TODO: 9/28/2015 populate view
+            mCloseResourcesDrawerButton.setText(note.getTitle());
+
+            TextView title = (TextView)view.findViewById(R.id.title);
+            TextView description = (TextView)view.findViewById(R.id.description);
+
+            LinkRenderer renderer = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
+                @Override
+                public boolean onPreprocess(PassageLinkSpan span) {
+                    Frame frame = library.getFrame(mSourceTranslation, span.getChapterId(), span.getFrameId());
+                    String title = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(span.getChapterId()) + ":" + frame.getTitle();
+                    span.setTitle(title);
+                    return library.getFrame(mSourceTranslation, span.getChapterId(), span.getFrameId()) != null;
+                }
+            }, new Span.OnClickListener() {
+                @Override
+                public void onClick(View view, Span span, int start, int end) {
+                    PassageLinkSpan link = (PassageLinkSpan)span;
+                    scrollToFrame(link.getChapterId(), link.getFrameId());
+                }
+            });
+
+            title.setText(note.getTitle());
+            description.setText(renderer.render(Html.fromHtml(note.getBody())));
+            ViewUtil.makeLinksClickable(description);
 
             mResourcesDrawerContent.removeAllViews();
             mResourcesDrawerContent.addView(view);

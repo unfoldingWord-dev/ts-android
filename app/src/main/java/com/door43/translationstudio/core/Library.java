@@ -920,12 +920,24 @@ public class Library {
         List<TranslationNote> notes = new ArrayList<>();
         String[] noteIds = getActiveIndex().getNotes(sourceTranslation, chapterId, frameId);
         for(String noteId:noteIds) {
-            TranslationNote note = TranslationNote.generate(chapterId, frameId, getActiveIndex().getNote(sourceTranslation, chapterId, frameId, noteId));
+            TranslationNote note = getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
             if(note != null) {
                 notes.add(note);
             }
         }
         return notes.toArray(new TranslationNote[notes.size()]);
+    }
+
+    /**
+     * Returns a single translation note
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @param translationNoteId
+     * @return
+     */
+    public TranslationNote getTranslationNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String translationNoteId) {
+        return TranslationNote.generate(chapterId, frameId, getActiveIndex().getNote(sourceTranslation, chapterId, frameId, translationNoteId));
     }
 
     /**

@@ -37,6 +37,14 @@ public class PassageLinkSpan extends Span {
         explodeAddress(address);
     }
 
+    /**
+     * Changes the title of the passage link
+     * @param title
+     */
+    public void setTitle(String title) {
+        setHumanReadable(title);
+    }
+
     @Override
     public SpannableStringBuilder render() {
         if(mSpannable == null) {

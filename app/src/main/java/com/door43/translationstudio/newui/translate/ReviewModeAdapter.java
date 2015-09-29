@@ -468,7 +468,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     public void onClick(View v) {
                         if(getListener() != null) {
                             int rightMargin = ((ViewGroup.MarginLayoutParams)holder.mResourceCard.getLayoutParams()).rightMargin;
-                            getListener().onTranslationNoteClick(note, holder.mResourceCard.getWidth() + rightMargin);
+                            getListener().onTranslationNoteClick(note.getChapterId(), note.getFrameId(), note.getId(), holder.mResourceCard.getWidth() + rightMargin);
                         }
                     }
                 });

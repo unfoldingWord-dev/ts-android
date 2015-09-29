@@ -117,6 +117,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onNewSourceTranslationTabClick();
         void closeKeyboard();
         void onTranslationWordClick(String translationWordId, int width);
-        void onTranslationNoteClick(TranslationNote note, int width);
+        void onTranslationNoteClick(String chapterId, String frameId, String translationNoteId, int width);
     }
 }

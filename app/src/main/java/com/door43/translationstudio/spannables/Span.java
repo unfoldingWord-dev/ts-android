@@ -47,6 +47,10 @@ public abstract class Span {
         mListener = listener;
     }
 
+    protected void setHumanReadable(String text) {
+        mHumanReadable = text;
+    }
+
     /**
      * Generates the span and hooks up the click listener.
      * @return
