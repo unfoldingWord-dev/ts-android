@@ -15,8 +15,6 @@ import android.widget.SeekBar;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.SharingActivity;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;

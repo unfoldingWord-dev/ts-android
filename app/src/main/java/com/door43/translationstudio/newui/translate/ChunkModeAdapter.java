@@ -1,7 +1,6 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -14,7 +13,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -137,6 +135,17 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             return mFrames[position].getChapterId();
         }
         return null;
+    }
+
+    @Override
+    public int getItemPosition(String chapterId, String frameId) {
+        for(int i = 0; i < mFrames.length; i ++) {
+            Frame frame = mFrames[i];
+            if(frame.getChapterId().equals(chapterId) && frame.getId().equals(frameId)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Override
@@ -296,7 +305,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
-                            getListener().onTabClick(sourceTranslationId);
+                            getListener().onSourceTranslationTabClick(sourceTranslationId);
                         }
                     });
                 }
@@ -317,7 +326,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             @Override
             public void onClick(View v) {
                 if (getListener() != null) {
-                    getListener().onNewTabClick();
+                    getListener().onNewSourceTranslationTabClick();
                 }
             }
         });

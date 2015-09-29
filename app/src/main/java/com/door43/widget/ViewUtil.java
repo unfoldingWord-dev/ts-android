@@ -8,6 +8,8 @@ import android.os.Build;
 import android.support.design.widget.Snackbar;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.CardView;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -29,6 +31,19 @@ import java.lang.reflect.Method;
  * This class provides utilities for views
  */
 public class ViewUtil {
+
+    /**
+     * Makes links in a textview clickable
+     * @param view
+     */
+    public static void makeLinksClickable(TextView view) {
+        MovementMethod m = view.getMovementMethod();
+        if(m == null || !(m instanceof LinkMovementMethod)) {
+            if(view.getLinksClickable()) {
+                view.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+        }
+    }
 
     /**
      * Sets the color of the snackbar text

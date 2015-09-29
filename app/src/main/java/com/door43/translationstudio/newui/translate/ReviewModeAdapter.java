@@ -43,8 +43,6 @@ import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.util.AppContext;
 import com.door43.widget.ViewUtil;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -168,6 +166,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     @Override
+    public int getItemPosition(String chapterId, String frameId) {
+        for(int i = 0; i < mFrames.length; i ++) {
+            Frame frame = mFrames[i];
+            if(frame.getChapterId().equals(chapterId) && frame.getId().equals(frameId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_review_list_item, parent, false);
         ViewHolder vh = new ViewHolder(parent.getContext(), v);
@@ -252,7 +261,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
-                            getListener().onTabClick(sourceTranslationId);
+                            getListener().onSourceTranslationTabClick(sourceTranslationId);
                         }
                     });
                 }
@@ -273,7 +282,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             @Override
             public void onClick(View v) {
                 if (getListener() != null) {
-                    getListener().onNewTabClick();
+                    getListener().onNewSourceTranslationTabClick();
                 }
             }
         });
@@ -445,24 +454,40 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // TODO: add click to open for resources
     }
 
-    private void renderResources(ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words) {
+    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words) {
         if(holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
         if(mOpenResourceTab[position] == TAB_NOTES) {
             // render notes
-            for(TranslationNote note:notes) {
+            for(final TranslationNote note:notes) {
                 TextView noteView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
                 noteView.setText(note.getTitle());
-                // TODO: set click listener
+                noteView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(getListener() != null) {
+                            int rightMargin = ((ViewGroup.MarginLayoutParams)holder.mResourceCard.getLayoutParams()).rightMargin;
+                            getListener().onTranslationNoteClick(note, holder.mResourceCard.getWidth() + rightMargin);
+                        }
+                    }
+                });
                 holder.mResourceList.addView(noteView);
             }
         } else {
             // render words
-            for(TranslationWord word:words) {
+            for(final TranslationWord word:words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
                 wordView.setText(word.getTitle());
-                // TODO: set click listener
+                wordView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (getListener() != null) {
+                            int rightMargin = ((ViewGroup.MarginLayoutParams)holder.mResourceCard.getLayoutParams()).rightMargin;
+                            getListener().onTranslationWordClick(word.getId(), holder.mResourceCard.getWidth() + rightMargin);
+                        }
+                    }
+                });
                 holder.mResourceList.addView(wordView);
             }
         }

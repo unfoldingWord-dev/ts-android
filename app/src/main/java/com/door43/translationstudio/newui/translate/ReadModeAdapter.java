@@ -111,6 +111,17 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
     }
 
+    @Override
+    public int getItemPosition(String chapterId, String frameId) {
+        for(int i = 0; i < mChapters.length; i ++) {
+            Chapter chapter = mChapters[i];
+            if(chapter.getId().equals(chapterId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 
     @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
@@ -192,7 +203,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             @Override
             public void onClick(View v) {
                 if (getListener() != null) {
-                    getListener().onNewTabClick();
+                    getListener().onNewSourceTranslationTabClick();
                 }
             }
         });
@@ -299,7 +310,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
                     hand.post(new Runnable() {
                         @Override
                         public void run() {
-                            getListener().onTabClick(sourceTranslationId);
+                            getListener().onSourceTranslationTabClick(sourceTranslationId);
                         }
                     });
                 }

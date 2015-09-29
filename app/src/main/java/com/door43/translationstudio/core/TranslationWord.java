@@ -1,8 +1,14 @@
 package com.door43.translationstudio.core;
 
+import com.door43.tools.reporting.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 9/19/2015.
@@ -47,19 +53,23 @@ public class TranslationWord {
         if(json == null) {
             return null;
         }
+        String id = json.getString("id");
         JSONArray examplesJson = json.getJSONArray("ex");
-        Example[] examples = new Example[examplesJson.length()];
+        List<Example> examples = new ArrayList<>();
         for(int i = 0; i < examplesJson.length(); i ++) {
             JSONObject exampleJson = examplesJson.getJSONObject(i);
-            examples[i] = new Example(exampleJson.getString("ref"), exampleJson.getString("text"));
+            try {
+                examples.add(new Example(exampleJson.getString("ref"), exampleJson.getString("text")));
+            } catch (InvalidParameterException e) {
+                Logger.e(TranslationWord.class.getName(), "Failed to parse a translation word example for " + id, e);
+            }
         }
         String[] aliases = jsonArrayToString(json.getJSONArray("aliases"));
         String[] seeAlso = jsonArrayToString(json.getJSONArray("cf"));
-        String id = json.getString("id");
         String word = json.getString("term");
         String def = json.getString("def");
         String defTitle = json.getString("def_title");
-        return new TranslationWord(id, word, def, defTitle, seeAlso, aliases, examples);
+        return new TranslationWord(id, word, def, defTitle, seeAlso, aliases, examples.toArray(new Example[examples.size()]));
     }
 
     /**
@@ -138,17 +148,32 @@ public class TranslationWord {
     public static class Example {
         private final String mReference;
         private final String mPassage;
+        private final String mChapterId;
+        private final String mFrameId;
 
-        public Example(String reference, String passage) {
+        /**
+         *
+         * @param reference
+         * @param passage
+         * @throws InvalidParameterException
+         */
+        public Example(String reference, String passage) throws InvalidParameterException {
             mReference = reference;
             mPassage = passage;
+            String[] complexId = reference.split("-");
+            if(complexId.length == 2) {
+                mChapterId = complexId[0];
+                mFrameId = complexId[1];
+            } else {
+                throw new InvalidParameterException("The reference '" + reference + "' is invalid");
+            }
         }
 
         /**
          * Returns the reference of the example
          * @return
          */
-        String getReference() {
+        public String getReference() {
             return mReference;
         }
 
@@ -156,8 +181,24 @@ public class TranslationWord {
          * Returns the passage body of the example
          * @return
          */
-        String getPassage() {
+        public String getPassage() {
             return mPassage;
+        }
+
+        /**
+         * Returns the chapter id of the reference
+         * @return
+         */
+        public String getChapterId() {
+            return mChapterId;
+        }
+
+        /**
+         * Returns the frame id of the reference
+         * @return
+         */
+        public String getFrameId() {
+            return mFrameId;
         }
     }
 }

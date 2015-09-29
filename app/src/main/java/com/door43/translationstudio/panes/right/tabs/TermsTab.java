@@ -283,8 +283,8 @@ import java.util.ArrayList;
                         }
 
                         // passage
-                        HtmlTextView passageText = (HtmlTextView) exampleView.findViewById(R.id.examplePassageText);
-                        passageText.setHtmlFromString(example.getText(), true);
+//                        HtmlTextView passageText = (HtmlTextView) exampleView.findViewById(R.id.examplePassageText);
+//                        passageText.setHtmlFromString(example.getText(), true);
 
                         mExamplePassagesView.addView(exampleView);
                     } else {

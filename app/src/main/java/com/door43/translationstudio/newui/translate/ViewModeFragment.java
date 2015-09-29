@@ -20,6 +20,8 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationNote;
+import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.util.AppContext;
@@ -114,6 +116,19 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         return rootView;
     }
 
+    /**
+     * Scrolls to the given frame
+     * @param chapterId
+     * @param frameId
+     */
+    protected void scrollToFrame(String chapterId, String frameId) {
+        int position = mAdapter.getItemPosition(chapterId, frameId);
+        if(position != -1) {
+            mLayoutManager.scrollToPosition(position);
+            mListener.onScrollProgress(position);
+        }
+    }
+
     protected void onPrepareView(View rootView) {
         // place holder so child classes can modify the view
     }
@@ -142,6 +157,16 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         }
     }
 
+    @Override
+    public void onTranslationWordClick(String translationWordId, int width) {
+
+    }
+
+    @Override
+    public void onTranslationNoteClick(TranslationNote note, int width) {
+
+    }
+
     /**
      * Require correct interface
      * @param activity
@@ -165,13 +190,13 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     @Override
-    public void onTabClick(String sourceTranslationId) {
+    public void onSourceTranslationTabClick(String sourceTranslationId) {
         AppContext.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
         mAdapter.setSourceTranslation(sourceTranslationId);
     }
 
     @Override
-    public void onNewTabClick() {
+    public void onNewSourceTranslationTabClick() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("tabsDialog");
         if (prev != null) {
@@ -265,6 +290,5 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * @param targetTranslationId
          */
         void onNoSourceTranslations(String targetTranslationId);
-
     }
 }

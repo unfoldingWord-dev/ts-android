@@ -3,6 +3,9 @@ package com.door43.translationstudio.newui.translate;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.door43.translationstudio.core.TranslationWord;
+import com.door43.translationstudio.core.TranslationNote;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,9 +104,19 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      */
     public abstract String getFocusedChapterId(int position);
 
+    /**
+     * Returns the position of an item in the adapter.
+     * @param chapterId
+     * @param frameId
+     * @return -1 if no item is found
+     */
+    public abstract int getItemPosition(String chapterId, String frameId);
+
     public interface OnEventListener {
-        void onTabClick(String sourceTranslationId);
-        void onNewTabClick();
+        void onSourceTranslationTabClick(String sourceTranslationId);
+        void onNewSourceTranslationTabClick();
         void closeKeyboard();
+        void onTranslationWordClick(String translationWordId, int width);
+        void onTranslationNoteClick(TranslationNote note, int width);
     }
 }

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/description_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/title"
+        android:textColor="@color/dark_primary_text"
+        android:text="Facts"/>
+
+    <org.sufficientlysecure.htmltextview.HtmlTextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="term description etc. tec.lask df;l akjsd;flkajs dfl;aks jfd ;laksjdf;laksjdfl;k"
+        android:textColor="@color/dark_primary_text"
+        android:layout_marginBottom="@dimen/card_margin"
+        android:textSize="@dimen/body" />
+
+    <TextView
+        android:id="@+id/see_also_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/title"
+        android:textColor="@color/dark_primary_text"
+        android:text="@string/related_terms"/>
+
+    <org.apmem.tools.layouts.FlowLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/see_also"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/card_margin">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="God the Father"
+            style="@style/Widget.Button.Tag"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Holy Spirit"
+            style="@style/Widget.Button.Tag"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Son of God"
+            style="@style/Widget.Button.Tag"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="God the Father"
+            style="@style/Widget.Button.Tag"/>
+    </org.apmem.tools.layouts.FlowLayout>
+
+    <TextView
+        android:id="@+id/examples_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/title"
+        android:textColor="@color/dark_primary_text"
+        android:text="@string/term_examples"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/examples"/>
+
+</LinearLayout>

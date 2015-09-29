@@ -86,7 +86,7 @@ public class Frame {
     }
 
     /**
-     * Returns the title of the chapter
+     * Returns the title of the frame
      * @return
      */
     public String getTitle() {

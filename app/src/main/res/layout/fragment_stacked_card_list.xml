@@ -1,6 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/recycler_view"
-    android:scrollbars="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+    android:layout_height="match_parent"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:scrollbars="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/resources_drawer_card"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:clickable="true"
+        card_view:cardElevation="2dp">
+
+        <LinearLayout
+            android:orientation="vertical"
+            style="@style/Widget.CardContent.Skinny"
+            android:paddingBottom="0dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Term Title"
+                android:id="@+id/close_resources_drawer_btn"
+                android:drawableLeft="@drawable/ic_clear_black_24dp"
+                android:paddingLeft="@dimen/card_margin"
+                android:paddingRight="@dimen/card_margin"
+                android:animateLayoutChanges="true"
+                android:textAllCaps="false"
+                android:textSize="@dimen/headline"
+                android:background="?attr/selectableItemBackground"/>
+
+            <ScrollView
+                android:id="@+id/resources_drawer_content"
+                android:layout_marginTop="@dimen/card_margin"
+                android:layout_width="match_parent"
+                android:animateLayoutChanges="true"
+                android:paddingLeft="@dimen/card_margin"
+                android:paddingRight="@dimen/card_margin"
+                android:layout_height="match_parent"/>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
+</FrameLayout>
+

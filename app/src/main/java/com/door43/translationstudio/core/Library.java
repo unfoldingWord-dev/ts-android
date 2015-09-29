@@ -772,13 +772,24 @@ public class Library {
         List<Frame> frames = new ArrayList<>();
         String[] frameIds = getActiveIndex().getFrames(sourceTranslation, chapterId);
         for(String frameId:frameIds) {
-            Frame frame = Frame.generate(chapterId, getActiveIndex().getFrame(sourceTranslation, chapterId, frameId));
+            Frame frame = getFrame(sourceTranslation, chapterId, frameId);
             if(frame != null) {
                 frames.add(frame);
             }
         }
         // TODO: sort by id
         return frames.toArray(new Frame[frames.size()]);
+    }
+
+    /**
+     * Returns a single frame
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public Frame getFrame(SourceTranslation sourceTranslation, String chapterId, String frameId) {
+        return Frame.generate(chapterId, getActiveIndex().getFrame(sourceTranslation, chapterId, frameId));
     }
 
     /**
@@ -928,17 +939,27 @@ public class Library {
         List<TranslationWord> words = new ArrayList<>();
         String[] wordIds = getActiveIndex().getWords(sourceTranslation, chapterId, frameId);
         for(String wordId:wordIds) {
-            TranslationWord word;
-            try {
-                word = TranslationWord.generate(getActiveIndex().getWord(sourceTranslation, wordId));
-                if(word != null) {
-                    words.add(word);
-                }
-            } catch (JSONException e) {
-                Logger.e(this.getClass().getName(), "Failed to parse the translationWord " + wordId + " in " + sourceTranslation.getId());
+            TranslationWord word = getTranslationWord(sourceTranslation, wordId);
+            if(word != null) {
+                words.add(word);
             }
         }
         return words.toArray(new TranslationWord[words.size()]);
+    }
+
+    /**
+     * Returns a translation word from the source translation
+     * @param sourceTranslation
+     * @param translationWordId
+     * @return
+     */
+    public TranslationWord getTranslationWord(SourceTranslation sourceTranslation, String translationWordId) {
+        try {
+            return TranslationWord.generate(getActiveIndex().getWord(sourceTranslation, translationWordId));
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "Failed to parse the translationWord " + translationWordId + " in " + sourceTranslation.getId());
+        }
+        return null;
     }
 
     /**
