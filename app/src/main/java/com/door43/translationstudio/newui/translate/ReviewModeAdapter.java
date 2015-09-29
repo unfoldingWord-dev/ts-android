@@ -476,7 +476,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.format(mContext, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(noteView);
             }
         } else {
@@ -492,7 +492,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
-                Typography.format(mContext, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                Typography.formatSub(mContext, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(wordView);
             }
         }

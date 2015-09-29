@@ -43,7 +43,7 @@ public class Typography {
      */
     public static void formatTitle(Context context, TextView view, String langaugeCode, LanguageDirection direction) {
         Typeface typeface = getTypeface(context, langaugeCode, direction);
-        float fontSize = getFontSize(context) * 1.5f;
+        float fontSize = getFontSize(context) * 1.3f;
 
         view.setTypeface(typeface, Typeface.BOLD);
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
@@ -60,8 +60,9 @@ public class Typography {
      */
     public static void formatSub(Context context, TextView view, String langaugeCode, LanguageDirection direction) {
         Typeface typeface = getTypeface(context, langaugeCode, direction);
-        float fontSize = getFontSize(context) * .8f;
+        float fontSize = getFontSize(context) * .7f;
 
+        view.setTypeface(typeface, 0);
         view.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
     }
 

@@ -221,7 +221,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             descriptionTitle.setText(word.getDefinitionTitle());
             Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
             descriptionView.setHtmlFromString(word.getDefinition(), true);
-            Typography.format(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatSub(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
 
             seeAlsoView.removeAllViews();
             for(int i = 0; i < word.getSeeAlso().length; i ++) {
@@ -260,8 +260,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                         scrollToFrame(example.getChapterId(), example.getFrameId());
                     }
                 });
-                Typography.format(getActivity(), referenceView, sourceLanguage.getId(), sourceLanguage.getDirection());
-                Typography.format(getActivity(), passageView, sourceLanguage.getId(), sourceLanguage.getDirection());
+                Typography.formatSub(getActivity(), referenceView, sourceLanguage.getId(), sourceLanguage.getDirection());
+                Typography.formatSub(getActivity(), passageView, sourceLanguage.getId(), sourceLanguage.getDirection());
                 examplesView.addView(exampleView);
             }
             if(word.getExamples().length > 0) {
@@ -317,7 +317,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             SourceLanguage sourceLanguage = library.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
             Typography.formatTitle(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
             description.setText(renderer.render(Html.fromHtml(note.getBody())));
-            Typography.format(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
             ViewUtil.makeLinksClickable(description);
 
             mResourcesDrawerContent.removeAllViews();

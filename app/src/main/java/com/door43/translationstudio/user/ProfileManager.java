@@ -17,6 +17,7 @@ import java.io.File;
 
 /**
  * Created by joel on 2/9/2015.
+ * // TODO: 9/29/2015 this should be changed the a User class in the core
  */
 public class ProfileManager {
     private static Profile mProfile = null;
