@@ -1,14 +1,17 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -41,6 +44,10 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     private static final String STATE_RESOURCES_OPEN = "state_resources_open";
     private static final String STATE_RESOURCES_DRAWER_OPEN = "state_resources_drawer_open";
+    private static final String STATE_WORD_ID = "state_word_id";
+    private static final String STATE_NOTE_ID = "state_note_id";
+    private static final String STATE_CHAPTER_ID = "state_chapter_id";
+    private static final String STATE_FRAME_ID = "state_frame_id";
     private GestureDetector mGesture;
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
@@ -48,6 +55,10 @@ public class ReviewModeFragment extends ViewModeFragment {
     private ScrollView mResourcesDrawerContent;
     private Button mCloseResourcesDrawerButton;
     private SourceTranslation mSourceTranslation;
+    private String mTranslationWordId;
+    private String mTranslationNoteId;
+    private String mFrameId;
+    private String mChapterId;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
@@ -56,30 +67,16 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     @Override
-    protected void onPrepareView(View rootView) {
+    protected void onPrepareView(final View rootView) {
         mResourcesDrawer = (CardView)rootView.findViewById(R.id.resources_drawer_card);
         mResourcesDrawerContent = (ScrollView)rootView.findViewById(R.id.resources_drawer_content);
         mCloseResourcesDrawerButton = (Button)rootView.findViewById(R.id.close_resources_drawer_btn);
-        ViewUtil.tintViewDrawable(mCloseResourcesDrawerButton, getResources().getColor(R.color.dark_secondary_text));
         mCloseResourcesDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mResourcesDrawerOpen = false;
-                // TODO: animate
-                ViewGroup.LayoutParams params = mResourcesDrawer.getLayoutParams();
-                params.width = 0;
-                mResourcesDrawer.setLayoutParams(params);
+                closeResourcesDrawer();
             }
         });
-        if(mResourcesDrawerOpen) {
-            // TODO: we'll need to remember the width as well
-            // TODO: we'll need to get the correct note or word
-            // we may have to ask the adapter to notify us again.
-        } else {
-            ViewGroup.LayoutParams params = mResourcesDrawer.getLayoutParams();
-            params.width = 0;
-            mResourcesDrawer.setLayoutParams(params);
-        }
 
         mGesture = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             public MotionEvent mLastOnDownEvent;
@@ -109,6 +106,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                             onRightSwipe();
                         } else {
                             onLeftSwipe();
+
                         }
                     }
                 } catch (Exception e) {
@@ -117,15 +115,37 @@ public class ReviewModeFragment extends ViewModeFragment {
                 return false;
             }
         });
+
+        // open the drawer on rotate
+        if(mResourcesDrawerOpen && mResourcesOpen) {
+            ViewTreeObserver viewTreeObserver = rootView.getViewTreeObserver();
+            if(viewTreeObserver.isAlive()) {
+                viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                            rootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                        } else {
+                            rootView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                        }
+                        ReviewModeAdapter.ViewHolder sample = (ReviewModeAdapter.ViewHolder) getViewHolderSample();
+                        if (sample != null) {
+                            if (mTranslationNoteId != null) {
+                                onTranslationNoteClick(mChapterId, mFrameId, mTranslationNoteId, sample.getResourceCardWidth());
+                            } else if (mTranslationWordId != null) {
+                                onTranslationWordClick(mTranslationWordId, sample.getResourceCardWidth());
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        closeResourcesDrawer();
     }
 
     private void onRightSwipe() {
         if(mResourcesDrawerOpen) {
-            mResourcesDrawerOpen = false;
-            // TODO: animate
-            ViewGroup.LayoutParams params = mResourcesDrawer.getLayoutParams();
-            params.width = 0;
-            mResourcesDrawer.setLayoutParams(params);
+            closeResourcesDrawer();
         } else {
             if (getAdapter() != null) {
                 ((ReviewModeAdapter) getAdapter()).closeResources();
@@ -157,6 +177,14 @@ public class ReviewModeFragment extends ViewModeFragment {
         // TODO: animate in
     }
 
+    private void closeResourcesDrawer() {
+        mResourcesDrawerOpen = false;
+        ViewGroup.LayoutParams params = mResourcesDrawer.getLayoutParams();
+        params.width = 0;
+        mResourcesDrawer.setLayoutParams(params);
+        // TODO: animate
+    }
+
     @Override
     public void onTranslationWordClick(String translationWordId, int width) {
         renderTranslationWord(translationWordId);
@@ -174,6 +202,9 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param translationWordId
      */
     private void renderTranslationWord(String translationWordId) {
+        mTranslationWordId = translationWordId;
+        mTranslationNoteId = null;
+
         Library library = AppContext.getLibrary();
         TranslationWord word = library.getTranslationWord(mSourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
@@ -245,6 +276,11 @@ public class ReviewModeFragment extends ViewModeFragment {
      * @param noteId
      */
     private void renderTranslationNote(String chapterId, String frameId, String noteId) {
+        mTranslationWordId = null;
+        mTranslationNoteId = noteId;
+        mFrameId = frameId;
+        mChapterId = chapterId;
+
         final Library library = AppContext.getLibrary();
         TranslationNote note = library.getTranslationNote(mSourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
@@ -287,6 +323,14 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(savedInstanceState != null) {
             mResourcesOpen = savedInstanceState.getBoolean(STATE_RESOURCES_OPEN, false);
             mResourcesDrawerOpen = savedInstanceState.getBoolean(STATE_RESOURCES_DRAWER_OPEN, false);
+
+            if(savedInstanceState.containsKey(STATE_NOTE_ID)) {
+                mTranslationNoteId = savedInstanceState.getString(STATE_NOTE_ID);
+                mChapterId = savedInstanceState.getString(STATE_CHAPTER_ID);
+                mFrameId = savedInstanceState.getString(STATE_FRAME_ID);
+            } else if(savedInstanceState.containsKey(STATE_WORD_ID)) {
+                mTranslationWordId = savedInstanceState.getString(STATE_WORD_ID);
+            }
         }
     }
 
@@ -294,6 +338,20 @@ public class ReviewModeFragment extends ViewModeFragment {
     public void onSaveInstanceState(Bundle out) {
         out.putBoolean(STATE_RESOURCES_OPEN, ((ReviewModeAdapter) getAdapter()).isResourcesOpen());
         out.putBoolean(STATE_RESOURCES_DRAWER_OPEN, mResourcesDrawerOpen);
+        if(mTranslationWordId != null) {
+            out.putString(STATE_WORD_ID, mTranslationWordId);
+        } else {
+            out.remove(STATE_WORD_ID);
+        }
+        if(mTranslationNoteId != null) {
+            out.putString(STATE_NOTE_ID, mTranslationNoteId);
+            out.putString(STATE_CHAPTER_ID, mChapterId);
+            out.putString(STATE_FRAME_ID, mFrameId);
+        } else {
+            out.remove(STATE_NOTE_ID);
+            out.remove(STATE_CHAPTER_ID);
+            out.remove(STATE_FRAME_ID);
+        }
         super.onSaveInstanceState(out);
     }
 }

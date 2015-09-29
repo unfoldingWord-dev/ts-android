@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -126,6 +127,19 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         if(position != -1) {
             mLayoutManager.scrollToPosition(position);
             mListener.onScrollProgress(position);
+        }
+    }
+
+    /**
+     * Returns a sample viewholder so we can check on the state of the ui
+     * @return
+     */
+    protected RecyclerView.ViewHolder getViewHolderSample() {
+        if(mLayoutManager != null && mRecyclerView != null) {
+            int position = mLayoutManager.findFirstVisibleItemPosition();
+            return mRecyclerView.findViewHolderForLayoutPosition(position);
+        } else {
+            return null;
         }
     }
 

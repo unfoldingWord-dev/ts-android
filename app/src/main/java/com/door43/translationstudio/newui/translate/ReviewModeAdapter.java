@@ -452,6 +452,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // TODO: add click to open for resources
+
     }
 
     private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words) {
@@ -467,8 +468,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     @Override
                     public void onClick(View v) {
                         if(getListener() != null) {
-                            int rightMargin = ((ViewGroup.MarginLayoutParams)holder.mResourceCard.getLayoutParams()).rightMargin;
-                            getListener().onTranslationNoteClick(note.getChapterId(), note.getFrameId(), note.getId(), holder.mResourceCard.getWidth() + rightMargin);
+                            getListener().onTranslationNoteClick(note.getChapterId(), note.getFrameId(), note.getId(), holder.getResourceCardWidth());
                         }
                     }
                 });
@@ -483,8 +483,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     @Override
                     public void onClick(View v) {
                         if (getListener() != null) {
-                            int rightMargin = ((ViewGroup.MarginLayoutParams)holder.mResourceCard.getLayoutParams()).rightMargin;
-                            getListener().onTranslationWordClick(word.getId(), holder.mResourceCard.getWidth() + rightMargin);
+                            getListener().onTranslationWordClick(word.getId(), holder.getResourceCardWidth());
                         }
                     }
                 });
@@ -579,6 +578,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             ViewUtil.tintViewDrawable(mEditButton, context.getResources().getColor(R.color.dark_disabled_text));
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
+        }
+
+        /**
+         * Returns the full width of the resource card
+         * @return
+         */
+        public int getResourceCardWidth() {
+            if(mResourceCard != null) {
+                int rightMargin = ((ViewGroup.MarginLayoutParams)mResourceCard.getLayoutParams()).rightMargin;
+                return mResourceCard.getWidth() + rightMargin;
+            } else {
+                return 0;
+            }
         }
     }
 }
