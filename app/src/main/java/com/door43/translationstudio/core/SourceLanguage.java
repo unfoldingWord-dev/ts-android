@@ -11,12 +11,14 @@ public class SourceLanguage implements Comparable {
     public final String name;
     public final LanguageDirection direction;
     public final int dateModified;
+    public final String projectTitle;
 
-    public SourceLanguage(String code, String name, int dateModified, LanguageDirection direction) {
+    public SourceLanguage(String code, String name, int dateModified, LanguageDirection direction, String projectTitle) {
         this.code = code;
         this.name = name;
         this.dateModified = dateModified;
         this.direction = direction;
+        this.projectTitle = projectTitle;
     }
 
     public String getId() {
@@ -37,11 +39,13 @@ public class SourceLanguage implements Comparable {
         if(json == null) {
             return null;
         }
+        JSONObject projectJson = json.getJSONObject("project");
         return new SourceLanguage(
                 json.getString("slug"),
                 json.getString("name"),
                 json.getInt("date_modified"),
-                LanguageDirection.get(json.getString("direction")));
+                LanguageDirection.get(json.getString("direction")),
+                projectJson.getString("name"));
     }
 
     @Override

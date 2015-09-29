@@ -45,8 +45,13 @@ public class ServerLibraryCache {
     public static boolean isExpired() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(AppContext.context());
         String token = Security.md5(prefs.getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, "_"));
+        boolean serverChanged = !token.equals(mToken);
+        if(serverChanged) {
+            // if we change the server url we must rebuild cached server index.
+            AppContext.getLibrary().destroyCache();
+        }
         boolean expired = (mAvailableLibraryUpdates == null || Math.abs(mCacheTimestamp - (int)System.currentTimeMillis()) > CACHE_TTL);
-        return !token.equals(mToken) || expired;
+        return serverChanged || expired;
     }
 
     /**

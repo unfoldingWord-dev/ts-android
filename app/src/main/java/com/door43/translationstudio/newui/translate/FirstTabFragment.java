@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -51,8 +52,8 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
         ImageButton newTabButton = (ImageButton) rootView.findViewById(R.id.newTabButton);
         LinearLayout secondaryNewTabButton = (LinearLayout) rootView.findViewById(R.id.secondaryNewTabButton);
         TextView translationTitle = (TextView) rootView.findViewById(R.id.source_translation_title);
-        SourceTranslation sourceTranslation = mLibrary.getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
-        translationTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
+        SourceLanguage sourceLanguage = mLibrary.getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        translationTitle.setText(sourceLanguage.projectTitle + " - " + targetTranslation.getTargetLanguageName());
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override

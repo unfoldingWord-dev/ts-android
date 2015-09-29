@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.transform.Source;
-
 /**
  * Created by joel on 8/29/2015.
  */
@@ -84,6 +82,14 @@ public class Library {
     public void destroyIndexes() {
         FileUtils.deleteQuietly(mIndexDir);
         FileUtils.deleteQuietly(mCacheDir);
+    }
+
+    /**
+     * Destroy's the server index
+     */
+    public void destroyCache() {
+        mServerIndex.destroy();
+        mDownloaderIndex.destroy();
     }
 
     /**
@@ -510,9 +516,9 @@ public class Library {
             JSONObject projectJson = getActiveIndex().getProject(projectId);
             try {
                 String categoryId = null;
-                JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, languageId);
+                JSONObject sourceLanguageJson = getPreferredSourceLanguageJSON(projectId, languageId);
                 if(sourceLanguageJson != null) {
-                    // TRICKY: getPreferredSourceLanguage can return a different language than what was requested
+                    // TRICKY: getPreferredSourceLanguageJSON can return a different language than what was requested
                     String categoryLanguageId = sourceLanguageJson.getString("slug");
                     JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
                     String title = projectLanguageJson.getString("name");
@@ -564,9 +570,9 @@ public class Library {
                 }
 
                 String categoryId = null;
-                JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, parentCategory.sourcelanguageId);
+                JSONObject sourceLanguageJson = getPreferredSourceLanguageJSON(projectId, parentCategory.sourcelanguageId);
                 if(sourceLanguageJson != null) {
-                    // TRICKY: getPreferredSourceLanguage can return a different language than what was requested
+                    // TRICKY: getPreferredSourceLanguageJSON can return a different language than what was requested
                     String categoryLanguageId = sourceLanguageJson.getString("slug");
 
                     // ensure the project has source
@@ -622,7 +628,7 @@ public class Library {
      * @param sourceLanguageId
      * @return null if no source langauges exist for the project
      */
-    private JSONObject getPreferredSourceLanguage(String projectId, String sourceLanguageId) {
+    private JSONObject getPreferredSourceLanguageJSON(String projectId, String sourceLanguageId) {
         // preferred language
         JSONObject sourceLanguageJson = getActiveIndex().getSourceLanguage(projectId, sourceLanguageId);
         // default (en)
@@ -674,6 +680,24 @@ public class Library {
     }
 
     /**
+     * Returns the preferred source language for a project
+     * If the source langauge exists it will be returned otherwise the next
+     * best choice is returned.
+     * @param projectId
+     * @param sourceLanguageId
+     * @return
+     */
+    public SourceLanguage getPreferredSourceLanguage(String projectId, String sourceLanguageId) {
+        JSONObject sourceLanguageJson = getPreferredSourceLanguageJSON(projectId, sourceLanguageId);
+        try {
+            return SourceLanguage.generate(sourceLanguageJson);
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "Failed to parse the preferred source language for project " + projectId, e);
+        }
+        return null;
+    }
+
+    /**
      * Returns an array of resources for the source language
      * @param projectId
      * @param sourceLanguageId
@@ -716,7 +740,7 @@ public class Library {
      */
     public Project getProject(String projectId, String languageId) {
         try {
-            return Project.generate(getActiveIndex().getProject(projectId), getPreferredSourceLanguage(projectId, languageId));
+            return Project.generate(getActiveIndex().getProject(projectId), getPreferredSourceLanguageJSON(projectId, languageId));
         } catch (JSONException e) {
             Logger.w(this.getClass().getName(), "Failed to parse the project " + projectId, e);
         }
@@ -831,7 +855,7 @@ public class Library {
         SourceTranslation simpleTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
         JSONObject resourceJson = getActiveIndex().getResource(simpleTranslation);
         if(resourceJson != null) {
-            JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, sourceLanguageId);
+            JSONObject sourceLanguageJson = getPreferredSourceLanguageJSON(projectId, sourceLanguageId);
             try {
                 return SourceTranslation.generate(projectId, sourceLanguageJson, resourceJson);
             } catch (JSONException e) {
@@ -861,7 +885,7 @@ public class Library {
                 }
             }
             // load source translation
-            JSONObject sourceLanguageJson = getPreferredSourceLanguage(projectId, sourceLanguageId);
+            JSONObject sourceLanguageJson = getPreferredSourceLanguageJSON(projectId, sourceLanguageId);
             try {
                 return SourceTranslation.generate(projectId, sourceLanguageJson, defaultResource);
             } catch (JSONException e) {
