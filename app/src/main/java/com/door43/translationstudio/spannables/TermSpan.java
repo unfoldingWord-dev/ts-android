@@ -5,7 +5,7 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 /**
  * Created by joel on 10/31/2014.

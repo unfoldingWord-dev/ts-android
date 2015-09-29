@@ -13,7 +13,6 @@ import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.tasks.InitializeLibraryTask;
 import com.door43.translationstudio.tasks.LoadTargetLanguagesTask;
 import com.door43.translationstudio.tasks.UpdateAppTask;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 

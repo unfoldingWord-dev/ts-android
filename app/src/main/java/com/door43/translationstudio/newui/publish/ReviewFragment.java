@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;

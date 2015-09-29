@@ -15,7 +15,7 @@ import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.projects.Model;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.PseudoProject;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.TaskManager;
 
 /**
@@ -69,7 +69,7 @@ public class ChooseProjectToImportDialog extends DialogFragment {
                     } else {
                         // return the selected project.
                         Project p = (Project)m;
-                        AppContext.getEventBus().post(new ChoseProjectToImportEvent(mPeer, p, ChooseProjectToImportDialog.this));
+//                        AppContext.getEventBus().post(new ChoseProjectToImportEvent(mPeer, p, ChooseProjectToImportDialog.this));
                         // NOTE: the caller should close this dialog
                     }
                 }

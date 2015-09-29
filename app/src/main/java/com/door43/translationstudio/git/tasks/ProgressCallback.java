@@ -1,6 +1,6 @@
 package com.door43.translationstudio.git.tasks;
 
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 /**
  * Displays a progress dialog to the user

@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ThreadableUI;
 
 import java.util.ArrayList;
@@ -57,12 +57,12 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
                     int translatedIndex = 0;
                     while(li.hasNext()) {
                         Language l = li.next();
-                        if(l.isTranslating(AppContext.projectManager().getSelectedProject())) {
-                            tempList.add(translatedIndex, l);
-                            translatedIndex ++;
-                        } else {
-                            tempList.add(l);
-                        }
+//                        if(l.isTranslating(AppContext.projectManager().getSelectedProject())) {
+//                            tempList.add(translatedIndex, l);
+//                            translatedIndex ++;
+//                        } else {
+//                            tempList.add(l);
+//                        }
                     }
                     mLanguageList = tempList;
                     mOrigLanguageList = tempList;
@@ -108,11 +108,11 @@ public class LanguageAdapter extends ArrayAdapter<Language> implements Filterabl
 
         holder.languageNameView.setText(l.getName());
         holder.languageIdView.setText(l.getId());
-        if(!mIsSourceLanguages && l.isTranslating(AppContext.projectManager().getSelectedProject())) {
-            holder.translationStatusIcon.setVisibility(View.VISIBLE);
-        } else {
-            holder.translationStatusIcon.setVisibility(View.GONE);
-        }
+//        if(!mIsSourceLanguages && l.isTranslating(AppContext.projectManager().getSelectedProject())) {
+//            holder.translationStatusIcon.setVisibility(View.VISIBLE);
+//        } else {
+//            holder.translationStatusIcon.setVisibility(View.GONE);
+//        }
         if(mSelectedItems.containsKey(l.getId())) {
             v.setBackgroundColor(mContext.getResources().getColor(R.color.accent));
             holder.languageNameView.setTextColor(Color.WHITE);

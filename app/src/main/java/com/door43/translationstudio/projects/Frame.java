@@ -6,7 +6,7 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingEngine;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.spannables.VerseSpan;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 
 import org.apache.commons.io.FileUtils;
@@ -181,7 +181,7 @@ public class Frame implements Model {
     public static Translation getTranslation(String projectId, String targetId, String chapterId, String frameId) {
         try {
             String text = FileUtils.readFileToString(new File(getFramePath(projectId, targetId, chapterId, frameId)));
-            Translation translation = new Translation(AppContext.projectManager().getLanguage(targetId), text);
+            Translation translation = null;//new Translation(AppContext.projectManager().getLanguage(targetId), text);
             translation.isSaved(true);
             return translation;
         } catch (IOException e) {
@@ -370,7 +370,7 @@ public class Frame implements Model {
                 // delete empty file
                 if(file.exists()) {
                     file.delete();
-                    AppContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
+//                    AppContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
                     mChapter.cleanDir(mTranslation.getLanguage());
                 }
             } else {
@@ -388,7 +388,7 @@ public class Frame implements Model {
                     ps.print(mTranslation.getText());
                     ps.close();
                     if(notifyTranslationChanged) {
-                        AppContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
+//                        AppContext.getEventBus().post(new FrameTranslationStatusChangedEvent());
                         mChapter.cleanDir(mTranslation.getLanguage());
                     }
                 } catch (IOException e) {
@@ -470,7 +470,7 @@ public class Frame implements Model {
      */
     @Override
     public boolean isSelected() {
-        Project p = AppContext.projectManager().getSelectedProject();
+        Project p = null;//AppContext.projectManager().getSelectedProject();
         if(p == null) return false;
         Chapter c = p.getSelectedChapter();
         if(c == null) return false;

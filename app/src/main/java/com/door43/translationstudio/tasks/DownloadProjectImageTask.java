@@ -1,7 +1,7 @@
 package com.door43.translationstudio.tasks;
 
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 
 /**
@@ -18,7 +18,7 @@ public class DownloadProjectImageTask extends ManagedTask {
     @Override
     public void start() {
         publishProgress(-1, "");
-        mImagPath = AppContext.projectManager().downloadProjectImage(mProject, false);
+        mImagPath =  null;//AppContext.projectManager().downloadProjectImage(mProject, false);
     }
 
     @Override

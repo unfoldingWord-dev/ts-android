@@ -33,7 +33,7 @@ import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;

@@ -5,7 +5,7 @@ import android.content.Intent;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.translationstudio.SplashScreenActivity;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import java.io.File;
 

@@ -12,7 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 /**
  * Created by joel on 1/29/2015.

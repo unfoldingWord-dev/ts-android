@@ -16,7 +16,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;

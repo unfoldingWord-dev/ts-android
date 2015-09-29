@@ -3,7 +3,7 @@ package com.door43.translationstudio.projects;
 import android.content.SharedPreferences;
 import android.net.Uri;
 
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import org.json.JSONException;
 import org.json.JSONObject;

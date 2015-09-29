@@ -13,7 +13,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import java.util.Locale;
 

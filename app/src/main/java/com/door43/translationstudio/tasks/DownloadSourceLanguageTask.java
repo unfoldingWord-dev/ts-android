@@ -3,10 +3,8 @@ package com.door43.translationstudio.tasks;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Resource;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
-
-import java.util.List;
 
 /**
  * This task downloads the source language data from the server.

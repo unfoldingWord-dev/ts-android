@@ -8,7 +8,7 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.FileUtils;
 

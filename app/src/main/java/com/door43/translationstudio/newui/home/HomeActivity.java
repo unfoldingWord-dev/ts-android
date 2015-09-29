@@ -24,7 +24,7 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.newui.ReportBugDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
 import java.util.Locale;

@@ -1,9 +1,7 @@
 package com.door43.translationstudio.tasks;
 
-import android.app.Application;
-
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 
 /**

@@ -16,8 +16,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -37,7 +35,7 @@ import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ExportingService;
 import com.door43.translationstudio.service.ImportingService;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.RSAEncryption;
 import com.squareup.otto.Subscribe;
 
@@ -197,7 +195,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
                         // device
                         preferredLanguages.add(Locale.getDefault().getLanguage());
                         // current project
-                        Project p = AppContext.projectManager().getSelectedProject();
+                        Project p = null;//AppContext.projectManager().getSelectedProject();
                         if(p != null) {
                             preferredLanguages.add(p.getSelectedSourceLanguage().getId());
                         }
@@ -404,7 +402,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
         try {
             json.put("id", event.getProject().getId());
             // check if we have the source for this project
-            Project existingProject = AppContext.projectManager().getProject(event.getProject().getId());
+            Project existingProject = null;//AppContext.projectManager().getProject(event.getProject().getId());
             if(existingProject == null || existingProject.getSelectedSourceLanguage() == null) {
                 JSONArray sourceLanguagesJson = new JSONArray();
                 sourceLanguagesJson.put(event.getProject().getSelectedSourceLanguage().getId());

@@ -1,28 +1,20 @@
 package com.door43.widget;
 
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.design.widget.Snackbar;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.widget.CardView;
 import android.text.method.LinkMovementMethod;
 import android.text.method.MovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.LinearInterpolator;
-import android.view.animation.Transformation;
 import android.view.animation.TranslateAnimation;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.AppContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

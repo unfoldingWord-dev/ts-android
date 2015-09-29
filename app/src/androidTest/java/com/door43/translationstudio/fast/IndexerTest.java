@@ -7,7 +7,7 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.Util;
 import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.SourceTranslation;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;

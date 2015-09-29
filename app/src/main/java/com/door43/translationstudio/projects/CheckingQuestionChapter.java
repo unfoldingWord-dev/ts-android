@@ -2,7 +2,7 @@ package com.door43.translationstudio.projects;
 
 import android.content.SharedPreferences;
 
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Security;
 
 import java.util.ArrayList;

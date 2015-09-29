@@ -1,7 +1,5 @@
 package com.door43.translationstudio.newui.publish;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -16,7 +14,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;

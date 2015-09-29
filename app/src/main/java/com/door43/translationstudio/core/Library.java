@@ -28,7 +28,7 @@ import java.util.Map;
 public class Library {
     public static final String TARGET_LANGUAGES_FILE = "languages.json";
     public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
-    private static final int SOURCE_TRANSLATION_MIN_CHECKING_LEVEL = 3;
+    private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_ID = "ulb";
     private final Indexer mServerIndex;
     private final Indexer mAppIndex;
@@ -294,7 +294,7 @@ public class Library {
 
                     // only download resources that meet the minimum checking level
 //                    Resource resource = getResource(sourceTranslation);
-//                    if(resource != null && resource.getCheckingLevel() < SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
+//                    if(resource != null && resource.getCheckingLevel() < MIN_CHECKING_LEVEL) {
 //                        continue;
 //                    }
 
@@ -906,7 +906,7 @@ public class Library {
             String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= MIN_CHECKING_LEVEL) {
                     sourceTranslations.add(sourceTranslation);
                 }
             }
@@ -925,7 +925,7 @@ public class Library {
             String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
-                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < SOURCE_TRANSLATION_MIN_CHECKING_LEVEL) {
+                if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
                     draftTranslations.add(sourceTranslation);
                 }
             }

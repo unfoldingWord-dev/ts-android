@@ -26,7 +26,6 @@ import com.door43.translationstudio.newui.library.ServerLibraryCache;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.util.StringUtilities;
@@ -198,13 +197,13 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             @Override
             public void run() {
                 final Handler handle = new Handler(Looper.getMainLooper());
-                final Project[] projects = AppContext.projectManager().getProjects();
+//                final Project[] projects = AppContext.projectManager().getProjects();
                 final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
                 dialog.setCancelable(false);
                 dialog.setCanceledOnTouchOutside(false);
                 dialog.setIndeterminate(true);
                 dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                dialog.setMax(projects.length);
+//                dialog.setMax(projects.length);
                 dialog.setMessage(getResources().getString(R.string.exporting));
 
                 // TODO: this should be placed inside of a task instead.

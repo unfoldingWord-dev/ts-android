@@ -22,7 +22,6 @@ import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.imports.ProjectImport;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.translationstudio.util.ToolAdapter;
 import com.door43.translationstudio.util.ToolItem;
 import com.door43.util.tasks.ThreadableUI;
@@ -76,7 +75,7 @@ public class SharingActivity extends BaseActivity {
         mProgressDialog.show();
 
         // stage and commit changes to the current project
-        Project p = AppContext.projectManager().getSelectedProject();
+        Project p = null; //AppContext.projectManager().getSelectedProject();
         if(p != null) {
             p.commit(new Project.OnCommitComplete() {
                 @Override
@@ -100,7 +99,7 @@ public class SharingActivity extends BaseActivity {
 
     private void init() {
         // TRICKY: this project may very well be null
-        final Project p = AppContext.projectManager().getSelectedProject();
+        final Project p = null;///AppContext.projectManager().getSelectedProject();
         final File internalDestDir = new File(getCacheDir(), "sharing/");
 
         internalDestDir.mkdirs();
@@ -208,7 +207,7 @@ public class SharingActivity extends BaseActivity {
                     @Override
                     public void run() {
                         // TODO: allow the user to choose which projects to export
-                        String library = Sharing.generateLibrary(AppContext.projectManager().getProjects());
+//                        String library = Sharing.generateLibrary(AppContext.projectManager().getProjects());
 
                         // try to locate the removable sd card
                         if(AppContext.isExternalMediaAvailable()) {

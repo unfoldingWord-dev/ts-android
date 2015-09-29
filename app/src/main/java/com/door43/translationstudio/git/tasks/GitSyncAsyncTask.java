@@ -2,7 +2,7 @@ package com.door43.translationstudio.git.tasks;
 
 import android.os.AsyncTask;
 
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 /**
  * Created by joel on 9/15/2014.

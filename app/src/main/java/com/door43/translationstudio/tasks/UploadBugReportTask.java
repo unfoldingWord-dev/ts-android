@@ -3,7 +3,7 @@ package com.door43.translationstudio.tasks;
 import com.door43.tools.reporting.GithubReporter;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;

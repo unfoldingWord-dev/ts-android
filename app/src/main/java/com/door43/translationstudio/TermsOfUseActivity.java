@@ -10,7 +10,6 @@ import android.widget.Button;
 
 import com.door43.translationstudio.dialogs.LicenseDialog;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.util.AppContext;
 
 /**
  * This activity checks if the user has accepted the terms of use before continuing to load the app

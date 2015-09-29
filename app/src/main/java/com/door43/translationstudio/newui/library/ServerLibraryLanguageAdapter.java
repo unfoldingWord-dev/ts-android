@@ -16,7 +16,7 @@ import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.tasks.DownloadSourceLanguageTask;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 

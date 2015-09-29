@@ -21,15 +21,13 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.ProjectCategory;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.Locale;
 
 public class ServerLibraryActivity extends BaseActivity implements ServerLibraryDetailFragment.OnEventListener, ServerLibraryFragment.OnClickListener, ManagedTask.OnFinishedListener, ManagedTask.OnProgressListener, DialogInterface.OnCancelListener {

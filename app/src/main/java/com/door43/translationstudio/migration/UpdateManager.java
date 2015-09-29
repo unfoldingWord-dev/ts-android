@@ -8,7 +8,7 @@ import android.util.Log;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 
 import java.io.File;
@@ -51,18 +51,18 @@ public class UpdateManager {
                     return;
                 }
 //                String databasePath = pInfo.applicationInfo.dataDir;
-                SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(AppContext.context(), pInfo.applicationInfo.dataDir);
-                try {
-                    migrationHelper.migrateDatabase(new SQLiteMigrationHelper.OnProgressCallback() {
-                        @Override
-                        public void onProgress(double progress, String message) {
-                            UpdateManager.this.onProgress(progress, message);
-                        }
-                    });
-                } catch(Exception e) {
-                    Logger.e(this.getClass().getName(), "migration failed", e);
-                    UpdateManager.this.onProgress(100, "Migration may not have been successful.");
-                }
+//                SQLiteMigrationHelper migrationHelper = new SQLiteMigrationHelper(AppContext.context(), pInfo.applicationInfo.dataDir);
+//                try {
+//                    migrationHelper.migrateDatabase(new SQLiteMigrationHelper.OnProgressCallback() {
+//                        @Override
+//                        public void onProgress(double progress, String message) {
+//                            UpdateManager.this.onProgress(progress, message);
+//                        }
+//                    });
+//                } catch(Exception e) {
+//                    Logger.e(this.getClass().getName(), "migration failed", e);
+//                    UpdateManager.this.onProgress(100, "Migration may not have been successful.");
+//                }
 
                 // backup database
                 File backup = new File(AppContext.context().getFilesDir(), "1.x_backup.sqlite3");

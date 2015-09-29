@@ -8,7 +8,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.ListMap;
 import com.door43.util.Manifest;
 
@@ -631,7 +631,7 @@ public class Project implements Model {
      */
     @Override
     public boolean isSelected() {
-        Project p = AppContext.projectManager().getSelectedProject();
+        Project p = null;//AppContext.projectManager().getSelectedProject();
         if(p == null) return false;
         return p.getId().equals(getId());
     }
@@ -725,7 +725,7 @@ public class Project implements Model {
      * @return
      */
     public boolean setSelectedTargetLanguage(String id) {
-        Language l = AppContext.projectManager().getLanguage(id);
+        Language l = null;//AppContext.projectManager().getLanguage(id);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
             storeSelectedTargetLanguage(mSelectedTargetLanguageId);
@@ -739,7 +739,7 @@ public class Project implements Model {
      * @return true if the language exists
      */
     public boolean setSelectedTargetLanguage(int index) {
-        Language l = AppContext.projectManager().getLanguage(index);
+        Language l = null;//AppContext.projectManager().getLanguage(index);
         if(l != null) {
             mSelectedTargetLanguageId = l.getId();
             storeSelectedTargetLanguage(mSelectedTargetLanguageId);
@@ -764,11 +764,11 @@ public class Project implements Model {
      * @return
      */
     public Language getSelectedTargetLanguage() {
-        Language selectedLanguage = AppContext.projectManager().getLanguage(mSelectedTargetLanguageId);
+        Language selectedLanguage = null;//AppContext.projectManager().getLanguage(mSelectedTargetLanguageId);
         if(selectedLanguage == null) {
             // auto select the first language
             int defaultLanguageIndex = 0;
-            return AppContext.projectManager().getLanguage(defaultLanguageIndex);
+            return null;//AppContext.projectManager().getLanguage(defaultLanguageIndex);
         } else {
             return selectedLanguage;
         }
@@ -1029,10 +1029,10 @@ public class Project implements Model {
         for(File f:files) {
             String[] pieces = f.getName().split("-");
             if(pieces.length == 3) {
-                Language l = AppContext.projectManager().getLanguage(pieces[2]);
-                if(l != null) {
-                    languages.add(l);
-                }
+//                Language l = AppContext.projectManager().getLanguage(pieces[2]);
+//                if(l != null) {
+//                    languages.add(l);
+//                }
             }
         }
         return languages.toArray(new Language[languages.size()]);

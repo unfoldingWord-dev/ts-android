@@ -9,7 +9,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.data.DataStore;
 import com.door43.translationstudio.projects.data.IndexStore;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -712,49 +712,49 @@ public class ProjectManager {
         Project p = getProject(projectId);
         if(p != null) {
             SourceLanguage currentLanguage = p.getSourceLanguage(latestLanguage.getId());
-            if(currentLanguage != null && latestLanguage.checkingLevel() >= AppContext.minCheckingLevel()) {
-                if(latestLanguage.getDateModified() > currentLanguage.getDateModified()) {
-                    // there is an update in the language
-                    return true;
-                } else {
-                    for(Resource r:latestLanguage.getResources()) {
-                        if(r.getDateModified() > currentLanguage.getResource(r.getId()).getDateModified()) {
-                            // there is an update in the resources
-                            return true;
-                        }
-                    }
-                }
-            }
+//            if(currentLanguage != null && latestLanguage.checkingLevel() >= AppContext.minCheckingLevel()) {
+//                if(latestLanguage.getDateModified() > currentLanguage.getDateModified()) {
+//                    // there is an update in the language
+//                    return true;
+//                } else {
+//                    for(Resource r:latestLanguage.getResources()) {
+//                        if(r.getDateModified() > currentLanguage.getResource(r.getId()).getDateModified()) {
+//                            // there is an update in the resources
+//                            return true;
+//                        }
+//                    }
+//                }
+//            }
         }
         return false;
     }
 
-    /**
-     * Checks if there are updates available for the source language draft
-     * @param projectId the id of the project to which the source language belongs
-     * @param latestDraft the source language that contains the latest date modified info
-     * @return
-     */
-    public boolean isSourceLanguageDraftUpdateAvailable(String projectId, SourceLanguage latestDraft) {
-        Project p = getProject(projectId);
-        if(p != null) {
-            SourceLanguage currentDraft = p.getSourceLanguageDraft(latestDraft.getId());
-            if(currentDraft != null && latestDraft.checkingLevel() >= AppContext.minCheckingLevel()) {
-                if(latestDraft.getDateModified() > currentDraft.getDateModified()) {
-                    // there is an update in the language
-                    return true;
-                } else {
-                    for(Resource r:latestDraft.getResources()) {
-                        if(r.getDateModified() > currentDraft.getResource(r.getId()).getDateModified()) {
-                            // there is an update in the resources
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
+//    /**
+//     * Checks if there are updates available for the source language draft
+//     * @param projectId the id of the project to which the source language belongs
+//     * @param latestDraft the source language that contains the latest date modified info
+//     * @return
+//     */
+//    public boolean isSourceLanguageDraftUpdateAvailable(String projectId, SourceLanguage latestDraft) {
+//        Project p = getProject(projectId);
+//        if(p != null) {
+//            SourceLanguage currentDraft = p.getSourceLanguageDraft(latestDraft.getId());
+//            if(currentDraft != null && latestDraft.checkingLevel() >= AppContext.minCheckingLevel()) {
+//                if(latestDraft.getDateModified() > currentDraft.getDateModified()) {
+//                    // there is an update in the language
+//                    return true;
+//                } else {
+//                    for(Resource r:latestDraft.getResources()) {
+//                        if(r.getDateModified() > currentDraft.getResource(r.getId()).getDateModified()) {
+//                            // there is an update in the resources
+//                            return true;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * Checks if any new source languages are available for download
@@ -865,11 +865,11 @@ public class ProjectManager {
                     }
 
                     // load into project
-                    if(l.checkingLevel() >= AppContext.minCheckingLevel()) {
-                        p.addSourceLanguage(l);
-                    } else {
-                        p.addSourceLanguageDraft(l);
-                    }
+//                    if(l.checkingLevel() >= AppContext.minCheckingLevel()) {
+//                        p.addSourceLanguage(l);
+//                    } else {
+//                        p.addSourceLanguageDraft(l);
+//                    }
 
                     languages.add(l);
                 }

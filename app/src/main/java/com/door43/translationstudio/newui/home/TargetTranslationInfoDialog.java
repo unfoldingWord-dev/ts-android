@@ -11,7 +11,7 @@ import android.widget.Button;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 /**
  * Displays detailed information about a target translation

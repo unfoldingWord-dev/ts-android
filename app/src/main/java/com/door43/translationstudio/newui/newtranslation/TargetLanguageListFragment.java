@@ -12,7 +12,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.newui.library.Searchable;
 import com.door43.translationstudio.newui.BaseFragment;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 /**
  * Created by joel on 9/4/2015.

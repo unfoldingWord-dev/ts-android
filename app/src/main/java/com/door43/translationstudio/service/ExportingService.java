@@ -14,7 +14,7 @@ import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.projects.Sharing;
 import com.door43.translationstudio.projects.SourceLanguage;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.RSAEncryption;
 import com.door43.util.StringUtilities;
 
@@ -216,7 +216,7 @@ public class ExportingService extends NetworkService {
                 try {
                     JSONArray preferredLanguagesJson = new JSONArray(data[0]);
                     for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
-                        Language lang = AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
+                        Language lang =  null;//AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
                         if(lang != null) {
                             preferredLanguages.add(lang);
                         }
@@ -227,7 +227,7 @@ public class ExportingService extends NetworkService {
 
                 // generate project library
                 // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
-                String library = Sharing.generateLibrary(AppContext.projectManager().getProjects(), preferredLanguages);
+                String library =  null;//Sharing.generateLibrary(AppContext.projectManager().getProjects(), preferredLanguages);
 
                 sendMessage(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 break;
@@ -249,7 +249,7 @@ public class ExportingService extends NetworkService {
                     try {
                         String projectId = json.getString("id");
 
-                        final Project p = AppContext.projectManager().getProject(projectId);
+                        final Project p =  null;//AppContext.projectManager().getProject(projectId);
                         // validate project
                         if(p != null) {
                             // validate requested source languages

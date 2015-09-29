@@ -5,7 +5,7 @@ import android.preference.PreferenceManager;
 
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.LibraryUpdates;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Security;
 
 /**

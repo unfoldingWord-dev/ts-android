@@ -12,7 +12,7 @@ import com.door43.translationstudio.git.tasks.ProgressCallback;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
 import com.door43.translationstudio.user.ProfileManager;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.network.TCPClient;
 
@@ -243,7 +243,7 @@ public class TranslationManager {
      */
     @Deprecated
     private static void pushSelectedProjectRepo() {
-        Project p = AppContext.projectManager().getSelectedProject();
+        Project p =  null;//AppContext.projectManager().getSelectedProject();
 
         if(p.translationIsReady()) {
             Logger.i(TranslationManager.class.getName(), "Publishing project " + p.getId() + " to the server");
@@ -318,7 +318,7 @@ public class TranslationManager {
      * @param draft the draft that will be imported
      */
     public static void importTranslationDraft(Project p, SourceLanguage draft, OnProgressListener listener) {
-        String source = AppContext.projectManager().getDataStore().pullSource(p.getId(), draft.getId(), draft.getSelectedResource().getId(), false, false);
+        String source =  null;//AppContext.projectManager().getDataStore().pullSource(p.getId(), draft.getId(), draft.getSelectedResource().getId(), false, false);
 
         if(listener != null) {
             listener.onProgress(-1, "");
@@ -414,11 +414,11 @@ public class TranslationManager {
                         try {
                             JSONObject projJson = projCatJson.getJSONObject(i);
                             String projSlug = projJson.getString("slug");
-                            Project existingProject = AppContext.projectManager().getProject(projSlug);
+                            Project existingProject =  null;//AppContext.projectManager().getProject(projSlug);
                             int projDateModified = projJson.getInt("date_modified");
                             if (existingProject == null || existingProject.getDateModified() < projDateModified) {
                                 // import/replace the project
-                                AppContext.projectManager().getDataStore().importProject(projJson.toString());
+//                                AppContext.projectManager().getDataStore().importProject(projJson.toString());
                                 // load languages
                                 File projDir = new File(dir, projSlug);
                                 if(projDir.exists()) {
@@ -438,7 +438,7 @@ public class TranslationManager {
                                                 }
                                                 if(existingLanguage == null || existingLanguage.getDateModified() < langDateModified) {
                                                     // import/replace the source language
-                                                    AppContext.projectManager().getDataStore().importSourceLanguage(projSlug, langJson.toString());
+//                                                    AppContext.projectManager().getDataStore().importSourceLanguage(projSlug, langJson.toString());
                                                     // load resources
                                                     File langDir = new File(projDir, langSlug);
                                                     if(langDir.exists()) {
@@ -457,7 +457,7 @@ public class TranslationManager {
                                                                         }
                                                                         if (existingResource == null || existingResource.getDateModified() < r.getDateModified()) {
                                                                             // import/replace the resource catalog
-                                                                            AppContext.projectManager().getDataStore().importResource(projSlug, langSlug, resJson.toString());
+//                                                                            AppContext.projectManager().getDataStore().importResource(projSlug, langSlug, resJson.toString());
 
 
                                                                             // load the individual resource files
@@ -471,10 +471,10 @@ public class TranslationManager {
                                                                                 String source = FileUtils.readFileToString(sourceFile);
                                                                                 String terms = FileUtils.readFileToString(termsFile);
 
-                                                                                AppContext.projectManager().getDataStore().importNotes(projSlug, langSlug, r.getId(), r.getNotesCatalog(), notes);
-                                                                                AppContext.projectManager().getDataStore().importSource(projSlug, langSlug, r.getId(), r.getSourceCatalog(), source);
-                                                                                AppContext.projectManager().getDataStore().importTerms(projSlug, langSlug, r.getId(), r.getTermsCatalog(), terms);
-                                                                                AppContext.projectManager().getDataStore().importQuestions(projSlug, langSlug, r.getId(), r.getQuestionsCatalog(), terms);
+//                                                                                AppContext.projectManager().getDataStore().importNotes(projSlug, langSlug, r.getId(), r.getNotesCatalog(), notes);
+//                                                                                AppContext.projectManager().getDataStore().importSource(projSlug, langSlug, r.getId(), r.getSourceCatalog(), source);
+//                                                                                AppContext.projectManager().getDataStore().importTerms(projSlug, langSlug, r.getId(), r.getTermsCatalog(), terms);
+//                                                                                AppContext.projectManager().getDataStore().importQuestions(projSlug, langSlug, r.getId(), r.getQuestionsCatalog(), terms);
                                                                             }
                                                                         }
                                                                     } else {
@@ -502,7 +502,7 @@ public class TranslationManager {
                     Logger.e(TranslationManager.class.getName(), "failed to import the source files", e);
                 }
                 // reload the projects
-                AppContext.projectManager().initProjects();
+//                AppContext.projectManager().initProjects();
             }
         }
     }

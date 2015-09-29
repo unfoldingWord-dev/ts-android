@@ -18,7 +18,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.home.HomeActivity;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.FileUtils;
 

@@ -5,7 +5,7 @@ import android.widget.Toast;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.GitSyncAsyncTask;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import org.eclipse.jgit.lib.ProgressMonitor;
 

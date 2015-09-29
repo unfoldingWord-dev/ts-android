@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.events.ChapterTranslationStatusChangedEvent;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.ListMap;
 
@@ -433,10 +433,10 @@ public class Chapter implements Model {
         String[] files = dir.list();
         if(files != null && files.length == 0) {
             FileUtilities.deleteRecursive(dir);
-            AppContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
+//            AppContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
         } else if(dir.exists()) {
             // the chapter has translations.
-            AppContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
+//            AppContext.getEventBus().post(new ChapterTranslationStatusChangedEvent());
         }
     }
 
@@ -513,7 +513,7 @@ public class Chapter implements Model {
      */
     @Override
     public boolean isSelected() {
-        Project p = AppContext.projectManager().getSelectedProject();
+        Project p = null;//AppContext.projectManager().getSelectedProject();
         if(p == null) return false;
         Chapter c = p.getSelectedChapter();
         if(c == null) return false;

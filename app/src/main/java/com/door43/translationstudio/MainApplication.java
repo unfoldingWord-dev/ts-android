@@ -19,7 +19,6 @@ import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.service.BackupService;
-import com.door43.translationstudio.util.AppContext;
 import com.door43.util.DummyDialogListener;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;

@@ -17,7 +17,7 @@ import com.door43.translationstudio.projects.imports.ImportRequestInterface;
 import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.projects.imports.TranslationImport;
 import com.door43.translationstudio.spannables.NoteSpan;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.Security;
 import com.door43.util.Zip;
@@ -309,11 +309,11 @@ public class Sharing {
         }
 
         public Project getProject() {
-            return AppContext.projectManager().getProject(projectId);
+            return  null;//AppContext.projectManager().getProject(projectId);
         }
 
         public Language getLanguage() {
-            return AppContext.projectManager().getLanguage(languageId);
+            return  null;//AppContext.projectManager().getLanguage(languageId);
         }
     }
 
@@ -329,7 +329,7 @@ public class Sharing {
         boolean hadTranslationWarnings = false;
 
         // locate existing project
-        final Project p = AppContext.projectManager().getProject(projectImport.projectId);
+        final Project p =  null;//AppContext.projectManager().getProject(projectImport.projectId);
         if(p == null) {
             projectImport.setMissingSource(true);
             Logger.i(Sharing.class.getName(), "Missing project source for import");
@@ -510,13 +510,13 @@ public class Sharing {
                         }
                     }
                     // causes the ui to reload the fresh content from the disk
-                    Language l = AppContext.projectManager().getLanguage(ti.languageId);
+                    Language l =  null;//AppContext.projectManager().getLanguage(ti.languageId);
                     l.touch();
                 }
             }
 
             // commit changes if this was an existing project
-            Project p = AppContext.projectManager().getProject(request.projectId);
+            Project p =  null;//AppContext.projectManager().getProject(request.projectId);
             if(p != null) {
                 p.commit(null);
             }
@@ -574,7 +574,7 @@ public class Sharing {
         File manifestFile = new File(stagingDir, "manifest.json");
         JSONObject manifestJson = new JSONObject();
         JSONArray projectsCatalogJson = new JSONArray();
-        DataStore ds = AppContext.projectManager().getDataStore();
+        DataStore ds = null;//AppContext.projectManager().getDataStore();
         sourceDir.mkdirs();
         dataDir.mkdirs();
 
@@ -660,7 +660,7 @@ public class Sharing {
         // compile source languages to include
         if(sourceLanguages.length > 0) {
             try {
-                DataStore ds = AppContext.projectManager().getDataStore();
+                DataStore ds =  null;//AppContext.projectManager().getDataStore();
                 dataDir.mkdirs();
 
 
@@ -712,7 +712,7 @@ public class Sharing {
 
                     for(Resource r:l.getResources()) {
                         // Do not include draft content
-                        if(r.getCheckingLevel() < AppContext.minCheckingLevel()) continue;
+//                        if(r.getCheckingLevel() < AppContext.minCheckingLevel()) continue;
 
                         File resourceDir = new File(languageSourceDir, r.getId());
                         resourceDir.mkdirs();
@@ -821,7 +821,7 @@ public class Sharing {
         // TODO: use prepareProjectSourceExport in place of this below.
         if(sourceLanguages.length > 0) {
             try {
-                DataStore ds = AppContext.projectManager().getDataStore();
+                DataStore ds = null;//AppContext.projectManager().getDataStore();
 
                 // build project catalog
                 File projectCatalogFile = new File(sourceCatalogDir, "projects_catalog.json");
@@ -1219,15 +1219,15 @@ public class Sharing {
                         line = line.substring(2, line.length() - 2).trim();
                         if(targetLanguage == null) {
                             // retrieve the translation language
-                            targetLanguage = AppContext.projectManager().getLanguageByName(line);
+                            targetLanguage = null;//AppContext.projectManager().getLanguageByName(line);
                             if(targetLanguage == null) return false;
                         } else if(project == null) {
                             // retrieve project
-                            project = AppContext.projectManager().getProject(line);
+                            project = null;//AppContext.projectManager().getProject(line);
                             if(project == null) return false;
 
                             // load the project source
-                            AppContext.projectManager().fetchProjectSource(project, false);
+//                            AppContext.projectManager().fetchProjectSource(project, false);
 
                             // place this translation into the correct language
                             project.setSelectedTargetLanguage(targetLanguage.getId());
@@ -1262,7 +1262,7 @@ public class Sharing {
                             frameBuffer.setLength(0);
 
                             // retrieve the translation language
-                            targetLanguage = AppContext.projectManager().getLanguageByName(line);
+                            targetLanguage =  null;//AppContext.projectManager().getLanguageByName(line);
                             if(targetLanguage == null) return false;
                         }
                     } else if(line.length() >= 12 && line.substring(0, 6).equals("======")) {

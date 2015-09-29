@@ -1,17 +1,11 @@
 package com.door43.translationstudio.newui;
 
 import android.content.Intent;
-import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.OrientationEventListener;
-import android.widget.BaseAdapter;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
-import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.CrashReporterActivity;
 import com.door43.translationstudio.SplashScreenActivity;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import java.io.File;
 

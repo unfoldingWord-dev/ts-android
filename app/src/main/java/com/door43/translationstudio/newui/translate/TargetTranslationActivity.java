@@ -21,7 +21,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.newui.ReportBugDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;

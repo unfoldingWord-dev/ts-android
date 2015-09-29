@@ -2,7 +2,6 @@ package com.door43.translationstudio;
 
 import android.content.Context;
 
-import com.door43.translationstudio.util.AppContext;
 import com.door43.util.FileUtilities;
 import com.door43.util.tasks.ManagedTask;
 

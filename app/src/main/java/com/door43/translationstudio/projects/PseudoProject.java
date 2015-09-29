@@ -1,7 +1,7 @@
 package com.door43.translationstudio.projects;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.ListMap;
 
 import org.json.JSONException;
@@ -131,7 +131,7 @@ public class PseudoProject implements Model {
         }
 
         // use the currently selected source language
-        Project p = AppContext.projectManager().getSelectedProject();
+        Project p = null;//AppContext.projectManager().getSelectedProject();
         if(p != null && isSelected()) {
             t = getTranslation(p.getSelectedSourceLanguage().getId());
             if (t != null) {
@@ -160,11 +160,12 @@ public class PseudoProject implements Model {
      */
     @Override
     public String getDescription() {
-        if(isSelected() && AppContext.projectManager().getSelectedProject() != null) {
-            return AppContext.projectManager().getSelectedProject().getTitle();
-        } else {
-            return "";
-        }
+//        if(isSelected() && AppContext.projectManager().getSelectedProject() != null) {
+//            return AppContext.projectManager().getSelectedProject().getTitle();
+//        } else {
+//            return "";
+//        }
+        return "";
     }
 
     /**
@@ -182,7 +183,7 @@ public class PseudoProject implements Model {
         }
 
         // use the currently selected source language of a child project
-        Project p = AppContext.projectManager().getSelectedProject();
+        Project p = null;//AppContext.projectManager().getSelectedProject();
         if(p != null && isSelected()) {
             t = getTranslation(p.getSelectedSourceLanguage().getId());
             if (t != null) {

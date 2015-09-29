@@ -19,7 +19,7 @@ import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.projects.Language;
 import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.util.Arrays;
@@ -82,7 +82,7 @@ public class ChooseProjectLanguagesToImportDialog extends DialogFragment {
                 public void onClick(View view) {
                     Language[] selectedItems = adapter.getSelectedItems();
                     if(selectedItems.length > 0) {
-                        AppContext.getEventBus().post(new ChoseProjectLanguagesToImportEvent(mPeer, mProject, selectedItems));
+//                        AppContext.getEventBus().post(new ChoseProjectLanguagesToImportEvent(mPeer, mProject, selectedItems));
                         dismiss();
                     }
                 }

@@ -6,7 +6,7 @@ import android.text.style.ForegroundColorSpan;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

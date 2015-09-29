@@ -5,7 +5,7 @@ import android.content.Context;
 import com.door43.translationstudio.events.OpenedChapterEvent;
 import com.door43.translationstudio.events.OpenedFrameEvent;
 import com.door43.translationstudio.events.OpenedProjectEvent;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ThreadableUI;
 import com.squareup.otto.Bus;
 
@@ -171,7 +171,7 @@ public class Navigator {
                     }
                     @Override
                     public void run() {
-                        AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
+//                        AppContext.projectManager().fetchProjectSource(AppContext.projectManager().getSelectedProject());
                     }
                     @Override
                     public void onPostExecute() {

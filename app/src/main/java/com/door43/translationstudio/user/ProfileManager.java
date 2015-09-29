@@ -7,7 +7,7 @@ import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.GitSyncAsyncTask;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.translationstudio.git.tasks.repo.PushTask;
-import com.door43.translationstudio.util.AppContext;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.FileUtilities;
 
 import org.apache.commons.io.FileUtils;

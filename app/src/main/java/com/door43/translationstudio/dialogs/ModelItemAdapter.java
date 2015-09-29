@@ -18,11 +18,8 @@ import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.projects.Model;
-import com.door43.translationstudio.tasks.LoadModelFontTask;
 import com.door43.translationstudio.util.AnimationUtilities;
-import com.door43.translationstudio.util.AppContext;
-import com.door43.util.tasks.ManagedTask;
-import com.door43.util.tasks.TaskManager;
+import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ThreadableUI;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
@@ -175,43 +172,43 @@ public class ModelItemAdapter extends BaseAdapter {
         String selectedFontName = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getResources().getString(R.string.pref_default_translation_typeface));
         if(!holder.hasFont || !holder.fontName.equals(selectedFontName)) {
             if (holder.fontTaskId != null) {
-                LoadModelFontTask oldTask = (LoadModelFontTask) TaskManager.getTask(holder.fontTaskId);
-                if (oldTask != null) {
-                    TaskManager.cancelTask(oldTask);
-                    TaskManager.clearTask(oldTask);
-                }
+//                LoadModelFontTask oldTask = (LoadModelFontTask) TaskManager.getTask(holder.fontTaskId);
+//                if (oldTask != null) {
+//                    TaskManager.cancelTask(oldTask);
+//                    TaskManager.clearTask(oldTask);
+//                }
                 holder.fontTaskId = null;
             }
-            LoadModelFontTask task = new LoadModelFontTask(getItem(position), mIndicateSelected);
-            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
-                @Override
-                public void onFinished(final ManagedTask task) {
-                    TaskManager.clearTask(task);
-                    if (!task.isCanceled()) {
-                        Handler hand = new Handler(Looper.getMainLooper());
-                        hand.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                staticHolder.hasFont = true;
-                                staticHolder.fontName = ((LoadModelFontTask) task).getTypefaceName();
-                                staticHolder.title.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-                                staticHolder.description.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
-                            }
-                        });
-                    }
-                }
-            });
-            TaskManager.addTask(task);
-            if (mGroupTaskId != null) {
-                TaskManager.groupTask(task, mGroupTaskId);
-            }
-            holder.fontTaskId = task.getTaskId();
+//            LoadModelFontTask task = new LoadModelFontTask(getItem(position), mIndicateSelected);
+//            task.addOnFinishedListener(new ManagedTask.OnFinishedListener() {
+//                @Override
+//                public void onFinished(final ManagedTask task) {
+//                    TaskManager.clearTask(task);
+//                    if (!task.isCanceled()) {
+//                        Handler hand = new Handler(Looper.getMainLooper());
+//                        hand.post(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                staticHolder.hasFont = true;
+//                                staticHolder.fontName = ((LoadModelFontTask) task).getTypefaceName();
+//                                staticHolder.title.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+//                                staticHolder.description.setTypeface(((LoadModelFontTask) task).getTypeface(), 0);
+//                            }
+//                        });
+//                    }
+//                }
+//            });
+//            TaskManager.addTask(task);
+//            if (mGroupTaskId != null) {
+//                TaskManager.groupTask(task, mGroupTaskId);
+//            }
+//            holder.fontTaskId = task.getTaskId();
         }
 
         // set font size
-        float fontsize = AppContext.typefaceSize();
-        holder.title.setTextSize(fontsize);
-        holder.description.setTextSize((float) (fontsize * 0.7));
+//        float fontsize = AppContext.typefaceSize();
+//        holder.title.setTextSize(fontsize);
+//        holder.description.setTextSize((float) (fontsize * 0.7));
 
         // icons
 //        holder.translationNotesIcon.setBackgroundResource(R.drawable.ic_project_status_blank);
