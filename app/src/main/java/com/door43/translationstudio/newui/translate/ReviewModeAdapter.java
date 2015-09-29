@@ -369,7 +369,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(mOpenResourceTab[position] == TAB_NOTES) {
                 tab.select();
             }
+        } else if(mOpenResourceTab[position] == TAB_NOTES) {
+            // shift default tab to words if we don't have any notes.
+            mOpenResourceTab[position] = TAB_WORDS;
         }
+
         final TranslationWord[] words = mLibrary.getTranslationWords(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length > 0) {
             TabLayout.Tab tab = holder.mResourceTabs.newTab();
