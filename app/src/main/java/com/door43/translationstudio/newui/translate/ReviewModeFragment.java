@@ -23,9 +23,11 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.TranslationWord;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.projects.Translation;
 import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
@@ -206,6 +208,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         mTranslationNoteId = null;
 
         Library library = AppContext.getLibrary();
+        SourceLanguage sourceLanguage = library.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
         TranslationWord word = library.getTranslationWord(mSourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.scrollTo(0, 0);
@@ -221,7 +224,9 @@ public class ReviewModeFragment extends ViewModeFragment {
             TextView examplesTitle = (TextView)view.findViewById(R.id.examples_title);
 
             descriptionTitle.setText(word.getDefinitionTitle());
+            Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
             descriptionView.setHtmlFromString(word.getDefinition(), true);
+            Typography.format(getActivity(), descriptionView, sourceLanguage.getId(), sourceLanguage.getDirection());
 
             seeAlsoView.removeAllViews();
             for(int i = 0; i < word.getSeeAlso().length; i ++) {
@@ -232,9 +237,10 @@ public class ReviewModeFragment extends ViewModeFragment {
                     button.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                             onTranslationWordClick(relatedWord.getId(), mResourcesDrawer.getLayoutParams().width);
+                            onTranslationWordClick(relatedWord.getId(), mResourcesDrawer.getLayoutParams().width);
                         }
                     });
+                    Typography.formatSub(getActivity(), button, sourceLanguage.getId(), sourceLanguage.getDirection());
                     seeAlsoView.addView(button);
                 }
             }
@@ -243,6 +249,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 seeAlsoTitle.setVisibility(View.GONE);
             }
+            Typography.formatTitle(getActivity(), seeAlsoTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
 
             examplesView.removeAllViews();
             for(final TranslationWord.Example example:word.getExamples()) {
@@ -258,6 +265,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                         scrollToFrame(example.getChapterId(), example.getFrameId());
                     }
                 });
+                Typography.format(getActivity(), referenceView, sourceLanguage.getId(), sourceLanguage.getDirection());
+                Typography.format(getActivity(), passageView, sourceLanguage.getId(), sourceLanguage.getDirection());
                 examplesView.addView(exampleView);
             }
             if(word.getExamples().length > 0) {
@@ -265,6 +274,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             } else {
                 examplesTitle.setVisibility(View.GONE);
             }
+            Typography.formatTitle(getActivity(), examplesTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
 
             mResourcesDrawerContent.removeAllViews();
             mResourcesDrawerContent.addView(view);
@@ -309,7 +319,10 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
 
             title.setText(note.getTitle());
+            SourceLanguage sourceLanguage = library.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+            Typography.formatTitle(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
             description.setText(renderer.render(Html.fromHtml(note.getBody())));
+            Typography.format(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
             ViewUtil.makeLinksClickable(description);
 
             mResourcesDrawerContent.removeAllViews();

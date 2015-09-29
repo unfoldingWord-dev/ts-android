@@ -471,11 +471,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 noteView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if(getListener() != null) {
+                        if (getListener() != null) {
                             getListener().onTranslationNoteClick(note.getChapterId(), note.getFrameId(), note.getId(), holder.getResourceCardWidth());
                         }
                     }
                 });
+                Typography.format(mContext, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(noteView);
             }
         } else {
@@ -491,6 +492,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     }
                 });
+                Typography.format(mContext, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(wordView);
             }
         }
