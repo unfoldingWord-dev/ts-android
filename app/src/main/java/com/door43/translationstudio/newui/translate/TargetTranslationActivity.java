@@ -64,6 +64,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             AppContext.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
+        final ImageButton readButton = (ImageButton)findViewById(R.id.action_read);
+        final ImageButton chunkButton = (ImageButton)findViewById(R.id.action_chunk);
+        final ImageButton reviewButton = (ImageButton)findViewById(R.id.action_review);
+
         // inject fragments
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
@@ -71,10 +75,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             } else {
                 TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
                 if(viewMode == TranslationViewMode.READ) {
+                    readButton.setImageResource(R.drawable.icon_study_active);
                     mFragment = new ReadModeFragment();
                 } else if(viewMode == TranslationViewMode.CHUNK) {
+                    chunkButton.setImageResource(R.drawable.icon_frame_active);
                     mFragment = new ChunkModeFragment();
                 } else if(viewMode == TranslationViewMode.REVIEW) {
+                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
                     mFragment = new ReviewModeFragment();
                 }
                 mFragment.setArguments(getIntent().getExtras());
@@ -92,15 +99,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int position;
-                if(progress < 0) {
+                if (progress < 0) {
                     position = seekBar.getMax();
-                } else if(progress <= seekBar.getMax()) {
+                } else if (progress <= seekBar.getMax()) {
                     position = Math.abs(progress - seekBar.getMax());
                 } else {
                     position = 0;
                 }
-                if(mFragment instanceof ViewModeFragment) {
-                    ((ViewModeFragment)mFragment).onScrollProgressUpdate(position);
+                if (mFragment instanceof ViewModeFragment) {
+                    ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
                 }
             }
 
@@ -124,7 +131,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        switch(item.getItemId()) {
+                        switch (item.getItemId()) {
                             case R.id.action_translations:
                                 finish();
                                 return true;
@@ -172,11 +179,15 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 moreMenu.show();
             }
         });
-        ImageButton readButton = (ImageButton)findViewById(R.id.action_read);
+
         readButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mFragment instanceof ReadModeFragment == false) {
+                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
+                    chunkButton.setImageResource(R.drawable.icon_frame_inactive);
+                    readButton.setImageResource(R.drawable.icon_study_active);
+
                     AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
                     mFragment = new ReadModeFragment();
                     mFragment.setArguments(getIntent().getExtras());
@@ -187,11 +198,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
-        ImageButton chunkButton = (ImageButton)findViewById(R.id.action_chunk);
         chunkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mFragment instanceof  ChunkModeFragment == false) {
+                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
+                    chunkButton.setImageResource(R.drawable.icon_frame_active);
+                    readButton.setImageResource(R.drawable.icon_study_inactive);
+
                     AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
                     mFragment = new ChunkModeFragment();
                     mFragment.setArguments(getIntent().getExtras());
@@ -202,11 +216,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
-        ImageButton reviewButton = (ImageButton)findViewById(R.id.action_review);
         reviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mFragment instanceof  ReviewModeFragment == false) {
+                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
+                    chunkButton.setImageResource(R.drawable.icon_frame_inactive);
+                    readButton.setImageResource(R.drawable.icon_study_inactive);
+
                     AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
                     mFragment = new ReviewModeFragment();
                     mFragment.setArguments(getIntent().getExtras());

@@ -21,7 +21,10 @@ import java.util.Map;
 
 /**
  * Created by joel on 9/7/2015.
+ * we were using this to choose the first tab when a user created a new translation project but now
+ * we want them to go through the process of manually choosing their first tab.
  */
+@Deprecated
 public class SourceLanguageListFragment extends BaseFragment implements Searchable{
 
     public static final String ARG_PROJECT_ID = "extra_project_id";

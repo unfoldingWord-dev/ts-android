@@ -1,14 +1,12 @@
 package com.door43.translationstudio.newui.library;
 
-import com.door43.translationstudio.core.LibraryUpdates;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.ProjectManager;
-import com.door43.translationstudio.util.AppContext;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.LibraryUpdates;
+import com.door43.translationstudio.util.AppContext;
+import com.door43.util.Security;
 
 /**
  * This class handles the temporary list of available projects
@@ -18,12 +16,15 @@ public class ServerLibraryCache {
     private static final int CACHE_TTL = 10 * 60 * 1000; // the cache will expire every 10 minutes.
     private static LibraryUpdates mAvailableLibraryUpdates;
     private static int mCacheTimestamp = 0;
+    private static String mToken;
 
     /**
      * Sets the available updates
      * @param availableLibraryUpdates
      */
     public static void setAvailableUpdates(LibraryUpdates availableLibraryUpdates) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(AppContext.context());
+        mToken = Security.md5(prefs.getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, "_"));
         mAvailableLibraryUpdates = availableLibraryUpdates;
         mCacheTimestamp = (int)System.currentTimeMillis();
     }
@@ -38,10 +39,14 @@ public class ServerLibraryCache {
 
     /**
      * Checks if the library cache has expired
+     * The cache expires if enough time passes or if the media server has changed in the user preferences.
      * @return
      */
     public static boolean isExpired() {
-        return (mAvailableLibraryUpdates == null || Math.abs(mCacheTimestamp - (int)System.currentTimeMillis()) > CACHE_TTL);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(AppContext.context());
+        String token = Security.md5(prefs.getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, "_"));
+        boolean expired = (mAvailableLibraryUpdates == null || Math.abs(mCacheTimestamp - (int)System.currentTimeMillis()) > CACHE_TTL);
+        return !token.equals(mToken) || expired;
     }
 
     /**

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
@@ -22,6 +23,7 @@ import com.door43.translationstudio.util.AppContext;
 import org.json.JSONException;
 
 import java.security.InvalidParameterException;
+import java.util.Locale;
 
 /**
  * Created by joel on 9/14/2015.
@@ -41,13 +43,16 @@ public class FirstTabFragment extends BaseFragment implements ChooseSourceTransl
 
         Bundle args = getArguments();
         final String targetTranslationId = args.getString(TargetTranslationActivity.EXTRA_TARGET_TRANSLATION_ID, null);
-        TargetTranslation translation = mTranslator.getTargetTranslation(targetTranslationId);
-        if(translation == null) {
+        TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
+        if(targetTranslation == null) {
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
         ImageButton newTabButton = (ImageButton) rootView.findViewById(R.id.newTabButton);
         LinearLayout secondaryNewTabButton = (LinearLayout) rootView.findViewById(R.id.secondaryNewTabButton);
+        TextView translationTitle = (TextView) rootView.findViewById(R.id.source_translation_title);
+        SourceTranslation sourceTranslation = mLibrary.getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        translationTitle.setText(sourceTranslation.getProjectTitle() + " - " + targetTranslation.getTargetLanguageName());
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override

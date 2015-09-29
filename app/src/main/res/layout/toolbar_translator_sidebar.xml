@@ -19,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:src="@drawable/icon_study_active"
+            android:src="@drawable/icon_study_inactive"
             android:background="?attr/selectableItemBackground"/>
 
         <ImageButton
@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:src="@drawable/icon_frame_active"
+            android:src="@drawable/icon_frame_inactive"
             android:background="?attr/selectableItemBackground"/>
 
         <ImageButton
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:src="@drawable/ic_assignment_turned_in_white_24dp"
+            android:src="@drawable/ic_assignment_turned_in_inactive_24dp"
             android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
 
