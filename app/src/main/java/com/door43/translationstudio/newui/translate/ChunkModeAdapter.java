@@ -258,8 +258,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         // indicate completed frame translations
         if(frameTranslation.isFinished()) {
+            holder.mTargetBody.setEnabled(false);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
+            holder.mTargetBody.setEnabled(true);
             holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
         }
 
