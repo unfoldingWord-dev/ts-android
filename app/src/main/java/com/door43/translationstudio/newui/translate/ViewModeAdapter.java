@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.translate;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.TranslationNote;
 
@@ -116,6 +117,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onSourceTranslationTabClick(String sourceTranslationId);
         void onNewSourceTranslationTabClick();
         void closeKeyboard();
+        void openTranslationMode(TranslationViewMode mode);
         void onTranslationWordClick(String translationWordId, int width);
         void onTranslationNoteClick(String chapterId, String frameId, String translationNoteId, int width);
         void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width);

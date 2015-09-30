@@ -20,6 +20,7 @@
         android:clickable="true">
 
         <LinearLayout
+            android:id="@+id/target_translation_inner_card"
             android:orientation="vertical"
             style="@style/Widget.CardContent.Stacked"
             android:background="@drawable/paper_repeating"
@@ -37,6 +38,16 @@
                 android:textStyle="bold"
                 android:text="John 1"
                 android:id="@+id/target_translation_title" />
+
+            <Button
+                android:id="@+id/begin_translating_button"
+                android:text="@string/begin_translating"
+                android:layout_width="wrap_content"
+                style="@style/Widget.Button.Blue"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/icon_frame_active"
+                android:drawablePadding="10dp"
+                android:layout_gravity="center_horizontal"/>
 
             <TextView
                 android:id="@+id/target_translation_body"

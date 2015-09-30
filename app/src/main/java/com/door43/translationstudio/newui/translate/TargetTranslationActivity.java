@@ -42,6 +42,9 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private Timer mCommitTimer = new Timer();
+    private ImageButton mReadButton;
+    private ImageButton mChunkButton;
+    private ImageButton mReviewButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,31 +67,47 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             AppContext.setLastViewMode(targetTranslationId, TranslationViewMode.get(viewModeId));
         }
 
-        final ImageButton readButton = (ImageButton)findViewById(R.id.action_read);
-        final ImageButton chunkButton = (ImageButton)findViewById(R.id.action_chunk);
-        final ImageButton reviewButton = (ImageButton)findViewById(R.id.action_review);
+        mReadButton = (ImageButton)findViewById(R.id.action_read);
+        mChunkButton = (ImageButton)findViewById(R.id.action_chunk);
+        mReviewButton = (ImageButton)findViewById(R.id.action_review);
+
+        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
 
         // inject fragments
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
-                if(viewMode == TranslationViewMode.READ) {
-                    readButton.setImageResource(R.drawable.icon_study_active);
-                    mFragment = new ReadModeFragment();
-                } else if(viewMode == TranslationViewMode.CHUNK) {
-                    chunkButton.setImageResource(R.drawable.icon_frame_active);
-                    mFragment = new ChunkModeFragment();
-                } else if(viewMode == TranslationViewMode.REVIEW) {
-                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
-                    mFragment = new ReviewModeFragment();
+                viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+                switch (viewMode) {
+                    case READ:
+                        mFragment = new ReadModeFragment();
+                        break;
+                    case CHUNK:
+                        mFragment = new ChunkModeFragment();
+                        break;
+                    case REVIEW:
+                        mFragment = new ReviewModeFragment();
+                        break;
                 }
                 mFragment.setArguments(getIntent().getExtras());
                 getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
                 // TODO: animate
                 // TODO: udpate menu
             }
+        }
+
+        // highlight tabs
+        switch (viewMode) {
+            case READ:
+                mReadButton.setImageResource(R.drawable.icon_study_active);
+                break;
+            case CHUNK:
+                mChunkButton.setImageResource(R.drawable.icon_frame_active);
+                break;
+            case REVIEW:
+                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
+                break;
         }
 
         // set up menu items
@@ -180,57 +199,24 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             }
         });
 
-        readButton.setOnClickListener(new View.OnClickListener() {
+        mReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mFragment instanceof ReadModeFragment == false) {
-                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
-                    chunkButton.setImageResource(R.drawable.icon_frame_inactive);
-                    readButton.setImageResource(R.drawable.icon_study_active);
-
-                    AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
-                    mFragment = new ReadModeFragment();
-                    mFragment.setArguments(getIntent().getExtras());
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-                    // TODO: animate
-                    // TODO: udpate menu
-                }
+                openTranslationMode(TranslationViewMode.READ);
             }
         });
 
-        chunkButton.setOnClickListener(new View.OnClickListener() {
+        mChunkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mFragment instanceof  ChunkModeFragment == false) {
-                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
-                    chunkButton.setImageResource(R.drawable.icon_frame_active);
-                    readButton.setImageResource(R.drawable.icon_study_inactive);
-
-                    AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
-                    mFragment = new ChunkModeFragment();
-                    mFragment.setArguments(getIntent().getExtras());
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-                    // TODO: animate
-                    // TODO: udpate menu
-                }
+                openTranslationMode(TranslationViewMode.CHUNK);
             }
         });
 
-        reviewButton.setOnClickListener(new View.OnClickListener() {
+        mReviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mFragment instanceof  ReviewModeFragment == false) {
-                    reviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
-                    chunkButton.setImageResource(R.drawable.icon_frame_inactive);
-                    readButton.setImageResource(R.drawable.icon_study_inactive);
-
-                    AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
-                    mFragment = new ReviewModeFragment();
-                    mFragment.setArguments(getIntent().getExtras());
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-                    // TODO: animate
-                    // TODO: udpate menu
-                }
+                openTranslationMode(TranslationViewMode.REVIEW);
             }
         });
 
@@ -272,6 +258,49 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
             // TODO: animate
             // TODO: udpate menu
+        }
+    }
+
+    @Override
+    public void openTranslationMode(TranslationViewMode mode) {
+        mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
+        mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
+        mReadButton.setImageResource(R.drawable.icon_study_inactive);
+
+        switch (mode) {
+            case READ:
+                mReadButton.setImageResource(R.drawable.icon_study_active);
+                AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
+                if(mFragment instanceof ReadModeFragment == false) {
+                    mFragment = new ReadModeFragment();
+                    mFragment.setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                    // TODO: udpate menu
+                }
+                break;
+            case CHUNK:
+                mChunkButton.setImageResource(R.drawable.icon_frame_active);
+                AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
+                if(mFragment instanceof  ChunkModeFragment == false) {
+                    mFragment = new ChunkModeFragment();
+                    mFragment.setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                    // TODO: udpate menu
+                }
+                break;
+            case REVIEW:
+                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
+                AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
+                if(mFragment instanceof  ReviewModeFragment == false) {
+                    mFragment = new ReviewModeFragment();
+                    mFragment.setArguments(getIntent().getExtras());
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                    // TODO: udpate menu
+                }
+                break;
         }
     }
 

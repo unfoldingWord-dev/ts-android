@@ -10,12 +10,16 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -29,6 +33,7 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -232,8 +237,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         holder.mSourceTitle.setText(sourceChapterTitle);
 
         // render the target frame body
+        final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
         if(mRenderedTargetBody[position] == null) {
-            FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
             mRenderedTargetBody[position] = renderText(frameTranslation.body, frameTranslation.getFormat());
         }
         if(holder.mTextWatcher != null) {
@@ -244,13 +249,19 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // render target frame title
         ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
         String targetChapterTitle = chapterTranslation.title;
-        final FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
         if(!targetChapterTitle.isEmpty()) {
             targetChapterTitle += ":" + frameTranslation.getTitle();
         } else {
             targetChapterTitle = sourceChapterTitle;
         }
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
+
+        // indicate completed frame translations
+        if(frameTranslation.isFinished()) {
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+        } else {
+            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+        }
 
         // load tabs
         holder.mTabLayout.setOnTabSelectedListener(null);
@@ -480,12 +491,15 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         public final ImageButton mNewTabButton;
         public TextView mSourceTitle;
         public TextView mSourceBody;
+        public LinearLayout mTargetInnerCard;
+
         public ViewHolder(View v) {
             super(v);
             mSourceCard = (CardView)v.findViewById(R.id.source_translation_card);
             mSourceTitle = (TextView)v.findViewById(R.id.source_translation_title);
             mSourceBody = (TextView)v.findViewById(R.id.source_translation_body);
             mTargetCard = (CardView)v.findViewById(R.id.target_translation_card);
+            mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);

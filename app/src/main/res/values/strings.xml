@@ -361,4 +361,5 @@
     <string name="references">References</string>
     <string name="question">Question</string>
     <string name="answer">Answer</string>
+    <string name="begin_translating">Begin translating</string>
 </resources>

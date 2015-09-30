@@ -7,10 +7,13 @@ import android.os.Looper;
 import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -24,6 +27,7 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -253,6 +257,33 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             mRenderedTargetBody[position] = targetRendering.start();
         }
 
+        // display begin translation button
+        if(mRenderedTargetBody[position].toString().trim().isEmpty()) {
+            holder.mBeginButton.setVisibility(View.VISIBLE);
+            final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    getListener().openTranslationMode(TranslationViewMode.CHUNK);
+                    return true;
+                }
+            });
+            holder.mBeginButton.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return detector.onTouchEvent(event);
+                }
+            });
+        } else {
+            holder.mBeginButton.setVisibility(View.GONE);
+        }
+
+        // TODO: indicate completed chapter translations
+//        if(frameTranslation.isFinished()) {
+//            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+//        } else {
+//            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+//        }
+
         // TODO: get the translations of the title
         holder.mTargetBody.setText(mRenderedTargetBody[position]);
         String targetChapterTitle = chapter.title;
@@ -395,6 +426,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        private final Button mBeginButton;
         private final TextView mTargetTitle;
         private final TextView mTargetBody;
         private final CardView mTargetCard;
@@ -416,6 +448,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             mTabLayout = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mTabLayout.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
+            mBeginButton = (Button) v.findViewById(R.id.begin_translating_button);
         }
     }
 }

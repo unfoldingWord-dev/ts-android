@@ -21,6 +21,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseFragment;
 import com.door43.translationstudio.AppContext;
@@ -377,6 +378,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         }
     }
 
+    /**
+     * Opens a translation mode
+     * @param mode
+     */
+    public void openTranslationMode(TranslationViewMode mode) {
+        mListener.openTranslationMode(mode);
+    }
+
     public interface OnEventListener {
 
         /**
@@ -397,5 +406,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * @param targetTranslationId
          */
         void onNoSourceTranslations(String targetTranslationId);
+
+        /**
+         * Opens a particular translation mode
+         * @param mode
+         */
+        void openTranslationMode(TranslationViewMode mode);
     }
 }
