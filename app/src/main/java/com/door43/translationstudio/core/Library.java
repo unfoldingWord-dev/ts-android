@@ -999,6 +999,42 @@ public class Library {
     }
 
     /**
+     * Returns an array of checking questions in the frame
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    public CheckingQuestion[] getCheckingQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
+        List<CheckingQuestion> questions = new ArrayList<>();
+        String[] questionIds = getActiveIndex().getQuestions(sourceTranslation, chapterId, frameId);
+        for(String questionId:questionIds) {
+            CheckingQuestion question = getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
+            if(question != null) {
+                questions.add(question);
+            }
+        }
+        return questions.toArray(new CheckingQuestion[questions.size()]);
+    }
+
+    /**
+     * Returns a checking question in the frame
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @param checkingQuestionId
+     * @return
+     */
+    public CheckingQuestion getCheckingQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String checkingQuestionId) {
+        try {
+            return CheckingQuestion.generate(chapterId, frameId, getActiveIndex().getQuestion(sourceTranslation, chapterId, frameId, checkingQuestionId));
+        } catch (JSONException e) {
+            Logger.e(this.getClass().getName(), "Failed to parse the checking question " + checkingQuestionId + " in " + sourceTranslation.getId());
+        }
+        return null;
+    }
+
+    /**
      * Checks if the project has any source downloaded
      *
      * @param projectId

@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
+import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
@@ -56,6 +57,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private static final int TAB_NOTES = 0;
     private static final int TAB_WORDS = 1;
+    private static final int TAB_QUESTIONS = 2;
     private final Library mLibrary;
     private final Translator mTranslator;
     private final Activity mContext;
@@ -373,11 +375,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(mOpenResourceTab[position] == TAB_NOTES) {
                 tab.select();
             }
-        } else if(mOpenResourceTab[position] == TAB_NOTES) {
-            // shift default tab to words if we don't have any notes.
-            mOpenResourceTab[position] = TAB_WORDS;
         }
-
         final TranslationWord[] words = mLibrary.getTranslationWords(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length > 0) {
             TabLayout.Tab tab = holder.mResourceTabs.newTab();
@@ -388,6 +386,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 tab.select();
             }
         }
+        final CheckingQuestion[] questions = mLibrary.getCheckingQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
+        if(questions.length > 0) {
+            TabLayout.Tab tab = holder.mResourceTabs.newTab();
+            tab.setText(R.string.questions);
+            tab.setTag(TAB_QUESTIONS);
+            holder.mResourceTabs.addTab(tab);
+            if(mOpenResourceTab[position] == TAB_QUESTIONS) {
+                tab.select();
+            }
+        }
+
+        // select default tab. first notes, then words, then questions
+        if(mOpenResourceTab[position] == TAB_NOTES && notes.length == 0) {
+            mOpenResourceTab[position] = TAB_WORDS;
+        }
+        if(mOpenResourceTab[position] == TAB_WORDS && words.length == 0) {
+            mOpenResourceTab[position] = TAB_QUESTIONS;
+        }
 
         holder.mResourceTabs.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -395,11 +411,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 if((int) tab.getTag() == TAB_NOTES && mOpenResourceTab[position] != TAB_NOTES) {
                     mOpenResourceTab[position] = TAB_NOTES;
                     // render notes
-                    renderResources(holder, position, notes, words);
+                    renderResources(holder, position, notes, words, questions);
                 } else if((int) tab.getTag() == TAB_WORDS && mOpenResourceTab[position] != TAB_WORDS) {
                     mOpenResourceTab[position] = TAB_WORDS;
                     // render words
-                    renderResources(holder, position, notes, words);
+                    renderResources(holder, position, notes, words, questions);
+                } else if((int) tab.getTag() == TAB_QUESTIONS && mOpenResourceTab[position] != TAB_QUESTIONS) {
+                    mOpenResourceTab[position] = TAB_QUESTIONS;
+                    // render questions
+                    renderResources(holder, position, notes, words, questions);
                 }
             }
 
@@ -415,8 +435,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
 
         // resource list
-        if(notes.length > 0 || words.length > 0) {
-            renderResources(holder, position, notes, words);
+        if(notes.length > 0 || words.length > 0 || questions.length > 0) {
+            renderResources(holder, position, notes, words, questions);
         }
 
         // done buttons
@@ -479,7 +499,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words) {
+    private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words, CheckingQuestion[] questions) {
         if(holder.mResourceList.getChildCount() > 0) {
             holder.mResourceList.removeAllViews();
         }
@@ -499,7 +519,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 Typography.formatSub(mContext, noteView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(noteView);
             }
-        } else {
+        } else if(mOpenResourceTab[position] == TAB_WORDS) {
             // render words
             for(final TranslationWord word:words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
@@ -514,6 +534,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 });
                 Typography.formatSub(mContext, wordView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
                 holder.mResourceList.addView(wordView);
+            }
+        } else if(mOpenResourceTab[position] == TAB_QUESTIONS) {
+            // render questions
+            for(final CheckingQuestion question:questions) {
+                TextView questionView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
+                questionView.setText(question.getQuestion());
+                questionView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (getListener() != null) {
+                            getListener().onCheckingQuestionClick(question.getChapterId(), question.getFrameId(), question.getId(), holder.getResourceCardWidth());
+                        }
+                    }
+                });
+                Typography.formatSub(mContext, questionView, mSourceLanguage.getId(), mSourceLanguage.getDirection());
+                holder.mResourceList.addView(questionView);
             }
         }
     }

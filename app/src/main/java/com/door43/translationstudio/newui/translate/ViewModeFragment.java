@@ -264,6 +264,11 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
 
     }
 
+    @Override
+    public void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width) {
+
+    }
+
     /**
      * Require correct interface
      * @param activity

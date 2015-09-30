@@ -64,25 +64,12 @@ public class TranslationWord {
                 Logger.e(TranslationWord.class.getName(), "Failed to parse a translation word example for " + id, e);
             }
         }
-        String[] aliases = jsonArrayToString(json.getJSONArray("aliases"));
-        String[] seeAlso = jsonArrayToString(json.getJSONArray("cf"));
+        String[] aliases = Util.jsonArrayToString(json.getJSONArray("aliases"));
+        String[] seeAlso = Util.jsonArrayToString(json.getJSONArray("cf"));
         String word = json.getString("term");
         String def = json.getString("def");
         String defTitle = json.getString("def_title");
         return new TranslationWord(id, word, def, defTitle, seeAlso, aliases, examples.toArray(new Example[examples.size()]));
-    }
-
-    /**
-     * Converts a json array to a string array
-     * @param json
-     * @return
-     */
-    private static String[] jsonArrayToString(JSONArray json) throws JSONException {
-        String[] values = new String[json.length()];
-        for(int i = 0; i < json.length(); i ++) {
-            values[i] = json.getString(i);
-        }
-        return values;
     }
 
     /**

@@ -8,6 +8,9 @@ import android.os.Build;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.View;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -56,5 +59,18 @@ public class Util {
         } finally {
             is.close();
         }
+    }
+
+    /**
+     * Converts a json array to a string array
+     * @param json
+     * @return
+     */
+    public static String[] jsonArrayToString(JSONArray json) throws JSONException {
+        String[] values = new String[json.length()];
+        for(int i = 0; i < json.length(); i ++) {
+            values[i] = json.getString(i);
+        }
+        return values;
     }
 }

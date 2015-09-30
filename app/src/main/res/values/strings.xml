@@ -357,4 +357,8 @@
     <string name="cannot_delete_project_with_translations">You cannot delete a project you are translating.</string>
     <string name="missing_project">The project is missing</string>
     <string name="menu_update_library">Update Library</string>
+    <string name="questions">Questions</string>
+    <string name="references">References</string>
+    <string name="question">Question</string>
+    <string name="answer">Answer</string>
 </resources>

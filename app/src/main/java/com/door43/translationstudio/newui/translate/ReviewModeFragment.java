@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.text.Html;
 import android.view.ContextThemeWrapper;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,8 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
@@ -45,6 +44,7 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static final String STATE_NOTE_ID = "state_note_id";
     private static final String STATE_CHAPTER_ID = "state_chapter_id";
     private static final String STATE_FRAME_ID = "state_frame_id";
+    private static final String STATE_QUESTION_ID = "state_question_id";
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
@@ -55,6 +55,7 @@ public class ReviewModeFragment extends ViewModeFragment {
     private String mTranslationNoteId;
     private String mFrameId;
     private String mChapterId;
+    private String mCheckingQuestionId;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
@@ -92,6 +93,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                                 onTranslationNoteClick(mChapterId, mFrameId, mTranslationNoteId, sample.getResourceCardWidth());
                             } else if (mTranslationWordId != null) {
                                 onTranslationWordClick(mTranslationWordId, sample.getResourceCardWidth());
+                            } else if(mCheckingQuestionId != null) {
+                                onCheckingQuestionClick(mChapterId, mFrameId, mCheckingQuestionId, sample.getResourceCardWidth());
                             }
                         }
                     }
@@ -144,6 +147,12 @@ public class ReviewModeFragment extends ViewModeFragment {
     @Override
     public void onTranslationNoteClick(String chapterId, String frameId, String translatioNoteId, int width) {
         renderTranslationNote(chapterId, frameId, translatioNoteId);
+        openResourcesDrawer(width);
+    }
+
+    @Override
+    public void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width) {
+        renderCheckingQuestion(chapterId, frameId, checkingQuestionId);
         openResourcesDrawer(width);
     }
 
@@ -201,7 +210,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             examplesView.removeAllViews();
             for(final TranslationWord.Example example:word.getExamples()) {
-                LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_pane_right_resources_example_item, null);
+                LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
                 TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
                 HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
                 Frame frame = library.getFrame(mSourceTranslation, example.getChapterId(), example.getFrameId());
@@ -278,6 +287,61 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
     }
 
+    /**
+     * Prepares the resources drawer with the checking question
+     * @param questionId
+     */
+    private void renderCheckingQuestion(String chapterId, String frameId, String questionId) {
+        mTranslationWordId = null;
+        mTranslationNoteId = null;
+        mCheckingQuestionId = questionId;
+        mFrameId = frameId;
+        mChapterId = chapterId;
+
+        final Library library = AppContext.getLibrary();
+        CheckingQuestion question = library.getCheckingQuestion(mSourceTranslation, chapterId, frameId, questionId);
+        SourceLanguage sourceLanguage = library.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+        if(mResourcesDrawerContent != null) {
+            mResourcesDrawerContent.scrollTo(0, 0);
+            LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_question, null);
+
+            mCloseResourcesDrawerButton.setText(question.getQuestion());
+
+            TextView questionTitle = (TextView)view.findViewById(R.id.question_title);
+            Typography.formatTitle(getActivity(), questionTitle, sourceLanguage.getId(), sourceLanguage.direction);
+            TextView questionView = (TextView)view.findViewById(R.id.question);
+            TextView answerTitle = (TextView)view.findViewById(R.id.answer_title);
+            Typography.formatTitle(getActivity(), answerTitle, sourceLanguage.getId(), sourceLanguage.direction);
+            TextView answerView = (TextView)view.findViewById(R.id.answer);
+            TextView referencesTitle = (TextView)view.findViewById(R.id.references_title);
+            Typography.formatTitle(getActivity(), referencesTitle, sourceLanguage.getId(), sourceLanguage.direction);
+            LinearLayout referencesLayout = (LinearLayout)view.findViewById(R.id.references);
+
+            referencesLayout.removeAllViews();
+            for(final CheckingQuestion.Reference reference:question.getReferences()) {
+                TextView referenceView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_reference_item, null);
+                Frame frame = library.getFrame(mSourceTranslation, reference.getChapterId(), reference.getFrameId());
+                referenceView.setText(mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
+                Typography.formatSub(getActivity(), referenceView, sourceLanguage.getId(), sourceLanguage.direction);
+                referenceView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        scrollToFrame(reference.getChapterId(), reference.getFrameId());
+                    }
+                });
+                referencesLayout.addView(referenceView);
+            }
+
+            questionView.setText(question.getQuestion());
+            Typography.formatSub(getActivity(), questionView, sourceLanguage.getId(), sourceLanguage.getDirection());
+            answerView.setText(question.getAnswer());
+            Typography.formatSub(getActivity(), answerView, sourceLanguage.getId(), sourceLanguage.getDirection());
+
+            mResourcesDrawerContent.removeAllViews();
+            mResourcesDrawerContent.addView(view);
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -291,6 +355,10 @@ public class ReviewModeFragment extends ViewModeFragment {
                 mFrameId = savedInstanceState.getString(STATE_FRAME_ID);
             } else if(savedInstanceState.containsKey(STATE_WORD_ID)) {
                 mTranslationWordId = savedInstanceState.getString(STATE_WORD_ID);
+            } else if(savedInstanceState.containsKey(STATE_QUESTION_ID)) {
+                mCheckingQuestionId = savedInstanceState.getString(STATE_QUESTION_ID);
+                mChapterId = savedInstanceState.getString(STATE_CHAPTER_ID);
+                mFrameId = savedInstanceState.getString(STATE_FRAME_ID);
             }
         }
     }
@@ -310,8 +378,13 @@ public class ReviewModeFragment extends ViewModeFragment {
             out.putString(STATE_FRAME_ID, mFrameId);
         } else {
             out.remove(STATE_NOTE_ID);
-            out.remove(STATE_CHAPTER_ID);
-            out.remove(STATE_FRAME_ID);
+        }
+        if(mCheckingQuestionId != null) {
+            out.putString(STATE_QUESTION_ID, mCheckingQuestionId);
+            out.putString(STATE_CHAPTER_ID, mChapterId);
+            out.putString(STATE_FRAME_ID, mFrameId);
+        } else {
+            out.remove(STATE_QUESTION_ID);
         }
         super.onSaveInstanceState(out);
     }
