@@ -10,6 +10,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -177,13 +178,13 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openTargetTranslation(holder, position);
+                openTargetTranslationCard(holder, position);
             }
         });
         holder.mSourceCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                closeTargetTranslation(holder, position);
+                closeTargetTranslationCard(holder, position);
             }
         });
 
@@ -340,10 +341,24 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      * @param holder
      * @param position
      */
-    public void closeTargetTranslation(ViewHolder holder, int position) {
+    public void closeTargetTranslationCard(ViewHolder holder, final int position) {
         if (mTargetStateOpen[position]) {
-            mTargetStateOpen[position] = false;
-            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
+            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mTargetStateOpen[position] = false;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
 
             // re-enable new tab button
             holder.mNewTabButton.setEnabled(true);
@@ -355,10 +370,24 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
      * @param holder
      * @param position
      */
-    public void openTargetTranslation(ViewHolder holder, int position) {
+    public void openTargetTranslationCard(ViewHolder holder, final int position) {
         if (!mTargetStateOpen[position]) {
-            mTargetStateOpen[position] = true;
-            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
+            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false, new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mTargetStateOpen[position] = true;
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
 
             // disable new tab button so we don't accidently open it
             holder.mNewTabButton.setEnabled(false);

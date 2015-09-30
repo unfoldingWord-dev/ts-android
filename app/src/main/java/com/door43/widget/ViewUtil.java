@@ -72,43 +72,50 @@ public class ViewUtil {
      * @param bottomCard
      * @param topCardElevation
      * @param bottomCardElevation
-     * @param leftToRight indicates which direction the animation should move.
+     * @param leftToRight indicates which direction the animation of the top card should go.
+     * @param listener
      */
-    public static void animateSwapCards(final View topCard, final View bottomCard, final int topCardElevation, final int bottomCardElevation, final boolean leftToRight) {
+    public static void animateSwapCards(final View topCard, final View bottomCard, final int topCardElevation, final int bottomCardElevation, final boolean leftToRight, Animation.AnimationListener listener) {
         long duration = 400;
         float xMargin = topCard.getX() - bottomCard.getX();
         float yMargin = topCard.getY() - bottomCard.getY();
 
+        topCard.clearAnimation();
+        bottomCard.clearAnimation();
+
         final ViewGroup.LayoutParams topLayout = topCard.getLayoutParams();
         final ViewGroup.LayoutParams bottomLayout = bottomCard.getLayoutParams();
 
+        // bottom animation
+        Animation upLeft = new TranslateAnimation(0f, xMargin, 0f, yMargin);
+        upLeft.setDuration(duration);
+        Animation bottomCardRight = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        bottomCardRight.setDuration(duration);
+        Animation bottomCardLeft = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        bottomCardLeft.setDuration(duration);
 
-        // animate bottom card
-        Animation bottomShift = new TranslateAnimation(0f, xMargin, 0f, yMargin);
-        bottomShift.setInterpolator(new LinearInterpolator());
-        bottomShift.setDuration(duration);
-
-        Animation bottomOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        bottomOut.setInterpolator(new LinearInterpolator());
-        bottomOut.setDuration(duration);
-
-        final AnimationSet bottomOutSet = new AnimationSet(false);
-        bottomOutSet.addAnimation(bottomOut);
-
-        Animation bottomIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        bottomIn.setInterpolator(new LinearInterpolator());
-        bottomIn.setDuration(duration);
-
-        final AnimationSet bottomInSet = new AnimationSet(false);
+        AnimationSet bottomOutSet = new AnimationSet(false);
+        if(leftToRight) {
+            bottomOutSet.addAnimation(bottomCardLeft);
+        } else {
+            bottomOutSet.addAnimation(bottomCardRight);
+        }
+        AnimationSet bottomInSet = new AnimationSet(false);
         bottomInSet.setStartOffset(duration);
-        bottomInSet.addAnimation(bottomIn);
-        bottomInSet.addAnimation(bottomShift);
-
+        if(leftToRight) {
+            bottomInSet.addAnimation(bottomCardRight);
+            bottomInSet.addAnimation(upLeft);
+        } else {
+            bottomInSet.addAnimation(bottomCardLeft);
+            bottomInSet.addAnimation(upLeft);
+        }
         AnimationSet bottomSet = new AnimationSet(false);
+        bottomSet.setInterpolator(new LinearInterpolator());
         bottomSet.addAnimation(bottomOutSet);
         bottomSet.addAnimation(bottomInSet);
+        bottomSet.setAnimationListener(listener);
 
-        bottomOut.setAnimationListener(new Animation.AnimationListener() {
+        bottomOutSet.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
 
@@ -118,19 +125,10 @@ public class ViewUtil {
             public void onAnimationEnd(Animation animation) {
                 // elevation takes precedence for API 21+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    if (leftToRight) {
-                        topCard.setElevation(topCardElevation);
-                        bottomCard.setElevation(bottomCardElevation);
-                    } else {
-                        topCard.setElevation(bottomCardElevation);
-                        bottomCard.setElevation(topCardElevation);
-                    }
+                    topCard.setElevation(bottomCardElevation);
+                    bottomCard.setElevation(topCardElevation);
                 }
-                if (leftToRight) {
-                    topCard.bringToFront();
-                } else {
-                    bottomCard.bringToFront();
-                }
+                bottomCard.bringToFront();
                 ((View) bottomCard.getParent()).requestLayout();
                 ((View) bottomCard.getParent()).invalidate();
             }
@@ -159,30 +157,38 @@ public class ViewUtil {
 
             }
         });
-        bottomCard.startAnimation(bottomSet);
 
-        // animate top card
-        Animation topShift = new TranslateAnimation(0f, -xMargin, 0f, -yMargin);
-        topShift.setInterpolator(new LinearInterpolator());
-        topShift.setDuration(duration);
+        // top animation
+        Animation downRight = new TranslateAnimation(0f, -xMargin, 0f, -yMargin);
+        downRight.setDuration(duration);
+        Animation topCardRight = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        topCardRight.setDuration(duration);
+        Animation topCardLeft = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
+        topCardLeft.setDuration(duration);
 
-        Animation topOut = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, -.5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        topOut.setDuration(duration);
-
-        final AnimationSet topOutSet = new AnimationSet(false);
-        topOutSet.addAnimation(topOut);
-
-        Animation topIn = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, .5f, Animation.RELATIVE_TO_SELF, 0, Animation.RELATIVE_TO_SELF, 0);
-        topIn.setDuration(duration);
-
-        AnimationSet topInSet = new AnimationSet(true);
+        AnimationSet topOutSet = new AnimationSet(false);
+        if(leftToRight) {
+            topOutSet.addAnimation(topCardRight);
+        } else {
+            topOutSet.addAnimation(topCardLeft);
+        }
+        AnimationSet topInSet = new AnimationSet(false);
         topInSet.setStartOffset(duration);
-        topInSet.addAnimation(topIn);
-        topInSet.addAnimation(topShift);
+        if(leftToRight) {
+            topInSet.addAnimation(topCardLeft);
+            topInSet.addAnimation(downRight);
+        } else {
+            topInSet.addAnimation(topCardRight);
+            topInSet.addAnimation(downRight);
+        }
 
-        AnimationSet topSet = new AnimationSet(true);
+        AnimationSet topSet = new AnimationSet(false);
+        topSet.setInterpolator(new LinearInterpolator());
         topSet.addAnimation(topOutSet);
         topSet.addAnimation(topInSet);
+
+        // start animations
+        bottomCard.startAnimation(bottomSet);
         topCard.startAnimation(topSet);
     }
 

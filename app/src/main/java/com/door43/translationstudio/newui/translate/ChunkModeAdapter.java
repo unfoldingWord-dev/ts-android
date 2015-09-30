@@ -13,6 +13,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -202,29 +203,13 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!mTargetStateOpen[position]) {
-                    mTargetStateOpen[position] = true;
-                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
-
-                    // disable new tab button so we don't accidently open it
-                    holder.mNewTabButton.setEnabled(false);
-                }
+               openTargetTranslationCard(holder, position);
             }
         });
         holder.mSourceCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mTargetStateOpen[position]) {
-                    mTargetStateOpen[position] = false;
-                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
-
-                    if(getListener() != null) {
-                        getListener().closeKeyboard();
-                    }
-
-                    // re-enable new tab button
-                    holder.mNewTabButton.setEnabled(true);
-                }
+                closeTargetTranslationCard(holder, position);
             }
         });
 
@@ -416,12 +401,72 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         return mFrames.length;
     }
 
-    public void closeTargetTranslationCard() {
+    /**
+     * Moves the target translation card to the back
+     * @param holder
+     * @param position
+     */
+    public void closeTargetTranslationCard(ViewHolder holder, final int position) {
+        if(mTargetStateOpen[position]) {
+            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
 
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mTargetStateOpen[position] = false;
+                    if (getListener() != null) {
+                        getListener().closeKeyboard();
+                    }
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            if (getListener() != null) {
+                getListener().closeKeyboard();
+            }
+            // re-enable new tab button
+            holder.mNewTabButton.setEnabled(true);
+        }
     }
 
-    public void openTargetTranslationCard() {
+    /**
+     * Moves the target translation to the top
+     * @param holder
+     * @param position
+     */
+    public void openTargetTranslationCard(ViewHolder holder, final int position) {
+        if(!mTargetStateOpen[position]) {
+            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false, new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
 
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    mTargetStateOpen[position] = true;
+                    if (getListener() != null) {
+                        getListener().closeKeyboard();
+                    }
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            if (getListener() != null) {
+                getListener().closeKeyboard();
+            }
+            // disable new tab button so we don't accidently open it
+            holder.mNewTabButton.setEnabled(false);
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

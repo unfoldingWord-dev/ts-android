@@ -23,7 +23,7 @@ public class ReadModeFragment extends ViewModeFragment {
             }
             if(position != -1) {
                 RecyclerView.ViewHolder holder = getViewHolderForAdapterPosition(position);
-                ((ReadModeAdapter) getAdapter()).closeTargetTranslation((ReadModeAdapter.ViewHolder)holder, position);
+                ((ReadModeAdapter) getAdapter()).closeTargetTranslationCard((ReadModeAdapter.ViewHolder) holder, position);
             }
         }
     }
@@ -37,7 +37,7 @@ public class ReadModeFragment extends ViewModeFragment {
             }
             if(position != -1) {
                 RecyclerView.ViewHolder holder = getViewHolderForAdapterPosition(position);
-                ((ReadModeAdapter) getAdapter()).openTargetTranslation((ReadModeAdapter.ViewHolder)holder, position);
+                ((ReadModeAdapter) getAdapter()).openTargetTranslationCard((ReadModeAdapter.ViewHolder) holder, position);
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 
 /**
@@ -16,14 +17,28 @@ public class ChunkModeFragment extends ViewModeFragment {
     @Override
     protected void onRightSwipe(MotionEvent e1, MotionEvent e2) {
         if(getAdapter() != null) {
-            ((ChunkModeAdapter) getAdapter()).closeTargetTranslationCard();
+            int position = findViewHolderAdapterPosition(e1.getX(), e1.getY());
+            if(position == -1) {
+                position = findViewHolderAdapterPosition(e2.getX(), e2.getY());
+            }
+            if(position != -1) {
+                RecyclerView.ViewHolder holder = getViewHolderForAdapterPosition(position);
+                ((ChunkModeAdapter) getAdapter()).closeTargetTranslationCard((ChunkModeAdapter.ViewHolder)holder, position);
+            }
         }
     }
 
     @Override
     protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
         if(getAdapter() != null) {
-            ((ChunkModeAdapter) getAdapter()).openTargetTranslationCard();
+            int position = findViewHolderAdapterPosition(e1.getX(), e1.getY());
+            if(position == -1) {
+                position = findViewHolderAdapterPosition(e2.getX(), e2.getY());
+            }
+            if(position != -1) {
+                RecyclerView.ViewHolder holder = getViewHolderForAdapterPosition(position);
+                ((ChunkModeAdapter) getAdapter()).openTargetTranslationCard((ChunkModeAdapter.ViewHolder)holder, position);
+            }
         }
     }
 }

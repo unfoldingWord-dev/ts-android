@@ -13,7 +13,9 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -454,15 +456,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
         }
 
-        // TODO: add click to open for resources
         if(!mResourcesOpened) {
             holder.mResourceLayout.setVisibility(View.INVISIBLE);
-            holder.mResourceCard.setOnClickListener(new View.OnClickListener() {
+            // TRICKY: we have to detect a single tap so that swipes do not trigger this
+            final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
                 @Override
-                public void onClick(View v) {
-                    if(!mResourcesOpened) {
+                public boolean onSingleTapUp(MotionEvent e) {
+                    if (!mResourcesOpened) {
                         openResources();
                     }
+                    return true;
+                }
+            });
+            holder.mResourceCard.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return detector.onTouchEvent(event);
                 }
             });
         } else {
