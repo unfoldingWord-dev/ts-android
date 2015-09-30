@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
+import com.door43.translationstudio.CrashReporterActivity;
 import com.door43.translationstudio.SplashScreenActivity;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.TermsOfUseActivity;
 
 import java.io.File;
 
@@ -20,14 +22,18 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
-        // check if we crashed or if we need to reload
-        File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
-        String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);
-        if (crashFiles.length > 0 || !AppContext.getLibrary().exists() || AppContext.getLibrary().getTargetLanguagesLength() == 0) {
-            // restart
-            Intent intent = new Intent(this, SplashScreenActivity.class);
-            startActivity(intent);
-            finish();
+        if(this instanceof TermsOfUseActivity == false
+                && this instanceof SplashScreenActivity == false
+                && this instanceof CrashReporterActivity == false) {
+            // check if we crashed or if we need to reload
+            File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
+            String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);
+            if (crashFiles.length > 0 || !AppContext.getLibrary().exists() || AppContext.getLibrary().getTargetLanguagesLength() == 0) {
+                // restart
+                Intent intent = new Intent(this, SplashScreenActivity.class);
+                startActivity(intent);
+                finish();
+            }
         }
     }
 }

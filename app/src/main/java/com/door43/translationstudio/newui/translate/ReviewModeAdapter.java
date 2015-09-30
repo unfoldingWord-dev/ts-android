@@ -366,7 +366,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // resource tabs
         holder.mResourceTabs.setOnTabSelectedListener(null);
         holder.mResourceTabs.removeAllTabs();
-        final TranslationNote[] notes = mLibrary.getTranslationNotes(mSourceTranslation, frame.getChapterId(), frame.getId());
+        final TranslationNote[] notes = getPreferredNotes(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length > 0) {
             TabLayout.Tab tab = holder.mResourceTabs.newTab();
             tab.setText(R.string.label_translation_notes);
@@ -376,7 +376,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 tab.select();
             }
         }
-        final TranslationWord[] words = mLibrary.getTranslationWords(mSourceTranslation, frame.getChapterId(), frame.getId());
+        final TranslationWord[] words = getPreferredWords(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length > 0) {
             TabLayout.Tab tab = holder.mResourceTabs.newTab();
             tab.setText(R.string.translation_words);
@@ -386,7 +386,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 tab.select();
             }
         }
-        final CheckingQuestion[] questions = mLibrary.getCheckingQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
+        final CheckingQuestion[] questions = getPreferredQuestions(mSourceTranslation, frame.getChapterId(), frame.getId());
         if(questions.length > 0) {
             TabLayout.Tab tab = holder.mResourceTabs.newTab();
             tab.setText(R.string.questions);
@@ -497,6 +497,56 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mResourceLayout.setVisibility(View.VISIBLE);
         }
+    }
+
+    /**
+     * Returns the preferred translation notes.
+     * if none exist in the source language it will return the english version
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    private static TranslationNote[] getPreferredNotes(SourceTranslation sourceTranslation, String chapterId, String frameId) {
+        Library library = AppContext.getLibrary();
+        TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, chapterId, frameId);
+        if(notes.length == 0 && !sourceTranslation.sourceLanguageId.equals("en")) {
+            notes = library.getTranslationNotes(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId);
+        }
+        return notes;
+    }
+
+    /**
+     * Returns the preferred translation words.
+     * if none exist in the source language it will return the english version
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    private static TranslationWord[] getPreferredWords(SourceTranslation sourceTranslation, String chapterId, String frameId) {
+        Library library = AppContext.getLibrary();
+        TranslationWord[] words = library.getTranslationWords(sourceTranslation, chapterId, frameId);
+        if(words.length == 0 && !sourceTranslation.sourceLanguageId.equals("en")) {
+            words = library.getTranslationWords(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId);
+        }
+        return words;
+    }
+
+    /**
+     * Returns the preferred checking questions.
+     * if none exist in the source language it will return the english version
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    private static CheckingQuestion[] getPreferredQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
+        Library library = AppContext.getLibrary();
+        CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
+        if(questions.length == 0 && !sourceTranslation.sourceLanguageId.equals("en")) {
+            questions = library.getCheckingQuestions(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId);
+        }
+        return questions;
     }
 
     private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words, CheckingQuestion[] questions) {

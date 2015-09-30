@@ -46,6 +46,9 @@ public class CheckingQuestion {
      * @throws JSONException
      */
     public static CheckingQuestion generate(String chapterId, String frameId, JSONObject json) throws JSONException {
+        if(json == null) {
+            return null;
+        }
         String id = json.getString("id");
         String question = json.getString("q");
         String answer = json.getString("a");

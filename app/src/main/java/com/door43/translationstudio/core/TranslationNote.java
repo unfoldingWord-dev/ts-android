@@ -29,6 +29,9 @@ public class TranslationNote {
      * @return
      */
     public static TranslationNote generate(String chapterId, String frameId, JSONObject json) {
+        if(json == null) {
+            return null;
+        }
         try {
             return new TranslationNote(
                     chapterId,

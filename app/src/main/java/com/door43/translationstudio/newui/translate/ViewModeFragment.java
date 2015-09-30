@@ -173,6 +173,14 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     }
 
     /**
+     * Returns the currently selected source translation
+     * @return
+     */
+    protected SourceTranslation getSourceTranslation() {
+        return mLibrary.getSourceTranslation(mSourceTranslationId);
+    }
+
+    /**
      * Scrolls to the given frame
      * @param chapterId
      * @param frameId
@@ -295,6 +303,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     @Override
     public void onSourceTranslationTabClick(String sourceTranslationId) {
         AppContext.setSelectedSourceTranslation(mTargetTranslation.getId(), sourceTranslationId);
+        mSourceTranslationId = sourceTranslationId;
         mAdapter.setSourceTranslation(sourceTranslationId);
     }
 

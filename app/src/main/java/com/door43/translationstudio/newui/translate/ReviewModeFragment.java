@@ -50,7 +50,6 @@ public class ReviewModeFragment extends ViewModeFragment {
     private CardView mResourcesDrawer;
     private ScrollView mResourcesDrawerContent;
     private Button mCloseResourcesDrawerButton;
-    private SourceTranslation mSourceTranslation;
     private String mTranslationWordId;
     private String mTranslationNoteId;
     private String mFrameId;
@@ -59,7 +58,6 @@ public class ReviewModeFragment extends ViewModeFragment {
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
-        mSourceTranslation = AppContext.getLibrary().getSourceTranslation(sourceTranslationId);
         return new ReviewModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId, mResourcesOpen);
     }
 
@@ -165,8 +163,9 @@ public class ReviewModeFragment extends ViewModeFragment {
         mTranslationNoteId = null;
 
         Library library = AppContext.getLibrary();
-        SourceLanguage sourceLanguage = library.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
-        TranslationWord word = library.getTranslationWord(mSourceTranslation, translationWordId);
+        SourceTranslation sourceTranslation = getSourceTranslation();
+        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectId, sourceTranslation.sourceLanguageId);
+        TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_word, null);
@@ -187,7 +186,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             seeAlsoView.removeAllViews();
             for(int i = 0; i < word.getSeeAlso().length; i ++) {
-                final TranslationWord relatedWord = library.getTranslationWord(mSourceTranslation, word.getSeeAlso()[i]);
+                final TranslationWord relatedWord = getPreferredWord(sourceTranslation, word.getSeeAlso()[i]);
                 if(relatedWord != null) {
                     Button button = new Button(new ContextThemeWrapper(getActivity(), R.style.Widget_Button_Tag), null, R.style.Widget_Button_Tag);
                     button.setText(relatedWord.getTitle());
@@ -213,8 +212,8 @@ public class ReviewModeFragment extends ViewModeFragment {
                 LinearLayout exampleView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_example_item, null);
                 TextView referenceView = (TextView)exampleView.findViewById(R.id.reference);
                 HtmlTextView passageView = (HtmlTextView)exampleView.findViewById(R.id.passage);
-                Frame frame = library.getFrame(mSourceTranslation, example.getChapterId(), example.getFrameId());
-                referenceView.setText(mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(example.getChapterId()) + ":" + frame.getTitle());
+                Frame frame = library.getFrame(sourceTranslation, example.getChapterId(), example.getFrameId());
+                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(example.getChapterId()) + ":" + frame.getTitle());
                 passageView.setHtmlFromString(example.getPassage(), true);
                 exampleView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -249,7 +248,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         mChapterId = chapterId;
 
         final Library library = AppContext.getLibrary();
-        TranslationNote note = library.getTranslationNote(mSourceTranslation, chapterId, frameId, noteId);
+        final SourceTranslation sourceTranslation = getSourceTranslation();
+        TranslationNote note = getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_note, null);
@@ -262,10 +262,10 @@ public class ReviewModeFragment extends ViewModeFragment {
             LinkRenderer renderer = new LinkRenderer(new LinkRenderer.OnPreprocessLink() {
                 @Override
                 public boolean onPreprocess(PassageLinkSpan span) {
-                    Frame frame = library.getFrame(mSourceTranslation, span.getChapterId(), span.getFrameId());
-                    String title = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(span.getChapterId()) + ":" + frame.getTitle();
+                    Frame frame = library.getFrame(sourceTranslation, span.getChapterId(), span.getFrameId());
+                    String title = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(span.getChapterId()) + ":" + frame.getTitle();
                     span.setTitle(title);
-                    return library.getFrame(mSourceTranslation, span.getChapterId(), span.getFrameId()) != null;
+                    return library.getFrame(sourceTranslation, span.getChapterId(), span.getFrameId()) != null;
                 }
             }, new Span.OnClickListener() {
                 @Override
@@ -276,7 +276,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
 
             title.setText(note.getTitle());
-            SourceLanguage sourceLanguage = library.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+            SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectId, sourceTranslation.sourceLanguageId);
             Typography.formatTitle(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
             description.setText(renderer.render(Html.fromHtml(note.getBody())));
             Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
@@ -299,8 +299,9 @@ public class ReviewModeFragment extends ViewModeFragment {
         mChapterId = chapterId;
 
         final Library library = AppContext.getLibrary();
-        CheckingQuestion question = library.getCheckingQuestion(mSourceTranslation, chapterId, frameId, questionId);
-        SourceLanguage sourceLanguage = library.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+        SourceTranslation sourceTranslation = getSourceTranslation();
+        CheckingQuestion question = getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
+        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectId, sourceTranslation.sourceLanguageId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_question, null);
@@ -320,8 +321,8 @@ public class ReviewModeFragment extends ViewModeFragment {
             referencesLayout.removeAllViews();
             for(final CheckingQuestion.Reference reference:question.getReferences()) {
                 TextView referenceView = (TextView) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_reference_item, null);
-                Frame frame = library.getFrame(mSourceTranslation, reference.getChapterId(), reference.getFrameId());
-                referenceView.setText(mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
+                Frame frame = library.getFrame(sourceTranslation, reference.getChapterId(), reference.getFrameId());
+                referenceView.setText(sourceTranslation.getProjectTitle() + " " + Integer.parseInt(reference.getChapterId()) + ":" + frame.getTitle());
                 Typography.formatSub(getActivity(), referenceView, sourceLanguage.getId(), sourceLanguage.direction);
                 referenceView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -387,5 +388,53 @@ public class ReviewModeFragment extends ViewModeFragment {
             out.remove(STATE_QUESTION_ID);
         }
         super.onSaveInstanceState(out);
+    }
+
+    /**
+     * Returns the preferred translation notes.
+     * if none exist in the source language it will return the english version
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    private static TranslationNote getPreferredNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String noteId) {
+        Library library = AppContext.getLibrary();
+        TranslationNote note = library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
+        if(note == null && !sourceTranslation.sourceLanguageId.equals("en")) {
+            note = library.getTranslationNote(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId, noteId);
+        }
+        return note;
+    }
+
+    /**
+     * Returns the preferred translation words.
+     * if none exist in the source language it will return the english version
+     * @param sourceTranslation
+     * @return
+     */
+    private static TranslationWord getPreferredWord(SourceTranslation sourceTranslation, String wordId) {
+        Library library = AppContext.getLibrary();
+        TranslationWord word = library.getTranslationWord(sourceTranslation, wordId);
+        if(word == null && !sourceTranslation.sourceLanguageId.equals("en")) {
+            word = library.getTranslationWord(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), wordId);
+        }
+        return word;
+    }
+
+    /**
+     * Returns the preferred checking question.
+     * if none exist in the source language it will return the english version
+     * @param sourceTranslation
+     * @param chapterId
+     * @param frameId
+     * @return
+     */
+    private static CheckingQuestion getPreferredQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String questionId) {
+        Library library = AppContext.getLibrary();
+        CheckingQuestion question = library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
+        if(question == null && !sourceTranslation.sourceLanguageId.equals("en")) {
+            question = library.getCheckingQuestion(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId, questionId);
+        }
+        return question;
     }
 }
