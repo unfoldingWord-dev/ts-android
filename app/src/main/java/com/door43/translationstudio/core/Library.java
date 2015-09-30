@@ -822,6 +822,11 @@ public class Library {
      * @return
      */
     public TargetLanguage getTargetLanguage(String targetLanguageId) {
+        if(mTargetLanguages == null) {
+            // TRICKY: if for some reason the target languages are not loaded do so now.
+            // This will slow the ui considerably this once, but will prevent the app from crashing
+            getTargetLanguages();
+        }
         if(mTargetLanguages.containsKey(targetLanguageId)) {
             return mTargetLanguages.get(targetLanguageId);
         } else {
@@ -1080,6 +1085,18 @@ public class Library {
             mAppIndex.deleteProject(projectId);
         }
 
+    }
+
+    /**
+     * Returns the number of target languages without loading them from the disk.
+     * @return
+     */
+    public int getTargetLanguagesLength() {
+        if(mTargetLanguages != null) {
+            return mTargetLanguages.size();
+        } else {
+            return 0;
+        }
     }
 
     public interface OnProgressListener {

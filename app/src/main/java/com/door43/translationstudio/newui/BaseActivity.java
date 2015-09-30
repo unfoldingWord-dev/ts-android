@@ -20,10 +20,10 @@ public abstract class BaseActivity extends AppCompatActivity {
     public void onResume() {
         super.onResume();
 
-        // check if we crashed
+        // check if we crashed or if we need to reload
         File dir = new File(getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
-        String[] files = GlobalExceptionHandler.getStacktraces(dir);
-        if (files.length > 0) {
+        String[] crashFiles = GlobalExceptionHandler.getStacktraces(dir);
+        if (crashFiles.length > 0 || !AppContext.getLibrary().exists() || AppContext.getLibrary().getTargetLanguagesLength() == 0) {
             // restart
             Intent intent = new Intent(this, SplashScreenActivity.class);
             startActivity(intent);
