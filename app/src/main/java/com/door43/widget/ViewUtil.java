@@ -62,6 +62,7 @@ public class ViewUtil {
             view.setBackgroundDrawable(wrappedDrawable);
         }
     }
+
     /**
      * Performs a stacked card animation that brings a bottom card to the front
      * In preperation two views should be stacked on top of each other with appropriate margin
@@ -71,9 +72,9 @@ public class ViewUtil {
      * @param bottomCard
      * @param topCardElevation
      * @param bottomCardElevation
-     * @param bringLeftCardToFront
+     * @param leftToRight indicates which direction the animation should move.
      */
-    public static void animateSwapCards(final View topCard, final View bottomCard, final int topCardElevation, final int bottomCardElevation, final boolean bringLeftCardToFront) {
+    public static void animateSwapCards(final View topCard, final View bottomCard, final int topCardElevation, final int bottomCardElevation, final boolean leftToRight) {
         long duration = 400;
         float xMargin = topCard.getX() - bottomCard.getX();
         float yMargin = topCard.getY() - bottomCard.getY();
@@ -117,7 +118,7 @@ public class ViewUtil {
             public void onAnimationEnd(Animation animation) {
                 // elevation takes precedence for API 21+
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    if (bringLeftCardToFront) {
+                    if (leftToRight) {
                         topCard.setElevation(topCardElevation);
                         bottomCard.setElevation(bottomCardElevation);
                     } else {
@@ -125,7 +126,7 @@ public class ViewUtil {
                         bottomCard.setElevation(topCardElevation);
                     }
                 }
-                if (bringLeftCardToFront) {
+                if (leftToRight) {
                     topCard.bringToFront();
                 } else {
                     bottomCard.bringToFront();

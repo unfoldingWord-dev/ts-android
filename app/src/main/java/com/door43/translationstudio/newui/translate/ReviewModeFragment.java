@@ -45,7 +45,6 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static final String STATE_NOTE_ID = "state_note_id";
     private static final String STATE_CHAPTER_ID = "state_chapter_id";
     private static final String STATE_FRAME_ID = "state_frame_id";
-    private GestureDetector mGesture;
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
@@ -72,44 +71,6 @@ public class ReviewModeFragment extends ViewModeFragment {
             @Override
             public void onClick(View v) {
                 closeResourcesDrawer();
-            }
-        });
-
-        mGesture = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
-            public MotionEvent mLastOnDownEvent;
-            private final float SWIPE_THRESHOLD_VELOCITY = 20f;
-            private final float SWIPE_MIN_DISTANCE = 50f;
-            private final float SWIPE_MAX_ANGLE_DEG = 30;
-            @Override
-            public boolean onDown(MotionEvent e) {
-                mLastOnDownEvent = e;
-                return super.onDown(e);
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                if(e1 == null) {
-                    e1 = mLastOnDownEvent;
-                }
-                try {
-                    float distanceX = e2.getX() - e1.getX();
-                    float distanceY = e2.getY() - e1.getY();
-                    // don't handle vertical swipes (division error)
-                    if (distanceX == 0) return false;
-
-                    double flingAngle = Math.toDegrees(Math.asin(Math.abs(distanceY / distanceX)));
-                    if (flingAngle <= SWIPE_MAX_ANGLE_DEG && Math.abs(distanceX) >= SWIPE_MIN_DISTANCE && Math.abs(velocityX) >= SWIPE_THRESHOLD_VELOCITY) {
-                        if (distanceX > 0) {
-                            onRightSwipe();
-                        } else {
-                            onLeftSwipe();
-
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return false;
             }
         });
 
@@ -140,7 +101,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         closeResourcesDrawer();
     }
 
-    private void onRightSwipe() {
+    @Override
+    protected void onRightSwipe(MotionEvent e1, MotionEvent e2) {
         if(mResourcesDrawerOpen) {
             closeResourcesDrawer();
         } else {
@@ -150,19 +112,10 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
     }
 
-    private void onLeftSwipe() {
+    @Override
+    protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
         if(getAdapter() != null) {
             ((ReviewModeAdapter)getAdapter()).openResources();
-        }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if(mGesture != null) {
-            return mGesture.onTouchEvent(event);
-        } else {
-            Logger.w(this.getClass().getName(), "The gesture dectector was not initialized so the touch was not handled");
-            return false;
         }
     }
 

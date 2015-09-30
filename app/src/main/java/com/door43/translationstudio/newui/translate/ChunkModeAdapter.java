@@ -416,6 +416,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         return mFrames.length;
     }
 
+    public void closeTargetTranslationCard() {
+
+    }
+
+    public void openTargetTranslationCard() {
+
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;

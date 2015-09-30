@@ -135,8 +135,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         float closedWeight = 0.765f;
         ObjectAnimator anim;
         if(mResourcesOpened) {
+            holder.mResourceLayout.setVisibility(View.VISIBLE);
             anim = ObjectAnimator.ofFloat(holder.mMainContent, "weightSum", openWeight, closedWeight);
         } else {
+            holder.mResourceLayout.setVisibility(View.INVISIBLE);
             anim = ObjectAnimator.ofFloat(holder.mMainContent, "weightSum", closedWeight, openWeight);
         }
         anim.setDuration(durration);
@@ -411,10 +413,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
 
         // resource list
-        if(notes.length == 0 && words.length == 0) {
-            holder.mResourceLayout.setVisibility(View.GONE);
-        } else {
-            holder.mResourceLayout.setVisibility(View.VISIBLE);
+        if(notes.length > 0 || words.length > 0) {
             renderResources(holder, position, notes, words);
         }
 
@@ -456,7 +455,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // TODO: add click to open for resources
-
+        if(!mResourcesOpened) {
+            holder.mResourceLayout.setVisibility(View.INVISIBLE);
+            holder.mResourceCard.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(!mResourcesOpened) {
+                        openResources();
+                    }
+                }
+            });
+        } else {
+            holder.mResourceLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void renderResources(final ViewHolder holder, int position, TranslationNote[] notes, TranslationWord[] words) {

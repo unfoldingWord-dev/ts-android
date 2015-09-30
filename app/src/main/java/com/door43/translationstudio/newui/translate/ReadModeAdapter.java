@@ -177,25 +177,13 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!mTargetStateOpen[position]) {
-                    mTargetStateOpen[position] = true;
-                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
-
-                    // disable new tab button so we don't accidently open it
-                    holder.mNewTabButton.setEnabled(false);
-                }
+                openTargetTranslation(holder, position);
             }
         });
         holder.mSourceCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mTargetStateOpen[position]) {
-                    mTargetStateOpen[position] = false;
-                    ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
-
-                    // re-enable new tab button
-                    holder.mNewTabButton.setEnabled(true);
-                }
+                closeTargetTranslation(holder, position);
             }
         });
 
@@ -345,6 +333,36 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     public void rebuild() {
         mLayoutBuildNumber ++;
         notifyDataSetChanged();
+    }
+
+    /**
+     * Moves the target translation card to the back
+     * @param holder
+     * @param position
+     */
+    public void closeTargetTranslation(ViewHolder holder, int position) {
+        if (mTargetStateOpen[position]) {
+            mTargetStateOpen[position] = false;
+            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, true);
+
+            // re-enable new tab button
+            holder.mNewTabButton.setEnabled(true);
+        }
+    }
+
+    /**
+     * Moves the target translation card to the top
+     * @param holder
+     * @param position
+     */
+    public void openTargetTranslation(ViewHolder holder, int position) {
+        if (!mTargetStateOpen[position]) {
+            mTargetStateOpen[position] = true;
+            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false);
+
+            // disable new tab button so we don't accidently open it
+            holder.mNewTabButton.setEnabled(false);
+        }
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

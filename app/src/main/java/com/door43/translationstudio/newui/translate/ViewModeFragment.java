@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,6 +43,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
     private Translator mTranslator;
     private Library mLibrary;
     private String mSourceTranslationId;
+    private GestureDetector mGesture;
 
     /**
      * Returns an instance of the adapter
@@ -108,10 +110,65 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             }
         }
 
+        mGesture = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            public MotionEvent mLastOnDownEvent;
+            private final float SWIPE_THRESHOLD_VELOCITY = 20f;
+            private final float SWIPE_MIN_DISTANCE = 50f;
+            private final float SWIPE_MAX_ANGLE_DEG = 30;
+            @Override
+            public boolean onDown(MotionEvent e) {
+                mLastOnDownEvent = e;
+                return super.onDown(e);
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                if(e1 == null) {
+                    e1 = mLastOnDownEvent;
+                }
+                try {
+                    float distanceX = e2.getX() - e1.getX();
+                    float distanceY = e2.getY() - e1.getY();
+                    // don't handle vertical swipes (division error)
+                    if (distanceX == 0) return false;
+
+                    double flingAngle = Math.toDegrees(Math.asin(Math.abs(distanceY / distanceX)));
+                    if (flingAngle <= SWIPE_MAX_ANGLE_DEG && Math.abs(distanceX) >= SWIPE_MIN_DISTANCE && Math.abs(velocityX) >= SWIPE_THRESHOLD_VELOCITY) {
+                        if (distanceX > 0) {
+                            onRightSwipe(e1, e2);
+                        } else {
+                            onLeftSwipe(e1, e2);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }
+        });
+
         // let child classes modify the view
         onPrepareView(rootView);
 
         return rootView;
+    }
+
+    /**
+     * Called when the user performs a swipe towards the right
+     * @param e1
+     * @param e2
+     */
+    protected void onRightSwipe(MotionEvent e1, MotionEvent e2) {
+
+    }
+
+    /**
+     * Called when the user performs a swipe towards the left
+     * @param e1
+     * @param e2
+     */
+    protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
+
     }
 
     /**
@@ -124,6 +181,34 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
         if(position != -1) {
             mLayoutManager.scrollToPosition(position);
             mListener.onScrollProgress(position);
+        }
+    }
+
+    /**
+     * Returns the adapter position of a view holder under the coordinates
+     * @param x
+     * @param y
+     * @return
+     */
+    protected int findViewHolderAdapterPosition(float x, float y) {
+        if(mRecyclerView != null) {
+            View view = mRecyclerView.findChildViewUnder(x, y);
+            return mRecyclerView.getChildAdapterPosition(view);
+        } else {
+            return 0;
+        }
+    }
+
+    /**
+     * Returns a viewholder item for the adapter position
+     * @param position
+     * @return
+     */
+    protected RecyclerView.ViewHolder getViewHolderForAdapterPosition(int position) {
+        if(mRecyclerView != null) {
+            return mRecyclerView.findViewHolderForAdapterPosition(position);
+        } else {
+            return null;
         }
     }
 
@@ -278,7 +363,12 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @return
      */
     public boolean onTouchEvent(MotionEvent event) {
-        return false;
+        if(mGesture != null) {
+            return mGesture.onTouchEvent(event);
+        } else {
+            Logger.w(this.getClass().getName(), "The gesture dectector was not initialized so the touch was not handled");
+            return false;
+        }
     }
 
     public interface OnEventListener {
