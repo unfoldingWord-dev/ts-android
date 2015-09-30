@@ -6,12 +6,13 @@ import android.content.pm.PackageManager;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.migration.UpdateManager;
+import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 
 /**
- * This tasks performs any upgrades that need to occure between app versions
+ * This tasks performs any upgrades that need to occur between app versions
  */
 public class UpdateAppTask extends ManagedTask {
     public static final String TASK_ID = "update_app";
@@ -33,33 +34,54 @@ public class UpdateAppTask extends ManagedTask {
         PackageInfo pInfo = null;
         try {
             pInfo = AppContext.context().getPackageManager().getPackageInfo(AppContext.context().getPackageName(), 0);
-            editor.putInt("last_version_code", pInfo.versionCode);
-            editor.apply();
-            if(pInfo.versionCode > lastVersionCode) {
-                // update the app
-                publishProgress(-1, "performing updates");
-                UpdateManager updater = new UpdateManager(lastVersionCode, pInfo.versionCode);
-                updater.run(new UpdateManager.OnProgressCallback() {
-                    @Override
-                    public void onProgress(double progress, String message) {
-                        publishProgress(progress * 100, message);
-                    }
-
-                    @Override
-                    public void onSuccess() {
-
-                    }
-
-                    @Override
-                    public void onError(String message) {
-                        mError = message;
-                        Logger.w(this.getClass().getName(), message);
-                    }
-                });
-            }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
+
+        if (pInfo != null) {
+            // record latest version
+            editor.putInt("last_version_code", pInfo.versionCode);
+            editor.apply();
+
+            // check if update is possible
+            if (pInfo.versionCode > lastVersionCode) {
+                performUpdates(lastVersionCode, pInfo.versionCode);
+            }
+        }
+    }
+
+    /**
+     * Performs required updates between the two app versions
+     * @param lastVersion
+     * @param currentVersion
+     */
+    private void performUpdates(int lastVersion, int currentVersion) {
+        if(lastVersion < 87) {
+            upgradePre87();
+        }
+        if(lastVersion < 100) {
+            upgradePre100();
+        }
+    }
+
+    /**
+     * Change default font to noto because most of the others do not work
+     */
+    private void upgradePre87() {
+        publishProgress(-1, "Upgrading fonts");
+        Logger.i(this.getClass().getName(), "Upgrading fonts from pre 87");
+        SharedPreferences.Editor editor = AppContext.context().getUserPreferences().edit();
+        editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getString(R.string.pref_default_translation_typeface));
+        editor.apply();
+    }
+
+    /**
+     * Major changes.
+     * Moved to the new object management system.
+     */
+    private void upgradePre100() {
+        // TODO: 9/30/2015 migrate old target translations
+        // TODO: 9/30/2015 remove the old source languages
     }
 
     @Override
