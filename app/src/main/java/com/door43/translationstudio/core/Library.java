@@ -755,7 +755,8 @@ public class Library {
      * @return
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
-        SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
         float numFrames = 0f;
         float numFinishedFrames = 0f;
         if(sourceTranslation != null) {
