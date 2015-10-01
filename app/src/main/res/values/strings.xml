@@ -362,4 +362,14 @@
     <string name="question">Question</string>
     <string name="answer">Answer</string>
     <string name="begin_translating">Begin translating</string>
+    <string name="publishing_explanation">
+<![CDATA[
+<p>Publishing your work through unfoldingWord makes your content available:</p>
+<ul>
+    <li>Online at unfoldingword.org in multiple formats</li>
+    <li>In the unfoldingWord Mobile App</li>
+    <li>In a PDF suitable for printing</li>
+</ul>
+]]>
+    </string>
 </resources>

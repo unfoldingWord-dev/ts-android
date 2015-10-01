@@ -27,6 +27,8 @@ import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 import com.door43.widget.ViewUtil;
 
+import org.sufficientlysecure.htmltextview.HtmlTextView;
+
 import java.security.InvalidParameterException;
 
 
@@ -44,6 +46,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_publish_publish, container, false);
+
+        HtmlTextView explanationView = (HtmlTextView)rootView.findViewById(R.id.explanation);
+        explanationView.setHtmlFromString(getResources().getString(R.string.publishing_explanation), true);
 
         if(savedInstanceState != null) {
             mUploaded = savedInstanceState.getBoolean(STATE_UPLOADED, false);

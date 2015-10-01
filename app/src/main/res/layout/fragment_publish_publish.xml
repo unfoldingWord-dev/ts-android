@@ -26,13 +26,13 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:background="@drawable/ic_unfolding_word_logo_large"/>
-                <TextView
+                <org.sufficientlysecure.htmltextview.HtmlTextView
+                    android:id="@+id/explanation"
                     android:layout_margin="@dimen/card_margin"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:textColor="@color/dark_secondary_text"
-                    android:textSize="@dimen/title"
-                    android:text="Explaination of the publishing process will appear here!"/>
+                    android:textSize="@dimen/title"/>
             </LinearLayout>
 
         </android.support.v7.widget.CardView>
