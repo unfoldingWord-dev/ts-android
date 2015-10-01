@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -45,6 +46,8 @@ import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.spannables.VerseBubbleSpan;
 import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
@@ -220,16 +223,41 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // TODO: 10/1/2015 insert verse markers at front if not already in text
         holder.mTargetBody.setText(TextUtils.concat(mRenderedTargetBody[position], "\n"));
 
+        // TODO: 10/1/2015 re-enable this once we have a sample marker to click on
         holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                int inType = holder.mTargetBody.getInputType();
-                holder.mTargetBody.setInputType(InputType.TYPE_NULL);
-                holder.mTargetBody.onTouchEvent(event);
-                holder.mTargetBody.setInputType(inType);
+                v.onTouchEvent(event);
+                v.clearFocus();
                 return true;
             }
         });
+        // TODO: 10/1/2015 inject sample marker
+        VerseBubbleSpan span = new VerseBubbleSpan(1321);
+        span.setOnClickListener(new Span.OnClickListener() {
+            @Override
+            public void onClick(View view, Span span, int start, int end) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), "You clicked the verse span!", Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+                holder.mTargetBody.setSelection(holder.mTargetBody.getText().length());
+            }
+        });
+        holder.mTargetBody.setTextIsSelectable(false);
+        holder.mTargetBody.append("some text before the span ");
+        holder.mTargetBody.append(span.toCharSequence());
+        holder.mTargetBody.append(" some extra text after the span.");
+        ViewUtil.makeLinksClickable(holder.mTargetBody);
+
+//        if (Build.VERSION.SDK_INT >= 11) {
+//            holder.mTargetBody.setRawInputType(InputType.TYPE_CLASS_TEXT);
+//            holder.mTargetBody.setTextIsSelectable(true);
+//        } else {
+//            holder.mTargetBody.setRawInputType(InputType.TYPE_NULL);
+//            holder.mTargetBody.setFocusable(true);
+//        }
+
+
 
         // render target frame title
         ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);

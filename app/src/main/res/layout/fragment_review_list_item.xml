@@ -115,17 +115,15 @@
                         android:background="@drawable/ic_mode_edit_black_24dp"/>
                 </FrameLayout>
 
-                <EditText
+                <com.door43.widget.KeyboardlessEditText
                     android:id="@+id/target_translation_body"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:text="this is the tflkjlksjsd\nlkjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdlkjsfdl\nlksjdlfkjsd"
                     android:textSize="@dimen/body"
-                    android:focusable="true"
+                    android:inputType="textMultiLine"
                     android:gravity="top"
-                    android:imeOptions="flagNoExtractUi"
-                    android:inputType="textNoSuggestions|text|textMultiLine"
-                    android:focusableInTouchMode="true"
+                    android:editable="false"
                     android:background="@null"
                     android:layout_marginBottom="@dimen/card_margin"
                     android:textColor="@color/dark_primary_text"/>
