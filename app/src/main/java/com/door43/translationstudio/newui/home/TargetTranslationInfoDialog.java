@@ -1,17 +1,28 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.Project;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.user.Profile;
+import com.door43.translationstudio.user.ProfileManager;
+import com.door43.util.tasks.ThreadableUI;
+
+import java.util.Locale;
 
 /**
  * Displays detailed information about a target translation
@@ -22,6 +33,15 @@ public class TargetTranslationInfoDialog extends DialogFragment {
     private TargetTranslation mTargetTranslation;
     private Translator mTranslator;
     private OnDeleteListener mListener;
+    private int mTranslationProgress = 0;
+    private boolean mTranslationProgressWasCalculated = false;
+
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        dialog.setCanceledOnTouchOutside(false);
+        return dialog;
+    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -36,17 +56,89 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         }
 
+        final Library library = AppContext.getLibrary();
+
+        TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
+        SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        if(sourceLanguage != null) {
+            projectTitle.setText(sourceLanguage.projectTitle + " (" + mTargetTranslation.getProjectId() + ")");
+        } else {
+            projectTitle.setText(mTargetTranslation.getProjectId());
+        }
+
+        TextView languageTitle = (TextView)v.findViewById(R.id.language_title);
+        languageTitle.setText(mTargetTranslation.getTargetLanguageName() + " (" + mTargetTranslation.getTargetLanguageId() + ")");
+
+        final TextView progressView = (TextView)v.findViewById(R.id.progress);
+        final ThreadableUI task = new ThreadableUI(getActivity()) {
+            private int progress = 0;
+
+            @Override
+            public void onStop() {
+
+            }
+
+            @Override
+            public void run() {
+                progress = Math.round(library.getTranslationProgress(mTargetTranslation) * 100);
+            }
+
+            @Override
+            public void onPostExecute() {
+                if (!isInterrupted()) {
+                    mTranslationProgressWasCalculated = true;
+                    mTranslationProgress = progress;
+                    progressView.setText(progress + "%");
+                }
+            }
+        };
+        if(!mTranslationProgressWasCalculated) {
+            progressView.setText("");
+            task.start();
+        } else {
+            progressView.setText(mTranslationProgress + "%");
+        }
+
+        TextView translatorsView = (TextView)v.findViewById(R.id.translators);
+        translatorsView.setText("");
+        Profile profile = ProfileManager.getProfile();
+        if(profile != null) {
+            translatorsView.setText(profile.getName());
+        }
+        // TODO: 10/1/2015 support displaying multiple translators
+
         Button deleteButton = (Button)v.findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mTargetTranslation != null) {
-                    mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
-                    AppContext.clearTargetTranslationSettings(mTargetTranslation.getId());
-                }
-                if(mListener != null) {
-                    mListener.onDeleteTargetTranslation(mTargetTranslation.getId());
-                }
+                new android.support.v7.app.AlertDialog.Builder(getActivity())
+                        .setTitle(R.string.label_delete)
+                        .setIcon(R.drawable.ic_delete_black_24dp)
+                        .setMessage(R.string.confirm_delete_target_translation)
+                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                task.stop();
+                                if(mTargetTranslation != null) {
+                                    mTranslator.deleteTargetTranslation(mTargetTranslation.getId());
+                                    AppContext.clearTargetTranslationSettings(mTargetTranslation.getId());
+                                }
+                                if(mListener != null) {
+                                    mListener.onDeleteTargetTranslation(mTargetTranslation.getId());
+                                }
+                                dismiss();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+            }
+        });
+
+        final Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                task.stop();
                 dismiss();
             }
         });

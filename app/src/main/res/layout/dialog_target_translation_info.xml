@@ -1,18 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:padding="16dp"
-    android:layout_height="match_parent">
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="This is the translation information"
+        android:text="Open Bible Stories - Afaraf"
+        android:padding="16dp"
+        android:textSize="@dimen/headline"
+        android:gravity="center"
         android:id="@+id/textView12" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delete translation"
-        android:id="@+id/deleteButton" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/cardView1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            card_view:cardElevation="2dp"
+            android:layout_margin="@dimen/card_margin">
+            <LinearLayout
+                style="@style/Widget.CardContent"
+                android:background="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:visibility="gone"
+                    android:orientation="vertical"
+                    android:id="@+id/loadingLayout"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/title"
+                        android:textColor="@color/dark_secondary_text"
+                        android:text="@string/please_wait"/>
+
+                    <ProgressBar
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"
+                        android:id="@+id/progressBar2" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:id="@+id/formLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_secondary_text"
+                            android:textSize="@dimen/body"
+                            android:text="Project"
+                            android:paddingRight="10dp"/>
+                        <TextView
+                            android:id="@+id/project_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_primary_text"
+                            android:textSize="@dimen/title"
+                            android:text="Open Bible Stories (obs)"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_secondary_text"
+                            android:textSize="@dimen/body"
+                            android:text="Target Language"
+                            android:paddingRight="10dp"/>
+                        <TextView
+                            android:id="@+id/language_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_primary_text"
+                            android:textSize="@dimen/title"
+                            android:text="Afaraf (aa)"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_secondary_text"
+                            android:textSize="@dimen/body"
+                            android:text="Progress"
+                            android:paddingRight="10dp"/>
+                        <TextView
+                            android:id="@+id/progress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_primary_text"
+                            android:textSize="@dimen/title"
+                            android:text="60%"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_secondary_text"
+                            android:textSize="@dimen/body"
+                            android:text="Translators"
+                            android:paddingRight="10dp"/>
+                        <TextView
+                            android:id="@+id/translators"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/dark_primary_text"
+                            android:textSize="@dimen/title"
+                            android:text="Joel Lonbeck"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_marginTop="@dimen/card_margin"
+                        android:layout_height="1dp"
+                        android:background="@drawable/dark_bottom_border"></LinearLayout>
+
+                    <Button
+                        android:id="@+id/deleteButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_delete"
+                        android:drawableLeft="@drawable/ic_delete_black_24dp"
+                        android:drawableStart="@drawable/ic_delete_black_24dp"
+                        android:textColor="@color/dark_secondary_text"
+                        android:textSize="@dimen/button"
+                        android:gravity="left|center_vertical"
+                        android:padding="16dp"
+                        android:drawablePadding="10dp"
+                        android:background="?attr/selectableItemBackground" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right|end"
+            android:layout_below="@+id/cardView1">
+
+            <Button
+                android:id="@+id/dismiss_button"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/dismiss"
+                android:textColor="?attr/colorAccent"
+                android:padding="16dp"
+                android:textSize="@dimen/button"
+                android:background="?attr/selectableItemBackground"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+
 </LinearLayout>

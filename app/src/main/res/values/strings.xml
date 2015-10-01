@@ -372,4 +372,5 @@
 </ul>
 ]]>
     </string>
+    <string name="confirm_delete_target_translation">This will permanently remove the translation. Continue?</string>
 </resources>
