@@ -57,12 +57,16 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
                 return new File(dir, filename).isFile() && ext.equals(STACKTRACE_EXT);
             }
         });
-        // build full path
-        String[] stacktraces = new String[files.length];
-        for(int i = 0; i < files.length; i ++) {
-            stacktraces[i] = new File(stacktraceDir, files[i]).getAbsolutePath();
+        if(files != null) {
+            // build full path
+            String[] stacktraces = new String[files.length];
+            for (int i = 0; i < files.length; i++) {
+                stacktraces[i] = new File(stacktraceDir, files[i]).getAbsolutePath();
+            }
+            return stacktraces;
+        } else {
+            return new String[0];
         }
-        return stacktraces;
     }
 
     /**

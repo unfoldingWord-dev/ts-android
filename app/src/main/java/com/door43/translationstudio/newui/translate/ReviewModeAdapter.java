@@ -11,6 +11,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.GestureDetector;
@@ -216,7 +217,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         }
+        // TODO: 10/1/2015 insert verse markers at front if not already in text
         holder.mTargetBody.setText(TextUtils.concat(mRenderedTargetBody[position], "\n"));
+
+        holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                int inType = holder.mTargetBody.getInputType();
+                holder.mTargetBody.setInputType(InputType.TYPE_NULL);
+                holder.mTargetBody.onTouchEvent(event);
+                holder.mTargetBody.setInputType(inType);
+                return true;
+            }
+        });
 
         // render target frame title
         ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
@@ -296,9 +309,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mEditButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: handle the edit button click
+                // TODO: 10/1/2015 enable editing the text
+//                holder.mTargetBody.setFocusableInTouchMode(true);
+//                holder.mTargetBody.setFocusable(true);
+                // TODO: 10/1/2015 display button to disable editing
             }
         });
+        holder.mEditButton.setVisibility(View.INVISIBLE);// TODO temporary
 
         holder.mTextWatcher = new TextWatcher() {
             @Override
