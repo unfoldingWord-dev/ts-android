@@ -5,7 +5,7 @@ import android.os.Handler;
 
 /**
  * This class allows you to execute operations in a seperate thread and then finish up by running some code on the ui thread
- * @deprecated you should probably almost always use the new task manager
+ * Note: you should probably almost always use the new task manager
  */
 public abstract class ThreadableUI {
     private final Thread mThread;

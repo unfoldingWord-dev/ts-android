@@ -389,8 +389,8 @@ public class Library {
                 if(listener != null) {
                     listener.onIndeterminate();
                 }
-                mAppIndex.mergeProjectShalow(translation.projectId, translation.sourceLanguageId, mDownloader.getIndex());
-                mAppIndex.mergeSourceTranslation(translation, mDownloader.getIndex());
+                mAppIndex.mergeSourceTranslationShalow(translation, mDownloader.getIndex());
+                mAppIndex.mergeResources(translation, mDownloader.getIndex());
             } catch (IOException e) {
                 Logger.e(this.getClass().getName(), "Failed to merge the source translation " + translation.getId() + " from the download index into the app index", e);
                 return false;

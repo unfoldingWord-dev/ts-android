@@ -664,7 +664,7 @@ public class Indexer {
 
                             // update/add source translation
                             if(!shallow) {
-                                mergeSourceTranslation(translation, index);
+                                mergeResources(translation, index);
                             }
                         }
                     }
@@ -675,36 +675,32 @@ public class Indexer {
 
     /**
      * Merges a project into the current index.
-     * This will only peform a shallow merge for a single source language
-     * @param projectId
-     * @param sourceLanguageId
-     * @param index
+     * This will only peform a shallow merge. That is, none of the resources will be merged.
+     * Just the project, source language, and resource catalogs are merged.
+     * @param sourceTranslation
      * @throws IOException
      */
-    public void mergeProjectShalow(String projectId, String sourceLanguageId, Indexer index) throws IOException {
-        JSONObject newProject = index.getProject(projectId);
+    public void mergeSourceTranslationShalow(SourceTranslation sourceTranslation, Indexer index) throws IOException {
+        JSONObject newProject = index.getProject(sourceTranslation.projectId);
         if(newProject != null) {
             JSONArray projectJson = new JSONArray();
             projectJson.put(newProject);
             // update/add project
             indexProjects(projectJson.toString());
 
-            JSONObject newSourceLanguage = index.getSourceLanguage(projectId, sourceLanguageId);
+            JSONObject newSourceLanguage = index.getSourceLanguage(sourceTranslation.projectId, sourceTranslation.sourceLanguageId);
             if(newSourceLanguage != null) {
                 JSONArray sourceLanguageJson = new JSONArray();
                 sourceLanguageJson.put(newSourceLanguage);
                 // update/add source language
-                indexSourceLanguages(projectId, sourceLanguageJson.toString());
+                indexSourceLanguages(sourceTranslation.projectId, sourceLanguageJson.toString());
 
-                for(String resourceId:index.getResources(projectId, sourceLanguageId)) {
-                    SourceTranslation translation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
-                    JSONObject newResource = index.getResource(translation);
-                    if(newResource != null) {
-                        JSONArray resourceJson = new JSONArray();
-                        resourceJson.put(newResource);
-                        // update/add resource
-                        indexResources(projectId, sourceLanguageId, resourceJson.toString());
-                    }
+                JSONObject newResource = index.getResource(sourceTranslation);
+                if(newResource != null) {
+                    JSONArray resourceJson = new JSONArray();
+                    resourceJson.put(newResource);
+                    // update/add resource
+                    indexResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId, resourceJson.toString());
                 }
             }
         }
@@ -720,7 +716,7 @@ public class Indexer {
      * @param translation
      * @param index
      */
-    public void mergeSourceTranslation(SourceTranslation translation, Indexer index) throws IOException {
+    public void mergeResources(SourceTranslation translation, Indexer index) throws IOException {
         // delete old content
         deleteTerms(translation);
         deleteTermAssignments(translation);
