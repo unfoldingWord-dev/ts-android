@@ -52,6 +52,15 @@ public class Frame {
     }
 
     /**
+     * Generates a dummy frame with just the chapter id
+     * @param chapterId
+     * @return
+     */
+    public static Frame generateDummy(String chapterId) {
+        return new Frame(null, chapterId, "", TranslationFormat.DEFAULT);
+    }
+
+    /**
      * Generates a new frame from json
      *
      * Note: we receive the chapter id rather than parsing it from the frame id to keep things future proof

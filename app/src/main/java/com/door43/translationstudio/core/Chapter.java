@@ -35,12 +35,20 @@ public class Chapter {
 
     /**
      * Generates an instance of a chapter from json
-     * @param chapter
+     * @param json
      * @return
      */
-    public static Chapter generate(JSONObject chapter) {
+    public static Chapter generate(JSONObject json) {
+        String title = "";
+        String reference = "";
         try {
-            return new Chapter(chapter.getString("title"), chapter.getString("ref"), chapter.getString("number"));
+            if(json.has("title")) {
+                title = json.getString("title");
+            }
+            if(json.has("ref")) {
+                reference = json.getString("ref");
+            }
+            return new Chapter(title, reference, json.getString("number"));
         } catch (JSONException e) {
             e.printStackTrace();
         }

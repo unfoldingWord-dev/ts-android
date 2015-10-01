@@ -15,6 +15,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.AppContext;
+import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 import com.filippudak.ProgressPieView.ProgressPieView;
 
@@ -25,11 +26,18 @@ import java.util.Locale;
  */
 public class TargetTranslationAdapter extends BaseAdapter {
 
+    private final Context mContext;
     private TargetTranslation[] mTranslations;
     private OnInfoClickListener mInfoClickListener = null;
+    private int[] mTranslationProgress;
+    private boolean[] mTranslationProgressCalculated;
 
-    public TargetTranslationAdapter(TargetTranslation[] translations) {
-        mTranslations = translations;
+    public TargetTranslationAdapter(Context context, TargetTranslation[] targetTranslations) {
+        mContext = context;
+        mTranslations = targetTranslations;
+        mTranslationProgress = new int[targetTranslations.length];
+        mTranslationProgressCalculated = new boolean[targetTranslations.length];
+        // TODO: scheduele calcualtions
     }
 
     /**
@@ -72,8 +80,8 @@ public class TargetTranslationAdapter extends BaseAdapter {
         }
 
         // render view
-        TargetTranslation targetTranslation = getItem(position);
-        Library library = AppContext.getLibrary();
+        final TargetTranslation targetTranslation = getItem(position);
+        final Library library = AppContext.getLibrary();
         Project project = library.getProject(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         if(project != null) {
             holder.mTitleView.setText(project.name);
@@ -81,8 +89,45 @@ public class TargetTranslationAdapter extends BaseAdapter {
             holder.mTitleView.setText(targetTranslation.getProjectId());
         }
         holder.mLanguageView.setText(targetTranslation.getTargetLanguageName());
-        // TODO: read actual progress from project
-        holder.mProgressView.setProgress(Math.round(library.getTranslationProgress(targetTranslation) * 100));
+
+        // calculate translation progress
+        if(!mTranslationProgressCalculated[position]) {
+            final ViewHolder staticHolder = holder;
+            if(holder.mProgressTask != null) {
+                holder.mProgressTask.stop();
+            }
+            holder.mProgressTask = new ThreadableUI(mContext) {
+                private int progress = 0;
+
+                @Override
+                public void onStop() {
+
+                }
+
+                @Override
+                public void run() {
+                    // TODO: this method should respond correct to thread interruptions
+                    progress = Math.round(library.getTranslationProgress(targetTranslation) * 100);
+                }
+
+                @Override
+                public void onPostExecute() {
+                    if (!isInterrupted()) {
+                        mTranslationProgress[position] = progress;
+                        mTranslationProgressCalculated[position] = true;
+                        staticHolder.mProgressView.setProgress(progress);
+                        staticHolder.mProgressView.setVisibility(View.VISIBLE);
+                        // TODO: animate in progress view (pin)
+                    }
+                }
+            };
+            holder.mProgressTask.start();
+            holder.mProgressView.setVisibility(View.INVISIBLE);
+        } else {
+            holder.mProgressView.setProgress(mTranslationProgress[position]);
+            holder.mProgressView.setVisibility(View.VISIBLE);
+        }
+
         // TODO: finish rendering project icon
         holder.mInfoButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,6 +144,9 @@ public class TargetTranslationAdapter extends BaseAdapter {
 
     public void changeData(TargetTranslation[] targetTranslations) {
         mTranslations = targetTranslations;
+        mTranslationProgress = new int[targetTranslations.length];
+        mTranslationProgressCalculated = new boolean[targetTranslations.length];
+        // TODO: scheduele calcualtions
         notifyDataSetChanged();
     }
 
@@ -112,6 +160,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
         public TextView mLanguageView;
         public ProgressPieView mProgressView;
         public ImageButton mInfoButton;
+        public ThreadableUI mProgressTask;
 
         public ViewHolder(View view, Context context) {
             mIconView = (ImageView) view.findViewById(R.id.projectIcon);

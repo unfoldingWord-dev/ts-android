@@ -22,4 +22,30 @@ public class ChapterTranslation {
     public String getId() {
         return mId;
     }
+
+    /**
+     * Checks if the chapter reference is finished being translated
+     * @return
+     */
+    public boolean isReferenceFinished() {
+        // TODO: 9/30/2015 finish
+        return false;
+    }
+
+    /**
+     * Checks if the chapter reference is finished being translated
+     * @return
+     */
+    public boolean isTitleFinished() {
+        // TODO: 9/30/2015 finish
+        return false;
+    }
+
+    /**
+     * Returns the translation format for the chapter title and reference
+     * @return
+     */
+    public TranslationFormat getFormat() {
+        return TranslationFormat.DEFAULT;
+    }
 }

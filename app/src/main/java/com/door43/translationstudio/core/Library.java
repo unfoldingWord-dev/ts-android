@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -748,13 +749,43 @@ public class Library {
     }
 
     /**
-     * Calculates the progress of a target translation
+     * Calculates the progress of a target translation.
+     * This can take some time so don't run this on the main thread
      * @param targetTranslation
      * @return
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
-        // TODO: calculate the progress
-        return 0.60f;
+        SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        float numFrames = 0f;
+        float numFinishedFrames = 0f;
+        if(sourceTranslation != null) {
+            String[] chapterIds = getActiveIndex().getChapters(sourceTranslation);
+            for(String chapterId:chapterIds) {
+                if(Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+                String[] frameIds = getActiveIndex().getFrames(sourceTranslation, chapterId);
+                for(String frameId:frameIds) {
+                    if(Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+                    Frame frame = getFrame(sourceTranslation, chapterId, frameId);
+                    if(!frame.body.isEmpty()) {
+                        // TRICKY: the format doesn't matter because we are only looking at the finished state
+                        FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+                        numFrames++;
+                        if (frameTranslation.isFinished()) {
+                            numFinishedFrames++;
+                        }
+                    }
+                }
+            }
+        }
+        // TODO: 9/30/2015 include chapter title and references in calculation
+        if(numFrames > 0) {
+            return numFinishedFrames / numFrames;
+        }
+        return 0f;
     }
 
     /**

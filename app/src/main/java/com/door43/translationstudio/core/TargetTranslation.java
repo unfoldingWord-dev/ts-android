@@ -182,18 +182,28 @@ public class TargetTranslation {
      * @return
      */
     public FrameTranslation getFrameTranslation(Frame frame) {
+        return getFrameTranslation(frame.getChapterId(), frame.getId(), frame.getFormat());
+    }
 
-        File frameFile = getFrameFile(frame.getChapterId(), frame.getId());
+    /**
+     * Returns the translation of a frame
+     * @param chapterId
+     * @param frameId
+     * @param format
+     * @return
+     */
+    public FrameTranslation getFrameTranslation(String chapterId, String frameId, TranslationFormat format) {
+        File frameFile = getFrameFile(chapterId, frameId);
         if(frameFile.exists()) {
             try {
                 String body = FileUtils.readFileToString(frameFile);
-                return new FrameTranslation(frame.getId(), frame.getChapterId(), body, frame.getFormat(), isFrameFinished(frame));
+                return new FrameTranslation(frameId, chapterId, body, format, isFrameFinished(chapterId + "-" + frameId));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         // give empty translation
-        return new FrameTranslation(frame.getId(), frame.getChapterId(), "", frame.getFormat(), false);
+        return new FrameTranslation(frameId, chapterId, "", format, false);
     }
 
     /**
@@ -204,8 +214,8 @@ public class TargetTranslation {
      * @return
      */
     public ChapterTranslation getChapterTranslation(Chapter chapter) {
-        File referenceFile = new File(mTargetTranslationDirectory, chapter.getId() + "/reference.txt");
-        File titleFile = new File(mTargetTranslationDirectory, chapter.getId() + "/title.txt");
+        File referenceFile = getChapterReferenceFile(chapter.getId());
+        File titleFile = getChapterTitleFile(chapter.getId());
         String reference = "";
         String title = "";
         if(referenceFile.exists()) {
@@ -279,7 +289,40 @@ public class TargetTranslation {
             frameFile.getParentFile().mkdirs();
             FileUtils.write(frameFile, translatedText);
         }
-        // TODO: add and commit git
+    }
+
+    /**
+     * Saves a chapter reference translation to the disk
+     * if the translated text is null the reference will be removed
+     * @param chapterTranslation
+     * @param translatedText
+     * @throws IOException
+     */
+    private void saveChapterReferenceTranslation(ChapterTranslation chapterTranslation, String translatedText) throws IOException {
+        File chapterReferenceFile = getChapterReferenceFile(chapterTranslation.getId());
+        if(translatedText.isEmpty()) {
+            chapterReferenceFile.delete();
+        } else {
+            chapterReferenceFile.getParentFile().mkdirs();
+            FileUtils.write(chapterReferenceFile, translatedText);
+        }
+    }
+
+    /**
+     * Saves a chapter title translation to the disk
+     * if the translated text is null the title will be removed
+     * @param chapterTranslation
+     * @param translatedText
+     * @throws IOException
+     */
+    private void saveChapterTitleTranslation(ChapterTranslation chapterTranslation, String translatedText) throws IOException {
+        File chapterTitleFile = getChapterTitleFile(chapterTranslation.getId());
+        if(translatedText.isEmpty()) {
+            chapterTitleFile.delete();
+        } else {
+            chapterTitleFile.getParentFile().mkdirs();
+            FileUtils.write(chapterTitleFile, translatedText);
+        }
     }
 
     /**
@@ -290,6 +333,24 @@ public class TargetTranslation {
      */
     private File getFrameFile(String chapterId, String frameId) {
         return new File(mTargetTranslationDirectory, chapterId + "/" + frameId + ".txt");
+    }
+
+    /**
+     * Returns the reference file
+     * @param chapterId
+     * @return
+     */
+    private File getChapterReferenceFile(String chapterId) {
+        return new File(mTargetTranslationDirectory, chapterId + "/reference.txt");
+    }
+
+    /**
+     * Returns the title file
+     * @param chapterId
+     * @return
+     */
+    private File getChapterTitleFile(String chapterId) {
+        return new File(mTargetTranslationDirectory, chapterId + "/title.txt");
     }
 
     /**
@@ -346,10 +407,19 @@ public class TargetTranslation {
      * @return
      */
     private boolean isFrameFinished(Frame frame) {
+        return isFrameFinished(frame.getComplexId());
+    }
+
+    /**
+     * Checks if the translation of a frame is complete
+     * @param frameComplexId
+     * @return
+     */
+    private boolean isFrameFinished(String frameComplexId) {
         JSONObject framesJson = mManifest.getJSONObject("frames");
-        if(framesJson.has(frame.getComplexId())) {
+        if(framesJson.has(frameComplexId)) {
             try {
-                JSONObject frameJson = framesJson.getJSONObject(frame.getComplexId());
+                JSONObject frameJson = framesJson.getJSONObject(frameComplexId);
                 if(frameJson.has("finished")) {
                     return frameJson.getBoolean("finished");
                 }
@@ -427,5 +497,31 @@ public class TargetTranslation {
     public boolean getPublishable() {
         File readyFile = new File(mTargetTranslationDirectory, "READY");
         return readyFile.exists();
+    }
+
+    /**
+     * Stages a chapter reference to be saved
+     * @param chapterTranslation
+     * @param translatedText
+     */
+    public void applyChapterReferenceTranslation(ChapterTranslation chapterTranslation, String translatedText) {
+        try {
+            saveChapterReferenceTranslation(chapterTranslation, translatedText);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Stages a chapter title to be saved
+     * @param chapterTranslation
+     * @param translatedText
+     */
+    public void applyChapterTitleTranslation(ChapterTranslation chapterTranslation, String translatedText) {
+        try {
+            saveChapterTitleTranslation(chapterTranslation, translatedText);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
