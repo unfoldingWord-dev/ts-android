@@ -258,21 +258,22 @@ public class Indexer {
     }
 
     /**
-     * Creates a new link file
+     * Creates or updates a catalog link
      * @param md5hash
      * @param linkPath
      * @return
      */
     private Boolean createLink (String md5hash, String linkPath) {
-        try {
-            if(saveFile(linkPath, md5hash)) {
-                incrementLink(md5hash);
-            }
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
+        mDatabaseHelper.replaceLink(md5hash, linkPath);
+//        try {
+//            if(saveFile(linkPath, md5hash)) {
+//                incrementLink(md5hash);
+//            }
+//            return true;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        return true;
     }
 
     /**
