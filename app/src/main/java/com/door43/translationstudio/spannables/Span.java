@@ -7,13 +7,16 @@ import android.text.SpannedString;
 import android.view.View;
 import android.widget.TextView;
 
+import com.door43.widget.LongClickableSpan;
+
 /**
  * Created by joel on 1/28/2015.
  */
 public abstract class Span {
     private CharSequence mHumanReadable;
     private CharSequence mMachineReadable;
-    private OnClickListener mListener;
+    private OnClickListener mClickListener;
+    private OnClickListener mLongClickListener;
 
     /**
      * Creates a new empty span.
@@ -43,8 +46,20 @@ public abstract class Span {
         mMachineReadable = machineReadable;
     }
 
+    /**
+     * Sets the click listener on this span
+     * @param listener
+     */
     public void setOnClickListener(OnClickListener listener) {
-        mListener = listener;
+        mClickListener = listener;
+    }
+
+    /**
+     * Sets the long click listener on this span
+     * @param listener
+     */
+    public void setOnLongClickListener(OnClickListener listener) {
+        mLongClickListener = listener;
     }
 
     protected void setHumanReadable(String text) {
@@ -59,21 +74,33 @@ public abstract class Span {
         SpannableStringBuilder spannable = new SpannableStringBuilder(mHumanReadable);
         if (spannable.length() > 0) {
             spannable.setSpan(new SpannedString(mMachineReadable), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            if (mListener != null) {
-                ClickableSpanNoUnderline clickSpan = new ClickableSpanNoUnderline() {
+//            if (mClickListener != null) {
+                LongClickableSpan clickSpan = new LongClickableSpan() {
+
                     @Override
-                    public void onClick(View view) {
-                        if (mListener != null) {
+                    public void onLongClick(View view) {
+                        if(mLongClickListener != null) {
                             TextView tv = (TextView)view;
                             Spanned s = (Spanned)tv.getText();
                             int start = s.getSpanStart(this);
                             int end = s.getSpanEnd(this);
-                            mListener.onClick(view, Span.this, start, end);
+                            mLongClickListener.onClick(view, Span.this, start, end);
+                        }
+                    }
+
+                    @Override
+                    public void onClick(View view) {
+                        if (mClickListener != null) {
+                            TextView tv = (TextView)view;
+                            Spanned s = (Spanned)tv.getText();
+                            int start = s.getSpanStart(this);
+                            int end = s.getSpanEnd(this);
+                            mClickListener.onClick(view, Span.this, start, end);
                         }
                     }
                 };
                 spannable.setSpan(clickSpan, 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
+//            }
         }
         return spannable;
     }
@@ -97,7 +124,7 @@ public abstract class Span {
     /**
      * Custom click listener when span is clicked
      */
-    public static interface OnClickListener {
-        public void onClick(View view, Span span, int start, int end);
+    public interface OnClickListener {
+        void onClick(View view, Span span, int start, int end);
     }
 }

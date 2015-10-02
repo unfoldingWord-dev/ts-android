@@ -26,13 +26,14 @@ public class ViewUtil {
 
     /**
      * Makes links in a textview clickable
+     * includes support for long clicks
      * @param view
      */
     public static void makeLinksClickable(TextView view) {
         MovementMethod m = view.getMovementMethod();
-        if(m == null || !(m instanceof LinkMovementMethod)) {
+        if(m == null || !(m instanceof LongClickLinkMovementMethod)) {
             if(view.getLinksClickable()) {
-                view.setMovementMethod(LinkMovementMethod.getInstance());
+                view.setMovementMethod(LongClickLinkMovementMethod.getInstance());
             }
         }
     }

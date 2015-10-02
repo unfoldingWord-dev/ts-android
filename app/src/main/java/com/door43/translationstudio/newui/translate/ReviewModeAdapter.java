@@ -243,6 +243,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 holder.mTargetBody.setSelection(holder.mTargetBody.getText().length());
             }
         });
+        span.setOnLongClickListener(new Span.OnClickListener() {
+            @Override
+            public void onClick(View view, Span span, int start, int end) {
+                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), "You long clicked the verse span!", Snackbar.LENGTH_LONG);
+                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                snack.show();
+                holder.mTargetBody.setSelection(holder.mTargetBody.getText().length());
+            }
+        });
         holder.mTargetBody.setTextIsSelectable(false);
         holder.mTargetBody.append("some text before the span ");
         holder.mTargetBody.append(span.toCharSequence());
