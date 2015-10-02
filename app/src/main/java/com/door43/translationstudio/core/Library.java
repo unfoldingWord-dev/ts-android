@@ -55,9 +55,9 @@ public class Library {
         mLibraryDir = libraryDir;
         mCacheDir = cacheDir;
         mIndexDir = new File(libraryDir, "index");
-        mDownloaderIndex = new Indexer("downloads", mCacheDir);
-        mServerIndex = new Indexer("server", mCacheDir);
-        mAppIndex = new Indexer("app", mIndexDir);
+        mDownloaderIndex = new Indexer(context, "downloads", mCacheDir);
+        mServerIndex = new Indexer(context, "server", mCacheDir);
+        mAppIndex = new Indexer(context, "app", mIndexDir);
         mRootApiUrl = rootApiUrl;
         mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
         mAsServerLibrary = server;
@@ -68,9 +68,9 @@ public class Library {
         mLibraryDir = libraryDir;
         mCacheDir = cacheDir;
         mIndexDir = new File(libraryDir, "index");
-        mDownloaderIndex = new Indexer("downloads", mCacheDir);
-        mServerIndex = new Indexer("server", mCacheDir);
-        mAppIndex = new Indexer("app", mIndexDir);
+        mDownloaderIndex = new Indexer(context, "downloads", mCacheDir);
+        mServerIndex = new Indexer(context, "server", mCacheDir);
+        mAppIndex = new Indexer(context, "app", mIndexDir);
         mRootApiUrl = rootApiUrl;
         mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
         mAsServerLibrary = false;

@@ -28,12 +28,12 @@ public class IndexerTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         MainApplication app = AppContext.context();
         mIndexRoot = new File(app.getCacheDir(), "test_index");
-        mIndex = new Indexer("app", mIndexRoot);
+        mIndex = new Indexer(app, "indexer_test_app", mIndexRoot);
         mContext = getInstrumentation().getContext();
     }
 
     public void test01IndexProjects() throws Exception {
-        FileUtils.deleteQuietly(mIndexRoot);
+        mIndex.destroy();
         String catalog = Util.readStream(mContext.getAssets().open("indexer/catalog.json"));
         assertTrue(mIndex.indexProjects(catalog));
         assertTrue(mIndex.getProjects().length > 0);
@@ -116,12 +116,12 @@ public class IndexerTest extends InstrumentationTestCase {
         Util.copyStreamToCache(mContext, is, asset);
         File indexDir = asset.getParentFile();
         Zip.unzip(asset, indexDir);
-        Indexer index = new Indexer("sample_index", indexDir);
+        Indexer index = new Indexer(AppContext.context(), "sample_index", indexDir);
         assertTrue(index.getProjects().length > 0);
     }
 
     public void test09MergeIndexShallow() throws Exception {
-        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
         mergedIndex.destroy();
         mergedIndex.mergeIndex(mIndex, true);
         assertTrue(mergedIndex.getProjects().length > 0);
@@ -138,7 +138,7 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test10MergeIndexDeep() throws Exception {
-        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
         mergedIndex.destroy();
         mergedIndex.mergeIndex(mIndex);
         assertTrue(mergedIndex.getProjects().length  > 1);
@@ -155,7 +155,7 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test11MergeIndexProjectShallow() throws Exception {
-        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
         mergedIndex.destroy();
         mergedIndex.mergeProject("obs", mIndex, true);
         assertTrue(mergedIndex.getProjects().length == 1);
@@ -167,7 +167,7 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test12MergeIndexProjectDeep() throws Exception {
-        Indexer mergedIndex = new Indexer("merged_app", mIndexRoot);
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
         mergedIndex.destroy();
         mergedIndex.mergeProject("obs", mIndex);
         assertTrue(mergedIndex.getProjects().length == 1);
@@ -188,6 +188,6 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test999999Cleanup() throws Exception {
-        FileUtils.deleteQuietly(mIndexRoot);
+        mIndex.destroy();
     }
 }

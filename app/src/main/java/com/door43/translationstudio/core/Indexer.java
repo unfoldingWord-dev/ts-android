@@ -1,5 +1,10 @@
 package com.door43.translationstudio.core;
 
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Manifest;
 import com.door43.util.Security;
@@ -13,13 +18,17 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
  * Created by joel on 8/26/2015.
  */
 public class Indexer {
+    private final IndexerSQLiteHelper mDatabaseHelper;
+    private SQLiteDatabase mDatabase;
     private Manifest mManifest;
     private final String mId;
     private final File mIndexDir;
@@ -40,10 +49,19 @@ public class Indexer {
      * @param name the name of the index
      * @param rootDir the directory where the index's are stored
      */
-    public Indexer(String name, File rootDir) {
+    public Indexer(Context context, String name, File rootDir) {
         mId = name;
         mIndexDir = new File(rootDir, name);
         mManifest = reload();
+        mDatabaseHelper = new IndexerSQLiteHelper(context, name);
+        mDatabase = mDatabaseHelper.getWritableDatabase();
+    }
+
+    /**
+     * Closes the index database
+     */
+    public void close() {
+        mDatabaseHelper.close();
     }
 
     /**
@@ -75,8 +93,14 @@ public class Indexer {
      * Destroys the entire index
      */
     public void destroy() {
+        // reset manifest
         FileUtils.deleteQuietly(mIndexDir);
         mManifest = reload();
+        // delete database
+        close();
+        mDatabaseHelper.deleteDatabase();
+        // rebuild database
+        mDatabase = mDatabaseHelper.getWritableDatabase();
     }
 
     /**
@@ -84,16 +108,30 @@ public class Indexer {
      * @param path the relative path to the indexed file
      * @return a string or null
      */
-    private String readFile(String path) {
-        File file = new File(mIndexDir, path);
-        if(file.exists()) {
-            try {
-                return FileUtils.readFileToString(file);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return null;
-            }
+    private synchronized String readFile(String path) {
+//        File file = new File(mIndexDir, path);
+//        if(file.exists()) {
+//            try {
+//                return FileUtils.readFileToString(file);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                return null;
+//            }
+//        } else {
+//            return null;
+//        }
+
+        String[] columns = {IndexerSQLiteHelper.COLUMN_CONTENT};
+        String selection = IndexerSQLiteHelper.COLUMN_PATH + " = ?";
+        String[] selectionArgs = {path};
+        Cursor cursor = mDatabase.query(IndexerSQLiteHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, null);
+        if(cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            String content = cursor.getString(0);
+            cursor.close();
+            return content;
         } else {
+            cursor.close();
             return null;
         }
     }
@@ -119,11 +157,16 @@ public class Indexer {
      * Deletes a file from the index
      * @param path
      */
-    private Boolean deleteFile(String path) {
-        File file = new File(mIndexDir, path);
-        if(file.exists()) {
-            return FileUtils.deleteQuietly(file);
-        }
+    private synchronized Boolean deleteFile(String path) {
+//        File file = new File(mIndexDir, path);
+//        if(file.exists()) {
+//            return FileUtils.deleteQuietly(file);
+//        }
+//        return true;
+
+        String where = IndexerSQLiteHelper.COLUMN_PATH + " = ?";
+        String[] whereArgs = {path};
+        mDatabase.delete(IndexerSQLiteHelper.TABLE_FILES, where, whereArgs);
         return true;
     }
 
@@ -133,12 +176,25 @@ public class Indexer {
      * @param contents the contents to be written
      * @return true if the file was new
      */
-    private Boolean saveFile(String path, String contents) throws IOException {
-        File file = new File(mIndexDir, path);
-        Boolean isNew = !file.exists();
-        file.getParentFile().mkdirs();
-        FileUtils.write(file, contents);
-        return isNew;
+    private synchronized Boolean saveFile(String path, String contents) throws IOException {
+//        File file = new File(mIndexDir, path);
+//        Boolean isNew = !file.exists();
+//        file.getParentFile().mkdirs();
+//        FileUtils.write(file, contents);
+//        return isNew;
+
+        File file = new File(path);
+        String fileDirPath = file.getParent();
+        String fileName = FilenameUtils.removeExtension(file.getName());
+
+        ContentValues values = new ContentValues();
+        values.put(mDatabaseHelper.COLUMN_PATH, path);
+        values.put(mDatabaseHelper.COLUMN_CONTENT, contents);
+        values.put(mDatabaseHelper.COLUMN_DIR, fileDirPath);
+        values.put(mDatabaseHelper.COLUMN_FILE, fileName);
+
+        mDatabase.replace(IndexerSQLiteHelper.TABLE_FILES, null, values);
+        return true;
     }
 
     /**
@@ -185,7 +241,6 @@ public class Indexer {
                 int count = json.getInt(md5hash) - 1;
                 if(count <= 0) {
                     count = 0;
-//                    File indexedDataPath = new File(mDataPath, md5hash);
                     deleteFile(mDataPath + "/" + md5hash);
                 }
                 json.put(md5hash, count);
@@ -415,34 +470,50 @@ public class Indexer {
      * @param subFolder
      * @return
      */
-    private String[] getItemsArray(JSONObject itemObject, String urlProperty, String subFolder) {
-        String[] items = new String[0];
+    private synchronized String[] getItemsArray(JSONObject itemObject, String urlProperty, String subFolder) {
+        List<String> items = new ArrayList<>();
         if(itemObject == null) {
-            return items;
+            return new String[0];
         }
 
         String catalogApiUrl = getUrlFromObject(itemObject, urlProperty);
+        String md5hash = Security.md5(catalogApiUrl);
+        String md5path = mDataPath + "/" + md5hash;
+        if(subFolder != null) {
+            md5path = md5path + "/" + subFolder;
+        }
+
         if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            String md5path = mDataPath + "/" + md5hash;
-            if(subFolder != null) {
-                md5path = md5path + "/" + subFolder;
-            }
-            File itemDir = new File(mIndexDir, md5path);
-            if(itemDir.exists()) {
-                items = itemDir.list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String filename) {
-                        String ext = FilenameUtils.getExtension(filename);
-                        return !ext.equalsIgnoreCase("json") && !filename.equals(".") && !filename.equals("..");
-                    }
-                });
-                if(items == null) {
-                    items = new String[0];
+            if(catalogApiUrl.indexOf("source.json") != -1 && subFolder == null) {
+                // get chapters
+                String trimDir = md5path + "/";
+                String[] columns = {mDatabaseHelper.COLUMN_DIR};
+                String selection = mDatabaseHelper.COLUMN_DIR + " LIKE ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ?";
+                String[] selectionArgs = {md5path + "%", "chapter", "meta"};
+                Cursor cursor = mDatabase.query(true, mDatabaseHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, mDatabaseHelper.COLUMN_PATH, null);
+                cursor.moveToFirst();
+                while(!cursor.isAfterLast()) {
+                    String dir = cursor.getString(0);
+                    items.add(dir.replace(trimDir, ""));
+                    cursor.moveToNext();
                 }
+                cursor.close();
+            } else {
+                // get items
+                String[] columns = {mDatabaseHelper.COLUMN_FILE};
+                String selection = mDatabaseHelper.COLUMN_DIR + " = ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ?";
+                String[] selectionArgs = {md5path, "chapter", "meta"};
+                Cursor cursor = mDatabase.query(mDatabaseHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, mDatabaseHelper.COLUMN_PATH);
+                cursor.moveToFirst();
+                while(!cursor.isAfterLast()) {
+                    String dir = cursor.getString(0);
+                    items.add(dir);
+                    cursor.moveToNext();
+                }
+                cursor.close();
             }
         }
-        return items;
+        return items.toArray(new String[items.size()]);
     }
 
     /**

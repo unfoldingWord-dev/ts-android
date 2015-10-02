@@ -26,7 +26,7 @@ public class DownloaderTest extends AndroidTestCase {
     protected void setUp() throws Exception {
         MainApplication app = AppContext.context();
         mIndexRoot = new File(app.getCacheDir(), "test_index");
-        mIndex = new Indexer("downloads", mIndexRoot);
+        mIndex = new Indexer(app, "downloads", mIndexRoot);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         mDownloader = new Downloader(mIndex, server + app.getResources().getString(R.string.root_catalog_api));
     }
