@@ -37,9 +37,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String catalogTable = "CREATE TABLE `catalog` ( `id` INTERGER NOT NULL UNIQUE, `hash`  TEXT NOT NULL UNIQUE, `num_links` INTEGER NOT NULL DEFAULT 0, `updated_at`  INTEGER NOT NULL, PRIMARY KEY(id));";
-        String fileTable = "CREATE TABLE `file` ( `id`  INTEGER NOT NULL UNIQUE, `name`  text NOT NULL, `parent_id` INTEGER NOT NULL DEFAULT 0, `catalog_hash`  text NOT NULL, `content` text, `is_dir`  INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(id), UNIQUE (name, parent_id, catalog_hash) ON CONFLICT REPLACE, FOREIGN KEY (parent_id) REFERENCES file(id) ON DELETE CASCADE);";
-        String linkTable ="CREATE TABLE `link` ( `id` INTEGER NOT NULL UNIQUE, `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL, PRIMARY KEY(id));";
+        String catalogTable = "CREATE TABLE `catalog` ( `id` INTERGER PRIMARY KEY NOT NULL UNIQUE, `hash`  TEXT NOT NULL UNIQUE, `num_links` INTEGER NOT NULL DEFAULT 0, `updated_at`  INTEGER NOT NULL);";
+        String fileTable = "CREATE TABLE `file` ( `file_id`  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE, `name`  text NOT NULL, `parent_id` INTEGER NOT NULL DEFAULT 0, `catalog_hash`  text NOT NULL, `content` text, `is_dir`  INTEGER NOT NULL DEFAULT 0, UNIQUE (name, parent_id, catalog_hash) ON CONFLICT REPLACE, FOREIGN KEY (parent_id) REFERENCES file(file_id) ON DELETE CASCADE);";
+        String linkTable ="CREATE TABLE `link` ( `id` INTEGER PRIMARY KEY NOT NULL UNIQUE, `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL);";
         db.execSQL(catalogTable);
         db.execSQL(fileTable);
         db.execSQL(linkTable);
@@ -191,11 +191,10 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
         // check if file exists
         String[] args = {components[0], hash};
-        String[] columns = {"id"};
+        String[] columns = {"file_id"};
         Cursor cursor = db.query(TABLE_FILES, columns, "name=? AND parent_id=" + parent + " AND catalog_hash=?", args, null, null, null);
         long id;
-        if(cursor.getCount() > 0) {
-            cursor.moveToFirst();
+        if(cursor.moveToFirst()) {
             id = cursor.getLong(0);
             // update file
             db.update(IndexerSQLiteHelper.TABLE_FILES, values, "name=? AND parent_id=" + parent + " AND catalog_hash=?", args);
@@ -222,9 +221,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         String content = null;
         if(fileId > 0) {
             String[] columns = {"content", "is_dir"};
-            Cursor cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "id=" + fileId, null, null, null, null);
-            if(cursor.getCount() < 1) {
-                cursor.moveToFirst();
+            Cursor cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "file_id=" + fileId, null, null, null, null);
+            if(cursor.moveToFirst()) {
                 int isDir = cursor.getInt(1);
                 if(isDir == 0) {
                     content = cursor.getString(0);
@@ -244,7 +242,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     public void deleteFile(SQLiteDatabase db, String hash, String path) {
         long fileId = findFile(db, hash, path, ROOT_FILE_ID);
         if(fileId > 0) {
-            db.delete(TABLE_FILES, "id="+fileId, null);
+            db.delete(TABLE_FILES, "file_id="+fileId, null);
         }
     }
 
@@ -262,8 +260,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String[] columns = {"name"};
             Cursor cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "parent_id="+fileId, null, null, null, "name");
             List<String> files = new ArrayList<>();
-            if(cursor.getCount() > 0) {
-                cursor.moveToFirst();
+            if(cursor.moveToFirst()) {
                 while(!cursor.isAfterLast()) {
                     String name = cursor.getString(0);
                     String ext = FilenameUtils.getExtension(name);
@@ -299,11 +296,10 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         String[] components = StringUtilities.ltrim(path.trim(), '/').split("/", 2);
         String name = components[0].trim();
 
-        String[] columns = {"id"};
+        String[] columns = {"file_id"};
         String[] selectionArgs = {hash, name};
         Cursor cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "catalog_hash=? AND parent_id="+parent+" AND name=?", selectionArgs, null, null, null);
-        if(cursor.getCount() > 0) {
-            cursor.moveToFirst();
+        if(cursor.moveToFirst()) {
             long id = cursor.getLong(0);
             cursor.close();
 
