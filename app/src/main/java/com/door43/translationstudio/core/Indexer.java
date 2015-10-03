@@ -60,7 +60,7 @@ public class Indexer {
     /**
      * Closes the index database
      */
-    public void close() {
+    public synchronized void close() {
         mDatabaseHelper.close();
     }
 
@@ -92,7 +92,7 @@ public class Indexer {
     /**
      * Destroys the entire index
      */
-    public void destroy() {
+    public synchronized void destroy() {
         // reset manifest
         FileUtils.deleteQuietly(mIndexDir);
         mManifest = reload();
@@ -247,7 +247,7 @@ public class Indexer {
      * @param linkPath
      * @return
      */
-    private Boolean createLink (String md5hash, String linkPath) {
+    private synchronized Boolean createLink (String md5hash, String linkPath) {
         mDatabaseHelper.replaceLink(mDatabase, md5hash, linkPath);
 //        try {
 //            if(saveFile(linkPath, md5hash)) {
@@ -544,7 +544,7 @@ public class Indexer {
      * Removes a project from the index
      * @param projectId
      */
-    public void deleteProject (String projectId) {
+    public synchronized void deleteProject (String projectId) {
         String catalogApiUrl = getUrlFromObject(getRootCatalog(), "proj_catalog");
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
@@ -559,7 +559,7 @@ public class Indexer {
      * @param projectId
      * @param sourceLanguageId
      */
-    public void deleteSourceLanguage (String projectId, String sourceLanguageId) {
+    public synchronized void deleteSourceLanguage (String projectId, String sourceLanguageId) {
         for(String resourceId:getResources(projectId, sourceLanguageId)) {
             deleteResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
         }
@@ -583,7 +583,7 @@ public class Indexer {
      * Removes a resource from the index
      * @param translation
      */
-    private void deleteResource (SourceTranslation translation) {
+    private synchronized void deleteResource (SourceTranslation translation) {
         deleteTerms(translation);
         deleteTermAssignments(translation);
         deleteQuestions(translation);
@@ -607,7 +607,7 @@ public class Indexer {
      * Removes the source for the source translation from the index
      * @param translation
      */
-    private void deleteSource (SourceTranslation translation) {
+    private synchronized void deleteSource (SourceTranslation translation) {
         String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link";
         mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
 
@@ -624,7 +624,7 @@ public class Indexer {
      * Removes the translationNotes for the source translation from the index
      * @param translation
      */
-    private void deleteNotes (SourceTranslation translation) {
+    private synchronized void deleteNotes (SourceTranslation translation) {
         String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link";
         mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
 //        String catalogApiUrl = getUrlFromObject(getResource(translation), "notes");
@@ -640,7 +640,7 @@ public class Indexer {
      * Removes the translationWords for the source translation from the index
      * @param translation
      */
-    private void deleteTerms (SourceTranslation translation) {
+    private synchronized void deleteTerms (SourceTranslation translation) {
         String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link";
         mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
 //        String catalogApiUrl = getUrlFromObject(getResource(translation), "terms");
@@ -652,7 +652,7 @@ public class Indexer {
 //        }
     }
 
-    private void deleteTermAssignments (SourceTranslation translation) {
+    private synchronized void deleteTermAssignments (SourceTranslation translation) {
         String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link";
         mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
 
@@ -669,7 +669,7 @@ public class Indexer {
      * Removes the checking questions for the source translation from the index
      * @param translation
      */
-    private void deleteQuestions (SourceTranslation translation) {
+    private synchronized void deleteQuestions (SourceTranslation translation) {
         String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link";
         mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
 
@@ -1277,7 +1277,7 @@ public class Indexer {
      * @param projectId
      * @return
      */
-    public JSONObject getProject(String projectId) {
+    public synchronized JSONObject getProject(String projectId) {
         String md5hash = mDatabaseHelper.readLink(mDatabase, mSourcePath + "/projects_catalog.link");
         if(md5hash == null) {
             return null;
@@ -1291,7 +1291,7 @@ public class Indexer {
      * @param sourcLanguageId
      * @return
      */
-    public JSONObject getSourceLanguage(String projectId, String sourcLanguageId) {
+    public synchronized JSONObject getSourceLanguage(String projectId, String sourcLanguageId) {
         String md5hash = mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + projectId + "/languages_catalog.link");
         if(md5hash == null) {
             return null;
@@ -1304,7 +1304,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public JSONObject getResource(SourceTranslation translation) {
+    public synchronized JSONObject getResource(SourceTranslation translation) {
         String md5hash = mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/resources_catalog.link");
         if(md5hash == null) {
             return null;
@@ -1390,7 +1390,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public String readSourceLink(SourceTranslation translation) {
+    public synchronized String readSourceLink(SourceTranslation translation) {
         return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link");
     }
 
@@ -1399,7 +1399,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public String readQuestionsLink(SourceTranslation translation) {
+    public synchronized String readQuestionsLink(SourceTranslation translation) {
         return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link");
     }
 
@@ -1408,7 +1408,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public String readWordsLink(SourceTranslation translation) {
+    public synchronized String readWordsLink(SourceTranslation translation) {
         return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link");
     }
 
@@ -1417,7 +1417,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public String readWordAssignmentsLink(SourceTranslation translation) {
+    public synchronized String readWordAssignmentsLink(SourceTranslation translation) {
         return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link");
     }
 
@@ -1426,7 +1426,7 @@ public class Indexer {
      * @param translation
      * @return
      */
-    public String readNotesLink(SourceTranslation translation) {
+    public synchronized String readNotesLink(SourceTranslation translation) {
         return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link");
     }
 }
