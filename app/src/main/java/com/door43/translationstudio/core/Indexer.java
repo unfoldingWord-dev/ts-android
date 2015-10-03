@@ -108,7 +108,8 @@ public class Indexer {
      * @param path the relative path to the indexed file
      * @return a string or null
      */
-    private synchronized String readFile(String path) {
+    private synchronized String readFile(String hash, String path) {
+        return mDatabaseHelper.readFile(mDatabase, hash, path);
 //        File file = new File(mIndexDir, path);
 //        if(file.exists()) {
 //            try {
@@ -120,20 +121,6 @@ public class Indexer {
 //        } else {
 //            return null;
 //        }
-
-        String[] columns = {IndexerSQLiteHelper.COLUMN_CONTENT};
-        String selection = IndexerSQLiteHelper.COLUMN_PATH + " = ?";
-        String[] selectionArgs = {path};
-        Cursor cursor = mDatabase.query(IndexerSQLiteHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, null);
-        if(cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            String content = cursor.getString(0);
-            cursor.close();
-            return content;
-        } else {
-            cursor.close();
-            return null;
-        }
     }
 
     /**
@@ -141,8 +128,8 @@ public class Indexer {
      * @param path the relative path to the indexed file
      * @return
      */
-    private JSONObject readJSON(String path) {
-        String contents = readFile(path);
+    private JSONObject readJSON(String hash, String path) {
+        String contents = readFile(hash, path);
         if(contents != null) {
             try {
                 return new JSONObject(contents);
@@ -153,22 +140,22 @@ public class Indexer {
         return null;
     }
 
-    /**
-     * Deletes a file from the index
-     * @param path
-     */
-    private synchronized Boolean deleteFile(String path) {
-//        File file = new File(mIndexDir, path);
-//        if(file.exists()) {
-//            return FileUtils.deleteQuietly(file);
-//        }
+//    /**
+//     * Deletes a file from the index
+//     * @param path
+//     */
+//    private synchronized Boolean deleteFile(String path) {
+////        File file = new File(mIndexDir, path);
+////        if(file.exists()) {
+////            return FileUtils.deleteQuietly(file);
+////        }
+////        return true;
+//
+//        String where = IndexerSQLiteHelper.COLUMN_PATH + " = ?";
+//        String[] whereArgs = {path};
+//        mDatabase.delete(IndexerSQLiteHelper.TABLE_FILES, where, whereArgs);
 //        return true;
-
-        String where = IndexerSQLiteHelper.COLUMN_PATH + " = ?";
-        String[] whereArgs = {path};
-        mDatabase.delete(IndexerSQLiteHelper.TABLE_FILES, where, whereArgs);
-        return true;
-    }
+//    }
 
     /**
      * Saves a string to a file in the index
@@ -176,86 +163,83 @@ public class Indexer {
      * @param contents the contents to be written
      * @return true if the file was new
      */
-    private synchronized Boolean saveFile(String path, String contents) throws IOException {
+    private synchronized Boolean saveFile(String hash, String path, String contents) throws IOException {
+//        File file = new File(path);
+//        String fileDirPath = file.getParent();
+//        String fileName = FilenameUtils.removeExtension(file.getName());
+//
+        mDatabaseHelper.replaceFile(mDatabase, hash, path, contents);
 //        File file = new File(mIndexDir, path);
 //        Boolean isNew = !file.exists();
 //        file.getParentFile().mkdirs();
 //        FileUtils.write(file, contents);
 //        return isNew;
 
-        File file = new File(path);
-        String fileDirPath = file.getParent();
-        String fileName = FilenameUtils.removeExtension(file.getName());
 
-        ContentValues values = new ContentValues();
-        values.put(mDatabaseHelper.COLUMN_PATH, path);
-        values.put(mDatabaseHelper.COLUMN_CONTENT, contents);
-        values.put(mDatabaseHelper.COLUMN_DIR, fileDirPath);
-        values.put(mDatabaseHelper.COLUMN_FILE, fileName);
-
-        mDatabase.replace(IndexerSQLiteHelper.TABLE_FILES, null, values);
         return true;
     }
 
-    /**
-     * Increments the number of sources that link to some indexed data
-     * @param md5hash the data index id
-     * @return true if successfully incremented
-     */
-    private Boolean incrementLink(String md5hash) {
-        JSONObject json = readJSON(mLinksPath);
-        if (json == null) {
-            json = new JSONObject();
-        }
-        try {
-            if(!json.has(md5hash)) {
-                json.put(md5hash, 0);
-            }
-            json.put(md5hash, json.getInt(md5hash) + 1);
-            try {
-                saveFile(mLinksPath, json.toString());
-                return true;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+//    /**
+//     * Increments the number of sources that link to some indexed data
+//     * @param md5hash the data index id
+//     * @return true if successfully incremented
+//     */
+//    @Deprecated
+//    private Boolean incrementLink(String md5hash) {
+//        JSONObject json = readJSON(mLinksPath);
+//        if (json == null) {
+//            json = new JSONObject();
+//        }
+//        try {
+//            if(!json.has(md5hash)) {
+//                json.put(md5hash, 0);
+//            }
+//            json.put(md5hash, json.getInt(md5hash) + 1);
+//            try {
+//                saveFile(mLinksPath, json.toString());
+//                return true;
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                return false;
+//            }
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return false;
+//    }
 
-    /**
-     * Decrements the number of sources that link to some indexed data
-     * When the number of links drops below 1 the indexed data will be deleted.
-     * @param md5hash the data index id
-     * @return true if successfully
-     */
-    private Boolean decrementLink(String md5hash) {
-        JSONObject json = readJSON(mLinksPath);
-        if(json == null) {
-            json = new JSONObject();
-        }
-        try {
-            if(json.has(md5hash)) {
-                int count = json.getInt(md5hash) - 1;
-                if(count <= 0) {
-                    count = 0;
-                    deleteFile(mDataPath + "/" + md5hash);
-                }
-                json.put(md5hash, count);
-                try {
-                    saveFile(mLinksPath, json.toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+//    /**
+//     * Decrements the number of sources that link to some indexed data
+//     * When the number of links drops below 1 the indexed data will be deleted.
+//     * @param md5hash the data index id
+//     * @return true if successfully
+//     */
+//    @Deprecated
+//    private Boolean decrementLink(String md5hash) {
+//        JSONObject json = readJSON(mLinksPath);
+//        if(json == null) {
+//            json = new JSONObject();
+//        }
+//        try {
+//            if(json.has(md5hash)) {
+//                int count = json.getInt(md5hash) - 1;
+//                if(count <= 0) {
+//                    count = 0;
+//                    deleteFile(mDataPath + "/" + md5hash);
+//                }
+//                json.put(md5hash, count);
+//                try {
+//                    saveFile(mLinksPath, json.toString());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//            return true;
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return false;
+//    }
 
     /**
      * Creates or updates a catalog link
@@ -264,7 +248,7 @@ public class Indexer {
      * @return
      */
     private Boolean createLink (String md5hash, String linkPath) {
-        mDatabaseHelper.replaceLink(md5hash, linkPath);
+        mDatabaseHelper.replaceLink(mDatabase, md5hash, linkPath);
 //        try {
 //            if(saveFile(linkPath, md5hash)) {
 //                incrementLink(md5hash);
@@ -364,7 +348,7 @@ public class Indexer {
                             itemPath = md5Path + "/" + item.getString("id");
                         }
                         try {
-                            saveFile(itemPath, item.toString());
+                            saveFile(md5hash, itemPath, item.toString());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -391,7 +375,7 @@ public class Indexer {
                                     // save note
                                     String itemPath = md5Path + "/" + chapterId + "/" + frameId + "/" + noteId;
                                     try {
-                                        saveFile(itemPath, note.toString());
+                                        saveFile(md5hash, itemPath, note.toString());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -421,7 +405,7 @@ public class Indexer {
                         chapter.remove("frames");
                         String chapterPath = md5Path + "/" + chapterId + "/chapter.json";
                         try {
-                            saveFile(chapterPath, chapter.toString());
+                            saveFile(md5hash, chapterPath, chapter.toString());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -433,7 +417,7 @@ public class Indexer {
                                 String frameId = complexId[1];
                                 String framePath = md5Path + "/" + chapterId + "/" + frameId;
                                 try {
-                                    saveFile(framePath, frame.toString());
+                                    saveFile(md5hash, framePath, frame.toString());
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -472,49 +456,53 @@ public class Indexer {
      * @return
      */
     private synchronized String[] getItemsArray(JSONObject itemObject, String urlProperty, String subFolder) {
-        List<String> items = new ArrayList<>();
         if(itemObject == null) {
             return new String[0];
         }
 
         String catalogApiUrl = getUrlFromObject(itemObject, urlProperty);
+        if(catalogApiUrl == null) {
+            return new String[0];
+        }
         String md5hash = Security.md5(catalogApiUrl);
         String md5path = mDataPath + "/" + md5hash;
         if(subFolder != null) {
             md5path = md5path + "/" + subFolder;
         }
 
-        if(catalogApiUrl != null) {
-            if(catalogApiUrl.indexOf("source.json") != -1 && subFolder == null) {
-                // get chapters
-                String trimDir = md5path + "/";
-                String[] columns = {mDatabaseHelper.COLUMN_DIR};
-                String selection = mDatabaseHelper.COLUMN_DIR + " LIKE ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ?";
-                String[] selectionArgs = {md5path + "%", "chapter", "meta"};
-                Cursor cursor = mDatabase.query(true, mDatabaseHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, mDatabaseHelper.COLUMN_PATH, null);
-                cursor.moveToFirst();
-                while(!cursor.isAfterLast()) {
-                    String dir = cursor.getString(0);
-                    items.add(dir.replace(trimDir, ""));
-                    cursor.moveToNext();
-                }
-                cursor.close();
-            } else {
-                // get items
-                String[] columns = {mDatabaseHelper.COLUMN_FILE};
-                String selection = mDatabaseHelper.COLUMN_DIR + " = ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ?";
-                String[] selectionArgs = {md5path, "chapter", "meta"};
-                Cursor cursor = mDatabase.query(mDatabaseHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, mDatabaseHelper.COLUMN_PATH);
-                cursor.moveToFirst();
-                while(!cursor.isAfterLast()) {
-                    String dir = cursor.getString(0);
-                    items.add(dir);
-                    cursor.moveToNext();
-                }
-                cursor.close();
-            }
-        }
-        return items.toArray(new String[items.size()]);
+        String[] extensionFilters = {"json"};
+        return mDatabaseHelper.listDir(mDatabase, md5hash, md5path, extensionFilters);
+
+//        if(catalogApiUrl.indexOf("source.json") != -1 && subFolder == null) {
+//            // get chapters
+//            String trimDir = md5path + "/";
+//            String[] columns = {mDatabaseHelper.COLUMN_DIR};
+//            String selection = mDatabaseHelper.COLUMN_DIR + " LIKE ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ?";
+//            String[] selectionArgs = {md5path + "%", "chapter", "meta"};
+//            Cursor cursor = mDatabase.query(true, mDatabaseHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, mDatabaseHelper.COLUMN_PATH, null);
+//            cursor.moveToFirst();
+//            while(!cursor.isAfterLast()) {
+//                String dir = cursor.getString(0);
+//                items.add(dir.replace(trimDir, ""));
+//                cursor.moveToNext();
+//            }
+//            cursor.close();
+//        } else {
+//            // get items
+//            String[] columns = {mDatabaseHelper.COLUMN_FILE};
+//            String selection = mDatabaseHelper.COLUMN_DIR + " = ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ? AND " + mDatabaseHelper.COLUMN_FILE + " <> ?";
+//            String[] selectionArgs = {md5path, "chapter", "meta"};
+//            Cursor cursor = mDatabase.query(mDatabaseHelper.TABLE_FILES, columns, selection, selectionArgs, null, null, mDatabaseHelper.COLUMN_PATH);
+//            cursor.moveToFirst();
+//            while(!cursor.isAfterLast()) {
+//                String dir = cursor.getString(0);
+//                items.add(dir);
+//                cursor.moveToNext();
+//            }
+//            cursor.close();
+//        }
+
+//        return items.toArray(new String[items.size()]);
     }
 
     /**
@@ -561,7 +549,8 @@ public class Indexer {
         if(catalogApiUrl != null) {
             String md5hash = Security.md5(catalogApiUrl);
             String projectPath = mDataPath + "/" + md5hash + "/" + projectId;
-            deleteFile(projectPath);
+            mDatabaseHelper.deleteFile(mDatabase, md5hash, projectPath);
+//            deleteFile(projectPath);
         }
     }
 
@@ -577,13 +566,16 @@ public class Indexer {
 
         // delete the language catalog when there are no more source languages
         if(getSourceLanguages(projectId).length == 0) {
-            String catalogApiUrl = getUrlFromObject(getProject(projectId), "lang_catalog");
-            if (catalogApiUrl != null) {
-                String md5hash = Security.md5(catalogApiUrl);
-                decrementLink(md5hash);
-                String catalogLinkFile = mSourcePath + "/" + projectId + "/languages_catalog.link";
-                deleteFile(catalogLinkFile);
-            }
+            String catalogLinkFile = mSourcePath + "/" + projectId + "/languages_catalog.link";
+            mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
+
+//            String catalogApiUrl = getUrlFromObject(getProject(projectId), "lang_catalog");
+//            if (catalogApiUrl != null) {
+//                String md5hash = Security.md5(catalogApiUrl);
+//                decrementLink(md5hash);
+//                String catalogLinkFile = mSourcePath + "/" + projectId + "/languages_catalog.link";
+//                deleteFile(catalogLinkFile);
+//            }
         }
     }
 
@@ -598,13 +590,17 @@ public class Indexer {
         deleteNotes(translation);
         deleteSource(translation);
 
-        String catalogApiUrl = getUrlFromObject(getSourceLanguage(translation.projectId, translation.sourceLanguageId), "res_catalog");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            decrementLink(md5hash);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/resources_catalog.link";
-            deleteFile(catalogLinkFile);
-        }
+        // TODO: we should not destroy then entire resources catalog here
+//        String catalogApiUrl = getUrlFromObject(getSourceLanguage(translation.projectId, translation.sourceLanguageId), "res_catalog");
+        String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/resources_catalog.link";
+        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
+
+//        if(catalogApiUrl != null) {
+//            String md5hash = Security.md5(catalogApiUrl);
+//            decrementLink(md5hash);
+//
+//            deleteFile(catalogLinkFile);
+//        }
     }
 
     /**
@@ -612,13 +608,16 @@ public class Indexer {
      * @param translation
      */
     private void deleteSource (SourceTranslation translation) {
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "source");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            decrementLink(md5hash);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link";
-            deleteFile(catalogLinkFile);
-        }
+        String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link";
+        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
+
+//        String catalogApiUrl = getUrlFromObject(getResource(translation), "source");
+//        if(catalogApiUrl != null) {
+//            String md5hash = Security.md5(catalogApiUrl);
+//            decrementLink(md5hash);
+//            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link";
+//            deleteFile(catalogLinkFile);
+//        }
     }
 
     /**
@@ -626,13 +625,15 @@ public class Indexer {
      * @param translation
      */
     private void deleteNotes (SourceTranslation translation) {
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "notes");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            decrementLink(md5hash);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link";
-            deleteFile(catalogLinkFile);
-        }
+        String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link";
+        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
+//        String catalogApiUrl = getUrlFromObject(getResource(translation), "notes");
+//        if(catalogApiUrl != null) {
+//            String md5hash = Security.md5(catalogApiUrl);
+//            decrementLink(md5hash);
+//
+//            deleteFile(catalogLinkFile);
+//        }
     }
 
     /**
@@ -640,23 +641,28 @@ public class Indexer {
      * @param translation
      */
     private void deleteTerms (SourceTranslation translation) {
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "terms");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            decrementLink(md5hash);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link";
-            deleteFile(catalogLinkFile);
-        }
+        String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link";
+        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
+//        String catalogApiUrl = getUrlFromObject(getResource(translation), "terms");
+//        if(catalogApiUrl != null) {
+//            String md5hash = Security.md5(catalogApiUrl);
+//            decrementLink(md5hash);
+//
+//            deleteFile(catalogLinkFile);
+//        }
     }
 
     private void deleteTermAssignments (SourceTranslation translation) {
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "tw_cat");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            decrementLink(md5hash);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link";
-            deleteFile(catalogLinkFile);
-        }
+        String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link";
+        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
+
+//        String catalogApiUrl = getUrlFromObject(getResource(translation), "tw_cat");
+//        if(catalogApiUrl != null) {
+//            String md5hash = Security.md5(catalogApiUrl);
+//            decrementLink(md5hash);
+//
+//            deleteFile(catalogLinkFile);
+//        }
     }
 
     /**
@@ -664,13 +670,16 @@ public class Indexer {
      * @param translation
      */
     private void deleteQuestions (SourceTranslation translation) {
-        String catalogApiUrl = getUrlFromObject(getResource(translation), "checking_questions");
-        if(catalogApiUrl != null) {
-            String md5hash = Security.md5(catalogApiUrl);
-            decrementLink(md5hash);
-            String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link";
-            deleteFile(catalogLinkFile);
-        }
+        String catalogLinkFile = mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link";
+        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
+
+//        String catalogApiUrl = getUrlFromObject(getResource(translation), "checking_questions");
+//        if(catalogApiUrl != null) {
+//            String md5hash = Security.md5(catalogApiUrl);
+//            decrementLink(md5hash);
+//
+//            deleteFile(catalogLinkFile);
+//        }
     }
 
     /**
@@ -1247,7 +1256,7 @@ public class Indexer {
     public JSONObject getWord(SourceTranslation translation, String termId) {
         String md5hash = readWordsLink(translation);
         if(md5hash != null) {
-            return readJSON(mDataPath + "/" + md5hash + "/" + termId);
+            return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + termId);
         }
         return null;
     }
@@ -1269,11 +1278,11 @@ public class Indexer {
      * @return
      */
     public JSONObject getProject(String projectId) {
-        String md5hash = readFile(mSourcePath + "/projects_catalog.link");
+        String md5hash = mDatabaseHelper.readLink(mDatabase, mSourcePath + "/projects_catalog.link");
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + projectId);
+        return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + projectId);
     }
 
     /**
@@ -1283,11 +1292,11 @@ public class Indexer {
      * @return
      */
     public JSONObject getSourceLanguage(String projectId, String sourcLanguageId) {
-        String md5hash = readFile(mSourcePath + "/" + projectId + "/languages_catalog.link");
+        String md5hash = mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + projectId + "/languages_catalog.link");
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + sourcLanguageId);
+        return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + sourcLanguageId);
     }
 
     /**
@@ -1296,11 +1305,11 @@ public class Indexer {
      * @return
      */
     public JSONObject getResource(SourceTranslation translation) {
-        String md5hash = readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/resources_catalog.link");
+        String md5hash = mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/resources_catalog.link");
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + translation.resourceId);
+        return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + translation.resourceId);
     }
 
     /**
@@ -1314,7 +1323,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/chapter.json");
+        return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + chapterId + "/chapter.json");
     }
 
     /**
@@ -1329,7 +1338,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId);
+        return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId);
     }
 
     /**
@@ -1345,7 +1354,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + questionId);
+        return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + questionId);
     }
 
     /**
@@ -1361,7 +1370,7 @@ public class Indexer {
         if(md5hash == null) {
             return null;
         }
-        return readJSON(mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + noteId);
+        return readJSON(md5hash, mDataPath + "/" + md5hash + "/" + chapterId + "/" + frameId + "/" + noteId);
     }
 
     /**
@@ -1382,7 +1391,7 @@ public class Indexer {
      * @return
      */
     public String readSourceLink(SourceTranslation translation) {
-        return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link");
+        return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/source.link");
     }
 
     /**
@@ -1391,7 +1400,7 @@ public class Indexer {
      * @return
      */
     public String readQuestionsLink(SourceTranslation translation) {
-        return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link");
+        return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/checking_questions.link");
     }
 
     /**
@@ -1400,7 +1409,7 @@ public class Indexer {
      * @return
      */
     public String readWordsLink(SourceTranslation translation) {
-        return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link");
+        return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/terms.link");
     }
 
     /**
@@ -1409,7 +1418,7 @@ public class Indexer {
      * @return
      */
     public String readWordAssignmentsLink(SourceTranslation translation) {
-        return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link");
+        return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/tw_cat.link");
     }
 
     /**
@@ -1418,6 +1427,6 @@ public class Indexer {
      * @return
      */
     public String readNotesLink(SourceTranslation translation) {
-        return readFile(mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link");
+        return mDatabaseHelper.readLink(mDatabase, mSourcePath + "/" + translation.projectId + "/" + translation.sourceLanguageId + "/" + translation.resourceId + "/notes.link");
     }
 }

@@ -11,6 +11,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.util.StorageUtils;
+import com.door43.util.StringUtilities;
 
 import java.io.File;
 import java.io.IOException;
@@ -332,13 +333,6 @@ public class AppContext {
      */
     public static String getMediaServer() {
         String url = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, AppContext.context().getResources().getString(R.string.pref_default_media_server));
-        return ltrim(url, '/');
-    }
-
-    private static String ltrim(String str, char target) {
-        if (str.length() > 0 && str.charAt(str.length()-1)==target) {
-            str = str.substring(0, str.length()-1);
-        }
-        return str;
+        return StringUtilities.ltrim(url, '/');
     }
 }

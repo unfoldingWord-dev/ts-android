@@ -188,6 +188,6 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test999999Cleanup() throws Exception {
-        mIndex.destroy();
+        //mIndex.destroy();
     }
 }

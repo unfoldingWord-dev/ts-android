@@ -60,4 +60,11 @@ public class StringUtilities {
         }
         return new Pair(start, end);
     }
+
+    public static String ltrim(String str, char target) {
+        if (str.length() > 0 && str.charAt(str.length()-1)==target) {
+            str = str.substring(0, str.length()-1);
+        }
+        return str;
+    }
 }
