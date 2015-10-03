@@ -420,6 +420,7 @@ public class Indexer {
      * @param sourceLanguageId
      */
     public synchronized void deleteSourceLanguage (String projectId, String sourceLanguageId) {
+        mDatabase.beginTransaction();
         for(String resourceId:getResources(projectId, sourceLanguageId)) {
             deleteResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
         }
@@ -429,6 +430,8 @@ public class Indexer {
             String catalogLinkFile = projectId + "/languages_catalog.link";
             mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
         }
+        mDatabase.setTransactionSuccessful();
+        mDatabase.endTransaction();
     }
 
     /**
