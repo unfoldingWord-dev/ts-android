@@ -1,6 +1,7 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Tar;
@@ -113,31 +114,31 @@ public class Library {
     }
 
     /**
-     * Extracts the default library replacing anything that already existed
-     * This will remove any existing app index before copying the zipped library
-     * into the assets dir and extracting it.
+     * Imports the default index and languages into the library
+     *
+     * @param index the default application sqlite index
+     * @param languages the languages json file
      *
      */
-    public Boolean deployDefaultLibrary() {
-        try {
-            // languages
-            File languagesFile = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
-            Util.writeStream(mContext.getAssets().open(TARGET_LANGUAGES_FILE), languagesFile);
+    public void deploy(File index, File languages) throws Exception {
+        destroyIndexes();
 
-            // library index
-            File libraryArchive = new File(mLibraryDir, DEFAULT_LIBRARY_ZIP);
-            Util.writeStream(mContext.getAssets().open(DEFAULT_LIBRARY_ZIP), libraryArchive);
-            FileUtils.deleteQuietly(mAppIndex.getIndexDir());
-            mAppIndex.getIndexDir().mkdirs();
-            // TODO: we should update the library export to not include the root folder so we are not dependent on the name.
-            Zip.unzip(libraryArchive, mAppIndex.getIndexDir().getParentFile());
-            FileUtils.deleteQuietly(libraryArchive);
-            mAppIndex.reload();
-            return true;
-        } catch (Exception e) {
-            Logger.e(this.getClass().getName(), "Failed to deploy the library", e);
+        // languages
+        File languagesDest = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
+        if(languagesDest.exists()) {
+            languagesDest.delete();
         }
-        return false;
+        mLibraryDir.mkdirs();
+        FileUtils.moveFile(languages, languagesDest);
+
+        // library index
+        File indexDest = mContext.getDatabasePath("app");
+        if(indexDest.exists()) {
+            indexDest.delete();
+        }
+        indexDest.getParentFile().mkdirs();
+        FileUtils.moveFile(index, indexDest);
+        mAppIndex.reload();
     }
 
     /**
@@ -564,9 +565,11 @@ public class Library {
         Map<String, ProjectCategory> categoriesMap = new HashMap<>();
 
         String[] projectIds = getActiveIndex().getProjects();
-        for(String projectId:projectIds) {
-            JSONObject projectJson = getActiveIndex().getProject(projectId);
+        String[] projectData = getActiveIndex().getProjectsContents();
+        for(int i = 0; i < projectIds.length; i ++) {
+            String projectId = projectIds[i];
             try {
+                JSONObject projectJson = new JSONObject(projectData[i]);
                 JSONArray metaJson = projectJson.getJSONArray("meta");
 
                 if(parentCategory.categoryId != null && (metaJson.length() <= parentCategory.categoryDepth || !metaJson.getString(parentCategory.categoryDepth).equals(parentCategory.categoryId))) {

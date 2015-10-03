@@ -240,7 +240,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     public void deleteFile(SQLiteDatabase db, String hash, String path) {
         long fileId = findFile(db, hash, path, ROOT_FILE_ID);
         if(fileId > 0) {
-            db.delete(TABLE_FILES, "file_id="+fileId, null);
+            db.delete(TABLE_FILES, "file_id=" + fileId, null);
         }
     }
 
@@ -289,6 +289,58 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             }
             cursor.close();
             return files.toArray(new String[files.size()]);
+        } else {
+            return new String[0];
+        }
+    }
+
+    /**
+     * Returns an array of file contents in the directory.
+     * This is exactly like listDir except rather than returning the file names it returns the file contents
+     * @param db
+     * @param hash
+     * @param path if null the entire catalog is listed
+     * @param extensionFilters an array of extensions to skip
+     * @return
+     */
+    public String[] listDirContents(SQLiteDatabase db, String hash, String path, String[] extensionFilters) {
+        long fileId = 0;
+        boolean listCatalog = false;
+        if(path != null) {
+            fileId = findFile(db, hash, path, ROOT_FILE_ID);
+        } else {
+            listCatalog = true;
+        }
+        if(listCatalog || fileId > 0) {
+            String[] columns = {"name", "content"};
+            Cursor cursor;
+            if(listCatalog) {
+                String[] args = {hash};
+                cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "catalog_hash=? AND parent_id="+ROOT_FILE_ID, args, null, null, "name");
+            } else {
+                cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "parent_id=" + fileId, null, null, null, "name");
+            }
+            List<String> contentsList = new ArrayList<>();
+            if(cursor.moveToFirst()) {
+                while(!cursor.isAfterLast()) {
+                    String name = cursor.getString(0);
+                    String contents = cursor.getString(1);
+                    String ext = FilenameUtils.getExtension(name);
+                    boolean skip = false;
+                    for(String filtered:extensionFilters) {
+                        if(ext.equals(filtered)) {
+                            skip = true;
+                            break;
+                        }
+                    }
+                    if(!skip) {
+                        contentsList.add(contents);
+                    }
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            return contentsList.toArray(new String[contentsList.size()]);
         } else {
             return new String[0];
         }

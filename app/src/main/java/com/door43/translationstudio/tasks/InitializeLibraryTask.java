@@ -1,5 +1,6 @@
 package com.door43.translationstudio.tasks;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
@@ -13,7 +14,11 @@ public class InitializeLibraryTask extends ManagedTask {
     @Override
     public void start() {
         Library library = AppContext.getLibrary();
-        library.deployDefaultLibrary();
-        library.seedDownloadIndex();
+        try {
+            AppContext.deployDefaultLibrary(library);
+            library.seedDownloadIndex();
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
+        }
     }
 }

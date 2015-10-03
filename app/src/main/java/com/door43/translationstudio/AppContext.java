@@ -10,8 +10,12 @@ import android.provider.Settings;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Util;
 import com.door43.util.StorageUtils;
 import com.door43.util.StringUtilities;
+import com.door43.util.Zip;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +25,8 @@ import java.io.IOException;
  */
 public class AppContext {
     private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
+    public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
+    public static final String TARGET_LANGUAGES_FILE = "languages.json";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -44,6 +50,36 @@ public class AppContext {
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
         String rootApiUrl = server + mContext.getResources().getString(R.string.root_catalog_api);
         return new Library(mContext, new File(mContext.getFilesDir(), "library"), new File(mContext.getCacheDir(), "library"), rootApiUrl);
+    }
+
+    /**
+     * Deploys the default index and the target languages
+     * The
+     * @throws Exception
+     */
+    public static void deployDefaultLibrary(Library library) throws Exception {
+        File cacheDir = mContext.getCacheDir();
+        cacheDir.mkdirs();
+
+        // languages
+        File languagesFile = new File(cacheDir, TARGET_LANGUAGES_FILE);
+        if(languagesFile.exists()) {
+            languagesFile.delete();
+        }
+        Util.writeStream(mContext.getAssets().open(TARGET_LANGUAGES_FILE), languagesFile);
+
+        // library index
+        File libraryArchive = new File(cacheDir, DEFAULT_LIBRARY_ZIP);
+        Util.writeStream(mContext.getAssets().open(DEFAULT_LIBRARY_ZIP), libraryArchive);
+        Zip.unzip(libraryArchive, cacheDir);
+        FileUtils.deleteQuietly(libraryArchive);
+        File indexFile = new File(cacheDir, "app");
+
+        library.deploy(indexFile, languagesFile);
+
+        // clean up
+        languagesFile.delete();
+        indexFile.delete();
     }
 
     /**

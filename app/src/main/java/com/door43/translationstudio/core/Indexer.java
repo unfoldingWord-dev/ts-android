@@ -1,8 +1,6 @@
 package com.door43.translationstudio.core;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.door43.tools.reporting.Logger;
@@ -10,17 +8,13 @@ import com.door43.util.Manifest;
 import com.door43.util.Security;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -32,9 +26,6 @@ public class Indexer {
     private Manifest mManifest;
     private final String mId;
     private final File mIndexDir;
-//    private final String mDataPath = "data";
-//    private final String mSourcePath = "source";
-//    private final String mLinksPath = mDataPath + "/links.json";
 
     private enum CatalogType {
         Simple,
@@ -357,13 +348,31 @@ public class Indexer {
             return new String[0];
         }
         String md5hash = Security.md5(catalogApiUrl);
-//        String md5path = mDataPath + "/" + md5hash;
-//        if(subFolder != null) {
-//            md5path = md5path + "/" + subFolder;
-//        }
 
         String[] extensionFilters = {"json"};
         return mDatabaseHelper.listDir(mDatabase, md5hash, subFolder, extensionFilters);
+    }
+
+    /**
+     * Returns an array of contents indexed under an object.
+     * This is just like getItemsArray except that it returns the contents of the items rather than the names
+     * @param itemObject
+     * @param urlProperty
+     * @param subFolder
+     * @return
+     */
+    private String[] getContentsArray(JSONObject itemObject, String urlProperty, String subFolder) {
+        if(itemObject == null) {
+            return new String[0];
+        }
+
+        String catalogApiUrl = getUrlFromObject(itemObject, urlProperty);
+        if(catalogApiUrl == null) {
+            return new String[0];
+        }
+        String md5hash = Security.md5(catalogApiUrl);
+        String[] extensionFilters = {"json"};
+        return mDatabaseHelper.listDirContents(mDatabase, md5hash, subFolder, extensionFilters);
     }
 
     /**
@@ -991,6 +1000,14 @@ public class Indexer {
      */
     public String[] getProjects() {
         return getItemsArray(getRootCatalog(), "proj_catalog");
+    }
+
+    /**
+     * Returns a list of project contents
+     * @return
+     */
+    public String[] getProjectsContents() {
+        return getContentsArray(getRootCatalog(), "proj_catalog", null);
     }
 
     /**

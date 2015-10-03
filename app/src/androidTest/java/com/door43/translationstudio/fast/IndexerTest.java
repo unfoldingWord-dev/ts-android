@@ -1,6 +1,8 @@
 package com.door43.translationstudio.fast;
 
 import android.content.Context;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteDatabase;
 import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.MainApplication;
@@ -23,12 +25,13 @@ public class IndexerTest extends InstrumentationTestCase {
     private Indexer mIndex;
     private Context mContext;
     private File mIndexRoot;
+    private MainApplication mApp;
 
     @Override
     protected void setUp() throws Exception {
-        MainApplication app = AppContext.context();
-        mIndexRoot = new File(app.getCacheDir(), "test_index");
-        mIndex = new Indexer(app, "indexer_test_app", mIndexRoot);
+        mApp = AppContext.context();
+        mIndexRoot = new File(mApp.getCacheDir(), "test_index");
+        mIndex = new Indexer(mApp, "indexer_test_app", mIndexRoot);
         mContext = getInstrumentation().getContext();
     }
 
@@ -115,9 +118,13 @@ public class IndexerTest extends InstrumentationTestCase {
         File asset = new File(AppContext.context().getCacheDir(), "indexer/sample_index.zip");
         Util.copyStreamToCache(mContext, is, asset);
         File indexDir = asset.getParentFile();
+        FileUtils.deleteQuietly(new File(indexDir, "sample_index"));
+        indexDir.mkdirs();
         Zip.unzip(asset, indexDir);
+        File dbPath = mApp.getDatabasePath("sample_index");
+        FileUtils.deleteQuietly(dbPath);
+        FileUtils.moveFile(new File(indexDir, "sample_index"), dbPath);
         Indexer index = new Indexer(AppContext.context(), "sample_index", indexDir);
-        index.destroy();
         assertTrue(index.getProjects().length > 0);
     }
 

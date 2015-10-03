@@ -11,6 +11,8 @@ import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.Util;
+import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 
@@ -25,22 +27,23 @@ public class TranslatorTest extends InstrumentationTestCase {
     private Translator mTranslator;
     private File mLibraryDir;
     private Library mLibrary;
+    private MainApplication mApp;
 
     protected void setUp() throws Exception {
-        MainApplication app = AppContext.context();
-        mTranslatorDir = new File(app.getFilesDir(), "test_translations");
-        mTranslator = new Translator(app, mTranslatorDir);
+        mApp = AppContext.context();
+        mTranslatorDir = new File(mApp.getFilesDir(), "test_translations");
+        mTranslator = new Translator(mApp, mTranslatorDir);
 
-        mLibraryDir = new File(app.getFilesDir(), "test_translator_library");
-        String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
-        String rootApi = server + app.getResources().getString(R.string.root_catalog_api);
-        mLibrary = new Library(app, mLibraryDir, mLibraryDir, rootApi);
+        mLibraryDir = new File(mApp.getFilesDir(), "test_translator_library");
+        String server = mApp.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mApp.getResources().getString(R.string.pref_default_media_server));
+        String rootApi = server + mApp.getResources().getString(R.string.root_catalog_api);
+        mLibrary = new Library(mApp, mLibraryDir, mLibraryDir, rootApi);
     }
 
     public void test01Clean() throws Exception {
         FileUtils.deleteQuietly(mTranslatorDir);
         if(!mLibrary.exists()) {
-            mLibrary.deployDefaultLibrary();
+            AppContext.deployDefaultLibrary(mLibrary);
         }
     }
 
