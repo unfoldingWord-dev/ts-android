@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -36,6 +37,9 @@ import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Created by joel on 9/9/2015.
@@ -56,6 +60,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
     private final Translator mTranslator;
     private Chapter[] mChapters;
     private int mLayoutBuildNumber = 0;
+    private ContentValues[] mTabs;
 
     public ReadModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
@@ -80,6 +85,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mTargetStateOpen = new boolean[mChapters.length];
         mRenderedSourceBody = new CharSequence[mChapters.length];
         mRenderedTargetBody = new CharSequence[mChapters.length];
+
+        loadTabInfo();
     }
 
     /**
@@ -93,6 +100,8 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         mChapters = mLibrary.getChapters(mSourceTranslation);
         mTargetStateOpen = new boolean[mChapters.length];
         mRenderedSourceBody = new CharSequence[mChapters.length];
+
+        loadTabInfo();
 
         notifyDataSetChanged();
     }
@@ -133,6 +142,29 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_read_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
         return vh;
+    }
+
+    /**
+     * Rebuilds the card tabs
+     */
+    private void loadTabInfo() {
+        List<ContentValues> tabContents = new ArrayList<>();
+        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        for(String id:sourceTranslationIds) {
+            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
+            if(sourceTranslation != null) {
+                ContentValues values = new ContentValues();
+                // include the resource id if there are more than one
+                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
+                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
+                } else {
+                    values.put("title", sourceTranslation.getSourceLanguageTitle());
+                }
+                values.put("tag", sourceTranslation.getId());
+                tabContents.add(values);
+            }
+        }
+        mTabs = tabContents.toArray(new ContentValues[tabContents.size()]);
     }
 
     @Override
@@ -295,20 +327,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         // load tabs
         holder.mTabLayout.setOnTabSelectedListener(null);
         holder.mTabLayout.removeAllTabs();
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-            if(sourceTranslation != null) {
-                TabLayout.Tab tab = holder.mTabLayout.newTab();
-                // include the resource id if there are more than one
-                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
-                    tab.setText(sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
-                } else {
-                    tab.setText(sourceTranslation.getSourceLanguageTitle());
-                }
-                tab.setTag(sourceTranslation.getId());
-                holder.mTabLayout.addTab(tab);
-            }
+        for(ContentValues values:mTabs) {
+            TabLayout.Tab tab = holder.mTabLayout.newTab();
+            tab.setText(values.getAsString("title"));
+            tab.setTag(values.getAsString("tag"));
+            holder.mTabLayout.addTab(tab);
         }
 
         // select correct tab

@@ -802,14 +802,19 @@ public class Library {
      */
     public Chapter[] getChapters(SourceTranslation sourceTranslation) {
         List<Chapter> chapters = new ArrayList<>();
-        String[] chapterIds = getActiveIndex().getChapters(sourceTranslation);
-        for(String chapterId:chapterIds) {
-            Chapter chapter = getChapter(sourceTranslation, chapterId);
-            if(chapter != null) {
-                chapters.add(chapter);
+        String[] chaptersContent = getActiveIndex().getChaptersContents(sourceTranslation);
+        for(String json:chaptersContent) {
+            if(json != null) {
+                try {
+                    Chapter chapter = Chapter.generate(new JSONObject(json));
+                    if (chapter != null) {
+                        chapters.add(chapter);
+                    }
+                } catch (JSONException e) {
+                    Logger.e(this.getClass().getName(), "Failed to parse the chapter", e);
+                }
             }
         }
-        // TODO: sort by id
         return chapters.toArray(new Chapter[chapters.size()]);
     }
 
@@ -832,14 +837,17 @@ public class Library {
      */
     public Frame[] getFrames(SourceTranslation sourceTranslation, String chapterId) {
         List<Frame> frames = new ArrayList<>();
-        String[] frameIds = getActiveIndex().getFrames(sourceTranslation, chapterId);
-        for(String frameId:frameIds) {
-            Frame frame = getFrame(sourceTranslation, chapterId, frameId);
-            if(frame != null) {
-                frames.add(frame);
+        String[] framesContent = getActiveIndex().getFramesContents(sourceTranslation, chapterId);
+        for(String json:framesContent) {
+            try {
+                Frame frame = Frame.generate(chapterId, new JSONObject(json));
+                if (frame != null) {
+                    frames.add(frame);
+                }
+            } catch (JSONException e) {
+                Logger.e(this.getClass().getName(), "Failed to parse the frame", e);
             }
         }
-        // TODO: sort by id
         return frames.toArray(new Frame[frames.size()]);
     }
 

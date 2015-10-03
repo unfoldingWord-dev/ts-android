@@ -295,6 +295,55 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
+     * Returns an array of contents for a file found in each directory.
+     * For example. if you have directorys 01, 02, and 03 each containing a file "myfile.json"
+     * this method will list the contents of reach "myfile.json" ordered by directory name.
+     * @param db
+     * @param hash
+     * @param path
+     * @param file the name of the file who's contents will be returned
+     * @return
+     */
+    public String[] listDirFileContents(SQLiteDatabase db, String hash, String path, String file) {
+        long fileId = 0;
+        boolean listCatalog = false;
+        if(path != null) {
+            fileId = findFile(db, hash, path, ROOT_FILE_ID);
+        } else {
+            listCatalog = true;
+        }
+        if(listCatalog || fileId > 0) {
+            Cursor cursor;
+            if(listCatalog) {
+                String[] args = {file, hash};
+                String query = "SELECT f.content FROM file AS f"
+                        + " LEFT JOIN file AS parent ON parent.file_id=f.parent_id"
+                        + " WHERE f.is_dir=0 AND f.name=? AND f.parent_id IN ("
+                        + "SELECT file_id FROM file WHERE catalog_hash=? AND parent_id="+ROOT_FILE_ID+") ORDER BY parent.name";
+                cursor = db.rawQuery(query, args);
+            } else {
+                String[] args = {file};
+                String query = "SELECT f.content FROM file AS f"
+                        + " LEFT JOIN file AS parent ON parent.file_id=f.parent_id"
+                        + " WHERE f.is_dir=0 AND f.name=? AND f.parent_id IN ("
+                        + "SELECT file_id FROM file WHERE parent_id="+fileId+") ORDER BY parent.name";
+                cursor = db.rawQuery(query, args);
+            }
+            List<String> contentsList = new ArrayList<>();
+            if(cursor.moveToFirst()) {
+                while(!cursor.isAfterLast()) {
+                    contentsList.add(cursor.getString(0));
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            return contentsList.toArray(new String[contentsList.size()]);
+        } else {
+            return new String[0];
+        }
+    }
+
+    /**
      * Returns an array of file contents in the directory.
      * This is exactly like listDir except rather than returning the file names it returns the file contents
      * @param db

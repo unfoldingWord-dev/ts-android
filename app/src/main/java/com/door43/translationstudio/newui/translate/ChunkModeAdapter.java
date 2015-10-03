@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -70,6 +71,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private List<Integer> mChapterTitles = new ArrayList<>();
     private List<Integer> mChapterReferences = new ArrayList<>();
     private int mLayoutBuildNumber = 0;
+    private ContentValues[] mTabs;
 
     public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
         mLibrary = AppContext.getLibrary();
@@ -115,6 +117,31 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mTargetStateOpen = new boolean[mFrames.length];
         mRenderedSourceBody = new CharSequence[mFrames.length];
         mRenderedTargetBody = new CharSequence[mFrames.length];
+
+        loadTabInfo();
+    }
+
+    /**
+     * Rebuilds the card tabs
+     */
+    private void loadTabInfo() {
+        List<ContentValues> tabContents = new ArrayList<>();
+        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        for(String id:sourceTranslationIds) {
+            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
+            if(sourceTranslation != null) {
+                ContentValues values = new ContentValues();
+                // include the resource id if there are more than one
+                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
+                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
+                } else {
+                    values.put("title", sourceTranslation.getSourceLanguageTitle());
+                }
+                values.put("tag", sourceTranslation.getId());
+                tabContents.add(values);
+            }
+        }
+        mTabs = tabContents.toArray(new ContentValues[tabContents.size()]);
     }
 
     /**
@@ -150,6 +177,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mTargetStateOpen = new boolean[mFrames.length];
         mRenderedSourceBody = new CharSequence[mFrames.length];
         mRenderedTargetBody = new CharSequence[mFrames.length];
+
+        loadTabInfo();
 
         notifyDataSetChanged();
     }
@@ -253,20 +282,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         // load tabs
         holder.mTabLayout.setOnTabSelectedListener(null);
         holder.mTabLayout.removeAllTabs();
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-            if(sourceTranslation != null) {
-                TabLayout.Tab tab = holder.mTabLayout.newTab();
-                // include the resource id if there are more than one
-                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
-                    tab.setText(sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
-                } else {
-                    tab.setText(sourceTranslation.getSourceLanguageTitle());
-                }
-                tab.setTag(sourceTranslation.getId());
-                holder.mTabLayout.addTab(tab);
-            }
+        for(ContentValues values:mTabs) {
+            TabLayout.Tab tab = holder.mTabLayout.newTab();
+            tab.setText(values.getAsString("title"));
+            tab.setTag(values.getAsString("tag"));
+            holder.mTabLayout.addTab(tab);
         }
 
         // select correct tab

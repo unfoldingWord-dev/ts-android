@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.translate;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
@@ -52,6 +53,7 @@ import com.door43.widget.ViewUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -66,6 +68,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private final Translator mTranslator;
     private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
+    private HashMap<String, Chapter> mChapters;
     private SourceTranslation mSourceTranslation;
     private SourceLanguage mSourceLanguage;
     private final TargetLanguage mTargetLanguage;
@@ -75,6 +78,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private CharSequence[] mRenderedTargetBody;
     private int mLayoutBuildNumber = 0;
     private boolean mResourcesOpened = false;
+    private ContentValues[] mTabs;
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, boolean resourcesOpened) {
         mLibrary = AppContext.getLibrary();
@@ -87,8 +91,10 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mResourcesOpened = resourcesOpened;
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
+        mChapters = new HashMap<>();
         List<Frame> frames = new ArrayList<>();
         for(Chapter c:chapters) {
+            mChapters.put(c.getId(), c);
             Frame[] chapterFrames = mLibrary.getFrames(mSourceTranslation, c.getId());
             if(chapterId != null && c.getId().equals(chapterId) && chapterFrames.length > 0) {
                 // identify starting selection
@@ -109,12 +115,37 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mOpenResourceTab = new int[mFrames.length];
         mRenderedSourceBody = new CharSequence[mFrames.length];
         mRenderedTargetBody = new CharSequence[mFrames.length];
+
+        loadTabInfo();
     }
 
     @Override
     void rebuild() {
         mLayoutBuildNumber ++;
         notifyDataSetChanged();
+    }
+
+    /**
+     * Rebuilds the card tabs
+     */
+    private void loadTabInfo() {
+        List<ContentValues> tabContents = new ArrayList<>();
+        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
+        for(String id:sourceTranslationIds) {
+            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
+            if(sourceTranslation != null) {
+                ContentValues values = new ContentValues();
+                // include the resource id if there are more than one
+                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
+                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
+                } else {
+                    values.put("title", sourceTranslation.getSourceLanguageTitle());
+                }
+                values.put("tag", sourceTranslation.getId());
+                tabContents.add(values);
+            }
+        }
+        mTabs = tabContents.toArray(new ContentValues[tabContents.size()]);
     }
 
     @Override
@@ -124,7 +155,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<Frame> frames = new ArrayList<>();
+        mChapters = new HashMap<>();
         for(Chapter c:chapters) {
+            mChapters.put(c.getId(), c);
             Frame[] chapterFrames = mLibrary.getFrames(mSourceTranslation, c.getId());
             frames.addAll(Arrays.asList(chapterFrames));
         }
@@ -132,6 +165,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mOpenResourceTab = new int[mFrames.length];
         mRenderedSourceBody = new CharSequence[mFrames.length];
         mRenderedTargetBody = new CharSequence[mFrames.length];
+
+        loadTabInfo();
 
         notifyDataSetChanged();
     }
@@ -205,7 +240,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
 
         // render source frame title (we don't actually set the source title)
-        Chapter chapter = mLibrary.getChapter(mSourceTranslation, frame.getChapterId());
+        Chapter chapter = mChapters.get(frame.getChapterId());
         String sourceChapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
             sourceChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
@@ -282,20 +317,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // load tabs
         holder.mTranslationTabs.setOnTabSelectedListener(null);
         holder.mTranslationTabs.removeAllTabs();
-        String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(mTargetTranslation.getId());
-        for(String id:sourceTranslationIds) {
-            SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(id);
-            if(sourceTranslation != null) {
-                TabLayout.Tab tab = holder.mTranslationTabs.newTab();
-                // include the resource id if there are more than one
-                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
-                    tab.setText(sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
-                } else {
-                    tab.setText(sourceTranslation.getSourceLanguageTitle());
-                }
-                tab.setTag(sourceTranslation.getId());
-                holder.mTranslationTabs.addTab(tab);
-            }
+        for(ContentValues values:mTabs) {
+            TabLayout.Tab tab = holder.mTranslationTabs.newTab();
+            tab.setText(values.getAsString("title"));
+            tab.setTag(values.getAsString("tag"));
+            holder.mTranslationTabs.addTab(tab);
         }
 
         // select correct tab

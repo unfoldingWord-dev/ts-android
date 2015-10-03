@@ -376,6 +376,30 @@ public class Indexer {
     }
 
     /**
+     * Returns an array of contents for a file found in each directory.
+     * For example. if you have directorys 01, 02, and 03 each containing a file "myfile.json"
+     * this method will list the contents of reach "myfile.json" ordered by directory name.
+     *
+     * @param itemObject
+     * @param urlProperty
+     * @param subFolder
+     * @param file the file who's contents will be returned
+     * @return
+     */
+    private String[] getDirFileContentsArray(JSONObject itemObject, String urlProperty, String subFolder, String file) {
+        if(itemObject == null) {
+            return new String[0];
+        }
+
+        String catalogApiUrl = getUrlFromObject(itemObject, urlProperty);
+        if (catalogApiUrl == null) {
+            return new String[0];
+        }
+        String md5hash = Security.md5(catalogApiUrl);
+        return mDatabaseHelper.listDirFileContents(mDatabase, md5hash, subFolder, file);
+    }
+
+    /**
      * Returns the url from an object without any url parameters
      * @param json
      * @param urlProperty
@@ -1039,6 +1063,14 @@ public class Indexer {
     }
 
     /**
+     * Returns a list of chapter contents
+     * @return
+     */
+    public String[] getChaptersContents(SourceTranslation translation) {
+        return getDirFileContentsArray(getResource(translation), "source", null, "chapter.json");
+    }
+
+    /**
      * Returns an array of frame ids
      * @param translation
      * @param chapterId
@@ -1046,6 +1078,16 @@ public class Indexer {
      */
     public String[] getFrames(SourceTranslation translation, String chapterId) {
         return getItemsArray(getResource(translation), "source", chapterId);
+    }
+
+    /**
+     * Returns an array of frame contents
+     * @param translation
+     * @param chapterId
+     * @return
+     */
+    public String[] getFramesContents(SourceTranslation translation, String chapterId) {
+        return getContentsArray(getResource(translation), "source", chapterId);
     }
 
     /**
