@@ -117,6 +117,7 @@ public class IndexerTest extends InstrumentationTestCase {
         File indexDir = asset.getParentFile();
         Zip.unzip(asset, indexDir);
         Indexer index = new Indexer(AppContext.context(), "sample_index", indexDir);
+        index.destroy();
         assertTrue(index.getProjects().length > 0);
     }
 

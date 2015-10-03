@@ -139,7 +139,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         String hash = readLink(db, linkPath);
         String[] args = {linkPath};
         db.delete(TABLE_LINKS, "name=?", args);
-        if(countCatalogLinks(db, hash) < 1) {
+        if(hash != null && countCatalogLinks(db, hash) < 1) {
             deleteCatalog(db, hash);
         }
     }
