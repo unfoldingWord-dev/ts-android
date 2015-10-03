@@ -83,6 +83,9 @@ public class Library {
     public void destroyIndexes() {
         FileUtils.deleteQuietly(mIndexDir);
         FileUtils.deleteQuietly(mCacheDir);
+
+        mAppIndex.destroy();
+        destroyCache();
     }
 
     /**

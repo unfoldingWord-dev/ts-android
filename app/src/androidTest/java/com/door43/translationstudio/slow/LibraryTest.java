@@ -41,14 +41,15 @@ public class LibraryTest extends AndroidTestCase {
 
     public void test01Clean() throws Exception {
         FileUtils.deleteQuietly(mLibraryDir);
+        mLibrary.destroyIndexes();
     }
 
-    public void test02ExtractLibrary() throws Exception {
-        // NOTE: the default library is large so we don't include in the repo. So this test should always fall through
-        assertFalse(mLibrary.exists());
-        mLibrary.deployDefaultLibrary();
-        assertTrue(mLibrary.exists());
-    }
+//    public void test02ExtractLibrary() throws Exception {
+//        // NOTE: the default library is large so we don't include in the repo. So this test should always fall through
+//        assertFalse(mLibrary.exists());
+//        mLibrary.deployDefaultLibrary();
+//        assertTrue(mLibrary.exists());
+//    }
 
     public void test03CheckForAvailableUpdates() throws Exception {
         // pre-populate download index with shallow copy
@@ -151,6 +152,6 @@ public class LibraryTest extends AndroidTestCase {
     }
 
     public void test999999Cleanup() throws Exception {
-        FileUtils.deleteQuietly(mLibraryDir);
+//        FileUtils.deleteQuietly(mLibraryDir);
     }
 }

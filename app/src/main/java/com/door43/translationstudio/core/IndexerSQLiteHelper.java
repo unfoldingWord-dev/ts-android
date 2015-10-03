@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
-    private static final String TABLE_CATALOGS = "catalog";
+//    private static final String TABLE_CATALOGS = "catalog";
     private static final String TABLE_FILES = "file";
     private static final String TABLE_LINKS = "link";
     private static final int DATABASE_VERSION = 1;
@@ -37,10 +37,10 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String catalogTable = "CREATE TABLE `catalog` ( `id` INTERGER PRIMARY KEY NOT NULL UNIQUE, `hash`  TEXT NOT NULL UNIQUE, `num_links` INTEGER NOT NULL DEFAULT 0, `updated_at`  INTEGER NOT NULL);";
+//        String catalogTable = "CREATE TABLE `catalog` ( `id` INTERGER PRIMARY KEY NOT NULL UNIQUE, `hash`  TEXT NOT NULL UNIQUE, `num_links` INTEGER NOT NULL DEFAULT 0, `updated_at`  INTEGER NOT NULL);";
         String fileTable = "CREATE TABLE `file` ( `file_id`  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE, `name`  text NOT NULL, `parent_id` INTEGER NOT NULL DEFAULT 0, `catalog_hash`  text NOT NULL, `content` text, `is_dir`  INTEGER NOT NULL DEFAULT 0, UNIQUE (name, parent_id, catalog_hash) ON CONFLICT REPLACE, FOREIGN KEY (parent_id) REFERENCES file(file_id) ON DELETE CASCADE);";
         String linkTable ="CREATE TABLE `link` ( `id` INTEGER PRIMARY KEY NOT NULL UNIQUE, `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL);";
-        db.execSQL(catalogTable);
+//        db.execSQL(catalogTable);
         db.execSQL(fileTable);
         db.execSQL(linkTable);
 
@@ -151,7 +151,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public void deleteCatalog(SQLiteDatabase db, String hash) {
         String[] args = {hash};
-        db.delete(TABLE_CATALOGS, "hash=?", args);
+//        db.delete(TABLE_CATALOGS, "hash=?", args);
         db.delete(TABLE_FILES, "catalog_hash=?", args);
         db.delete(TABLE_LINKS, "catalog_hash=?", args);
     }
@@ -250,15 +250,27 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * Returns an array of files in the directory
      * @param db
      * @param hash
-     * @param path
+     * @param path if null the entire catalog is listed
      * @param extensionFilters an array of extensions to skip
      * @return
      */
     public String[] listDir(SQLiteDatabase db, String hash, String path, String[] extensionFilters) {
-        long fileId = findFile(db, hash, path, ROOT_FILE_ID);
-        if(fileId > 0) {
+        long fileId = 0;
+        boolean listCatalog = false;
+        if(path != null) {
+            fileId = findFile(db, hash, path, ROOT_FILE_ID);
+        } else {
+            listCatalog = true;
+        }
+        if(listCatalog || fileId > 0) {
             String[] columns = {"name"};
-            Cursor cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "parent_id="+fileId, null, null, null, "name");
+            Cursor cursor;
+            if(listCatalog) {
+                String[] args = {hash};
+                cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "catalog_hash=? AND parent_id="+ROOT_FILE_ID, args, null, null, "name");
+            } else {
+                cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "parent_id=" + fileId, null, null, null, "name");
+            }
             List<String> files = new ArrayList<>();
             if(cursor.moveToFirst()) {
                 while(!cursor.isAfterLast()) {
