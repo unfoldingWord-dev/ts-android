@@ -55,4 +55,19 @@ public class Project {
         }
         return null;
     }
+
+    /**
+     * Generates a simple form of the project, that is, with out any source translation
+     * @param json
+     * @return
+     */
+    public static Project generateSimple(JSONObject json) throws JSONException {
+        if(json != null) {
+            String projectId = json.getString("slug");
+            int dateModified = json.getInt("date_modified");
+
+            return new Project(projectId, null, null, null, dateModified);
+        }
+        return null;
+    }
 }
