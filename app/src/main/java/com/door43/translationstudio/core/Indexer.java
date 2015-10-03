@@ -216,7 +216,7 @@ public class Indexer {
         return null;
     }
 
-    private Boolean indexItems (String md5hash, CatalogType type, String jsonString) {
+    private synchronized Boolean indexItems (String md5hash, CatalogType type, String jsonString) {
         JSONArray items;
         try {
             items = new JSONArray(jsonString);
@@ -224,7 +224,7 @@ public class Indexer {
             e.printStackTrace();
             return false;
         }
-
+        mDatabase.beginTransaction();
         // save items
         if(type == CatalogType.Simple) {
             for(int i = 0; i < items.length(); i ++ ) {
@@ -325,6 +325,8 @@ public class Indexer {
         } else if(type == CatalogType.Questions) {
             // TODO: eventually we'll index the checking question dictionary here
         }
+        mDatabase.setTransactionSuccessful();
+        mDatabase.endTransaction();
         return true;
     }
 
@@ -616,32 +618,37 @@ public class Indexer {
         generateTermsLink(translation);
         generateTermAssignmentsLink(translation);
 
-        // TODO: 10/2/2015 The below code is no longer valid
-        // import new content
+        // TODO: 10/2/2015 The below code is no longer valid. We should attache the two databases and import the data directly
+        // http://stackoverflow.com/questions/10801567/is-it-possible-to-get-data-from-multi-databases-in-android-sqlite-or-any-quick
+        // import source
         File sourceDir = index.getDataDir(index.readSourceLink(translation));
         File destSourceDir = getDataDir(readSourceLink(translation));
         if(sourceDir != null && sourceDir.exists()) {
             FileUtils.copyDirectory(sourceDir, destSourceDir);
         }
 
+        // import notes
         File notesDir = index.getDataDir(index.readNotesLink(translation));
         File destNotesDir = getDataDir(readNotesLink(translation));
         if(notesDir != null && notesDir.exists()) {
             FileUtils.copyDirectory(notesDir, destNotesDir);
         }
 
+        // import questions
         File questionsDir = index.getDataDir(index.readQuestionsLink(translation));
         File destQuestionsDir = getDataDir(readQuestionsLink(translation));
         if(questionsDir != null && questionsDir.exists()) {
             FileUtils.copyDirectory(questionsDir, destQuestionsDir);
         }
 
+        // import terms
         File termsDir = index.getDataDir(index.readWordsLink(translation));
         File destTermsDir = getDataDir(readWordsLink(translation));
         if(termsDir != null && termsDir.exists()) {
             FileUtils.copyDirectory(termsDir, destTermsDir);
         }
 
+        // import term assignments
         File termAssignmentsDir = index.getDataDir(index.readWordAssignmentsLink(translation));
         File destTermAssignmentsDir = getDataDir(readWordAssignmentsLink(translation));
         if(termAssignmentsDir != null && termAssignmentsDir.exists()) {
