@@ -37,10 +37,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-//        String catalogTable = "CREATE TABLE `catalog` ( `id` INTERGER PRIMARY KEY NOT NULL UNIQUE, `hash`  TEXT NOT NULL UNIQUE, `num_links` INTEGER NOT NULL DEFAULT 0, `updated_at`  INTEGER NOT NULL);";
         String fileTable = "CREATE TABLE `file` ( `file_id`  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE, `name`  text NOT NULL, `parent_id` INTEGER NOT NULL DEFAULT 0, `catalog_hash`  text NOT NULL, `content` text, `is_dir`  INTEGER NOT NULL DEFAULT 0, UNIQUE (name, parent_id, catalog_hash) ON CONFLICT REPLACE, FOREIGN KEY (parent_id) REFERENCES file(file_id) ON DELETE CASCADE);";
-        String linkTable ="CREATE TABLE `link` ( `id` INTEGER PRIMARY KEY NOT NULL UNIQUE, `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL);";
-//        db.execSQL(catalogTable);
+        String linkTable ="CREATE TABLE `link` ( `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL, PRIMARY KEY(name));";
         db.execSQL(fileTable);
         db.execSQL(linkTable);
 
