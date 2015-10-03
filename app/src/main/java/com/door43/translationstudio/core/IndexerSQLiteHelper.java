@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
 
 import com.door43.util.StringUtilities;
@@ -365,7 +366,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             Cursor cursor;
             if(listCatalog) {
                 String[] args = {hash};
-                cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "catalog_hash=? AND parent_id="+ROOT_FILE_ID, args, null, null, "name");
+                cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "catalog_hash=? AND parent_id=" + ROOT_FILE_ID, args, null, null, "name");
             } else {
                 cursor = db.query(IndexerSQLiteHelper.TABLE_FILES, columns, "parent_id=" + fileId, null, null, null, "name");
             }
@@ -424,5 +425,50 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             cursor.close();
             return 0;
         }
+    }
+
+    /**
+     * Imports the catalog from the source database into this database
+     * @param db
+     * @param sourceDatabaseAlias
+     * @param sourceHash
+     * @param targetHash
+     */
+    public void migrateCatalog(SQLiteDatabase db, String sourceDatabaseAlias, String sourceHash, String targetHash) {
+        migrateCatalog(db, sourceDatabaseAlias, sourceHash, targetHash, ROOT_FILE_ID);
+    }
+
+    /**
+     * Recursively migrates the contents of a catalog in the source database to this database
+     * @param db
+     * @param sourceDatabaseAlias
+     * @param sourceHash
+     * @param targetHash
+     * @param parent
+     */
+    private void migrateCatalog(SQLiteDatabase db, String sourceDatabaseAlias, String sourceHash, String targetHash, long parent) {
+        String query = "SELECT name, content, is_dir FROM "+sourceDatabaseAlias+".file WHERE catalog_hash=? AND parent_id="+parent;
+        Cursor cursor = db.rawQuery(query, new String[]{sourceHash});
+        cursor.moveToFirst();
+        SQLiteStatement stmt = db.compileStatement("INSERT INTO file (name, parent_id, catalog_hash, content, is_dir) VALUES (?, ?, ?, ?, ?)");
+        while(!cursor.isAfterLast()) {
+            long isDir = cursor.getLong(2);
+            String content = cursor.getString(1);
+            if(content == null) {
+                content = "";
+            }
+            stmt.bindString(1, cursor.getString(0));
+            stmt.bindLong(2, parent);
+            stmt.bindString(3, targetHash);
+            stmt.bindString(4, content);
+            stmt.bindLong(5, isDir);
+            long id = stmt.executeInsert();
+            if(isDir == 1) {
+                // recurs directories
+                migrateCatalog(db, sourceDatabaseAlias, sourceHash, targetHash, id);
+            }
+            cursor.moveToNext();
+        }
+        cursor.close();
     }
 }

@@ -22,6 +22,7 @@ import java.util.Iterator;
  */
 public class Indexer {
     private final IndexerSQLiteHelper mDatabaseHelper;
+    private final Context mContext;
     private SQLiteDatabase mDatabase;
     private Manifest mManifest;
     private final String mId;
@@ -46,6 +47,7 @@ public class Indexer {
         mManifest = reload();
         mDatabaseHelper = new IndexerSQLiteHelper(context, name);
         mDatabase = mDatabaseHelper.getWritableDatabase();
+        mContext = context;
     }
 
     /**
@@ -639,7 +641,12 @@ public class Indexer {
      * @param translation
      * @param index
      */
-    public void mergeResources(SourceTranslation translation, Indexer index) throws IOException {
+    public synchronized void mergeResources(SourceTranslation translation, Indexer index) throws IOException {
+        final String dbAlias = "attachedDb";
+        // attach databases
+        mDatabase.execSQL("attach database ? as ?", new String[]{mContext.getDatabasePath(index.getIndexId()).getAbsolutePath(), dbAlias});
+        mDatabase.beginTransactionNonExclusive();
+
         // delete old content
         deleteTerms(translation);
         deleteTermAssignments(translation);
@@ -648,47 +655,34 @@ public class Indexer {
         deleteSource(translation);
 
         // re-create links
-        generateSourceLink(translation);
-        generateNotesLink(translation);
-        generateQuestionsLink(translation);
-        generateTermsLink(translation);
-        generateTermAssignmentsLink(translation);
+        String sourceCatalogHash = generateSourceLink(translation);
+        String notesCatalogHash = generateNotesLink(translation);
+        String questionsCatalogHash = generateQuestionsLink(translation);
+        String termsCatalogHash = generateTermsLink(translation);
+        String termAssignmentsCatalogHash = generateTermAssignmentsLink(translation);
 
-        // TODO: 10/2/2015 The below code is no longer valid. We should attache the two databases and import the data directly
-        // http://stackoverflow.com/questions/10801567/is-it-possible-to-get-data-from-multi-databases-in-android-sqlite-or-any-quick
-        // import source
-        File sourceDir = index.getDataDir(index.readSourceLink(translation));
-        File destSourceDir = getDataDir(readSourceLink(translation));
-        if(sourceDir != null && sourceDir.exists()) {
-            FileUtils.copyDirectory(sourceDir, destSourceDir);
-        }
+        migrateCatalog(index.readSourceLink(translation), sourceCatalogHash, dbAlias);
+        migrateCatalog(index.readNotesLink(translation), notesCatalogHash, dbAlias);
+        migrateCatalog(index.readQuestionsLink(translation), questionsCatalogHash, dbAlias);
+        migrateCatalog(index.readWordsLink(translation), termsCatalogHash, dbAlias);
+        migrateCatalog(index.readWordAssignmentsLink(translation), termAssignmentsCatalogHash, dbAlias);
 
-        // import notes
-        File notesDir = index.getDataDir(index.readNotesLink(translation));
-        File destNotesDir = getDataDir(readNotesLink(translation));
-        if(notesDir != null && notesDir.exists()) {
-            FileUtils.copyDirectory(notesDir, destNotesDir);
-        }
+        mDatabase.setTransactionSuccessful();
+        mDatabase.endTransaction();
+        // detach databases
+        mDatabase.execSQL("detach ?", new String[]{dbAlias});
+    }
 
-        // import questions
-        File questionsDir = index.getDataDir(index.readQuestionsLink(translation));
-        File destQuestionsDir = getDataDir(readQuestionsLink(translation));
-        if(questionsDir != null && questionsDir.exists()) {
-            FileUtils.copyDirectory(questionsDir, destQuestionsDir);
-        }
-
-        // import terms
-        File termsDir = index.getDataDir(index.readWordsLink(translation));
-        File destTermsDir = getDataDir(readWordsLink(translation));
-        if(termsDir != null && termsDir.exists()) {
-            FileUtils.copyDirectory(termsDir, destTermsDir);
-        }
-
-        // import term assignments
-        File termAssignmentsDir = index.getDataDir(index.readWordAssignmentsLink(translation));
-        File destTermAssignmentsDir = getDataDir(readWordAssignmentsLink(translation));
-        if(termAssignmentsDir != null && termAssignmentsDir.exists()) {
-            FileUtils.copyDirectory(termAssignmentsDir, destTermAssignmentsDir);
+    /**
+     * Migrates a catalog from the the source database into the database of this index.
+     * You should attach/detach the source database before/after calling this method.
+     * @param sourceHash  the catalog hash who's files will be exported from the source database
+     * @param targetHash the catalog hash that will receive the exported files
+     * @param sourceDatabaseAlias the alias of the attached source database.
+     */
+    private void migrateCatalog(String sourceHash, String targetHash, String sourceDatabaseAlias) {
+        if(sourceHash != null && targetHash != null) {
+            mDatabaseHelper.migrateCatalog(mDatabase, sourceDatabaseAlias, sourceHash, targetHash);
         }
     }
 
