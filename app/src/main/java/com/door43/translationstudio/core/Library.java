@@ -43,6 +43,9 @@ public class Library {
     private static Map<String, TargetLanguage> mTargetLanguages;
     private final File mCacheDir;
     private Downloader mDownloader;
+    private static IndexerSQLiteHelper serverIndexHelper;
+    private static IndexerSQLiteHelper downloadIndexHelper;
+    private static IndexerSQLiteHelper appIndexHelper;
 
     /**
      *
@@ -52,29 +55,47 @@ public class Library {
      * @param server when true will cause the library to operate off of the server index (just for reading)
      */
     private Library(Context context, File libraryDir, File cacheDir, String rootApiUrl, boolean server) {
+        initalizeHelpers(context);
         mContext = context;
         mLibraryDir = libraryDir;
         mCacheDir = cacheDir;
         mIndexDir = new File(libraryDir, "index");
-        mDownloaderIndex = new Indexer(context, "downloads", mCacheDir);
-        mServerIndex = new Indexer(context, "server", mCacheDir);
-        mAppIndex = new Indexer(context, "app", mIndexDir);
+        mDownloaderIndex = new Indexer(context, "downloads", mCacheDir, downloadIndexHelper);
+        mServerIndex = new Indexer(context, "server", mCacheDir, serverIndexHelper);
+        mAppIndex = new Indexer(context, "app", mIndexDir, appIndexHelper);
         mRootApiUrl = rootApiUrl;
         mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
         mAsServerLibrary = server;
     }
 
     public Library(Context context, File libraryDir, File cacheDir, String rootApiUrl) {
+        initalizeHelpers(context);
         mContext = context;
         mLibraryDir = libraryDir;
         mCacheDir = cacheDir;
         mIndexDir = new File(libraryDir, "index");
-        mDownloaderIndex = new Indexer(context, "downloads", mCacheDir);
-        mServerIndex = new Indexer(context, "server", mCacheDir);
-        mAppIndex = new Indexer(context, "app", mIndexDir);
+        mDownloaderIndex = new Indexer(context, "downloads", mCacheDir, downloadIndexHelper);
+        mServerIndex = new Indexer(context, "server", mCacheDir, serverIndexHelper);
+        mAppIndex = new Indexer(context, "app", mIndexDir, appIndexHelper);
         mRootApiUrl = rootApiUrl;
         mDownloader = new Downloader(mDownloaderIndex, rootApiUrl);
         mAsServerLibrary = false;
+    }
+
+    /**
+     * Initializes the static index sqlite helpers
+     * @param context
+     */
+    private synchronized static void initalizeHelpers(Context context) {
+        if(serverIndexHelper == null) {
+            serverIndexHelper = new IndexerSQLiteHelper(context, "server");
+        }
+        if(downloadIndexHelper == null) {
+            downloadIndexHelper = new IndexerSQLiteHelper(context, "downloads");
+        }
+        if(appIndexHelper == null) {
+            appIndexHelper = new IndexerSQLiteHelper(context, "app");
+        }
     }
 
     /**

@@ -7,6 +7,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Downloader;
 import com.door43.translationstudio.core.Indexer;
+import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.AppContext;
 
@@ -26,7 +27,8 @@ public class DownloaderTest extends AndroidTestCase {
     protected void setUp() throws Exception {
         MainApplication app = AppContext.context();
         mIndexRoot = new File(app.getCacheDir(), "test_index");
-        mIndex = new Indexer(app, "downloads", mIndexRoot);
+        IndexerSQLiteHelper downloadIndexHelper = new IndexerSQLiteHelper(app, "downloads");
+        mIndex = new Indexer(app, "downloads", mIndexRoot, downloadIndexHelper);
         String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
         mDownloader = new Downloader(mIndex, server + app.getResources().getString(R.string.root_catalog_api));
     }

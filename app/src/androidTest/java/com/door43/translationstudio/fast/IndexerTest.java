@@ -8,11 +8,14 @@ import android.test.InstrumentationTestCase;
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.Util;
 import com.door43.translationstudio.core.Indexer;
+import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.projects.Frame;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.InputStream;
@@ -31,7 +34,8 @@ public class IndexerTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         mApp = AppContext.context();
         mIndexRoot = new File(mApp.getCacheDir(), "test_index");
-        mIndex = new Indexer(mApp, "indexer_test_app", mIndexRoot);
+        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "indexer_test_app");
+        mIndex = new Indexer(mApp, "indexer_test_app", mIndexRoot, indexHelper);
         mContext = getInstrumentation().getContext();
     }
 
@@ -124,12 +128,14 @@ public class IndexerTest extends InstrumentationTestCase {
         File dbPath = mApp.getDatabasePath("sample_index");
         FileUtils.deleteQuietly(dbPath);
         FileUtils.moveFile(new File(indexDir, "sample_index"), dbPath);
-        Indexer index = new Indexer(AppContext.context(), "sample_index", indexDir);
+        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "sample_index");
+        Indexer index = new Indexer(AppContext.context(), "sample_index", indexDir, indexHelper);
         assertTrue(index.getProjects().length > 0);
     }
 
     public void test09MergeIndexShallow() throws Exception {
-        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
+        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
         mergedIndex.destroy();
         mergedIndex.mergeIndex(mIndex, true);
         assertTrue(mergedIndex.getProjects().length > 0);
@@ -143,10 +149,12 @@ public class IndexerTest extends InstrumentationTestCase {
         SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
         assertTrue(mergedIndex.getChapters(genTranslation).length == 0);
+        indexHelper.close();
     }
 
     public void test10MergeIndexDeep() throws Exception {
-        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
+        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
         mergedIndex.destroy();
         mergedIndex.mergeIndex(mIndex);
         assertTrue(mergedIndex.getProjects().length  > 1);
@@ -159,11 +167,19 @@ public class IndexerTest extends InstrumentationTestCase {
         SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
         SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
-        assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
+        String[] genChapters = mergedIndex.getChapters(genTranslation);
+        assertTrue(genChapters.length > 0);
+        String[] genFrames = mergedIndex.getFrames(genTranslation, genChapters[0]);
+        assertTrue(genFrames.length > 0);
+        JSONObject frameJson = mergedIndex.getFrame(genTranslation, genChapters[0], genFrames[0]);
+        Frame frame = Frame.generate(frameJson);
+        assertTrue(!frame.getText().isEmpty());
+        indexHelper.close();
     }
 
     public void test11MergeIndexProjectShallow() throws Exception {
-        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
+        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
         mergedIndex.destroy();
         mergedIndex.mergeProject("obs", mIndex, true);
         assertTrue(mergedIndex.getProjects().length == 1);
@@ -172,10 +188,12 @@ public class IndexerTest extends InstrumentationTestCase {
         assertTrue(mergedIndex.getResources("obs", "en").length == 1);
         SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
         assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
+        indexHelper.close();
     }
 
     public void test12MergeIndexProjectDeep() throws Exception {
-        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot);
+        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
+        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
         mergedIndex.destroy();
         mergedIndex.mergeProject("obs", mIndex);
         assertTrue(mergedIndex.getProjects().length == 1);
@@ -193,6 +211,7 @@ public class IndexerTest extends InstrumentationTestCase {
         assertTrue(mergedIndex.getResources("gen", "en").length > 0);
         SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
         assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
+        indexHelper.close();
     }
 
     public void test999999Cleanup() throws Exception {

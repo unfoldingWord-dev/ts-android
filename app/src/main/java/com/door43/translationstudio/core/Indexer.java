@@ -40,12 +40,13 @@ public class Indexer {
      * Creates a new instance of the index
      * @param name the name of the index
      * @param rootDir the directory where the index's are stored
+     *                // TODO: 10/3/2015 the rootDir is deprecated.
      */
-    public Indexer(Context context, String name, File rootDir) {
+    public Indexer(Context context, String name, File rootDir, IndexerSQLiteHelper helper) {
         mId = name;
         mIndexDir = new File(rootDir, name);
         mManifest = reload();
-        mDatabaseHelper = new IndexerSQLiteHelper(context, name);
+        mDatabaseHelper = helper;
         mDatabase = mDatabaseHelper.getWritableDatabase();
         mContext = context;
     }
@@ -91,7 +92,7 @@ public class Indexer {
         mManifest = reload();
         // delete database
         close();
-        mDatabaseHelper.deleteDatabase();
+        mDatabaseHelper.deleteDatabase(mContext);
         // rebuild database
         mDatabase = mDatabaseHelper.getWritableDatabase();
     }
@@ -250,15 +251,15 @@ public class Indexer {
                         try {
                             JSONObject frame = frames.getJSONObject(frameIndex);
                             String frameId = frame.getString("id");
-                            JSONArray notes = frame.getJSONArray("items");
-                            for(int noteIndex = 0; noteIndex < notes.length(); noteIndex ++) {
+                            JSONArray frameItems = frame.getJSONArray("items");
+                            for(int itemIndex = 0; itemIndex < frameItems.length(); itemIndex ++) {
                                 try {
-                                    JSONObject note = notes.getJSONObject(noteIndex);
-                                    String noteId = note.getString("id");
-                                    // save note
+                                    JSONObject item = frameItems.getJSONObject(itemIndex);
+                                    String noteId = item.getString("id");
+                                    // save item
                                     String itemPath = chapterId + "/" + frameId + "/" + noteId;
                                     try {
-                                        saveFile(md5hash, itemPath, note.toString());
+                                        saveFile(md5hash, itemPath, item.toString());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -642,9 +643,6 @@ public class Indexer {
      * @param index
      */
     public synchronized void mergeResources(SourceTranslation translation, Indexer index) throws IOException {
-        final String dbAlias = "attachedDb";
-        // attach databases
-        mDatabase.execSQL("attach database ? as ?", new String[]{mContext.getDatabasePath(index.getIndexId()).getAbsolutePath(), dbAlias});
         mDatabase.beginTransactionNonExclusive();
 
         // delete old content
@@ -661,29 +659,81 @@ public class Indexer {
         String termsCatalogHash = generateTermsLink(translation);
         String termAssignmentsCatalogHash = generateTermAssignmentsLink(translation);
 
-        migrateCatalog(index.readSourceLink(translation), sourceCatalogHash, dbAlias);
-        migrateCatalog(index.readNotesLink(translation), notesCatalogHash, dbAlias);
-        migrateCatalog(index.readQuestionsLink(translation), questionsCatalogHash, dbAlias);
-        migrateCatalog(index.readWordsLink(translation), termsCatalogHash, dbAlias);
-        migrateCatalog(index.readWordAssignmentsLink(translation), termAssignmentsCatalogHash, dbAlias);
+        // migrate words
+        String[] words = index.getWordsContents(translation);
+        for(String wordContents:words) {
+            try {
+                TranslationWord word = TranslationWord.generate(new JSONObject(wordContents));
+                String wordPath = word.getId();
+                saveFile(termsCatalogHash, wordPath, wordContents);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
+        // migrate chapters
+        String[] chapters = index.getChaptersContents(translation);
+        for(String chapterContents:chapters) {
+            try {
+                Chapter chapter = Chapter.generate(new JSONObject(chapterContents));
+                String chapterPath = chapter.getId() + "/chapter.json";
+                saveFile(sourceCatalogHash, chapterPath, chapterContents);
+
+                // migrate frames
+                String[] frames = index.getFramesContents(translation, chapter.getId());
+                for(String frameContents:frames) {
+                    try {
+                        Frame frame = Frame.generate(chapter.getId(), new JSONObject(frameContents));
+                        String framePath = chapter.getId() + "/" + frame.getId();
+                        saveFile(sourceCatalogHash, framePath, frameContents);
+
+                        // migrate notes
+                        String[] notes = index.getNotesContents(translation, chapter.getId(), frame.getId());
+                        for(String noteContents:notes) {
+                            try {
+                                TranslationNote note = TranslationNote.generate(chapter.getId(), frame.getId(), new JSONObject(noteContents));
+                                String notePath = chapter.getId() + "/" + frame.getId() + "/" + note.getId();
+                                saveFile(notesCatalogHash, notePath, noteContents);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        // migrate questions
+                        String[] questions = index.getQuestionsContents(translation, chapter.getId(), frame.getId());
+                        for(String questionContents:questions) {
+                            try {
+                                CheckingQuestion question = CheckingQuestion.generate(chapter.getId(), frame.getId(), new JSONObject(questionContents));
+                                String questionPath = chapter.getId() + "/" + frame.getId() + "/" + question.getId();
+                                saveFile(questionsCatalogHash, questionPath, questionContents);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        // migrate word assignments
+                        String[] wordAssignments = index.getWords(translation, chapter.getId(), frame.getId());
+                        for(String wordId:wordAssignments) {
+                            try {
+                                JSONObject json = new JSONObject();
+                                json.put("id", wordId);
+                                String wordAssignmentPath = chapter.getId() + "/" + frame.getId() + "/" + wordId;
+                                saveFile(termAssignmentsCatalogHash, wordAssignmentPath, wordId);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         mDatabase.setTransactionSuccessful();
         mDatabase.endTransaction();
-        // detach databases
-        mDatabase.execSQL("detach ?", new String[]{dbAlias});
-    }
-
-    /**
-     * Migrates a catalog from the the source database into the database of this index.
-     * You should attach/detach the source database before/after calling this method.
-     * @param sourceHash  the catalog hash who's files will be exported from the source database
-     * @param targetHash the catalog hash that will receive the exported files
-     * @param sourceDatabaseAlias the alias of the attached source database.
-     */
-    private void migrateCatalog(String sourceHash, String targetHash, String sourceDatabaseAlias) {
-        if(sourceHash != null && targetHash != null) {
-            mDatabaseHelper.migrateCatalog(mDatabase, sourceDatabaseAlias, sourceHash, targetHash);
-        }
     }
 
     /**
@@ -1088,6 +1138,16 @@ public class Indexer {
     }
 
     /**
+     * Returns an array of note contents
+     * @param translation
+     * @param chapterId
+     * @return
+     */
+    public String[] getNotesContents(SourceTranslation translation, String chapterId, String frameId) {
+        return getContentsArray(getResource(translation), "notes", chapterId + "/" + frameId);
+    }
+
+    /**
      * Returns an array of translationWord ids for a single frame
      * @param translation
      * @param chapterId
@@ -1105,6 +1165,15 @@ public class Indexer {
      */
     public String[] getWords(SourceTranslation translation) {
         return getItemsArray(getResource(translation), "terms");
+    }
+
+    /**
+     * Returns an array of word contents
+     * @param translation
+     * @return
+     */
+    public String[] getWordsContents(SourceTranslation translation) {
+        return getContentsArray(getResource(translation), "terms", null);
     }
 
     /**
@@ -1130,6 +1199,16 @@ public class Indexer {
      */
     public String[] getQuestions(SourceTranslation translation, String chapterId, String frameId) {
         return getItemsArray(getResource(translation), "checking_questions", chapterId + "/" + frameId);
+    }
+
+    /**
+     * Returns an array of question contents
+     * @param translation
+     * @param chapterId
+     * @return
+     */
+    public String[] getQuestionsContents(SourceTranslation translation, String chapterId, String frameId) {
+        return getContentsArray(getResource(translation), "checking_questions", chapterId + "/" + frameId);
     }
 
     /**

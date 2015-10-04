@@ -27,12 +27,10 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     private static final String TABLE_LINKS = "link";
     private static final int DATABASE_VERSION = 1;
     private static final long ROOT_FILE_ID = 1;
-    private final Context mContext;
     private final String mDatabaseName;
 
     public IndexerSQLiteHelper(Context context, String name) {
         super(context, name, null, DATABASE_VERSION);
-        mContext = context;
         mDatabaseName = name;
     }
 
@@ -72,8 +70,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     /**
      * Destroys the database
      */
-    public void deleteDatabase() {
-        mContext.deleteDatabase(mDatabaseName);
+    public void deleteDatabase(Context context) {
+        context.deleteDatabase(mDatabaseName);
     }
 
     /**
@@ -89,7 +87,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             ContentValues values = new ContentValues();
             values.put("name", linkPath);
             values.put("catalog_hash", md5hash);
-            db.insert(IndexerSQLiteHelper.TABLE_LINKS, null, values);
+            db.insertOrThrow(IndexerSQLiteHelper.TABLE_LINKS, null, values);
         } else if(!oldHash.equals(md5hash)) {
             // update link
             ContentValues values = new ContentValues();
@@ -199,7 +197,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             db.update(IndexerSQLiteHelper.TABLE_FILES, values, "name=? AND parent_id=" + parent + " AND catalog_hash=?", args);
         } else {
             // insert new file
-            id = db.insert(IndexerSQLiteHelper.TABLE_FILES, null, values);
+            id = db.insertOrThrow(IndexerSQLiteHelper.TABLE_FILES, null, values);
         }
         cursor.close();
 
@@ -435,7 +433,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param targetHash
      */
     public void migrateCatalog(SQLiteDatabase db, String sourceDatabaseAlias, String sourceHash, String targetHash) {
-        migrateCatalog(db, sourceDatabaseAlias, sourceHash, targetHash, ROOT_FILE_ID);
+        migrateCatalog(db, sourceDatabaseAlias, sourceHash, targetHash, ROOT_FILE_ID, ROOT_FILE_ID);
     }
 
     /**
@@ -444,31 +442,40 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param sourceDatabaseAlias
      * @param sourceHash
      * @param targetHash
-     * @param parent
+     * @param sourceParent
+     * @param targetParent
      */
-    private void migrateCatalog(SQLiteDatabase db, String sourceDatabaseAlias, String sourceHash, String targetHash, long parent) {
-        String query = "SELECT name, content, is_dir FROM "+sourceDatabaseAlias+".file WHERE catalog_hash=? AND parent_id="+parent;
+    private void migrateCatalog(SQLiteDatabase db, String sourceDatabaseAlias, String sourceHash, String targetHash, long sourceParent, long targetParent) {
+        List<long[]> directories = new ArrayList<>();
+        String query = "SELECT name, content, parent_id, is_dir FROM "+sourceDatabaseAlias+".file WHERE catalog_hash=? AND parent_id="+sourceParent;
         Cursor cursor = db.rawQuery(query, new String[]{sourceHash});
         cursor.moveToFirst();
         SQLiteStatement stmt = db.compileStatement("INSERT INTO file (name, parent_id, catalog_hash, content, is_dir) VALUES (?, ?, ?, ?, ?)");
         while(!cursor.isAfterLast()) {
-            long isDir = cursor.getLong(2);
+            String name = cursor.getString(0);
             String content = cursor.getString(1);
+            long nextSourceParent = cursor.getLong(2);
+            long isDir = cursor.getLong(3);
             if(content == null) {
                 content = "";
             }
-            stmt.bindString(1, cursor.getString(0));
-            stmt.bindLong(2, parent);
+            stmt.bindString(1, name);
+            stmt.bindLong(2, targetParent);
             stmt.bindString(3, targetHash);
             stmt.bindString(4, content);
             stmt.bindLong(5, isDir);
-            long id = stmt.executeInsert();
+            long nextTargetParent = stmt.executeInsert();
             if(isDir == 1) {
-                // recurs directories
-                migrateCatalog(db, sourceDatabaseAlias, sourceHash, targetHash, id);
+                // queue directory for recursing
+                directories.add(new long[]{nextSourceParent, nextTargetParent});
             }
             cursor.moveToNext();
         }
         cursor.close();
+
+        // recurs directories
+        for(long[] dir:directories) {
+            migrateCatalog(db, sourceDatabaseAlias, sourceHash, targetHash, dir[0], dir[1]);
+        }
     }
 }
