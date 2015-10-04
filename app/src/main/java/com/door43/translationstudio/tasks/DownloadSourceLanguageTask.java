@@ -39,7 +39,7 @@ public class DownloadSourceLanguageTask extends ManagedTask {
      */
     @Override
     public void start() {
-
+        publishProgress(-1, "");
         final Resource[] resources = mServerLibrary.getResources(mProjectId, mSourceLanguageId);
         mSuccess = true;
         for(int i = 0; i < resources.length; i ++) {
