@@ -1,10 +1,8 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.util.Tar;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
@@ -142,7 +140,15 @@ public class Library {
      *
      */
     public void deploy(File index, File languages) throws Exception {
-        destroyIndexes();
+        serverIndexHelper.close();
+        downloadIndexHelper.close();
+        appIndexHelper.close();
+
+        FileUtils.deleteQuietly(mIndexDir);
+        FileUtils.deleteQuietly(mCacheDir);
+        mContext.getDatabasePath(serverIndexHelper.getDatabaseName()).delete();
+        mContext.getDatabasePath(downloadIndexHelper.getDatabaseName()).delete();
+        mContext.getDatabasePath(appIndexHelper.getDatabaseName()).delete();
 
         // languages
         File languagesDest = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
@@ -153,13 +159,14 @@ public class Library {
         FileUtils.moveFile(languages, languagesDest);
 
         // library index
-        File indexDest = mContext.getDatabasePath("app");
-        if(indexDest.exists()) {
-            indexDest.delete();
-        }
+        File indexDest = mContext.getDatabasePath(appIndexHelper.getDatabaseName());
         indexDest.getParentFile().mkdirs();
         FileUtils.moveFile(index, indexDest);
         mAppIndex.reload();
+
+        serverIndexHelper = null;
+        downloadIndexHelper = null;
+        appIndexHelper = null;
     }
 
     /**
@@ -304,18 +311,8 @@ public class Library {
 
         // download
         for (String projectId : mServerIndex.getProjects()) {
-            if(Thread.currentThread().isInterrupted()) {
-                return false;
-            }
-            boolean projectDownloadSuccess = true;
             for (String sourceLanguageId : mServerIndex.getSourceLanguages(projectId)) {
-                if(Thread.currentThread().isInterrupted()) {
-                    return false;
-                }
                 for(String resourceId : mServerIndex.getResources(projectId, sourceLanguageId)) {
-                    if(Thread.currentThread().isInterrupted()) {
-                        return false;
-                    }
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
 
                     // only download resources that meet the minimum checking level
@@ -327,103 +324,16 @@ public class Library {
                     boolean downloadSuccess = downloadSourceTranslation(sourceTranslation, sourceTranslationListener);
                     if(!downloadSuccess) {
                         Logger.w(this.getClass().getName(), "Failed to download " + sourceTranslation.getId());
-                        success = downloadSuccess;
-                        projectDownloadSuccess = downloadSuccess;
+                        success = false;
                     }
                 }
             }
-            // merge the project
-//            if (projectDownloadSuccess) {
-//                try {
-//                    if(projectProgressListener != null) {
-//                        projectProgressListener.onIndeterminate();
-//                    }
-//                    mAppIndex.mergeProject(projectId, mDownloader.getIndex());
-//                } catch (IOException e) {
-//                    Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
-//                    success = false;
-//                }
-//            }
             if(projectProgressListener != null) {
                 projectProgressListener.onProgress(currentProject, numProjects);
                 currentProject ++;
             }
         }
-        return success;
-    }
-
-    /**
-     * Downloads updates from the server
-     * @deprecated
-     * @param updates
-     */
-    public Boolean downloadUpdates(LibraryUpdates updates, OnProgressListener listener) throws Exception {
-        boolean success = true;
-        if(updates != null) {
-            // count updates
-            int numUpdates = 0;
-            if(listener != null) {
-                for (String pId : updates.getUpdatedProjects()) {
-                    for (String slId : updates.getUpdatedSourceLanguages(pId)) {
-                        numUpdates += updates.getUpdatedResources(pId, slId).length;
-                    }
-                }
-            }
-
-            // download updates
-            int currUpdate = 1;
-            for (String projectId : updates.getUpdatedProjects()) {
-                boolean projectDownloadSuccess = true;
-                for (String sourceLanguageId : updates.getUpdatedSourceLanguages(projectId)) {
-                    for (String resourceId : updates.getUpdatedResources(projectId, sourceLanguageId)) {
-                        projectDownloadSuccess = downloadSourceTranslationWithoutMerging(SourceTranslation.simple(projectId, sourceLanguageId, resourceId), null) ? projectDownloadSuccess : false;
-                        if (!projectDownloadSuccess) {
-                            throw new Exception("Failed to download " + projectId + " " + sourceLanguageId + " " + resourceId);
-                        }
-                        if(listener != null) {
-                            listener.onProgress(currUpdate, numUpdates);
-                            currUpdate++;
-                        }
-                    }
-                }
-                success = projectDownloadSuccess ? success : false;
-                if (projectDownloadSuccess) {
-                    try {
-                        if(listener != null) {
-                            listener.onIndeterminate();
-                        }
-                        mAppIndex.mergeProject(projectId, mDownloader.getIndex());
-                    } catch (IOException e) {
-                        Logger.e(this.getClass().getName(), "Failed to merge the project " + projectId + " from the download index into the app index", e);
-                        success = false;
-                    }
-                }
-            }
-        }
-        return success;
-    }
-
-    /**
-     * Downloads a source translation from the server and merges it into the app index
-     * @param translation
-     * @return
-     */
-    public Boolean downloadSourceTranslation(SourceTranslation translation, final OnProgressListener listener) {
-        if(downloadSourceTranslationWithoutMerging(translation, listener)) {
-            try {
-                if(listener != null) {
-                    listener.onIndeterminate();
-                }
-                mAppIndex.mergeSourceTranslationShalow(translation, mDownloader.getIndex());
-                mAppIndex.mergeResources(translation, mDownloader.getIndex());
-            } catch (IOException e) {
-                Logger.e(this.getClass().getName(), "Failed to merge the source translation " + translation.getId() + " from the download index into the app index", e);
-                return false;
-            }
-            return true;
-        } else {
-            return false;
-        }
+        return success;//
     }
 
     /**
@@ -431,43 +341,57 @@ public class Library {
      * @param translation
      * @return
      */
-    private Boolean downloadSourceTranslationWithoutMerging(SourceTranslation translation, OnProgressListener listener) {
+    public Boolean downloadSourceTranslation(SourceTranslation translation, OnProgressListener listener) {
+        mAppIndex.beginTransaction();
+        try {
+            mAppIndex.mergeSourceTranslationShallow(translation, mDownloader.getIndex());
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to merge the source translation " + translation.getId(), e);
+            mAppIndex.endTransaction(false);
+            return false;
+        }
         boolean success = true;
-        success = mDownloader.downloadSource(translation) ? success : false;
+        success = mDownloader.downloadSource(translation, mAppIndex) ? success : false;
         if(listener != null) {
             listener.onProgress(1, 5);
         }
         if(Thread.currentThread().isInterrupted()) {
+            mAppIndex.endTransaction(false);
             return false;
         }
-        mDownloader.downloadTerms(translation); // optional to success of download
+        mDownloader.downloadTerms(translation, mAppIndex); // optional to success of download
         if(listener != null) {
             listener.onProgress(2, 5);
         }
         if(Thread.currentThread().isInterrupted()) {
+            mAppIndex.endTransaction(false);
             return false;
         }
-        mDownloader.downloadTermAssignments(translation); // optional to success of download
+        mDownloader.downloadTermAssignments(translation, mAppIndex); // optional to success of download
         if(listener != null) {
             listener.onProgress(3, 5);
         }
         if(Thread.currentThread().isInterrupted()) {
+            mAppIndex.endTransaction(false);
             return false;
         }
-        mDownloader.downloadNotes(translation); // optional to success of download
+        mDownloader.downloadNotes(translation, mAppIndex); // optional to success of download
         if(listener != null) {
             listener.onProgress(4, 5);
         }
         if(Thread.currentThread().isInterrupted()) {
+            mAppIndex.endTransaction(false);
             return false;
         }
-        mDownloader.downloadCheckingQuestions(translation); // optional to success of download
+        mDownloader.downloadCheckingQuestions(translation, mAppIndex); // optional to success of download
         if(listener != null) {
             listener.onProgress(5, 5);
         }
         if(Thread.currentThread().isInterrupted()) {
+            mAppIndex.endTransaction(false);
             return false;
         }
+        mAppIndex.endTransaction(success);
         return success;
     }
 

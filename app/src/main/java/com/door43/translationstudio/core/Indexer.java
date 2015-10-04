@@ -218,7 +218,6 @@ public class Indexer {
             e.printStackTrace();
             return false;
         }
-        mDatabase.beginTransaction();
         // save items
         if(type == CatalogType.Simple) {
             for(int i = 0; i < items.length(); i ++ ) {
@@ -319,9 +318,25 @@ public class Indexer {
         } else if(type == CatalogType.Questions) {
             // TODO: eventually we'll index the checking question dictionary here
         }
-        mDatabase.setTransactionSuccessful();
-        mDatabase.endTransaction();
         return true;
+    }
+
+    /**
+     * Call to start a transaction
+     */
+    public void beginTransaction() {
+        mDatabase.beginTransactionNonExclusive();
+    }
+
+    /**
+     * Call to close the transaction
+     * @param sucess
+     */
+    public void endTransaction(boolean sucess) {
+        if(sucess) {
+            mDatabase.setTransactionSuccessful();
+        }
+        mDatabase.endTransaction();
     }
 
     /**
@@ -527,14 +542,14 @@ public class Indexer {
         mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
     }
 
-    /**
-     * Merges an index itno the current index
-     * @param index
-     * @throws IOException
-     */
-    public void mergeIndex(Indexer index) throws IOException {
-        mergeIndex(index, false);
-    }
+//    /**
+//     * Merges an index into the current index
+//     * @param index
+//     * @throws IOException
+//     */
+//    public void mergeIndex(Indexer index) throws IOException {
+//        mergeIndex(index, false);
+//    }
 
     /**
      * Merges an index into the current index
@@ -547,15 +562,15 @@ public class Indexer {
         }
     }
 
-    /**
-     * Merges a project into the current index
-     * @param projectId
-     * @param index
-     * @throws IOException
-     */
-    public void mergeProject(String projectId, Indexer index) throws IOException {
-        mergeProject(projectId, index, false);
-    }
+//    /**
+//     * Merges a project into the current index
+//     * @param projectId
+//     * @param index
+//     * @throws IOException
+//     */
+//    public void mergeProject(String projectId, Indexer index) throws IOException {
+//        mergeProject(projectId, index, false);
+//    }
 
     /**
      * Merges a project into the current index
@@ -606,7 +621,7 @@ public class Indexer {
      * @param sourceTranslation
      * @throws IOException
      */
-    public void mergeSourceTranslationShalow(SourceTranslation sourceTranslation, Indexer index) throws IOException {
+    public void mergeSourceTranslationShallow(SourceTranslation sourceTranslation, Indexer index) throws IOException {
         JSONObject newProject = index.getProject(sourceTranslation.projectId);
         if(newProject != null) {
             JSONArray projectJson = new JSONArray();

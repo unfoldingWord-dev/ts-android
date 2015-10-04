@@ -131,14 +131,15 @@ public class Downloader {
     /**
      * Downloads the source for a source translation from the server
      * @param translation
+     * @param targetIndex the index into which the source will be downloaded
      * @return
      */
-    public Boolean downloadSource(SourceTranslation translation) {
+    public Boolean downloadSource(SourceTranslation translation, Indexer targetIndex) {
         String catalogApiUrl = getUrlFromObject(mIndex.getResource(translation), "source");
         if(catalogApiUrl != null) {
             String catalog = request(catalogApiUrl);
             if(catalog != null) {
-                return mIndex.indexSource(translation, catalog);
+                return targetIndex.indexSource(translation, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + catalogApiUrl);
             }
@@ -149,14 +150,15 @@ public class Downloader {
     /**
      * Downloads the translationWords for a source translation from the server
      * @param translation
+     * @param targetIndex the index to which the terms will be downloaded
      * @return
      */
-    public Boolean downloadTerms(SourceTranslation translation) {
+    public Boolean downloadTerms(SourceTranslation translation, Indexer targetIndex) {
         String catalogApiUrl = getUrlFromObject(mIndex.getResource(translation), "terms");
         if(catalogApiUrl != null) {
             String catalog = request(catalogApiUrl);
             if(catalog != null) {
-                return mIndex.indexTerms(translation, catalog);
+                return targetIndex.indexTerms(translation, catalog);
             }
         }
         return false;
@@ -165,14 +167,15 @@ public class Downloader {
     /**
      * Downloads the translationWord assignments for a source translation from the server
      * @param translation
+     * @param targetIndex the index to which the term assignments will be downloaded
      * @return
      */
-    public Boolean downloadTermAssignments(SourceTranslation translation) {
+    public Boolean downloadTermAssignments(SourceTranslation translation, Indexer targetIndex) {
         String catalogApiUrl = getUrlFromObject(mIndex.getResource(translation), "tw_cat");
         if(catalogApiUrl != null) {
             String catalog = request(catalogApiUrl);
             if(catalog != null) {
-                return mIndex.indexTermAssignments(translation, catalog);
+                return targetIndex.indexTermAssignments(translation, catalog);
             }
         }
         return false;
@@ -181,14 +184,15 @@ public class Downloader {
     /**
      * Downloads the translationNotes for a source translation from the server
      * @param translation
+     * @param targetIndex the index to which the notes will be downloaded
      * @return
      */
-    public Boolean downloadNotes(SourceTranslation translation) {
+    public Boolean downloadNotes(SourceTranslation translation, Indexer targetIndex) {
         String catalogApiUrl = getUrlFromObject(mIndex.getResource(translation), "notes");
         if(catalogApiUrl != null) {
             String catalog = request(catalogApiUrl);
             if(catalog != null) {
-                return mIndex.indexNotes(translation, catalog);
+                return targetIndex.indexNotes(translation, catalog);
             }
         }
         return false;
@@ -197,14 +201,15 @@ public class Downloader {
     /**
      * Downloads the checkingQuestions for a source translation from the server
      * @param translation
+     * @param targetIndex the index to which the checking questions will be downloaded
      * @return
      */
-    public Boolean downloadCheckingQuestions(SourceTranslation translation) {
+    public Boolean downloadCheckingQuestions(SourceTranslation translation, Indexer targetIndex) {
         String catalogApiUrl = getUrlFromObject(mIndex.getResource(translation), "checking_questions");
         if(catalogApiUrl != null) {
             String catalog = request(catalogApiUrl);
             if(catalog != null) {
-                return mIndex.indexQuestions(translation, catalog);
+                return targetIndex.indexQuestions(translation, catalog);
             }
         }
         return false;

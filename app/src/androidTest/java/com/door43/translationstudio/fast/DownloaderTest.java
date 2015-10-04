@@ -35,26 +35,34 @@ public class DownloaderTest extends AndroidTestCase {
 
     public void test1DownloadProjects() throws Exception {
         FileUtils.deleteQuietly(mIndexRoot);
+        mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadProjectList());
+        mDownloader.getIndex().endTransaction(true);
         String[] projectIds = mIndex.getProjects();
         assertTrue(projectIds.length > 0);
     }
 
     public void test2DownloadSourceLanguages() throws Exception {
+        mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadSourceLanguageList("obs"));
+        mDownloader.getIndex().endTransaction(true);
         String[] languageIds = mIndex.getSourceLanguages("obs");
         assertTrue(languageIds.length > 0);
     }
 
     public void test3DownloadResources() throws Exception {
+        mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadResourceList("obs", "en"));
+        mDownloader.getIndex().endTransaction(true);
         String[] resourceIds = mIndex.getResources("obs", "en");
         assertTrue(resourceIds.length > 0);
     }
 
     public void test4DownloadSource() throws Exception {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
-        assertTrue(mDownloader.downloadSource(translation));
+        mDownloader.getIndex().beginTransaction();
+        assertTrue(mDownloader.downloadSource(translation, mDownloader.getIndex()));
+        mDownloader.getIndex().endTransaction(true);
         String[] chapterIds = mIndex.getChapters(translation);
         assertTrue(chapterIds.length > 0);
         String[] frameIds = mIndex.getFrames(translation, "01");
@@ -63,25 +71,33 @@ public class DownloaderTest extends AndroidTestCase {
 
     public void test5DownloadTerms() throws Exception {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
-        assertTrue(mDownloader.downloadTerms(translation));
+        mDownloader.getIndex().beginTransaction();
+        assertTrue(mDownloader.downloadTerms(translation, mDownloader.getIndex()));
+        mDownloader.getIndex().endTransaction(true);
         String[] allTermIds = mIndex.getWords(translation);
         assertTrue(allTermIds.length > 0);
         assertNotNull(mIndex.getWord(translation, allTermIds[0]));
-        assertTrue(mDownloader.downloadTermAssignments(translation));
+        mDownloader.getIndex().beginTransaction();
+        assertTrue(mDownloader.downloadTermAssignments(translation, mDownloader.getIndex()));
+        mDownloader.getIndex().endTransaction(true);
         String[] termsIds = mIndex.getWords(translation, "01", "01");
         assertTrue(termsIds.length > 0);
     }
 
     public void test6DownloadNotes() throws Exception {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
-        assertTrue(mDownloader.downloadNotes(translation));
+        mDownloader.getIndex().beginTransaction();
+        assertTrue(mDownloader.downloadNotes(translation, mDownloader.getIndex()));
+        mDownloader.getIndex().endTransaction(true);
         String[] noteIds = mIndex.getNotes(translation, "01", "01");
         assertTrue(noteIds.length > 0);
     }
 
     public void test7DownloadQuestions() throws Exception {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
-        assertTrue(mDownloader.downloadCheckingQuestions(translation));
+        mDownloader.getIndex().beginTransaction();
+        assertTrue(mDownloader.downloadCheckingQuestions(translation, mDownloader.getIndex()));
+        mDownloader.getIndex().endTransaction(true);
         String[] questionIds = mIndex.getQuestions(translation, "01", "01");
         assertTrue(questionIds.length > 0);
     }
