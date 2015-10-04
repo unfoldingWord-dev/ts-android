@@ -451,19 +451,19 @@ public class Library {
     }
 
     /**
-     * Exports the library in a zipped archive
+     * Exports the library in a zip archive
      * @param destDir the directory where the library will be exported
      * @return the path to the exported file
      */
     public File export(File destDir) {
         SimpleDateFormat s = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
         String date = s.format(new Date());
-        File destFile = new File(destDir, "library_" + date + ".tar");
+        File destFile = new File(destDir, "library_" + date + ".zip");
         destDir.mkdirs();
         try {
             destFile.createNewFile();
-            Tar.tar(getActiveIndex().getIndexDir().getPath(), destFile.getPath());
-//            Zip.zip(getActiveIndex().getIndexDir().getPath(), destFile.getPath());
+//            Tar.tar(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
+            Zip.zip(mContext.getDatabasePath(getActiveIndex().getIndexId()).getPath(), destFile.getPath());
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to export the library", e);
             return null;

@@ -695,14 +695,6 @@ public class Indexer {
     }
 
     /**
-     * Returns the directory where this index is stored
-     * @return
-     */
-    public File getIndexDir() {
-        return mIndexDir;
-    }
-
-    /**
      * Builds a project index from json
      * @param catalog the json formatted project catalog
      * @return
