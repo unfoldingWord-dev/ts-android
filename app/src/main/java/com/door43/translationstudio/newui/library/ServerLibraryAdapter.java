@@ -32,7 +32,8 @@ public class ServerLibraryAdapter extends BaseAdapter {
     private final Library mLibrary;
     private int mSelectedIndex = -1;
     private boolean mSearching = false;
-
+    private boolean[] mHasSource;
+    private boolean[] mIsProcessed; // used to determine if we've already pulled the necessary info from the index
     private ProjectCategory[] mCategories;
     private ProjectCategory[] mFilteredCategories;
     private ProjectCategoryFilter mProjectFilter;
@@ -86,8 +87,11 @@ public class ServerLibraryAdapter extends BaseAdapter {
         }
 
         // indicate downloaded
-        boolean isDownloaded = mLibrary.projectHasSource(getItem(position).projectId);
-        if(isDownloaded) {
+        if(!mIsProcessed[position]) {
+            mIsProcessed[position] = true;
+            mHasSource[position] = mLibrary.projectHasSource(getItem(position).projectId);
+        }
+        if(mHasSource[position]) {
             if(mSelectedIndex == position) {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_white_24dp);
             } else {
@@ -98,7 +102,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         }
 
         // indicate updates
-        if(isDownloaded && mUpdates.hasProjectUpdate(getItem(position).projectId)) {
+        if(mHasSource[position] && mUpdates.hasProjectUpdate(getItem(position).projectId)) {
             if(mSelectedIndex == position) {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_white_24dp);
             } else {
@@ -125,6 +129,8 @@ public class ServerLibraryAdapter extends BaseAdapter {
         mUpdates = availableUpdates;
         mCategories = categories;
         mFilteredCategories = categories;
+        mHasSource = new boolean[categories.length];
+        mIsProcessed = new boolean[categories.length];
         notifyDataSetChanged();
     }
 

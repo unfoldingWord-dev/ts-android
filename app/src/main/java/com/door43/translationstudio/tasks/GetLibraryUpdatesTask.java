@@ -18,7 +18,6 @@ public class GetLibraryUpdatesTask extends ManagedTask {
     public void start() {
         publishProgress(-1, "");
 
-        // new code
         Library library = AppContext.getLibrary();
         mUpdates = library.getAvailableLibraryUpdates(new Library.OnProgressListener() {
             @Override

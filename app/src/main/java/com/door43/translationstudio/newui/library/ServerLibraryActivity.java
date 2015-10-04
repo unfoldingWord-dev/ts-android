@@ -327,10 +327,10 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
                     if (mProgressDialog == null) {
                         mProgressDialog = new ProgressDialog(ServerLibraryActivity.this);
-                        mProgressDialog.setCancelable(true); // TODO: need to update the download method to support cancelling
+                        mProgressDialog.setCancelable(false); // TODO: need to update the download method to support cancelling
                         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mProgressDialog.setCanceledOnTouchOutside(false);
-                        mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
+//                        mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
                         mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
                         if(task instanceof GetLibraryUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
@@ -371,15 +371,17 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     @Override
     public void onCancel(DialogInterface dialogInterface) {
         // the dialog was canceled
-        mProgressDialog = null;
-        DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask) TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
-        if(downloadAllProjectsTask != null) {
-            TaskManager.cancelTask(downloadAllProjectsTask);
-        }
-        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask) TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
-        if(getLibraryUpdatesTask != null) {
-            TaskManager.cancelTask(getLibraryUpdatesTask);
-        }
+        // TODO: 10/3/2015 we need to hook this up once the library correctly supports interrupted threads.
+//        mProgressDialog = null;
+//        DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask) TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+//        if(downloadAllProjectsTask != null) {
+//            TaskManager.cancelTask(downloadAllProjectsTask);
+//        }
+//        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask) TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+//        if(getLibraryUpdatesTask != null) {
+//            TaskManager.cancelTask(getLibraryUpdatesTask);
+//            finish();
+//        }
     }
 
     @Override
