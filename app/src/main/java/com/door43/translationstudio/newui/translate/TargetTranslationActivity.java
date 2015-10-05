@@ -2,12 +2,15 @@ package com.door43.translationstudio.newui.translate;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
@@ -263,6 +266,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     @Override
     public void openTranslationMode(TranslationViewMode mode) {
+        // close the keyboard when switching between modes
+        if(getCurrentFocus() != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        } else {
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+        }
+
         mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
         mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
         mReadButton.setImageResource(R.drawable.icon_study_inactive);
