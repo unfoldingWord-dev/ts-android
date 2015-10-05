@@ -235,8 +235,25 @@ public class USXRenderer extends RenderingEngine {
                     }
                     // render verses not already found
                     if(!alreadyRendered) {
-                        verse.setOnClickListener(mVerseListener);
-                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+                        // exclude verses not within the range
+                        boolean invalidVerse = false;
+                        if(mExpectedVerseRange.length > 0) {
+                            int minVerse = mExpectedVerseRange[0];
+                            int maxVerse = mExpectedVerseRange[1];
+                            if(maxVerse == 0) maxVerse = minVerse;
+
+                            int verseNumStart = ((VerseSpan) verse).getStartVerseNumber();
+                            int verseNumEnd = ((VerseSpan) verse).getEndVerseNumber();
+                            if(verseNumEnd == 0) verseNumEnd = verseNumStart;
+                            invalidVerse = verseNumStart < minVerse || verseNumStart > maxVerse || verseNumEnd < minVerse || verseNumEnd > maxVerse;
+                        }
+                        if(!invalidVerse) {
+                            verse.setOnClickListener(mVerseListener);
+                            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+                        } else {
+                            // exclude invalid verse
+                            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+                        }
                     } else {
                         // exclude duplicate verse
                         out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));

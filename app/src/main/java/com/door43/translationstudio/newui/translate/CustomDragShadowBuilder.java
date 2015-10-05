@@ -60,6 +60,6 @@ public class CustomDragShadowBuilder extends View.DragShadowBuilder {
         shadowSize.y = shadow.getMinimumHeight();
 
         shadowTouchPoint.x = (int)(shadowSize.x / 2);
-        shadowTouchPoint.y = 0; //(int)(shadowSize.y / 4);
+        shadowTouchPoint.y = (int)(shadowSize.y + 36);
     }
 }

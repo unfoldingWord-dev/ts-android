@@ -714,36 +714,39 @@ public class Library {
      * @return
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
-        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
-        SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
-        float numFrames = 0f;
-        float numFinishedFrames = 0f;
-        if(sourceTranslation != null) {
-            String[] chapterIds = getActiveIndex().getChapters(sourceTranslation);
-            for(String chapterId:chapterIds) {
-                if(Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-                String[] frameIds = getActiveIndex().getFrames(sourceTranslation, chapterId);
-                for(String frameId:frameIds) {
-                    if(Thread.currentThread().isInterrupted()) {
+        // TODO: 10/5/2015 re-enable progress once we can retrieve it efficiently
+        if(false) {
+            SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
+            float numFrames = 0f;
+            float numFinishedFrames = 0f;
+            if (sourceTranslation != null) {
+                String[] chapterIds = getActiveIndex().getChapters(sourceTranslation);
+                for (String chapterId : chapterIds) {
+                    if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
-                    Frame frame = getFrame(sourceTranslation, chapterId, frameId);
-                    if(!frame.body.isEmpty()) {
-                        // TRICKY: the format doesn't matter because we are only looking at the finished state
-                        FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
-                        numFrames++;
-                        if (frameTranslation.isFinished()) {
-                            numFinishedFrames++;
+                    String[] frameIds = getActiveIndex().getFrames(sourceTranslation, chapterId);
+                    for (String frameId : frameIds) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+                        Frame frame = getFrame(sourceTranslation, chapterId, frameId);
+                        if (!frame.body.isEmpty()) {
+                            // TRICKY: the format doesn't matter because we are only looking at the finished state
+                            FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+                            numFrames++;
+                            if (frameTranslation.isFinished()) {
+                                numFinishedFrames++;
+                            }
                         }
                     }
                 }
             }
-        }
-        // TODO: 9/30/2015 include chapter title and references in calculation
-        if(numFrames > 0) {
-            return numFinishedFrames / numFrames;
+            // TODO: 9/30/2015 include chapter title and references in calculation
+            if (numFrames > 0) {
+                return numFinishedFrames / numFrames;
+            }
         }
         return 0f;
     }

@@ -14,6 +14,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -668,7 +669,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 @Override
                 public void onLongClick(final View view, Span span, int start, int end) {
                     ClipData dragData = ClipData.newPlainText(frame.getComplexId(), span.getMachineReadable());
-                    VersePinSpan pin = ((VersePinSpan) span);
+                    final VersePinSpan pin = ((VersePinSpan) span);
 
                     // create drag shadow
                     LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -689,12 +690,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             0          // flags (not currently used, set to 0)
                     );
                     view.setOnDragListener(new View.OnDragListener() {
+                        private boolean hasEntered = false;
                         @Override
                         public boolean onDrag(View v, DragEvent event) {
+                            EditText editText = ((EditText) view);
                             // TODO: every view should have a drag listener and each view should have a unique tag so we can identify a valid drop site
                             // TODO: highlight the drop site.
                             if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
-                                EditText editText = ((EditText) view);
                                 // delete old span
                                 int[] spanRange = (int[])event.getLocalState();
                                 CharSequence in = editText.getText();
@@ -703,16 +705,43 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 editText.setText(out);
                                 editText.addTextChangedListener(holder.mTextWatcher);
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
-                                Log.d("DRAG", "action");
-                                // TODO: insert the verse
+                                int offset = editText.getOffsetForPosition(event.getX(), event.getY());
+                                CharSequence text = editText.getText();
+                                if(offset >= 0) {
+                                    // insert the verse at the offset
+                                    text = TextUtils.concat(text.subSequence(0, offset), pin.toCharSequence(), text.subSequence(offset, text.length()));
+                                } else {
+                                    // place the verse back at the beginning
+                                    text = TextUtils.concat(pin.toCharSequence(), text);
+                                }
+                                editText.setText(text);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                                 view.setOnClickListener(null);
+                                editText.setSelection(editText.getSelectionEnd());
+                                // reset verse if dragged off the view
+                                // TODO: 10/5/2015 perhaps we should confirm with the user?
+                                if(!hasEntered) {
+                                    // place the verse back at the beginning
+                                    CharSequence text = editText.getText();
+                                    text = TextUtils.concat(pin.toCharSequence(), text);
+                                    editText.removeTextChangedListener(holder.mTextWatcher);
+                                    editText.setText(text);
+                                    editText.addTextChangedListener(holder.mTextWatcher);
+                                }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
+                                hasEntered = true;
                                 Log.d("DRAG", "action");
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_EXITED) {
-                                Log.d("DRAG", "action");
+                                hasEntered = false;
+                                editText.setSelection(editText.getSelectionEnd());
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_LOCATION) {
-                                Log.d("DRAG", "action");
+                                int offset = editText.getOffsetForPosition(event.getX(), event.getY());
+                                if(offset >= 0) {
+//                                    editText.setSelection(offset);
+                                    Selection.setSelection(editText.getText(), offset);
+                                } else {
+                                    editText.setSelection(editText.getSelectionEnd());
+                                }
                             }
                             return true;
                         }
