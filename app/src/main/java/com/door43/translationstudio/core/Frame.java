@@ -70,6 +70,9 @@ public class Frame {
      * @return
      */
     public static Frame generate(String chapterId, JSONObject json) {
+        if(json == null) {
+            return null;
+        }
         try {
             TranslationFormat format = TranslationFormat.DEFAULT;
             if(json.has("format")) {
