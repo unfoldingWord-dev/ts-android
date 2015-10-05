@@ -201,7 +201,7 @@ public class Library {
         try {
             mDownloaderIndex.mergeIndex(mAppIndex, true);
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             Logger.w(this.getClass().getName(), "Failed to seed the download index", e);
         }
         return false;

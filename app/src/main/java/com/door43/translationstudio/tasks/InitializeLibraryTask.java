@@ -16,6 +16,8 @@ public class InitializeLibraryTask extends ManagedTask {
         Library library = AppContext.getLibrary();
         try {
             AppContext.deployDefaultLibrary(library);
+            // re-connect the database
+            library = AppContext.getLibrary();
             library.seedDownloadIndex();
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
