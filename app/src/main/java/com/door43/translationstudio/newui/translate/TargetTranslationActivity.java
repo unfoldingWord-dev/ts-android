@@ -172,14 +172,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 ViewUtil.setSnackBarTextColor(snackBackup, getResources().getColor(R.color.light_primary_text));
                                 snackBackup.show();
                                 return true;
-                            case R.id.action_share:
-//                                Intent shareIntent = new Intent(TargetTranslationActivity.this, SharingActivity.class);
-//                                startActivity(shareIntent);
-                                Snackbar snackShare = Snackbar.make(findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
-                                ViewUtil.setSnackBarTextColor(snackShare, getResources().getColor(R.color.light_primary_text));
-                                snackShare.show();
-                                return true;
-                            case R.id.action_bug:
+                            case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                                 Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
                                 if (prev != null) {

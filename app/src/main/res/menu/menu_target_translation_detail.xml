@@ -21,16 +21,10 @@
         android:icon="@drawable/ic_backup_black_24dp"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_share"
-        android:title="@string/menu_share"
-        android:orderInCategory="100"
-        android:icon="@drawable/ic_share_black_24dp"
-        app:showAsAction="never" />
-
-    <item android:id="@+id/action_bug"
-        android:title="@string/menu_bug"
+    <item android:id="@+id/action_feedback"
+        android:title="@string/feedback"
         android:orderInCategory="200"
-        android:icon="@drawable/ic_bug_report_black_24dp"
+        android:icon="@drawable/ic_feedback_black_24dp"
         app:showAsAction="never" />
 
     <item android:id="@+id/action_settings"

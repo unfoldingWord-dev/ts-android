@@ -374,4 +374,5 @@
     </string>
     <string name="confirm_delete_target_translation">This will permanently remove the translation. Continue?</string>
     <string name="long_click_to_drag">Tap and hold to drag</string>
+    <string name="feedback">Feedback</string>
 </resources>

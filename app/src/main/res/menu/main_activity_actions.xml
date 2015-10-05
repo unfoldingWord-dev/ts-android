@@ -27,7 +27,7 @@
         android:title="@string/menu_upload"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_bug"
+        android:id="@+id/action_feedback"
         android:title="@string/menu_bug"
         app:showAsAction="never" />
     <item

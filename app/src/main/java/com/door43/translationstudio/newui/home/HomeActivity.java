@@ -74,22 +74,15 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             public void onClick(View v) {
                 PopupMenu moreMenu = new PopupMenu(HomeActivity.this, v);
                 ViewUtil.forcePopupMenuIcons(moreMenu);
-                moreMenu.getMenuInflater().inflate(R.menu.menu_target_translation_list, moreMenu.getMenu());
+                moreMenu.getMenuInflater().inflate(R.menu.menu_home, moreMenu.getMenu());
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
                         switch(item.getItemId()) {
-                            case R.id.action_share:
-                                Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
-                                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                                snack.show();
-//                                Intent shareIntent = new Intent(HomeActivity.this, SharingActivity.class);
-//                                startActivity(shareIntent);
-                                return true;
                             case R.id.action_update:
                                 openLibrary();
                                 return true;
-                            case R.id.action_bug:
+                            case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                                 Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
                                 if (prev != null) {

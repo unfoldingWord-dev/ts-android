@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/menu_bug"
+        android:text="@string/feedback"
         android:padding="16dp"
         android:textSize="@dimen/headline"
         android:gravity="center"
