@@ -373,4 +373,14 @@ public class AppContext {
         String url = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, AppContext.context().getResources().getString(R.string.pref_default_media_server));
         return StringUtilities.ltrim(url, '/');
     }
+
+    /**
+     * Returns the sharing directory
+     * @return
+     */
+    public static File getSharingDir() {
+        File file = new File(mContext.getCacheDir(), "sharing");
+        file.mkdirs();
+        return file;
+    }
 }

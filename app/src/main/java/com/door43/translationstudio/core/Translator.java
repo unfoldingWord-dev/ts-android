@@ -27,6 +27,7 @@ import java.util.List;
 public class Translator {
     private static final int TSTUDIO_PACKAGE_VERSION = 2;
     private static final String GENERATOR_NAME = "ts-android";
+    public static final String ARCHIVE_EXTENSION = "tstudio";
     private final File mRootDir;
     private final Context mContext;
 

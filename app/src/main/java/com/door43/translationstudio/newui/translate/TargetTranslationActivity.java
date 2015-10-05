@@ -22,6 +22,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
+import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
@@ -167,10 +168,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 finish();
                                 return true;
                             case R.id.action_backup:
-                                // TODO: need new ui
-                                Snackbar snackBackup = Snackbar.make(findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
-                                ViewUtil.setSnackBarTextColor(snackBackup, getResources().getColor(R.color.light_primary_text));
-                                snackBackup.show();
+                                FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+                                Fragment backupPrev = getFragmentManager().findFragmentByTag("backupDialog");
+                                if (backupPrev != null) {
+                                    backupFt.remove(backupPrev);
+                                }
+                                backupFt.addToBackStack(null);
+
+                                BackupDialog backupDialog = new BackupDialog();
+                                Bundle args = new Bundle();
+                                args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                backupDialog.setArguments(args);
+                                backupDialog.show(backupFt, "backupDialog");
                                 return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
