@@ -8,7 +8,7 @@ import android.text.style.StyleSpan;
 
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
-import com.door43.translationstudio.spannables.VerseBubbleSpan;
+import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 
 import java.util.ArrayList;
@@ -209,7 +209,7 @@ public class USXRenderer extends RenderingEngine {
                 if(mVerseListener == null) {
                     verse = new VerseSpan(matcher.group(1));
                 } else {
-                    verse = new VerseBubbleSpan(matcher.group(1));
+                    verse = new VersePinSpan(matcher.group(1));
                 }
 
                 if (verse != null) {
@@ -262,7 +262,7 @@ public class USXRenderer extends RenderingEngine {
                     if (mVerseListener == null) {
                         verse = new VerseSpan(mExpectedVerseRange[0]);
                     } else {
-                        verse = new VerseBubbleSpan(mExpectedVerseRange[0]);
+                        verse = new VersePinSpan(mExpectedVerseRange[0]);
                     }
                     verse.setOnClickListener(mVerseListener);
                     out = TextUtils.concat(verse.toCharSequence(), out);
@@ -275,7 +275,7 @@ public class USXRenderer extends RenderingEngine {
                         if (mVerseListener == null) {
                             verse = new VerseSpan(i);
                         } else {
-                            verse = new VerseBubbleSpan(i);
+                            verse = new VersePinSpan(i);
                         }
                         verse.setOnClickListener(mVerseListener);
                         out = TextUtils.concat(verse.toCharSequence(), out);

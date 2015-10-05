@@ -6,11 +6,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -20,6 +16,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -28,8 +25,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -54,9 +51,8 @@ import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
-
-import org.eclipse.jgit.diff.Edit;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +72,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private final Translator mTranslator;
     private final Activity mContext;
     private final TargetTranslation mTargetTranslation;
-    private final ImageView mDragImage;
     private HashMap<String, Chapter> mChapters;
     private SourceTranslation mSourceTranslation;
     private SourceLanguage mSourceLanguage;
@@ -90,9 +85,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private ContentValues[] mTabs;
 
     public ReviewModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, boolean resourcesOpened) {
-        mDragImage = new ImageView(context);
-        mDragImage.setImageResource(R.drawable.ic_info_black_36dp);
-        mDragImage.setTag(IMAGEVIEW_TAG);
 
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
@@ -263,34 +255,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // render the target frame body
         if(mRenderedTargetBody[position] == null) {
             FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
-//
-//            RenderingGroup renderingGroup = new RenderingGroup();
-//            USXRenderer usxRenderer = new USXRenderer(new Span.OnClickListener() {
-//                @Override
-//                public void onClick(View view, Span span, int start, int end) {
-//                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.long_click_to_drag, Snackbar.LENGTH_SHORT);
-//                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-//                    snack.show();
-//                    holder.mTargetBody.setSelection(holder.mTargetBody.getText().length());
-//                }
-//
-//                @Override
-//                public void onLongClick(View view, Span span, int start, int end) {
-//                    // TODO: 10/4/2015 hide the verse marker while we are dragging.
-//
-//                    ClipData dragData = ClipData.newPlainText((String) mDragImage.getTag(), span.getMachineReadable());
-//                    View.DragShadowBuilder myShadow = new MyDragShadowBuilder(mDragImage);
-//
-//                    view.startDrag(dragData,  // the data to be dragged
-//                            myShadow,  // the drag shadow builder
-//                            null,      // no need to use local data
-//                            0          // flags (not currently used, set to 0)
-//                    );
-//                }
-//            }, null);
-//            usxRenderer.setPopulateVerseMarkers(frame.getVerseRange());
-//            renderingGroup.addEngine(usxRenderer);
-//            renderingGroup.init(frameTranslation.body);
             mRenderedTargetBody[position] = renderTargeText(frameTranslation.body, frameTranslation.getFormat(), frame, holder); //= renderingGroup.start();
         }
         if(holder.mTextWatcher != null) {
@@ -306,44 +270,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 return true;
             }
         });
-        // TODO: 10/1/2015 inject sample marker
-//        VerseBubbleSpan span = new VerseBubbleSpan(1321);
-//        span.setOnClickListener(new Span.OnClickListener() {
-//            @Override
-//            public void onClick(View view, Span span, int start, int end) {
-//                Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.long_click_to_drag, Snackbar.LENGTH_SHORT);
-//                ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-//                snack.show();
-//                holder.mTargetBody.setSelection(holder.mTargetBody.getText().length());
-//            }
-//
-//            @Override
-//            public void onLongClick(View view, Span span, int start, int end) {
-//                // TODO: 10/4/2015 hide the verse marker while we are dragging.
-//
-//                ClipData dragData = ClipData.newPlainText((String) mDragImage.getTag(), span.getMachineReadable());
-//                View.DragShadowBuilder myShadow = new MyDragShadowBuilder(mDragImage);
-//
-//                view.startDrag(dragData,  // the data to be dragged
-//                        myShadow,  // the drag shadow builder
-//                        null,      // no need to use local data
-//                        0          // flags (not currently used, set to 0)
-//                );
-//            }
-//        });
-//        holder.mTargetBody.setTextIsSelectable(false);
-//        holder.mTargetBody.append("some text before the span ");
-//        holder.mTargetBody.append(span.toCharSequence());
-//        holder.mTargetBody.append(" some extra text after the span.");
         ViewUtil.makeLinksClickable(holder.mTargetBody);
-
-//        if (Build.VERSION.SDK_INT >= 11) {
-//            holder.mTargetBody.setRawInputType(InputType.TYPE_CLASS_TEXT);
-//            holder.mTargetBody.setTextIsSelectable(true);
-//        } else {
-//            holder.mTargetBody.setRawInputType(InputType.TYPE_NULL);
-//            holder.mTargetBody.setFocusable(true);
-//        }
 
         // render target frame title
         ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(chapter);
@@ -726,7 +653,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private CharSequence renderTargeText(String text, TranslationFormat format, Frame frame, final ViewHolder holder) {
+    private CharSequence renderTargeText(String text, TranslationFormat format, final Frame frame, final ViewHolder holder) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if(format == TranslationFormat.USX) {
             USXRenderer usxRenderer = new USXRenderer(new Span.OnClickListener() {
@@ -740,10 +667,20 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
                 @Override
                 public void onLongClick(final View view, Span span, int start, int end) {
-                    // TODO: 10/4/2015 hide the verse marker while we are dragging.
+                    ClipData dragData = ClipData.newPlainText(frame.getComplexId(), span.getMachineReadable());
+                    VersePinSpan pin = ((VersePinSpan) span);
 
-                    ClipData dragData = ClipData.newPlainText((String) mDragImage.getTag(), span.getMachineReadable());
-                    View.DragShadowBuilder myShadow = new MyDragShadowBuilder(mDragImage);
+                    // create drag shadow
+                    LayoutInflater inflater = (LayoutInflater)AppContext.context().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    FrameLayout verseLayout = (FrameLayout)inflater.inflate(R.layout.fragment_verse_marker, null);
+                    TextView verseTitle = (TextView)verseLayout.findViewById(R.id.verse);
+                    if(pin.getEndVerseNumber() > 0) {
+                        verseTitle.setText(pin.getStartVerseNumber() + "-" + pin.getEndVerseNumber());
+                    } else {
+                        verseTitle.setText(pin.getStartVerseNumber() + "");
+                    }
+                    Bitmap shadow = ViewUtil.convertToBitmap(verseLayout);
+                    View.DragShadowBuilder myShadow = CustomDragShadowBuilder.fromBitmap(mContext, shadow);
 
                     int[] spanRange = {start, end};
                     view.startDrag(dragData,  // the data to be dragged
@@ -766,7 +703,16 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 editText.setText(out);
                                 editText.addTextChangedListener(holder.mTextWatcher);
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
-
+                                Log.d("DRAG", "action");
+                                // TODO: insert the verse
+                            } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
+                                view.setOnClickListener(null);
+                            } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
+                                Log.d("DRAG", "action");
+                            } else if(event.getAction() == DragEvent.ACTION_DRAG_EXITED) {
+                                Log.d("DRAG", "action");
+                            } else if(event.getAction() == DragEvent.ACTION_DRAG_LOCATION) {
+                                Log.d("DRAG", "action");
                             }
                             return true;
                         }
@@ -882,59 +828,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             } else {
                 return 0;
             }
-        }
-    }
-
-    private static class MyDragShadowBuilder extends View.DragShadowBuilder {
-
-        // The drag shadow image, defined as a drawable thing
-        private static Drawable shadow;
-
-        // Defines the constructor for myDragShadowBuilder
-        public MyDragShadowBuilder(View v) {
-
-            // Stores the View parameter passed to myDragShadowBuilder.
-            super(v);
-
-            // Creates a draggable image that will fill the Canvas provided by the system.
-            shadow = new ColorDrawable(Color.LTGRAY);
-        }
-
-        // Defines a callback that sends the drag shadow dimensions and touch point back to the
-        // system.
-        @Override
-        public void onProvideShadowMetrics (Point size, Point touch) {
-
-
-            // Defines local variables
-            int width, height;
-
-            // Sets the width of the shadow to half the width of the original View
-            width = getView().getWidth() / 2;
-
-            // Sets the height of the shadow to half the height of the original View
-            height = getView().getHeight() / 2;
-
-            // The drag shadow is a ColorDrawable. This sets its dimensions to be the same as the
-            // Canvas that the system will provide. As a result, the drag shadow will fill the
-            // Canvas.
-            shadow.setBounds(0, 0, width, height);
-
-            // Sets the size parameter's width and height values. These get back to the system
-            // through the size parameter.
-            size.set(width, height);
-
-            // Sets the touch point's position to be in the middle of the drag shadow
-            touch.set(width / 2, height / 2);
-        }
-
-        // Defines a callback that draws the drag shadow in a Canvas that the system constructs
-        // from the dimensions passed in onProvideShadowMetrics().
-        @Override
-        public void onDrawShadow(Canvas canvas) {
-
-            // Draws the ColorDrawable in the Canvas passed in from the system.
-            shadow.draw(canvas);
         }
     }
 }

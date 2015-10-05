@@ -1,6 +1,8 @@
 package com.door43.widget;
 
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.design.widget.Snackbar;
@@ -215,5 +217,18 @@ public class ViewUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Converts a view to a bitmap
+     * @param view
+     * @return
+     */
+    public static Bitmap convertToBitmap(View view) {
+        view.setDrawingCacheEnabled(true);
+        view.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        view.buildDrawingCache(true);
+        return view.getDrawingCache();
     }
 }
