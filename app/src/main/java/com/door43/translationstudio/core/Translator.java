@@ -65,7 +65,7 @@ public class Translator {
      */
     public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, String projectId) {
         try {
-            return TargetTranslation.generate(targetLanguage, projectId, mRootDir);
+            return TargetTranslation.generate(mContext, targetLanguage, projectId, mRootDir);
         } catch (Exception e) {
             e.printStackTrace();
         }

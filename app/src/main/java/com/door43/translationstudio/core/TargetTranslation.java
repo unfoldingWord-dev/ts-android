@@ -1,6 +1,11 @@
 package com.door43.translationstudio.core;
 
+import android.app.Application;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
@@ -20,6 +25,7 @@ import java.util.Timer;
  */
 public class TargetTranslation {
     private static final long COMMIT_DELAY = 5000;
+    private static final int PACKAGE_VERSION = 2; // the version of the translation format
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
@@ -84,7 +90,7 @@ public class TargetTranslation {
      * @param mRootDir the parent directory in which the target translation directory will be created
      * @return
      */
-    public static TargetTranslation generate(TargetLanguage targetLanguage, String projectId, File mRootDir) throws Exception {
+    public static TargetTranslation generate(Context context, TargetLanguage targetLanguage, String projectId, File mRootDir) throws Exception {
         // generate new target translation if it does not exist
         File translationDir = generateTargetTranslationDir(targetLanguage.getId(), projectId, mRootDir);
         if(!translationDir.exists()) {
@@ -93,8 +99,10 @@ public class TargetTranslation {
             manifest.put("slug", projectId);
             JSONObject generatorJson = new JSONObject();
             generatorJson.put("name", "ts-android");
-            generatorJson.put("version", 1);
+            PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+            generatorJson.put("build", pInfo.versionCode);
             manifest.put("generator", generatorJson);
+            manifest.put("package_version", PACKAGE_VERSION);
             JSONObject targetLangaugeJson = new JSONObject();
             targetLangaugeJson.put("direction", targetLanguage.direction.toString());
             targetLangaugeJson.put("slug", targetLanguage.code);
