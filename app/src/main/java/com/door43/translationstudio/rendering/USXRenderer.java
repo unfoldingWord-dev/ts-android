@@ -222,15 +222,19 @@ public class USXRenderer extends RenderingEngine {
                         for(int i = startVerse; i <= endVerse; i ++) {
                             if(!foundVerses.contains(i)) {
                                 foundVerses.add(i);
+                            } else {
+                                alreadyRendered = true;
                             }
                         }
                     } else {
                         if(!foundVerses.contains(startVerse)) {
                             foundVerses.add(startVerse);
+                        } else {
+                            alreadyRendered = true;
                         }
                     }
                     // render verses not already found
-                    if(!foundVerses.contains(startVerse)) {
+                    if(!alreadyRendered) {
                         verse.setOnClickListener(mVerseListener);
                         out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
                     } else {
