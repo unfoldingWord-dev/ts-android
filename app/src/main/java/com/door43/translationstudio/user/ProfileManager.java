@@ -87,7 +87,7 @@ public class ProfileManager {
      * @return
      */
     public static String getRepositoryPath() {
-        return AppContext.context().getFilesDir() + "/" + AppContext.context().getResources().getString(R.string.git_repository_dir) + "/profile/";
+        return AppContext.context().getFilesDir() + "/" + AppContext.PROFILES_DIR + "/profile/";
     }
 
     /**

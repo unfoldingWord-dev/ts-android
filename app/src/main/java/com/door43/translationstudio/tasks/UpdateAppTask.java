@@ -88,9 +88,18 @@ public class UpdateAppTask extends ManagedTask {
         publishProgress(-1, "Updating translations");
         Logger.i(this.getClass().getName(), "Upgrading source data management from pre 103");
 
-        // migrate target translations
+        // migrate target translations and profile
         File oldTranslationsDir = new File(AppContext.context().getFilesDir(), "git");
         File newTranslationsDir = AppContext.getTranslator().getPath();
+        newTranslationsDir.mkdirs();
+        File oldProfileDir = new File(oldTranslationsDir, "profile");
+        File newProfileDir = new File(AppContext.context().getFilesDir(), AppContext.PROFILES_DIR + "/profile");
+        newProfileDir.getParentFile().mkdirs();
+        try {
+            FileUtils.moveDirectory(oldProfileDir, newProfileDir);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to migrate the profile", e);
+        }
         try {
             FileUtils.moveDirectory(oldTranslationsDir, newTranslationsDir);
         } catch (IOException e) {
@@ -104,6 +113,14 @@ public class UpdateAppTask extends ManagedTask {
         FileUtils.deleteQuietly(oldSourceDir);
         FileUtils.deleteQuietly(oldTempSourceDir);
         FileUtils.deleteQuietly(oldIndexDir);
+
+        // remove old caches
+        File oldP2PDir = new File(AppContext.context().getExternalCacheDir(), "transferred");
+        File oldExportDir = new File(AppContext.context().getCacheDir(), "exported");
+        File oldImportDir = new File(AppContext.context().getCacheDir(), "imported");
+        FileUtils.deleteQuietly(oldP2PDir);
+        FileUtils.deleteQuietly(oldExportDir);
+        FileUtils.deleteQuietly(oldImportDir);
     }
 
     @Override

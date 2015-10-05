@@ -28,6 +28,7 @@ public class AppContext {
     public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     public static final String TARGET_LANGUAGES_FILE = "languages.json";
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
+    public static final String PROFILES_DIR = "profiles";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
