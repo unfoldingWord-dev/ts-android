@@ -22,7 +22,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.git.tasks.repo.CommitTask;
-import com.door43.translationstudio.newui.ReportBugDialog;
+import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.widget.VerticalSeekBar;
@@ -180,7 +180,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 }
                                 ft.addToBackStack(null);
 
-                                ReportBugDialog dialog = new ReportBugDialog();
+                                FeedbackDialog dialog = new FeedbackDialog();
                                 dialog.show(ft, "bugDialog");
                                 return true;
                             case R.id.action_settings:

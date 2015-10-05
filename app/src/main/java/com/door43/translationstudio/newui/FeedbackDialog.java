@@ -38,7 +38,7 @@ import java.io.IOException;
 /**
  * Created by joel on 9/17/2015.
  */
-public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFinishedListener {
+public class FeedbackDialog extends DialogFragment implements ManagedTask.OnFinishedListener {
 
     private static final String STATE_LATEST_RELEASE = "latest_release";
     private static final String STATE_NOTES = "bug_notes";
@@ -58,7 +58,7 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        View v = inflater.inflate(R.layout.dialog_report_bug, container, false);
+        View v = inflater.inflate(R.layout.dialog_feedback, container, false);
 
         if(savedInstanceState == null) {
             Bundle args = getArguments();
@@ -166,7 +166,7 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
         mMessage = message;
         showLoadingUI();
         CheckForLatestReleaseTask task = new CheckForLatestReleaseTask();
-        task.addOnFinishedListener(ReportBugDialog.this);
+        task.addOnFinishedListener(FeedbackDialog.this);
         TaskManager.addTask(task, CheckForLatestReleaseTask.TASK_ID);
     }
 
@@ -194,18 +194,18 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
             } else {
                 if(!mMessage.isEmpty()) {
                     UploadBugReportTask newTask = new UploadBugReportTask(mMessage);
-                    newTask.addOnFinishedListener(ReportBugDialog.this);
+                    newTask.addOnFinishedListener(FeedbackDialog.this);
                     TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
                 } else {
                     notifyInputRequired();
-                    ReportBugDialog.this.dismiss();
+                    FeedbackDialog.this.dismiss();
                 }
             }
         } else if(task.getClass().getName().equals(UploadBugReportTask.class.getName())) {
             Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
             ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
             snack.show();
-            ReportBugDialog.this.dismiss();
+            FeedbackDialog.this.dismiss();
         }
     }
 
@@ -223,7 +223,7 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mLatestRelease = null;
-                        ReportBugDialog.this.dismiss();
+                        FeedbackDialog.this.dismiss();
                     }
                 })
                 .setNeutralButton(R.string.download_update, new DialogInterface.OnClickListener() {
@@ -243,7 +243,7 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
                             startActivity(browserIntent);
                         }
                         dialog.dismiss();
-                        ReportBugDialog.this.dismiss();
+                        FeedbackDialog.this.dismiss();
                     }
                 })
                 .setPositiveButton(R.string.label_continue, new DialogInterface.OnClickListener() {
@@ -251,11 +251,11 @@ public class ReportBugDialog extends DialogFragment implements ManagedTask.OnFin
                     public void onClick(DialogInterface dialog, int which) {
                         if(!mMessage.isEmpty()) {
                             UploadBugReportTask newTask = new UploadBugReportTask(mMessage);
-                            newTask.addOnFinishedListener(ReportBugDialog.this);
+                            newTask.addOnFinishedListener(FeedbackDialog.this);
                             TaskManager.addTask(newTask, UploadBugReportTask.TASK_ID);
                         } else {
                             notifyInputRequired();
-                            ReportBugDialog.this.dismiss();
+                            FeedbackDialog.this.dismiss();
                         }
                         dialog.dismiss();
                     }

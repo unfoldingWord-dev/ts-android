@@ -19,7 +19,7 @@ import android.widget.LinearLayout;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.newui.ReportBugDialog;
+import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.tasks.UploadTargetTranslationTask;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.GenericTaskWatcher;
@@ -208,14 +208,14 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                             }
                             ft.addToBackStack(null);
 
-                            ReportBugDialog dialog = new ReportBugDialog();
+                            FeedbackDialog dialog = new FeedbackDialog();
                             Bundle args = new Bundle();
                             String message = "Failed to publish the translation of " +
                                     project.name + " into " +
                                     targetTranslation.getTargetLanguageName()
                                     + ".\ntargetTranslation: " + targetTranslation.getId() +
                                     "\n--------\n\n";
-                            args.putString(ReportBugDialog.ARG_MESSAGE, message);
+                            args.putString(FeedbackDialog.ARG_MESSAGE, message);
                             dialog.setArguments(args);
                             dialog.show(ft, "bugDialog");
                         }

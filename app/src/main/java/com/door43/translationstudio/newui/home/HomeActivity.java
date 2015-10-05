@@ -22,7 +22,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
-import com.door43.translationstudio.newui.ReportBugDialog;
+import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
@@ -90,7 +90,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 }
                                 ft.addToBackStack(null);
 
-                                ReportBugDialog dialog = new ReportBugDialog();
+                                FeedbackDialog dialog = new FeedbackDialog();
                                 dialog.show(ft, "bugDialog");
                                 return true;
                             case R.id.action_settings:
