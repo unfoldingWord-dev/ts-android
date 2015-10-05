@@ -118,9 +118,11 @@ public class UpdateAppTask extends ManagedTask {
         File oldP2PDir = new File(AppContext.context().getExternalCacheDir(), "transferred");
         File oldExportDir = new File(AppContext.context().getCacheDir(), "exported");
         File oldImportDir = new File(AppContext.context().getCacheDir(), "imported");
+        File oldSharingDir = new File(AppContext.context().getCacheDir(), "sharing");
         FileUtils.deleteQuietly(oldP2PDir);
         FileUtils.deleteQuietly(oldExportDir);
         FileUtils.deleteQuietly(oldImportDir);
+        FileUtils.deleteQuietly(oldSharingDir);
     }
 
     @Override
