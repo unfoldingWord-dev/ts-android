@@ -32,6 +32,7 @@ public class TargetTranslation {
     private final File mTargetTranslationDirectory;
     private final Manifest mManifest;
     private final String mTargetTranslationName;
+    private final LanguageDirection mDirection;
     private Timer mApplyFrameTimer;
 
     public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
@@ -46,6 +47,32 @@ public class TargetTranslation {
             e.printStackTrace();
         }
         mTargetTranslationName = name;
+        LanguageDirection direction = LanguageDirection.LeftToRight;
+        try {
+            direction = LanguageDirection.get(mManifest.getJSONObject("target_language").getString("direction"));
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        mDirection = direction;
+    }
+
+    /**
+     * Returns the directory to this target translation
+     * @return
+     */
+    public File getPath() {
+        return mTargetTranslationDirectory;
+    }
+
+    /**
+     * Returns the language direction of the target language
+     * @return
+     */
+    public LanguageDirection getTargetLanguageDirection() {
+        return mDirection;
     }
 
     /**

@@ -2,10 +2,13 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.text.Editable;
 import android.text.SpannedString;
 
+import com.door43.translationstudio.AppContext;
 import com.door43.util.Manifest;
+import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -14,6 +17,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +25,8 @@ import java.util.List;
  * Created by joel on 8/29/2015.
  */
 public class Translator {
+    private static final int TSTUDIO_PACKAGE_VERSION = 2;
+    private static final String GENERATOR_NAME = "ts-android";
     private final File mRootDir;
     private final Context mContext;
 
@@ -153,13 +159,45 @@ public class Translator {
     }
 
     /**
-     * Exports a target translation in .tstudio
+     * Exports a single target translation in .tstudio format
      * @param t
      * @param outputFile
      */
-    public void export(TargetTranslation t, File outputFile) {
-        // TODO: perform export
-        // manifest
-        // translation
+    public void export(TargetTranslation t, File outputFile) throws Exception {
+        Zip.zip(new File[]{t.getPath()}, outputFile);
+
+        // build manifest
+        JSONObject manifestJson = new JSONObject();
+        JSONObject generatorJson = new JSONObject();
+        generatorJson.put("name", GENERATOR_NAME);
+        PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+        generatorJson.put("build", pInfo.versionCode);
+        manifestJson.put("generator", generatorJson);
+        manifestJson.put("package_version", TSTUDIO_PACKAGE_VERSION);
+        manifestJson.put("timestamp", System.currentTimeMillis() / 1000L);
+        JSONArray translationsJson = new JSONArray();
+        JSONObject translationJson = new JSONObject();
+        translationJson.put("path", t.getId());
+        translationJson.put("id", t.getId());
+        translationJson.put("commit_hash", t.commitHash());
+        translationJson.put("direction", t.getTargetLanguageDirection());
+        translationJson.put("target_language_name", t.getTargetLanguageName());
+        translationsJson.put(translationJson);
+        manifestJson.put("target_translations", translationsJson);
+
+        File tempCache = new File(mRootDir, System.currentTimeMillis()+"");
+        try {
+            tempCache.mkdirs();
+            File manifestFile = new File(tempCache, "manifest.json");
+            manifestFile.createNewFile();
+            FileUtils.write(manifestFile, manifestJson.toString());
+            Zip.addFilesToExistingZip(outputFile, new File[]{manifestFile});
+        } catch (Exception e) {
+            FileUtils.deleteQuietly(tempCache);
+            throw e;
+        }
+
+        // clean
+        FileUtils.deleteQuietly(tempCache);
     }
 }
