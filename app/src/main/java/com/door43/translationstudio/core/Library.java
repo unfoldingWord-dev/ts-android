@@ -535,10 +535,11 @@ public class Library {
                     ProjectCategory existingCat = categoriesMap.get(dummyCat.getId());
                     if (existingCat == null || (!existingCat.sourcelanguageId.equals(dummyCat.sourcelanguageId) && dummyCat.sourcelanguageId.equals(parentCategory.sourcelanguageId))) {
 
+                        // TODO: 10/4/2015 re-enable this check once we have an efficient way to check for source
                         // ensure the project has source
-                        if(!sourceLanguageHasSource(project.getId(), categoryLanguageId)) {
-                            continue;
-                        }
+//                        if(!sourceLanguageHasSource(project.getId(), categoryLanguageId)) {
+//                            continue;
+//                        }
 
                         JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
                         String title = projectLanguageJson.getString("name");
