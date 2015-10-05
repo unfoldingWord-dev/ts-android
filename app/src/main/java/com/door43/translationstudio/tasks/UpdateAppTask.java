@@ -96,12 +96,20 @@ public class UpdateAppTask extends ManagedTask {
         File newProfileDir = new File(AppContext.context().getFilesDir(), AppContext.PROFILES_DIR + "/profile");
         newProfileDir.getParentFile().mkdirs();
         try {
-            FileUtils.moveDirectory(oldProfileDir, newProfileDir);
+            if(oldProfileDir.exists()) {
+                FileUtils.deleteQuietly(newProfileDir);
+                FileUtils.moveDirectory(oldProfileDir, newProfileDir);
+            }
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to migrate the profile", e);
         }
         try {
-            FileUtils.moveDirectory(oldTranslationsDir, newTranslationsDir);
+            if(oldTranslationsDir.exists() && oldTranslationsDir.list().length > 0) {
+                FileUtils.deleteQuietly(newTranslationsDir);
+                FileUtils.moveDirectory(oldTranslationsDir, newTranslationsDir);
+            } else if(oldTranslationsDir.exists()) {
+                FileUtils.deleteQuietly(oldTranslationsDir);
+            }
         } catch (IOException e) {
             Logger.e(this.getClass().getName(), "Failed to migrate the target translations", e);
         }
