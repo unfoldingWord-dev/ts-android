@@ -36,7 +36,7 @@
             android:textColor="@color/dark_gray"
             android:inputType="text|textMultiLine"
             android:id="@+id/crashDescriptioneditText"
-            android:background="@drawable/form_input"
+            android:background="@drawable/edit_text"
             android:hint="@string/crash_details"
             android:imeOptions="actionDone" />
     </LinearLayout>

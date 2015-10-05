@@ -176,7 +176,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             case R.id.action_update:
                 new AlertDialog.Builder(this)
                         .setTitle(R.string.update_projects)
-                        .setIcon(R.drawable.ic_autorenew_black_24dp)
+                        .setIcon(R.drawable.ic_local_library_black_24dp)
                         .setMessage(R.string.use_internet_confirmation)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override

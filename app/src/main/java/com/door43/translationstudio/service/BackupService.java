@@ -109,7 +109,7 @@ public class BackupService extends Service {
             try {
                 tag = t.commitHash();
             } catch (Exception e) {
-                Logger.e(this.getClass().getName(), "Failed to read commit hash", e);
+                Logger.e(this.getClass().getName(), "ed to read commit hash", e);
                 continue;
             }
 
@@ -142,7 +142,8 @@ public class BackupService extends Service {
                         }
                         archive.delete();
                     } else {
-                        Logger.w(this.getClass().getName(), "Failed to export the target translation: " + t.getId());
+                        // TODO: 10/5/2015 Re-enable this log once the export method is completed.
+//                        Logger.w(this.getClass().getName(), "Failed to export the target translation: " + t.getId());
                     }
                 }
             } else {

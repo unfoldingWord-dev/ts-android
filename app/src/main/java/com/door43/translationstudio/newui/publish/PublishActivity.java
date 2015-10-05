@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.publish;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,6 +11,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.BaseActivity;
@@ -18,6 +22,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
+import java.util.Locale;
 
 public class PublishActivity extends BaseActivity implements PublishStepFragment.OnEventListener {
 
@@ -106,10 +111,29 @@ public class PublishActivity extends BaseActivity implements PublishStepFragment
             } else {
                 mFragment = new ValidationFragment();
                 String sourceTranslationId = AppContext.getSelectedSourceTranslationId(targetTranslationId);
-                args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);
-                mFragment.setArguments(args);
-                getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
-                // TODO: animate
+                if(sourceTranslationId == null) {
+                    // use the default target translation if they have not chosen one.
+                    Library library = AppContext.getLibrary();
+                    SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+                    if(sourceLanguage != null) {
+                        SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(mTargetTranslation.getProjectId(), sourceLanguage.getId());
+                        if (sourceTranslation != null) {
+                            sourceTranslationId = sourceTranslation.getId();
+                        }
+                    }
+                }
+                if(sourceTranslationId != null) {
+                    args.putSerializable(PublishStepFragment.ARG_SOURCE_TRANSLATION_ID, sourceTranslationId);
+                    mFragment.setArguments(args);
+                    getFragmentManager().beginTransaction().add(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                } else {
+                    // the user must choose a source translation before they can publish
+                    Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.choose_source_translations, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                    finish();
+                }
             }
         }
 
