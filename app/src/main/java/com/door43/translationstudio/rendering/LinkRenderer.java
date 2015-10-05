@@ -46,12 +46,18 @@ public class LinkRenderer extends RenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
+            // TODO: 10/5/2015 the passage link should be created with a generated that returns null if the link is invalid
             PassageLinkSpan link = new PassageLinkSpan(matcher.group(3), matcher.group(2));
-            link.setOnClickListener(mLinkListener);
+            // make sure the link chapter and frame id's are valid
+            if(link.getChapterId() != null && link.getFrameId() != null) {
+                link.setOnClickListener(mLinkListener);
 
-            // check if the link should be rendered
-            if(mPreprocessor.onPreprocess(link)) {
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.toCharSequence());
+                // check if the link should be rendered
+                if (mPreprocessor.onPreprocess(link)) {
+                    out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.toCharSequence());
+                } else {
+                    out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.getTitle());
+                }
             } else {
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), link.getTitle());
             }
@@ -64,7 +70,7 @@ public class LinkRenderer extends RenderingEngine {
     /**
      * Used to identify which links to render
      */
-    public static interface OnPreprocessLink {
-        public boolean onPreprocess(PassageLinkSpan span);
+    public interface OnPreprocessLink {
+        boolean onPreprocess(PassageLinkSpan span);
     }
 }
