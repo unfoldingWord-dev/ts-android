@@ -600,7 +600,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         RenderingGroup renderingGroup = new RenderingGroup();
         if (format == TranslationFormat.USX) {
             // TODO: add click listeners for verses and notes
-            renderingGroup.addEngine(new USXRenderer(null, null));
+            USXRenderer usxRenderer = new USXRenderer();
+            usxRenderer.setVersesEnabled(false);
+            renderingGroup.addEngine(usxRenderer);
         } else {
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));

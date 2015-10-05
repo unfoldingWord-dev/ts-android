@@ -16,7 +16,6 @@ public abstract class Span {
     private CharSequence mHumanReadable;
     private CharSequence mMachineReadable;
     private OnClickListener mClickListener;
-    private OnClickListener mLongClickListener;
 
     /**
      * Creates a new empty span.
@@ -54,14 +53,6 @@ public abstract class Span {
         mClickListener = listener;
     }
 
-    /**
-     * Sets the long click listener on this span
-     * @param listener
-     */
-    public void setOnLongClickListener(OnClickListener listener) {
-        mLongClickListener = listener;
-    }
-
     protected void setHumanReadable(String text) {
         mHumanReadable = text;
     }
@@ -79,12 +70,12 @@ public abstract class Span {
 
                     @Override
                     public void onLongClick(View view) {
-                        if(mLongClickListener != null) {
+                        if(mClickListener != null) {
                             TextView tv = (TextView)view;
                             Spanned s = (Spanned)tv.getText();
                             int start = s.getSpanStart(this);
                             int end = s.getSpanEnd(this);
-                            mLongClickListener.onClick(view, Span.this, start, end);
+                            mClickListener.onLongClick(view, Span.this, start, end);
                         }
                     }
 
@@ -126,5 +117,6 @@ public abstract class Span {
      */
     public interface OnClickListener {
         void onClick(View view, Span span, int start, int end);
+        void onLongClick(View view, Span span, int start, int end);
     }
 }

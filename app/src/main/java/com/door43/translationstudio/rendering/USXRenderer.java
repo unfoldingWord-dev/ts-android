@@ -8,8 +8,11 @@ import android.text.style.StyleSpan;
 
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
+import com.door43.translationstudio.spannables.VerseBubbleSpan;
 import com.door43.translationstudio.spannables.VerseSpan;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +25,8 @@ public class USXRenderer extends RenderingEngine {
 
     private Span.OnClickListener mNoteListener;
     private Span.OnClickListener mVerseListener;
+    private boolean mRenderVerses = true;
+    private int[] mExpectedVerseRange = new int[0];
 
     /**
      * Creates a new usx rendering engine without any listeners
@@ -37,6 +42,24 @@ public class USXRenderer extends RenderingEngine {
     public USXRenderer(Span.OnClickListener verseListener, Span.OnClickListener noteListener) {
         mVerseListener = verseListener;
         mNoteListener = noteListener;
+    }
+
+    /**
+     * if set to false verses will not be displayed in the output.
+     *
+     * @param enable default is true
+     */
+    public void setVersesEnabled(boolean enable) {
+        mRenderVerses = enable;
+    }
+
+    /**
+     * Specifies an inclusive range of verses expected in the input.
+     * If a verse is not found it will be inserted at the front of the input.
+     * @param verseRange
+     */
+    public void setPopulateVerseMarkers(int[] verseRange) {
+        mExpectedVerseRange = verseRange;
     }
 
     /**
@@ -178,20 +201,84 @@ public class USXRenderer extends RenderingEngine {
         Pattern pattern = Pattern.compile(VerseSpan.PATTERN);
         Matcher matcher = pattern.matcher(in);
         int lastIndex = 0;
+        List<Integer> foundVerses = new ArrayList<>();
         while(matcher.find()) {
             if(isStopped()) return in;
-            VerseSpan verse = new VerseSpan(matcher.group(1));
-            if(verse != null) {
-                verse.setOnClickListener(mVerseListener);
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
-            } else {
-                // failed to parse the verse
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
-            }
+            if(mRenderVerses) {
+                Span verse;
+                if(mVerseListener == null) {
+                    verse = new VerseSpan(matcher.group(1));
+                } else {
+                    verse = new VerseBubbleSpan(matcher.group(1));
+                }
 
+                if (verse != null) {
+                    // record found verses
+                    int startVerse = ((VerseSpan)verse).getStartVerseNumber();
+                    int endVerse = ((VerseSpan)verse).getEndVerseNumber();
+                    boolean alreadyRendered = false;
+                    if(endVerse > startVerse) {
+                        // range of verses
+                        for(int i = startVerse; i <= endVerse; i ++) {
+                            if(!foundVerses.contains(i)) {
+                                foundVerses.add(i);
+                            }
+                        }
+                    } else {
+                        if(!foundVerses.contains(startVerse)) {
+                            foundVerses.add(startVerse);
+                        }
+                    }
+                    // render verses not already found
+                    if(!foundVerses.contains(startVerse)) {
+                        verse.setOnClickListener(mVerseListener);
+                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+                    } else {
+                        // exclude duplicate verse
+                        out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+                    }
+                } else {
+                    // failed to parse the verse
+                    out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
+                }
+            } else {
+                // exclude verse from display
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()));
+            }
             lastIndex = matcher.end();
         }
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+
+        if(mRenderVerses) {
+            // populate missing verses
+            if (mExpectedVerseRange.length == 1) {
+                if (!foundVerses.contains(mExpectedVerseRange[0])) {
+                    // generate missing verse
+                    Span verse;
+                    if (mVerseListener == null) {
+                        verse = new VerseSpan(mExpectedVerseRange[0]);
+                    } else {
+                        verse = new VerseBubbleSpan(mExpectedVerseRange[0]);
+                    }
+                    verse.setOnClickListener(mVerseListener);
+                    out = TextUtils.concat(verse.toCharSequence(), out);
+                }
+            } else if (mExpectedVerseRange.length == 2) {
+                for (int i = mExpectedVerseRange[1]; i >= mExpectedVerseRange[0]; i--) {
+                    if (!foundVerses.contains(i)) {
+                        // generate missing verse
+                        Span verse;
+                        if (mVerseListener == null) {
+                            verse = new VerseSpan(i);
+                        } else {
+                            verse = new VerseBubbleSpan(i);
+                        }
+                        verse.setOnClickListener(mVerseListener);
+                        out = TextUtils.concat(verse.toCharSequence(), out);
+                    }
+                }
+            }
+        }
         return out;
     }
 

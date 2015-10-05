@@ -273,6 +273,11 @@ public class ReviewModeFragment extends ViewModeFragment {
                     PassageLinkSpan link = (PassageLinkSpan)span;
                     scrollToFrame(link.getChapterId(), link.getFrameId());
                 }
+
+                @Override
+                public void onLongClick(View view, Span span, int start, int end) {
+
+                }
             });
 
             title.setText(note.getTitle());

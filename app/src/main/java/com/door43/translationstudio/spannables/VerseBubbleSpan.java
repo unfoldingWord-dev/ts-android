@@ -17,6 +17,10 @@ public class VerseBubbleSpan extends VerseSpan {
 
     private SpannableStringBuilder mSpannable;
 
+    public VerseBubbleSpan(String verse) {
+        super(verse);
+    }
+
     public VerseBubbleSpan(int verse) {
         super(verse);
     }

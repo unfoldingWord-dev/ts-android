@@ -149,7 +149,7 @@ public class Frame {
 
     /**
      * Returns the range of verses that the body spans
-     * @return
+     * @return int[0] if no verses, int[1] if one verse, int[2] if a range of verses
      */
     public int[] getVerseRange() {
         if(mVerses == null) {
@@ -162,7 +162,7 @@ public class Frame {
      * Returns the range of verses that a chunk of text spans
      *
      * @param text
-     * @return new int[0] if no verses, new int[1] if one verse, new int[2] if a range of verses
+     * @return int[0] if no verses, int[1] if one verse, int[2] if a range of verses
      */
     public static int[] getVerseRange(CharSequence text) {
         // locate verse range
