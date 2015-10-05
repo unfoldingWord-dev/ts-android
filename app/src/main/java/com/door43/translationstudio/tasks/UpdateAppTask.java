@@ -131,6 +131,11 @@ public class UpdateAppTask extends ManagedTask {
         FileUtils.deleteQuietly(oldExportDir);
         FileUtils.deleteQuietly(oldImportDir);
         FileUtils.deleteQuietly(oldSharingDir);
+
+        // clear old logs and crash reports
+        Logger.flush();
+        File stacktraceDir = new File(AppContext.context().getExternalCacheDir(), AppContext.context().STACKTRACE_DIR);
+        FileUtils.deleteQuietly(stacktraceDir);
     }
 
     @Override
