@@ -256,7 +256,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // render the target frame body
         if(mRenderedTargetBody[position] == null) {
             FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
-            mRenderedTargetBody[position] = renderTargeText(frameTranslation.body, frameTranslation.getFormat(), frame, holder); //= renderingGroup.start();
+            if(frameTranslation.isFinished()) {
+                mRenderedTargetBody[position] = renderSourceText(frameTranslation.body, frameTranslation.getFormat());
+            } else {
+                mRenderedTargetBody[position] = renderTargeText(frameTranslation.body, frameTranslation.getFormat(), frame, holder);
+            }
         }
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
@@ -495,9 +499,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onClick(View v) {
                 // TODO: display confirmation dialog
                 if(mTargetTranslation.finishFrame(frame)) {
-                    holder.mDoneButton.setVisibility(View.GONE);
-                    holder.mDoneFlag.setVisibility(View.VISIBLE);
-                    holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+                    mRenderedTargetBody[position] = null;
+                    notifyDataSetChanged();
                 } else {
                     Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
@@ -510,9 +513,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onClick(View v) {
                 if(mTargetTranslation.reopenFrame(frame)) {
                     // TODO: display confirmation dialog
-                    holder.mDoneButton.setVisibility(View.VISIBLE);
-                    holder.mDoneFlag.setVisibility(View.GONE);
-                    holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+                    mRenderedTargetBody[position] = null;
+                    notifyDataSetChanged();
                 }
             }
         });
