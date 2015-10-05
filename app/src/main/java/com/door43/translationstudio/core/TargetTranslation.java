@@ -91,11 +91,15 @@ public class TargetTranslation {
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
             manifest.put("slug", projectId);
+            JSONObject generatorJson = new JSONObject();
+            generatorJson.put("name", "ts-android");
+            generatorJson.put("version", 1);
+            manifest.put("generator", generatorJson);
             JSONObject targetLangaugeJson = new JSONObject();
             targetLangaugeJson.put("direction", targetLanguage.direction.toString());
             targetLangaugeJson.put("slug", targetLanguage.code);
             targetLangaugeJson.put("name", targetLanguage.name);
-            // TODO: we should restructure this output to match what we see in the api.
+            // TODO: we should restructure this output to match what we see in the api. if we do we'll need to migrate all the old manifest files.
             // also the target language should have a toJson method that will do all of this.
             manifest.put("target_language", targetLangaugeJson);
         }
