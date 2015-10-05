@@ -27,6 +27,7 @@ public class AppContext {
     private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
     public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     public static final String TARGET_LANGUAGES_FILE = "languages.json";
+    private static final String TARGET_TRANSLATIONS_DIR = "translations";
     private static MainApplication mContext;
     public static final Bundle args = new Bundle();
     private static boolean loaded;
@@ -87,7 +88,7 @@ public class AppContext {
      * @return
      */
     public static Translator getTranslator() {
-        return new Translator(mContext, new File(mContext.getFilesDir(), "translations"));
+        return new Translator(mContext, new File(mContext.getFilesDir(), TARGET_TRANSLATIONS_DIR));
     }
 
     /**

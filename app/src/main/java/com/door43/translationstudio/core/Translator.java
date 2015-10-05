@@ -30,6 +30,14 @@ public class Translator {
     }
 
     /**
+     * Returns the root directory to the target translations
+     * @return
+     */
+    public File getPath() {
+        return mRootDir;
+    }
+
+    /**
      * Returns an array of all active translations
      * @return
      */

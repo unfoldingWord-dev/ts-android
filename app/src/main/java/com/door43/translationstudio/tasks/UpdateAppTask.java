@@ -11,6 +11,11 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+
 /**
  * This tasks performs any upgrades that need to occur between app versions
  */
@@ -59,8 +64,8 @@ public class UpdateAppTask extends ManagedTask {
         if(lastVersion < 87) {
             upgradePre87();
         }
-        if(lastVersion < 100) {
-            upgradePre100();
+        if(lastVersion < 103) {
+            upgradePre103();
         }
     }
 
@@ -68,7 +73,7 @@ public class UpdateAppTask extends ManagedTask {
      * Change default font to noto because most of the others do not work
      */
     private void upgradePre87() {
-        publishProgress(-1, "Upgrading fonts");
+        publishProgress(-1, "Updating fonts");
         Logger.i(this.getClass().getName(), "Upgrading fonts from pre 87");
         SharedPreferences.Editor editor = AppContext.context().getUserPreferences().edit();
         editor.putString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, AppContext.context().getString(R.string.pref_default_translation_typeface));
@@ -79,9 +84,26 @@ public class UpdateAppTask extends ManagedTask {
      * Major changes.
      * Moved to the new object management system.
      */
-    private void upgradePre100() {
-        // TODO: 9/30/2015 migrate old target translations
-        // TODO: 9/30/2015 remove the old source languages
+    private void upgradePre103() {
+        publishProgress(-1, "Updating translations");
+        Logger.i(this.getClass().getName(), "Upgrading source data management from pre 103");
+
+        // migrate target translations
+        File oldTranslationsDir = new File(AppContext.context().getFilesDir(), "git");
+        File newTranslationsDir = AppContext.getTranslator().getPath();
+        try {
+            FileUtils.moveDirectory(oldTranslationsDir, newTranslationsDir);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to migrate the target translations", e);
+        }
+        
+        // remove old source
+        File oldSourceDir = new File(AppContext.context().getFilesDir(), "assets");
+        File oldTempSourceDir = new File(AppContext.context().getCacheDir(), "assets");
+        File oldIndexDir = new File(AppContext.context().getCacheDir(), "index");
+        FileUtils.deleteQuietly(oldSourceDir);
+        FileUtils.deleteQuietly(oldTempSourceDir);
+        FileUtils.deleteQuietly(oldIndexDir);
     }
 
     @Override
