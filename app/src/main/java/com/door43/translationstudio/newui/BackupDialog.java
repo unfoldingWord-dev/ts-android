@@ -21,6 +21,8 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.widget.ViewUtil;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.File;
 import java.security.InvalidParameterException;
 
@@ -140,10 +142,23 @@ public class BackupDialog extends DialogFragment {
         if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
             if(data != null) {
                 File file = new File(data.getData().getPath());
-//                importTranslation(file);
-                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), "Importing translation", Snackbar.LENGTH_LONG);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
+                    try {
+                        AppContext.getTranslator().importArchive(file);
+                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
+                    } catch (Exception e) {
+                        Logger.e(this.getClass().getName(), "Failed to import the archive", e);
+                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
+                    }
+                } else {
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         }
     }

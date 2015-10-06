@@ -56,6 +56,7 @@ public class Zip {
      * @param files
      * @throws IOException
      */
+    @Deprecated
     public static void addFilesToExistingZip(File zipFile, File[] files) throws IOException {
         // get a temp file
         File tempFile = File.createTempFile(zipFile.getName(), null);

@@ -11,6 +11,7 @@ import com.door43.util.Manifest;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +19,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +64,15 @@ public class Translator {
         });
 
         return translations.toArray(new TargetTranslation[translations.size()]);
+    }
+
+    /**
+     * Returns the local translations cache directory.
+     * This is where import and export operations can expand files.
+     * @return
+     */
+    private File getLocalCacheDir() {
+        return new File(mRootDir, "cache");
     }
 
     /**
@@ -165,7 +176,9 @@ public class Translator {
      * @param outputFile
      */
     public void export(TargetTranslation t, File outputFile) throws Exception {
-        Zip.zip(new File[]{t.getPath()}, outputFile);
+        if(!FilenameUtils.getExtension(outputFile.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+            throw new Exception("Not a translationStudio archive");
+        }
 
         // build manifest
         JSONObject manifestJson = new JSONObject();
@@ -186,13 +199,44 @@ public class Translator {
         translationsJson.put(translationJson);
         manifestJson.put("target_translations", translationsJson);
 
-        File tempCache = new File(mRootDir, System.currentTimeMillis()+"");
+        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
             tempCache.mkdirs();
             File manifestFile = new File(tempCache, "manifest.json");
             manifestFile.createNewFile();
             FileUtils.write(manifestFile, manifestJson.toString());
-            Zip.addFilesToExistingZip(outputFile, new File[]{manifestFile});
+            Zip.zip(new File[]{manifestFile, t.getPath()}, outputFile);
+        } catch (Exception e) {
+            FileUtils.deleteQuietly(tempCache);
+            FileUtils.deleteQuietly(outputFile);
+            throw e;
+        }
+
+        // clean
+        FileUtils.deleteQuietly(tempCache);
+    }
+
+    /**
+     * Imports target translations from an archive
+     * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
+     * @param file
+     */
+    public void importArchive(File file) throws Exception {
+        if(!FilenameUtils.getExtension(file.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+            throw new Exception("Not a translationStudio archive");
+        }
+
+        File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        try {
+            tempCache.mkdirs();
+            Zip.unzip(file, tempCache);
+            File[] targetTranslationDirs = Importer.importArchive(tempCache);
+            for(File dir:targetTranslationDirs) {
+                // delete existing translation
+                FileUtils.deleteQuietly(new File(mRootDir, dir.getName()));
+                // import new translation
+                FileUtils.moveDirectory(dir, mRootDir);
+            }
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
             throw e;
