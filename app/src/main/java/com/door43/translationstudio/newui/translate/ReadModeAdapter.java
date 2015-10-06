@@ -136,6 +136,11 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         return -1;
     }
 
+    @Override
+    public void reload() {
+        setSourceTranslation(mSourceTranslation.getId());
+    }
+
 
     @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {

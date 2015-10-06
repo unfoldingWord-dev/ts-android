@@ -232,10 +232,11 @@ public class Translator {
             Zip.unzip(file, tempCache);
             File[] targetTranslationDirs = Importer.importArchive(tempCache);
             for(File dir:targetTranslationDirs) {
+                File newDir = new File(mRootDir, dir.getName());
                 // delete existing translation
-                FileUtils.deleteQuietly(new File(mRootDir, dir.getName()));
+                FileUtils.deleteQuietly(newDir);
                 // import new translation
-                FileUtils.moveDirectory(dir, mRootDir);
+                FileUtils.moveDirectory(dir, newDir);
             }
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);

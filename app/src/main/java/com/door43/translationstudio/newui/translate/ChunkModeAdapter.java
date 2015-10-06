@@ -216,6 +216,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     @Override
+    public void reload() {
+        setSourceTranslation(mSourceTranslation.getId());
+    }
+
+    @Override
     public ViewHolder onCreateManagedViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_chunk_list_item, parent, false);
         ViewHolder vh = new ViewHolder(v);

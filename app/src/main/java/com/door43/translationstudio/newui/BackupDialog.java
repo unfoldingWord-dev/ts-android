@@ -19,6 +19,7 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
+import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FilenameUtils;
@@ -59,6 +60,7 @@ public class BackupDialog extends DialogFragment {
         }
 
         Button uploadButton = (Button)v.findViewById(R.id.upload_to_cloud);
+        uploadButton.setVisibility(View.GONE);
         Button exportToSDButton = (Button)v.findViewById(R.id.export_to_sd);
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
         Button exportToAppButton = (Button)v.findViewById(R.id.export_to_app);
@@ -148,6 +150,10 @@ public class BackupDialog extends DialogFragment {
                         Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
                         ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                         snack.show();
+
+                        // todo: terrible hack.
+                        ((TargetTranslationActivity)getActivity()).notifyDatasetChanged();
+
                     } catch (Exception e) {
                         Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                         Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);

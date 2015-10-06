@@ -113,6 +113,11 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
      */
     public abstract int getItemPosition(String chapterId, String frameId);
 
+    /**
+     * Notifies the adpater that it needs to reload all it's data.
+     */
+    public abstract void reload();
+
     public interface OnEventListener {
         void onSourceTranslationTabClick(String sourceTranslationId);
         void onNewSourceTranslationTabClick();
