@@ -126,6 +126,7 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:visibility="gone"
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_marginTop="@dimen/card_margin"
@@ -145,6 +146,7 @@
                 </LinearLayout>
 
                 <Button
+                    android:visibility="gone"
                     android:id="@+id/export_to_sdcard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -156,6 +158,7 @@
                     android:background="?attr/selectableItemBackground"/>
 
                 <Button
+                    android:visibility="gone"
                     android:id="@+id/export_to_device"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -167,6 +170,7 @@
                     android:background="?attr/selectableItemBackground"/>
 
                 <Button
+                    android:visibility="gone"
                     android:id="@+id/export_to_app"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
