@@ -293,11 +293,17 @@ public class Indexer {
                             e.printStackTrace();
                         }
                         // save frames
+                        String lastFrameId = null;
                         for (int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
                             try {
                                 JSONObject frame = frames.getJSONObject(frameIndex);
                                 String[] complexId = frame.getString("id").split("-");
                                 String frameId = complexId[1];
+                                // TRICKY: a bug in v2 api causes the last frame in the last chapter to have a frame id of "00"
+                                if(lastFrameId != null && Integer.parseInt(frameId) == 0) {
+                                    frameId = String.format("%02d", Integer.parseInt(lastFrameId) + 1);
+                                }
+                                lastFrameId = frameId;
                                 String framePath = chapterId + "/" + frameId;
                                 try {
                                     saveFile(md5hash, framePath, frame.toString());

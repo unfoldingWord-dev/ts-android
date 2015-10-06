@@ -54,14 +54,16 @@ public class TranslationWord {
             return null;
         }
         String id = json.getString("id");
-        JSONArray examplesJson = json.getJSONArray("ex");
         List<Example> examples = new ArrayList<>();
-        for(int i = 0; i < examplesJson.length(); i ++) {
-            JSONObject exampleJson = examplesJson.getJSONObject(i);
-            try {
-                examples.add(new Example(exampleJson.getString("ref"), exampleJson.getString("text")));
-            } catch (InvalidParameterException e) {
-                Logger.e(TranslationWord.class.getName(), "Failed to parse a translation word example for " + id, e);
+        if(json.has("ex")) {
+            JSONArray examplesJson = json.getJSONArray("ex");
+            for (int i = 0; i < examplesJson.length(); i++) {
+                JSONObject exampleJson = examplesJson.getJSONObject(i);
+                try {
+                    examples.add(new Example(exampleJson.getString("ref"), exampleJson.getString("text")));
+                } catch (InvalidParameterException e) {
+                    Logger.e(TranslationWord.class.getName(), "Failed to parse a translation word example for " + id, e);
+                }
             }
         }
         String[] aliases = Util.jsonArrayToString(json.getJSONArray("aliases"));
