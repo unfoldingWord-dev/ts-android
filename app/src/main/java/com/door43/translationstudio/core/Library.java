@@ -804,6 +804,12 @@ public class Library {
                 Logger.e(this.getClass().getName(), "Failed to parse the frame", e);
             }
         }
+        // TRICKY: a bug in the v2 api gives the last frame in the last chapter and id of 00 which messes up the sorting
+        Frame firstFrame = frames.get(0);
+        if(Integer.parseInt(firstFrame.getId()) == 0) {
+            frames.remove(0);
+            frames.add(firstFrame);
+        }
         return frames.toArray(new Frame[frames.size()]);
     }
 

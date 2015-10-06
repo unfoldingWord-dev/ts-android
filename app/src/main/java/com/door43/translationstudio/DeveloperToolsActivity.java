@@ -35,6 +35,7 @@ import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import java.io.File;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 
 public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.OnProgressListener, ManagedTask.OnFinishedListener, DialogInterface.OnCancelListener {
@@ -172,21 +173,15 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 new AlertDialog.Builder(DeveloperToolsActivity.this)
                         .setTitle(R.string.action_download_all)
                         .setMessage(R.string.download_all_confirmation)
-                        .setIcon(R.drawable.icon_update_cloud_blue)
+                        .setIcon(R.drawable.icon_update_cloud_dark)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                GetLibraryUpdatesTask prepTask = (GetLibraryUpdatesTask) TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-                                DownloadAllProjectsTask task = (DownloadAllProjectsTask) TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-                                if(task == null && prepTask == null) {
-                                    // create new prep task
-                                    prepTask = new GetLibraryUpdatesTask();
-                                    prepTask.addOnProgressListener(DeveloperToolsActivity.this);
-                                    prepTask.addOnFinishedListener(DeveloperToolsActivity.this);
-                                    TaskManager.addTask(prepTask, TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-                                } else {
-                                    connectDownloadAllTask();
-                                }
+                                // create new prep task
+                                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
+                                task.addOnProgressListener(DeveloperToolsActivity.this);
+                                task.addOnFinishedListener(DeveloperToolsActivity.this);
+                                TaskManager.addTask(task, GetLibraryUpdatesTask.TASK_ID);
                             }
                         })
                         .setNegativeButton(R.string.no, null)
@@ -263,78 +258,60 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                 snack.show();
             }
         }));
-    }
 
-    public void onResume() {
-        super.onResume();
-        connectDownloadAllTask();
+        if(savedInstanceState != null) {
+            connectDownloadAllTask();
+        }
     }
 
     /**
      * Connects to an existing task
      */
     public void connectDownloadAllTask() {
-        GetLibraryUpdatesTask prepTask = (GetLibraryUpdatesTask)TaskManager.getTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-        DownloadAllProjectsTask task = (DownloadAllProjectsTask)TaskManager.getTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-        if(prepTask != null) {
-            // connect to existing task
-            prepTask.addOnProgressListener(this);
-            prepTask.addOnFinishedListener(this);
-        } else if(task != null) {
-            // connect to existing task
-            task.addOnProgressListener(this);
-            task.addOnFinishedListener(this);
-        } else {
-            onFinished(null);
+        DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+        GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        if(downloadAllTask != null) {
+            downloadAllTask.addOnProgressListener(this);
+            downloadAllTask.addOnFinishedListener(this);
+        }
+        if(getUpdatesTask != null) {
+            getUpdatesTask.addOnProgressListener(this);
+            getUpdatesTask.addOnFinishedListener(this);
         }
     }
 
     @Override
     public void onFinished(final ManagedTask task) {
-        Handler hand = new Handler(Looper.getMainLooper());
-        if(task != null) {
-            TaskManager.clearTask(task.getTaskId());
+        TaskManager.clearTask(task);
 
+        if(task instanceof GetLibraryUpdatesTask) {
+            DownloadAllProjectsTask newTask = new DownloadAllProjectsTask();
+            newTask.addOnProgressListener(this);
+            newTask.addOnFinishedListener(this);
+            TaskManager.addTask(newTask, DownloadAllProjectsTask.TASK_ID);
+        }
+
+        if(task instanceof DownloadAllProjectsTask) {
+            Handler hand = new Handler(Looper.getMainLooper());
             // display success
             hand.post(new Runnable() {
                 @Override
                 public void run() {
                     if (mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
                         mDownloadProgressDialog.dismiss();
-                        mDownloadProgressDialog = null;
-                    }
 
-                    if(!task.isCanceled()) {
-                        if (task instanceof GetLibraryUpdatesTask) {
-                            // start task to download projects
-                            // TODO: finish updating this
-//                            DownloadAllProjectsTask downloadTask = new DownloadAllProjectsTask(((GetLibraryUpdatesTask) task).getProjects(), true);
-//                            downloadTask.addOnProgressListener(DeveloperToolsActivity.this);
-//                            downloadTask.addOnFinishedListener(DeveloperToolsActivity.this);
-//                            TaskManager.addTask(downloadTask, TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-                        } else {
-                            // the download is complete
-                            new AlertDialog.Builder(DeveloperToolsActivity.this)
-                                    .setTitle(R.string.success)
-                                    .setIcon(R.drawable.ic_done_black_24dp)
-                                    .setMessage(R.string.download_complete)
-                                    .setCancelable(false)
-                                    .setPositiveButton(R.string.label_ok, null)
-                                    .show();
-                        }
                     }
-                }
-            });
-        } else {
-            // dismiss everything
-            TaskManager.clearTask(TASK_PREP_FORCE_DOWNLOAD_ALL_PROJECTS);
-            TaskManager.clearTask(TASK_FORCE_DOWNLOAD_ALL_PROJECTS);
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mDownloadProgressDialog != null && mDownloadProgressDialog.isShowing()) {
-                        mDownloadProgressDialog.dismiss();
-                        mDownloadProgressDialog = null;
+                    mDownloadProgressDialog = null;
+
+                    if (!task.isCanceled()) {
+                        // the download is complete
+                        new AlertDialog.Builder(DeveloperToolsActivity.this)
+                                .setTitle(R.string.success)
+                                .setIcon(R.drawable.ic_done_black_24dp)
+                                .setMessage(R.string.download_complete)
+                                .setCancelable(false)
+                                .setPositiveButton(R.string.label_ok, null)
+                                .show();
                     }
                 }
             });
@@ -342,7 +319,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
     }
 
     @Override
-    public void onProgress(final ManagedTask task, final double progress, final String message, boolean secondary) {
+    public void onProgress(final ManagedTask task, final double progress, final String message, final boolean secondary) {
         if(!task.isFinished()) {
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
@@ -355,37 +332,42 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                         }
                         return;
                     }
+
                     if (mDownloadProgressDialog == null) {
                         mDownloadProgressDialog = new ProgressDialog(DeveloperToolsActivity.this);
-                        mDownloadProgressDialog.setCancelable(true);
+                        mDownloadProgressDialog.setCancelable(false); // TODO: need to update the download method to support cancelling
                         mDownloadProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mDownloadProgressDialog.setCanceledOnTouchOutside(false);
-                        mDownloadProgressDialog.setOnCancelListener(DeveloperToolsActivity.this);
-                        mDownloadProgressDialog.setMax(100);
-                        mDownloadProgressDialog.setIcon(R.drawable.icon_update_cloud_blue);
+//                        mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
+                        mDownloadProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
                         if(task instanceof GetLibraryUpdatesTask) {
-                            mDownloadProgressDialog.setTitle(getResources().getString(R.string.loading));
-                        } else {
+                            mDownloadProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
+                        } else if(task instanceof DownloadAllProjectsTask) {
                             mDownloadProgressDialog.setTitle(getResources().getString(R.string.downloading));
                         }
                         mDownloadProgressDialog.setMessage("");
                     }
+                    mDownloadProgressDialog.setMax(task.maxProgress());
                     if (!mDownloadProgressDialog.isShowing()) {
                         mDownloadProgressDialog.show();
                     }
                     if (progress == -1) {
                         mDownloadProgressDialog.setIndeterminate(true);
                         mDownloadProgressDialog.setProgress(mDownloadProgressDialog.getMax());
+                        mDownloadProgressDialog.setProgressNumberFormat(null);
+                        mDownloadProgressDialog.setProgressPercentFormat(null);
                     } else {
                         mDownloadProgressDialog.setIndeterminate(false);
-                        mDownloadProgressDialog.setProgress((int) Math.ceil(progress * 100));
-                    }
-                    if (!message.isEmpty()) {
-                        if(task instanceof GetLibraryUpdatesTask) {
-                            mDownloadProgressDialog.setMessage(message);
+                        if(secondary) {
+                            mDownloadProgressDialog.setSecondaryProgress((int) progress);
                         } else {
-                            mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
+                            mDownloadProgressDialog.setProgress((int) progress);
                         }
+                        mDownloadProgressDialog.setProgressNumberFormat("%1d/%2d");
+                        mDownloadProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
+                    }
+                    if (task instanceof DownloadAllProjectsTask && !message.isEmpty()) {
+                        mDownloadProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
                     } else {
                         mDownloadProgressDialog.setMessage("");
                     }
