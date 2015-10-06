@@ -53,7 +53,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param sourceTranslationId
      * @return
      */
-    abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId);
+    abstract ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras);
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -82,7 +82,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
             mLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLayoutManager);
             mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-            mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId);
+            mAdapter = generateAdapter(this.getActivity(), targetTranslationId, mSourceTranslationId, chapterId, frameId, args);
             mRecyclerView.setAdapter(mAdapter);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
@@ -391,8 +391,8 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * Opens a translation mode
      * @param mode
      */
-    public void openTranslationMode(TranslationViewMode mode) {
-        mListener.openTranslationMode(mode);
+    public void openTranslationMode(TranslationViewMode mode, Bundle extras) {
+        mListener.openTranslationMode(mode, extras);
     }
 
     public interface OnEventListener {
@@ -420,6 +420,6 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
          * Opens a particular translation mode
          * @param mode
          */
-        void openTranslationMode(TranslationViewMode mode);
+        void openTranslationMode(TranslationViewMode mode, Bundle extras);
     }
 }

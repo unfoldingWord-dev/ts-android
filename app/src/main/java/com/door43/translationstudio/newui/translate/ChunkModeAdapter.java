@@ -73,7 +73,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     private int mLayoutBuildNumber = 0;
     private ContentValues[] mTabs;
 
-    public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
+    public ChunkModeAdapter(Activity context, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, boolean openSelectedTarget) {
         mLibrary = AppContext.getLibrary();
         mTranslator = AppContext.getTranslator();
         mContext = context;
@@ -115,6 +115,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         }
         mFrames = frames.toArray(new Frame[frames.size()]);
         mTargetStateOpen = new boolean[mFrames.length];
+        mTargetStateOpen[getListStartPosition()] = openSelectedTarget;
         mRenderedSourceBody = new CharSequence[mFrames.length];
         mRenderedTargetBody = new CharSequence[mFrames.length];
 

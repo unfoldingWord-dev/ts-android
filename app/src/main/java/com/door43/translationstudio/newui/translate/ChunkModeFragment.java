@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 
@@ -9,9 +10,15 @@ import android.view.MotionEvent;
  */
 public class ChunkModeFragment extends ViewModeFragment {
 
+    public static final String EXTRA_TARGET_OPEN = "extra_target_start_open";
+
     @Override
-    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
-        return new ChunkModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId);
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras) {
+        boolean openTarget = false;
+        if(extras != null && extras.containsKey(EXTRA_TARGET_OPEN)) {
+            openTarget = extras.getBoolean(EXTRA_TARGET_OPEN, false);
+        }
+        return new ChunkModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId, openTarget);
     }
 
     @Override

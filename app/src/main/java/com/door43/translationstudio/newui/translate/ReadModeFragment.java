@@ -1,6 +1,7 @@
 package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 
@@ -10,7 +11,7 @@ import android.view.MotionEvent;
 public class ReadModeFragment extends ViewModeFragment {
 
     @Override
-    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId) {
+    ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras) {
         return new ReadModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId);
     }
 

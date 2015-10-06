@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
@@ -122,7 +123,7 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onSourceTranslationTabClick(String sourceTranslationId);
         void onNewSourceTranslationTabClick();
         void closeKeyboard();
-        void openTranslationMode(TranslationViewMode mode);
+        void openTranslationMode(TranslationViewMode mode, Bundle extras);
         void onTranslationWordClick(String translationWordId, int width);
         void onTranslationNoteClick(String chapterId, String frameId, String translationNoteId, int width);
         void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width);

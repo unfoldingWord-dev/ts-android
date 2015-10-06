@@ -207,21 +207,21 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.READ);
+                openTranslationMode(TranslationViewMode.READ, null);
             }
         });
 
         mChunkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.CHUNK);
+                openTranslationMode(TranslationViewMode.CHUNK, null);
             }
         });
 
         mReviewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openTranslationMode(TranslationViewMode.REVIEW);
+                openTranslationMode(TranslationViewMode.REVIEW, null);
             }
         });
 
@@ -267,7 +267,13 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     @Override
-    public void openTranslationMode(TranslationViewMode mode) {
+    public void openTranslationMode(TranslationViewMode mode, Bundle extras) {
+        Bundle fragmentExtras = new Bundle();
+        fragmentExtras.putAll(getIntent().getExtras());
+        if(extras != null) {
+            fragmentExtras.putAll(extras);
+        }
+
         // close the keyboard when switching between modes
         if(getCurrentFocus() != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -286,7 +292,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
                 if(mFragment instanceof ReadModeFragment == false) {
                     mFragment = new ReadModeFragment();
-                    mFragment.setArguments(getIntent().getExtras());
+                    mFragment.setArguments(fragmentExtras);
+
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
                     // TODO: animate
                     // TODO: udpate menu
@@ -297,7 +304,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
                 if(mFragment instanceof  ChunkModeFragment == false) {
                     mFragment = new ChunkModeFragment();
-                    mFragment.setArguments(getIntent().getExtras());
+                    mFragment.setArguments(fragmentExtras);
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
                     // TODO: animate
                     // TODO: udpate menu
@@ -308,7 +315,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
                 if(mFragment instanceof  ReviewModeFragment == false) {
                     mFragment = new ReviewModeFragment();
-                    mFragment.setArguments(getIntent().getExtras());
+                    mFragment.setArguments(fragmentExtras);
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
                     // TODO: animate
                     // TODO: udpate menu

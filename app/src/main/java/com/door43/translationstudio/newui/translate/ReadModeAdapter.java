@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
@@ -238,7 +239,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             }
         });
 
-        Chapter chapter = mChapters[position];
+        final Chapter chapter = mChapters[position];
 
         // render the source chapter body
         if(mRenderedSourceBody[position] == null) {
@@ -300,7 +301,10 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
             final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onSingleTapUp(MotionEvent e) {
-                    getListener().openTranslationMode(TranslationViewMode.CHUNK);
+                    Bundle args = new Bundle();
+                    args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
+                    args.putString(TargetTranslationActivity.EXTRA_CHAPTER_ID, chapter.getId());
+                    getListener().openTranslationMode(TranslationViewMode.CHUNK, args);
                     return true;
                 }
             });

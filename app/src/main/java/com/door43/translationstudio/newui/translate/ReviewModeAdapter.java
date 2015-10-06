@@ -7,6 +7,7 @@ import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -44,6 +45,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
+import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
@@ -251,7 +253,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mSourceBody.setText(mRenderedSourceBody[position]);
 
         // render source frame title (we don't actually set the source title)
-        Chapter chapter = mChapters.get(frame.getChapterId());
+        final Chapter chapter = mChapters.get(frame.getChapterId());
         String sourceChapterTitle = chapter.title;
         if(chapter.title.isEmpty()) {
             sourceChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
@@ -348,16 +350,24 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
-        holder.mEditButton.setOnClickListener(new View.OnClickListener() {
+        // open blind draft mode
+        final GestureDetector editButtonDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
-            public void onClick(View v) {
-                // TODO: 10/1/2015 enable editing the text
-//                holder.mTargetBody.setFocusableInTouchMode(true);
-//                holder.mTargetBody.setFocusable(true);
-                // TODO: 10/1/2015 display button to disable editing
+            public boolean onSingleTapUp(MotionEvent e) {
+                Bundle args = new Bundle();
+                args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
+                args.putString(TargetTranslationActivity.EXTRA_CHAPTER_ID, chapter.getId());
+                args.putString(TargetTranslationActivity.EXTRA_FRAME_ID, frame.getId());
+                getListener().openTranslationMode(TranslationViewMode.CHUNK, args);
+                return true;
             }
         });
-        holder.mEditButton.setVisibility(View.INVISIBLE);// TODO temporary
+        holder.mEditButton.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return editButtonDetector.onTouchEvent(event);
+            }
+        });
 
         holder.mTextWatcher = new TextWatcher() {
             @Override
@@ -524,10 +534,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
         if(frameTranslation.isFinished()) {
+            holder.mEditButton.setVisibility(View.GONE);
             holder.mDoneButton.setVisibility(View.GONE);
             holder.mDoneFlag.setVisibility(View.VISIBLE);
             holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         } else {
+            holder.mEditButton.setVisibility(View.VISIBLE);
             holder.mDoneButton.setVisibility(View.VISIBLE);
             holder.mDoneFlag.setVisibility(View.GONE);
             holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
@@ -536,7 +548,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(!mResourcesOpened) {
             holder.mResourceLayout.setVisibility(View.INVISIBLE);
             // TRICKY: we have to detect a single tap so that swipes do not trigger this
-            final GestureDetector detector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
+            final GestureDetector resourceCardDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onSingleTapUp(MotionEvent e) {
                     if (!mResourcesOpened) {
@@ -548,7 +560,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mResourceCard.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    return detector.onTouchEvent(event);
+                    return resourceCardDetector.onTouchEvent(event);
                 }
             });
         } else {
