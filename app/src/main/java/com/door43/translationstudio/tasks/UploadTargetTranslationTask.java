@@ -120,7 +120,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
         Git git;
         try {
             git = repo.getGit();
-        } catch (StopTaskException e1) {
+        } catch (IOException e1) {
             return null;
         }
         // TODO: we might want to get some progress feedback for the user
@@ -223,7 +223,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
                 commit.setMessage("auto save");
                 commit.call();
             }
-        } catch (StopTaskException e) {
+        } catch (IOException e) {
             Logger.e(this.getClass().getName(), e.getMessage(), e);
             mUploadSucceeded = false;
             return false;

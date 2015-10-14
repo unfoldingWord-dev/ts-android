@@ -13,6 +13,7 @@ import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -77,7 +78,7 @@ public class PushTask extends RepoOpTask {
         Git git;
         try {
             git = mRepo.getGit();
-        } catch (StopTaskException e1) {
+        } catch (IOException e1) {
             return false;
         }
         PushCommand pushCommand = git.push().setPushTags()

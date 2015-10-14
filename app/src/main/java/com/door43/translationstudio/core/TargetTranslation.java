@@ -12,6 +12,10 @@ import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -470,14 +474,38 @@ public class TargetTranslation {
     }
 
     /**
-     * Commits any outstanding changes to the git repository
-     * @param callback an optional callback
+     * Stages and commits changes to the repository
+     * @throws Exception
      */
-    public void commit(CommitTask.OnAddComplete callback) {
-        // TODO: don't use a callback but perform on the same thread.
-        Repo repo = getRepo();
-        CommitTask commit = new CommitTask(repo, ".", callback);
-        commit.executeTask();
+    public void commit() throws Exception {
+        commit(".");
+    }
+
+    /**
+     * Stages and commits changes to the repository
+     * @param filePattern the file pattern that will be used to match files for staging
+     */
+    public void commit(String filePattern) throws Exception {
+        Git git = getRepo().getGit();
+
+        // check if dirty
+        try {
+            if(git.status().call().isClean()) {
+                return;
+            }
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+        }
+
+        // stage changes
+        AddCommand add = git.add();
+        add.addFilepattern(filePattern).call();
+
+        // commit changes
+        CommitCommand commit = git.commit();
+        commit.setAll(true);
+        commit.setMessage("auto save");
+        commit.call();
     }
 
     /**
@@ -515,7 +543,7 @@ public class TargetTranslation {
      * Sets whether or not this target translation is publishable
      * @param publishable
      */
-    public void setPublishable(boolean publishable) {
+    public void setPublishable(boolean publishable) throws Exception {
         File readyFile = new File(mTargetTranslationDirectory, "READY");
         if(publishable) {
             try {
@@ -526,7 +554,7 @@ public class TargetTranslation {
         } else {
             readyFile.delete();
         }
-        commit(null);
+        commit();
     }
 
     /**

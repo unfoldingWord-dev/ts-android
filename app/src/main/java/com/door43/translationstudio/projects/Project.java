@@ -919,24 +919,22 @@ public class Project implements Model {
      * @return
      */
     public String getLocalTranslationVersion(Language l) {
-        Repo repo = new Repo(getRepositoryPath(getId(), l.getId()));
-        try {
-            Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
-            RevCommit commit = null;
-            for(RevCommit c : commits) {
-                commit = c;
-            }
-            if(commit != null) {
-                String[] pieces = commit.toString().split(" ");
-                return pieces[1];
-            } else {
-                return null;
-            }
-        } catch (GitAPIException e) {
-            Logger.e(this.getClass().getName(), "failed to fetch the git commit", e);
-        } catch (StopTaskException e) {
-            Logger.e(this.getClass().getName(), "the task was stopped", e);
-        }
+//        Repo repo = new Repo(getRepositoryPath(getId(), l.getId()));
+//        try {
+//            Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+//            RevCommit commit = null;
+//            for(RevCommit c : commits) {
+//                commit = c;
+//            }
+//            if(commit != null) {
+//                String[] pieces = commit.toString().split(" ");
+//                return pieces[1];
+//            } else {
+//                return null;
+//            }
+//        } catch (GitAPIException e) {
+//            Logger.e(this.getClass().getName(), "failed to fetch the git commit", e);
+//        }
         return null;
     }
 

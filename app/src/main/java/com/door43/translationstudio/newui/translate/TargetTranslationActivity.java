@@ -229,17 +229,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mCommitTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                mTargetTranslation.commit(new CommitTask.OnAddComplete() {
-                    @Override
-                    public void success() {
-                        Logger.i(TargetTranslationActivity.class.getName(), "Committed the latest translation for " + targetTranslationId);
-                    }
-
-                    @Override
-                    public void error(Throwable e) {
-                        Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
-                    }
-                });
+                try {
+                    mTargetTranslation.commit();
+                } catch (Exception e) {
+                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to commit the latest translation of " + targetTranslationId, e);
+                }
             }
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
@@ -356,7 +350,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     @Override
     public void onDestroy() {
         mCommitTimer.cancel();
-        mTargetTranslation.commit(null);
+        try {
+            mTargetTranslation.commit();
+        } catch (Exception e) {
+            Logger.e(this.getClass().getName(), "Failed to commit changes before closing translation", e);
+        }
         super.onDestroy();
     }
 

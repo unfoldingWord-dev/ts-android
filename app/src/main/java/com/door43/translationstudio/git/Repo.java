@@ -85,19 +85,13 @@ public class Repo {
         return new File(getLocalPath());
     }
 
-    public Git getGit() throws StopTaskException {
-        if (mGit != null)
+    public Git getGit() throws IOException {
+        if (mGit != null) {
             return mGit;
-        try {
+        } else {
             File repoFile = getDir();
             mGit = Git.open(repoFile);
             return mGit;
-        } catch (RepositoryNotFoundException e) {
-            AppContext.context().showException(e, R.string.error_repository_not_found);
-            throw new StopTaskException();
-        } catch (IOException e) {
-            AppContext.context().showException(e);
-            throw new StopTaskException();
         }
     }
 
@@ -124,7 +118,6 @@ public class Repo {
             return getGit().getRepository().getFullBranch();
         } catch (IOException e) {
             AppContext.context().showException(e);
-        } catch (StopTaskException e) {
         }
         return "";
     }
@@ -151,7 +144,8 @@ public class Repo {
             Set<String> remotes = config.getSubsections("remote");
             mRemotes = new HashSet<String>(remotes);
             return mRemotes;
-        } catch (StopTaskException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return new HashSet<String>();
     }
@@ -170,11 +164,12 @@ public class Repo {
             config.setString("remote", remote, "fetch", fetch);
             config.save();
             mRemotes.add(remote);
-        } catch (StopTaskException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    public StoredConfig getStoredConfig() throws StopTaskException {
+    public StoredConfig getStoredConfig() throws IOException {
         if (mStoredConfig == null) {
             mStoredConfig = getGit().getRepository().getConfig();
         }

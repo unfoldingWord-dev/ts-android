@@ -104,6 +104,14 @@ public class BackupService extends Service {
         TargetTranslation[] targetTranslations = translator.getTargetTranslations();
         for(TargetTranslation t:targetTranslations) {
 
+            // commit pending changes
+            try {
+                t.commit();
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to commit changes before backing up", e);
+                continue;
+            }
+
             // retreive commit hash
             String tag;
             try {

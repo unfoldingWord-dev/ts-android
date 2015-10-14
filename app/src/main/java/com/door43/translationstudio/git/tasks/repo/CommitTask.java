@@ -8,6 +8,8 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
+import java.io.IOException;
+
 public class CommitTask extends RepoOpTask {
 
     private String mFilePattern;
@@ -40,7 +42,7 @@ public class CommitTask extends RepoOpTask {
         Git git = null;
         try {
             git = mRepo.getGit();
-        } catch (StopTaskException e) {
+        } catch (IOException e) {
             setException(e);
             return false;
         }

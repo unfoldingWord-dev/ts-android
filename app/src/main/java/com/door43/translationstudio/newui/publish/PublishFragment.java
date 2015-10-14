@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.TargetTranslation;
@@ -95,7 +96,13 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             @Override
             public void onClick(View v) {
                 if(AppContext.context().isNetworkAvailable()) {
-                    targetTranslation.setPublishable(true);
+                    try {
+                        targetTranslation.setPublishable(true);
+                    } catch (Exception e) {
+                        Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
+                        notifyPublishFailed(targetTranslation);
+                        return;
+                    }
                     // begin upload
                     UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
                     mTaskWatcher.watch(task);
@@ -189,38 +196,47 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             });
         } else {
-            final TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
-            final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle(R.string.success)
-                    .setMessage(R.string.upload_failed)
-                    .setPositiveButton(R.string.label_ok, null)
-                    .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-
-                            // open bug report dialog
-                            FragmentTransaction ft = getFragmentManager().beginTransaction();
-                            Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
-                            if (prev != null) {
-                                ft.remove(prev);
-                            }
-                            ft.addToBackStack(null);
-
-                            FeedbackDialog dialog = new FeedbackDialog();
-                            Bundle args = new Bundle();
-                            String message = "Failed to publish the translation of " +
-                                    project.name + " into " +
-                                    targetTranslation.getTargetLanguageName()
-                                    + ".\ntargetTranslation: " + targetTranslation.getId() +
-                                    "\n--------\n\n";
-                            args.putString(FeedbackDialog.ARG_MESSAGE, message);
-                            dialog.setArguments(args);
-                            dialog.show(ft, "bugDialog");
-                        }
-                    }).show();
+            TargetTranslation targetTranslation = ((UploadTargetTranslationTask)task).getTargetTranslation();
+            notifyPublishFailed(targetTranslation);
         }
+    }
+
+    /**
+     * Displays a dialog to the user indicating the publish failed.
+     * Includes an option to submit a bug report
+     * @param targetTranslation
+     */
+    private void notifyPublishFailed(final TargetTranslation targetTranslation) {
+        final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle(R.string.success)
+                .setMessage(R.string.upload_failed)
+                .setPositiveButton(R.string.label_ok, null)
+                .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+
+                        // open bug report dialog
+                        FragmentTransaction ft = getFragmentManager().beginTransaction();
+                        Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
+                        if (prev != null) {
+                            ft.remove(prev);
+                        }
+                        ft.addToBackStack(null);
+
+                        FeedbackDialog dialog = new FeedbackDialog();
+                        Bundle args = new Bundle();
+                        String message = "Failed to publish the translation of " +
+                                project.name + " into " +
+                                targetTranslation.getTargetLanguageName()
+                                + ".\ntargetTranslation: " + targetTranslation.getId() +
+                                "\n--------\n\n";
+                        args.putString(FeedbackDialog.ARG_MESSAGE, message);
+                        dialog.setArguments(args);
+                        dialog.show(ft, "bugDialog");
+                    }
+                }).show();
     }
 
     @Override
