@@ -66,8 +66,14 @@ public class TranslationWord {
                 }
             }
         }
-        String[] aliases = Util.jsonArrayToString(json.getJSONArray("aliases"));
-        String[] seeAlso = Util.jsonArrayToString(json.getJSONArray("cf"));
+        String[] aliases = new String[0];
+        if(json.has("aliases")) {
+            aliases = Util.jsonArrayToString(json.getJSONArray("aliases"));
+        }
+        String[] seeAlso = new String[0];
+        if(json.has("cf")) {
+            Util.jsonArrayToString(json.getJSONArray("cf"));
+        }
         String word = json.getString("term");
         String def = json.getString("def");
         String defTitle = json.getString("def_title");
