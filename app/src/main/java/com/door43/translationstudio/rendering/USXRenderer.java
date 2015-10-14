@@ -176,10 +176,10 @@ public class USXRenderer extends RenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            NoteSpan verse = NoteSpan.parseNote(matcher.group());
-            if(verse != null) {
-                verse.setOnClickListener(mNoteListener);
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+            NoteSpan note = NoteSpan.parseNote(matcher.group());
+            if(note != null) {
+                note.setOnClickListener(mNoteListener);
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), note.toCharSequence());
             } else {
                 // failed to parse the note
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));
