@@ -1,5 +1,7 @@
 package com.door43.translationstudio.spannables;
 
+import java.util.regex.Pattern;
+
 /**
  * Represents a char element according to the usx specification
  * See http://dbl.ubs-icap.org:8090/display/DBLDOCS/USX#USX-char
@@ -19,11 +21,22 @@ public class Char {
     public static final String STYLE_FOOTNOTE_VERSE = "fv";
     public static final String STYLE_FOOTNOTE_DEUTEROCANONICAL_APOCRYPHA = "fdc";
 
+    // selah styles
+    public static final String STYLE_SELAH = "qs";
+
     public final String style;
     public final CharSequence value;
 
     public Char(String style, CharSequence value) {
         this.style = style.trim().toLowerCase();
         this.value = value;
+    }
+
+    /**
+     * Returns the compiled pattern to match this char
+     * @return
+     */
+    public static Pattern getPattern(String style) {
+        return Pattern.compile("<char\\s+style=\"" + style + "\"\\s*>\\s*(((?!</char>).)*)</char>", Pattern.DOTALL);
     }
 }
