@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -51,7 +52,12 @@ public class AppContext {
         // NOTE: rather than keeping the library around we rebuild it so that changes to the user settings will work
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
         String rootApiUrl = server + mContext.getResources().getString(R.string.root_catalog_api);
-        return new Library(mContext, new File(mContext.getFilesDir(), "library"), new File(mContext.getCacheDir(), "library"), rootApiUrl);
+        try {
+            return new Library(mContext, new File(mContext.getFilesDir(), "library"), new File(mContext.getCacheDir(), "library"), rootApiUrl);
+        } catch (IOException e) {
+            Logger.e(AppContext.class.getName(), "Failed to create the library", e);
+        }
+        return null;
     }
 
     /**

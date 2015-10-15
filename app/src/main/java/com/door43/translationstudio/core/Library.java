@@ -52,7 +52,7 @@ public class Library {
      * @param rootApiUrl
      * @param server when true will cause the library to operate off of the server index (just for reading)
      */
-    private Library(Context context, File libraryDir, File cacheDir, String rootApiUrl, boolean server) {
+    private Library(Context context, File libraryDir, File cacheDir, String rootApiUrl, boolean server) throws IOException {
         initalizeHelpers(context);
         mContext = context;
         mLibraryDir = libraryDir;
@@ -66,7 +66,7 @@ public class Library {
         mAsServerLibrary = server;
     }
 
-    public Library(Context context, File libraryDir, File cacheDir, String rootApiUrl) {
+    public Library(Context context, File libraryDir, File cacheDir, String rootApiUrl) throws IOException {
         initalizeHelpers(context);
         mContext = context;
         mLibraryDir = libraryDir;
@@ -84,7 +84,7 @@ public class Library {
      * Initializes the static index sqlite helpers
      * @param context
      */
-    private synchronized static void initalizeHelpers(Context context) {
+    private synchronized static void initalizeHelpers(Context context) throws IOException {
         if(serverIndexHelper == null) {
             serverIndexHelper = new IndexerSQLiteHelper(context, "server");
         }
@@ -121,7 +121,12 @@ public class Library {
      * @return
      */
     public Library getServerLibrary() {
-        return new Library(mContext, mLibraryDir, mCacheDir, mRootApiUrl, true);
+        try {
+            return new Library(mContext, mLibraryDir, mCacheDir, mRootApiUrl, true);
+        } catch (IOException e) {
+            Logger.e(this.getClass().getName(), "Failed to create the library", e);
+        }
+        return null;
     }
 
     /**

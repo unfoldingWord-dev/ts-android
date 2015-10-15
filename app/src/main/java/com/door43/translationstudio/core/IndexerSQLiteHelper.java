@@ -13,6 +13,7 @@ import com.door43.util.StringUtilities;
 
 import org.apache.commons.io.FilenameUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,21 +29,31 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     private static final int DATABASE_VERSION = 1;
     private static final long ROOT_FILE_ID = 1;
     private final String mDatabaseName;
+    private final String mSchema;
 
-    public IndexerSQLiteHelper(Context context, String name) {
+    /**
+     * Creates a new sql helper for the indexer.
+     * This currently expects an asset named schema.sql
+     * @param context
+     * @param name
+     * @throws IOException
+     */
+    public IndexerSQLiteHelper(Context context, String name) throws IOException {
         super(context, name, null, DATABASE_VERSION);
+        mSchema = Util.readStream(context.getAssets().open("schema.sql"));
         mDatabaseName = name;
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String fileTable = "CREATE TABLE `file` ( `file_id`  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE, `name`  text NOT NULL, `parent_id` INTEGER NOT NULL DEFAULT 0, `catalog_hash`  text NOT NULL, `content` text, `is_dir`  INTEGER NOT NULL DEFAULT 0, UNIQUE (name, parent_id, catalog_hash) ON CONFLICT REPLACE, FOREIGN KEY (parent_id) REFERENCES file(file_id) ON DELETE CASCADE);";
-        String linkTable ="CREATE TABLE `link` ( `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL, PRIMARY KEY(name));";
-        db.execSQL(fileTable);
-        db.execSQL(linkTable);
+        db.execSQL(mSchema);
+//        String fileTable = "CREATE TABLE `file` ( `file_id`  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE, `name`  text NOT NULL, `parent_id` INTEGER NOT NULL DEFAULT 0, `catalog_hash`  text NOT NULL, `content` text, `is_dir`  INTEGER NOT NULL DEFAULT 0, UNIQUE (name, parent_id, catalog_hash) ON CONFLICT REPLACE, FOREIGN KEY (parent_id) REFERENCES file(file_id) ON DELETE CASCADE);";
+//        String linkTable ="CREATE TABLE `link` ( `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL, PRIMARY KEY(name));";
+//        db.execSQL(fileTable);
+//        db.execSQL(linkTable);
 
         // TRICKY: this root file must be added before the foreign key constraints are enabled
-        replaceFile(db, "N/A", "root", "Do not remove me", ROOT_FILE_ID);
+//        replaceFile(db, "N/A", "root", "Do not remove me", ROOT_FILE_ID);
 
         // TRICKY: onConfigure is not available for API < 16
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
