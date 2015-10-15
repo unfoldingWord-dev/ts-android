@@ -81,7 +81,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
     @Override
     public void onItemClick(String projectId) {
         Translator translator = AppContext.getTranslator();
-        TargetTranslation existingTranslation = translator.getTargetTranslation(mSelectedTargetLanguage.getId(), projectId);
+        TargetTranslation existingTranslation = translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId(mSelectedTargetLanguage.getId(), projectId));
         if(existingTranslation == null) {
             // create new target translation
             TargetTranslation targetTranslation = AppContext.getTranslator().createTargetTranslation(mSelectedTargetLanguage, projectId);

@@ -42,7 +42,7 @@ public class TargetTranslation {
     public TargetTranslation(String targetLanguageId, String projectId, File rootDir) {
         mTargetLanguageId = targetLanguageId;
         mProjectId = projectId;
-        mTargetTranslationDirectory = generateTargetTranslationDir(targetLanguageId, projectId, rootDir);;
+        mTargetTranslationDirectory = generateTargetTranslationDir(generateTargetTranslationId(targetLanguageId, projectId), rootDir);;
         mManifest = Manifest.generate(mTargetTranslationDirectory);
         String name = targetLanguageId;
         try {
@@ -123,7 +123,7 @@ public class TargetTranslation {
      */
     public static TargetTranslation generate(Context context, TargetLanguage targetLanguage, String projectId, File mRootDir) throws Exception {
         // generate new target translation if it does not exist
-        File translationDir = generateTargetTranslationDir(targetLanguage.getId(), projectId, mRootDir);
+        File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), mRootDir);
         if(!translationDir.exists()) {
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
@@ -152,7 +152,7 @@ public class TargetTranslation {
      * @param projectId
      * @return
      */
-    private static String generateTargetTranslationId(String targetLanguageId, String projectId) {
+    public static String generateTargetTranslationId(String targetLanguageId, String projectId) {
         return GLOBAL_PROJECT_ID + "-" + projectId + "-" + targetLanguageId;
     }
 
@@ -192,13 +192,11 @@ public class TargetTranslation {
     /**
      * Generates the file to the directory where the target translation is located
      *
-     * @param targetLanguageId the language to which the project is being translated
-     * @param projectId the id of the project that is being translated
+     * @param targetTranslationId the language to which the project is being translated
      * @param rootDir the directory where the target translations are stored
      * @return
      */
-    public static File generateTargetTranslationDir(String targetLanguageId, String projectId, File rootDir) {
-        String targetTranslationId = generateTargetTranslationId(targetLanguageId, projectId);
+    public static File generateTargetTranslationDir(String targetTranslationId, File rootDir) {
         return new File(rootDir, targetTranslationId);
     }
 

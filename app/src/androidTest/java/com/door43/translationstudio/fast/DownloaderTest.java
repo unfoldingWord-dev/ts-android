@@ -1,6 +1,7 @@
 package com.door43.translationstudio.fast;
 
 import android.test.AndroidTestCase;
+import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.MainApplication;
 import com.door43.translationstudio.R;
@@ -18,7 +19,8 @@ import java.io.File;
 /**
  * Created by joel on 8/27/2015.
  */
-public class DownloaderTest extends AndroidTestCase {
+public class DownloaderTest extends InstrumentationTestCase {
+
     private Downloader mDownloader;
     private Indexer mIndex;
     private File mIndexRoot;
@@ -34,6 +36,7 @@ public class DownloaderTest extends AndroidTestCase {
     }
 
     public void test1DownloadProjects() throws Exception {
+        mIndex.destroy();
         FileUtils.deleteQuietly(mIndexRoot);
         mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadProjectList());
