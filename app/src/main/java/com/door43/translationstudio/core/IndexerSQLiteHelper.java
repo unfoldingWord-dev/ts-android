@@ -42,7 +42,14 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(mSchema);
+        try {
+            String[] queries = mSchema.split(";");
+            for (String query : queries) {
+                db.execSQL(query);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // TRICKY: onConfigure is not available for API < 16
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
@@ -201,7 +208,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public void addSourceLanguageCategories(SQLiteDatabase db, long projectId, long sourceLanguageId, String[] categoryNames) {
         if(categoryNames != null && categoryNames.length > 0) {
-            Cursor cursor = db.rawQuery("SELECT `id` from `category` AS `c`"
+            Cursor cursor = db.rawQuery("SELECT `c`.`id` from `category` AS `c`"
                     + " LEFT JOIN `project__category` AS `pc` ON `pc`.`category_id`=`c`.`id`"
                     + " WHERE `pc`.`project_id`=" + projectId, null);
             if (cursor.moveToFirst()) {
@@ -450,6 +457,42 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public String[] getProjectSlugs(SQLiteDatabase db) {
         Cursor cursor = db.rawQuery("SELECT `slug` FROM `project` ORDER BY `sort` DESC", null);
+        cursor.moveToFirst();
+        List<String> slugs = new ArrayList<>();
+        while(!cursor.isAfterLast()) {
+            slugs.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return slugs.toArray(new String[slugs.size()]);
+    }
+
+    /**
+     * Returns an array of sorted source language slugs
+     * @param db
+     * @param projectId
+     * @return
+     */
+    public String[] getSourceLanguageSlugs(SQLiteDatabase db, long projectId) {
+        Cursor cursor = db.rawQuery("SELECT `slug` FROM `source_language` WHERE `project_id`=" + projectId + " ORDER BY `slug` DESC", null);
+        cursor.moveToFirst();
+        List<String> slugs = new ArrayList<>();
+        while(!cursor.isAfterLast()) {
+            slugs.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return slugs.toArray(new String[slugs.size()]);
+    }
+
+    /**
+     * Returns an array of resource slugs
+     * @param db
+     * @param sourceLanguageId
+     * @return
+     */
+    public String[] getResourceSlugs(SQLiteDatabase db, long sourceLanguageId) {
+        Cursor cursor = db.rawQuery("SELECT `slug` FROM `resource` WHERE `source_language_id`=" + sourceLanguageId + " ORDER BY `slug` DESC", null);
         cursor.moveToFirst();
         List<String> slugs = new ArrayList<>();
         while(!cursor.isAfterLast()) {

@@ -221,7 +221,7 @@ public class Library {
      */
     private void downloadSourceLanguageList(String projectId) {
         if(mDownloader.downloadSourceLanguageList(projectId)) {
-            for(String sourceLanguageId:mDownloader.getIndex().getSourceLanguages(projectId)) {
+            for(String sourceLanguageId:mDownloader.getIndex().getSourceLanguageSlugs(projectId)) {
                 try {
                     int latestSourceLanguageModified = mDownloader.getIndex().getSourceLanguage(projectId, sourceLanguageId).getInt("date_modified");
                     JSONObject lastSourceLanguage = mServerIndex.getSourceLanguage(projectId, sourceLanguageId);
@@ -287,7 +287,7 @@ public class Library {
     private LibraryUpdates generateLibraryUpdates() {
         LibraryUpdates updates = new LibraryUpdates();
         for(String projectId:mServerIndex.getProjectSlugs()) {
-            for(String sourceLanguageId:mServerIndex.getSourceLanguages(projectId)) {
+            for(String sourceLanguageId:mServerIndex.getSourceLanguageSlugs(projectId)) {
                 for(String resourceId:mServerIndex.getResources(projectId, sourceLanguageId)) {
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
                     try {
@@ -319,7 +319,7 @@ public class Library {
 
         // download
         for (String projectId : mServerIndex.getProjectSlugs()) {
-            for (String sourceLanguageId : mServerIndex.getSourceLanguages(projectId)) {
+            for (String sourceLanguageId : mServerIndex.getSourceLanguageSlugs(projectId)) {
                 for(String resourceId : mServerIndex.getResources(projectId, sourceLanguageId)) {
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
 
@@ -605,7 +605,7 @@ public class Library {
         }
         // first available
         if(sourceLanguageJson == null) {
-            String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
+            String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
             if(sourceLanguageIds.length > 0) {
                 sourceLanguageJson = getActiveIndex().getSourceLanguage(projectId, sourceLanguageIds[0]);
             }
@@ -620,7 +620,7 @@ public class Library {
      */
     public SourceLanguage[] getSourceLanguages(String projectId) {
         List<SourceLanguage> sourceLanguages = new ArrayList<>();
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String id:sourceLanguageIds) {
             SourceLanguage lang = getSourceLanguage(projectId, id);
             if(lang != null) {
@@ -931,7 +931,7 @@ public class Library {
      */
     public SourceTranslation[] getSourceTranslations(String projectId) {
         List<SourceTranslation> sourceTranslations = new ArrayList<>();
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
             String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
@@ -950,7 +950,7 @@ public class Library {
      */
     public SourceTranslation[] getDraftTranslations(String projectId) {
         List<SourceTranslation> draftTranslations = new ArrayList<>();
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
             String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
@@ -1071,7 +1071,7 @@ public class Library {
      * @return
      */
     public boolean projectHasSource(String projectId) {
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguages(projectId);
+        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
             if(sourceLanguageHasSource(projectId, sourceLanguageId)) {
                 return true;
@@ -1103,7 +1103,7 @@ public class Library {
      */
     public void deleteProject(String projectId) {
         if(mAppIndex.getProject(projectId) != null) {
-            String[] sourceLanguageIds = mAppIndex.getSourceLanguages(projectId);
+            String[] sourceLanguageIds = mAppIndex.getSourceLanguageSlugs(projectId);
             for(String sourceLanguageId:sourceLanguageIds) {
                 mAppIndex.deleteSourceLanguage(projectId, sourceLanguageId);
             }

@@ -50,13 +50,13 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.beginTransaction();
         assertTrue(mIndex.indexSourceLanguages("gen", genCatalog));
         mIndex.endTransaction(true);
-        assertTrue(mIndex.getSourceLanguages("gen").length > 0);
+        assertTrue(mIndex.getSourceLanguageSlugs("gen").length > 0);
 
         String obsCatalog = Util.readStream(mContext.getAssets().open("indexer/obs/languages.json"));
         mIndex.beginTransaction();
         assertTrue(mIndex.indexSourceLanguages("obs", obsCatalog));
         mIndex.endTransaction(true);
-        assertTrue(mIndex.getSourceLanguages("obs").length > 0);
+        assertTrue(mIndex.getSourceLanguageSlugs("obs").length > 0);
     }
 
     public void test03IndexResources() throws Exception {
@@ -160,8 +160,8 @@ public class IndexerTest extends InstrumentationTestCase {
 //        assertTrue(mergedIndex.getProjectSlugs().length > 0);
 //        assertNotNull(mergedIndex.getProject("obs"));
 //        assertNotNull(mergedIndex.getProject("gen"));
-//        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
-//        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguageSlugs("gen").length > 0);
 //        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
 //        assertTrue(mergedIndex.getResources("gen", "en").length > 1);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
@@ -179,8 +179,8 @@ public class IndexerTest extends InstrumentationTestCase {
 //        assertTrue(mergedIndex.getProjectSlugs().length  > 1);
 //        assertNotNull(mergedIndex.getProject("obs"));
 //        assertNotNull(mergedIndex.getProject("gen"));
-//        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
-//        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguageSlugs("gen").length > 0);
 //        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
 //        assertTrue(mergedIndex.getResources("gen", "en").length > 0);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
@@ -203,7 +203,7 @@ public class IndexerTest extends InstrumentationTestCase {
 //        mergedIndex.mergeProject("obs", mIndex, true);
 //        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("obs"));
-//        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
 //        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
 //        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
@@ -217,7 +217,7 @@ public class IndexerTest extends InstrumentationTestCase {
 //        mergedIndex.mergeProject("obs", mIndex);
 //        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("obs"));
-//        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
 //        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
 //        assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
@@ -226,7 +226,7 @@ public class IndexerTest extends InstrumentationTestCase {
 //        mergedIndex.mergeProject("gen", mIndex);
 //        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("gen"));
-//        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguageSlugs("gen").length > 0);
 //        assertTrue(mergedIndex.getResources("gen", "en").length > 0);
 //        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
 //        assertTrue(mergedIndex.getChapters(genTranslation).length > 0);

@@ -49,7 +49,7 @@ public class DownloaderTest extends InstrumentationTestCase {
         mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadSourceLanguageList("obs"));
         mDownloader.getIndex().endTransaction(true);
-        String[] languageIds = mIndex.getSourceLanguages("obs");
+        String[] languageIds = mIndex.getSourceLanguageSlugs("obs");
         assertTrue(languageIds.length > 0);
     }
 

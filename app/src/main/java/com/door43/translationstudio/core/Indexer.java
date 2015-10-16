@@ -569,7 +569,7 @@ public class Indexer {
             // update/add project
             indexProjects(projectJson.toString());
 
-            for(String sourceLanguageId:index.getSourceLanguages(projectId)) {
+            for(String sourceLanguageId:index.getSourceLanguageSlugs(projectId)) {
                 JSONObject newSourceLanguage = index.getSourceLanguage(projectId, sourceLanguageId);
                 if(newSourceLanguage != null) {
                     JSONArray sourceLanguageJson = new JSONArray();
@@ -784,7 +784,7 @@ public class Indexer {
      */
     public synchronized boolean indexSourceLanguages(String projectSlug, String catalog) {
         //KLUDGE: modify v2 sourceLanguages catalogJson to match expected catalogJson format
-        JSONArray items = null;
+        JSONArray items;
         try {
             items = new JSONArray(catalog);
         } catch (JSONException e) {
@@ -813,7 +813,7 @@ public class Indexer {
                     JSONObject item = items.getJSONObject(i);
                     SourceLanguage sourceLanguage = SourceLanguage.generate(item);
                     if (sourceLanguage != null) {
-                        JSONArray categoriesJson = item.getJSONArray("meta");
+                        JSONArray categoriesJson = item.getJSONObject("project").getJSONArray("meta");
                         List<String> categoryNames = new ArrayList<>();
                         for(int j = 0; j < categoriesJson.length(); j ++) {
                             categoryNames.add(categoriesJson.getString(j));
@@ -1241,25 +1241,32 @@ public class Indexer {
 
     /**
      * Returns an array of source language ids
-     * @param projectId
+     * @param projectSlug
      * @return
      */
-    public String[] getSourceLanguages(String projectId) {
-        // TODO: 10/16/2015 this should return an array of source language objects
+    public String[] getSourceLanguageSlugs(String projectSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, projectSlug);
+        if(projectId > 0) {
+            return mDatabaseHelper.getSourceLanguageSlugs(mDatabase, projectId);
+        }
         return new String[0];
-//        return getItemsArray(getProject(projectId), "lang_catalog");
     }
 
     /**
      * Returns an array of resource ids
-     * @param projectId
-     * @param sourceLanguageId
+     * @param projectSlug
+     * @param sourceLanguageSlug
      * @return
      */
-    public String[] getResources(String projectId, String sourceLanguageId) {
-        // TODO: 10/16/2015 this should return an array of resource objects
+    public String[] getResources(String projectSlug, String sourceLanguageSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, projectSlug);
+        if(projectId > 0) {
+            long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceLanguageSlug, projectId);
+            if(sourceLanguageId > 0) {
+                return mDatabaseHelper.getResourceSlugs(mDatabase, sourceLanguageId);
+            }
+        }
         return new String[0];
-//        return getItemsArray(getSourceLanguage(projectId, sourceLanguageId), "res_catalog");
     }
 
     /**
