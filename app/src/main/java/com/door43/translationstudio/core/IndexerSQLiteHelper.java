@@ -26,7 +26,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 //    private static final String TABLE_CATALOGS = "catalog";
     private static final String TABLE_FILES = "file";
     private static final String TABLE_LINKS = "link";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final long ROOT_FILE_ID = 1;
     private final String mDatabaseName;
     private final String mSchema;
@@ -46,14 +46,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-//        db.execSQL(mSchema);
-        String fileTable = "CREATE TABLE `file` ( `file_id`  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE, `name`  text NOT NULL, `parent_id` INTEGER NOT NULL DEFAULT 0, `catalog_hash`  text NOT NULL, `content` text, `is_dir`  INTEGER NOT NULL DEFAULT 0, UNIQUE (name, parent_id, catalog_hash) ON CONFLICT REPLACE, FOREIGN KEY (parent_id) REFERENCES file(file_id) ON DELETE CASCADE);";
-        String linkTable ="CREATE TABLE `link` ( `name`  TEXT NOT NULL UNIQUE, `catalog_hash`  text NOT NULL, PRIMARY KEY(name));";
-        db.execSQL(fileTable);
-        db.execSQL(linkTable);
-
-        // TRICKY: this root file must be added before the foreign key constraints are enabled
-        replaceFile(db, "N/A", "root", "Do not remove me", ROOT_FILE_ID);
+        db.execSQL(mSchema);
 
         // TRICKY: onConfigure is not available for API < 16
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
@@ -74,7 +67,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO: perform any nessesary updates as necessary
+        if(oldVersion < 2) {
+            db.execSQL("DROP TABLE IF EXISTS `file`");
+            db.execSQL("DROP TABLE IF EXISTS `link`");
+        }
+
         onCreate(db);
     }
 
@@ -83,6 +80,169 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public void deleteDatabase(Context context) {
         context.deleteDatabase(mDatabaseName);
+    }
+
+    /**
+     * Inserts or updates a project
+     * @param db
+     * @param slug
+     * @param sort
+     * @param dateModified
+     * @param sourceLanguageCatalogUrl
+     */
+    public void addProject(SQLiteDatabase db, String slug, int sort, int dateModified, String sourceLanguageCatalogUrl, String[] categorySlugs) {
+        ContentValues values = new ContentValues();
+        values.put("slug", slug);
+        values.put("sort", sort);
+        values.put("modified_at", dateModified);
+        values.put("source_language_catalog_url", sourceLanguageCatalogUrl);
+
+        // add project
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `project` WHERE `slug`=?", new String[]{slug});
+        long projectId;
+        if(cursor.moveToFirst()) {
+            // update
+            projectId = cursor.getLong(0);
+            db.update("project", values, "`id`=" + projectId, null);
+        } else {
+            // insert
+            projectId = db.insert("project", null, values);
+        }
+        cursor.close();
+
+        // add categories
+        db.delete("project__category", "project_id=" + projectId, null);
+        addProjectCategories(db, projectId, categorySlugs);
+    }
+
+    /**
+     * Adds the project categories and links the project to the last category
+     * @param db
+     * @param projectId
+     * @param categorySlugs
+     * @return
+     */
+    private void addProjectCategories(SQLiteDatabase db, long projectId, String[] categorySlugs) {
+        if(categorySlugs != null && categorySlugs.length > 0) {
+            long categoryId = 0L;
+            for (String catSlug : categorySlugs) {
+                Cursor cursor = db.rawQuery("SELECT `id` FROM `category` WHERE `slug`=? AND `parent_id`=" + categoryId, new String[]{catSlug});
+                if (cursor.moveToFirst()) {
+                    // follow
+                    categoryId = cursor.getLong(0);
+                } else {
+                    // insert
+                    ContentValues values = new ContentValues();
+                    values.put("slug", catSlug);
+                    values.put("parent_id", categoryId);
+                    categoryId = db.insert("category", null, values);
+                }
+                cursor.close();
+            }
+            ContentValues values = new ContentValues();
+            values.put("project_id", projectId);
+            values.put("category_id", categoryId);
+            db.insert("project__category", null, values);
+        }
+    }
+
+    /**
+     * Removes a project.
+     * This will cascade
+     * @param db
+     * @param slug
+     */
+    public void deleteProject(SQLiteDatabase db, String slug) {
+        db.delete("project", "`slug`=?", new String[]{slug});
+    }
+
+    /**
+     * Inserts or updates a source language
+     * @param db
+     * @param slug
+     * @param projectId
+     * @param name
+     * @param projectName
+     * @param projectDescription
+     * @param direction
+     * @param dateModified
+     * @param resourceCatalogUrl
+     */
+    public void addSourceLanguage(SQLiteDatabase db, String slug, long projectId, String name, String projectName, String projectDescription, String direction, int dateModified, String resourceCatalogUrl, String[] categoryNames) {
+        ContentValues values = new ContentValues();
+        values.put("slug", slug);
+        values.put("project_id", projectId);
+        values.put("name", name);
+        values.put("project_name", projectName);
+        values.put("project_description", projectDescription);
+        values.put("direction", direction);
+        values.put("modified_at", dateModified);
+        values.put("resource_catalog_url", resourceCatalogUrl);
+
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `source_language` WHERE `slug`=? AND `project_id`=" + projectId, new String[]{slug});
+        long sourceLanguageId;
+        if(cursor.moveToFirst()) {
+            // update
+            sourceLanguageId = cursor.getLong(0);
+            db.update("source_language", values, "`id`=" + id, null);
+        } else {
+            // insert
+            sourceLanguageId = db.insert("source_language", null, values);
+        }
+        cursor.close();
+
+        db.delete("source_language__category", "source_language_id=" + sourceLanguageId, null);
+        addSourceLanguageCategories(db, projectId, sourceLanguageId, categoryNames);
+    }
+
+    /**
+     * Adds the names for categories
+     * @param db
+     * @param sourceLanguageId
+     * @param categoryNames
+     */
+    public void addSourceLanguageCategories(SQLiteDatabase db, long projectId, long sourceLanguageId, String[] categoryNames) {
+        if(categoryNames != null && categoryNames.length > 0) {
+            Cursor cursor = db.rawQuery("SELECT `id` from `category` AS `c`"
+                    + " LEFT JOIN `project__category` AS `pc` ON `pc`.`category_id`=`c`.`id`"
+                    + " WHERE `pc`.`project_id`=" + projectId, null);
+            if (cursor.moveToFirst()) {
+                // bottom category
+                long categoryId = cursor.getLong(0);
+                cursor.close();
+
+                // name categories from bottom to top
+                for (String name : categoryNames) {
+                    ContentValues values = new ContentValues();
+                    values.put("source_language_id", sourceLanguageId);
+                    values.put("category_id", categoryId);
+                    values.put("category_name", name);
+                    db.insert("source_language__category", null, values);
+
+                    // move up in categories
+                    cursor = db.rawQuery("SELECT `parent_id` FROM `category` WHERE `id`=" + categoryId, null);
+                    if(cursor.moveToFirst()) {
+                        categoryId = cursor.getLong(0);
+                        if(categoryId == 0L) {
+                            // stop when we reach the top
+                            break;
+                        }
+                    }
+                }
+            } else {
+                cursor.close();
+            }
+        }
+    }
+
+    /**
+     * Removes a source language.
+     * This will cascade
+     * @param db
+     * @param slug
+     */
+    public void deleteSourceLanguage(SQLiteDatabase db, String slug, long projectId) {
+        db.delete("source_language", "`slug`=? AND `project_id`=" + projectId, new String[]{slug});
     }
 
     /**
