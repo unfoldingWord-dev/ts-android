@@ -11,6 +11,8 @@ public class Project {
     public final String description;
     public final String name;
     public final String sourceLanguageId;
+    public final int sort;
+    public final String sourceLanguageCatalog;
     private String mId;
 
     /**
@@ -21,12 +23,14 @@ public class Project {
      * @param description the description of the project
      * @param dateModified the date the project was last modified
      */
-    private Project(String projectId, String sourceLanguageId, String name, String description, int dateModified) {
+    private Project(String projectId, String sourceLanguageId, String name, String description, int dateModified, int sort, String sourceLanguageCatalog) {
         mId = projectId;
         this.name = name;
         this.description = description;
         this.dateModified = dateModified;
         this.sourceLanguageId = sourceLanguageId;
+        this.sourceLanguageCatalog = sourceLanguageCatalog;
+        this.sort = sort;
     }
 
     /**
@@ -50,8 +54,10 @@ public class Project {
             JSONObject projectLanguageJson = sourceLanguage.getJSONObject("project");
             String name = projectLanguageJson.getString("name");
             String description = projectLanguageJson.getString("desc");
+            String sourceLanguageCatalog = json.getString("lang_catalog");
+            int sort = json.getInt("sort");
 
-            return new Project(projectId, sourceLanguageId, name, description, dateModified);
+            return new Project(projectId, sourceLanguageId, name, description, dateModified, sort, sourceLanguageCatalog);
         }
         return null;
     }
@@ -65,8 +71,10 @@ public class Project {
         if(json != null) {
             String projectId = json.getString("slug");
             int dateModified = json.getInt("date_modified");
+            int sort = json.getInt("sort");
+            String sourceLanguageCatalog = json.getString("lang_catalog");
 
-            return new Project(projectId, null, null, null, dateModified);
+            return new Project(projectId, null, null, null, dateModified, sort, sourceLanguageCatalog);
         }
         return null;
     }

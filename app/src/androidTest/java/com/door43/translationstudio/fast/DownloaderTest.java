@@ -1,6 +1,5 @@
 package com.door43.translationstudio.fast;
 
-import android.test.AndroidTestCase;
 import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.MainApplication;
@@ -36,12 +35,13 @@ public class DownloaderTest extends InstrumentationTestCase {
     }
 
     public void test1DownloadProjects() throws Exception {
-        mIndex.destroy();
+        mIndex.delete();
+        mIndex.rebuild();
         FileUtils.deleteQuietly(mIndexRoot);
         mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadProjectList());
         mDownloader.getIndex().endTransaction(true);
-        String[] projectIds = mIndex.getProjects();
+        String[] projectIds = mIndex.getProjectSlugs();
         assertTrue(projectIds.length > 0);
     }
 
@@ -83,7 +83,7 @@ public class DownloaderTest extends InstrumentationTestCase {
         mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadTermAssignments(translation, mDownloader.getIndex()));
         mDownloader.getIndex().endTransaction(true);
-        String[] termsIds = mIndex.getWords(translation, "01", "01");
+        String[] termsIds = mIndex.getWordsForFrame(translation, "01", "01");
         assertTrue(termsIds.length > 0);
     }
 

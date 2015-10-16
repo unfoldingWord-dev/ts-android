@@ -104,7 +104,8 @@ public class Library {
         FileUtils.deleteQuietly(mIndexDir);
         FileUtils.deleteQuietly(mCacheDir);
 
-        mAppIndex.destroy();
+        mAppIndex.delete();
+        mAppIndex.rebuild();
         destroyCache();
     }
 
@@ -112,8 +113,10 @@ public class Library {
      * Destroy's the server index
      */
     public void destroyCache() {
-        mServerIndex.destroy();
-        mDownloaderIndex.destroy();
+        mServerIndex.delete();
+        mServerIndex.rebuild();
+        mDownloaderIndex.delete();
+        mDownloaderIndex.rebuild();
     }
 
     /**
@@ -195,7 +198,7 @@ public class Library {
      */
     public boolean exists() {
         File languagesFile = new File(mLibraryDir, TARGET_LANGUAGES_FILE);
-        return languagesFile.exists() && mAppIndex.getProjects().length > 0;
+        return languagesFile.exists() && mAppIndex.getProjectSlugs().length > 0;
     }
 
     /**
@@ -243,7 +246,7 @@ public class Library {
      */
     public LibraryUpdates getAvailableLibraryUpdates(OnProgressListener listener) {
         if(mDownloader.downloadProjectList()) {
-            String[] projectIds = mDownloader.getIndex().getProjects();
+            String[] projectIds = mDownloader.getIndex().getProjectSlugs();
             for (int i = 0; i < projectIds.length; i ++) {
                 String projectId = projectIds[i];
                 try {
@@ -283,7 +286,7 @@ public class Library {
      */
     private LibraryUpdates generateLibraryUpdates() {
         LibraryUpdates updates = new LibraryUpdates();
-        for(String projectId:mServerIndex.getProjects()) {
+        for(String projectId:mServerIndex.getProjectSlugs()) {
             for(String sourceLanguageId:mServerIndex.getSourceLanguages(projectId)) {
                 for(String resourceId:mServerIndex.getResources(projectId, sourceLanguageId)) {
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
@@ -312,10 +315,10 @@ public class Library {
     public Boolean downloadAllProjects(OnProgressListener projectProgressListener, OnProgressListener sourceTranslationListener) {
         boolean success = true;
         int currentProject = 1;
-        int numProjects = mServerIndex.getProjects().length;
+        int numProjects = mServerIndex.getProjectSlugs().length;
 
         // download
-        for (String projectId : mServerIndex.getProjects()) {
+        for (String projectId : mServerIndex.getProjectSlugs()) {
             for (String sourceLanguageId : mServerIndex.getSourceLanguages(projectId)) {
                 for(String resourceId : mServerIndex.getResources(projectId, sourceLanguageId)) {
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
@@ -466,7 +469,7 @@ public class Library {
     public ProjectCategory[] getProjectCategoriesFlat(String languageId) {
         List<ProjectCategory> categories = new ArrayList<>();
 
-        String[] projectIds = getActiveIndex().getProjects();
+        String[] projectIds = getActiveIndex().getProjectSlugs();
         for(String projectId:projectIds) {
             JSONObject projectJson = getActiveIndex().getProject(projectId);
             try {
@@ -689,7 +692,7 @@ public class Library {
         JSONObject resourceJson = getActiveIndex().getResource(SourceTranslation.simple(sourceTranslation.projectId, sourceTranslation.sourceLanguageId, sourceTranslation.resourceId));
         try {
             return Resource.generate(resourceJson);
-        } catch (JSONException e) {
+        } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to parse the resource " + sourceTranslation.getId(), e);
         }
         return null;
@@ -787,7 +790,12 @@ public class Library {
      */
     public Chapter getChapter(SourceTranslation sourceTranslation, String chapterId) {
         JSONObject chapterJson = getActiveIndex().getChapter(sourceTranslation, chapterId);
-        return Chapter.generate(chapterJson);
+        try {
+            return Chapter.generate(chapterJson);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -995,7 +1003,7 @@ public class Library {
      */
     public TranslationWord[] getTranslationWords(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         List<TranslationWord> words = new ArrayList<>();
-        String[] wordIds = getActiveIndex().getWords(sourceTranslation, chapterId, frameId);
+        String[] wordIds = getActiveIndex().getWordsForFrame(sourceTranslation, chapterId, frameId);
         for(String wordId:wordIds) {
             TranslationWord word = getTranslationWord(sourceTranslation, wordId);
             if(word != null) {

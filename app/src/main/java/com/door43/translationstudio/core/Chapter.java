@@ -38,20 +38,18 @@ public class Chapter {
      * @param json
      * @return
      */
-    public static Chapter generate(JSONObject json) {
+    public static Chapter generate(JSONObject json) throws JSONException {
+        if(json == null) {
+            return null;
+        }
         String title = "";
         String reference = "";
-        try {
-            if(json.has("title")) {
-                title = json.getString("title");
-            }
-            if(json.has("ref")) {
-                reference = json.getString("ref");
-            }
-            return new Chapter(title, reference, json.getString("number"));
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if(json.has("title")) {
+            title = json.getString("title");
         }
-        return null;
+        if(json.has("ref")) {
+            reference = json.getString("ref");
+        }
+        return new Chapter(title, reference, json.getString("number"));
     }
 }

@@ -1,11 +1,4 @@
 -- ---
--- Globals
--- ---
-
--- SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
--- SET FOREIGN_KEY_CHECKS=0;
-
--- ---
 -- Table 'translation_note'
 -- 
 -- ---
@@ -13,12 +6,11 @@
 DROP TABLE IF EXISTS `translation_note`;
     
 CREATE TABLE `translation_note` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `frame_id` INTEGER NOT NULL,
   `title` TEXT NOT NULL,
   `body` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY (`frame_id`)
+  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`)
 );
 
 -- ---
@@ -29,13 +21,12 @@ CREATE TABLE `translation_note` (
 DROP TABLE IF EXISTS `project`;
     
 CREATE TABLE `project` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,
   `sort` INTEGER NOT NULL DEFAULT 0,
   `modified_at` INTEGER NOT NULL,
   `source_language_catalog_url` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`slug`)
+  UNIQUE (`slug`)
 );
 
 -- ---
@@ -46,7 +37,7 @@ CREATE TABLE `project` (
 DROP TABLE IF EXISTS `resource`;
     
 CREATE TABLE `resource` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,
   `source_language_id` INTEGER NOT NULL,
   `name` TEXT NOT NULL,
@@ -54,12 +45,22 @@ CREATE TABLE `resource` (
   `version` TEXT NOT NULL,
   `modified_at` INTEGER NOT NULL,
   `source_catalog_url` TEXT NOT NULL,
+  `source_catalog_local_modified_at` INTEGER NOT NULL,
+  `source_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
   `translation_notes_catalog_url` TEXT NULL DEFAULT NULL,
+  `translation_notes_catalog_local_modified_at` INTEGER NOT NULL,
+  `translation_notes_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
   `translation_words_catalog_url` TEXT NULL DEFAULT NULL,
+  `translation_words_catalog_local_modified_at` INTEGER NOT NULL,
+  `translation_words_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
   `translation_word_assignments_catalog_url` TEXT NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`slug`, `source_language_id`),
-  KEY (`checking_level`)
+  `translation_word_assignments_catalog_local_modified_at` INTEGER NOT NULL,
+  `translation_word_assignments_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
+  `checking_questions_catalog_url` TEXT NULL DEFAULT NULL,
+  `checking_questions_catalog_local_modified_at` INTEGER NOT NULL,
+  `checking_questions_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0,
+  UNIQUE (`slug`, `source_language_id`),
+  FOREIGN KEY (source_language_id) REFERENCES `source_language` (`id`)
 );
 
 -- ---
@@ -70,13 +71,11 @@ CREATE TABLE `resource` (
 DROP TABLE IF EXISTS `target_language`;
     
 CREATE TABLE `target_language` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `code` TEXT NOT NULL,
   `name` TEXT NOT NULL,
   `direction` TEXT NOT NULL,
-  `region` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY (`code`)
+  `region` TEXT NOT NULL
 );
 
 -- ---
@@ -87,14 +86,14 @@ CREATE TABLE `target_language` (
 DROP TABLE IF EXISTS `translation_word`;
     
 CREATE TABLE `translation_word` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,
   `resource_id` INTEGER NOT NULL,
   `term` TEXT NOT NULL,
   `definition_title` TEXT NOT NULL,
   `definition` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`slug`, `resource_id`)
+  UNIQUE (`slug`, `resource_id`),
+  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`)
 );
 
 -- ---
@@ -105,7 +104,7 @@ CREATE TABLE `translation_word` (
 DROP TABLE IF EXISTS `source_language`;
     
 CREATE TABLE `source_language` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,
   `project_id` INTEGER NOT NULL,
   `name` TEXT NOT NULL,
@@ -114,8 +113,8 @@ CREATE TABLE `source_language` (
   `direction` TEXT NOT NULL,
   `modified_at` INTEGER(10) NOT NULL,
   `resource_catalog_url` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`slug`, `project_id`)
+  UNIQUE (`slug`, `project_id`),
+  FOREIGN KEY (project_id) REFERENCES `project` (`id`)
 );
 
 -- ---
@@ -126,12 +125,10 @@ CREATE TABLE `source_language` (
 DROP TABLE IF EXISTS `checking_question`;
     
 CREATE TABLE `checking_question` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `chapter_id` INTEGER NOT NULL,
   `question` TEXT NOT NULL,
-  `answer` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY (`chapter_id`)
+  `answer` TEXT NOT NULL
 );
 
 -- ---
@@ -142,13 +139,13 @@ CREATE TABLE `checking_question` (
 DROP TABLE IF EXISTS `chapter`;
     
 CREATE TABLE `chapter` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,
   `resource_id` INTEGER NOT NULL,
   `reference` TEXT NULL DEFAULT NULL,
   `title` TEXT NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`resource_id`, `slug`)
+  UNIQUE (`resource_id`, `slug`),
+  FOREIGN KEY (resource_id) REFERENCES `resource` (`id`)
 );
 
 -- ---
@@ -159,14 +156,14 @@ CREATE TABLE `chapter` (
 DROP TABLE IF EXISTS `frame`;
     
 CREATE TABLE `frame` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `chapter_id` INTEGER NOT NULL,
   `slug` TEXT NOT NULL,
   `body` TEXT NOT NULL,
   `format` TEXT NULL DEFAULT NULL,
   `image_url` TEXT NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`chapter_id`, `slug`)
+  UNIQUE (`chapter_id`, `slug`),
+  FOREIGN KEY (chapter_id) REFERENCES `chapter` (`id`)
 );
 
 -- ---
@@ -177,11 +174,10 @@ CREATE TABLE `frame` (
 DROP TABLE IF EXISTS `category`;
     
 CREATE TABLE `category` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `slug` TEXT NOT NULL,
   `parent_id` INTEGER NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`slug`, `parent_id`)
+  UNIQUE (`slug`, `parent_id`)
 );
 
 -- ---
@@ -192,11 +188,12 @@ CREATE TABLE `category` (
 DROP TABLE IF EXISTS `project__category`;
     
 CREATE TABLE `project__category` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `project_id` INTEGER NOT NULL,
   `category_id` INTEGER NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`project_id`, `category_id`)
+  UNIQUE (`project_id`, `category_id`),
+  FOREIGN KEY (project_id) REFERENCES `project` (`id`),
+  FOREIGN KEY (category_id) REFERENCES `category` (`id`)
 );
 
 -- ---
@@ -207,12 +204,13 @@ CREATE TABLE `project__category` (
 DROP TABLE IF EXISTS `source_language__category`;
     
 CREATE TABLE `source_language__category` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `source_language_id` INTEGER(10) NOT NULL,
   `category_id` INTEGER NOT NULL,
   `category_name` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`source_language_id`, `category_id`)
+  UNIQUE (`source_language_id`, `category_id`),
+  FOREIGN KEY (source_language_id) REFERENCES `source_language` (`id`),
+  FOREIGN KEY (category_id) REFERENCES `category` (`id`)
 );
 
 -- ---
@@ -221,14 +219,13 @@ CREATE TABLE `source_language__category` (
 -- ---
 
 DROP TABLE IF EXISTS `frame__checking_question`;
-    
+
 CREATE TABLE `frame__checking_question` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `frame_id` INTEGER NOT NULL,
   `checking_question_id` INTEGER NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY (`frame_id`),
-  KEY (`checking_question_id`)
+  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`),
+  FOREIGN KEY (checking_question_id) REFERENCES `checking_question` (`id`)
 );
 
 -- ---
@@ -239,11 +236,12 @@ CREATE TABLE `frame__checking_question` (
 DROP TABLE IF EXISTS `translation_word_related`;
     
 CREATE TABLE `translation_word_related` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `translation_word_id` INTEGER NOT NULL,
   `related_translation_word_id` INTEGER NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`related_translation_word_id`, `translation_word_id`)
+  UNIQUE (`related_translation_word_id`, `translation_word_id`),
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`),
+  FOREIGN KEY (related_translation_word_id) REFERENCES `translation_word` (`id`)
 );
 
 -- ---
@@ -254,16 +252,14 @@ CREATE TABLE `translation_word_related` (
 DROP TABLE IF EXISTS `translation_word_example`;
     
 CREATE TABLE `translation_word_example` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `translation_word_id` INTEGER NOT NULL,
   `frame_slug` TEXT NOT NULL,
   `chapter_slug` TEXT NOT NULL,
   `body` TEXT NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY (`translation_word_id`),
-  KEY (`frame_slug`),
-  KEY (`chapter_slug`)
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
 );
+
 
 -- ---
 -- Table 'frame__translation_word'
@@ -273,11 +269,12 @@ CREATE TABLE `translation_word_example` (
 DROP TABLE IF EXISTS `frame__translation_word`;
     
 CREATE TABLE `frame__translation_word` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `frame_id` INTEGER NOT NULL,
   `translation_word_id` INTEGER NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY (`frame_id`, `translation_word_id`)
+  UNIQUE (`frame_id`, `translation_word_id`),
+  FOREIGN KEY (frame_id) REFERENCES `frame` (`id`),
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
 );
 
 -- ---
@@ -288,91 +285,21 @@ CREATE TABLE `frame__translation_word` (
 DROP TABLE IF EXISTS `meta`;
     
 CREATE TABLE `meta` (
-  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `key` TEXT NOT NULL,
-  `value` TEXT NOT NULL,
-  PRIMARY KEY (`id`)
+  `value` TEXT NOT NULL
 );
 
 -- ---
--- Foreign Keys 
+-- Indexes
 -- ---
 
-ALTER TABLE `translation_note` ADD FOREIGN KEY (frame_id) REFERENCES `frame` (`id`);
-ALTER TABLE `resource` ADD FOREIGN KEY (source_language_id) REFERENCES `source_language` (`id`);
-ALTER TABLE `translation_word` ADD FOREIGN KEY (resource_id) REFERENCES `resource` (`id`);
-ALTER TABLE `source_language` ADD FOREIGN KEY (project_id) REFERENCES `project` (`id`);
-ALTER TABLE `chapter` ADD FOREIGN KEY (resource_id) REFERENCES `resource` (`id`);
-ALTER TABLE `frame` ADD FOREIGN KEY (chapter_id) REFERENCES `chapter` (`id`);
-ALTER TABLE `project__category` ADD FOREIGN KEY (project_id) REFERENCES `project` (`id`);
-ALTER TABLE `project__category` ADD FOREIGN KEY (category_id) REFERENCES `category` (`id`);
-ALTER TABLE `source_language__category` ADD FOREIGN KEY (id) REFERENCES `source_language` (`id`);
-ALTER TABLE `source_language__category` ADD FOREIGN KEY (category_id) REFERENCES `category` (`id`);
-ALTER TABLE `frame__checking_question` ADD FOREIGN KEY (frame_id) REFERENCES `frame` (`id`);
-ALTER TABLE `frame__checking_question` ADD FOREIGN KEY (checking_question_id) REFERENCES `checking_question` (`id`);
-ALTER TABLE `translation_word_related` ADD FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`);
-ALTER TABLE `translation_word_related` ADD FOREIGN KEY (related_translation_word_id) REFERENCES `translation_word` (`id`);
-ALTER TABLE `translation_word_example` ADD FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`);
-ALTER TABLE `frame__translation_word` ADD FOREIGN KEY (frame_id) REFERENCES `frame` (`id`);
-ALTER TABLE `frame__translation_word` ADD FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`);
-
--- ---
--- Table Properties
--- ---
-
--- ALTER TABLE `translation_note` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `project` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `resource` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `target_language` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `translation_word` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `source_language` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `checking_question` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `chapter` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `frame` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `category` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `project__category` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `source_language__category` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `frame__checking_question` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `translation_word_related` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `translation_word_example` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `frame__translation_word` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `meta` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- ---
--- Test Data
--- ---
-
--- INSERT INTO `translation_note` (`id`,`frame_id`,`title`,`body`) VALUES
--- ('','','','');
--- INSERT INTO `project` (`id`,`slug`,`sort`,`modified_at`,`source_language_catalog_url`) VALUES
--- ('','','','','');
--- INSERT INTO `resource` (`id`,`slug`,`source_language_id`,`name`,`checking_level`,`version`,`modified_at`,`source_catalog_url`,`translation_notes_catalog_url`,`translation_words_catalog_url`,`translation_word_assignments_catalog_url`) VALUES
--- ('','','','','','','','','','','');
--- INSERT INTO `target_language` (`id`,`code`,`name`,`direction`,`region`) VALUES
--- ('','','','','');
--- INSERT INTO `translation_word` (`id`,`slug`,`resource_id`,`term`,`definition_title`,`definition`) VALUES
--- ('','','','','','');
--- INSERT INTO `source_language` (`id`,`slug`,`project_id`,`name`,`project_name`,`project_description`,`direction`,`modified_at`,`resource_catalog_url`) VALUES
--- ('','','','','','','','','');
--- INSERT INTO `checking_question` (`id`,`chapter_id`,`question`,`answer`) VALUES
--- ('','','','');
--- INSERT INTO `chapter` (`id`,`slug`,`resource_id`,`reference`,`title`) VALUES
--- ('','','','','');
--- INSERT INTO `frame` (`id`,`chapter_id`,`slug`,`body`,`format`,`image_url`) VALUES
--- ('','','','','','');
--- INSERT INTO `category` (`id`,`slug`,`parent_id`) VALUES
--- ('','','');
--- INSERT INTO `project__category` (`id`,`project_id`,`category_id`) VALUES
--- ('','','');
--- INSERT INTO `source_language__category` (`id`,`source_language_id`,`category_id`,`category_name`) VALUES
--- ('','','','');
--- INSERT INTO `frame__checking_question` (`id`,`frame_id`,`checking_question_id`) VALUES
--- ('','','');
--- INSERT INTO `translation_word_related` (`id`,`translation_word_id`,`related_translation_word_id`) VALUES
--- ('','','');
--- INSERT INTO `translation_word_example` (`id`,`translation_word_id`,`frame_slug`,`chapter_slug`,`body`) VALUES
--- ('','','','','');
--- INSERT INTO `frame__translation_word` (`id`,`frame_id`,`translation_word_id`) VALUES
--- ('','','');
--- INSERT INTO `meta` (`id`,`key`,`value`) VALUES
--- ('','','');
+CREATE INDEX `translation_note_frame_id` ON `translation_note`(`frame_id`);
+CREATE INDEX `resource_checking_level` ON `resource`(`checking_level`);
+CREATE INDEX `target_language_code` ON `target_language`(`code`);
+CREATE INDEX `checking_question_chapter_id` ON `checking_question`(`chapter_id`);
+CREATE INDEX `frame__checking_question_frame_id` ON `frame__checking_question`(`frame_id`);
+CREATE INDEX `frame__checking_question_checking_question_id` ON `frame__checking_question`(`checking_question_id`);
+CREATE INDEX `translation_word_example_translation_word_id` ON `translation_word_example`(`translation_word_id`);
+CREATE INDEX `translation_word_example_frame_slug` ON `translation_word_example`(`frame_slug`);
+CREATE INDEX `translation_word_example_chapter_slug` ON `translation_word_example`(`chapter_slug`);

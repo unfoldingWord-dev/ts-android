@@ -1,8 +1,6 @@
 package com.door43.translationstudio.fast;
 
 import android.content.Context;
-import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteDatabase;
 import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.MainApplication;
@@ -11,11 +9,9 @@ import com.door43.translationstudio.core.Indexer;
 import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.projects.Frame;
 import com.door43.util.Zip;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.InputStream;
@@ -40,12 +36,13 @@ public class IndexerTest extends InstrumentationTestCase {
     }
 
     public void test01IndexProjects() throws Exception {
-        mIndex.destroy();
+        mIndex.delete();
+        mIndex.rebuild();
         String catalog = Util.readStream(mContext.getAssets().open("indexer/catalog.json"));
         mIndex.beginTransaction();
         assertTrue(mIndex.indexProjects(catalog));
         mIndex.endTransaction(true);
-        assertTrue(mIndex.getProjects().length > 0);
+        assertTrue(mIndex.getProjectSlugs().length > 0);
     }
 
     public void test02IndexSourceLanguages() throws Exception {
@@ -124,7 +121,7 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.beginTransaction();
         assertTrue(mIndex.indexTermAssignments(translation, associationscatalog));
         mIndex.endTransaction(true);
-        String[] termIds = mIndex.getWords(translation, "01", "01");
+        String[] termIds = mIndex.getWordsForFrame(translation, "01", "01");
         assertTrue(termIds.length > 0);
     }
 
@@ -152,34 +149,34 @@ public class IndexerTest extends InstrumentationTestCase {
         FileUtils.moveFile(new File(indexDir, "sample_index"), dbPath);
         IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "sample_index");
         Indexer index = new Indexer(AppContext.context(), "sample_index", indexDir, indexHelper);
-        assertTrue(index.getProjects().length > 0);
+        assertTrue(index.getProjectSlugs().length > 0);
     }
 
-    public void test09MergeIndexShallow() throws Exception {
-        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
-        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
-        mergedIndex.destroy();
-        mergedIndex.mergeIndex(mIndex, true);
-        assertTrue(mergedIndex.getProjects().length > 0);
-        assertNotNull(mergedIndex.getProject("obs"));
-        assertNotNull(mergedIndex.getProject("gen"));
-        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
-        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
-        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
-        assertTrue(mergedIndex.getResources("gen", "en").length > 1);
-        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
-        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
-        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
-        assertTrue(mergedIndex.getChapters(genTranslation).length == 0);
-        indexHelper.close();
-    }
+//    public void test09MergeIndexShallow() throws Exception {
+//        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
+//        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
+//        mergedIndex.delete();
+//        mergedIndex.mergeIndex(mIndex, true);
+//        assertTrue(mergedIndex.getProjectSlugs().length > 0);
+//        assertNotNull(mergedIndex.getProject("obs"));
+//        assertNotNull(mergedIndex.getProject("gen"));
+//        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+//        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
+//        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+//        assertTrue(mergedIndex.getResources("gen", "en").length > 1);
+//        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
+//        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
+//        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
+//        assertTrue(mergedIndex.getChapters(genTranslation).length == 0);
+//        indexHelper.close();
+//    }
 
 //    public void test10MergeIndexDeep() throws Exception {
 //        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
 //        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
-//        mergedIndex.destroy();
+//        mergedIndex.delete();
 //        mergedIndex.mergeIndex(mIndex);
-//        assertTrue(mergedIndex.getProjects().length  > 1);
+//        assertTrue(mergedIndex.getProjectSlugs().length  > 1);
 //        assertNotNull(mergedIndex.getProject("obs"));
 //        assertNotNull(mergedIndex.getProject("gen"));
 //        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
@@ -199,35 +196,35 @@ public class IndexerTest extends InstrumentationTestCase {
 //        indexHelper.close();
 //    }
 
-    public void test11MergeIndexProjectShallow() throws Exception {
-        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
-        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
-        mergedIndex.destroy();
-        mergedIndex.mergeProject("obs", mIndex, true);
-        assertTrue(mergedIndex.getProjects().length == 1);
-        assertNotNull(mergedIndex.getProject("obs"));
-        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
-        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
-        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
-        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
-        indexHelper.close();
-    }
+//    public void test11MergeIndexProjectShallow() throws Exception {
+//        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
+//        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
+//        mergedIndex.delete();
+//        mergedIndex.mergeProject("obs", mIndex, true);
+//        assertTrue(mergedIndex.getProjectSlugs().length == 1);
+//        assertNotNull(mergedIndex.getProject("obs"));
+//        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
+//        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+//        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
+//        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
+//        indexHelper.close();
+//    }
 
 //    public void test12MergeIndexProjectDeep() throws Exception {
 //        IndexerSQLiteHelper indexHelper = new IndexerSQLiteHelper(mApp, "merged_app");
 //        Indexer mergedIndex = new Indexer(AppContext.context(), "merged_app", mIndexRoot, indexHelper);
-//        mergedIndex.destroy();
+//        mergedIndex.delete();
 //        mergedIndex.mergeProject("obs", mIndex);
-//        assertTrue(mergedIndex.getProjects().length == 1);
+//        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("obs"));
 //        assertTrue(mergedIndex.getSourceLanguages("obs").length > 0);
 //        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
 //        assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
 //
-//        mergedIndex.destroy();
+//        mergedIndex.delete();
 //        mergedIndex.mergeProject("gen", mIndex);
-//        assertTrue(mergedIndex.getProjects().length == 1);
+//        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("gen"));
 //        assertTrue(mergedIndex.getSourceLanguages("gen").length > 0);
 //        assertTrue(mergedIndex.getResources("gen", "en").length > 0);
@@ -237,6 +234,6 @@ public class IndexerTest extends InstrumentationTestCase {
 //    }
 
     public void test999999Cleanup() throws Exception {
-        //mIndex.destroy();
+        //mIndex.delete();
     }
 }
