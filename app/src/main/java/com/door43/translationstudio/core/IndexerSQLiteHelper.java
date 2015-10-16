@@ -184,7 +184,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         if(cursor.moveToFirst()) {
             // update
             sourceLanguageId = cursor.getLong(0);
-            db.update("source_language", values, "`id`=" + id, null);
+            db.update("source_language", values, "`id`=" + sourceLanguageId, null);
         } else {
             // insert
             sourceLanguageId = db.insert("source_language", null, values);
@@ -251,6 +251,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param md5hash
      * @param linkPath
      */
+    @Deprecated
     public void replaceLink(SQLiteDatabase db, String md5hash, String linkPath) {
         String oldHash = readLink(db, linkPath);
         if(oldHash == null) {
@@ -274,6 +275,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param linkPath
      * @return returns the catalog hash
      */
+    @Deprecated
     public String readLink(SQLiteDatabase db, String linkPath) {
         String[] columns = {"catalog_hash"};
         String[] args = {linkPath};
@@ -292,6 +294,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param db
      * @param hash
      */
+    @Deprecated
     public long countCatalogLinks(SQLiteDatabase db, String hash) {
         String[] args = {hash};
         return DatabaseUtils.queryNumEntries(db, TABLE_LINKS, "catalog_hash=?", args);
@@ -303,6 +306,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param db
      * @param linkPath
      */
+    @Deprecated
     public void deleteLink(SQLiteDatabase db, String linkPath) {
         String hash = readLink(db, linkPath);
         String[] args = {linkPath};
@@ -317,6 +321,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param db
      * @param hash
      */
+    @Deprecated
     public void deleteCatalog(SQLiteDatabase db, String hash) {
         String[] args = {hash};
 //        db.delete(TABLE_CATALOGS, "hash=?", args);
@@ -331,6 +336,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param path
      * @param contents
      */
+    @Deprecated
     public void replaceFile(SQLiteDatabase db, String hash, String path, String contents) {
         replaceFile(db, hash, path, contents, ROOT_FILE_ID);
     }
@@ -343,6 +349,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param contents
      * @param parent
      */
+    @Deprecated
     private void replaceFile(SQLiteDatabase db, String hash, String name, String contents, long parent) {
         String[] components = StringUtilities.ltrim(name.trim(), '/').split("/", 2);
 
@@ -384,6 +391,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param path
      * @return
      */
+    @Deprecated
     public String readFile(SQLiteDatabase db, String hash, String path) {
         long fileId = findFile(db, hash, path, ROOT_FILE_ID);
         String content = null;
@@ -407,6 +415,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param hash
      * @param path
      */
+    @Deprecated
     public void deleteFile(SQLiteDatabase db, String hash, String path) {
         long fileId = findFile(db, hash, path, ROOT_FILE_ID);
         if(fileId > 0) {
@@ -422,6 +431,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param extensionFilters an array of extensions to skip
      * @return
      */
+    @Deprecated
     public String[] listDir(SQLiteDatabase db, String hash, String path, String[] extensionFilters) {
         long fileId = 0;
         boolean listCatalog = false;
@@ -474,6 +484,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param file the name of the file who's contents will be returned
      * @return
      */
+    @Deprecated
     public String[] listDirFileContents(SQLiteDatabase db, String hash, String path, String file) {
         long fileId = 0;
         boolean listCatalog = false;
@@ -522,6 +533,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param extensionFilters an array of extensions to skip
      * @return
      */
+    @Deprecated
     public String[] listDirContents(SQLiteDatabase db, String hash, String path, String[] extensionFilters) {
         long fileId = 0;
         boolean listCatalog = false;
@@ -573,6 +585,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param parent
      * @return the file id or 0 if no file was found
      */
+    @Deprecated
     private long findFile(SQLiteDatabase db, String hash, String path, long parent) {
         String[] components = StringUtilities.ltrim(path.trim(), '/').split("/", 2);
         String name = components[0].trim();
