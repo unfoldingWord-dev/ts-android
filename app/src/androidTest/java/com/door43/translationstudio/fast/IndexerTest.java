@@ -64,13 +64,13 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.beginTransaction();
         assertTrue(mIndex.indexResources("gen", "en", genCatalog));
         mIndex.endTransaction(true);
-        assertTrue(mIndex.getResources("gen", "en").length > 0);
+        assertTrue(mIndex.getResourceSlugs("gen", "en").length > 0);
 
         String obsCatalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/resources.json"));
         mIndex.beginTransaction();
         assertTrue(mIndex.indexResources("obs", "en", obsCatalog));
         mIndex.endTransaction(true);
-        assertTrue(mIndex.getResources("obs", "en").length > 0);
+        assertTrue(mIndex.getResourceSlugs("obs", "en").length > 0);
     }
 
     public void test04IndexSource() throws Exception {
@@ -79,10 +79,10 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.beginTransaction();
         assertTrue(mIndex.indexSource(bibleTranslation, genCatalog));
         mIndex.endTransaction(true);
-        String[] bibleChapterIds = mIndex.getChapters(bibleTranslation);
+        String[] bibleChapterIds = mIndex.getChapterSlugs(bibleTranslation);
         assertTrue(bibleChapterIds.length > 0);
         for(String id:bibleChapterIds) {
-            assertTrue(mIndex.getFrames(bibleTranslation, id).length > 0);
+            assertTrue(mIndex.getFrameSlugs(bibleTranslation, id).length > 0);
         }
 
         SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
@@ -90,10 +90,10 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.beginTransaction();
         assertTrue(mIndex.indexSource(obsTranslation, obsCatalog));
         mIndex.endTransaction(true);
-        String[] obsChapterIds = mIndex.getChapters(obsTranslation);
+        String[] obsChapterIds = mIndex.getChapterSlugs(obsTranslation);
         assertTrue(obsChapterIds.length > 0);
         for(String id:obsChapterIds) {
-            assertTrue(mIndex.getFrames(obsTranslation, id).length > 0);
+            assertTrue(mIndex.getFrameSlugs(obsTranslation, id).length > 0);
         }
     }
 
@@ -162,12 +162,12 @@ public class IndexerTest extends InstrumentationTestCase {
 //        assertNotNull(mergedIndex.getProject("gen"));
 //        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
 //        assertTrue(mergedIndex.getSourceLanguageSlugs("gen").length > 0);
-//        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
-//        assertTrue(mergedIndex.getResources("gen", "en").length > 1);
+//        assertTrue(mergedIndex.getResourceSlugs("obs", "en").length == 1);
+//        assertTrue(mergedIndex.getResourceSlugs("gen", "en").length > 1);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
 //        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
-//        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
-//        assertTrue(mergedIndex.getChapters(genTranslation).length == 0);
+//        assertTrue(mergedIndex.getChapterSlugs(obsTranslation).length == 0);
+//        assertTrue(mergedIndex.getChapterSlugs(genTranslation).length == 0);
 //        indexHelper.close();
 //    }
 
@@ -181,14 +181,14 @@ public class IndexerTest extends InstrumentationTestCase {
 //        assertNotNull(mergedIndex.getProject("gen"));
 //        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
 //        assertTrue(mergedIndex.getSourceLanguageSlugs("gen").length > 0);
-//        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
-//        assertTrue(mergedIndex.getResources("gen", "en").length > 0);
+//        assertTrue(mergedIndex.getResourceSlugs("obs", "en").length == 1);
+//        assertTrue(mergedIndex.getResourceSlugs("gen", "en").length > 0);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
 //        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
-//        assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
-//        String[] genChapters = mergedIndex.getChapters(genTranslation);
+//        assertTrue(mergedIndex.getChapterSlugs(obsTranslation).length > 0);
+//        String[] genChapters = mergedIndex.getChapterSlugs(genTranslation);
 //        assertTrue(genChapters.length > 0);
-//        String[] genFrames = mergedIndex.getFrames(genTranslation, genChapters[0]);
+//        String[] genFrames = mergedIndex.getFrameSlugs(genTranslation, genChapters[0]);
 //        assertTrue(genFrames.length > 0);
 //        JSONObject frameJson = mergedIndex.getFrame(genTranslation, genChapters[0], genFrames[0]);
 //        Frame frame = Frame.generate(frameJson);
@@ -204,9 +204,9 @@ public class IndexerTest extends InstrumentationTestCase {
 //        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("obs"));
 //        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
-//        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+//        assertTrue(mergedIndex.getResourceSlugs("obs", "en").length == 1);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
-//        assertTrue(mergedIndex.getChapters(obsTranslation).length == 0);
+//        assertTrue(mergedIndex.getChapterSlugs(obsTranslation).length == 0);
 //        indexHelper.close();
 //    }
 
@@ -218,18 +218,18 @@ public class IndexerTest extends InstrumentationTestCase {
 //        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("obs"));
 //        assertTrue(mergedIndex.getSourceLanguageSlugs("obs").length > 0);
-//        assertTrue(mergedIndex.getResources("obs", "en").length == 1);
+//        assertTrue(mergedIndex.getResourceSlugs("obs", "en").length == 1);
 //        SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
-//        assertTrue(mergedIndex.getChapters(obsTranslation).length > 0);
+//        assertTrue(mergedIndex.getChapterSlugs(obsTranslation).length > 0);
 //
 //        mergedIndex.delete();
 //        mergedIndex.mergeProject("gen", mIndex);
 //        assertTrue(mergedIndex.getProjectSlugs().length == 1);
 //        assertNotNull(mergedIndex.getProject("gen"));
 //        assertTrue(mergedIndex.getSourceLanguageSlugs("gen").length > 0);
-//        assertTrue(mergedIndex.getResources("gen", "en").length > 0);
+//        assertTrue(mergedIndex.getResourceSlugs("gen", "en").length > 0);
 //        SourceTranslation genTranslation = SourceTranslation.simple("gen", "en", "ulb");
-//        assertTrue(mergedIndex.getChapters(genTranslation).length > 0);
+//        assertTrue(mergedIndex.getChapterSlugs(genTranslation).length > 0);
 //        indexHelper.close();
 //    }
 

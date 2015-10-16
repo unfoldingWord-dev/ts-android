@@ -105,7 +105,7 @@ public class DownloadSourceLanguageTask extends ManagedTask {
 //        // reload project
 //        if(interrupted()) return;
 //        // TODO: only delete the index if there were changes
-//        publishProgress(-1, AppContext.context().getResources().getString(R.string.indexing));
+//        publishProgress(-1, AppContext.context().getResourceSlugs().getString(R.string.indexing));
 //        IndexStore.delete(mProjectId, mSourceLanguageId);
 //        delegate(new IndexProjectsTask(mProjectId));
 //        Project currentProject = AppContext.projectManager().getSelectedProject();

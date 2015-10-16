@@ -57,7 +57,7 @@ public class DownloaderTest extends InstrumentationTestCase {
         mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadResourceList("obs", "en"));
         mDownloader.getIndex().endTransaction(true);
-        String[] resourceIds = mIndex.getResources("obs", "en");
+        String[] resourceIds = mIndex.getResourceSlugs("obs", "en");
         assertTrue(resourceIds.length > 0);
     }
 
@@ -66,9 +66,9 @@ public class DownloaderTest extends InstrumentationTestCase {
         mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadSource(translation, mDownloader.getIndex()));
         mDownloader.getIndex().endTransaction(true);
-        String[] chapterIds = mIndex.getChapters(translation);
+        String[] chapterIds = mIndex.getChapterSlugs(translation);
         assertTrue(chapterIds.length > 0);
-        String[] frameIds = mIndex.getFrames(translation, "01");
+        String[] frameIds = mIndex.getFrameSlugs(translation, "01");
         assertTrue(frameIds.length > 0);
     }
 

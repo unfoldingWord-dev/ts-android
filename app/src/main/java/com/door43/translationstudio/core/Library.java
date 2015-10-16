@@ -288,7 +288,7 @@ public class Library {
         LibraryUpdates updates = new LibraryUpdates();
         for(String projectId:mServerIndex.getProjectSlugs()) {
             for(String sourceLanguageId:mServerIndex.getSourceLanguageSlugs(projectId)) {
-                for(String resourceId:mServerIndex.getResources(projectId, sourceLanguageId)) {
+                for(String resourceId:mServerIndex.getResourceSlugs(projectId, sourceLanguageId)) {
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
                     try {
                         int serverModified = mServerIndex.getResource(sourceTranslation).getInt("date_modified");
@@ -320,7 +320,7 @@ public class Library {
         // download
         for (String projectId : mServerIndex.getProjectSlugs()) {
             for (String sourceLanguageId : mServerIndex.getSourceLanguageSlugs(projectId)) {
-                for(String resourceId : mServerIndex.getResources(projectId, sourceLanguageId)) {
+                for(String resourceId : mServerIndex.getResourceSlugs(projectId, sourceLanguageId)) {
                     SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
 
                     // only download resources that meet the minimum checking level
@@ -673,7 +673,7 @@ public class Library {
      */
     public Resource[] getResources(String projectId, String sourceLanguageId) {
         List<Resource> resources = new ArrayList<>();
-        String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
+        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
             Resource res = getResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
             if(res != null) {
@@ -689,7 +689,7 @@ public class Library {
      * @return
      */
     private Resource getResource(SourceTranslation sourceTranslation) {
-        JSONObject resourceJson = getActiveIndex().getResource(SourceTranslation.simple(sourceTranslation.projectId, sourceTranslation.sourceLanguageId, sourceTranslation.resourceId));
+        JSONObject resourceJson = getActiveIndex().getResource(SourceTranslation.simple(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug));
         try {
             return Resource.generate(resourceJson);
         } catch (Exception e) {
@@ -729,12 +729,12 @@ public class Library {
             float numFrames = 0f;
             float numFinishedFrames = 0f;
             if (sourceTranslation != null) {
-                String[] chapterIds = getActiveIndex().getChapters(sourceTranslation);
+                String[] chapterIds = getActiveIndex().getChapterSlugs(sourceTranslation);
                 for (String chapterId : chapterIds) {
                     if (Thread.currentThread().isInterrupted()) {
                         break;
                     }
-                    String[] frameIds = getActiveIndex().getFrames(sourceTranslation, chapterId);
+                    String[] frameIds = getActiveIndex().getFrameSlugs(sourceTranslation, chapterId);
                     for (String frameId : frameIds) {
                         if (Thread.currentThread().isInterrupted()) {
                             break;
@@ -838,7 +838,12 @@ public class Library {
      * @return
      */
     public Frame getFrame(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        return Frame.generate(chapterId, getActiveIndex().getFrame(sourceTranslation, chapterId, frameId));
+        try {
+            return Frame.generate(chapterId, getActiveIndex().getFrame(sourceTranslation, chapterId, frameId));
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -933,7 +938,7 @@ public class Library {
         List<SourceTranslation> sourceTranslations = new ArrayList<>();
         String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
+            String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
                 if(sourceTranslation != null && sourceTranslation.getCheckingLevel() >= MIN_CHECKING_LEVEL) {
@@ -952,7 +957,7 @@ public class Library {
         List<SourceTranslation> draftTranslations = new ArrayList<>();
         String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
         for(String sourceLanguageId:sourceLanguageIds) {
-            String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
+            String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
             for(String resourceId:resourceIds) {
                 SourceTranslation sourceTranslation = getSourceTranslation(projectId, sourceLanguageId, resourceId);
                 if(sourceTranslation != null && sourceTranslation.getCheckingLevel() < MIN_CHECKING_LEVEL) {
@@ -1087,9 +1092,9 @@ public class Library {
      * @return
      */
     public boolean sourceLanguageHasSource(String projectId, String sourceLanguageId) {
-        String[] resourceIds = getActiveIndex().getResources(projectId, sourceLanguageId);
+        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
         for(String resourceId:resourceIds) {
-            String[] chapterIds = getActiveIndex().getChapters(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
+            String[] chapterIds = getActiveIndex().getChapterSlugs(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
             if(chapterIds.length > 0) {
                 return true;
             }

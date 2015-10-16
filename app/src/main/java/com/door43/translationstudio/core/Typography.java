@@ -92,7 +92,7 @@ public class Typography {
 //        if(!fontFile.exists()) {
 //            fontFile.getParentFile().mkdirs();
 //            try {
-//                Util.writeStream(context.getResources().getAssets().open("fonts/" + fontName), fontFile);
+//                Util.writeStream(context.getResourceSlugs().getAssets().open("fonts/" + fontName), fontFile);
 //            } catch (Exception e) {
 //                e.printStackTrace();
 //                return;

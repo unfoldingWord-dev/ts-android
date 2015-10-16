@@ -144,6 +144,7 @@ CREATE TABLE `chapter` (
   `resource_id` INTEGER NOT NULL,
   `reference` TEXT NULL DEFAULT NULL,
   `title` TEXT NULL DEFAULT NULL,
+  `sort` INTEGER NOT NULL DEFAULT 0,
   UNIQUE (`resource_id`, `slug`),
   FOREIGN KEY (resource_id) REFERENCES `resource` (`id`)
 );
@@ -162,6 +163,7 @@ CREATE TABLE `frame` (
   `body` TEXT NOT NULL,
   `format` TEXT NULL DEFAULT NULL,
   `image_url` TEXT NULL DEFAULT NULL,
+  `sort` INTEGER NOT NULL DEFAULT 0,
   UNIQUE (`chapter_id`, `slug`),
   FOREIGN KEY (chapter_id) REFERENCES `chapter` (`id`)
 );

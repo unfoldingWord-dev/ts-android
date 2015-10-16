@@ -503,6 +503,76 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         return slugs.toArray(new String[slugs.size()]);
     }
 
+    /**
+     * Returns the database id for the resource
+     * @param db
+     * @param slug
+     * @param sourceLanguageId
+     * @return
+     */
+    public long getResourceDBId(SQLiteDatabase db, String slug, long sourceLanguageId) {
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `resource` WHERE `slug`=? AND `source_language_id`=" + sourceLanguageId, new String[]{slug});
+        long resourceId = 0;
+        if(cursor.moveToFirst()) {
+            resourceId = cursor.getLong(0);
+        }
+        cursor.close();
+        return resourceId;
+    }
+
+    /**
+     * Returns an array of chapter slugs
+     * @param db
+     * @param resourceId
+     * @return
+     */
+    public String[] getChapterSlugs(SQLiteDatabase db, long resourceId) {
+        Cursor cursor = db.rawQuery("SELECT `slug` FROM `chapter` WHERE `resource_id`=" + resourceId + " ORDER BY `sort` DESC", null);
+        cursor.moveToFirst();
+        List<String> slugs = new ArrayList<>();
+        while(!cursor.isAfterLast()) {
+            slugs.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return slugs.toArray(new String[slugs.size()]);
+    }
+
+    /**
+     * Returns the database id for the chapter
+     * @param db
+     * @param slug
+     * @param resourceId
+     * @return
+     */
+    public long getChapterDBId(SQLiteDatabase db, String slug, long resourceId) {
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `chapter` WHERE `slug`=? AND `resource_id`=" + resourceId, new String[]{slug});
+        long chapterId = 0;
+        if(cursor.moveToFirst()) {
+            chapterId = cursor.getLong(0);
+        }
+        cursor.close();
+        return chapterId;
+    }
+
+    /**
+     * Returns an array of frame slugs
+     * @param db
+     * @param chapterId
+     * @return
+     */
+    public String[] getFrameSlugs(SQLiteDatabase db, long chapterId) {
+        Cursor cursor = db.rawQuery("SELECT `slug` FROM `frame` WHERE `chapter_id`=" + chapterId + " ORDER BY `sort` DESC", null);
+        cursor.moveToFirst();
+        List<String> slugs = new ArrayList<>();
+        while(!cursor.isAfterLast()) {
+            slugs.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return slugs.toArray(new String[slugs.size()]);
+    }
+
 
 //    /**
 //     * Creates or updates a link

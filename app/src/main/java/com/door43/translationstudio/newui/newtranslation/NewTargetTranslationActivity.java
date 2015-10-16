@@ -98,7 +98,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 //            if(extras == null) {
 //                extras = new Bundle();
 //            }
-//            extras.putString(SourceLanguageListFragment.ARG_PROJECT_ID, projectId);
+//            extras.putString(SourceLanguageListFragment.ARG_PROJECT_ID, projectSlug);
 //                    ((SourceLanguageListFragment) mFragment).setArguments(extras);
 //            getFragmentManager().beginTransaction().replace(R.id.fragment_container, (SourceLanguageListFragment) mFragment).commit();
 //            // TODO: animate

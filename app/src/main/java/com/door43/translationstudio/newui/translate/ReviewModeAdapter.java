@@ -94,7 +94,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mContext = context;
         mTargetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
         mTargetLanguage = mLibrary.getTargetLanguage(mTargetTranslation.getTargetLanguageId());
         mResourcesOpened = resourcesOpened;
 
@@ -144,8 +144,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(sourceTranslation != null) {
                 ContentValues values = new ContentValues();
                 // include the resource id if there are more than one
-                if(mLibrary.getResources(sourceTranslation.projectId, sourceTranslation.sourceLanguageId).length > 1) {
-                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceId.toUpperCase());
+                if(mLibrary.getResources(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug).length > 1) {
+                    values.put("title", sourceTranslation.getSourceLanguageTitle() + " " + sourceTranslation.resourceSlug.toUpperCase());
                 } else {
                     values.put("title", sourceTranslation.getSourceLanguageTitle());
                 }
@@ -159,7 +159,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     void setSourceTranslation(String sourceTranslationId) {
         mSourceTranslation = mLibrary.getSourceTranslation(sourceTranslationId);
-        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectId, mSourceTranslation.sourceLanguageId);
+        mSourceLanguage = mLibrary.getSourceLanguage(mSourceTranslation.projectSlug, mSourceTranslation.sourceLanguageSlug);
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<Frame> frames = new ArrayList<>();
@@ -578,8 +578,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static TranslationNote[] getPreferredNotes(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         Library library = AppContext.getLibrary();
         TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, chapterId, frameId);
-        if(notes.length == 0 && !sourceTranslation.sourceLanguageId.equals("en")) {
-            notes = library.getTranslationNotes(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId);
+        if(notes.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            notes = library.getTranslationNotes(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId);
         }
         return notes;
     }
@@ -595,8 +595,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static TranslationWord[] getPreferredWords(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         Library library = AppContext.getLibrary();
         TranslationWord[] words = library.getTranslationWords(sourceTranslation, chapterId, frameId);
-        if(words.length == 0 && !sourceTranslation.sourceLanguageId.equals("en")) {
-            words = library.getTranslationWords(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId);
+        if(words.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            words = library.getTranslationWords(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId);
         }
         return words;
     }
@@ -612,8 +612,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private static CheckingQuestion[] getPreferredQuestions(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         Library library = AppContext.getLibrary();
         CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
-        if(questions.length == 0 && !sourceTranslation.sourceLanguageId.equals("en")) {
-            questions = library.getCheckingQuestions(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId);
+        if(questions.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            questions = library.getCheckingQuestions(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId);
         }
         return questions;
     }

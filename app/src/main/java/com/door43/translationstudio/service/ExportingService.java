@@ -249,7 +249,7 @@ public class ExportingService extends NetworkService {
                     try {
                         String projectId = json.getString("id");
 
-                        final Project p =  null;//AppContext.projectManager().getProject(projectId);
+                        final Project p =  null;//AppContext.projectManager().getProject(projectSlug);
                         // validate project
                         if(p != null) {
                             // validate requested source languages

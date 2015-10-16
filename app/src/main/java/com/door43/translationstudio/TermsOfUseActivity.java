@@ -105,7 +105,7 @@ public class TermsOfUseActivity extends BaseActivity {
         ft.addToBackStack(null);
 
         Bundle args = new Bundle();
-        args.putInt("resourceId", stringResource);
+        args.putInt("resourceSlug", stringResource);
         mLicenseDialog.setArguments(args);
         mLicenseDialog.show(ft, "dialog");
     }

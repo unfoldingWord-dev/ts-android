@@ -17,14 +17,16 @@ public class Frame {
     private final String mId;
     private final TranslationFormat mFormat;
     private final String mChapterId;
+    public final String imageUrl;
     private String mTitle;
     private int[] mVerses = null;
 
-    private Frame(String frameId, String chapterId, String body, TranslationFormat format) {
+    private Frame(String frameId, String chapterId, String body, TranslationFormat format, String imageUrl) {
         mChapterId = chapterId;
         this.body = body;
         mFormat = format;
         mId = frameId;
+        this.imageUrl = imageUrl;
     }
 
     /**
@@ -57,7 +59,7 @@ public class Frame {
      * @return
      */
     public static Frame generateDummy(String chapterId) {
-        return new Frame(null, chapterId, "", TranslationFormat.DEFAULT);
+        return new Frame(null, chapterId, "", TranslationFormat.DEFAULT, "");
     }
 
     /**
@@ -69,32 +71,32 @@ public class Frame {
      * @param json
      * @return
      */
-    public static Frame generate(String chapterId, JSONObject json) {
+    public static Frame generate(String chapterId, JSONObject json) throws JSONException {
         if(json == null) {
             return null;
         }
-        try {
-            TranslationFormat format = TranslationFormat.DEFAULT;
-            if(json.has("format")) {
-                format = TranslationFormat.get(json.getString("format"));
-            }
-            String[] complexId = json.getString("id").split("-");
-            String frameId;
-            if(complexId.length > 1) {
-                frameId = complexId[1];
-            } else {
-                // future proof
-                frameId = complexId[0];
-            }
-            return new Frame(
-                    frameId,
-                    chapterId,
-                    json.getString("text"),
-                    format);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        TranslationFormat format = TranslationFormat.DEFAULT;
+        if(json.has("format")) {
+            format = TranslationFormat.get(json.getString("format"));
         }
-        return null;
+        String img = "";
+        if(json.has("img")) {
+            img = json.getString("img");
+        }
+        String[] complexId = json.getString("id").split("-");
+        String frameId;
+        if(complexId.length > 1) {
+            frameId = complexId[1];
+        } else {
+            // future proof
+            frameId = complexId[0];
+        }
+        return new Frame(
+                frameId,
+                chapterId,
+                json.getString("text"),
+                format,
+                img);
     }
 
     /**
