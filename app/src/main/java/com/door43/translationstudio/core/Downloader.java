@@ -158,7 +158,7 @@ public class Downloader {
         if(catalogApiUrl != null) {
             String catalog = request(catalogApiUrl);
             if(catalog != null) {
-                return targetIndex.indexTerms(translation, catalog);
+                return targetIndex.indexWords(translation, catalog);
             }
         }
         return false;

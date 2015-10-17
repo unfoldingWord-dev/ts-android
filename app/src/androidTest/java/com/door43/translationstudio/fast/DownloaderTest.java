@@ -92,7 +92,7 @@ public class DownloaderTest extends InstrumentationTestCase {
         mDownloader.getIndex().beginTransaction();
         assertTrue(mDownloader.downloadNotes(translation, mDownloader.getIndex()));
         mDownloader.getIndex().endTransaction(true);
-        String[] noteIds = mIndex.getNotes(translation, "01", "01");
+        String[] noteIds = mIndex.getNoteSlugs(translation, "01", "01");
         assertTrue(noteIds.length > 0);
     }
 

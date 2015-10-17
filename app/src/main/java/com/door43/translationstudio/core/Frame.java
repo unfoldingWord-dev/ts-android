@@ -21,7 +21,7 @@ public class Frame {
     private String mTitle;
     private int[] mVerses = null;
 
-    private Frame(String frameId, String chapterId, String body, TranslationFormat format, String imageUrl) {
+    public Frame(String frameId, String chapterId, String body, TranslationFormat format, String imageUrl) {
         mChapterId = chapterId;
         this.body = body;
         mFormat = format;

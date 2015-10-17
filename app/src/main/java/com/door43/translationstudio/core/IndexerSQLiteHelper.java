@@ -573,6 +573,193 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         return slugs.toArray(new String[slugs.size()]);
     }
 
+    /**
+     * Returns the database id for the frame
+     * @param db
+     * @param slug
+     * @param chapterId
+     * @return
+     */
+    public long getFrameDBId(SQLiteDatabase db, String slug, long chapterId) {
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `frame` WHERE `slug`=? AND `chapter_id`=" + chapterId, new String[]{slug});
+        long frameId = 0;
+        if(cursor.moveToFirst()) {
+            frameId = cursor.getLong(0);
+        }
+        cursor.close();
+        return frameId;
+    }
+
+    /**
+     * Inserts or updates a translation note
+     * @param db
+     * @param slug
+     * @param frameId
+     * @param title
+     * @param body
+     * @return
+     */
+    public long addTranslationNote(SQLiteDatabase db, String slug, long frameId, String title, String body) {
+        ContentValues values = new ContentValues();
+        values.put("slug", slug);
+        values.put("frame_id", frameId);
+        values.put("title", title);
+        values.put("body", body);
+
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `translation_note` WHERE `slug`=? AND `frame_id`=" + frameId, new String[]{slug});
+        long noteId;
+        if(cursor.moveToFirst()) {
+            // update
+            noteId = cursor.getLong(0);
+            db.update("translation_note", values, "`id`=" + noteId, null);
+        } else {
+            // insert
+            noteId = db.insert("translation_note", null, values);
+        }
+        cursor.close();
+        return noteId;
+    }
+
+    /**
+     * Returns an array of translation note slugs
+     * @param db
+     * @param frameId
+     * @return
+     */
+    public String[] getTranslationNoteSlugs(SQLiteDatabase db, long frameId) {
+        Cursor cursor = db.rawQuery("SELECT `slug` FROM `translation_note` WHERE `frame_id`=" + frameId + " ORDER BY `title` DESC", null);
+        cursor.moveToFirst();
+        List<String> slugs = new ArrayList<>();
+        while(!cursor.isAfterLast()) {
+            slugs.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return slugs.toArray(new String[slugs.size()]);
+    }
+
+    /**
+     * Returns a translation note
+     * @param db
+     * @param slug
+     * @param frameId
+     * @return
+     */
+    public TranslationNote getTranslationNote(SQLiteDatabase db, String slug, long frameId) {
+        Cursor cursor = db.rawQuery("SELECT `c`.`slug`, `f`.`slug`, `tn`.`id`, `tn`.`title`, `tn`.`body` FROM `translation_note` AS `tn`"
+                + " LEFT JOIN `frame` AS `f` ON `f`.`id`=`tn`.`frame_id`"
+                + " LEFT JOIN `chapter` AS `c` ON `c`.`id`=`f`.`chapter_id`"
+                + " WHERE `tn`.`slug`=? AND `tn`.`frame_id`=" + frameId, new String[]{slug});
+        TranslationNote note = null;
+        if(cursor.moveToFirst()) {
+            note = new TranslationNote(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
+        }
+        cursor.close();
+        return note;
+    }
+
+    /**
+     * Returns a chapter
+     * @param db
+     * @param slug
+     * @param resourceId
+     * @return
+     */
+    public Chapter getChapter(SQLiteDatabase db, String slug, long resourceId) {
+        Cursor cursor = db.rawQuery("SELECT `title`, `reference`, `slug` FROM `chapter` WHERE `slug`=? AND `resource_id`=" + resourceId, new String[]{slug});
+        Chapter chapter = null;
+        if(cursor.moveToFirst()) {
+            chapter = new Chapter(cursor.getString(0), cursor.getString(1), cursor.getString(2));
+        }
+        cursor.close();
+        return chapter;
+    }
+
+    /**
+     * Returns a frame
+     * @param db
+     * @param slug
+     * @param chapterId
+     * @return
+     */
+    public Frame getFrame(SQLiteDatabase db, String slug, long chapterId) {
+        Cursor cursor = db.rawQuery("SELECT `f`.`slug`, `c`.`slug`, `f`.`body`, `f`.`format`, `f`.`image_url` FROM `frame` AS `f`"
+                + " LEFT JOIN `chapter` AS `c` ON `c`.`id`=`f`.`chapter_id`"
+                + " WHERE `f`.`slug`=? AND `f`.`chapter_id`=" + chapterId, new String[]{slug});
+        Frame frame = null;
+        if(cursor.moveToFirst()) {
+            frame = new Frame(cursor.getString(0), cursor.getString(1), cursor.getString(2), TranslationFormat.get(cursor.getString(3)), cursor.getString(4));
+        }
+        cursor.close();
+        return frame;
+    }
+
+    /**
+     * inserts or replace a translation word
+     * @param db
+     * @param slug
+     * @param resourceId
+     * @param title
+     * @param definitionTitle
+     * @param definition
+     * @return
+     */
+    public long addTranslationWord(SQLiteDatabase db, String slug, long resourceId, String title, String definitionTitle, String definition) {
+        ContentValues values = new ContentValues();
+        values.put("slug", slug);
+        values.put("resource_id", resourceId);
+        values.put("title", title);
+        values.put("definition_title", definitionTitle);
+        values.put("definition", definition);
+
+        // TODO: 10/16/2015 make sure this performs an insert or replace
+        return db.replace("frame", null, values);
+    }
+
+    /**
+     * Returns an array of translation word slugs
+     * @param db
+     * @param resourceId
+     * @return
+     */
+    public String[] getTranslationWordSlugs(SQLiteDatabase db, long resourceId) {
+        Cursor cursor = db.rawQuery("SELECT `slug` FROM `translation_word` WHERE `resource_id`=" + resourceId + " ORDER BY `title` DESC", null);
+        cursor.moveToFirst();
+        List<String> slugs = new ArrayList<>();
+        while(!cursor.isAfterLast()) {
+            slugs.add(cursor.getString(0));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return slugs.toArray(new String[slugs.size()]);
+    }
+
+    /**
+     * Returns a translation word
+     * @param db
+     * @param slug
+     * @param resourceId
+     * @return
+     */
+    public TranslationWord getTranslationWord(SQLiteDatabase db, String slug, long resourceId) {
+        Cursor cursor = db.rawQuery("SELECT `id`, `term`, `definition`, `definition_title` FROM `translation_word`"
+                + " WHERE ``slug`=? AND `resource_id`=" + resourceId, new String[]{slug});
+        TranslationWord word = null;
+        if(cursor.moveToFirst()) {
+            long wordId = cursor.getLong(0);
+            String term = cursor.getString(1);
+            String definition = cursor.getString(2);
+            String definitionTitle = cursor.getString(3);
+            cursor.close();
+
+            // TODO: 10/16/2015 retrieve the related terms and exmaple passages
+            // TODO: 10/16/2015 we could create a comma delimited list for related (and aliases)
+            word = new TranslationWord(slug, term, definition, definitionTitle, new String[0],  new String[0],  new TranslationWord.Example[0]);
+        }
+        cursor.close();
+        return word;
+    }
+
 
 //    /**
 //     * Creates or updates a link

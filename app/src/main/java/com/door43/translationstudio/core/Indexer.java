@@ -933,11 +933,11 @@ public class Indexer {
     /**
      * Builds a notes index from json
      *
-     * @param translation
+     * @param sourceTranslation
      * @param catalog
      * @return
      */
-    public synchronized boolean indexNotes(SourceTranslation translation, String catalog) {
+    public synchronized boolean indexNotes(SourceTranslation sourceTranslation, String catalog) {
         //KLUDGE: modify v2 notes catalogJson to match expected catalogJson format
         JSONArray items;
         try {
@@ -992,35 +992,46 @@ public class Indexer {
         items = jsonArray;
         //KLUDGE: end modify v2
 
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
 
-        // index
-        for(int chapterIndex = 0; chapterIndex < items.length(); chapterIndex ++) {
-            try {
-                JSONObject chapter = items.getJSONObject(chapterIndex);
-                String chapterId = chapter.getString("id");
-                JSONArray frames = chapter.getJSONArray("frames");
-                for(int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
-                    try {
-                        JSONObject frame = frames.getJSONObject(frameIndex);
-                        String frameId = frame.getString("id");
-                        JSONArray frameItems = frame.getJSONArray("items");
-                        for(int itemIndex = 0; itemIndex < frameItems.length(); itemIndex ++) {
+        if(resourceId > 0) {
+            // index
+            for (int chapterIndex = 0; chapterIndex < items.length(); chapterIndex++) {
+                try {
+                    JSONObject chapterJson = items.getJSONObject(chapterIndex);
+                    String chapterSlug = chapterJson.getString("id");
+                    long chapterId = mDatabaseHelper.getChapterDBId(mDatabase, chapterSlug, resourceId);
+                    if(chapterId > 0) {
+                        JSONArray frames = chapterJson.getJSONArray("frames");
+                        for (int frameIndex = 0; frameIndex < frames.length(); frameIndex++) {
                             try {
-                                JSONObject item = frameItems.getJSONObject(itemIndex);
-                                TranslationNote note = TranslationNote.generate(chapterId, frameId, item);
-                                if(note != null) {
-                                    // TODO: index the note
+                                JSONObject frameJson = frames.getJSONObject(frameIndex);
+                                String frameSlug = frameJson.getString("id");
+                                long frameId = mDatabaseHelper.getFrameDBId(mDatabase, frameSlug, chapterId);
+                                if(frameId > 0) {
+                                    JSONArray frameItems = frameJson.getJSONArray("items");
+                                    for (int itemIndex = 0; itemIndex < frameItems.length(); itemIndex++) {
+                                        try {
+                                            JSONObject item = frameItems.getJSONObject(itemIndex);
+                                            TranslationNote note = TranslationNote.generate(chapterSlug, frameSlug, item);
+                                            if (note != null) {
+                                                mDatabaseHelper.addTranslationNote(mDatabase, note.getId(), frameId, note.getTitle(), note.getBody());
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 }
-                            } catch(JSONException e) {
+                            } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
-                    } catch(JSONException e) {
-                        e.printStackTrace();
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
         return true;
@@ -1028,11 +1039,11 @@ public class Indexer {
 
     /**
      * Builds a terms index from json
-     * @param translation
+     * @param sourceTranslation
      * @param catalog
      * @return
      */
-    public synchronized boolean indexTerms(SourceTranslation translation, String catalog) {
+    public synchronized boolean indexWords(SourceTranslation sourceTranslation, String catalog) {
         JSONArray items;
         try {
             items = new JSONArray(catalog);
@@ -1041,15 +1052,21 @@ public class Indexer {
             return false;
         }
 
-        for(int i = 0; i < items.length(); i ++ ) {
-            try {
-                JSONObject item = items.getJSONObject(i);
-                TranslationWord word = TranslationWord.generate(item);
-                if(word != null) {
-                    // TODO: index word
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            for (int i = 0; i < items.length(); i++) {
+                try {
+                    JSONObject item = items.getJSONObject(i);
+                    TranslationWord word = TranslationWord.generate(item);
+                    if (word != null) {
+                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resourceId, word.getTitle(), word.getDefinitionTitle(), word.getDefinition());
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
 
@@ -1329,16 +1346,23 @@ public class Indexer {
     }
 
     /**
-     * Returns an array of translationNote ids
-     * @param translation
-     * @param chapterId
-     * @param frameId
+     * Returns an array of translationNote slugs
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @param frameSlug
      * @return
      */
-    public String[] getNotes(SourceTranslation translation, String chapterId, String frameId) {
-        // TODO: 10/16/2015 this should return an array of note objects
+    public String[] getNoteSlugs(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+        long chapterId = mDatabaseHelper.getChapterDBId(mDatabase, chapterSlug, resourceId);
+        long frameId = mDatabaseHelper.getFrameDBId(mDatabase, frameSlug, chapterId);
+
+        if(frameId > 0) {
+            return mDatabaseHelper.getTranslationNoteSlugs(mDatabase, frameId);
+        }
         return new String[0];
-//        return getItemsArray(getResource(translation), "notes", chapterId + "/" + frameId);
     }
 
     /**
@@ -1367,14 +1391,19 @@ public class Indexer {
     }
 
     /**
-     * Returns an array of translationWords for the sourceTranslation
-     * @param translation
+     * Returns an array of translationWord slugs
+     * @param sourceTranslation
      * @return
      */
-    public String[] getWords(SourceTranslation translation) {
-        // TODO: 10/16/2015 this should return an array of translation word objects
+    public String[] getWords(SourceTranslation sourceTranslation) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            return mDatabaseHelper.getTranslationWordSlugs(mDatabase, resourceId);
+        }
         return new String[0];
-//        return getItemsArray(getResource(translation), "terms");
     }
 
     /**
@@ -1389,18 +1418,21 @@ public class Indexer {
     }
 
     /**
-     * Returns a single translatonWord
-     * @param translation
-     * @param termId
+     * Returns a translatonWord
+     * @param sourceTranslation
+     * @param wordSlug
      * @return
      */
-    public JSONObject getWord(SourceTranslation translation, String termId) {
-        // TODO: 10/16/2015 this should return a translation word object
-//        String md5hash = readWordsLink(translation);
-//        if(md5hash != null) {
-//            return readJSON(md5hash, termId);
-//        }
-        return null;
+    public TranslationWord getWord(SourceTranslation sourceTranslation, String wordSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            return mDatabaseHelper.getTranslationWord(mDatabase, wordSlug, resourceId);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -1475,35 +1507,36 @@ public class Indexer {
     }
 
     /**
-     * Returns the json object for a single chapter
-     * @param translation
-     * @param chapterId
+     * Returns a chapter
+     * @param sourceTranslation
+     * @param chapterSlug
      * @return
      */
-    public JSONObject getChapter(SourceTranslation translation, String chapterId) {
-//        String md5hash = readSourceLink(translation);
-//        if(md5hash == null) {
-//            return null;
-//        }
-//        return readJSON(md5hash, chapterId + "/chapter.json");
-        // TODO: 10/16/2015 this should return a chapter object
+    public Chapter getChapter(SourceTranslation sourceTranslation, String chapterSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+        if(resourceId > 0) {
+            return mDatabaseHelper.getChapter(mDatabase, chapterSlug, resourceId);
+        }
         return null;
     }
 
     /**
-     * Returns the json object for a single frame
-     * @param translation
-     * @param chapterId
-     * @param frameId
+     * Returns a frame
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @param frameSlug
      * @return
      */
-    public JSONObject getFrame(SourceTranslation translation, String chapterId, String frameId) {
-//        String md5hash = readSourceLink(translation);
-//        if(md5hash == null) {
-//            return null;
-//        }
-//        return readJSON(md5hash, chapterId + "/" + frameId);
-        // TODO: 10/16/2015 this should return a frame object
+    public Frame getFrame(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+        long chapterId = mDatabaseHelper.getChapterDBId(mDatabase, chapterSlug, resourceId);
+        if(chapterId > 0) {
+            return mDatabaseHelper.getFrame(mDatabase, frameSlug, chapterId);
+        }
         return null;
     }
 
@@ -1526,20 +1559,22 @@ public class Indexer {
     }
 
     /**
-     * Returns the json object for a single translationNote
-     * @param translation
-     * @param chapterId
-     * @param frameId
-     * @param noteId
+     * Returns a translation note
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @param frameSlug
+     * @param noteSlug
      * @return
      */
-    public JSONObject getNote(SourceTranslation translation, String chapterId, String frameId, String noteId) {
-//        String md5hash = readNotesLink(translation);
-//        if(md5hash == null) {
-//            return null;
-//        }
-//        return readJSON(md5hash, chapterId + "/" + frameId + "/" + noteId);
-        // TODO: 10/16/2015 this should return a note object
+    public TranslationNote getNote(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug, String noteSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+        long chapterId = mDatabaseHelper.getChapterDBId(mDatabase, chapterSlug, resourceId);
+        long frameId = mDatabaseHelper.getFrameDBId(mDatabase, frameSlug, chapterId);
+        if(frameId > 0) {
+            return mDatabaseHelper.getTranslationNote(mDatabase, noteSlug, frameId);
+        }
         return null;
     }
 

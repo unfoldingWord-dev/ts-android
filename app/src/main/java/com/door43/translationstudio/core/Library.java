@@ -789,13 +789,7 @@ public class Library {
      * @return
      */
     public Chapter getChapter(SourceTranslation sourceTranslation, String chapterId) {
-        JSONObject chapterJson = getActiveIndex().getChapter(sourceTranslation, chapterId);
-        try {
-            return Chapter.generate(chapterJson);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return getActiveIndex().getChapter(sourceTranslation, chapterId);
     }
 
     /**
@@ -838,12 +832,7 @@ public class Library {
      * @return
      */
     public Frame getFrame(SourceTranslation sourceTranslation, String chapterId, String frameId) {
-        try {
-            return Frame.generate(chapterId, getActiveIndex().getFrame(sourceTranslation, chapterId, frameId));
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return getActiveIndex().getFrame(sourceTranslation, chapterId, frameId);
     }
 
     /**
@@ -977,7 +966,7 @@ public class Library {
      */
     public TranslationNote[] getTranslationNotes(SourceTranslation sourceTranslation, String chapterId, String frameId) {
         List<TranslationNote> notes = new ArrayList<>();
-        String[] noteIds = getActiveIndex().getNotes(sourceTranslation, chapterId, frameId);
+        String[] noteIds = getActiveIndex().getNoteSlugs(sourceTranslation, chapterId, frameId);
         for(String noteId:noteIds) {
             TranslationNote note = getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
             if(note != null) {
@@ -996,7 +985,7 @@ public class Library {
      * @return
      */
     public TranslationNote getTranslationNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String translationNoteId) {
-        return TranslationNote.generate(chapterId, frameId, getActiveIndex().getNote(sourceTranslation, chapterId, frameId, translationNoteId));
+        return getActiveIndex().getNote(sourceTranslation, chapterId, frameId, translationNoteId);
     }
 
     /**

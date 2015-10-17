@@ -19,7 +19,7 @@ public class Chapter {
      * @param reference
      * @param chapterId
      */
-    protected Chapter(String title, String reference, String chapterId) {
+    public Chapter(String title, String reference, String chapterId) {
         this.title = title;
         this.reference = reference;
         mId = chapterId;

@@ -13,7 +13,7 @@ public class TranslationNote {
     private final String mRef;
     private final String mText;
 
-    private TranslationNote(String chapterId, String frameId, String noteId, String ref, String text) {
+    public TranslationNote(String chapterId, String frameId, String noteId, String ref, String text) {
         mChapterId = chapterId;
         mFrameId = frameId;
         mId = noteId;

@@ -81,8 +81,13 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.endTransaction(true);
         String[] bibleChapterIds = mIndex.getChapterSlugs(bibleTranslation);
         assertTrue(bibleChapterIds.length > 0);
-        for(String id:bibleChapterIds) {
-            assertTrue(mIndex.getFrameSlugs(bibleTranslation, id).length > 0);
+        for(String chapterId:bibleChapterIds) {
+            assertNotNull(mIndex.getChapter(bibleTranslation, chapterId));
+            String[] bibleFrameIds = mIndex.getFrameSlugs(bibleTranslation, chapterId);
+            assertTrue(bibleFrameIds.length > 0);
+            for(String frameId:bibleFrameIds) {
+                assertNotNull(mIndex.getFrame(bibleTranslation, chapterId, frameId));
+            }
         }
 
         SourceTranslation obsTranslation = SourceTranslation.simple("obs", "en", "obs");
@@ -92,8 +97,13 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.endTransaction(true);
         String[] obsChapterIds = mIndex.getChapterSlugs(obsTranslation);
         assertTrue(obsChapterIds.length > 0);
-        for(String id:obsChapterIds) {
-            assertTrue(mIndex.getFrameSlugs(obsTranslation, id).length > 0);
+        for(String chapterId:obsChapterIds) {
+            assertTrue(mIndex.getFrameSlugs(obsTranslation, chapterId).length > 0);
+            String[] obsFrameIds = mIndex.getFrameSlugs(obsTranslation, chapterId);
+            assertTrue(obsFrameIds.length > 0);
+            for(String frameId:obsFrameIds) {
+                assertNotNull(mIndex.getFrame(obsTranslation, chapterId, frameId));
+            }
         }
     }
 
@@ -103,7 +113,7 @@ public class IndexerTest extends InstrumentationTestCase {
         mIndex.beginTransaction();
         assertTrue(mIndex.indexNotes(translation, catalog));
         mIndex.endTransaction(true);
-        String[] noteIds = mIndex.getNotes(translation, "01", "01");
+        String[] noteIds = mIndex.getNoteSlugs(translation, "01", "01");
         assertTrue(noteIds.length > 0);
         assertNotNull(mIndex.getNote(translation, "01", "01", noteIds[0]));
     }
@@ -112,7 +122,7 @@ public class IndexerTest extends InstrumentationTestCase {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/terms.json"));
         mIndex.beginTransaction();
-        assertTrue(mIndex.indexTerms(translation, catalog));
+        assertTrue(mIndex.indexWords(translation, catalog));
         mIndex.endTransaction(true);
         String[] allTermIds = mIndex.getWords(translation);
         assertTrue(allTermIds.length > 0);

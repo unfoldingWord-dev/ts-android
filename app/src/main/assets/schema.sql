@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS `translation_note`;
     
 CREATE TABLE `translation_note` (
   `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  `slug` TEXT NOT NULL,
   `frame_id` INTEGER NOT NULL,
   `title` TEXT NOT NULL,
   `body` TEXT NOT NULL,
@@ -158,8 +159,8 @@ DROP TABLE IF EXISTS `frame`;
     
 CREATE TABLE `frame` (
   `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  `chapter_id` INTEGER NOT NULL,
   `slug` TEXT NOT NULL,
+  `chapter_id` INTEGER NOT NULL,
   `body` TEXT NOT NULL,
   `format` TEXT NULL DEFAULT NULL,
   `image_url` TEXT NULL DEFAULT NULL,
