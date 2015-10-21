@@ -35,7 +35,8 @@
                 android:layout_marginBottom="@dimen/stacked_card_margin"
                 android:textColor="@color/dark_secondary_text"
                 android:text="John 1:1-3"
-                android:id="@+id/target_translation_title" />
+                android:id="@+id/target_translation_title"
+                android:clickable="true" />
 
             <EditText
                 android:id="@+id/target_translation_body"
