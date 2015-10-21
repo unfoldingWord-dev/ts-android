@@ -560,7 +560,7 @@ public class Project implements Model {
      */
     public static boolean isTranslating(String projectId, String languageId) {
 //        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
-//        String selectedTargetLanguage = settings.getString("selected_target_language_"+projectId, null);
+//        String selectedTargetLanguage = settings.getString("selected_target_language_"+projectSlug, null);
 
 //        if(selectedTargetLanguage != null) {
         File dir = new File(Project.getRepositoryPath(projectId, languageId));
@@ -919,24 +919,22 @@ public class Project implements Model {
      * @return
      */
     public String getLocalTranslationVersion(Language l) {
-        Repo repo = new Repo(getRepositoryPath(getId(), l.getId()));
-        try {
-            Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
-            RevCommit commit = null;
-            for(RevCommit c : commits) {
-                commit = c;
-            }
-            if(commit != null) {
-                String[] pieces = commit.toString().split(" ");
-                return pieces[1];
-            } else {
-                return null;
-            }
-        } catch (GitAPIException e) {
-            Logger.e(this.getClass().getName(), "failed to fetch the git commit", e);
-        } catch (StopTaskException e) {
-            Logger.e(this.getClass().getName(), "the task was stopped", e);
-        }
+//        Repo repo = new Repo(getRepositoryPath(getId(), l.getId()));
+//        try {
+//            Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
+//            RevCommit commit = null;
+//            for(RevCommit c : commits) {
+//                commit = c;
+//            }
+//            if(commit != null) {
+//                String[] pieces = commit.toString().split(" ");
+//                return pieces[1];
+//            } else {
+//                return null;
+//            }
+//        } catch (GitAPIException e) {
+//            Logger.e(this.getClass().getName(), "failed to fetch the git commit", e);
+//        }
         return null;
     }
 
@@ -979,7 +977,7 @@ public class Project implements Model {
      * @return
      */
 //    public String getRemotePath(Language lang) {
-//        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+//        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResourceSlugs().getString(R.string.pref_default_git_server));
 //        return server + ":tS/" + AppContext.udid() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
 //    }
 

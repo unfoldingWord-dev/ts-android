@@ -207,7 +207,7 @@ public class SharingActivity extends BaseActivity {
                     @Override
                     public void run() {
                         // TODO: allow the user to choose which projects to export
-//                        String library = Sharing.generateLibrary(AppContext.projectManager().getProjects());
+//                        String library = Sharing.generateLibrary(AppContext.projectManager().getProjectSlugs());
 
                         // try to locate the removable sd card
                         if(AppContext.isExternalMediaAvailable()) {

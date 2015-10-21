@@ -257,7 +257,7 @@ public class ImportingService extends NetworkService {
                                 }
                             });
 
-//                            showProgress(getResources().getString(R.string.downloading));
+//                            showProgress(getResourceSlugs().getString(R.string.downloading));
                             final File file = new File(getExternalCacheDir() + "/transferred/" + name);
                             try {
                                 // download archive

@@ -227,7 +227,7 @@ public class ExportingService extends NetworkService {
 
                 // generate project library
                 // TODO: identifying the projects that have changes could be expensive if there are lots of clients and lots of projects. We might want to cache this
-                String library =  null;//Sharing.generateLibrary(AppContext.projectManager().getProjects(), preferredLanguages);
+                String library =  null;//Sharing.generateLibrary(AppContext.projectManager().getProjectSlugs(), preferredLanguages);
 
                 sendMessage(client, SocketMessages.MSG_PROJECT_LIST + ":" + library);
                 break;
@@ -249,7 +249,7 @@ public class ExportingService extends NetworkService {
                     try {
                         String projectId = json.getString("id");
 
-                        final Project p =  null;//AppContext.projectManager().getProject(projectId);
+                        final Project p =  null;//AppContext.projectManager().getProject(projectSlug);
                         // validate project
                         if(p != null) {
                             // validate requested source languages

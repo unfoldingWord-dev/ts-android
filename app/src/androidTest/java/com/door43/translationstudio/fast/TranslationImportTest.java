@@ -12,10 +12,10 @@ public class TranslationImportTest extends InstrumentationTestCase {
 //             load everything
 //            Util.runTask(new LoadTargetLanguagesTask());
 //            Util.runTask(new LoadProjectsTask());
-//            Util.runTask(new IndexProjectsTask(AppContext.projectManager().getProjects()));
+//            Util.runTask(new IndexProjectsTask(AppContext.projectManager().getProjectSlugs()));
 //            AppContext.setLoaded(true);
 //        } else {
-//            Project[] projects = AppContext.projectManager().getProjects();
+//            Project[] projects = AppContext.projectManager().getProjectSlugs();
 //            for(Project p:projects) {
 //                FileUtilities.deleteRecursive(new File(ProjectManager.getRepositoryPath(p, p.getSelectedSourceLanguage())));
 //                p.flush();

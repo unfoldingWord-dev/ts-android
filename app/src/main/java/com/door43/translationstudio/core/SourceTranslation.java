@@ -7,9 +7,9 @@ import org.json.JSONObject;
  * Represents a single source translation.
  */
 public class SourceTranslation {
-    public final String projectId;
-    public final String sourceLanguageId;
-    public final String resourceId;
+    public final String projectSlug;
+    public final String sourceLanguageSlug;
+    public final String resourceSlug;
     private final String mProjectTitle;
     private final String mResourceTitle;
     private final int mCheckingLevel;
@@ -17,10 +17,10 @@ public class SourceTranslation {
     private final int mDateModified;
     private final String mVersion;
 
-    private SourceTranslation(String projectId, String sourceLanguageId, String resourceId, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel, int dateModified, String version) {
-        this.projectId = projectId;
-        this.sourceLanguageId = sourceLanguageId;
-        this.resourceId = resourceId;
+    private SourceTranslation(String projectId, String sourceLanguageSlug, String resourceSlug, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel, int dateModified, String version) {
+        this.projectSlug = projectId;
+        this.sourceLanguageSlug = sourceLanguageSlug;
+        this.resourceSlug = resourceSlug;
         mProjectTitle = projectTitle;
         mSourceLanguageTitle = sourceLanguageTitle;
         mResourceTitle = resourceTitle;
@@ -80,13 +80,13 @@ public class SourceTranslation {
      * This object will not contain any extra information about the translation other than the ids
      *
      * @param projectId
-     * @param sourceLanguageId
-     * @param resourceId
+     * @param sourceLanguageSlug
+     * @param resourceSlug
      */
-    private SourceTranslation(String projectId, String sourceLanguageId, String resourceId) {
-        this.projectId = projectId;
-        this.sourceLanguageId = sourceLanguageId;
-        this.resourceId = resourceId;
+    private SourceTranslation(String projectId, String sourceLanguageSlug, String resourceSlug) {
+        this.projectSlug = projectId;
+        this.sourceLanguageSlug = sourceLanguageSlug;
+        this.resourceSlug = resourceSlug;
         mProjectTitle = "";
         mSourceLanguageTitle = "";
         mResourceTitle = "";
@@ -130,7 +130,7 @@ public class SourceTranslation {
      * @return
      */
     public String getId() {
-        return projectId + "-" + sourceLanguageId + "-" + resourceId;
+        return projectSlug + "-" + sourceLanguageSlug + "-" + resourceSlug;
     }
 
     /**

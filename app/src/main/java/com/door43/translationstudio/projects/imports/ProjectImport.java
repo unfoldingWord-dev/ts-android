@@ -41,7 +41,7 @@ public class ProjectImport extends ImportRequest {
     @Override
     public String getTitle() {
         // TODO: this will throw a null pointer exception if we don't have the source
-        Project p =  null;//AppContext.projectManager().getProject(projectId);
+        Project p =  null;//AppContext.projectManager().getProject(projectSlug);
         if(p != null) {
             return p.getTitle();
         } else {

@@ -1,11 +1,15 @@
 package com.door43.translationstudio.rendering;
 
 import android.graphics.Typeface;
+import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.AlignmentSpan;
 import android.text.style.StyleSpan;
 
+import com.door43.translationstudio.spannables.Char;
 import com.door43.translationstudio.spannables.NoteSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
@@ -82,7 +86,30 @@ public class USXRenderer extends RenderingEngine {
         out = renderVerse(out);
         out = renderNote(out);
         out = renderChapterLabel(out);
+        out = renderSelah(out);
 
+        return out;
+    }
+
+    /**
+     * Renders all the Selah tags
+     * @param in
+     * @return
+     */
+    private CharSequence renderSelah(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = Char.getPattern(Char.STYLE_SELAH);
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            SpannableStringBuilder span = new SpannableStringBuilder(matcher.group(1));
+            span.setSpan(new StyleSpan(Typeface.ITALIC), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), "\n", span);
+            lastIndex = matcher.end();
+        }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
 
@@ -176,10 +203,10 @@ public class USXRenderer extends RenderingEngine {
         int lastIndex = 0;
         while(matcher.find()) {
             if(isStopped()) return in;
-            NoteSpan verse = NoteSpan.parseNote(matcher.group());
-            if(verse != null) {
-                verse.setOnClickListener(mNoteListener);
-                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), verse.toCharSequence());
+            NoteSpan note = NoteSpan.parseNote(matcher.group());
+            if(note != null) {
+                note.setOnClickListener(mNoteListener);
+                out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), note.toCharSequence());
             } else {
                 // failed to parse the note
                 out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.end()));

@@ -192,7 +192,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             @Override
             public void run() {
                 final Handler handle = new Handler(Looper.getMainLooper());
-//                final Project[] projects = AppContext.projectManager().getProjects();
+//                final Project[] projects = AppContext.projectManager().getProjectSlugs();
                 final ProgressDialog dialog = new ProgressDialog(DeveloperToolsActivity.this);
                 dialog.setCancelable(false);
                 dialog.setCanceledOnTouchOutside(false);

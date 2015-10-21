@@ -18,14 +18,14 @@ public class LibraryUpdates implements Serializable {
     }
 
     public void addUpdate(SourceTranslation translation) {
-        if(!mUpdates.containsKey(translation.projectId)) {
-            mUpdates.put(translation.projectId, new HashMap<String, List<String>>());
+        if(!mUpdates.containsKey(translation.projectSlug)) {
+            mUpdates.put(translation.projectSlug, new HashMap<String, List<String>>());
         }
-        if(!mUpdates.get(translation.projectId).containsKey(translation.sourceLanguageId)) {
-            mUpdates.get(translation.projectId).put(translation.sourceLanguageId, new ArrayList<String>());
+        if(!mUpdates.get(translation.projectSlug).containsKey(translation.sourceLanguageSlug)) {
+            mUpdates.get(translation.projectSlug).put(translation.sourceLanguageSlug, new ArrayList<String>());
         }
-        if(!mUpdates.get(translation.projectId).get(translation.sourceLanguageId).contains(translation.resourceId)) {
-            mUpdates.get(translation.projectId).get(translation.sourceLanguageId).add(translation.resourceId);
+        if(!mUpdates.get(translation.projectSlug).get(translation.sourceLanguageSlug).contains(translation.resourceSlug)) {
+            mUpdates.get(translation.projectSlug).get(translation.sourceLanguageSlug).add(translation.resourceSlug);
         }
     }
 
