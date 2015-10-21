@@ -11,13 +11,10 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -34,7 +31,6 @@ import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
-import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.rendering.DefaultRenderer;
@@ -623,12 +619,27 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
+     * removes text selection from target
+     * @param holder
+     */
+    public void clearSelectionFromTarget(ViewHolder holder) {
+
+        EditText translationEditText = (EditText) holder.mTargetCard.findViewById(R.id.target_translation_body);
+        if (translationEditText != null) {
+            translationEditText.clearFocus();
+        }
+    }
+
+    /**
      * Moves the target translation card to the back
      * @param holder
      * @param position
      */
     public void closeTargetTranslationCard(ViewHolder holder, final int position) {
         if(mTargetStateOpen[position]) {
+
+            clearSelectionFromTarget(holder);
+
             ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
