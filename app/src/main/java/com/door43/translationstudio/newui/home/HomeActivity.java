@@ -140,6 +140,9 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             mFragment = new WelcomeFragment();
             mFragment.setArguments(getIntent().getExtras());
             getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+        } else if(numTranslations > 0 && mFragment instanceof TargetTranslationListFragment) {
+            // reload list
+            ((TargetTranslationListFragment)mFragment).reloadList();
         }
     }
 
