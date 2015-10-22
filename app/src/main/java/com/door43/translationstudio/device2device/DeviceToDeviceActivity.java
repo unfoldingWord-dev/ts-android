@@ -571,7 +571,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
         if(models.length > 0) {
             showProjectSelectionDialog(server, models);
         } else {
-//            app().showToastMessage(getResources().getString(R.string.no_projects_available_on_server));
+//            app().showToastMessage(getResourceSlugs().getString(R.string.no_projects_available_on_server));
             Handler hand = new Handler(Looper.getMainLooper());
             hand.post(new Runnable() {
                 @Override

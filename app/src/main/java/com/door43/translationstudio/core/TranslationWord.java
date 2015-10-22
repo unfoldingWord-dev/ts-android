@@ -33,7 +33,7 @@ public class TranslationWord {
      * @param aliases id's of translationWord aliases
      * @param examples examples passages
      */
-    private TranslationWord(String id, String word, String def, String defTitle, String[] seeAlso, String[] aliases, Example[] examples) {
+    public TranslationWord(String id, String word, String def, String defTitle, String[] seeAlso, String[] aliases, Example[] examples) {
         mId = id;
         mWord = word;
         mDef = def;
@@ -84,7 +84,7 @@ public class TranslationWord {
      * Returns the title of the translationWord
      * @return
      */
-    public String getTitle() {
+    public String getTerm() {
         return mWord;
     }
 

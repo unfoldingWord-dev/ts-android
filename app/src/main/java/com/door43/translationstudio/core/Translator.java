@@ -92,21 +92,6 @@ public class Translator {
 
     /**
      * Returns a target translation if it exists
-     * @param targetLanguageId
-     * @param projectId
-     * @return
-     */
-    public TargetTranslation getTargetTranslation(String targetLanguageId, String projectId) {
-        File dir = TargetTranslation.generateTargetTranslationDir(targetLanguageId, projectId, mRootDir);
-        if(dir.exists()) {
-            return new TargetTranslation(targetLanguageId, projectId, mRootDir);
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns a target translation if it exists
      * @param targetTranslationId
      * @return
      */
@@ -115,7 +100,13 @@ public class Translator {
             try {
                 String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
                 String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
-                return getTargetTranslation(targetLanguageId, projectId);
+
+                File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
+                if(dir.exists()) {
+                    return new TargetTranslation(targetLanguageId, projectId, mRootDir);
+                } else {
+                    return null;
+                }
             } catch (StringIndexOutOfBoundsException e) {
                 e.printStackTrace();
             }
@@ -130,9 +121,7 @@ public class Translator {
     public void deleteTargetTranslation(String targetTranslationId) {
         if(targetTranslationId != null) {
             try {
-                String projectId = TargetTranslation.getProjectIdFromId(targetTranslationId);
-                String targetLanguageId = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
-                File dir = TargetTranslation.generateTargetTranslationDir(targetLanguageId, projectId, mRootDir);
+                File dir = TargetTranslation.generateTargetTranslationDir(targetTranslationId, mRootDir);
                 FileUtils.deleteQuietly(dir);
             } catch (StringIndexOutOfBoundsException e) {
                 e.printStackTrace();

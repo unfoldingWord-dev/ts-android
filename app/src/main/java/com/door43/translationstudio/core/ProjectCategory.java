@@ -3,13 +3,12 @@ package com.door43.translationstudio.core;
 /**
  * A project category can represent a project or a category of projects.
  */
-public class ProjectCategory implements Comparable {
+public class ProjectCategory {
     public final String projectId;
     public final String categoryId;
-    public final int categoryDepth;
+    public final long parentCategoryId;
     public final String title;
     public final String sourcelanguageId;
-    public final String sort;
 
     /**
      *
@@ -17,15 +16,14 @@ public class ProjectCategory implements Comparable {
      * @param categoryId
      * @param projectId
      * @param sourceLanguageId the id of the source languaged to which the project title belongs
-     * @param categoryDepth the depth of the category in the hierarchy of categories.
+     * @param parentCategoryId
      */
-    public ProjectCategory(String title, String categoryId, String projectId, String sourceLanguageId, String sort, int categoryDepth) {
+    public ProjectCategory(String title, String categoryId, String projectId, String sourceLanguageId , long parentCategoryId) {
         this.title = title;
         this.categoryId = categoryId;
         this.projectId = projectId;
         this.sourcelanguageId = sourceLanguageId;
-        this.sort = sort;
-        this.categoryDepth = categoryDepth;
+        this.parentCategoryId = parentCategoryId;
     }
 
     /**
@@ -53,10 +51,5 @@ public class ProjectCategory implements Comparable {
      */
     public Boolean isProject() {
         return categoryId == null;
-    }
-
-    @Override
-    public int compareTo(Object another) {
-        return sort.compareToIgnoreCase(((ProjectCategory)another).sort);
     }
 }

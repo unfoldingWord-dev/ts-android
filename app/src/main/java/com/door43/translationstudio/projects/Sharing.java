@@ -309,7 +309,7 @@ public class Sharing {
         }
 
         public Project getProject() {
-            return  null;//AppContext.projectManager().getProject(projectId);
+            return  null;//AppContext.projectManager().getProject(projectSlug);
         }
 
         public Language getLanguage() {
@@ -329,7 +329,7 @@ public class Sharing {
         boolean hadTranslationWarnings = false;
 
         // locate existing project
-        final Project p =  null;//AppContext.projectManager().getProject(projectImport.projectId);
+        final Project p =  null;//AppContext.projectManager().getProject(projectImport.projectSlug);
         if(p == null) {
             projectImport.setMissingSource(true);
             Logger.i(Sharing.class.getName(), "Missing project source for import");
@@ -516,7 +516,7 @@ public class Sharing {
             }
 
             // commit changes if this was an existing project
-            Project p =  null;//AppContext.projectManager().getProject(request.projectId);
+            Project p =  null;//AppContext.projectManager().getProject(request.projectSlug);
             if(p != null) {
                 p.commit(null);
             }

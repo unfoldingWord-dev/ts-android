@@ -52,7 +52,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mServerLibrary = AppContext.getLibrary().getServerLibrary();
+        mServerLibrary = AppContext.getLibrary();
 
         if (getArguments().containsKey(ARG_PROJECT_ID)) {
             String projectId = getArguments().getString(ARG_PROJECT_ID);
@@ -272,7 +272,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
         SourceTranslation[] sourceTranslations = mServerLibrary.getSourceTranslations(mProject.getId());
         Map<String, SourceLanguage> sourceLanguages = new HashMap<>();
         for(SourceTranslation sourceTranslation:sourceTranslations) {
-            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), sourceTranslation.sourceLanguageId);
+            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), sourceTranslation.sourceLanguageSlug);
             // TRICKY: a source language could be represented several times due to multiple resources
             if(!sourceLanguages.containsKey(sourceLanguage.getId())) {
                 sourceLanguages.put(sourceLanguage.getId(), sourceLanguage);
@@ -287,7 +287,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
         SourceTranslation[] draftTranslations = mServerLibrary.getDraftTranslations(mProject.getId());
         Map<String, SourceLanguage> draftLanguages = new HashMap<>();
         for(SourceTranslation sourceTranslation:draftTranslations) {
-            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), sourceTranslation.sourceLanguageId);
+            SourceLanguage sourceLanguage = mServerLibrary.getSourceLanguage(mProject.getId(), sourceTranslation.sourceLanguageSlug);
             // TRICKY: a source language could be represented several times due to multiple resources
             if(!draftLanguages.containsKey(sourceLanguage.getId())) {
                 draftLanguages.put(sourceLanguage.getId(), sourceLanguage);

@@ -28,7 +28,7 @@ public class CheckingQuestion {
      * @param answer
      * @param references
      */
-    private CheckingQuestion(String id, String chapterId, String frameId, String question, String answer, Reference[] references) {
+    public CheckingQuestion(String id, String chapterId, String frameId, String question, String answer, Reference[] references) {
         mId = id;
         mChapterId = chapterId;
         mFrameId = frameId;

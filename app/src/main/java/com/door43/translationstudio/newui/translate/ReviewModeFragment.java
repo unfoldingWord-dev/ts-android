@@ -164,13 +164,13 @@ public class ReviewModeFragment extends ViewModeFragment {
 
         Library library = AppContext.getLibrary();
         SourceTranslation sourceTranslation = getSourceTranslation();
-        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectId, sourceTranslation.sourceLanguageId);
+        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_word, null);
 
-            mCloseResourcesDrawerButton.setText(word.getTitle());
+            mCloseResourcesDrawerButton.setText(word.getTerm());
 
             TextView descriptionTitle = (TextView)view.findViewById(R.id.description_title);
             HtmlTextView descriptionView = (HtmlTextView)view.findViewById(R.id.description);
@@ -189,7 +189,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 final TranslationWord relatedWord = getPreferredWord(sourceTranslation, word.getSeeAlso()[i]);
                 if(relatedWord != null) {
                     Button button = new Button(new ContextThemeWrapper(getActivity(), R.style.Widget_Button_Tag), null, R.style.Widget_Button_Tag);
-                    button.setText(relatedWord.getTitle());
+                    button.setText(relatedWord.getTerm());
                     button.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -281,7 +281,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             });
 
             title.setText(note.getTitle());
-            SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectId, sourceTranslation.sourceLanguageId);
+            SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
             Typography.formatTitle(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
             description.setText(renderer.render(Html.fromHtml(note.getBody())));
             Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
@@ -306,7 +306,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         final Library library = AppContext.getLibrary();
         SourceTranslation sourceTranslation = getSourceTranslation();
         CheckingQuestion question = getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
-        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectId, sourceTranslation.sourceLanguageId);
+        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_question, null);
@@ -405,8 +405,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static TranslationNote getPreferredNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String noteId) {
         Library library = AppContext.getLibrary();
         TranslationNote note = library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
-        if(note == null && !sourceTranslation.sourceLanguageId.equals("en")) {
-            note = library.getTranslationNote(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId, noteId);
+        if(note == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            note = library.getTranslationNote(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId, noteId);
         }
         return note;
     }
@@ -420,8 +420,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static TranslationWord getPreferredWord(SourceTranslation sourceTranslation, String wordId) {
         Library library = AppContext.getLibrary();
         TranslationWord word = library.getTranslationWord(sourceTranslation, wordId);
-        if(word == null && !sourceTranslation.sourceLanguageId.equals("en")) {
-            word = library.getTranslationWord(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), wordId);
+        if(word == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            word = library.getTranslationWord(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), wordId);
         }
         return word;
     }
@@ -437,8 +437,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     private static CheckingQuestion getPreferredQuestion(SourceTranslation sourceTranslation, String chapterId, String frameId, String questionId) {
         Library library = AppContext.getLibrary();
         CheckingQuestion question = library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
-        if(question == null && !sourceTranslation.sourceLanguageId.equals("en")) {
-            question = library.getCheckingQuestion(SourceTranslation.simple(sourceTranslation.projectId, "en", sourceTranslation.resourceId), chapterId, frameId, questionId);
+        if(question == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
+            question = library.getCheckingQuestion(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId, questionId);
         }
         return question;
     }

@@ -31,7 +31,7 @@ public class LicenseDialog extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Bundle args = getArguments();
-        int resourceId = args.getInt("resourceId", 0);
+        int resourceId = args.getInt("resourceSlug", 0);
 
         // inflate the views
         View mView = inflater.inflate(R.layout.dialog_license, container, false);

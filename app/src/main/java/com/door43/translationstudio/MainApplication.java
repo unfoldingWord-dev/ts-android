@@ -151,14 +151,14 @@ public class MainApplication extends Application {
 //        NotificationCompat.Builder mBuilder =
 //                new NotificationCompat.Builder(this)
 //                        .setSmallIcon(R.drawable.ic_stat_notify_msg)
-//                        .setContentTitle(getResources().getString(titleResourceId))
+//                        .setContentTitle(getResourceSlugs().getString(titleResourceId))
 //                        .setContentText(message)
 //                        .setAutoCancel(true)
 //                        .setNumber(notifications.size());
 //
 //        // build big notification
 //        NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
-//        inboxStyle.setBigContentTitle(getResources().getString(titleResourceId));
+//        inboxStyle.setBigContentTitle(getResourceSlugs().getString(titleResourceId));
 //        for (String event:notifications) {
 //            inboxStyle.addLine(event);
 //        }

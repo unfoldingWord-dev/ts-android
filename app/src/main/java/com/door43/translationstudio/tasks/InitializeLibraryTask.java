@@ -13,12 +13,8 @@ public class InitializeLibraryTask extends ManagedTask {
 
     @Override
     public void start() {
-        Library library = AppContext.getLibrary();
         try {
-            AppContext.deployDefaultLibrary(library);
-            // re-connect the database
-            library = AppContext.getLibrary();
-            library.seedDownloadIndex();
+            AppContext.deployDefaultLibrary();
         } catch (Exception e) {
             Logger.e(this.getClass().getName(), "Failed to deploy the default index", e);
         }

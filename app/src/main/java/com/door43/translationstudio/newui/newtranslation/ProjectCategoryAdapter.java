@@ -27,7 +27,6 @@ public class ProjectCategoryAdapter extends BaseAdapter {
 
     public ProjectCategoryAdapter(ProjectCategory[] categories) {
         List<ProjectCategory> categoriesList = Arrays.asList(categories);
-        Collections.sort(categoriesList);
         mCategories = categoriesList.toArray(new ProjectCategory[categoriesList.size()]);
         mFilteredCategories = mCategories;
     }

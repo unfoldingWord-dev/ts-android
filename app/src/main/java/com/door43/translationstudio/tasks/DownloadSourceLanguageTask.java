@@ -16,7 +16,6 @@ public class DownloadSourceLanguageTask extends ManagedTask {
     private final String mProjectId;
     private final String mSourceLanguageId;
     private final Library mLibrary;
-    private final Library mServerLibrary;
     private int mMaxProgress = 1;
     private boolean mSuccess;
     private int mTaskProgress = 0;
@@ -28,7 +27,6 @@ public class DownloadSourceLanguageTask extends ManagedTask {
      */
     public DownloadSourceLanguageTask(String projectId, String sourceLanguageId) {
         mLibrary = AppContext.getLibrary();
-        mServerLibrary = mLibrary.getServerLibrary();
         mProjectId = projectId;
         mSourceLanguageId = sourceLanguageId;
     }
@@ -40,7 +38,7 @@ public class DownloadSourceLanguageTask extends ManagedTask {
     @Override
     public void start() {
         publishProgress(-1, "");
-        final Resource[] resources = mServerLibrary.getResources(mProjectId, mSourceLanguageId);
+        final Resource[] resources = mLibrary.getResources(mProjectId, mSourceLanguageId);
         mSuccess = true;
         for(int i = 0; i < resources.length; i ++) {
             // TODO: hook up progress listener
@@ -85,7 +83,7 @@ public class DownloadSourceLanguageTask extends ManagedTask {
 //
 //            // terms
 //            publishProgress(((i + 1) / (double) resources.size()) * .50, "");
-//            AppContext.projectManager().downloadTerms(mProjectId, mSourceLanguageId, r, ignoreCache);
+//            AppContext.projectManager().downloadWords(mProjectId, mSourceLanguageId, r, ignoreCache);
 //            AppContext.projectManager().mergeTerms(mProjectId.getId(), mSourceLanguageId.getId(), r);
 //
 //            // source
@@ -105,8 +103,8 @@ public class DownloadSourceLanguageTask extends ManagedTask {
 //        // reload project
 //        if(interrupted()) return;
 //        // TODO: only delete the index if there were changes
-//        publishProgress(-1, AppContext.context().getResources().getString(R.string.indexing));
-//        IndexStore.destroy(mProjectId, mSourceLanguageId);
+//        publishProgress(-1, AppContext.context().getResourceSlugs().getString(R.string.indexing));
+//        IndexStore.delete(mProjectId, mSourceLanguageId);
 //        delegate(new IndexProjectsTask(mProjectId));
 //        Project currentProject = AppContext.projectManager().getSelectedProject();
 //        // index resources of current project

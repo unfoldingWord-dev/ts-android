@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -25,8 +26,7 @@ import java.io.IOException;
  */
 public class AppContext {
     private static final String PREFERENCES_NAME = "com.door43.translationstudio.general";
-    public static final String DEFAULT_LIBRARY_ZIP = "library.zip";
-    public static final String TARGET_LANGUAGES_FILE = "languages.json";
+    private static final String DEFAULT_LIBRARY_ZIP = "library.zip";
     private static final String TARGET_TRANSLATIONS_DIR = "translations";
     public static final String PROFILES_DIR = "profiles";
     private static MainApplication mContext;
@@ -51,7 +51,12 @@ public class AppContext {
         // NOTE: rather than keeping the library around we rebuild it so that changes to the user settings will work
         String server = mContext.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, mContext.getResources().getString(R.string.pref_default_media_server));
         String rootApiUrl = server + mContext.getResources().getString(R.string.root_catalog_api);
-        return new Library(mContext, new File(mContext.getFilesDir(), "library"), new File(mContext.getCacheDir(), "library"), rootApiUrl);
+        try {
+            return new Library(mContext, rootApiUrl);
+        } catch (IOException e) {
+            Logger.e(AppContext.class.getName(), "Failed to create the library", e);
+        }
+        return null;
     }
 
     /**
@@ -59,29 +64,25 @@ public class AppContext {
      * The
      * @throws Exception
      */
-    public static void deployDefaultLibrary(Library library) throws Exception {
-        File cacheDir = mContext.getCacheDir();
-        cacheDir.mkdirs();
-
-        // languages
-        File languagesFile = new File(cacheDir, TARGET_LANGUAGES_FILE);
-        if(languagesFile.exists()) {
-            languagesFile.delete();
+    public static void deployDefaultLibrary() throws Exception {
+        Library library = getLibrary();
+        File archive = mContext.getCacheDir().createTempFile("index", ".zip");
+        Util.writeStream(mContext.getAssets().open(DEFAULT_LIBRARY_ZIP), archive);
+        File tempLibraryDir = new File(mContext.getCacheDir(), System.currentTimeMillis() + "");
+        tempLibraryDir.mkdirs();
+        Zip.unzip(archive, tempLibraryDir);
+        File[] dbs = tempLibraryDir.listFiles();
+        if(dbs.length == 1) {
+            library.deploy(dbs[0]);
+        } else {
+            FileUtils.deleteQuietly(archive);
+            FileUtils.deleteQuietly(tempLibraryDir);
+            throw new Exception("Invalid index count in '" + DEFAULT_LIBRARY_ZIP + "'. Expecting 1 but found " + dbs.length);
         }
-        Util.writeStream(mContext.getAssets().open(TARGET_LANGUAGES_FILE), languagesFile);
-
-        // library index
-        File libraryArchive = new File(cacheDir, DEFAULT_LIBRARY_ZIP);
-        Util.writeStream(mContext.getAssets().open(DEFAULT_LIBRARY_ZIP), libraryArchive);
-        Zip.unzip(libraryArchive, cacheDir);
-        FileUtils.deleteQuietly(libraryArchive);
-        File indexFile = new File(cacheDir, "app");
-
-        library.deploy(indexFile, languagesFile);
 
         // clean up
-        languagesFile.delete();
-        indexFile.delete();
+        FileUtils.deleteQuietly(archive);
+        FileUtils.deleteQuietly(tempLibraryDir);
     }
 
     /**

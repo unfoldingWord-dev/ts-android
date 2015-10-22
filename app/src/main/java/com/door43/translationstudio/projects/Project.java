@@ -560,7 +560,7 @@ public class Project implements Model {
      */
     public static boolean isTranslating(String projectId, String languageId) {
 //        SharedPreferences settings = AppContext.context().getSharedPreferences(PREFERENCES_TAG, AppContext.context().MODE_PRIVATE);
-//        String selectedTargetLanguage = settings.getString("selected_target_language_"+projectId, null);
+//        String selectedTargetLanguage = settings.getString("selected_target_language_"+projectSlug, null);
 
 //        if(selectedTargetLanguage != null) {
         File dir = new File(Project.getRepositoryPath(projectId, languageId));
@@ -977,7 +977,7 @@ public class Project implements Model {
      * @return
      */
 //    public String getRemotePath(Language lang) {
-//        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
+//        String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResourceSlugs().getString(R.string.pref_default_git_server));
 //        return server + ":tS/" + AppContext.udid() + "/" + GLOBAL_PROJECT_SLUG + "-" + getId() + "-" + lang.getId();
 //    }
 
