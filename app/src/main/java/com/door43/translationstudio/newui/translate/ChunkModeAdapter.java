@@ -637,7 +637,6 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
-                    holder.mTargetCard.clearFocus();
                 }
 
                 @Override
