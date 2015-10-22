@@ -260,7 +260,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               openTargetTranslationCard(holder, position);
+                boolean actionTaken = openTargetTranslationCard(holder, position);
+
+                if (!actionTaken) {
+                    holder.mTargetBody.requestFocus();
+                }
             }
         });
         holder.mSourceCard.setOnClickListener(new View.OnClickListener() {
@@ -614,14 +618,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * Moves the target translation card to the back
      * @param holder
      * @param position
+     * @return true if action was taken, else false
      */
-    public void closeTargetTranslationCard(ViewHolder holder, final int position) {
+    public boolean closeTargetTranslationCard(final ViewHolder holder, final int position) {
         final ListItem item = mListItems[position];
         if(item.isTargetCardOpen) {
             ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
-
                 }
 
                 @Override
@@ -642,6 +646,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             }
             // re-enable new tab button
             holder.mNewTabButton.setEnabled(true);
+
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -649,8 +657,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * Moves the target translation to the top
      * @param holder
      * @param position
+     * @return true if action was taken, else false
      */
-    public void openTargetTranslationCard(ViewHolder holder, final int position) {
+    public boolean openTargetTranslationCard(ViewHolder holder, final int position) {
         final ListItem item = mListItems[position];
         if(!item.isTargetCardOpen) {
             ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false, new Animation.AnimationListener() {
@@ -677,6 +686,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             }
             // disable new tab button so we don't accidently open it
             holder.mNewTabButton.setEnabled(false);
+
+            return true;
+        } else {
+            return false;
         }
     }
 
