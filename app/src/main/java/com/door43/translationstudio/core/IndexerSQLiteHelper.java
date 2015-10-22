@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
 import android.util.Log;
 
+import com.door43.util.Security;
 import com.door43.util.StringUtilities;
 
 import org.apache.commons.io.FilenameUtils;
@@ -359,6 +360,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("resource_id", resourceId);
+        values.put("sort", Integer.parseInt(slug));
         values.put("reference", reference);
         values.put("title", title);
 
@@ -401,6 +403,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("chapter_id", chapterId);
+        values.put("sort", Integer.parseInt(slug));
         values.put("body", body);
         values.put("format", format);
         values.put("image_url", imageUrl);
@@ -461,15 +464,6 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return sourceLanguageId;
-    }
-
-    /**
-     * Returns an array of projects
-     * @param db
-     * @return
-     */
-    public Cursor getProjects(SQLiteDatabase db) {
-        return null;
     }
 
     /**
@@ -1325,7 +1319,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
-                + " WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=? AND `c`.`slug`=? ORDER BY `f`.`sort` ASC", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug});
+                + " WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=? AND `c`.`slug`=? ORDER BY `c`.`sort`, `f`.`sort` ASC", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug});
         String body = "";
         if(cursor.moveToFirst()) {
             body = cursor.getString(0);

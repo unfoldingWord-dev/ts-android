@@ -11,10 +11,11 @@ public class ProjectCategory {
     public final String sourcelanguageId;
 
     /**
+     * Creates a new project category.
      *
      * @param title
      * @param categoryId
-     * @param projectId
+     * @param projectId if not null the category will be rendered as a selectable project otherwise as a category
      * @param sourceLanguageId the id of the source languaged to which the project title belongs
      * @param parentCategoryId
      */
@@ -35,7 +36,7 @@ public class ProjectCategory {
      * @return
      */
     public String getId() {
-        if(categoryId == null) {
+        if(projectId != null) {
             return "cat-" + projectId;
         } else {
             return categoryId;
@@ -50,6 +51,6 @@ public class ProjectCategory {
      * @return
      */
     public Boolean isProject() {
-        return categoryId == null;
+        return projectId != null;
     }
 }
