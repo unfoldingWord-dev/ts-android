@@ -615,6 +615,17 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
+     * removes text selection from the target card
+     * @param holder
+     */
+    public void clearSelectionFromTarget(ViewHolder holder) {
+        EditText translationEditText = (EditText) holder.mTargetCard.findViewById(R.id.target_translation_body);
+        if (translationEditText != null) {
+            translationEditText.clearFocus();
+        }
+    }
+
+    /**
      * Moves the target translation card to the back
      * @param holder
      * @param position
@@ -623,6 +634,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public boolean closeTargetTranslationCard(final ViewHolder holder, final int position) {
         final ListItem item = mListItems[position];
         if(item.isTargetCardOpen) {
+
+            clearSelectionFromTarget(holder);
+
             ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
