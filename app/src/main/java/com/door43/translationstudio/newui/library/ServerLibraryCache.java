@@ -48,7 +48,7 @@ public class ServerLibraryCache {
         boolean serverChanged = !token.equals(mToken);
         if(serverChanged) {
             // if we change the server url we must rebuild cached server index.
-            AppContext.getLibrary().destroyCache();
+//            AppContext.getLibrary().destroyCache();
         }
         boolean expired = (mAvailableLibraryUpdates == null || Math.abs(mCacheTimestamp - (int)System.currentTimeMillis()) > CACHE_TTL);
         return serverChanged || expired;

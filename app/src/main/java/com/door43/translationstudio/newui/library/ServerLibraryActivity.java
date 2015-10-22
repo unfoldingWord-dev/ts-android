@@ -76,13 +76,13 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 TaskManager.addTask(getUpdatesTask, GetLibraryUpdatesTask.TASK_ID);
             } else {
                 // load the cached data
-                Library serverLibrary = AppContext.getLibrary().getServerLibrary();
+                Library serverLibrary = AppContext.getLibrary();
                 ProjectCategory[] categories = serverLibrary.getProjectCategoriesFlat(Locale.getDefault().getLanguage());
                 mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
             }
         } else {
             // populated cached data
-            Library serverLibrary = AppContext.getLibrary().getServerLibrary();
+            Library serverLibrary = AppContext.getLibrary();
             ProjectCategory[] categories = serverLibrary.getProjectCategoriesFlat(Locale.getDefault().getLanguage());
             mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
 
@@ -286,7 +286,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         hand.post(new Runnable() {
             @Override
             public void run() {
-                Library serverLibrary = AppContext.getLibrary().getServerLibrary();
+                Library serverLibrary = AppContext.getLibrary();
                 ProjectCategory[] categories = serverLibrary.getProjectCategoriesFlat(Locale.getDefault().getLanguage());
                 mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
 

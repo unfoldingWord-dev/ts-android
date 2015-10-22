@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a set of updates available for the library
@@ -12,6 +13,7 @@ import java.util.Map;
 public class LibraryUpdates implements Serializable {
     private static final long serialVersionUID = 0L;
     private Map<String, Map<String, List<String>>> mUpdates;
+    private int numSourceTranslationUpdates = 0;
 
     public LibraryUpdates() {
         mUpdates = new HashMap<>();
@@ -26,6 +28,7 @@ public class LibraryUpdates implements Serializable {
         }
         if(!mUpdates.get(translation.projectSlug).get(translation.sourceLanguageSlug).contains(translation.resourceSlug)) {
             mUpdates.get(translation.projectSlug).get(translation.sourceLanguageSlug).add(translation.resourceSlug);
+            numSourceTranslationUpdates ++;
         }
     }
 
@@ -34,7 +37,7 @@ public class LibraryUpdates implements Serializable {
      * @return
      */
     public String[] getUpdatedProjects() {
-        return mUpdates.keySet().toArray(new String[0]);
+        return mUpdates.keySet().toArray(new String[mUpdates.keySet().size()]);
     }
 
     /**
@@ -52,7 +55,8 @@ public class LibraryUpdates implements Serializable {
      */
     public String[] getUpdatedSourceLanguages(String projectId) {
         if(mUpdates.get(projectId) != null) {
-            return mUpdates.get(projectId).keySet().toArray(new String[0]);
+            Set<String> sourceLanguages = mUpdates.get(projectId).keySet();
+            return sourceLanguages.toArray(new String[sourceLanguages.size()]);
         } else {
             return new String[0];
         }
@@ -66,7 +70,8 @@ public class LibraryUpdates implements Serializable {
      */
     public String[] getUpdatedResources(String projectId, String sourceLanguageId) {
         if(mUpdates.get(projectId) != null && mUpdates.get(projectId).get(sourceLanguageId) != null) {
-            return mUpdates.get(projectId).get(sourceLanguageId).toArray(new String[0]);
+            List<String> resources = mUpdates.get(projectId).get(sourceLanguageId);
+            return resources.toArray(new String[resources.size()]);
         } else {
             return new String[0];
         }
@@ -93,6 +98,7 @@ public class LibraryUpdates implements Serializable {
      */
     public void removeSourceLanguageUpdate(String projectId, String sourceLanguageId) {
         if(mUpdates.containsKey(projectId)) {
+            numSourceTranslationUpdates -= mUpdates.get(projectId).get(sourceLanguageId).size();
             mUpdates.get(projectId).remove(sourceLanguageId);
             if(mUpdates.get(projectId).size() == 0) {
                 mUpdates.remove(projectId);
@@ -101,10 +107,10 @@ public class LibraryUpdates implements Serializable {
     }
 
     /**
-     * Removes a project update from the list of available updates
-     * @param projectId
+     * Returns the number of source translations available for update
+     * @return
      */
-    public void removeProjectUpdate(String projectId) {
-        mUpdates.remove(projectId);
+    public int numSourceTranslationUpdates() {
+        return numSourceTranslationUpdates;
     }
 }

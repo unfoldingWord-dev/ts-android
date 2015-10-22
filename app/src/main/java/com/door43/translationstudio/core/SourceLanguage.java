@@ -15,7 +15,7 @@ public class SourceLanguage implements Comparable {
     public final String projectDescription;
     public final String resourceCatalog;
 
-    private SourceLanguage(String code, String name, int dateModified, LanguageDirection direction, String projectTitle, String projectDescription, String resourceCatalog) {
+    public SourceLanguage(String code, String name, int dateModified, LanguageDirection direction, String projectTitle, String projectDescription, String resourceCatalog) {
         this.code = code;
         this.name = name;
         this.dateModified = dateModified;

@@ -23,7 +23,6 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.dialogs.ErrorLogDialog;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.newui.library.ServerLibraryCache;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.util.ToolAdapter;
@@ -251,7 +250,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
         mDeveloperTools.add(new ToolItem("Delete Library", "Completely deletes the library and all of it's indexes", R.drawable.ic_delete_black_24dp, new ToolItem.ToolAction() {
             @Override
             public void run() {
-                AppContext.getLibrary().destroyIndexes();
+                AppContext.getLibrary().delete();
                 ServerLibraryCache.clear();
                 Snackbar snack = Snackbar.make(findViewById(android.R.id.content), "The library content was deleted", Snackbar.LENGTH_LONG);
                 ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));

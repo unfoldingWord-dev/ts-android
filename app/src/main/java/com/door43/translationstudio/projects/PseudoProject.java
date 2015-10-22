@@ -161,7 +161,7 @@ public class PseudoProject implements Model {
     @Override
     public String getDescription() {
 //        if(isSelected() && AppContext.projectManager().getSelectedProject() != null) {
-//            return AppContext.projectManager().getSelectedProject().getTitle();
+//            return AppContext.projectManager().getSelectedProject().getTerm();
 //        } else {
 //            return "";
 //        }

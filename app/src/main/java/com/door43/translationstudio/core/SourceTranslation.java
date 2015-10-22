@@ -17,7 +17,7 @@ public class SourceTranslation {
     private final int mDateModified;
     private final String mVersion;
 
-    private SourceTranslation(String projectId, String sourceLanguageSlug, String resourceSlug, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel, int dateModified, String version) {
+    public SourceTranslation(String projectId, String sourceLanguageSlug, String resourceSlug, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel, int dateModified, String version) {
         this.projectSlug = projectId;
         this.sourceLanguageSlug = sourceLanguageSlug;
         this.resourceSlug = resourceSlug;

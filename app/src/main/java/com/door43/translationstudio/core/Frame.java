@@ -20,6 +20,7 @@ public class Frame {
     public final String imageUrl;
     private String mTitle;
     private int[] mVerses = null;
+    private long DBId = -1;
 
     public Frame(String frameId, String chapterId, String body, TranslationFormat format, String imageUrl) {
         mChapterId = chapterId;
@@ -212,5 +213,13 @@ public class Frame {
      */
     public String getComplexId() {
         return mChapterId + "-" + mId;
+    }
+
+    public void setDBId(long DBId) {
+        this.DBId = DBId;
+    }
+
+    public long getDBId() {
+        return this.DBId;
     }
 }

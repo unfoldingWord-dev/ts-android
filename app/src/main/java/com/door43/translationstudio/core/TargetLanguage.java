@@ -9,7 +9,6 @@ import org.json.JSONObject;
 public class TargetLanguage implements Comparable {
 
     public final LanguageDirection direction;
-    public final Boolean isGatewayLanguage;
     public final String region;
     public final String name;
     public final String code;
@@ -28,11 +27,10 @@ public class TargetLanguage implements Comparable {
         return code.compareToIgnoreCase(anotherCode);
     }
 
-    private TargetLanguage (String code, String name, String region, Boolean isGatewayLanguage, LanguageDirection direction) {
+    public TargetLanguage (String code, String name, String region, LanguageDirection direction) {
         this.code = code;
         this.name = name;
         this.region = region;
-        this.isGatewayLanguage = isGatewayLanguage;
         this.direction = direction;
     }
 
@@ -41,7 +39,7 @@ public class TargetLanguage implements Comparable {
      * @param json
      * @return
      */
-    public static TargetLanguage Generate(JSONObject json) throws JSONException {
+    public static TargetLanguage generate(JSONObject json) throws JSONException {
         if(json == null) {
             return null;
         }
@@ -49,7 +47,6 @@ public class TargetLanguage implements Comparable {
                 json.getString("lc"),
                 json.getString("ln"),
                 json.getString("lr"),
-                json.getBoolean("gw"),
                 LanguageDirection.get(json.getString("ld"))
         );
     }

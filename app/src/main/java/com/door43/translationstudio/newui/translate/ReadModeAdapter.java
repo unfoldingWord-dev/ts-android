@@ -243,17 +243,9 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         // render the source chapter body
         if(mRenderedSourceBody[position] == null) {
-            Frame[] frames = mLibrary.getFrames(mSourceTranslation, chapter.getId());
-            String chapterBody = "";
-            TranslationFormat bodyFormat = TranslationFormat.DEFAULT;
-            if(frames.length > 0) {
-                bodyFormat = frames[0].getFormat();
-            }
-            for (Frame frame : frames) {
-                chapterBody += " " + frame.body;
-            }
+            String chapterBody = mLibrary.getChapterBody(mSourceTranslation, chapter.getId());
+            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mSourceTranslation, chapter.getId());
             RenderingGroup sourceRendering = new RenderingGroup();
-            // TODO: identify key terms
             if (bodyFormat == TranslationFormat.USX) {
                 // TODO: add click listeners
                 sourceRendering.addEngine(new USXRenderer(null, null));
@@ -273,18 +265,15 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 
         // render the target chapter body
         if(mRenderedTargetBody[position] == null) {
-            Frame[] frames = mLibrary.getFrames(mSourceTranslation, chapter.getId());
+            TranslationFormat bodyFormat = mLibrary.getChapterBodyFormat(mSourceTranslation, chapter.getId());
             String chapterBody = "";
-            TranslationFormat bodyFormat = TranslationFormat.DEFAULT;
-            if(frames.length > 0) {
-                bodyFormat = frames[0].getFormat();
-            }
-            for (Frame frame : frames) {
-                FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
+            String[] frameSlugs = mLibrary.getFrameSlugs(mSourceTranslation, chapter.getId());
+            for (String frameSlug : frameSlugs) {
+                Frame simpleFrame = new Frame(frameSlug, chapter.getId(), null, bodyFormat, null);
+                FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(simpleFrame);
                 chapterBody += " " + frameTranslation.body;
             }
             RenderingGroup targetRendering = new RenderingGroup();
-            // TODO: identify key terms
             if (bodyFormat == TranslationFormat.USX) {
                 // TODO: add click listeners
                 targetRendering.addEngine(new USXRenderer(null, null));

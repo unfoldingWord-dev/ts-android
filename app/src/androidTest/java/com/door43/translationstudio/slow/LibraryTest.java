@@ -1,7 +1,6 @@
 package com.door43.translationstudio.slow;
 
 import android.content.Context;
-import android.test.AndroidTestCase;
 import android.test.InstrumentationTestCase;
 
 import com.door43.translationstudio.MainApplication;
@@ -16,6 +15,7 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.TranslationWord;
 
 import org.apache.commons.io.FileUtils;
 
@@ -30,36 +30,31 @@ import java.io.ObjectOutputStream;
  */
 public class LibraryTest extends InstrumentationTestCase {
     private Library mLibrary;
-    private File mLibraryDir;
-    private Context mContext;
-    private String mRootApi;
 
     protected void setUp() throws Exception {
-        MainApplication app = AppContext.context();
-        mLibraryDir = new File(app.getFilesDir(), "test_library");
-        String server = app.getUserPreferences().getString(SettingsActivity.KEY_PREF_MEDIA_SERVER, app.getResources().getString(R.string.pref_default_media_server));
-        mRootApi = server + app.getResources().getString(R.string.root_catalog_api);
-        mContext = getInstrumentation().getContext();
-        mLibrary = new Library(app, mLibraryDir, mLibraryDir, mRootApi);
+        mLibrary = AppContext.getLibrary();
     }
 
     public void test01Clean() throws Exception {
-        FileUtils.deleteQuietly(mLibraryDir);
-        mLibrary.destroyIndexes();
+        mLibrary.delete();
     }
 
     public void test02ExtractLibrary() throws Exception {
         // NOTE: the default library is large so we don't include in the repo. So this test should always fall through
         assertFalse(mLibrary.exists());
-        AppContext.deployDefaultLibrary(mLibrary);
-        mLibrary = new Library(AppContext.context(), mLibraryDir, mLibraryDir, mRootApi);
+        AppContext.deployDefaultLibrary();
+        mLibrary = AppContext.getLibrary();
+
+        // NOTE: this will fail when first updating the db version
         assertTrue(mLibrary.exists());
     }
 
-    public void test03CheckForAvailableUpdates() throws Exception {
-        // pre-populate download index with shallow copy
-        mLibrary.seedDownloadIndex();
+    public void test03DownloadTargetLanguages() throws Exception {
+        mLibrary.downloadTargetLanguages();
+        assertTrue(mLibrary.getTargetLanguages().length > 0);
+    }
 
+    public void test04CheckForAvailableUpdates() throws Exception {
         LibraryUpdates updates = mLibrary.getAvailableLibraryUpdates(null);
 
         // cache updates
@@ -69,7 +64,7 @@ public class LibraryTest extends InstrumentationTestCase {
         os.close();
         fos.close();
 
-        if(updates.getUpdatedProjects().length > 0) {
+        if(updates.numSourceTranslationUpdates() > 0) {
             String pid = updates.getUpdatedProjects()[0];
             assertTrue(updates.getUpdatedSourceLanguages(pid).length > 0);
             String lid = updates.getUpdatedSourceLanguages(pid)[0];
@@ -77,34 +72,36 @@ public class LibraryTest extends InstrumentationTestCase {
         }
     }
 
-    public void test04DownloadUpdates() throws Exception {
+    public void test05DownloadUpdates() throws Exception {
         FileInputStream fis = AppContext.context().openFileInput("library_updates");
         ObjectInputStream is = new ObjectInputStream(fis);
         LibraryUpdates updates = (LibraryUpdates) is.readObject();
         is.close();
         fis.close();
 
-//        assertTrue(mLibrary.downloadUpdates(updates, null));
+        // download all available updates
+        assertTrue(mLibrary.downloadUpdates(updates, null));
     }
 
-    public void test05Export() throws Exception {
+    public void test06Export() throws Exception {
         File archive = mLibrary.export(AppContext.getPublicDownloadsDirectory());
         assertNotNull(archive);
         assertTrue(archive.exists());
     }
 
-    public void test06LoadTargetLanguages() throws Exception {
+    public void test07LoadTargetLanguages() throws Exception {
         TargetLanguage[] languages = mLibrary.getTargetLanguages();
         assertNotNull(languages);
         assertTrue(languages.length > 0);
     }
 
-    public void test07DownloadSourceTranslation() throws Exception {
+    public void test08DownloadSourceTranslation() throws Exception {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslations("obs")[0];
+
         assertTrue(mLibrary.downloadSourceTranslation(sourceTranslation, null));
     }
 
-    public void test08GetProjectCategories() throws Exception {
+    public void test09GetProjectCategories() throws Exception {
         ProjectCategory[] projectCategories = mLibrary.getProjectCategories("en");
         // for now we just have obs, nt, and ot
         assertEquals(3, projectCategories.length);
@@ -121,7 +118,7 @@ public class LibraryTest extends InstrumentationTestCase {
 
     }
 
-    public void test09GetSourceLanguages() throws Exception {
+    public void test10GetSourceLanguages() throws Exception {
         SourceLanguage[] sourceLanguages = mLibrary.getSourceLanguages("obs");
         assertTrue(sourceLanguages.length > 0);
 
@@ -130,12 +127,12 @@ public class LibraryTest extends InstrumentationTestCase {
         assertEquals("en", sourceLanguage.getId());
     }
 
-    public void test10GetResources() throws Exception {
+    public void test11GetResources() throws Exception {
         Resource[] resources = mLibrary.getResources("obs", "en");
         assertTrue(resources.length > 0);
     }
 
-    public void test11GetProject() throws Exception {
+    public void test12GetProject() throws Exception {
         Project p = mLibrary.getProject("obs", "en");
         assertNotNull(p);
         assertEquals("obs", p.getId());
@@ -154,9 +151,5 @@ public class LibraryTest extends InstrumentationTestCase {
 
         SourceTranslation anotherSourceTranslation = mLibrary.getSourceTranslation("obs", "en", "obs");
         assertNotNull(anotherSourceTranslation);
-    }
-
-    public void test999999Cleanup() throws Exception {
-//        FileUtils.deleteQuietly(mLibraryDir);
     }
 }

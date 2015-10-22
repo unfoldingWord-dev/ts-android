@@ -10,15 +10,15 @@ public class TranslationNote {
     private final String mChapterId;
     private final String mFrameId;
     private final String mId;
-    private final String mRef;
-    private final String mText;
+    private final String title;
+    private final String body;
 
-    public TranslationNote(String chapterId, String frameId, String noteId, String ref, String text) {
+    public TranslationNote(String chapterId, String frameId, String noteId, String title, String body) {
         mChapterId = chapterId;
         mFrameId = frameId;
         mId = noteId;
-        mRef = ref;
-        mText = text;
+        this.title = title;
+        this.body = body;
     }
 
     /**
@@ -74,7 +74,7 @@ public class TranslationNote {
      * @return
      */
     public String getTitle() {
-        return mRef;
+        return title;
     }
 
     /**
@@ -82,6 +82,6 @@ public class TranslationNote {
      * @return
      */
     public String getBody() {
-        return mText;
+        return body;
     }
 }

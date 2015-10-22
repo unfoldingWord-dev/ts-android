@@ -52,7 +52,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mServerLibrary = AppContext.getLibrary().getServerLibrary();
+        mServerLibrary = AppContext.getLibrary();
 
         if (getArguments().containsKey(ARG_PROJECT_ID)) {
             String projectId = getArguments().getString(ARG_PROJECT_ID);

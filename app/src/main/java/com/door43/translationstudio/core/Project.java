@@ -23,7 +23,7 @@ public class Project {
      * @param description the description of the project
      * @param dateModified the date the project was last modified
      */
-    private Project(String projectId, String sourceLanguageId, String name, String description, int dateModified, int sort, String sourceLanguageCatalog) {
+    public Project(String projectId, String sourceLanguageId, String name, String description, int dateModified, int sort, String sourceLanguageCatalog) {
         mId = projectId;
         this.name = name;
         this.description = description;

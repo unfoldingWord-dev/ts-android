@@ -4,50 +4,35 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.util.Manifest;
 import com.door43.util.Security;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
  * Created by joel on 8/26/2015.
+ * TODO: we might make this static in the library as well
  */
 public class Indexer {
     private final IndexerSQLiteHelper mDatabaseHelper;
     private final Context mContext;
     private SQLiteDatabase mDatabase;
-    private Manifest mManifest;
     private final String mId;
-    private final File mIndexDir;
-
-    private enum CatalogType {
-        Simple,
-        Source,
-        Advanced,
-        Questions,
-        Terms
-    };
 
     /**
      * Creates a new instance of the index
      * @param name the name of the index
-     * @param rootDir the directory where the index's are stored
-     *                // TODO: 10/3/2015 the rootDir is deprecated.
      */
-    public Indexer(Context context, String name, File rootDir, IndexerSQLiteHelper helper) {
+    public Indexer(Context context, String name, IndexerSQLiteHelper helper) {
         mId = name;
-        mIndexDir = new File(rootDir, name);
-        mManifest = reload();
         mDatabaseHelper = helper;
         mDatabase = mDatabaseHelper.getWritableDatabase();
         mContext = context;
@@ -61,38 +46,18 @@ public class Indexer {
     }
 
     /**
-     * Loads the index manifest and prepares the index for use.
-     */
-    public Manifest reload() {
-        mIndexDir.mkdirs();
-        Manifest m = Manifest.generate(mIndexDir);
-        if(!m.has("version")) {
-            m.put("version", 1);
-        }
-        return m;
-    }
-
-    /**
      * Returns the version of the indexer
      * @return
      */
     public int getVersion() {
-        try {
-            return mManifest.getInt("version");
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return -1;
-        }
+        // TODO: return the version of the index. We can get this info from the database.
+        return 0;
     }
 
     /**
      * Destroys the entire index
      */
     public synchronized void delete() {
-        // reset manifest
-        FileUtils.deleteQuietly(mIndexDir);
-        mManifest = reload();
-        // delete database
         close();
         mDatabaseHelper.deleteDatabase(mContext);
     }
@@ -103,228 +68,6 @@ public class Indexer {
     public synchronized void rebuild() {
         mDatabase = mDatabaseHelper.getWritableDatabase();
     }
-
-//    /**
-//     * Returns the contents of a file in the index
-//     * @param path the relative path to the indexed file
-//     * @return a string or null
-//     */
-//    private synchronized String readFile(String hash, String path) {
-//        return mDatabaseHelper.readFile(mDatabase, hash, path);
-//    }
-
-//    /**
-//     * Returns the JSON contents of a file in the index
-//     * @param path the relative path to the indexed file
-//     * @return
-//     */
-//    private JSONObject readJSON(String hash, String path) {
-//        String contents = readFile(hash, path);
-//        if(contents != null) {
-//            try {
-//                return new JSONObject(contents);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        return null;
-//    }
-
-//    /**
-//     * Saves a string to a file in the index
-//     * @param path the relative path to the file
-//     * @param contents the contents to be written
-//     * @return true if the file was new
-//     */
-//    private synchronized Boolean saveFile(String hash, String path, String contents) throws IOException {
-//        mDatabaseHelper.replaceFile(mDatabase, hash, path, contents);
-//        return true;
-//    }
-
-//    /**
-//     * Creates or updates a catalog link
-//     * @param md5hash
-//     * @param linkPath
-//     * @return
-//     */
-//    private synchronized Boolean createLink (String md5hash, String linkPath) {
-//        mDatabaseHelper.replaceLink(mDatabase, md5hash, linkPath);
-//        return true;
-//    }
-
-//    /**
-//     * Generates a source link for the source translation
-//     * @param translation
-//     * @return
-//     */
-//    private String generateSourceLink (SourceTranslation translation) {
-//        return generateResourceFieldLink(translation, "source");
-//    }
-
-//    /**
-//     * Generates a notes link for the source translation
-//     * @param translation
-//     * @return
-//     */
-//    private String generateNotesLink (SourceTranslation translation) {
-//        return generateResourceFieldLink(translation, "notes");
-//    }
-
-//    /**
-//     * Generate a terms link for the source translation
-//     * @param translation
-//     * @return
-//     */
-//    private String generateTermsLink (SourceTranslation translation) {
-//        return generateResourceFieldLink(translation, "terms");
-//    }
-
-//    /**
-//     * Generates a term assignments link for the source translation
-//     * @param translation
-//     * @return
-//     */
-//    private String generateTermAssignmentsLink (SourceTranslation translation) {
-//        return generateResourceFieldLink(translation, "tw_cat");
-//    }
-
-//    /**
-//     * Generates a questions link for the source translation
-//     * @param translation
-//     * @return
-//     */
-//    private String generateQuestionsLink (SourceTranslation translation) {
-//        return generateResourceFieldLink(translation, "checking_questions");
-//    }
-
-//    /**
-//     * Generates a link for a field in the resources catalog.
-//     * For example, the "source", or "notes"
-//     *
-//     * @param translation
-//     * @param field
-//     * @return
-//     */
-//    private String generateResourceFieldLink (SourceTranslation translation, String field) {
-//        String catalogApiUrl = getUrlFromObject(getResource(translation), field);
-//        if(catalogApiUrl != null) {
-//            String md5hash = Security.md5(catalogApiUrl);
-//            String catalogLinkFile = translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/" + field + ".link";
-//            if(createLink(md5hash, catalogLinkFile)) {
-//                return md5hash;
-//            }
-//        }
-//        return null;
-//    }
-
-//    private synchronized Boolean indexItems (String md5hash, CatalogType type, String jsonString) {
-//        JSONArray items;
-//        try {
-//            items = new JSONArray(jsonString);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
-//        // save items
-//        if(type == CatalogType.Simple) {
-//            for(int i = 0; i < items.length(); i ++ ) {
-//                try {
-//                    JSONObject item = items.getJSONObject(i);
-//                    if(item.has("slug") || item.has("id")) {
-//                        String itemPath;
-//                        if(item.has("slug")) {
-//                            itemPath = item.getString("slug");
-//                        } else {
-//                            itemPath = item.getString("id");
-//                        }
-//                        try {
-//                            saveFile(md5hash, itemPath, item.toString());
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        } else if(type == CatalogType.Advanced) {
-//            for(int chapterIndex = 0; chapterIndex < items.length(); chapterIndex ++) {
-//                try {
-//                    JSONObject chapter = items.getJSONObject(chapterIndex);
-//                    String chapterId = chapter.getString("id");
-//                    JSONArray frames = chapter.getJSONArray("frames");
-//                    for(int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
-//                        try {
-//                            JSONObject frame = frames.getJSONObject(frameIndex);
-//                            String frameId = frame.getString("id");
-//                            JSONArray frameItems = frame.getJSONArray("items");
-//                            for(int itemIndex = 0; itemIndex < frameItems.length(); itemIndex ++) {
-//                                try {
-//                                    JSONObject item = frameItems.getJSONObject(itemIndex);
-//                                    String noteId = item.getString("id");
-//                                    // save item
-//                                    String itemPath = chapterId + "/" + frameId + "/" + noteId;
-//                                    try {
-//                                        saveFile(md5hash, itemPath, item.toString());
-//                                    } catch (IOException e) {
-//                                        e.printStackTrace();
-//                                    }
-//                                } catch(JSONException e) {
-//                                    e.printStackTrace();
-//                                }
-//                            }
-//                        } catch(JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        } else if(type == CatalogType.Source) {
-//            for(int chapterIndex = 0; chapterIndex < items.length(); chapterIndex ++ ) {
-//                try {
-//                    JSONObject chapter = items.getJSONObject(chapterIndex);
-//                    if(chapter.has("number")) {
-//                        String chapterId = chapter.getString("number");
-//                        // save chapter
-//                        JSONArray frames = new JSONArray();
-//                        if(chapter.has("frames")) {
-//                            frames = chapter.getJSONArray("frames");
-//                        }
-//                        chapter.remove("frames");
-//                        String chapterPath = chapterId + "/chapter.json";
-//                        try {
-//                            saveFile(md5hash, chapterPath, chapter.toString());
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                        // save frames
-//                        for (int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
-//                            try {
-//                                JSONObject frame = frames.getJSONObject(frameIndex);
-//                                String[] complexId = frame.getString("id").split("-");
-//                                String frameId = complexId[1];
-//                                String framePath = chapterId + "/" + frameId;
-//                                try {
-//                                    saveFile(md5hash, framePath, frame.toString());
-//                                } catch (IOException e) {
-//                                    e.printStackTrace();
-//                                }
-//                            } catch (JSONException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    }
-//                } catch (JSONException e) {
-//                    Logger.e(this.getClass().getName(), "Failed to process the source", e);
-//                }
-//            }
-//        } else if(type == CatalogType.Terms) {
-//        } else if(type == CatalogType.Questions) {
-//        }
-//        return true;
-//    }
 
     /**
      * Call to start a transaction
@@ -343,119 +86,6 @@ public class Indexer {
         }
         mDatabase.endTransaction();
     }
-
-//    /**
-//     * Returns an array of items indexed under an object
-//     * @param itemObject
-//     * @param urlProperty
-//     * @return
-//     */
-//    private String[] getItemsArray(JSONObject itemObject, String urlProperty) {
-//        return getItemsArray(itemObject, urlProperty, null);
-//    }
-
-//    /**
-//     * Returns an array of items indexed under an object
-//     * @param itemObject
-//     * @param urlProperty
-//     * @param subFolder
-//     * @return
-//     */
-//    private synchronized String[] getItemsArray(JSONObject itemObject, String urlProperty, String subFolder) {
-//        if(itemObject == null) {
-//            return new String[0];
-//        }
-//
-//        String catalogApiUrl = getUrlFromObject(itemObject, urlProperty);
-//        if(catalogApiUrl == null) {
-//            return new String[0];
-//        }
-//        String md5hash = Security.md5(catalogApiUrl);
-//
-//        String[] extensionFilters = {"json"};
-//        return mDatabaseHelper.listDir(mDatabase, md5hash, subFolder, extensionFilters);
-//    }
-
-//    /**
-//     * Returns an array of contents indexed under an object.
-//     * This is just like getItemsArray except that it returns the contents of the items rather than the names
-//     * @param itemObject
-//     * @param urlProperty
-//     * @param subFolder
-//     * @return
-//     */
-//    private String[] getContentsArray(JSONObject itemObject, String urlProperty, String subFolder) {
-//        if(itemObject == null) {
-//            return new String[0];
-//        }
-//
-//        String catalogApiUrl = getUrlFromObject(itemObject, urlProperty);
-//        if(catalogApiUrl == null) {
-//            return new String[0];
-//        }
-//        String md5hash = Security.md5(catalogApiUrl);
-//        String[] extensionFilters = {"json"};
-//        return mDatabaseHelper.listDirContents(mDatabase, md5hash, subFolder, extensionFilters);
-//    }
-
-//    /**
-//     * Returns an array of contents for a file found in each directory.
-//     * For example. if you have directorys 01, 02, and 03 each containing a file "myfile.json"
-//     * this method will list the contents of reach "myfile.json" ordered by directory name.
-//     *
-//     * @param itemObject
-//     * @param urlProperty
-//     * @param subFolder
-//     * @param file the file who's contents will be returned
-//     * @return
-//     */
-//    private String[] getDirFileContentsArray(JSONObject itemObject, String urlProperty, String subFolder, String file) {
-//        if(itemObject == null) {
-//            return new String[0];
-//        }
-//
-//        String catalogApiUrl = getUrlFromObject(itemObject, urlProperty);
-//        if (catalogApiUrl == null) {
-//            return new String[0];
-//        }
-//        String md5hash = Security.md5(catalogApiUrl);
-//        return mDatabaseHelper.listDirFileContents(mDatabase, md5hash, subFolder, file);
-//    }
-
-    /**
-     * Returns the url from an object without any url parameters
-     * @param json
-     * @param urlProperty
-     * @return
-     */
-    private String getUrlFromObject(JSONObject json, String urlProperty) {
-        if(json != null && json.has(urlProperty)) {
-            try {
-                String[] list = json.getString(urlProperty).split("\\?");
-                if (list.length > 0) {
-                    return list[0];
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-//    /**
-//     * Returns the root catalog
-//     * @return
-//     */
-//    private JSONObject getRootCatalog() {
-//        JSONObject json = new JSONObject();
-//        try {
-//            json.put("proj_catalog", "_");
-//            return json;
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
 
     /**
      * Removes a project from the index
@@ -482,265 +112,22 @@ public class Indexer {
         mDatabaseHelper.deleteResource(mDatabase, sourceTranslation.resourceSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.projectSlug);
     }
 
-//    /**
-//     * Removes the source for the source translation from the index
-//     * @param translation
-//     */
-//    private synchronized void deleteSource (SourceTranslation translation) {
-//        String catalogLinkFile = translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/source.link";
-//        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
-//    }
-//
-//    /**
-//     * Removes the translationNotes for the source translation from the index
-//     * @param translation
-//     */
-//    private synchronized void deleteNotes (SourceTranslation translation) {
-//        String catalogLinkFile = translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/notes.link";
-//        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
-//    }
-//
-//    /**
-//     * Removes the translationWords for the source translation from the index
-//     * @param translation
-//     */
-//    private synchronized void deleteTerms (SourceTranslation translation) {
-//        String catalogLinkFile = translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/terms.link";
-//        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
-//    }
-//
-//    private synchronized void deleteTermAssignments (SourceTranslation translation) {
-//        String catalogLinkFile = translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/tw_cat.link";
-//        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
-//    }
-
-//    /**
-//     * Removes the checking questions for the source translation from the index
-//     * @param translation
-//     */
-//    private synchronized void deleteQuestions (SourceTranslation translation) {
-//        String catalogLinkFile = translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/checking_questions.link";
-//        mDatabaseHelper.deleteLink(mDatabase, catalogLinkFile);
-//    }
-
-//    /**
-//     * Merges an index into the current index
-//     * @param index
-//     * @throws IOException
-//     */
-//    public void mergeIndex(Indexer index) throws IOException {
-//        mergeIndex(index, false);
-//    }
-
-    /**
-     * Merges an index into the current index
-     * @param index
-     * @param shallow if true none of the source translation content will be merged
-     */
-    @Deprecated
-    public void mergeIndex(Indexer index, Boolean shallow) throws IOException {
-//        for(String projectSlug:index.getProjectSlugs()) {
-//            mergeProject(projectSlug, index, shallow);
-//        }
-    }
-
-//    /**
-//     * Merges a project into the current index
-//     * @param projectSlug
-//     * @param index
-//     * @throws IOException
-//     */
-//    public void mergeProject(String projectSlug, Indexer index) throws IOException {
-//        mergeProject(projectSlug, index, false);
-//    }
-
-    /**
-     * Merges a project into the current index
-     * @param index
-     * @param projectId
-     * @param shallow if true none of the source translation content will be merged
-     */
-    @Deprecated
-    public void mergeProject(String projectId, Indexer index, Boolean shallow) throws IOException {
-        JSONObject newProject = index.getProject(projectId);
-        if(newProject != null) {
-            JSONArray projectJson = new JSONArray();
-            projectJson.put(newProject);
-            // update/add project
-            indexProjects(projectJson.toString());
-
-            for(String sourceLanguageId:index.getSourceLanguageSlugs(projectId)) {
-                JSONObject newSourceLanguage = index.getSourceLanguage(projectId, sourceLanguageId);
-                if(newSourceLanguage != null) {
-                    JSONArray sourceLanguageJson = new JSONArray();
-                    sourceLanguageJson.put(newSourceLanguage);
-                    // update/add source language
-                    indexSourceLanguages(projectId, sourceLanguageJson.toString());
-
-                    for(String resourceId:index.getResourceSlugs(projectId, sourceLanguageId)) {
-                        SourceTranslation translation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
-                        JSONObject newResource = index.getResource(translation);
-                        if(newResource != null) {
-                            JSONArray resourceJson = new JSONArray();
-                            resourceJson.put(newResource);
-                            // update/add resource
-                            indexResources(projectId, sourceLanguageId, resourceJson.toString());
-
-                            // update/add source translation
-                            if(!shallow) {
-                                mergeResources(translation, index);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Merges a project into the current index.
-     * This will only peform a shallow merge. That is, none of the resources will be merged.
-     * Just the project, source language, and resource catalogs are merged.
-     * @param sourceTranslation
-     * @throws IOException
-     */
-    public void mergeSourceTranslationShallow(SourceTranslation sourceTranslation, Indexer index) throws IOException {
-        JSONObject newProject = index.getProject(sourceTranslation.projectSlug);
-        if(newProject != null) {
-            JSONArray projectJson = new JSONArray();
-            projectJson.put(newProject);
-            // update/add project
-            indexProjects(projectJson.toString());
-
-            JSONObject newSourceLanguage = index.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
-            if(newSourceLanguage != null) {
-                JSONArray sourceLanguageJson = new JSONArray();
-                sourceLanguageJson.put(newSourceLanguage);
-                // update/add source language
-                indexSourceLanguages(sourceTranslation.projectSlug, sourceLanguageJson.toString());
-
-                JSONObject newResource = index.getResource(sourceTranslation);
-                if(newResource != null) {
-                    JSONArray resourceJson = new JSONArray();
-                    resourceJson.put(newResource);
-                    // update/add resource
-                    indexResources(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, resourceJson.toString());
-                }
-            }
-        }
-    }
-
-    /**
-     * Merges a source translation into the current index
-     * This consists of the source, notes, questions, and terms
-     *
-     * Note: this does NOT include the resource catalog since that is included in the definition
-     * of a source translation not the actual content.
-     *
-     * @param translation
-     * @param index
-     */
-    @Deprecated
-    public synchronized void mergeResources(SourceTranslation translation, Indexer index) throws IOException {
-//        mDatabase.beginTransactionNonExclusive();
-
-        // delete old content
-//        deleteTerms(translation);
-//        deleteTermAssignments(translation);
-//        deleteQuestions(translation);
-//        deleteNotes(translation);
-//        deleteSource(translation);
-
-        // re-create links
-//        String sourceCatalogHash = generateSourceLink(translation);
-//        String notesCatalogHash = generateNotesLink(translation);
-//        String questionsCatalogHash = generateQuestionsLink(translation);
-//        String termsCatalogHash = generateTermsLink(translation);
-//        String termAssignmentsCatalogHash = generateTermAssignmentsLink(translation);
-
-        // migrate words
-//        String[] words = index.getWordsContents(translation);
-//        for(String wordContents:words) {
-//            try {
-//                TranslationWord word = TranslationWord.generate(new JSONObject(wordContents));
-//                String wordPath = word.getId();
-//                saveFile(termsCatalogHash, wordPath, wordContents);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        // migrate chapters
-//        String[] chapters = index.getChaptersContents(translation);
-//        for(String chapterContents:chapters) {
-//            try {
-//                Chapter chapter = Chapter.generate(new JSONObject(chapterContents));
-//                String chapterPath = chapter.getId() + "/chapter.json";
-//                saveFile(sourceCatalogHash, chapterPath, chapterContents);
-//
-//                // migrate frames
-//                String[] frames = index.getFramesContents(translation, chapter.getId());
-//                for(String frameContents:frames) {
-//                    try {
-//                        Frame frame = Frame.generate(chapter.getId(), new JSONObject(frameContents));
-//                        String framePath = chapter.getId() + "/" + frame.getId();
-//                        saveFile(sourceCatalogHash, framePath, frameContents);
-//
-//                        // migrate notes
-//                        String[] notes = index.getNotesContents(translation, chapter.getId(), frame.getId());
-//                        for(String noteContents:notes) {
-//                            try {
-//                                TranslationNote note = TranslationNote.generate(chapter.getId(), frame.getId(), new JSONObject(noteContents));
-//                                String notePath = chapter.getId() + "/" + frame.getId() + "/" + note.getId();
-//                                saveFile(notesCatalogHash, notePath, noteContents);
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//
-//                        // migrate questions
-//                        String[] questions = index.getQuestionsContents(translation, chapter.getId(), frame.getId());
-//                        for(String questionContents:questions) {
-//                            try {
-//                                CheckingQuestion question = CheckingQuestion.generate(chapter.getId(), frame.getId(), new JSONObject(questionContents));
-//                                String questionPath = chapter.getId() + "/" + frame.getId() + "/" + question.getId();
-//                                saveFile(questionsCatalogHash, questionPath, questionContents);
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//
-//                        // migrate word assignments
-//                        String[] wordAssignments = index.getWordsForFrame(translation, chapter.getId(), frame.getId());
-//                        for(String wordId:wordAssignments) {
-//                            try {
-//                                JSONObject json = new JSONObject();
-//                                json.put("id", wordId);
-//                                String wordAssignmentPath = chapter.getId() + "/" + frame.getId() + "/" + wordId;
-//                                saveFile(termAssignmentsCatalogHash, wordAssignmentPath, wordId);
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//
-//                    } catch (Exception e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        mDatabase.setTransactionSuccessful();
-//        mDatabase.endTransaction();
-    }
-
     /**
      * Returns the index id
      * @return
      */
     public String getIndexId() {
         return mId;
+    }
+
+    /**
+     * Returns a branch of the category list
+     * @param sourcelanguageSlug
+     * @param parentCategoryId
+     * @return
+     */
+    public ProjectCategory[] getCategoryBranch(String sourcelanguageSlug, long parentCategoryId) {
+        return mDatabaseHelper.getCategoryBranch(mDatabase, sourcelanguageSlug, parentCategoryId);
     }
 
     /**
@@ -874,6 +261,36 @@ public class Indexer {
         return true;
     }
 
+//    /**
+//     * Updates the resources local date modiifed to match the server date modified
+//     * @param projectSlug
+//     * @param sourceLanguageSlug
+//     * @return
+//     */
+//    public synchronized boolean normalizeResourcesModifiedDate(String projectSlug, String sourceLanguageSlug) {
+//        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, projectSlug);
+//        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceLanguageSlug, projectId);
+//        if(sourceLanguageId > 0) {
+//            mDatabaseHelper.normalizeResourcesModifiedDate(mDatabase, sourceLanguageId);
+//        }
+//        return true;
+//    }
+
+    /**
+     * Updates the resource's local date modiifed to match the server date modified
+     * @param sourceTranslation
+     * @return
+     */
+    public synchronized boolean markResourceUpToDate(SourceTranslation sourceTranslation) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+        if(resourceId > 0) {
+            mDatabaseHelper.markResourceUpToDate(mDatabase, resourceId);
+        }
+        return true;
+    }
+
     /**
      * Builds a source index from json
      * @param sourceTranslation
@@ -925,6 +342,34 @@ public class Indexer {
                 }
             } catch (JSONException e) {
                 Logger.e(this.getClass().getName(), "Failed to parse the chapter at index " + chapterIndex + " for source translation " + sourceTranslation.getId(), e);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Builds a index of all the target languages
+     * @param catalog
+     * @return
+     */
+    public boolean indexTargetLanguages(String catalog) {
+        JSONArray items;
+        try {
+            items = new JSONArray(catalog);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        for (int i = 0; i < items.length(); i ++) {
+            try {
+                JSONObject item = items.getJSONObject(i);
+                TargetLanguage targetLanguage = TargetLanguage.generate(item);
+                if(targetLanguage != null) {
+                    mDatabaseHelper.addTargetLanguage(mDatabase, targetLanguage.getId(), targetLanguage.getDirection().toString(), targetLanguage.name, targetLanguage.region);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         }
         return true;
@@ -1017,7 +462,7 @@ public class Indexer {
                                             JSONObject item = frameItems.getJSONObject(itemIndex);
                                             TranslationNote note = TranslationNote.generate(chapterSlug, frameSlug, item);
                                             if (note != null) {
-                                                mDatabaseHelper.addTranslationNote(mDatabase, note.getId(), frameId, note.getTitle(), note.getBody());
+                                                mDatabaseHelper.addTranslationNote(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug, note.getId(), frameId, note.getTitle(), note.getBody());
                                             }
                                         } catch (JSONException e) {
                                             e.printStackTrace();
@@ -1052,17 +497,15 @@ public class Indexer {
             return false;
         }
 
-        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
-        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
-        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+        Resource resource = mDatabaseHelper.getResource(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
 
-        if(resourceId > 0) {
+        if(resource != null) {
             for (int i = 0; i < items.length(); i++) {
                 try {
                     JSONObject item = items.getJSONObject(i);
                     TranslationWord word = TranslationWord.generate(item);
                     if (word != null) {
-                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resourceId, word.getTitle(), word.getDefinitionTitle(), word.getDefinition());
+                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getTerm(), word.getDefinitionTitle(), word.getDefinition());
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -1075,11 +518,11 @@ public class Indexer {
 
     /**
      * Builds a translationWord assignment index from json
-     * @param translation
+     * @param sourceTranslation
      * @param catalog
      * @return
      */
-    public synchronized boolean indexTermAssignments(SourceTranslation translation, String catalog) {
+    public synchronized boolean indexTermAssignments(SourceTranslation sourceTranslation, String catalog) {
         //KLUDGE: modify v2 questions catalogJson to match expected catalogJson format
         JSONArray items;
         try {
@@ -1091,30 +534,45 @@ public class Indexer {
         }
         //KLUDGE: end modify v2\
 
-        for(int chapterIndex = 0; chapterIndex < items.length(); chapterIndex ++) {
-            try {
-                JSONObject chapter = items.getJSONObject(chapterIndex);
-                String chapterId = chapter.getString("id");
-                JSONArray frames = chapter.getJSONArray("frames");
-                for(int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
-                    try {
-                        JSONObject frame = frames.getJSONObject(frameIndex);
-                        String frameId = frame.getString("id");
-                        JSONArray frameItems = frame.getJSONArray("items");
-                        for(int itemIndex = 0; itemIndex < frameItems.length(); itemIndex ++) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            // index
+            for (int chapterIndex = 0; chapterIndex < items.length(); chapterIndex++) {
+                try {
+                    JSONObject chapter = items.getJSONObject(chapterIndex);
+                    String chapterSlug = chapter.getString("id");
+                    long chapterId = mDatabaseHelper.getChapterDBId(mDatabase, chapterSlug, resourceId);
+                    if(chapterId > 0) {
+                        JSONArray frames = chapter.getJSONArray("frames");
+                        for (int frameIndex = 0; frameIndex < frames.length(); frameIndex++) {
                             try {
-                                JSONObject item = frameItems.getJSONObject(itemIndex);
-                                // TODO: index term assignments
-                            } catch(JSONException e) {
+                                JSONObject frame = frames.getJSONObject(frameIndex);
+                                String frameSlug = frame.getString("id");
+                                long frameId = mDatabaseHelper.getFrameDBId(mDatabase, frameSlug, chapterId);
+                                if(frameId > 0) {
+                                    JSONArray frameItems = frame.getJSONArray("items");
+                                    for (int itemIndex = 0; itemIndex < frameItems.length(); itemIndex++) {
+                                        try {
+                                            JSONObject item = frameItems.getJSONObject(itemIndex);
+                                            if (item.has("id")) {
+                                                mDatabaseHelper.addTranslationWordToFrame(mDatabase, item.getString("id"), resourceId, frameId, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug);
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
+                            } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
-                    } catch(JSONException e) {
-                        e.printStackTrace();
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
 
@@ -1123,11 +581,11 @@ public class Indexer {
 
     /**
      * Builds a questions index from json
-     * @param translation
+     * @param sourceTranslation
      * @param catalog
      * @return
      */
-    public synchronized boolean indexQuestions(SourceTranslation translation, String catalog) {
+    public synchronized boolean indexQuestions(SourceTranslation sourceTranslation, String catalog) {
         //KLUDGE: modify v2 questions catalogJson to match expected catalogJson format
         JSONArray items;
         try {
@@ -1209,33 +667,45 @@ public class Indexer {
         items = jsonArray;
         //KLUDGE: end modify v2
 
-        for(int chapterIndex = 0; chapterIndex < items.length(); chapterIndex ++) {
-            try {
-                JSONObject chapter = items.getJSONObject(chapterIndex);
-                String chapterId = chapter.getString("id");
-                JSONArray frames = chapter.getJSONArray("frames");
-                for(int frameIndex = 0; frameIndex < frames.length(); frameIndex ++) {
-                    try {
-                        JSONObject frame = frames.getJSONObject(frameIndex);
-                        String frameId = frame.getString("id");
-                        JSONArray frameItems = frame.getJSONArray("items");
-                        for(int itemIndex = 0; itemIndex < frameItems.length(); itemIndex ++) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            for (int chapterIndex = 0; chapterIndex < items.length(); chapterIndex++) {
+                try {
+                    JSONObject chapter = items.getJSONObject(chapterIndex);
+                    String chapterSlug = chapter.getString("id");
+                    long chapterId = mDatabaseHelper.getChapterDBId(mDatabase, chapterSlug, resourceId);
+                    if(chapterId > 0) {
+                        JSONArray frames = chapter.getJSONArray("frames");
+                        for (int frameIndex = 0; frameIndex < frames.length(); frameIndex++) {
                             try {
-                                JSONObject item = frameItems.getJSONObject(itemIndex);
-                                CheckingQuestion question = CheckingQuestion.generate(chapterId, frameId, item);
-                                if(question != null) {
-                                    // TODO: index question
+                                JSONObject frame = frames.getJSONObject(frameIndex);
+                                String frameSlug = frame.getString("id");
+                                long frameId = mDatabaseHelper.getFrameDBId(mDatabase, frameSlug, chapterId);
+                                if(frameId > 0) {
+                                    JSONArray frameItems = frame.getJSONArray("items");
+                                    for (int itemIndex = 0; itemIndex < frameItems.length(); itemIndex++) {
+                                        try {
+                                            JSONObject item = frameItems.getJSONObject(itemIndex);
+                                            CheckingQuestion question = CheckingQuestion.generate(chapterSlug, frameSlug, item);
+                                            if (question != null) {
+                                                mDatabaseHelper.addCheckingQuestion(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug, question.getId(), frameId, chapterId, question.getQuestion(), question.getAnswer());
+                                            }
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 }
-                            } catch(JSONException e) {
+                            } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
-                    } catch(JSONException e) {
-                        e.printStackTrace();
                     }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
         }
         return true;
@@ -1306,13 +776,19 @@ public class Indexer {
     }
 
     /**
-     * Returns a list of chapter contents
+     * Returns a list of chapters
      * @return
      */
     @Deprecated
-    public String[] getChaptersContents(SourceTranslation translation) {
-        return new String[0];
-//        return getDirFileContentsArray(getResource(translation), "source", null, "chapter.json");
+    public Chapter[] getChapters(SourceTranslation sourceTranslation) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+
+        if(resourceId > 0) {
+            return mDatabaseHelper.getChapters(mDatabase, resourceId);
+        }
+        return new Chapter[0];
     }
 
     /**
@@ -1335,14 +811,37 @@ public class Indexer {
 
     /**
      * Returns an array of frame contents
-     * @param translation
-     * @param chapterId
+     * @param sourceTranslation
+     * @param chapterSlug
      * @return
      */
-    @Deprecated
-    public String[] getFramesContents(SourceTranslation translation, String chapterId) {
-        return new String[0];
-//        return getContentsArray(getResource(translation), "source", chapterId);
+    public Frame[] getFrames(SourceTranslation sourceTranslation, String chapterSlug) {
+        return mDatabaseHelper.getFrames(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug);
+    }
+
+    /**
+     * Returns an array of target languages
+     * @return
+     */
+    public TargetLanguage[] getTargetLanguages() {
+        return mDatabaseHelper.getTargetLanguages(mDatabase);
+    }
+
+    /**
+     * Returns a target language
+     * @param targetLanguageSlug
+     * @return
+     */
+    public TargetLanguage getTargetLanguage(String targetLanguageSlug) {
+        return mDatabaseHelper.getTargetLanguage(mDatabase, targetLanguageSlug);
+    }
+
+    /**
+     * Returns the number of target languages
+     * @return
+     */
+    public int getNumTargetLanguages() {
+        return mDatabaseHelper.getTargetLanguagesLength(mDatabase);
     }
 
     /**
@@ -1366,36 +865,11 @@ public class Indexer {
     }
 
     /**
-     * Returns an array of note contents
-     * @param translation
-     * @param chapterId
-     * @return
-     */
-    @Deprecated
-    public String[] getNotesContents(SourceTranslation translation, String chapterId, String frameId) {
-        return new String[0];
-//        return getContentsArray(getResource(translation), "notes", chapterId + "/" + frameId);
-    }
-
-    /**
-     * Returns an array of translationWord ids for a single frame
-     * @param translation
-     * @param chapterId
-     * @param frameId
-     * @return
-     */
-    public String[] getWordsForFrame(SourceTranslation translation, String chapterId, String frameId) {
-        // TODO: 10/16/2015 this should return an array of translation word objects
-        return new String[0];
-//        return getItemsArray(getResource(translation), "tw_cat", chapterId + "/" + frameId);
-    }
-
-    /**
      * Returns an array of translationWord slugs
      * @param sourceTranslation
      * @return
      */
-    public String[] getWords(SourceTranslation sourceTranslation) {
+    public String[] getWordSlugs(SourceTranslation sourceTranslation) {
         long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
         long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
         long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
@@ -1407,14 +881,14 @@ public class Indexer {
     }
 
     /**
-     * Returns an array of word contents
-     * @param translation
+     * Returns an array of translationWords for a single frame
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @param frameSlug
      * @return
      */
-    @Deprecated
-    public String[] getWordsContents(SourceTranslation translation) {
-        return new String[0];
-//        return getContentsArray(getResource(translation), "terms", null);
+    public TranslationWord[] getWordsForFrame(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
+        return mDatabaseHelper.getTranslationWordsForFrame(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug);
     }
 
     /**
@@ -1436,74 +910,65 @@ public class Indexer {
     }
 
     /**
-     * Returns an array of checkingQuestion ids
-     * @param translation
-     * @param chapterId
-     * @param frameId
+     * Returns an array of checkingQuestions
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @param frameSlug
      * @return
      */
-    public String[] getQuestions(SourceTranslation translation, String chapterId, String frameId) {
-        // TODO: 10/16/2015 this should return an array of question objects
-        return new String[0];
-//        return getItemsArray(getResource(translation), "checking_questions", chapterId + "/" + frameId);
+    public CheckingQuestion[] getCheckingQuestions(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
+        return mDatabaseHelper.getCheckingQuestions(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug);
     }
 
     /**
-     * Returns an array of question contents
-     * @param translation
-     * @param chapterId
+     * Returns a project
+     * The default language will be used for the project title and description
+     * @param projectSlug
      * @return
      */
-    @Deprecated
-    public String[] getQuestionsContents(SourceTranslation translation, String chapterId, String frameId) {
-        return new String[0];
-//        return getContentsArray(getResource(translation), "checking_questions", chapterId + "/" + frameId);
+    public synchronized Project getProject(String projectSlug) {
+        String defaultLanguageCode = Locale.getDefault().getLanguage();
+        return getProject(projectSlug, defaultLanguageCode);
     }
 
     /**
-     * Returns the json object for a single project
-     * @param projectId
+     * Returns a project
+     * @param projectSlug
+     * @param sourceLanguageSlug
      * @return
      */
-    public synchronized JSONObject getProject(String projectId) {
-        // TODO: 10/16/2015 this should return a project object
-//        String md5hash = mDatabaseHelper.readLink(mDatabase, "projects_catalog.link");
-//        if(md5hash == null) {
-//            return null;
-//        }
-//        return readJSON(md5hash, projectSlug);
-        return null;
+    public synchronized Project getProject(String projectSlug, String sourceLanguageSlug) {
+        return mDatabaseHelper.getProject(mDatabase, projectSlug, sourceLanguageSlug);
     }
 
     /**
-     * Returns the json object for a single source language
-     * @param projectId
-     * @param sourcLanguageId
+     * Returns a source language
+     * @param projectSlug
+     * @param sourceLanguageSlug
      * @return
      */
-    public synchronized JSONObject getSourceLanguage(String projectId, String sourcLanguageId) {
-//        String md5hash = mDatabaseHelper.readLink(mDatabase, projectSlug + "/languages_catalog.link");
-//        if(md5hash == null) {
-//            return null;
-//        }
-//        return readJSON(md5hash, sourcLanguageId);
-        // TODO: 10/16/2015 this should return a source language object
-        return null;
+    public synchronized SourceLanguage getSourceLanguage(String projectSlug, String sourceLanguageSlug) {
+        return mDatabaseHelper.getSourceLanguage(mDatabase, projectSlug, sourceLanguageSlug);
     }
 
     /**
-     * Returns the json object for a single resource
+     * Returns a source translation
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     * @return
+     */
+    public SourceTranslation getSourceTranslation(String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        return mDatabaseHelper.getSourceTranslation(mDatabase, projectSlug, sourceLanguageSlug, resourceSlug);
+    }
+
+    /**
+     * Returns a resource
      * @param translation
      * @return
      */
-    public synchronized JSONObject getResource(SourceTranslation translation) {
-//        String md5hash = mDatabaseHelper.readLink(mDatabase, translation.projectSlug + "/" + translation.sourceLanguageSlug + "/resources_catalog.link");
-//        if(md5hash == null) {
-//            return null;
-//        }
-//        return readJSON(md5hash, translation.resourceSlug);
-        // TODO: 10/16/2015 this should return a resource object
-        return null;
+    public synchronized Resource getResource(SourceTranslation translation) {
+        return mDatabaseHelper.getResource(mDatabase, translation.projectSlug, translation.sourceLanguageSlug, translation.resourceSlug);
     }
 
     /**
@@ -1542,19 +1007,20 @@ public class Indexer {
 
     /**
      * Returns the json object for a single checkingQuestion
-     * @param translation
-     * @param chapterId
-     * @param frameId
-     * @param questionId
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @param questionSlug
      * @return
      */
-    public JSONObject getQuestion(SourceTranslation translation, String chapterId, String frameId, String questionId) {
-//        String md5hash = readQuestionsLink(translation);
-//        if(md5hash == null) {
-//            return null;
-//        }
-//        return readJSON(md5hash, chapterId + "/" + frameId + "/" + questionId);
-        // TODO: 10/16/2015 this should return a question object
+    public CheckingQuestion getCheckingQuestion(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug, String questionSlug) {
+        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
+        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
+        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
+        long chapterId = mDatabaseHelper.getChapterDBId(mDatabase, chapterSlug, resourceId);
+
+        if(chapterId > 0) {
+            return mDatabaseHelper.getCheckingQuestion(mDatabase, chapterId, frameSlug, questionSlug);
+        }
         return null;
     }
 
@@ -1578,58 +1044,34 @@ public class Indexer {
         return null;
     }
 
-//    /**
-//     * Returns a file pointing to a specific set of data
-//     * @param md5hash the data to retrieve
-//     * @return the file to the data dir or null if the hash is null
-//     */
-//    @Deprecated
-//    public File getDataDir (String md5hash) {
-//        return null;
-//    }
+    /**
+     * Returns the body of the chapter
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @return
+     */
+    public String getChapterBody(SourceTranslation sourceTranslation, String chapterSlug) {
+        return mDatabaseHelper.getChapterBody(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug);
+    }
 
-//    /**
-//     * Reads the data key from the source link
-//     * @param translation
-//     * @return
-//     */
-//    public synchronized String readSourceLink(SourceTranslation translation) {
-//        return mDatabaseHelper.readLink(mDatabase, translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/source.link");
-//    }
+    /**
+     * Returns the format of the chapter body
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @return
+     */
+    public TranslationFormat getChapterBodyFormat(SourceTranslation sourceTranslation, String chapterSlug) {
+        return mDatabaseHelper.getChapterBodyFromat(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug);
+    }
 
-//    /**
-//     * Reads the data key from the questions link
-//     * @param translation
-//     * @return
-//     */
-//    public synchronized String readQuestionsLink(SourceTranslation translation) {
-//        return mDatabaseHelper.readLink(mDatabase, translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/checking_questions.link");
-//    }
-
-//    /**
-//     * Reads the data key from the terms link
-//     * @param translation
-//     * @return
-//     */
-//    public synchronized String readWordsLink(SourceTranslation translation) {
-//        return mDatabaseHelper.readLink(mDatabase, translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/terms.link");
-//    }
-
-//    /**
-//     * Reads the data key from the term assignments link
-//     * @param translation
-//     * @return
-//     */
-//    public synchronized String readWordAssignmentsLink(SourceTranslation translation) {
-//        return mDatabaseHelper.readLink(mDatabase, translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/tw_cat.link");
-//    }
-//
-//    /**
-//     * Reads the data key from the notes link
-//     * @param translation
-//     * @return
-//     */
-//    public synchronized String readNotesLink(SourceTranslation translation) {
-//        return mDatabaseHelper.readLink(mDatabase, translation.projectSlug + "/" + translation.sourceLanguageSlug + "/" + translation.resourceSlug + "/notes.link");
-//    }
+    /**
+     * Returns the translation notes in a frame
+     * @param sourceTranslation
+     * @param chapterSlug
+     * @param frameSlug
+     * @return
+     */
+    public TranslationNote[] getTranslationNotes(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
+        return mDatabaseHelper.getTranslationNotes(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug);
+    }
 }

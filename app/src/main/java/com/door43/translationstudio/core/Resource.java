@@ -22,11 +22,19 @@ public class Resource {
     private final int termAssignmentsDateModified;
     private final String questionsCatalogUrl;
     private final int questionsDateModified;
+    private final int sourceServerDateModified;
+    private final int notesServerDateModified;
+    private final int termsServerDateModified;
+    private final int termAssignmentsServerDateModified;
+    private final int questionsServerDateModified;
+    private long DBId = -1;
 
-    private Resource(String name, String slug, int checkingLevel, String version, int dateModified,
-                     String sourceCatalogUrl, int sourceDateModified, String notesCatalogUrl, int notesDateModified,
-                     String termsCatalogUrl, int termsDateModified, String termAssignmentsCatalogUrl,
-                     int termAssignmentsDateModified, String questionsCatalogUrl, int questionsDateModified) {
+    public Resource(String name, String slug, int checkingLevel, String version, int dateModified,
+                    String sourceCatalogUrl, int sourceDateModified, int sourceServerDateModified,
+                    String notesCatalogUrl, int notesDateModified, int notesServerDateModified,
+                    String termsCatalogUrl, int termsDateModified, int termsServerDateModified,
+                    String termAssignmentsCatalogUrl, int termAssignmentsDateModified, int termAssignmentsServerDateModified,
+                    String questionsCatalogUrl, int questionsDateModified, int questionsServerDateModified) {
         mTitle = name;
         mId = slug;
         mCheckingLevel = checkingLevel;
@@ -35,14 +43,23 @@ public class Resource {
 
         this.sourceCatalogUrl = sourceCatalogUrl;
         this.sourceDateModified = sourceDateModified;
+        this.sourceServerDateModified = sourceServerDateModified;
+
         this.notesCatalogUrl = notesCatalogUrl;
         this.notesDateModified = notesDateModified;
+        this.notesServerDateModified = notesServerDateModified;
+
         this.termsCatalogUrl = termsCatalogUrl;
         this.termsDateModified = termsDateModified;
+        this.termsServerDateModified = termsServerDateModified;
+
         this.termAssignmentsCatalogUrl = termAssignmentsCatalogUrl;
         this.termAssignmentsDateModified = termAssignmentsDateModified;
+        this.termAssignmentsServerDateModified = termAssignmentsServerDateModified;
+
         this.questionsCatalogUrl = questionsCatalogUrl;
         this.questionsDateModified = questionsDateModified;
+        this.questionsServerDateModified = questionsServerDateModified;
     }
 
     /**
@@ -95,14 +112,19 @@ public class Resource {
                 json.getInt("date_modified"),
                 sourceCatalog,
                 sourceModified,
+                0,
                 notesCatalog,
                 notesModified,
+                0,
                 wordsCatalog,
                 wordsModified,
+                0,
                 termAssignmentsCatalog,
                 termAssignmentsModified,
+                0,
                 questionsCatalog,
-                questionsDateModified
+                questionsDateModified,
+                0
         );
     }
 
@@ -162,7 +184,8 @@ public class Resource {
     }
 
     /**
-     * Returns the date the resource was last modified
+     * Returns the date the resource was last modified.
+     * The local date modified is always the lowest date modified available
      * @return
      */
     public int getDateModified() {
@@ -207,5 +230,55 @@ public class Resource {
 
     public int getQuestionsDateModified() {
         return questionsDateModified;
+    }
+
+    public int getSourceServerDateModified() {
+        return sourceServerDateModified;
+    }
+
+    public int getNotesServerDateModified() {
+        return notesServerDateModified;
+    }
+
+    public int getTermsServerDateModified() {
+        return termsServerDateModified;
+    }
+
+    public int getTermAssignmentsServerDateModified() {
+        return termAssignmentsServerDateModified;
+    }
+
+    public int getQuestionsServerDateModified() {
+        return questionsServerDateModified;
+    }
+
+    /**
+     * Checks if updates are available for this resource on the server
+     * @return
+     */
+    public boolean hasUpdates() {
+        boolean hasUpdates = sourceDateModified < sourceServerDateModified;
+
+        if(notesCatalogUrl != null && !notesCatalogUrl.isEmpty()) {
+            hasUpdates = notesDateModified < notesServerDateModified ? true : hasUpdates;
+        }
+        if(questionsCatalogUrl != null && !questionsCatalogUrl.isEmpty()) {
+            hasUpdates = questionsDateModified < questionsServerDateModified ? true : hasUpdates;
+        }
+        if(termsCatalogUrl != null && !termsCatalogUrl.isEmpty()) {
+            hasUpdates = termsDateModified < termsServerDateModified ? true : hasUpdates;
+        }
+        if(termAssignmentsCatalogUrl != null && !termAssignmentsCatalogUrl.isEmpty()) {
+            hasUpdates = termAssignmentsDateModified < termAssignmentsServerDateModified ? true : hasUpdates;
+        }
+        return hasUpdates;
+    }
+
+    public void setDBId(long DBId) {
+        this.DBId = DBId;
+    }
+
+    public long getDBId() {
+        return this.DBId;
     }
 }

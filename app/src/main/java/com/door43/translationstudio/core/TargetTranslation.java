@@ -223,6 +223,9 @@ public class TargetTranslation {
      * @return
      */
     public FrameTranslation getFrameTranslation(Frame frame) {
+        if(frame == null) {
+            return null;
+        }
         return getFrameTranslation(frame.getChapterId(), frame.getId(), frame.getFormat());
     }
 

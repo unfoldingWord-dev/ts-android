@@ -1304,7 +1304,7 @@ public class ProjectManager {
 //        }
 
         // load the correct title and description
-//        p.setDefaultTitle(p.getTitle(p.getSelectedSourceLanguage()));
+//        p.setDefaultTitle(p.getTerm(p.getSelectedSourceLanguage()));
 //        p.setDefaultDescription(p.getDescription(p.getSelectedSourceLanguage()));
         return importedLanguages;
     }
