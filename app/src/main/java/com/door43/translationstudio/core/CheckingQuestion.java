@@ -56,8 +56,8 @@ public class CheckingQuestion {
         List<Reference> references = new ArrayList<>();
         for(String reference:rawReferences) {
             try {
-                references.add(new Reference(reference));
-            } catch (InvalidParameterException e) {
+                references.add(Reference.generate(reference));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -116,18 +116,31 @@ public class CheckingQuestion {
      * Represents a single reference in a question
      */
     public static class Reference {
-        private final String mChapterId;
-        private final String mFrameId;
-        private final String mReference;
+        private final String chapterSlug;
+        private final String frameSlug;
+        private final String reference;
 
-        public Reference(String reference) throws InvalidParameterException {
-            mReference = reference;
+        /**
+         *
+         * @param chapterSlug
+         * @param frameSlug
+         * @throws InvalidParameterException
+         */
+        public Reference(String chapterSlug, String frameSlug) throws InvalidParameterException {
+            this.reference = chapterSlug + "-" + frameSlug;
+            this.chapterSlug = chapterSlug;
+            this.frameSlug = frameSlug;
+        }
+
+        public static Reference generate(String reference) throws Exception {
+            if(reference == null) {
+                throw new Exception("The reference must not be null");
+            }
             String[] complexId = reference.split("-");
             if(complexId.length == 2) {
-                this.mChapterId = complexId[0];
-                this.mFrameId = complexId[1];
+                return new Reference(complexId[0], complexId[1]);
             } else {
-                throw new InvalidParameterException("The reference '" + reference + "' is invalid");
+                throw new Exception("The reference '" + reference + "' is invalid");
             }
         }
 
@@ -136,7 +149,7 @@ public class CheckingQuestion {
          * @return
          */
         public String getReference() {
-            return this.mReference;
+            return this.reference;
         }
 
         /**
@@ -144,7 +157,7 @@ public class CheckingQuestion {
          * @return
          */
         public String getChapterId() {
-            return this.mChapterId;
+            return this.chapterSlug;
         }
 
         /**
@@ -152,7 +165,7 @@ public class CheckingQuestion {
          * @return
          */
         public String getFrameId() {
-            return this.mFrameId;
+            return this.frameSlug;
         }
     }
 }

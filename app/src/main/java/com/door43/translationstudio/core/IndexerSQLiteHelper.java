@@ -949,7 +949,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     public CheckingQuestion getCheckingQuestion(SQLiteDatabase db, long chapterId, String frameSlug, String questionSlug) {
         CheckingQuestion question = null;
-        Cursor cursor = db.rawQuery("SELECT `c`.`slug`, `cq`.`question`, `cq`.`answer` FROM `checking_question` AS `cq`"
+        Cursor cursor = db.rawQuery("SELECT `c`.`slug`, `cq`.`question`, `cq`.`answer`, `ref`.`references` FROM `checking_question` AS `cq`"
+                + " LEFT JOIN ("
+                + "   SELECT `checking_question_id`, GROUP_CONCAT(`chapter_slug` || '-' || `frame_slug`, ',') AS `references` FROM `frame__checking_question`"
+                + "   GROUP BY `checking_question_id`"
+                + " ) AS `ref` ON `ref`.`checking_question_id`=`cq`.`id`"
                 + " LEFT JOIN `frame__checking_question` AS `fcq` ON `fcq`.`checking_question_id`=`cq`.`id`"
                 + " LEFT JOIN `frame` AS `f` ON `f`.`id`=`fcq`.`frame_id`"
                 + " LEFT JOIN `chapter` AS `c` ON `c`.`id`=`f`.`chapter_id`"
@@ -959,8 +963,16 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String questionText = cursor.getString(1);
             String answer = cursor.getString(2);
 
-            // TODO: 10/16/2015 retrieve the references
-            question = new CheckingQuestion(questionSlug, chapterSlug, frameSlug, questionText, answer, new CheckingQuestion.Reference[0]);
+            String[] referenceStrings = cursor.getString(3).split(",");
+            List<CheckingQuestion.Reference> references = new ArrayList<>();
+            for(String reference:referenceStrings) {
+                try {
+                    references.add(CheckingQuestion.Reference.generate(reference));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            question = new CheckingQuestion(questionSlug, chapterSlug, frameSlug, questionText, answer, references.toArray(new CheckingQuestion.Reference[references.size()]));
         }
         cursor.close();
         return question;
