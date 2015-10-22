@@ -778,7 +778,10 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
         // insert related
         for(String relatedWordSlug:related) {
-
+            ContentValues relatedValues = new ContentValues();
+            relatedValues.put("slug", relatedWordSlug);
+            relatedValues.put("translation_word_id", wordId);
+            db.insertWithOnConflict("translation_word_related", null, relatedValues, SQLiteDatabase.CONFLICT_IGNORE);
         }
 
         return wordId;
@@ -814,11 +817,15 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @return
      */
     public TranslationWord getTranslationWord(SQLiteDatabase db, String slug, long resourceId) {
-        Cursor cursor = db.rawQuery("SELECT `tw`.`id`, `tw`.`term`, `tw`.`definition`, `tw`.`definition_title`, `related`.`related_words` FROM `translation_word` AS `tw`"
+        Cursor cursor = db.rawQuery("SELECT `tw`.`id`, `tw`.`term`, `tw`.`definition`, `tw`.`definition_title`, `related`.`related_words`, `aliases`.`word_aliases` FROM `translation_word` AS `tw`"
                 + " LEFT JOIN ("
-                + "    SELECT `translation_word_id`, GROUP_CONCAT(`related_translation_word_id`, ',') AS `related_words`"
+                + "    SELECT `translation_word_id`, GROUP_CONCAT(`slug`, ';') AS `related_words`"
                 + "    FROM `translation_word_related` GROUP BY `translation_word_id`"
                 + " ) AS `related` ON `related`.`translation_word_id`=`tw`.`id`"
+                + " LEFT JOIN ("
+                + "    SELECT `translation_word_id`, GROUP_CONCAT(`term`, ';') AS `word_aliases`"
+                + "    FROM `translation_word_related` GROUP BY `translation_word_id`"
+                + " ) AS `aliases` ON `aliases`.`translation_word_id`=`tw`.`id`"
                 + " LEFT JOIN `resource__translation_word` AS `rtw` ON `rtw`.`translation_word_id`=`tw`.`id`"
                 + " WHERE `tw`.`slug`=? AND `rtw`.`resource_id`=" + resourceId, new String[]{slug});
         TranslationWord word = null;
@@ -831,11 +838,20 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String rawRelated = cursor.getString(4);
             String[] relatedWords = new String[0];
             if(rawRelated != null) {
-                relatedWords = rawRelated.split(",");
+                relatedWords = rawRelated.split(";");
             }
-            // TODO: 10/16/2015 retrieve the example passages in a new query
-            // TODO: 10/16/2015 we could create a comma delimited list for aliases
-            word = new TranslationWord(slug, term, definition, definitionTitle, relatedWords,  new String[0],  new TranslationWord.Example[0]);
+
+            String rawAliases = cursor.getString(5);
+            String[] wordAliases = new String[0];
+            if(rawAliases != null) {
+                wordAliases = rawAliases.split(";");
+            }
+            cursor.close();
+
+            // retrieve examples
+            // TODO: 10/22/2015 query for the examples
+
+            word = new TranslationWord(slug, term, definition, definitionTitle, relatedWords,  wordAliases,  new TranslationWord.Example[0]);
         }
         cursor.close();
         return word;

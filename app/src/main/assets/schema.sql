@@ -268,10 +268,9 @@ DROP TABLE IF EXISTS `translation_word_related`;
 CREATE TABLE `translation_word_related` (
   `id` INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   `translation_word_id` INTEGER NOT NULL,
-  `related_translation_word_id` INTEGER NOT NULL,
-  UNIQUE (`related_translation_word_id`, `translation_word_id`),
-  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`),
-  FOREIGN KEY (related_translation_word_id) REFERENCES `translation_word` (`id`)
+  `slug` TEXT NOT NULL,
+  UNIQUE (`slug`, `translation_word_id`),
+  FOREIGN KEY (translation_word_id) REFERENCES `translation_word` (`id`)
 );
 
 -- ---
