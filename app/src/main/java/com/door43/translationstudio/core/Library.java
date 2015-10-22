@@ -14,12 +14,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by joel on 8/29/2015.
  */
 public class Library {
     private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
+    private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private final Indexer mAppIndex;
     private final Context mContext;
     private Downloader mDownloader;
@@ -418,39 +420,52 @@ public class Library {
      * @return
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
-        // TODO: 10/5/2015 build queries for this
+        // TODO: 10/22/2015 need to make this faster. we should add another method to the target
+        // translation that returns the number of translated items. Then add a method to the
+        // index that returns the number of items to be translated.
         if(false) {
-//            SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
-//            SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
-//            float numFrames = 0f;
-//            float numFinishedFrames = 0f;
-//            if (sourceTranslation != null) {
-//                String[] chapterIds = getActiveIndex().getChapterSlugs(sourceTranslation);
-//                for (String chapterId : chapterIds) {
-//                    if (Thread.currentThread().isInterrupted()) {
-//                        break;
-//                    }
-//                    String[] frameIds = getActiveIndex().getFrameSlugs(sourceTranslation, chapterId);
-//                    for (String frameId : frameIds) {
-//                        if (Thread.currentThread().isInterrupted()) {
-//                            break;
-//                        }
-//                        Frame frame = getFrame(sourceTranslation, chapterId, frameId);
-//                        if (!frame.body.isEmpty()) {
-//                            // TRICKY: the format doesn't matter because we are only looking at the finished state
-//                            FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
-//                            numFrames++;
-//                            if (frameTranslation.isFinished()) {
-//                                numFinishedFrames++;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            // TODO: 9/30/2015 include chapter title and references in calculation
-//            if (numFrames > 0) {
-//                return numFinishedFrames / numFrames;
-//            }
+            SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+            SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
+            float numItems = 0f;
+            float numTranslatedItems = 0f;
+            if (sourceTranslation != null) {
+                Chapter[] chapters = getActiveIndex().getChapters(sourceTranslation);
+                for (Chapter chapter : chapters) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+                    ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter);
+                    if (!chapter.reference.isEmpty()) {
+                        numItems++;
+                        if (chapterTranslation.isReferenceFinished()) {
+                            numTranslatedItems++;
+                        }
+                    }
+                    if (!chapter.title.isEmpty()) {
+                        numItems++;
+                        if (chapterTranslation.isTitleFinished()) {
+                            numTranslatedItems++;
+                        }
+                    }
+                    Frame[] frames = getActiveIndex().getFrames(sourceTranslation, chapter.getId());
+                    for (Frame frame : frames) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+                        if (!frame.body.isEmpty()) {
+                            // TRICKY: the format doesn't matter because we are only looking at the finished state
+                            FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
+                            numItems++;
+                            if (frameTranslation.isFinished()) {
+                                numTranslatedItems++;
+                            }
+                        }
+                    }
+                }
+            }
+            if (numItems > 0) {
+                return numTranslatedItems / numItems;
+            }
         }
         return 0f;
     }
@@ -572,30 +587,20 @@ public class Library {
      * Returns the source translation with the default resource.
      * If the default resource does not exist it will use the first available resource
      *
-     * @param projectId
-     * @param sourceLanguageId
+     * @param projectSlug
+     * @param sourceLanguageSlug
      * @return null if the source translation does not exist
      */
-    public SourceTranslation getDefaultSourceTranslation(String projectId, String sourceLanguageId) {
-        // TODO: 10/19/2015 build queries for this
-//        Resource[] resources = getResources(projectId, sourceLanguageId);
-//        if(resources.length > 0) {
-//            // start with first resource
-//            Resource defaultResource = resources[0];
-//            // try default resource
-//            for (Resource resource : resources) {
-//                if (resource.getId().toLowerCase().equals(DEFAULT_RESOURCE_ID)) {
-//                    defaultResource = resource;
-//                }
-//            }
-//            // load source translation
-//            SourceLanguage sourceLanguage = getPreferredSourceLanguage(projectId, sourceLanguageId);
-//            try {
-//                return SourceTranslation.generate(projectId, sourceLanguage, defaultResource);
-//            } catch (JSONException e) {
-//                Logger.e(this.getClass().getName(), "Failed to parse the source translation " + SourceTranslation.simple(projectId, sourceLanguageId, defaultResource.getId()).getId(), e);
-//            }
-//        }
+    public SourceTranslation getDefaultSourceTranslation(String projectSlug, String sourceLanguageSlug) {
+        SourceTranslation sourceTranslation = mAppIndex.getSourceTranslation(projectSlug, sourceLanguageSlug, DEFAULT_RESOURCE_SLUG);
+        if(sourceTranslation == null) {
+            String[] resourceSlugs = mAppIndex.getResourceSlugs(projectSlug, sourceLanguageSlug);
+            if(resourceSlugs.length > 0) {
+                return mAppIndex.getSourceTranslation(projectSlug, sourceLanguageSlug, resourceSlugs[0]);
+            }
+        } else {
+            return sourceTranslation;
+        }
         return null;
     }
 

@@ -28,17 +28,15 @@ public class ChapterTranslation {
      * @return
      */
     public boolean isReferenceFinished() {
-        // TODO: 9/30/2015 finish
-        return false;
+        return reference != null && !reference.isEmpty();
     }
 
     /**
-     * Checks if the chapter reference is finished being translated
+     * Checks if the chapter title is finished being translated
      * @return
      */
     public boolean isTitleFinished() {
-        // TODO: 9/30/2015 finish
-        return false;
+        return title != null && !title.isEmpty();
     }
 
     /**
