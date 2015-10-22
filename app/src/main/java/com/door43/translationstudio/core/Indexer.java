@@ -505,7 +505,7 @@ public class Indexer {
                     JSONObject item = items.getJSONObject(i);
                     TranslationWord word = TranslationWord.generate(item);
                     if (word != null) {
-                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getTerm(), word.getDefinitionTitle(), word.getDefinition());
+                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getTerm(), word.getDefinitionTitle(), word.getDefinition(), word.getExamples(), word.getAliases(), word.getSeeAlso());
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

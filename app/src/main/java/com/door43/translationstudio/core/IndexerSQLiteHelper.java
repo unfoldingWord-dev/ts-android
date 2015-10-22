@@ -27,7 +27,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     // TRICKY: when you bump the db version you should run the library tests to generate a new index.
     // Note that the extract test will fail.
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 4;
     private final String mDatabaseName;
     private final String mSchema;
 
@@ -732,7 +732,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param definition
      * @return
      */
-    public long addTranslationWord(SQLiteDatabase db, String wordSlug, long resourceId, String catalogHash, String term, String definitionTitle, String definition) {
+    public long addTranslationWord(SQLiteDatabase db, String wordSlug, long resourceId, String catalogHash, String term, String definitionTitle, String definition, TranslationWord.Example[] examples, String[] aliases, String[] related) {
         ContentValues values = new ContentValues();
         values.put("slug", wordSlug);
         values.put("catalog_hash", catalogHash);
@@ -757,6 +757,29 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         linkValues.put("resource_id", resourceId);
         linkValues.put("translation_word_id", wordId);
         db.insertWithOnConflict("resource__translation_word", null, linkValues, SQLiteDatabase.CONFLICT_IGNORE);
+
+        // insert examples
+        for(TranslationWord.Example example:examples) {
+            ContentValues exampleValues = new ContentValues();
+            exampleValues.put("frame_slug", example.getFrameId());
+            exampleValues.put("chapter_slug", example.getChapterId());
+            exampleValues.put("body", example.getPassage());
+            exampleValues.put("translation_word_id", wordId);
+            db.insertWithOnConflict("translation_word_alias", null, exampleValues, SQLiteDatabase.CONFLICT_IGNORE);
+        }
+
+        // insert aliases
+        for(String alias:aliases) {
+            ContentValues aliasValues = new ContentValues();
+            aliasValues.put("term", alias);
+            aliasValues.put("translation_word_id", wordId);
+            db.insertWithOnConflict("translation_word_alias", null, aliasValues, SQLiteDatabase.CONFLICT_IGNORE);
+        }
+
+        // insert related
+        for(String relatedWordSlug:related) {
+
+        }
 
         return wordId;
     }
@@ -791,7 +814,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @return
      */
     public TranslationWord getTranslationWord(SQLiteDatabase db, String slug, long resourceId) {
-        Cursor cursor = db.rawQuery("SELECT `tw`.`id`, `tw`.`term`, `tw`.`definition`, `tw`.`definition_title` FROM `translation_word` AS `tw`"
+        Cursor cursor = db.rawQuery("SELECT `tw`.`id`, `tw`.`term`, `tw`.`definition`, `tw`.`definition_title`, `related`.`related_words` FROM `translation_word` AS `tw`"
+                + " LEFT JOIN ("
+                + "    SELECT `translation_word_id`, GROUP_CONCAT(`related_translation_word_id`, ',') AS `related_words`"
+                + "    FROM `translation_word_related` GROUP BY `translation_word_id`"
+                + " ) AS `related` ON `related`.`translation_word_id`=`tw`.`id`"
                 + " LEFT JOIN `resource__translation_word` AS `rtw` ON `rtw`.`translation_word_id`=`tw`.`id`"
                 + " WHERE `tw`.`slug`=? AND `rtw`.`resource_id`=" + resourceId, new String[]{slug});
         TranslationWord word = null;
@@ -801,9 +828,14 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String definition = cursor.getString(2);
             String definitionTitle = cursor.getString(3);
 
-            // TODO: 10/16/2015 retrieve the related terms and exmaple passages
-            // TODO: 10/16/2015 we could create a comma delimited list for related (and aliases)
-            word = new TranslationWord(slug, term, definition, definitionTitle, new String[0],  new String[0],  new TranslationWord.Example[0]);
+            String rawRelated = cursor.getString(4);
+            String[] relatedWords = new String[0];
+            if(rawRelated != null) {
+                relatedWords = rawRelated.split(",");
+            }
+            // TODO: 10/16/2015 retrieve the example passages in a new query
+            // TODO: 10/16/2015 we could create a comma delimited list for aliases
+            word = new TranslationWord(slug, term, definition, definitionTitle, relatedWords,  new String[0],  new TranslationWord.Example[0]);
         }
         cursor.close();
         return word;
@@ -834,8 +866,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String definition = cursor.getString(3);
             String definitionTitle = cursor.getString(4);
 
-            // TODO: 10/16/2015 retrieve the related terms and exmaple passages
-            // TODO: 10/16/2015 we could create a comma delimited list for related (and aliases)
+            // NOTE: we purposely do not retrieve the related terms, aliases and example passages for better performance
             words.add(new TranslationWord(wordSlug, term, definition, definitionTitle, new String[0],  new String[0],  new TranslationWord.Example[0]));
             cursor.moveToNext();
         }
@@ -939,7 +970,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String question = cursor.getString(1);
             String answer = cursor.getString(2);
 
-            // TODO: 10/16/2015 retrieve the references
+            // NOTE: we purposely do not retrieve references in the above query for better performance
             questions.add(new CheckingQuestion(questionSlug, chapterSlug, frameSlug, question, answer, new CheckingQuestion.Reference[0]));
             cursor.moveToNext();
         }
