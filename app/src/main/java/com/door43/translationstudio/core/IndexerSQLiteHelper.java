@@ -765,7 +765,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             exampleValues.put("chapter_slug", example.getChapterId());
             exampleValues.put("body", example.getPassage());
             exampleValues.put("translation_word_id", wordId);
-            db.insertWithOnConflict("translation_word_alias", null, exampleValues, SQLiteDatabase.CONFLICT_IGNORE);
+            db.insertWithOnConflict("translation_word_example", null, exampleValues, SQLiteDatabase.CONFLICT_IGNORE);
         }
 
         // insert aliases
@@ -824,7 +824,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " ) AS `related` ON `related`.`translation_word_id`=`tw`.`id`"
                 + " LEFT JOIN ("
                 + "    SELECT `translation_word_id`, GROUP_CONCAT(`term`, ';') AS `word_aliases`"
-                + "    FROM `translation_word_related` GROUP BY `translation_word_id`"
+                + "    FROM `translation_word_alias` GROUP BY `translation_word_id`"
                 + " ) AS `aliases` ON `aliases`.`translation_word_id`=`tw`.`id`"
                 + " LEFT JOIN `resource__translation_word` AS `rtw` ON `rtw`.`translation_word_id`=`tw`.`id`"
                 + " WHERE `tw`.`slug`=? AND `rtw`.`resource_id`=" + resourceId, new String[]{slug});
