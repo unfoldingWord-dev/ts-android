@@ -2,6 +2,7 @@ package com.door43.translationstudio.newui.translate;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -264,6 +266,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
                 if (!actionTaken) {
                     holder.mTargetBody.requestFocus();
+
+                    InputMethodManager mgr = (InputMethodManager)
+                            mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    mgr.showSoftInput(holder.mTargetBody, InputMethodManager.SHOW_IMPLICIT);
                 }
             }
         });
