@@ -771,7 +771,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         // insert aliases
         for(String alias:aliases) {
             ContentValues aliasValues = new ContentValues();
-            aliasValues.put("term", alias);
+            aliasValues.put("term", alias.trim());
             aliasValues.put("translation_word_id", wordId);
             db.insertWithOnConflict("translation_word_alias", null, aliasValues, SQLiteDatabase.CONFLICT_IGNORE);
         }
@@ -779,7 +779,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         // insert related
         for(String relatedWordSlug:related) {
             ContentValues relatedValues = new ContentValues();
-            relatedValues.put("slug", relatedWordSlug);
+            relatedValues.put("slug", relatedWordSlug.trim());
             relatedValues.put("translation_word_id", wordId);
             db.insertWithOnConflict("translation_word_related", null, relatedValues, SQLiteDatabase.CONFLICT_IGNORE);
         }

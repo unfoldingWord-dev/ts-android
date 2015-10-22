@@ -1,6 +1,5 @@
 -- ---
 -- Table 'translation_note'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `translation_note`;
@@ -21,7 +20,6 @@ CREATE TABLE `translation_note` (
 
 -- ---
 -- Table 'project'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `project`;
@@ -37,7 +35,6 @@ CREATE TABLE `project` (
 
 -- ---
 -- Table 'resource'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `resource`;
@@ -71,7 +68,6 @@ CREATE TABLE `resource` (
 
 -- ---
 -- Table 'resource__translation_word'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `resource__translation_word`;
@@ -87,7 +83,6 @@ CREATE TABLE `resource__translation_word` (
 
 -- ---
 -- Table 'target_language'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `target_language`;
@@ -102,7 +97,6 @@ CREATE TABLE `target_language` (
 
 -- ---
 -- Table 'translation_word'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `translation_word`;
@@ -119,7 +113,6 @@ CREATE TABLE `translation_word` (
 
 -- ---
 -- Table 'source_language'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `source_language`;
@@ -140,7 +133,6 @@ CREATE TABLE `source_language` (
 
 -- ---
 -- Table 'checking_question'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `checking_question`;
@@ -156,7 +148,6 @@ CREATE TABLE `checking_question` (
 
 -- ---
 -- Table 'chapter'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `chapter`;
@@ -174,7 +165,6 @@ CREATE TABLE `chapter` (
 
 -- ---
 -- Table 'frame'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `frame`;
@@ -193,7 +183,6 @@ CREATE TABLE `frame` (
 
 -- ---
 -- Table 'category'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `category`;
@@ -207,7 +196,6 @@ CREATE TABLE `category` (
 
 -- ---
 -- Table 'project__category'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `project__category`;
@@ -223,7 +211,6 @@ CREATE TABLE `project__category` (
 
 -- ---
 -- Table 'source_language__category'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `source_language__category`;
@@ -240,7 +227,6 @@ CREATE TABLE `source_language__category` (
 
 -- ---
 -- Table 'frame__checking_question'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `frame__checking_question`;
@@ -260,7 +246,6 @@ CREATE TABLE `frame__checking_question` (
 
 -- ---
 -- Table 'translation_word_related'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `translation_word_related`;
@@ -275,7 +260,6 @@ CREATE TABLE `translation_word_related` (
 
 -- ---
 -- Table 'translation_word_example'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `translation_word_example`;
@@ -292,7 +276,6 @@ CREATE TABLE `translation_word_example` (
 
 -- ---
 -- Table 'translation_word_alias'
---
 -- ---
 
 DROP TABLE IF EXISTS `translation_word_alias`;
@@ -307,7 +290,6 @@ CREATE TABLE `translation_word_alias` (
 
 -- ---
 -- Table 'frame__translation_word'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `frame__translation_word`;
@@ -328,7 +310,6 @@ CREATE TABLE `frame__translation_word` (
 
 -- ---
 -- Table 'meta'
--- 
 -- ---
 
 DROP TABLE IF EXISTS `meta`;
