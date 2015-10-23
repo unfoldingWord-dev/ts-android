@@ -32,12 +32,11 @@ public class TargetTranslationAdapter extends BaseAdapter {
     private int[] mTranslationProgress;
     private boolean[] mTranslationProgressCalculated;
 
-    public TargetTranslationAdapter(Context context, TargetTranslation[] targetTranslations) {
+    public TargetTranslationAdapter(Context context) {
         mContext = context;
-        mTranslations = targetTranslations;
-        mTranslationProgress = new int[targetTranslations.length];
-        mTranslationProgressCalculated = new boolean[targetTranslations.length];
-        // TODO: scheduele calcualtions
+        mTranslations = new TargetTranslation[0];
+        mTranslationProgress = new int[0];
+        mTranslationProgressCalculated = new boolean[0];
     }
 
     /**
@@ -91,7 +90,8 @@ public class TargetTranslationAdapter extends BaseAdapter {
         holder.mLanguageView.setText(targetTranslation.getTargetLanguageName());
 
         // calculate translation progress
-        if(!mTranslationProgressCalculated[position]) {
+        if(!mTranslationProgressCalculated[position] && holder.mCalculatingProgressForPosition != position) {
+            holder.mCalculatingProgressForPosition = position;
             final ViewHolder staticHolder = holder;
             if(holder.mProgressTask != null) {
                 holder.mProgressTask.stop();
@@ -101,7 +101,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
 
                 @Override
                 public void onStop() {
-
+                    staticHolder.mCalculatingProgressForPosition = -1;
                 }
 
                 @Override
@@ -119,6 +119,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
                         staticHolder.mProgressView.setVisibility(View.VISIBLE);
                         // TODO: animate in progress view (pin)
                     }
+                    staticHolder.mCalculatingProgressForPosition = -1;
                 }
             };
             holder.mProgressTask.start();
@@ -161,6 +162,7 @@ public class TargetTranslationAdapter extends BaseAdapter {
         public ProgressPieView mProgressView;
         public ImageButton mInfoButton;
         public ThreadableUI mProgressTask;
+        public int mCalculatingProgressForPosition = -1;
 
         public ViewHolder(View view, Context context) {
             mIconView = (ImageView) view.findViewById(R.id.projectIcon);

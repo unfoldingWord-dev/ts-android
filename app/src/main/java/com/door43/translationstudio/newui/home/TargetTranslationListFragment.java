@@ -28,7 +28,7 @@ public class TargetTranslationListFragment extends BaseFragment implements Targe
         View rootView = inflater.inflate(R.layout.fragment_target_translation_list, container, false);
 
         ListView list = (ListView) rootView.findViewById(R.id.translationsList);
-        mAdapter = new TargetTranslationAdapter(getActivity(), AppContext.getTranslator().getTargetTranslations());
+        mAdapter = new TargetTranslationAdapter(getActivity());
         mAdapter.setOnInfoClickListener(new TargetTranslationAdapter.OnInfoClickListener() {
             @Override
             public void onClick(String targetTranslationId) {

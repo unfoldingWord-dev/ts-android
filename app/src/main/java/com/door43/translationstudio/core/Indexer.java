@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.transform.Source;
+
 
 /**
  * Created by joel on 8/26/2015.
@@ -1073,5 +1075,16 @@ public class Indexer {
      */
     public TranslationNote[] getTranslationNotes(SourceTranslation sourceTranslation, String chapterSlug, String frameSlug) {
         return mDatabaseHelper.getTranslationNotes(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug);
+    }
+
+    /**
+     * Returns the number of translatable items in the source translation.
+     * This counts the frames, chapter titles, and chapter references.
+     * Empty items will not be counted.
+     * @param sourceTranslation
+     * @return
+     */
+    public int numTranslatable(SourceTranslation sourceTranslation) {
+        return mDatabaseHelper.countTranslatableItems(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
     }
 }

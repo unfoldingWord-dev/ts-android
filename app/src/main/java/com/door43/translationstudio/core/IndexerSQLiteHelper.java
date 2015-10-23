@@ -1345,11 +1345,13 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     public Frame[] getFrames(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug, String chapterSlug) {
         List<Frame> frames = new ArrayList<>();
         Cursor cursor = db.rawQuery("SELECT `f`.`id`, `f`.`slug`, `f`.`body`, `f`.`format`, `f`.`image_url` FROM `frame` AS `f`"
-                + " LEFT JOIN `chapter` AS `c` ON `c`.`id`=`f`.`chapter_id`"
-                + " LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
-                + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
-                + " LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
-                + " WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=? AND `c`.`slug`=? ORDER BY `f`.`sort` ASC", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug});
+                + " WHERE `f`.`chapter_id` IN ("
+                + "   SELECT `c`.`id` FROM `chapter` AS `c`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + "   LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=? AND `c`.`slug`=?"
+                + " ) ORDER BY `f`.`sort` ASC", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug});
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             long id = cursor.getLong(0);
@@ -1408,11 +1410,13 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public TranslationFormat getChapterBodyFromat(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug, String chapterSlug) {
         Cursor cursor = db.rawQuery("SELECT `f`.`format` FROM `frame` AS `f`"
-                + " LEFT JOIN `chapter` AS `c` ON `c`.`id`=`f`.`chapter_id`"
-                + " LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
-                + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
-                + " LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
-                + " WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=? AND `c`.`slug`=? AND `f`.`format` IS NOT NULL LIMIT 1", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug});
+                + " WHERE `f`.`chapter_id` IN ("
+                + "   SELECT `c`.`id` FROM `chapter` AS `c`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + "   LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=? AND `c`.`slug`=?"
+                + " ) AND `f`.`format` IS NOT NULL LIMIT 1", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug});
         TranslationFormat format = TranslationFormat.DEFAULT;
         if(cursor.moveToFirst()) {
             format = TranslationFormat.get(cursor.getString(0));
@@ -1450,5 +1454,41 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return notes.toArray(new TranslationNote[notes.size()]);
+    }
+
+    /**
+     * Returns the number of translatable items in the resource
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     * @return
+     */
+    public int countTranslatableItems(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        Cursor cursor = db.rawQuery("SELECT SUM(`count`) FROM ("
+                + "   SELECT COUNT(*) AS `count` FROM `frame` AS `f`"
+                + "   WHERE `f`.`chapter_id` IN ("
+                + "     SELECT `c`.`id` FROM `chapter` AS `c`"
+                + "     LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "     LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + "     LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "     WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?"
+                + "   ) AND `f`.`body` IS NOT NULL AND TRIM(`f`.`body`, ' ') <> ''"
+                + "   UNION"
+                + "   SELECT SUM(CASE WHEN `c`.`reference`<>'' THEN 1 ELSE 0 END)"
+                + "   + SUM(CASE WHEN `c`.`title`<>'' THEN 1 ELSE 0 END) AS `count` FROM `chapter` AS `c`"
+                + "   WHERE `c`.`resource_id` IN ("
+                + "     SELECT `r`.`id` FROM `resource` AS `r`"
+                + "     LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + "     LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "     WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?"
+                + "   )"
+                + " )", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, projectSlug, sourceLanguageSlug, resourceSlug});
+        int count = 0;
+        if(cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
     }
 }

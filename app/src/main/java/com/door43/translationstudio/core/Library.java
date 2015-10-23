@@ -420,54 +420,15 @@ public class Library {
      * @return
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
-        // TODO: 10/22/2015 need to make this faster. we should add another method to the target
-        // translation that returns the number of translated items. Then add a method to the
-        // index that returns the number of items to be translated.
-        if(false) {
-            SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
-            SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
-            float numItems = 0f;
-            float numTranslatedItems = 0f;
-            if (sourceTranslation != null) {
-                Chapter[] chapters = getActiveIndex().getChapters(sourceTranslation);
-                for (Chapter chapter : chapters) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-                    ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapter);
-                    if (!chapter.reference.isEmpty()) {
-                        numItems++;
-                        if (chapterTranslation.isReferenceFinished()) {
-                            numTranslatedItems++;
-                        }
-                    }
-                    if (!chapter.title.isEmpty()) {
-                        numItems++;
-                        if (chapterTranslation.isTitleFinished()) {
-                            numTranslatedItems++;
-                        }
-                    }
-                    Frame[] frames = getActiveIndex().getFrames(sourceTranslation, chapter.getId());
-                    for (Frame frame : frames) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-                        if (!frame.body.isEmpty()) {
-                            // TRICKY: the format doesn't matter because we are only looking at the finished state
-                            FrameTranslation frameTranslation = targetTranslation.getFrameTranslation(frame);
-                            numItems++;
-                            if (frameTranslation.isFinished()) {
-                                numTranslatedItems++;
-                            }
-                        }
-                    }
-                }
-            }
-            if (numItems > 0) {
-                return numTranslatedItems / numItems;
-            }
+        int numTranslatedItems = targetTranslation.numTranslated();
+        SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
+        SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
+        int numAvailableTranslations = mAppIndex.numTranslatable(sourceTranslation);
+        if(numAvailableTranslations > 0) {
+            return (float) numTranslatedItems / (float) numAvailableTranslations;
+        } else {
+            return 0;
         }
-        return 0f;
     }
 
     /**

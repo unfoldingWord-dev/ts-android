@@ -21,6 +21,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Timer;
 
@@ -302,21 +304,6 @@ public class TargetTranslation {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-//        if(mApplyFrameTimer != null) {
-//            mApplyFrameTimer.cancel();
-//        }
-//        mApplyFrameTimer = new Timer();
-//        mApplyFrameTimer.schedule(new TimerTask() {
-//            @Override
-//            public void run() {
-//                try {
-//                    saveFrameTranslation(frameTranslation, translatedText);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }, COMMIT_DELAY);
     }
 
     /**
@@ -591,5 +578,23 @@ public class TargetTranslation {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Returns the number of items that have been translated
+     * @return
+     */
+    public int numTranslated() {
+        int numFiles = 0;
+        File[] chapterDirs = mTargetTranslationDirectory.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        });
+        for(File dir:chapterDirs) {
+            numFiles += dir.list().length;
+        }
+        return numFiles;
     }
 }
