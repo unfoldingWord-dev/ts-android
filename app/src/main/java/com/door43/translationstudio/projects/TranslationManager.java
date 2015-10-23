@@ -47,7 +47,7 @@ public class TranslationManager {
     }
 
     private TranslationManager() {
-        sAutosaveDelay = Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, AppContext.context().getResources().getString(R.string.pref_default_autosave)));
+        sAutosaveDelay = 0; //Integer.parseInt(AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_AUTOSAVE, AppContext.context().getResources().getString(R.string.pref_default_autosave)));
     }
 
     /**

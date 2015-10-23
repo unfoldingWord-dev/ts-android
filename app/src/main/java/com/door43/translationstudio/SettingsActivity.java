@@ -50,17 +50,17 @@ public class SettingsActivity extends PreferenceActivity {
      * shown on tablets.
      */
     private static final boolean ALWAYS_SIMPLE_PREFS = false;
-    public static final String KEY_PREF_AUTOSAVE = "autosave";
+//    public static final String KEY_PREF_AUTOSAVE = "autosave";
     public static final String KEY_PREF_AUTH_SERVER = "auth_server";
     public static final String KEY_PREF_AUTH_SERVER_PORT = "auth_server_port";
     public static final String KEY_PREF_GIT_SERVER = "git_server";
     public static final String KEY_PREF_GIT_SERVER_PORT = "git_server_port";
     public static final String KEY_PREF_REMEMBER_POSITION = "remember_position";
     public static final String KEY_PREF_MEDIA_SERVER = "media_server";
-    public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
+//    public static final String KEY_PREF_EXPORT_FORMAT = "export_format";
     public static final String KEY_PREF_TRANSLATION_TYPEFACE = "translation_typeface";
     public static final String KEY_PREF_TYPEFACE_SIZE = "typeface_size";
-    public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
+//    public static final String KEY_PREF_HIGHLIGHT_KEY_TERMS = "highlight_key_terms";
 //    public static final String KEY_PREF_ADVANCED_SETTINGS = "advanced_settings";
     public static final String KEY_PREF_LOGGING_LEVEL = "logging_level";
     public static final String KEY_PREF_BACKUP_INTERVAL = "backup_interval";
@@ -77,7 +77,7 @@ public class SettingsActivity extends PreferenceActivity {
                 GeneralPreferenceFragment.class.getName(),
                 AdvancedPreferenceFragment.class.getName(),
                 SavePreferenceFragment.class.getName(),
-                SharingPreferenceFragment.class.getName()
+//                SharingPreferenceFragment.class.getName()
         };
         boolean isValid = false;
         for(String name:validFragments) {
@@ -156,16 +156,16 @@ public class SettingsActivity extends PreferenceActivity {
         bindPreferenceSummaryToValue(pref);
 
         // Add 'sharing' preferences, and a corresponding header.
-        PreferenceCategory preferenceHeader = new PreferenceCategory(this);
-        preferenceHeader.setTitle(R.string.pref_header_sharing);
-        getPreferenceScreen().addPreference(preferenceHeader);
-        addPreferencesFromResource(R.xml.sharing_preferences);
+//        PreferenceCategory preferenceHeader = new PreferenceCategory(this);
+//        preferenceHeader.setTitle(R.string.pref_header_sharing);
+//        getPreferenceScreen().addPreference(preferenceHeader);
+//        addPreferencesFromResource(R.xml.sharing_preferences);
 
-        // Add 'upload' preferences, and a corresponding header.
-        preferenceHeader = new PreferenceCategory(this);
+        // Add 'server' preferences, and a corresponding header.
+        PreferenceCategory preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_synchronization);
         getPreferenceScreen().addPreference(preferenceHeader);
-        addPreferencesFromResource(R.xml.save_preferences);
+        addPreferencesFromResource(R.xml.server_preferences);
 
         // add advanced preferences and coresponding hreader
         preferenceHeader = new PreferenceCategory(this);
@@ -177,12 +177,12 @@ public class SettingsActivity extends PreferenceActivity {
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
         // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
+//        bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
-        bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
+//        bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_LOGGING_LEVEL));
         bindPreferenceSummaryToValue(findPreference(KEY_PREF_BACKUP_INTERVAL));
@@ -346,13 +346,13 @@ public class SettingsActivity extends PreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.save_preferences);
+            addPreferencesFromResource(R.xml.server_preferences);
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
+//            bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTOSAVE));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_AUTH_SERVER_PORT));
@@ -365,19 +365,19 @@ public class SettingsActivity extends PreferenceActivity {
      * This fragment shows security preferences only. It is used when the
      * activity is showing a two-pane settings UI.
      */
-    public static class SharingPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.sharing_preferences);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
-        }
-    }
+//    public static class SharingPreferenceFragment extends PreferenceFragment {
+//        @Override
+//        public void onCreate(Bundle savedInstanceState) {
+//            super.onCreate(savedInstanceState);
+//            addPreferencesFromResource(R.xml.sharing_preferences);
+//
+//            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
+//            // to their values. When their values change, their summaries are
+//            // updated to reflect the new value, per the Android Design
+//            // guidelines.
+////            bindPreferenceSummaryToValue(findPreference(KEY_PREF_EXPORT_FORMAT));
+//        }
+//    }
 
     /**
      * This fragment shows security preferences only. It is used when the

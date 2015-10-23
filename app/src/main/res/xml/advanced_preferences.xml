@@ -23,8 +23,7 @@
         android:negativeButtonText="@null"
         android:positiveButtonText="@null" />
 
-    <Preference android:title="@string/pref_title_developer_tools"
-        android:summary="@string/pref_description_developer_tools">
+    <Preference android:title="@string/pref_title_developer_tools">
         <intent android:action="com.activity.DeveloperToolsActivity" />
     </Preference>
 </PreferenceScreen>

@@ -67,7 +67,7 @@ public class MainApplication extends Application {
         // initialize default settings
         // NOTE: make sure to add any new preference files here in order to have their default values properly loaded.
         PreferenceManager.setDefaultValues(this, R.xml.general_preferences, false);
-        PreferenceManager.setDefaultValues(this, R.xml.save_preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.server_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.sharing_preferences, false);
         PreferenceManager.setDefaultValues(this, R.xml.advanced_preferences, false);
 

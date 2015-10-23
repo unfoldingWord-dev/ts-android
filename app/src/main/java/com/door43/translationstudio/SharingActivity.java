@@ -105,7 +105,7 @@ public class SharingActivity extends BaseActivity {
         internalDestDir.mkdirs();
 
         // load export format
-        String exportFormt = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_EXPORT_FORMAT, AppContext.context().getResources().getString(R.string.pref_default_export_format));
+        String exportFormt = "project"; // AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_EXPORT_FORMAT, AppContext.context().getResources().getString(R.string.pref_default_export_format));
         final boolean exportAsProject = exportFormt.equals("project");
         final boolean exportAsDokuwiki = exportFormt.equals("dokuwiki");
 
