@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference android:key="license_agreement" android:title="@string/pref_title_license_agreement">
+        <intent android:action="com.activity.LegalDocumentActivity" />
+    </Preference>
+
+    <Preference android:key="statement_of_faith" android:title="@string/pref_title_statement_of_faith">
+        <intent android:action="com.activity.LegalDocumentActivity" />
+    </Preference>
+
+    <Preference android:key="translation_guidelines" android:title="@string/pref_title_translation_guidelines">
+        <intent android:action="com.activity.LegalDocumentActivity" />
+    </Preference>
+
+    <Preference android:key="software_licenses" android:title="@string/pref_title_software_licenses">
+        <intent android:action="com.activity.LegalDocumentActivity" />
+    </Preference>
+</PreferenceScreen>

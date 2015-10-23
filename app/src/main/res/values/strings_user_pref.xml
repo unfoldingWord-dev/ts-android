@@ -69,4 +69,11 @@
         <item>10 Minutes</item>
         <item>Disable Backup</item>
     </string-array>
+
+    <!-- Section heading for Legal settings -->
+    <string name="pref_header_legal">Legal</string>
+    <string name="pref_title_license_agreement" translatable="false">@string/view_license_agreement</string>
+    <string name="pref_title_statement_of_faith" translatable="false">@string/view_statement_of_faith</string>
+    <string name="pref_title_translation_guidelines" translatable="false">@string/view_translation_guidelines</string>
+    <string name="pref_title_software_licenses">Software Licenses</string>
 </resources>

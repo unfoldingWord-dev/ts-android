@@ -152,8 +152,16 @@
         </activity>
         <activity
             android:name=".newui.publish.PublishActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:label="@string/title_activity_publish" >
+            android:label="@string/title_activity_publish"
+            android:theme="@style/AppTheme.NoActionBar" >
+        </activity>
+        <activity
+            android:name=".newui.legal.LegalDocumentActivity"
+            android:theme="@style/AppTheme.Transparent" >
+            <intent-filter>
+                <action android:name="com.activity.LegalDocumentActivity" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
     </application>
 

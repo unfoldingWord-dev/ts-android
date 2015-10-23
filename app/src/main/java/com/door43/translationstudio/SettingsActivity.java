@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.util.TTFAnalyzer;
 
@@ -77,6 +78,7 @@ public class SettingsActivity extends PreferenceActivity {
                 GeneralPreferenceFragment.class.getName(),
                 AdvancedPreferenceFragment.class.getName(),
                 SavePreferenceFragment.class.getName(),
+                LegalPreferenceFragment.class.getName(),
 //                SharingPreferenceFragment.class.getName()
         };
         boolean isValid = false;
@@ -167,12 +169,23 @@ public class SettingsActivity extends PreferenceActivity {
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.server_preferences);
 
-        // add advanced preferences and coresponding hreader
+        // Add 'legal' preferences, and a corresponding header.
+        preferenceHeader = new PreferenceCategory(this);
+        preferenceHeader.setTitle(R.string.pref_header_legal);
+        getPreferenceScreen().addPreference(preferenceHeader);
+        addPreferencesFromResource(R.xml.legal_preferences);
+
+        // add 'advanced' preferences and coresponding hreader
         preferenceHeader = new PreferenceCategory(this);
         preferenceHeader.setTitle(R.string.pref_header_advanced);
         getPreferenceScreen().addPreference(preferenceHeader);
         addPreferencesFromResource(R.xml.advanced_preferences);
 
+        // bind the correct legal document to the preference intent
+        bindPreferenceClickToLegalDocument(findPreference("license_agreement"), R.string.license);
+        bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
+        bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
+        bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
 
         // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
         // their values. When their values change, their summaries are updated
@@ -359,6 +372,41 @@ public class SettingsActivity extends PreferenceActivity {
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_GIT_SERVER_PORT));
             bindPreferenceSummaryToValue(findPreference(KEY_PREF_MEDIA_SERVER));
         }
+    }
+
+    /**
+     * This frgment shows legal documents.
+     * It is used when the activity is showing a two-pane settings UI.
+     */
+    public static class LegalPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.legal_preferences);
+
+            bindPreferenceClickToLegalDocument(findPreference("license_agreement"), R.string.license);
+            bindPreferenceClickToLegalDocument(findPreference("statement_of_faith"), R.string.statement_of_faith);
+            bindPreferenceClickToLegalDocument(findPreference("translation_guidelines"), R.string.translation_guidlines);
+            bindPreferenceClickToLegalDocument(findPreference("software_licenses"), R.string.software_licenses);
+        }
+    }
+
+    /**
+     * Intercepts clicks and passes the resource to the intent.
+     * The preference should be configured as an action to an intent for the LegalDocumentActivity
+     * @param preference
+     * @param res
+     */
+    public static void bindPreferenceClickToLegalDocument(Preference preference, final int res) {
+        preference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Intent intent = preference.getIntent();
+                intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, res);
+                preference.setIntent(intent);
+                return false;
+            }
+        });
     }
 
     /**
