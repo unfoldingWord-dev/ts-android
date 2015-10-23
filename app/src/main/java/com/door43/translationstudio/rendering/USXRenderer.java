@@ -83,6 +83,7 @@ public class USXRenderer extends RenderingEngine {
         out = renderParagraph(out);
         out = renderBlankLine(out);
         out = renderPoeticLine(out);
+        out = renderRightAlignedPoeticLine(out);
         out = renderVerse(out);
         out = renderNote(out);
         out = renderChapterLabel(out);
@@ -331,7 +332,7 @@ public class USXRenderer extends RenderingEngine {
     }
 
     /**
-     * Renders all paragraph tgs
+     * Renders all paragraph tags
      * @param in
      * @return
      */
@@ -396,7 +397,7 @@ public class USXRenderer extends RenderingEngine {
     }
 
     /**
-     * Renders all paragraph tags
+     * Renders all poetic line tags
      * @param in
      * @return
      */
@@ -440,6 +441,30 @@ public class USXRenderer extends RenderingEngine {
             out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), leadingLineBreak, padding, span, trailingLineBreak);
             lastIndex = matcher.end();
         }
+        out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
+        return out;
+    }
+
+    /**
+     * Renders all right-aligned poetic line tags
+     * @param in
+     * @return
+     */
+    public CharSequence renderRightAlignedPoeticLine(CharSequence in) {
+        CharSequence out = "";
+        Pattern pattern = paraPattern("qr");
+        Matcher matcher = pattern.matcher(in);
+        int lastIndex = 0;
+
+        while(matcher.find()) {
+            if(isStopped()) return in;
+            SpannableStringBuilder span = new SpannableStringBuilder(matcher.group(1));
+            span.setSpan(new StyleSpan(Typeface.ITALIC), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            out = TextUtils.concat(out, in.subSequence(lastIndex, matcher.start()), "\n", span);
+            lastIndex = matcher.end();
+        }
+
         out = TextUtils.concat(out, in.subSequence(lastIndex, in.length()));
         return out;
     }
