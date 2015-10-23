@@ -27,7 +27,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     // TRICKY: when you bump the db version you should run the library tests to generate a new index.
     // Note that the extract test will fail.
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 2;
     private final String mDatabaseName;
     private final String mSchema;
 
@@ -849,9 +849,16 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             cursor.close();
 
             // retrieve examples
-            // TODO: 10/22/2015 query for the examples
-
-            word = new TranslationWord(slug, term, definition, definitionTitle, relatedWords,  wordAliases,  new TranslationWord.Example[0]);
+            Cursor examplesCursor = db.rawQuery("SELECT `chapter_slug`, `frame_slug`, `body` FROM `translation_word_example`"
+                    + " WHERE `translation_word_id`=" + wordId, null);
+            examplesCursor.moveToFirst();
+            List<TranslationWord.Example> examples = new ArrayList<>();
+            while(!examplesCursor.isAfterLast()) {
+                examples.add(new TranslationWord.Example(examplesCursor.getString(0), examplesCursor.getString(1), examplesCursor.getString(2)));
+                examplesCursor.moveToNext();
+            }
+            examplesCursor.close();
+            word = new TranslationWord(slug, term, definition, definitionTitle, relatedWords,  wordAliases,  examples.toArray(new TranslationWord.Example[examples.size()]));
         }
         cursor.close();
         return word;

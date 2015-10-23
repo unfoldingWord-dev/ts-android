@@ -60,7 +60,7 @@ public class TranslationWord {
             for (int i = 0; i < examplesJson.length(); i++) {
                 JSONObject exampleJson = examplesJson.getJSONObject(i);
                 try {
-                    examples.add(new Example(exampleJson.getString("ref"), exampleJson.getString("text")));
+                    examples.add(Example.generate(exampleJson.getString("ref"), exampleJson.getString("text")));
                 } catch (InvalidParameterException e) {
                     Logger.e(TranslationWord.class.getName(), "Failed to parse a translation word example for " + id, e);
                 }
@@ -141,24 +141,27 @@ public class TranslationWord {
      * Represents an example passage for a translationWord
      */
     public static class Example {
-        private final String mReference;
-        private final String mPassage;
-        private final String mChapterId;
-        private final String mFrameId;
+        private final String body;
+        private final String chapterSlug;
+        private final String frameSlug;
 
         /**
          *
-         * @param reference
-         * @param passage
+         * @param chapterSlug
+         * @param frameSlug
+         * @param body
          * @throws InvalidParameterException
          */
-        public Example(String reference, String passage) throws InvalidParameterException {
-            mReference = reference;
-            mPassage = passage;
+        public Example(String chapterSlug, String frameSlug, String body) {
+            this.body = body;
+            this.chapterSlug = chapterSlug;
+            this.frameSlug = frameSlug;
+        }
+
+        public static Example generate(String reference, String passage) throws InvalidParameterException {
             String[] complexId = reference.split("-");
             if(complexId.length == 2) {
-                mChapterId = complexId[0];
-                mFrameId = complexId[1];
+                return new Example(complexId[0], complexId[1], passage);
             } else {
                 throw new InvalidParameterException("The reference '" + reference + "' is invalid");
             }
@@ -169,7 +172,7 @@ public class TranslationWord {
          * @return
          */
         public String getReference() {
-            return mReference;
+            return chapterSlug + "-" + frameSlug;
         }
 
         /**
@@ -177,7 +180,7 @@ public class TranslationWord {
          * @return
          */
         public String getPassage() {
-            return mPassage;
+            return body;
         }
 
         /**
@@ -185,7 +188,7 @@ public class TranslationWord {
          * @return
          */
         public String getChapterId() {
-            return mChapterId;
+            return chapterSlug;
         }
 
         /**
@@ -193,7 +196,7 @@ public class TranslationWord {
          * @return
          */
         public String getFrameId() {
-            return mFrameId;
+            return frameSlug;
         }
     }
 }

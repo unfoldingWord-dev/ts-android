@@ -24,23 +24,6 @@ public class Downloader {
     }
 
     /**
-     * Returns the url from an object
-     * @param json
-     * @param urlProperty
-     * @return
-     */
-    private String getUrlFromObject(JSONObject json, String urlProperty) {
-        if(json.has(urlProperty)) {
-            try {
-                return json.getString(urlProperty);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    /**
      * Downloads content from a url and returns it as a string
      * @param apiUrl the url from which the content will be downloaded
      * @return
@@ -77,7 +60,7 @@ public class Downloader {
     /**
      * Downloads the project catalog from the server
      */
-    public Boolean downloadProjectList(Indexer targetIndex) {
+    public boolean downloadProjectList(Indexer targetIndex) {
         String catalog = request(mRootApiUrl);
         if(catalog != null) {
             return targetIndex.indexProjects(catalog);
@@ -90,7 +73,7 @@ public class Downloader {
      * @param projectId
      * @return
      */
-    public Boolean downloadSourceLanguageList(String projectId, Indexer targetIndex) {
+    public boolean downloadSourceLanguageList(String projectId, Indexer targetIndex) {
         Project project = targetIndex.getProject(projectId);
         if(project != null && project.sourceLanguageCatalog != null) {
             String catalog = request(project.sourceLanguageCatalog);
@@ -107,7 +90,7 @@ public class Downloader {
      * @param sourceLanguageId
      * @return
      */
-    public Boolean downloadResourceList(String projectId, String sourceLanguageId, Indexer targetIndex) {
+    public boolean downloadResourceList(String projectId, String sourceLanguageId, Indexer targetIndex) {
         SourceLanguage sourceLanguage = targetIndex.getSourceLanguage(projectId, sourceLanguageId);
         if(sourceLanguage != null && sourceLanguage.resourceCatalog != null) {
             String catalog = request(sourceLanguage.resourceCatalog);
@@ -124,7 +107,7 @@ public class Downloader {
      * @param targetIndex the index into which the source will be downloaded
      * @return
      */
-    public Boolean downloadSource(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadSource(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getSourceCatalogUrl() != null) {
             String catalog = request(resource.getSourceCatalogUrl());
@@ -143,7 +126,7 @@ public class Downloader {
      * @param targetIndex the index to which the terms will be downloaded
      * @return
      */
-    public Boolean downloadWords(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadWords(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getWordsCatalogUrl() != null) {
             String catalog = request(resource.getWordsCatalogUrl());
@@ -160,7 +143,7 @@ public class Downloader {
      * @param targetIndex the index to which the term assignments will be downloaded
      * @return
      */
-    public Boolean downloadWordAssignments(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadWordAssignments(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getWordAssignmentsCatalogUrl() != null) {
             String catalog = request(resource.getWordAssignmentsCatalogUrl());
@@ -177,7 +160,7 @@ public class Downloader {
      * @param targetIndex the index to which the notes will be downloaded
      * @return
      */
-    public Boolean downloadNotes(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadNotes(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getNotesCatalogUrl() != null) {
             String catalog = request(resource.getNotesCatalogUrl());
@@ -194,7 +177,7 @@ public class Downloader {
      * @param targetIndex the index to which the checking questions will be downloaded
      * @return
      */
-    public Boolean downloadCheckingQuestions(SourceTranslation translation, Indexer targetIndex) {
+    public boolean downloadCheckingQuestions(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
         if(resource != null && resource.getQuestionsCatalogUrl() != null) {
             String catalog = request(resource.getQuestionsCatalogUrl());
