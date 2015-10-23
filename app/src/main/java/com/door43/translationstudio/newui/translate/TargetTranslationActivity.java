@@ -75,14 +75,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mChunkButton = (ImageButton)findViewById(R.id.action_chunk);
         mReviewButton = (ImageButton)findViewById(R.id.action_review);
 
-        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+        setupSidebarModeIcons();
 
         // inject fragments
         if(findViewById(R.id.fragment_container) != null) {
             if(savedInstanceState != null) {
                 mFragment = getFragmentManager().findFragmentById(R.id.fragment_container);
             } else {
-                viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+                TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
                 switch (viewMode) {
                     case READ:
                         mFragment = new ReadModeFragment();
@@ -99,19 +99,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 // TODO: animate
                 // TODO: udpate menu
             }
-        }
-
-        // highlight tabs
-        switch (viewMode) {
-            case READ:
-                mReadButton.setImageResource(R.drawable.icon_study_active);
-                break;
-            case CHUNK:
-                mChunkButton.setImageResource(R.drawable.icon_frame_active);
-                break;
-            case REVIEW:
-                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
-                break;
         }
 
         // set up menu items
@@ -276,46 +263,31 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         }
 
-        mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
-        mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
-        mReadButton.setImageResource(R.drawable.icon_study_inactive);
+        AppContext.setLastViewMode(mTargetTranslation.getId(), mode);
+        setupSidebarModeIcons();
 
         switch (mode) {
             case READ:
-                mReadButton.setImageResource(R.drawable.icon_study_active);
-                AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.READ);
                 if(mFragment instanceof ReadModeFragment == false) {
                     mFragment = new ReadModeFragment();
-                    mFragment.setArguments(fragmentExtras);
-
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-                    // TODO: animate
-                    // TODO: udpate menu
                 }
                 break;
             case CHUNK:
-                mChunkButton.setImageResource(R.drawable.icon_frame_active);
-                AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.CHUNK);
                 if(mFragment instanceof  ChunkModeFragment == false) {
                     mFragment = new ChunkModeFragment();
-                    mFragment.setArguments(fragmentExtras);
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-                    // TODO: animate
-                    // TODO: udpate menu
                 }
                 break;
             case REVIEW:
-                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
-                AppContext.setLastViewMode(mTargetTranslation.getId(), TranslationViewMode.REVIEW);
                 if(mFragment instanceof  ReviewModeFragment == false) {
                     mFragment = new ReviewModeFragment();
-                    mFragment.setArguments(fragmentExtras);
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-                    // TODO: animate
-                    // TODO: udpate menu
                 }
                 break;
         }
+        mFragment.setArguments(fragmentExtras);
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+        // TODO: animate
+        // TODO: udpate menu
+
     }
 
     @Override
@@ -364,6 +336,46 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public void notifyDatasetChanged() {
         if(mFragment instanceof ViewModeFragment) {
             ((ViewModeFragment)mFragment).getAdapter().reload();
+        }
+    }
+
+    /**
+     * Updates the visual state of all the sidebar icons to match the application's current mode.
+     *
+     * Call this when creating the activity or when changing modes.
+     */
+    private void setupSidebarModeIcons() {
+        TranslationViewMode viewMode = AppContext.getLastViewMode(mTargetTranslation.getId());
+
+        // Set the non-highlighted icons by default.
+        mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_inactive_24dp);
+        mChunkButton.setImageResource(R.drawable.icon_frame_inactive);
+        mReadButton.setImageResource(R.drawable.icon_study_inactive);
+
+        // Clear the highlight background.
+        //
+        // This is more properly done with setBackground(), but that requires a higher API
+        // level than this application's minimum. Equivalently use setBackgroundDrawable(),
+        // which is deprecated, instead.
+        mReviewButton.setBackgroundDrawable(null);
+        mChunkButton.setBackgroundDrawable(null);
+        mReadButton.setBackgroundDrawable(null);
+
+        // For the active view, set the correct icon, and highlight the background.
+        final int backgroundColor = getResources().getColor(R.color.accent_material_dark);
+        switch (viewMode) {
+            case READ:
+                mReadButton.setImageResource(R.drawable.icon_study_active);
+                mReadButton.setBackgroundColor(backgroundColor);
+                break;
+            case CHUNK:
+                mChunkButton.setImageResource(R.drawable.icon_frame_active);
+                mChunkButton.setBackgroundColor(backgroundColor);
+                break;
+            case REVIEW:
+                mReviewButton.setImageResource(R.drawable.ic_assignment_turned_in_white_24dp);
+                mReviewButton.setBackgroundColor(backgroundColor);
+                break;
         }
     }
 }
