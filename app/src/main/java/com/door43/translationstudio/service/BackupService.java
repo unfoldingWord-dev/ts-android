@@ -17,7 +17,6 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.home.HomeActivity;
-import com.door43.translationstudio.projects.Project;
 import com.door43.translationstudio.AppContext;
 
 import org.apache.commons.io.FileUtils;
@@ -112,55 +111,57 @@ public class BackupService extends Service {
                 continue;
             }
 
-            // retreive commit hash
-            String tag;
-            try {
-                tag = t.commitHash();
-            } catch (Exception e) {
-                Logger.w(this.getClass().getName(), "Failed to read commit hash", e);
-                continue;
-            }
+            if(t.numTranslated() > 0) {
 
-            // check if backup is required
-            if(tag != null) {
-                File primaryBackupDir = new File(AppContext.getPublicDirectory(), "backups/" + t.getId() + "/");
-                File primaryBackupFile = new File(primaryBackupDir, tag + "." + Project.PROJECT_EXTENSION);
-                File downloadBackupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + t.getId() + "/");
-                File downloadBackupFile = new File(downloadBackupDir, tag + "." + Project.PROJECT_EXTENSION);
-                // e.g. ../../backups/uw-obs-de/[commit hash].tstudio
-                if (!downloadBackupFile.exists()) {
-
-                    // peform backup
-                    File archive = new File(AppContext.getPublicDownloadsDirectory(), t.getId() + ".temp." + Project.PROJECT_EXTENSION);
-                    try {
-                        translator.export(t, archive);
-                    } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Failed to export the target translation " + t.getId(), e);
-                        continue;
-                    }
-                    if(archive.exists() && archive.isFile()) {
-                        // move into backup
-                        FileUtils.deleteQuietly(downloadBackupDir);
-                        FileUtils.deleteQuietly(primaryBackupDir);
-                        downloadBackupDir.mkdirs();
-                        primaryBackupDir.mkdirs();
-                        try {
-                            // backup to downloads directory
-                            FileUtils.copyFile(archive, downloadBackupFile);
-                            // backup to a slightly less public area (used for auto restore)
-                            FileUtils.copyFile(archive, primaryBackupFile);
-                            backupPerformed = true;
-                        } catch (IOException e) {
-                            Logger.e(this.getClass().getName(), "Failed to copy the backup archive for target translation: " + t.getId(), e);
-                        }
-                        archive.delete();
-                    } else {
-                        // TODO: 10/5/2015 Re-enable this log once the export method is completed.
-//                        Logger.w(this.getClass().getName(), "Failed to export the target translation: " + t.getId());
-                    }
+                // retreive commit hash
+                String tag;
+                try {
+                    tag = t.commitHash();
+                } catch (Exception e) {
+                    Logger.w(this.getClass().getName(), "Failed to read commit hash", e);
+                    continue;
                 }
-            } else {
-                Logger.w(this.getClass().getName(), "Could not find the commit hash");
+
+                // check if backup is required
+                if (tag != null) {
+                    File primaryBackupDir = new File(AppContext.getPublicDirectory(), "backups/" + t.getId() + "/");
+                    File primaryBackupFile = new File(primaryBackupDir, tag + "." + Translator.ARCHIVE_EXTENSION);
+                    File downloadBackupDir = new File(AppContext.getPublicDownloadsDirectory(), "backups/" + t.getId() + "/");
+                    File downloadBackupFile = new File(downloadBackupDir, tag + "." + Translator.ARCHIVE_EXTENSION);
+                    // e.g. ../../backups/uw-obs-de/[commit hash].tstudio
+                    if (!downloadBackupFile.exists()) {
+
+                        // peform backup
+                        File archive = new File(AppContext.getPublicDownloadsDirectory(), t.getId() + ".temp." + Translator.ARCHIVE_EXTENSION);
+                        try {
+                            translator.export(t, archive);
+                        } catch (Exception e) {
+                            Logger.e(this.getClass().getName(), "Failed to export the target translation " + t.getId(), e);
+                            continue;
+                        }
+                        if (archive.exists() && archive.isFile()) {
+                            // move into backup
+                            FileUtils.deleteQuietly(downloadBackupDir);
+                            FileUtils.deleteQuietly(primaryBackupDir);
+                            downloadBackupDir.mkdirs();
+                            primaryBackupDir.mkdirs();
+                            try {
+                                // backup to downloads directory
+                                FileUtils.copyFile(archive, downloadBackupFile);
+                                // backup to a slightly less public area (used for auto restore)
+                                FileUtils.copyFile(archive, primaryBackupFile);
+                                backupPerformed = true;
+                            } catch (IOException e) {
+                                Logger.e(this.getClass().getName(), "Failed to copy the backup archive for target translation: " + t.getId(), e);
+                            }
+                            archive.delete();
+                        } else {
+                            Logger.w(this.getClass().getName(), "Failed to export the target translation: " + t.getId());
+                        }
+                    }
+                } else {
+                    Logger.w(this.getClass().getName(), "Could not find the commit hash");
+                }
             }
         }
 

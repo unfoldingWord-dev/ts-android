@@ -10,11 +10,6 @@ import com.door43.translationstudio.device2device.PeerStatusKeys;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.projects.SourceLanguage;
-import com.door43.translationstudio.AppContext;
 import com.door43.util.RSAEncryption;
 import com.door43.util.StringUtilities;
 
@@ -212,14 +207,14 @@ public class ExportingService extends NetworkService {
                 // TODO: we shouldn't use the project manager here because this may be running in the background (eventually)
 
                 // read preferred source languages (for better readability on the client)
-                List<Language> preferredLanguages = new ArrayList<>();
+//                List<Language> preferredLanguages = new ArrayList<>();
                 try {
                     JSONArray preferredLanguagesJson = new JSONArray(data[0]);
                     for(int i = 0; i < preferredLanguagesJson.length(); i ++) {
-                        Language lang =  null;//AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
-                        if(lang != null) {
-                            preferredLanguages.add(lang);
-                        }
+//                        Language lang =  null;//AppContext.projectManager().getLanguage(preferredLanguagesJson.getString(i));
+//                        if(lang != null) {
+//                            preferredLanguages.add(lang);
+//                        }
                     }
                 } catch (JSONException e) {
                     Logger.e(this.getClass().getName(), "failed to parse preferred language list", e);
@@ -249,86 +244,87 @@ public class ExportingService extends NetworkService {
                     try {
                         String projectId = json.getString("id");
 
-                        final Project p =  null;//AppContext.projectManager().getProject(projectSlug);
-                        // validate project
-                        if(p != null) {
-                            // validate requested source languages
-                            List<SourceLanguage> requestedSourceLanguages = new ArrayList<>();
-                            if(json.has("source_languages")) {
-                                JSONArray sourceLanguagesJson = json.getJSONArray("source_languages");
-                                for(int i = 0; i < sourceLanguagesJson.length(); i ++) {
-                                    String languageId = sourceLanguagesJson.getString(i);
-                                    SourceLanguage s = p.getSourceLanguage(languageId);
-                                    if(s != null) {
-                                        requestedSourceLanguages.add(s);
-                                    }
-                                }
-                            }
-
-                            // validate requested target languages
-                            Language[] activeLanguages = p.getActiveTargetLanguages();
-                            JSONArray targetLanguagesJson = json.getJSONArray("target_languages");
-                            List<Language> requestedTranslations = new ArrayList<>();
-                            for (int i = 0; i < targetLanguagesJson.length(); i++) {
-                                String languageId = (String) targetLanguagesJson.get(i);
-                                for(Language l:activeLanguages) {
-                                    if(l.getId().equals(languageId)) {
-                                        requestedTranslations.add(l);
-                                        break;
-                                    }
-                                }
-                            }
-                            if(requestedTranslations.size() > 0) {
-                                String path = Sharing.export(p, requestedSourceLanguages.toArray(new SourceLanguage[requestedSourceLanguages.size()]), requestedTranslations.toArray(new Language[requestedTranslations.size()]));
-                                final File archive = new File(path);
-                                if(archive.exists()) {
-                                    // open a socket to send the project
-                                    ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
-                                        @Override
-                                        public void onOpen(Connection connection) {
-                                            // send an archive of the current project to the connection
-                                            try {
-                                                // send the file to the connection
-                                                // TODO: display a progress bar when the files are being transferred (on each client list item)
-                                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
-                                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
-                                                byte[] buffer = new byte[8 * 1024];
-                                                int count;
-                                                while ((count = in.read(buffer)) > 0) {
-                                                    out.write(buffer, 0, count);
-                                                }
-                                                out.close();
-                                                in.close();
-                                            } catch (final IOException e) {
-                                                Logger.e(ExportingService.class.getName(), "Failed to send project archive to client", e);
-                                            }
-                                        }
-                                    });
-                                    // send details to the client so they can download
-                                    JSONObject infoJson = new JSONObject();
-                                    infoJson.put("port", fileSocket.getLocalPort());
-                                    infoJson.put("name", archive.getName());
-                                    infoJson.put("size", archive.length());
-                                    sendMessage(client, SocketMessages.MSG_PROJECT_ARCHIVE + ":" + infoJson.toString());
-                                } else {
-                                    // the archive could not be created
-                                    sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
-                                }
-                            } else {
-                                // the client should have known better
-                                sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-                            }
-                        } else {
-                            // the client should have known better
-                            sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-                        }
+//                        final Project p =  null;//AppContext.projectManager().getProject(projectSlug);
+//                        // validate project
+//                        if(p != null) {
+//                            // validate requested source languages
+//                            List<SourceLanguage> requestedSourceLanguages = new ArrayList<>();
+//                            if(json.has("source_languages")) {
+//                                JSONArray sourceLanguagesJson = json.getJSONArray("source_languages");
+//                                for(int i = 0; i < sourceLanguagesJson.length(); i ++) {
+//                                    String languageId = sourceLanguagesJson.getString(i);
+//                                    SourceLanguage s = p.getSourceLanguage(languageId);
+//                                    if(s != null) {
+//                                        requestedSourceLanguages.add(s);
+//                                    }
+//                                }
+//                            }
+//
+//                            // validate requested target languages
+//                            Language[] activeLanguages = p.getActiveTargetLanguages();
+//                            JSONArray targetLanguagesJson = json.getJSONArray("target_languages");
+//                            List<Language> requestedTranslations = new ArrayList<>();
+//                            for (int i = 0; i < targetLanguagesJson.length(); i++) {
+//                                String languageId = (String) targetLanguagesJson.get(i);
+//                                for(Language l:activeLanguages) {
+//                                    if(l.getId().equals(languageId)) {
+//                                        requestedTranslations.add(l);
+//                                        break;
+//                                    }
+//                                }
+//                            }
+//                            if(requestedTranslations.size() > 0) {
+//                                String path = Sharing.export(p, requestedSourceLanguages.toArray(new SourceLanguage[requestedSourceLanguages.size()]), requestedTranslations.toArray(new Language[requestedTranslations.size()]));
+//                                final File archive = new File(path);
+//                                if(archive.exists()) {
+//                                    // open a socket to send the project
+//                                    ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
+//                                        @Override
+//                                        public void onOpen(Connection connection) {
+//                                            // send an archive of the current project to the connection
+//                                            try {
+//                                                // send the file to the connection
+//                                                // TODO: display a progress bar when the files are being transferred (on each client list item)
+//                                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
+//                                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(archive)));
+//                                                byte[] buffer = new byte[8 * 1024];
+//                                                int count;
+//                                                while ((count = in.read(buffer)) > 0) {
+//                                                    out.write(buffer, 0, count);
+//                                                }
+//                                                out.close();
+//                                                in.close();
+//                                            } catch (final IOException e) {
+//                                                Logger.e(ExportingService.class.getName(), "Failed to send project archive to client", e);
+//                                            }
+//                                        }
+//                                    });
+//                                    // send details to the client so they can download
+//                                    JSONObject infoJson = new JSONObject();
+//                                    infoJson.put("port", fileSocket.getLocalPort());
+//                                    infoJson.put("name", archive.getName());
+//                                    infoJson.put("size", archive.length());
+//                                    sendMessage(client, SocketMessages.MSG_PROJECT_ARCHIVE + ":" + infoJson.toString());
+//                                } else {
+//                                    // the archive could not be created
+//                                    sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
+//                                }
+//                            } else {
+//                                // the client should have known better
+//                                sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
+//                            }
+//                        } else {
+//                            // the client should have known better
+//                            sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
+//                        }
                     } catch (JSONException e) {
                         Logger.e(this.getClass().getName(), "malformed or corrupt project archive response", e);
                         sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
-                    } catch (IOException e) {
-                        Logger.e(this.getClass().getName(), "unable to read project archive response", e);
-                        sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
                     }
+//                    catch (IOException e) {
+//                        Logger.e(this.getClass().getName(), "unable to read project archive response", e);
+//                        sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
+//                    }
                 } else {
                     sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }

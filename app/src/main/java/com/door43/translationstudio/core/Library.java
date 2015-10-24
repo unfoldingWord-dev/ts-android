@@ -284,6 +284,42 @@ public class Library {
     }
 
     /**
+     * Exports a json array of target translations on this device
+     * @param targetTranslations the target translations to export as json
+     * @param preferredSourceLanguages the preferred source languages to return the project information in
+     * @return
+     */
+    public String exportTranslationLibrary(TargetTranslation[] targetTranslations, String[] preferredSourceLanguages) {
+        // TODO: 10/23/2015 implement this follow structure... we might want to place this in an exporter class
+        // and pass in the version requested so we can support backwards compatible request but still
+        // upgrade the structure for newer devices.
+//        [
+//        {
+//            "id":"obs",
+//                "project":{
+//            "name":"Open Bible Stories",
+//                    "description":"The Bible in 50 stories",
+//                    "meta":[]
+//        },
+//            "language":{
+//            "slug":"en",
+//                    "name":"English",
+//                    "direction":"rtl"
+//        },
+//            "target_languages":[
+//            {
+//                "slug":"de",
+//                    "name":"Deutsch",
+//                    "direction":"rtl"
+//            },
+//            ...
+//            ]
+//        }
+//        ]
+        return "[]";
+    }
+
+    /**
      * Returns an array of target languages
      * @return
      */
@@ -769,6 +805,16 @@ public class Library {
      */
     public String getChapterBody(SourceTranslation mSourceTranslation, String chapterSlug) {
         return mAppIndex.getChapterBody(mSourceTranslation, chapterSlug);
+    }
+
+    /**
+     * Returns a target language by searching for it's human readable name
+     * @param name
+     * @return
+     */
+    public TargetLanguage findTargetLanguageByName(String name) {
+        // TODO: 10/23/2015 implement
+        return null;
     }
 
     public interface OnProgressListener {

@@ -8,8 +8,8 @@ import android.widget.ListView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.LibraryUpdates;
+import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.ProjectCategory;
-import com.door43.translationstudio.projects.Project;
 
 import java.util.List;
 

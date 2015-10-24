@@ -19,29 +19,14 @@ import android.widget.ListView;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
-import com.door43.translationstudio.dialogs.ChooseProjectLanguagesToImportDialog;
-import com.door43.translationstudio.dialogs.ChooseProjectToImportDialog;
-import com.door43.translationstudio.dialogs.ProjectTranslationImportApprovalDialog;
-import com.door43.translationstudio.events.ChoseProjectLanguagesToImportEvent;
-import com.door43.translationstudio.events.ChoseProjectToImportEvent;
 import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.BaseActivity;
-import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.projects.Model;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ExportingService;
 import com.door43.translationstudio.service.ImportingService;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.RSAEncryption;
-import com.squareup.otto.Subscribe;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -137,7 +122,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     private Intent broadcastServiceIntent;
     private Intent importServiceIntent;
     private Intent broadcastListenerServiceIntent;
-    private ProjectTranslationImportApprovalDialog mImportDialog = null;
+//    private ProjectTranslationImportApprovalDialog mImportDialog = null;
     private LinearLayout mLoadingLayout;
 
     @Override
@@ -195,10 +180,10 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
                         // device
                         preferredLanguages.add(Locale.getDefault().getLanguage());
                         // current project
-                        Project p = null;//AppContext.projectManager().getSelectedProject();
-                        if(p != null) {
-                            preferredLanguages.add(p.getSelectedSourceLanguage().getId());
-                        }
+//                        Project p = null;//AppContext.projectManager().getSelectedProject();
+//                        if(p != null) {
+//                            preferredLanguages.add(p.getSelectedSourceLanguage().getId());
+//                        }
                         // default
                         preferredLanguages.add("en");
                         mImportService.requestProjectList(server, preferredLanguages);
@@ -358,85 +343,85 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
      * Displays a dialog to choose the project to import
      * @param models an array of projects and sudo projects to choose from
      */
-    private void showProjectSelectionDialog(Peer server, Model[] models) {
-        AppContext.context().closeToastMessage();
-        if(!isFinishing()) {
-            FragmentTransaction ft = getFragmentManager().beginTransaction();
-            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-            if (prev != null) {
-                ft.remove(prev);
-            }
-            ft.addToBackStack(null);
-            ChooseProjectToImportDialog newFragment = new ChooseProjectToImportDialog();
-            mPeerDialogs.put(server.getIpAddress(), newFragment);
-            newFragment.setImportDetails(server, models);
-            newFragment.show(ft, "dialog");
-        }
-    }
+//    private void showProjectSelectionDialog(Peer server, Model[] models) {
+//        AppContext.context().closeToastMessage();
+//        if(!isFinishing()) {
+//            FragmentTransaction ft = getFragmentManager().beginTransaction();
+//            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+//            if (prev != null) {
+//                ft.remove(prev);
+//            }
+//            ft.addToBackStack(null);
+//            ChooseProjectToImportDialog newFragment = new ChooseProjectToImportDialog();
+//            mPeerDialogs.put(server.getIpAddress(), newFragment);
+//            newFragment.setImportDetails(server, models);
+//            newFragment.show(ft, "dialog");
+//        }
+//    }
 
-    /**
-     * Triggered when the client chooses a project from the server's project list
-     * @param event the event fired
-     */
-    @Subscribe
-    public void onChoseProjectToImport(ChoseProjectToImportEvent event) {
-        // TODO: if we do not have this project yet we need to fetch the project image if it exists.
-        event.getDialog().dismiss();
-        showProjectLanguageSelectionDialog(event.getPeer(), event.getProject());
-    }
+//    /**
+//     * Triggered when the client chooses a project from the server's project list
+//     * @param event the event fired
+//     */
+//    @Subscribe
+//    public void onChoseProjectToImport(ChoseProjectToImportEvent event) {
+//        // TODO: if we do not have this project yet we need to fetch the project image if it exists.
+//        event.getDialog().dismiss();
+//        showProjectLanguageSelectionDialog(event.getPeer(), event.getProject());
+//    }
 
-    /**
-     * Triggered when the client chooses the translations they wish to import with the project.
-     * @param event the event fired
-     */
-    @Subscribe
-    public void onChoseProjectTranslationsToImport(ChoseProjectLanguagesToImportEvent event) {
-        Handler handle = new Handler(getMainLooper());
-
-        showProgress(getResources().getString(R.string.loading));
-
-        // send the request to the server
-        Peer server = event.getPeer();
-
-        JSONObject json = new JSONObject();
-        try {
-            json.put("id", event.getProject().getId());
-            // check if we have the source for this project
-            Project existingProject = null;//AppContext.projectManager().getProject(event.getProject().getId());
-            if(existingProject == null || existingProject.getSelectedSourceLanguage() == null) {
-                JSONArray sourceLanguagesJson = new JSONArray();
-                sourceLanguagesJson.put(event.getProject().getSelectedSourceLanguage().getId());
-                json.put("source_languages", sourceLanguagesJson);
-            }
-            JSONArray languagesJson = new JSONArray();
-            for(Language l:event.getLanguages()) {
-                languagesJson.put(l.getId());
-            }
-            json.put("target_languages", languagesJson);
-            mImportService.requestProjectArchive(server, json);
-        } catch (final JSONException e) {
-            handle.post(new Runnable() {
-                @Override
-                public void run() {
-                    AppContext.context().showException(e);
-                }
-            });
-        }
-    }
+//    /**
+//     * Triggered when the client chooses the translations they wish to import with the project.
+//     * @param event the event fired
+//     */
+//    @Subscribe
+//    public void onChoseProjectTranslationsToImport(ChoseProjectLanguagesToImportEvent event) {
+//        Handler handle = new Handler(getMainLooper());
+//
+//        showProgress(getResources().getString(R.string.loading));
+//
+//        // send the request to the server
+//        Peer server = event.getPeer();
+//
+//        JSONObject json = new JSONObject();
+//        try {
+//            json.put("id", event.getProject().getId());
+//            // check if we have the source for this project
+//            Project existingProject = null;//AppContext.projectManager().getProject(event.getProject().getId());
+//            if(existingProject == null || existingProject.getSelectedSourceLanguage() == null) {
+//                JSONArray sourceLanguagesJson = new JSONArray();
+//                sourceLanguagesJson.put(event.getProject().getSelectedSourceLanguage().getId());
+//                json.put("source_languages", sourceLanguagesJson);
+//            }
+//            JSONArray languagesJson = new JSONArray();
+//            for(Language l:event.getLanguages()) {
+//                languagesJson.put(l.getId());
+//            }
+//            json.put("target_languages", languagesJson);
+//            mImportService.requestProjectArchive(server, json);
+//        } catch (final JSONException e) {
+//            handle.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    AppContext.context().showException(e);
+//                }
+//            });
+//        }
+//    }
 
     /**
      * Displays a dialog to choose the languages that will be imported with the project.
      * @param p
      */
-    private void showProjectLanguageSelectionDialog(Peer peer, Project p) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        AppContext.context().closeToastMessage();
-        // Create and show the dialog.
-        ChooseProjectLanguagesToImportDialog newFragment = new ChooseProjectLanguagesToImportDialog();
-        mPeerDialogs.put(peer.getIpAddress(), newFragment);
-        newFragment.setImportDetails(peer, p);
-        newFragment.show(ft, "dialog");
-    }
+//    private void showProjectLanguageSelectionDialog(Peer peer, Project p) {
+//        FragmentTransaction ft = getFragmentManager().beginTransaction();
+//        AppContext.context().closeToastMessage();
+//        // Create and show the dialog.
+//        ChooseProjectLanguagesToImportDialog newFragment = new ChooseProjectLanguagesToImportDialog();
+//        mPeerDialogs.put(peer.getIpAddress(), newFragment);
+//        newFragment.setImportDetails(peer, p);
+//        newFragment.show(ft, "dialog");
+//    }
 
     /**
      * shows or updates the progress dialog
@@ -566,61 +551,61 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
         Logger.e(this.getClass().getName(), "Import service encountered an exception: " + e.getMessage(), e);
     }
 
-    @Override
-    public void onReceivedProjectList(final Peer server, Model[] models) {
-        if(models.length > 0) {
-            showProjectSelectionDialog(server, models);
-        } else {
-//            app().showToastMessage(getResourceSlugs().getString(R.string.no_projects_available_on_server));
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(DeviceToDeviceActivity.this);
-                    builder.setTitle(server.getIpAddress()).setMessage(getResources().getString(R.string.no_projects_available_on_server)).show();
-                }
-            });
-        }
-    }
+//    @Override
+//    public void onReceivedProjectList(final Peer server, Model[] models) {
+//        if(models.length > 0) {
+////            showProjectSelectionDialog(server, models);
+//        } else {
+////            app().showToastMessage(getResourceSlugs().getString(R.string.no_projects_available_on_server));
+//            Handler hand = new Handler(Looper.getMainLooper());
+//            hand.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    AlertDialog.Builder builder = new AlertDialog.Builder(DeviceToDeviceActivity.this);
+//                    builder.setTitle(server.getIpAddress()).setMessage(getResources().getString(R.string.no_projects_available_on_server)).show();
+//                }
+//            });
+//        }
+//    }
 
-    @Override
-    public void onReceivedProject(Peer server, ProjectImport[] importStatuses) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-        mImportDialog = new ProjectTranslationImportApprovalDialog();
-        mImportDialog.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
-            @Override
-            public void onOk(ProjectImport[] requests) {
-                showProgress(getResources().getString(R.string.loading));
-                // TODO: we need to tell the import service what we want to import. It needs to be able to keep track of multiple imports.
-                for (ProjectImport r : requests) {
-                    Sharing.importProject(r);
-                }
-                Sharing.cleanImport(requests);
-//                file.delete();
-                hideProgress();
-                AppContext.context().showToastMessage(R.string.success);
-                // TODO: success dialog
-            }
-
-            @Override
-            public void onCancel(ProjectImport[] requests) {
-                // TODO: tell the import service to cancel.
-                // import was aborted
-                Sharing.cleanImport(requests);
-                hideProgress();
-//                file.delete();
-            }
-        });
-        // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
-        mImportDialog.setImportRequests(importStatuses);
-        mImportDialog.show(ft, "dialog");
-        hideProgress();
-    }
+//    @Override
+//    public void onReceivedProject(Peer server, ProjectImport[] importStatuses) {
+//        FragmentTransaction ft = getFragmentManager().beginTransaction();
+//        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+//        if (prev != null) {
+//            ft.remove(prev);
+//        }
+//        ft.addToBackStack(null);
+//        mImportDialog = new ProjectTranslationImportApprovalDialog();
+//        mImportDialog.setOnClickListener(new ProjectTranslationImportApprovalDialog.OnClickListener() {
+//            @Override
+//            public void onOk(ProjectImport[] requests) {
+//                showProgress(getResources().getString(R.string.loading));
+//                // TODO: we need to tell the import service what we want to import. It needs to be able to keep track of multiple imports.
+//                for (ProjectImport r : requests) {
+//                    Sharing.importProject(r);
+//                }
+//                Sharing.cleanImport(requests);
+////                file.delete();
+//                hideProgress();
+//                AppContext.context().showToastMessage(R.string.success);
+//                // TODO: success dialog
+//            }
+//
+//            @Override
+//            public void onCancel(ProjectImport[] requests) {
+//                // TODO: tell the import service to cancel.
+//                // import was aborted
+//                Sharing.cleanImport(requests);
+//                hideProgress();
+////                file.delete();
+//            }
+//        });
+//        // NOTE: we don't place this dialog into the peer dialog map because this will work even if the server disconnects
+//        mImportDialog.setImportRequests(importStatuses);
+//        mImportDialog.show(ft, "dialog");
+//        hideProgress();
+//    }
 
     @Override
     public void onFoundServer(Peer server) {

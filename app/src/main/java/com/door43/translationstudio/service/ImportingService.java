@@ -11,13 +11,6 @@ import com.door43.translationstudio.device2device.PeerStatusKeys;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
-import com.door43.translationstudio.projects.Language;
-import com.door43.translationstudio.projects.Model;
-import com.door43.translationstudio.projects.Project;
-import com.door43.translationstudio.projects.PseudoProject;
-import com.door43.translationstudio.projects.Sharing;
-import com.door43.translationstudio.projects.SourceLanguage;
-import com.door43.translationstudio.projects.imports.ProjectImport;
 import com.door43.util.ListMap;
 import com.door43.util.RSAEncryption;
 import com.door43.util.StringUtilities;
@@ -284,35 +277,35 @@ public class ImportingService extends NetworkService {
                                 in.close();
 
                                 // import the project
-                                ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
-                                if (importStatuses.length > 0) {
-                                    boolean importWarnings = false;
-                                    for (ProjectImport s : importStatuses) {
-                                        if (!s.isApproved()) {
-                                            importWarnings = true;
-                                        }
-                                    }
-                                    if (importWarnings) {
-                                        if(mListener != null) {
-                                            mListener.onReceivedProject(server, importStatuses);
-                                        }
-                                    } else {
-                                        for (ProjectImport r : importStatuses) {
-                                            Sharing.importProject(r);
-                                        }
-                                        Sharing.cleanImport(importStatuses);
-                                        file.delete();
-                                        if(mListener != null) {
-                                            mListener.onReceivedProject(server, new ProjectImport[0]);
-                                        }
-                                    }
-                                } else {
-                                    file.delete();
-                                    Logger.w(this.getClass().getName(), "failed to import the project archive");
-                                    if (mListener != null) {
-                                        mListener.onImportServiceError(new Exception("failed to import the project archive"));
-                                    }
-                                }
+//                                ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
+//                                if (importStatuses.length > 0) {
+//                                    boolean importWarnings = false;
+//                                    for (ProjectImport s : importStatuses) {
+//                                        if (!s.isApproved()) {
+//                                            importWarnings = true;
+//                                        }
+//                                    }
+//                                    if (importWarnings) {
+//                                        if(mListener != null) {
+//                                            mListener.onReceivedProject(server, importStatuses);
+//                                        }
+//                                    } else {
+//                                        for (ProjectImport r : importStatuses) {
+//                                            Sharing.importProject(r);
+//                                        }
+//                                        Sharing.cleanImport(importStatuses);
+//                                        file.delete();
+//                                        if(mListener != null) {
+//                                            mListener.onReceivedProject(server, new ProjectImport[0]);
+//                                        }
+//                                    }
+//                                } else {
+//                                    file.delete();
+//                                    Logger.w(this.getClass().getName(), "failed to import the project archive");
+//                                    if (mListener != null) {
+//                                        mListener.onImportServiceError(new Exception("failed to import the project archive"));
+//                                    }
+//                                }
                             } catch (IOException e) {
                                 Logger.e(this.getClass().getName(), "Failed to download the file", e);
                                 file.delete();
@@ -333,7 +326,7 @@ public class ImportingService extends NetworkService {
                 Logger.i(this.getClass().getName(), "received project list from " + server.getIpAddress());
                 // the sever gave us the list of available projects for import
                 String library = data[0];
-                final ListMap<Model> listableProjects = new ListMap<>();
+//                final ListMap<Model> listableProjects = new ListMap<>();
 
                 JSONArray json;
                 try {
@@ -345,64 +338,64 @@ public class ImportingService extends NetworkService {
                     break;
                 }
 
-                ListMap<PseudoProject> pseudoProjects = new ListMap<>();
+//                ListMap<PseudoProject> pseudoProjects = new ListMap<>();
 
                 // load the data
                 for(int i=0; i<json.length(); i++) {
                     try {
                         JSONObject projectJson = json.getJSONObject(i);
                         if (projectJson.has("id") && projectJson.has("project") && projectJson.has("language") && projectJson.has("target_languages")) {
-                            Project p = new Project(projectJson.getString("id"));
+//                            Project p = new Project(projectJson.getString("id"));
 
                             // source language (just for project info)
                             JSONObject sourceLangJson = projectJson.getJSONObject("language");
                             String sourceLangDirection = sourceLangJson.getString("direction");
-                            Language.Direction langDirection;
-                            if(sourceLangDirection.toLowerCase().equals("ltr")) {
-                                langDirection = Language.Direction.LeftToRight;
-                            } else {
-                                langDirection = Language.Direction.RightToLeft;
-                            }
-                            SourceLanguage sourceLanguage = new SourceLanguage(sourceLangJson.getString("slug"), sourceLangJson.getString("name"), langDirection, 0);
-                            p.addSourceLanguage(sourceLanguage);
-                            p.setSelectedSourceLanguage(sourceLanguage.getId());
+//                            Language.Direction langDirection;
+//                            if(sourceLangDirection.toLowerCase().equals("ltr")) {
+//                                langDirection = Language.Direction.LeftToRight;
+//                            } else {
+//                                langDirection = Language.Direction.RightToLeft;
+//                            }
+//                            SourceLanguage sourceLanguage = new SourceLanguage(sourceLangJson.getString("slug"), sourceLangJson.getString("name"), langDirection, 0);
+//                            p.addSourceLanguage(sourceLanguage);
+//                            p.setSelectedSourceLanguage(sourceLanguage.getId());
 
                             // project info
                             JSONObject projectInfoJson = projectJson.getJSONObject("project");
-                            p.setDefaultTitle(projectInfoJson.getString("name"));
-                            if(projectInfoJson.has("description")) {
-                                p.setDefaultDescription(projectInfoJson.getString("description"));
-                            }
+//                            p.setDefaultTitle(projectInfoJson.getString("name"));
+//                            if(projectInfoJson.has("description")) {
+//                                p.setDefaultDescription(projectInfoJson.getString("description"));
+//                            }
 
                             // load meta
                             // TRICKY: we are actually getting the meta names instead of the id's since we only receive one translation of the project info
-                            PseudoProject rootPseudoProject = null;
+//                            PseudoProject rootPseudoProject = null;
                             if (projectInfoJson.has("meta")) {
                                 JSONArray jsonMeta = projectInfoJson.getJSONArray("meta");
                                 if(jsonMeta.length() > 0) {
                                     // get the root meta
                                     String metaSlug = jsonMeta.getString(0); // this is actually the meta name in this case
-                                    rootPseudoProject = pseudoProjects.get(metaSlug);
-                                    if(rootPseudoProject == null) {
-                                        rootPseudoProject = new PseudoProject(metaSlug);
-                                        pseudoProjects.add(rootPseudoProject.getId(), rootPseudoProject);
-                                    }
-                                    // load children meta
-                                    PseudoProject currentPseudoProject = rootPseudoProject;
-                                    for (int j = 1; j < jsonMeta.length(); j++) {
-                                        PseudoProject sp = new PseudoProject(jsonMeta.getString(j));
-                                        if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
-                                            // load already created meta
-                                            currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
-                                        } else {
-                                            // create new meta
-                                            currentPseudoProject.addChild(sp);
-                                            currentPseudoProject = sp;
-                                        }
-                                        // add to project
-                                        p.addSudoProject(sp);
-                                    }
-                                    currentPseudoProject.addChild(p);
+//                                    rootPseudoProject = pseudoProjects.get(metaSlug);
+//                                    if(rootPseudoProject == null) {
+//                                        rootPseudoProject = new PseudoProject(metaSlug);
+//                                        pseudoProjects.add(rootPseudoProject.getId(), rootPseudoProject);
+//                                    }
+//                                    // load children meta
+//                                    PseudoProject currentPseudoProject = rootPseudoProject;
+//                                    for (int j = 1; j < jsonMeta.length(); j++) {
+//                                        PseudoProject sp = new PseudoProject(jsonMeta.getString(j));
+//                                        if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
+//                                            // load already created meta
+//                                            currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
+//                                        } else {
+//                                            // create new meta
+//                                            currentPseudoProject.addChild(sp);
+//                                            currentPseudoProject = sp;
+//                                        }
+//                                        // add to project
+//                                        p.addSudoProject(sp);
+//                                    }
+//                                    currentPseudoProject.addChild(p);
                                 }
                             }
 
@@ -413,21 +406,21 @@ public class ImportingService extends NetworkService {
                                 String languageId = langJson.getString("slug");
                                 String languageName = langJson.getString("name");
                                 String direction  = langJson.getString("direction");
-                                Language.Direction langDir;
-                                if(direction.toLowerCase().equals("ltr")) {
-                                    langDir = Language.Direction.LeftToRight;
-                                } else {
-                                    langDir = Language.Direction.RightToLeft;
-                                }
-                                Language l = new Language(languageId, languageName, langDir);
-                                p.addTargetLanguage(l);
+//                                Language.Direction langDir;
+//                                if(direction.toLowerCase().equals("ltr")) {
+//                                    langDir = Language.Direction.LeftToRight;
+//                                } else {
+//                                    langDir = Language.Direction.RightToLeft;
+//                                }
+//                                Language l = new Language(languageId, languageName, langDir);
+//                                p.addTargetLanguage(l);
                             }
                             // add project or meta to the project list
-                            if(rootPseudoProject == null) {
-                                listableProjects.add(p.getId(), p);
-                            } else {
-                                listableProjects.add(rootPseudoProject.getId(), rootPseudoProject);
-                            }
+//                            if(rootPseudoProject == null) {
+//                                listableProjects.add(p.getId(), p);
+//                            } else {
+//                                listableProjects.add(rootPseudoProject.getId(), rootPseudoProject);
+//                            }
                         } else {
                             Logger.w(this.getClass().getName(), "An invalid response was received from the server");
                         }
@@ -438,7 +431,7 @@ public class ImportingService extends NetworkService {
                     }
                 }
                 if(mListener != null) {
-                    mListener.onReceivedProjectList(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
+//                    mListener.onReceivedProjectList(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
                 }
                 break;
             case SocketMessages.MSG_INVALID_REQUEST:
@@ -461,8 +454,8 @@ public class ImportingService extends NetworkService {
         void onServerConnectionLost(Peer peer);
         void onServerConnectionChanged(Peer peer);
         void onImportServiceError(Throwable e);
-        void onReceivedProjectList(Peer server, Model[] models);
-        void onReceivedProject(Peer server, ProjectImport[] importStatuses);
+//        void onReceivedProjectList(Peer server, Model[] models);
+//        void onReceivedProject(Peer server, ProjectImport[] importStatuses);
     }
 
     /**

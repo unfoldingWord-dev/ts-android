@@ -1,22 +1,17 @@
 package com.door43.translationstudio;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.door43.translationstudio.dialogs.LicenseDialog;
 import com.door43.translationstudio.newui.BaseActivity;
+import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 
 /**
  * This activity checks if the user has accepted the terms of use before continuing to load the app
  */
 public class TermsOfUseActivity extends BaseActivity {
-    private LicenseDialog mLicenseDialog;
-    private Boolean mDialogIsOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,33 +75,8 @@ public class TermsOfUseActivity extends BaseActivity {
      * @param stringResource the string resource to display in the dialog.
      */
     private void showLicenseDialog(int stringResource) {
-        if(mLicenseDialog == null) {
-            mLicenseDialog = new LicenseDialog();
-        }
-
-        if(mDialogIsOpen) {
-            return;
-        } else {
-            mDialogIsOpen = true;
-        }
-
-        mLicenseDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialogInterface) {
-                mDialogIsOpen = false;
-            }
-        });
-
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
-        ft.addToBackStack(null);
-
-        Bundle args = new Bundle();
-        args.putInt("resourceSlug", stringResource);
-        mLicenseDialog.setArguments(args);
-        mLicenseDialog.show(ft, "dialog");
+        Intent intent = new Intent(this, LegalDocumentActivity.class);
+        intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, stringResource);
+        startActivity(intent);
     }
 }

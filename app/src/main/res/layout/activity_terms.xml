@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/terms"
                 android:textColor="@color/dark_primary_text"
-                android:textSize="@dimen/body"
+                android:textSize="@dimen/title"
                 android:gravity="center" />
 
             <LinearLayout
@@ -50,11 +50,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/view_license_agreement"
                     android:id="@+id/license_btn"
-                    android:elevation="2dp"
-                    style="@style/Base.Widget.AppCompat.ActionButton"
-                    android:background="?attr/colorAccent"
-                    android:textColor="@color/light_primary_text"
-                    android:textSize="@dimen/title"
+                    style="@style/Widget.Button.Blue"
                     android:layout_marginTop="16dp"/>
 
                 <Button
@@ -62,11 +58,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/view_translation_guidelines"
                     android:id="@+id/translation_guidelines_btn"
-                    android:elevation="2dp"
-                    style="@style/Base.Widget.AppCompat.ActionButton"
-                    android:background="?attr/colorAccent"
-                    android:textColor="@color/light_primary_text"
-                    android:textSize="@dimen/title"
+                    style="@style/Widget.Button.Blue"
                     android:layout_marginTop="16dp" />
 
                 <Button
@@ -74,11 +66,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/view_statement_of_faith"
                     android:id="@+id/statement_of_faith_btn"
-                    android:elevation="2dp"
-                    style="@style/Base.Widget.AppCompat.ActionButton"
-                    android:background="?attr/colorAccent"
-                    android:textColor="@color/light_primary_text"
-                    android:textSize="@dimen/title"
+                    style="@style/Widget.Button.Blue"
                     android:layout_marginTop="16dp" />
             </LinearLayout>
 

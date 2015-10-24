@@ -109,10 +109,11 @@ public class ProfileManager {
             final String remotePath = getRemotePath();
             final Repo repo = new Repo(getRepositoryPath());
 
-
+            // TODO: manually perform the commit
             CommitTask add = new CommitTask(repo, ".", new CommitTask.OnAddComplete() {
                 @Override
                 public void success() {
+                    // TODO: manually perform the push
                     PushTask push = new PushTask(repo, remotePath, true, true, new GitSyncAsyncTask.AsyncTaskCallback() {
                         public boolean doInBackground(Void... params) {
                             return false;

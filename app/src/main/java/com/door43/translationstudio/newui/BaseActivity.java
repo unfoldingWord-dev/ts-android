@@ -8,6 +8,7 @@ import com.door43.translationstudio.CrashReporterActivity;
 import com.door43.translationstudio.SplashScreenActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.TermsOfUseActivity;
+import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 
 import java.io.File;
 
@@ -23,6 +24,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onResume();
 
         if(this instanceof TermsOfUseActivity == false
+                && this instanceof LegalDocumentActivity == false
                 && this instanceof SplashScreenActivity == false
                 && this instanceof CrashReporterActivity == false) {
             // check if we crashed or if we need to reload

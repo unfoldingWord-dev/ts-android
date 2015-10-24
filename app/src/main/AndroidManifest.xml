@@ -157,6 +157,7 @@
         </activity>
         <activity
             android:name=".newui.legal.LegalDocumentActivity"
+            android:label=""
             android:theme="@style/AppTheme.Transparent" >
             <intent-filter>
                 <action android:name="com.activity.LegalDocumentActivity" />

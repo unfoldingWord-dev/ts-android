@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import com.door43.tools.reporting.GlobalExceptionHandler;
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.projects.Term;
 import com.door43.translationstudio.service.BackupService;
 import com.door43.util.DummyDialogListener;
 import com.jcraft.jsch.JSch;
@@ -46,7 +45,7 @@ public class MainApplication extends Application {
 //    private static Typeface mTranslationTypeface;
 //    private static String mSelectedTypeface = "";
     private static Activity mMainActivity;
-    private Term mSelectedKeyTerm;
+//    private Term mSelectedKeyTerm;
     private boolean mShowImportantTerms;
     public static final String STACKTRACE_DIR = "stacktrace";
     private boolean mClosingProgressDialog = false;
@@ -80,13 +79,13 @@ public class MainApplication extends Application {
         Logger.configure(new File(getExternalCacheDir(), "log.txt"), Logger.Level.getLevel(minLogLevel));
     }
 
-    /**
-     * Sets the main activity that can be used for displaying dialogs.
-     * @param activity
-     */
-    public static void setMainActivity(Activity activity) {
-        mMainActivity = activity;
-    }
+//    /**
+//     * Sets the main activity that can be used for displaying dialogs.
+//     * @param activity
+//     */
+//    public static void setMainActivity(Activity activity) {
+//        mMainActivity = activity;
+//    }
 
     /**
      * Checks if the app should use the saved positions.
@@ -173,13 +172,13 @@ public class MainApplication extends Application {
 //        }
 //    }
 
-    /**
-     * Sets the current activity so we can access it throughout the app.
-     * @param mCurrentActivity
-     */
-    public void setCurrentActivity(Activity mCurrentActivity) {
-        this.mCurrentActivity = mCurrentActivity;
-    }
+//    /**
+//     * Sets the current activity so we can access it throughout the app.
+//     * @param mCurrentActivity
+//     */
+//    public void setCurrentActivity(Activity mCurrentActivity) {
+//        this.mCurrentActivity = mCurrentActivity;
+//    }
 
     /**
      * Returns the currently active activity
@@ -261,33 +260,33 @@ public class MainApplication extends Application {
         showToastMessage(getString(resId));
     }
 
-    public void showMessageDialog(int title, int msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
-        showMessageDialog(title, getString(msg), positiveBtn, R.string.title_cancel, positiveListenerr, new DummyDialogListener());
-    }
+//    public void showMessageDialog(int title, int msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
+//        showMessageDialog(title, getString(msg), positiveBtn, R.string.title_cancel, positiveListenerr, new DummyDialogListener());
+//    }
 
-    public void showMessageDialog(int title, String msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
-        showMessageDialog(title, msg, positiveBtn, R.string.title_cancel, positiveListenerr, new DummyDialogListener());
-    }
+//    public void showMessageDialog(int title, String msg, int positiveBtn, DialogInterface.OnClickListener positiveListenerr) {
+//        showMessageDialog(title, msg, positiveBtn, R.string.title_cancel, positiveListenerr, new DummyDialogListener());
+//    }
 
-    /**
-     *
-     * @param title
-     * @param msg
-     * @param positiveBtn
-     * @param negativeBtn
-     * @param positiveListener
-     * @param negativeListener
-     */
-    public void showMessageDialog(int title, String msg, int positiveBtn, int negativeBtn, DialogInterface.OnClickListener positiveListener, DialogInterface.OnClickListener negativeListener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title).setMessage(msg)
-                .setPositiveButton(positiveBtn, positiveListener)
-                .setNegativeButton(negativeBtn, negativeListener).show();
-    }
+//    /**
+//     *
+//     * @param title
+//     * @param msg
+//     * @param positiveBtn
+//     * @param negativeBtn
+//     * @param positiveListener
+//     * @param negativeListener
+//     */
+//    public void showMessageDialog(int title, String msg, int positiveBtn, int negativeBtn, DialogInterface.OnClickListener positiveListener, DialogInterface.OnClickListener negativeListener) {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setTitle(title).setMessage(msg)
+//                .setPositiveButton(positiveBtn, positiveListener)
+//                .setNegativeButton(negativeBtn, negativeListener).show();
+//    }
 
-    public void showMessageDialog(int title, int msg, int positiveBtn, int negativeBtn, DialogInterface.OnClickListener positiveListener, DialogInterface.OnClickListener negativeListener) {
-        showMessageDialog(title, getResources().getString(msg), positiveBtn, negativeBtn, positiveListener, negativeListener);
-    }
+//    public void showMessageDialog(int title, int msg, int positiveBtn, int negativeBtn, DialogInterface.OnClickListener positiveListener, DialogInterface.OnClickListener negativeListener) {
+//        showMessageDialog(title, getResources().getString(msg), positiveBtn, negativeBtn, positiveListener, negativeListener);
+//    }
 
     public void showMessageDialog(int title, String msg) {
         showMessageDialog(getResources().getString(title), msg);
@@ -298,9 +297,9 @@ public class MainApplication extends Application {
         builder.setTitle(title).setMessage(msg).setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
     }
 
-    public void showMessageDialog(int title, int msg) {
-        showMessageDialog(title, getResources().getString(msg));
-    }
+//    public void showMessageDialog(int title, int msg) {
+//        showMessageDialog(title, getResources().getString(msg));
+//    }
 
     /**
      * Displays a message dialog to the user with a detailed view
@@ -530,48 +529,48 @@ public class MainApplication extends Application {
      * We store this here so selections persist between orientation changes
      * @param term
      */
-    public void setSelectedKeyTerm(Term term) {
-        mSelectedKeyTerm = term;
-    }
+//    public void setSelectedKeyTerm(Term term) {
+//        mSelectedKeyTerm = term;
+//    }
 
     /**
      * Returns the curently selected key term
      * @return
      */
-    public Term getSelectedKeyTerm() {
-        return mSelectedKeyTerm;
-    }
+//    public Term getSelectedKeyTerm() {
+//        return mSelectedKeyTerm;
+//    }
 
     /**
      * Check if the important terms should be shown
      * @return
      */
-    public boolean getShowImportantTerms() {
-        return mShowImportantTerms;
-    }
+//    public boolean getShowImportantTerms() {
+//        return mShowImportantTerms;
+//    }
 
     /**
      * Sets if the resources pane should display the important terms.
      * This is needed to persist selection between orientation change
      * @param showImportantTerms
      */
-    public void setShowImportantTerms(boolean showImportantTerms) {
-        this.mShowImportantTerms = showImportantTerms;
-    }
+//    public void setShowImportantTerms(boolean showImportantTerms) {
+//        this.mShowImportantTerms = showImportantTerms;
+//    }
 
     /**
      * Returns the directory where temporary indexes are stored
      * @return
      */
-    public File getCacheIndexDir() {
-        return new File(getCacheDir(), "index");
-    }
+//    public File getCacheIndexDir() {
+//        return new File(getCacheDir(), "index");
+//    }
 
     /**
      * Returns the directory where indexes are stored
      * @return
      */
-    public File getIndexDir() {
-        return new File(getFilesDir(), "index");
-    }
+//    public File getIndexDir() {
+//        return new File(getFilesDir(), "index");
+//    }
 }

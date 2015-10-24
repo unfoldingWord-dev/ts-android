@@ -8,7 +8,7 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.git.Repo;
 import com.door43.translationstudio.git.tasks.StopTaskException;
-import com.door43.translationstudio.git.tasks.repo.CommitTask;
+//import com.door43.translationstudio.git.tasks.repo.CommitTask;
 import com.door43.util.Manifest;
 
 import org.apache.commons.io.FileUtils;
@@ -260,8 +260,20 @@ public class TargetTranslation {
      * @return
      */
     public ChapterTranslation getChapterTranslation(Chapter chapter) {
-        File referenceFile = getChapterReferenceFile(chapter.getId());
-        File titleFile = getChapterTitleFile(chapter.getId());
+        if(chapter == null) {
+            return null;
+        }
+        return getChapterTranslation(chapter.getId());
+    }
+
+    /**
+     * Returns the translation of a chapter
+     * @param chapterSlug
+     * @return
+     */
+    public ChapterTranslation getChapterTranslation(String chapterSlug) {
+        File referenceFile = getChapterReferenceFile(chapterSlug);
+        File titleFile = getChapterTitleFile(chapterSlug);
         String reference = "";
         String title = "";
         if(referenceFile.exists()) {
@@ -278,7 +290,7 @@ public class TargetTranslation {
                 e.printStackTrace();
             }
         }
-        return new ChapterTranslation(title, reference, chapter.getId());
+        return new ChapterTranslation(title, reference, chapterSlug);
     }
 
     /**
@@ -596,5 +608,24 @@ public class TargetTranslation {
             numFiles += dir.list().length;
         }
         return numFiles;
+    }
+
+    /**
+     * Returns an array of chapter translations
+     * @return
+     */
+    public ChapterTranslation[] getChapterTranslations() {
+        // TODO: 10/23/2015 implement this
+        return new ChapterTranslation[0];
+    }
+
+    /**
+     * Returns an array of frame translations for the chapter
+     * @param chapterSlug
+     * @return
+     */
+    public FrameTranslation[] getFrameTranslations(String chapterSlug) {
+        // TODO: 10/23/2015 implement this
+        return new FrameTranslation[0];
     }
 }

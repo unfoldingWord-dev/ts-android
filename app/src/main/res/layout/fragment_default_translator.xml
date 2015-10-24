@@ -50,19 +50,19 @@
                 android:layout_marginLeft="2dp"
                 android:layout_marginRight="2dp" />
 
-            <com.door43.translationstudio.rendering.SourceTextView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/readSourceTranslation"
-                android:maxLines="9999"
-                android:scrollbars="vertical"
-                android:textColor="@color/dark_gray"
-                android:paddingTop="5dp"
-                android:paddingLeft="10dp"
-                android:paddingBottom="5dp"
-                android:paddingRight="10dp"
-                android:layout_above="@+id/sourceFrameNumText"
-                android:layout_below="@+id/sourceTitleText" />
+            <!--<com.door43.translationstudio.rendering.SourceTextView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:id="@+id/readSourceTranslation"-->
+                <!--android:maxLines="9999"-->
+                <!--android:scrollbars="vertical"-->
+                <!--android:textColor="@color/dark_gray"-->
+                <!--android:paddingTop="5dp"-->
+                <!--android:paddingLeft="10dp"-->
+                <!--android:paddingBottom="5dp"-->
+                <!--android:paddingRight="10dp"-->
+                <!--android:layout_above="@+id/sourceFrameNumText"-->
+                <!--android:layout_below="@+id/sourceTitleText" />-->
 
             <TextView
                 android:layout_width="match_parent"
