@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -119,6 +120,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 if (mFragment instanceof ViewModeFragment) {
                     ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
                 }
+
+                ((TargetTranslationActivity) seekBar.getContext()).clearKeyboard();
             }
 
             @Override
@@ -223,6 +226,14 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 }
             }
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
+    }
+
+    public void clearKeyboard() {
+        final Context myContext = (Context) this;
+        final Activity myActivity = this;
+
+        InputMethodManager inputManager = (InputMethodManager) myActivity.getSystemService(myContext.INPUT_METHOD_SERVICE);
+        inputManager.hideSoftInputFromWindow(myActivity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     @Override
