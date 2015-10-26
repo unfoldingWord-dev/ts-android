@@ -264,7 +264,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             public void onClick(View v) {
                 boolean actionTaken = openTargetTranslationCard(holder, position);
 
-                if (!actionTaken) {
+                // Accept clicks anywhere on card as if they were on the text box --
+                // but only if the text is actually editable (i.e., not yet done).
+                if (!actionTaken && holder.mTargetBody.isEnabled()) {
                     holder.mTargetBody.requestFocus();
 
                     InputMethodManager mgr = (InputMethodManager)
