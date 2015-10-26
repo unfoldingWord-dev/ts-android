@@ -121,7 +121,10 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                     ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
                 }
 
-                ((TargetTranslationActivity) seekBar.getContext()).clearKeyboard();
+                TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
+                if(activity != null) {
+                    activity.clearKeyboard();
+                }
             }
 
             @Override
@@ -198,6 +201,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 openTranslationMode(TranslationViewMode.READ, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+                if(activity != null) {
+                    activity.clearKeyboard();
+                }
             }
         });
 
@@ -205,6 +213,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 openTranslationMode(TranslationViewMode.CHUNK, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+                if(activity != null) {
+                    activity.clearKeyboard();
+                }
             }
         });
 
@@ -212,6 +225,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 openTranslationMode(TranslationViewMode.REVIEW, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
+                if(activity != null) {
+                    activity.clearKeyboard();
+                }
             }
         });
 
@@ -232,19 +250,25 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         final Context myContext = (Context) this;
         final Activity myActivity = this;
 
-        InputMethodManager inputManager = (InputMethodManager) myActivity.getSystemService(myContext.INPUT_METHOD_SERVICE);
-        inputManager.hideSoftInputFromWindow(myActivity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        try {
+            InputMethodManager inputManager = (InputMethodManager) myActivity.getSystemService(myContext.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(myActivity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        } catch (Exception e) {
+
+        }
     }
 
     @Override
     public void onScrollProgress(int progress) {
         mSeekBar.setProgress(mSeekBar.getMax() - progress);
+        clearKeyboard();
     }
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
         mSeekBar.setMax(itemCount);
         mSeekBar.setProgress(itemCount - progress);
+        clearKeyboard();
     }
 
     @Override
