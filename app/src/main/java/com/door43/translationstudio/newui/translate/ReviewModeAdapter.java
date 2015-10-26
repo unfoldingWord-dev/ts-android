@@ -7,7 +7,7 @@ import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Bundle;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -23,8 +23,10 @@ import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -45,7 +47,6 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationFormat;
-import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.TranslationWord;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
@@ -261,7 +262,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         final ListItem item = mListItems[position];
-        // TODO: 10/20/2015 this will break because we don't have a frame id
         final Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
         final FrameTranslation frameTranslation;
         final ChapterTranslation chapterTranslation;
@@ -345,15 +345,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
-        // open blind draft mode
+        // enable editing
         final GestureDetector editButtonDetector = new GestureDetector(new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
-                Bundle args = new Bundle();
-                args.putBoolean(ChunkModeFragment.EXTRA_TARGET_OPEN, true);
-                args.putString(TargetTranslationActivity.EXTRA_CHAPTER_ID, item.chapterSlug);
-                args.putString(TargetTranslationActivity.EXTRA_FRAME_ID, item.frameSlug);
-                getListener().openTranslationMode(TranslationViewMode.CHUNK, args);
+                if(item.isEditing) {
+                    holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+                    item.isEditing = false;
+                    holder.mTargetBody.setVisibility(View.VISIBLE);
+                    holder.mTargetEditableBody.setVisibility(View.GONE);
+                    holder.mTargetBody.requestFocus();
+                    getListener().closeKeyboard();
+                } else {
+                    holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+                    item.isEditing = true;
+                    holder.mTargetBody.setVisibility(View.GONE);
+                    holder.mTargetEditableBody.setVisibility(View.VISIBLE);
+                    holder.mTargetEditableBody.requestFocus();
+                    InputMethodManager mgr = (InputMethodManager)
+                            mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
+                }
                 return true;
             }
         });
@@ -424,6 +436,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             Typography.format(mContext, holder.mSourceBody, mSourceLanguage.getId(), mSourceLanguage.getDirection());
             Typography.formatSub(mContext, holder.mTargetTitle, mTargetLanguage.getId(), mTargetLanguage.getDirection());
             Typography.format(mContext, holder.mTargetBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
+            Typography.format(mContext, holder.mTargetEditableBody, mTargetLanguage.getId(), mTargetLanguage.getDirection());
         }
 
         // display resources as opened
@@ -432,8 +445,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         } else {
             holder.mMainContent.setWeightSum(1f);
         }
-
-
 
         // done buttons
         holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
@@ -652,7 +663,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         if(holder.mTextWatcher != null) {
             holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         }
-        holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+        holder.mTargetBody.setText(item.renderedTargetBody);
+        holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
         holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -870,7 +882,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final ViewHolder holder) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if(format == TranslationFormat.USX) {
-            USXRenderer usxRenderer = new USXRenderer(new Span.OnClickListener() {
+            Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
                     Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.long_click_to_drag, Snackbar.LENGTH_SHORT);
@@ -960,7 +972,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         }
                     });
                 }
-            }, null);
+            };
+            USXRenderer usxRenderer = new USXRenderer(verseClickListener, null);
             usxRenderer.setPopulateVerseMarkers(frame.getVerseRange());
             renderingGroup.addEngine(usxRenderer);
         } else {
@@ -1027,6 +1040,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final LinearLayout mTargetInnerCard;
         private final TabLayout mResourceTabs;
         private final LinearLayout mResourceList;
+        public final EditText mTargetEditableBody;
         public int mLayoutBuildNumber = -1;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
@@ -1050,11 +1064,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetInnerCard = (LinearLayout)v.findViewById(R.id.target_translation_inner_card);
             mTargetTitle = (TextView)v.findViewById(R.id.target_translation_title);
             mTargetBody = (EditText)v.findViewById(R.id.target_translation_body);
+            mTargetEditableBody = (EditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
             mDoneButton = (Button)v.findViewById(R.id.done_button);
             mDoneFlag = (LinearLayout)v.findViewById(R.id.done_flag);
-            ViewUtil.tintViewDrawable(mEditButton, context.getResources().getColor(R.color.dark_disabled_text));
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);
         }
@@ -1078,7 +1092,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final String chapterSlug;
         private boolean isChapterReference = false;
         private boolean isChapterTitle = false;
-        private boolean isTargetCardOpen = false;
+        private boolean isEditing = false;
         private CharSequence renderedSourceBody;
         private CharSequence renderedTargetBody;
 

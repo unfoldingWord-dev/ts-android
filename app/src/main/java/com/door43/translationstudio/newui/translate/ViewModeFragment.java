@@ -185,7 +185,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * @param chapterId
      * @param frameId
      */
-    protected void scrollToFrame(String chapterId, String frameId) {
+    public void scrollToFrame(String chapterId, String frameId) {
         closeKeyboard();
         int position = mAdapter.getItemPosition(chapterId, frameId);
         if(position != -1) {

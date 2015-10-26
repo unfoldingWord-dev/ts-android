@@ -127,5 +127,6 @@ public abstract class ViewModeAdapter<VH extends RecyclerView.ViewHolder> extend
         void onTranslationWordClick(String translationWordId, int width);
         void onTranslationNoteClick(String chapterId, String frameId, String translationNoteId, int width);
         void onCheckingQuestionClick(String chapterId, String frameId, String checkingQuestionId, int width);
+        void scrollToFrame(String chapterSlug, String frameSlug);
     }
 }

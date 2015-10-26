@@ -48,7 +48,7 @@
                     android:layout_height="wrap_content"
                     android:padding="10dp"
                     android:layout_gravity="right|center_vertical"
-                    android:background="?attr/selectableItemBackground"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/icon_tabedit_normal"/>
             </FrameLayout>
 
@@ -112,7 +112,8 @@
                         android:layout_height="wrap_content"
                         android:padding="10dp"
                         android:layout_gravity="right|center_vertical"
-                        android:background="@drawable/ic_mode_edit_black_24dp"/>
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_mode_edit_black_24dp"/>
                 </FrameLayout>
 
                 <com.door43.widget.KeyboardlessEditText
@@ -123,10 +124,22 @@
                     android:textSize="@dimen/body"
                     android:inputType="textMultiLine"
                     android:gravity="top"
-                    android:editable="false"
                     android:background="@null"
                     android:layout_marginBottom="@dimen/card_margin"
                     android:textColor="@color/dark_primary_text"/>
+
+                <EditText
+                    android:visibility="gone"
+                    android:id="@+id/target_translation_editable_body"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="this is the tflkjlksjsd\nlkjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdl\nlksjsdlfkjsdlkjsfdlkjsfdl\nlksjdlfkjsd"
+                    android:textSize="@dimen/body"
+                    android:inputType="textMultiLine"
+                    android:gravity="top"
+                    android:background="@null"
+                    android:layout_marginBottom="@dimen/card_margin"
+                    android:textColor="@color/dark_primary_text" />
             </LinearLayout>
 
             <LinearLayout
