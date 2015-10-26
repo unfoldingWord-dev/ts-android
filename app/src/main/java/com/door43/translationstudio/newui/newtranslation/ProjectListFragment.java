@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
@@ -46,6 +49,14 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
             }
         });
 
+        EditText searchView = (EditText) rootView.findViewById(R.id.search_text);
+        searchView.setHint(R.string.choose_a_project);
+        searchView.setEnabled(false);
+        ImageButton searchBackButton = (ImageButton) rootView.findViewById(R.id.search_back_button);
+        searchBackButton.setVisibility(View.GONE);
+
+        ImageView updateIcon = (ImageView) rootView.findViewById(R.id.search_mag_icon);
+        updateIcon.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
         // TODO: set up update button
 
         return rootView;
