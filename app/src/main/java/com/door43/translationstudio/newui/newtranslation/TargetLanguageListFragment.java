@@ -44,7 +44,7 @@ public class TargetLanguageListFragment extends BaseFragment implements Searchab
         ImageButton searchBackButton = (ImageButton) rootView.findViewById(R.id.search_back_button);
         searchBackButton.setVisibility(View.GONE);
         ImageView searchIcon = (ImageView) rootView.findViewById(R.id.search_mag_icon);
-        // TODO: set up search
+        searchIcon.setVisibility(View.GONE);
 
         return rootView;
     }
