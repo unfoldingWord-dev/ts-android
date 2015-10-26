@@ -907,7 +907,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         @Override
                         public boolean onDrag(View v, DragEvent event) {
                             EditText editText = ((EditText) view);
-                            // TODO: every view should have a drag listener and each view should have a unique tag so we can identify a valid drop site
                             // TODO: highlight the drop site.
                             if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
                                 // delete old span
@@ -929,7 +928,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 }
                                 editText.setText(text);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
-                                view.setOnClickListener(null);
+                                view.setOnDragListener(null);
                                 editText.setSelection(editText.getSelectionEnd());
                                 // reset verse if dragged off the view
                                 // TODO: 10/5/2015 perhaps we should confirm with the user?
@@ -943,7 +942,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
-                                Log.d("DRAG", "action");
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_EXITED) {
                                 hasEntered = false;
                                 editText.setSelection(editText.getSelectionEnd());
