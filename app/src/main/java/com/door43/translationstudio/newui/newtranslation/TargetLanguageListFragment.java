@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
@@ -35,6 +38,12 @@ public class TargetLanguageListFragment extends BaseFragment implements Searchab
             }
         });
 
+        EditText searchView = (EditText) rootView.findViewById(R.id.search_text);
+        searchView.setHint(R.string.choose_target_language);
+        searchView.setEnabled(false);
+        ImageButton searchBackButton = (ImageButton) rootView.findViewById(R.id.search_back_button);
+        searchBackButton.setVisibility(View.GONE);
+        ImageView searchIcon = (ImageView) rootView.findViewById(R.id.search_mag_icon);
         // TODO: set up search
 
         return rootView;
