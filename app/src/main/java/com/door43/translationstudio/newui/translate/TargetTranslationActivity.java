@@ -362,7 +362,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mReadButton.setBackgroundDrawable(null);
 
         // For the active view, set the correct icon, and highlight the background.
-        final int backgroundColor = getResources().getColor(R.color.accent_material_dark);
+        final int backgroundColor = getResources().getColor(R.color.primary_dark);
         switch (viewMode) {
             case READ:
                 mReadButton.setImageResource(R.drawable.icon_study_active);
