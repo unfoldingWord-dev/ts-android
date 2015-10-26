@@ -10,33 +10,36 @@
      <!--top -->
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center|top">
 
         <ImageButton
             android:id="@+id/action_read"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/icon_study_inactive"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center" />
 
         <ImageButton
             android:id="@+id/action_chunk"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:src="@drawable/icon_frame_inactive"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center" />
 
         <ImageButton
             android:id="@+id/action_review"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
             android:padding="16dp"
             android:src="@drawable/ic_assignment_turned_in_inactive_24dp"
-            android:background="?attr/selectableItemBackground"/>
+            android:background="?attr/selectableItemBackground"
+            android:layout_gravity="center" />
     </LinearLayout>
 
     <!-- middle -->
