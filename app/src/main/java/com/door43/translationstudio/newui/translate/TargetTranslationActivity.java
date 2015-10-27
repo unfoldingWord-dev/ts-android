@@ -1,12 +1,10 @@
 package com.door43.translationstudio.newui.translate;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -123,7 +121,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
                 if(activity != null) {
-                    activity.clearKeyboard();
+                    activity.closeKeyboard();
                 }
             }
 
@@ -203,9 +201,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 openTranslationMode(TranslationViewMode.READ, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-                if(activity != null) {
-                    activity.clearKeyboard();
-                }
             }
         });
 
@@ -215,9 +210,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 openTranslationMode(TranslationViewMode.CHUNK, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-                if(activity != null) {
-                    activity.clearKeyboard();
-                }
             }
         });
 
@@ -227,9 +219,6 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 openTranslationMode(TranslationViewMode.REVIEW, null);
 
                 TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
-                if(activity != null) {
-                    activity.clearKeyboard();
-                }
             }
         });
 
@@ -246,29 +235,23 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
 
-    public void clearKeyboard() {
-        final Context myContext = (Context) this;
-        final Activity myActivity = this;
-
-        try {
-            InputMethodManager inputManager = (InputMethodManager) myActivity.getSystemService(myContext.INPUT_METHOD_SERVICE);
-            inputManager.hideSoftInputFromWindow(myActivity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        } catch (Exception e) {
-
+    public void closeKeyboard() {
+        if(mFragment instanceof ViewModeFragment) {
+            ((ViewModeFragment) mFragment).closeKeyboard();
         }
     }
 
     @Override
     public void onScrollProgress(int progress) {
         mSeekBar.setProgress(mSeekBar.getMax() - progress);
-        clearKeyboard();
+        closeKeyboard();
     }
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
         mSeekBar.setMax(itemCount);
         mSeekBar.setProgress(itemCount - progress);
-        clearKeyboard();
+        closeKeyboard();
     }
 
     @Override
