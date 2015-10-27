@@ -388,13 +388,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(holder.mEditableTextWatcher != null) {
                 holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
             }
-            holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+            holder.mTargetEditableBody.setText(item.renderedTargetBody);
             if(holder.mEditableTextWatcher != null) {
                 holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
             }
         } else {
             // verse marker mode
-            holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+            holder.mTargetBody.setText(item.renderedTargetBody);
             holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
@@ -457,7 +457,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     int selection = holder.mTargetEditableBody.getSelectionStart();
 
                     holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
-                    holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
 
                     holder.mTargetEditableBody.scrollTo(scrollX, scrollY);
@@ -496,7 +496,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     item.loadTranslations(mTargetTranslation, chapter, frame);
                     // re-render for editing mode
                     item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat);
-                    holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+                    holder.mTargetEditableBody.setText(item.renderedTargetBody);
                     holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
                 } else {
                     // close editing mode
@@ -513,7 +513,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     item.loadTranslations(mTargetTranslation, chapter, frame);
                     // re-render for verse mode
                     item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
-                    holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+                    holder.mTargetBody.setText(item.renderedTargetBody);
                 }
                 return true;
             }
@@ -649,11 +649,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private void renderResourceCard(final int position, ListItem item, final ViewHolder holder) {
+        // clean up view
+        if(holder.mResourceList.getChildCount() > 0) {
+            holder.mResourceList.removeAllViews();
+        }
+        holder.mResourceTabs.setOnTabSelectedListener(null);
+        holder.mResourceTabs.removeAllTabs();
+
+        // skip if chapter title/reference
+        if(item.isChapterReference || item.isChapterTitle) {
+            return;
+        }
+
         Frame  frame = loadFrame(item.chapterSlug, item.frameSlug);
 
         // resource tabs
-        holder.mResourceTabs.setOnTabSelectedListener(null);
-        holder.mResourceTabs.removeAllTabs();
         final TranslationNote[] notes = getPreferredNotes(mSourceTranslation, frame);
         if(notes.length > 0) {
             TabLayout.Tab tab = holder.mResourceTabs.newTab();
@@ -725,8 +735,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         // resource list
         if(notes.length > 0 || words.length > 0 || questions.length > 0) {
             renderResources(holder, position, notes, words, questions);
-        } else if(holder.mResourceList.getChildCount() > 0) {
-            holder.mResourceList.removeAllViews();
         }
 
         // tap to open resources

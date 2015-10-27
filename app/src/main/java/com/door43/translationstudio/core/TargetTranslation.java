@@ -3,6 +3,7 @@ package com.door43.translationstudio.core;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.AsyncTask;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
@@ -485,7 +486,7 @@ public class TargetTranslation {
      * Stages and commits changes to the repository
      * @param filePattern the file pattern that will be used to match files for staging
      */
-    public void commit(String filePattern) throws Exception {
+    private void commit(String filePattern) throws Exception {
         Git git = getRepo().getGit();
 
         // check if dirty
@@ -502,10 +503,22 @@ public class TargetTranslation {
         add.addFilepattern(filePattern).call();
 
         // commit changes
-        CommitCommand commit = git.commit();
+        final CommitCommand commit = git.commit();
         commit.setAll(true);
         commit.setMessage("auto save");
-        commit.call();
+
+
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    commit.call();
+                } catch (GitAPIException e) {
+                    Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
+                }
+            }
+        };
+        thread.start();
     }
 
     /**

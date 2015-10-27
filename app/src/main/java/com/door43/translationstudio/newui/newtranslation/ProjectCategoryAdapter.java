@@ -124,20 +124,37 @@ public class ProjectCategoryAdapter extends BaseAdapter {
                 // perform filter
                 List<ProjectCategory> filteredCategories = new ArrayList<>();
                 for(ProjectCategory category:mCategories) {
-                    // match the project id
-                    boolean match = category.projectId.toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    boolean match = false;
+                    if(category.isProject()) {
+                        // match the project id
+                        match = category.projectId.toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    }
                     if(!match) {
+                        String[] categoryComponents = category.getId().split("-");
+                        String[] titleComponents = category.title.split(" ");
                         if (category.title.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the project title in any language
                             match = true;
-                        }
-//                        TODO: search the source language title as well. This requires an update to the project category.
-                        else if (category.sourcelanguageId.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        } else if (category.sourcelanguageId.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the language id or name
                             match = true;
-                        } else if (category.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
-                            // match category id
-                            match = true;
+                        } else {
+                            // match category id components
+                            for(String component:categoryComponents) {
+                                if (component.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                                    match = true;
+                                    break;
+                                }
+                            }
+                            if(!match) {
+                                // match title components
+                                for(String component:titleComponents) {
+                                    if (component.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                                        match = true;
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                     if(match) {
@@ -153,10 +170,11 @@ public class ProjectCategoryAdapter extends BaseAdapter {
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
             List<ProjectCategory> filteredProjects = ((List<ProjectCategory>) filterResults.values);
-            if(charSequence != null && charSequence.length() > 0) {
-                sortProjectCategories(filteredProjects, charSequence);
+            if(filteredProjects != null) {
+                mFilteredCategories = filteredProjects.toArray(new ProjectCategory[filterResults.count]);
+            } else {
+                mFilteredCategories = new ProjectCategory[0];
             }
-            mFilteredCategories = filteredProjects.toArray(new ProjectCategory[filterResults.count]);
             notifyDataSetChanged();
         }
     }
