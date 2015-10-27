@@ -602,6 +602,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
             }
         }
+
+        holder.mResourceCard.setVisibility(View.INVISIBLE);
     }
 
     private void renderChapterTitle(ViewHolder holder, int position, String chapterSlug) {
@@ -648,6 +650,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
             }
         }
+
+        holder.mResourceCard.setVisibility(View.INVISIBLE);
     }
 
     private void renderFrame(ViewHolder holder, Frame frame, int position) {
