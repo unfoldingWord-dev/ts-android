@@ -394,7 +394,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         } else {
             // verse marker mode
-            holder.mTargetBody.setText(item.renderedTargetBody);
+            holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
             holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
@@ -508,6 +508,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     }
                     holder.mTargetBody.requestFocus();
                     getListener().closeKeyboard();
+
+                    // TRICKY: there may be changes to translation
+                    item.loadTranslations(mTargetTranslation, chapter, frame);
+                    // re-render for verse mode
+                    item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
+                    holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
                 }
                 return true;
             }
@@ -891,7 +897,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_LOCATION) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
                                 if(offset >= 0) {
-//                                    editText.setSelection(offset);
                                     Selection.setSelection(editText.getText(), offset);
                                 } else {
                                     editText.setSelection(editText.getSelectionEnd());
@@ -909,8 +914,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // TODO: add note click listener
             renderingGroup.addEngine(new DefaultRenderer(null));
         }
-        renderingGroup.init(text);
-        return renderingGroup.start();
+        if(!text.trim().isEmpty()) {
+            renderingGroup.init(text);
+            return renderingGroup.start();
+        } else {
+            return "";
+        }
     }
 
     private CharSequence renderSourceText(String text, TranslationFormat format) {
