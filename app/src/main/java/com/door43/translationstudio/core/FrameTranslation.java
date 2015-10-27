@@ -20,6 +20,10 @@ public class FrameTranslation {
         mFinished = finished;
     }
 
+    /**
+     * Returns the title of the frame translation
+     * @return
+     */
     public String getTitle() {
         if(mFormat == TranslationFormat.USX) {
             // get verse range
