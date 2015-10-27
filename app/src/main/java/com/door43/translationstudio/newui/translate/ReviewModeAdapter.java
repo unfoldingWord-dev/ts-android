@@ -1079,7 +1079,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         public final CardView mResourceCard;
         public final LinearLayout mMainContent;
         public final LinearLayout mResourceLayout;
-        public final Button mDoneButton;
+        public final LinearLayout mDoneButton;
         private final LinearLayout mDoneFlag;
         private final LinearLayout mTargetInnerCard;
         private final TabLayout mResourceTabs;
@@ -1112,7 +1112,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             mTargetEditableBody = (EditText)v.findViewById(R.id.target_translation_editable_body);
             mTranslationTabs = (TabLayout)v.findViewById(R.id.source_translation_tabs);
             mEditButton = (ImageButton)v.findViewById(R.id.edit_translation_button);
-            mDoneButton = (Button)v.findViewById(R.id.done_button);
+            mDoneButton = (LinearLayout)v.findViewById(R.id.done_button);
             mDoneFlag = (LinearLayout)v.findViewById(R.id.done_flag);
             mTranslationTabs.setTabTextColors(R.color.dark_disabled_text, R.color.dark_secondary_text);
             mNewTabButton = (ImageButton) v.findViewById(R.id.new_tab_button);

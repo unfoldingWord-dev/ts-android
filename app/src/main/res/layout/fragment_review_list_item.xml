@@ -147,16 +147,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="bottom">
-                <Button
+
+                <LinearLayout
+                    android:id="@+id/done_button"
+                    android:orientation="horizontal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:padding="10dp"
                     android:layout_gravity="center_horizontal"
-                    android:text="@string/done"
-                    android:textAllCaps="true"
-                    style="@style/Widget.Button.Blue"
-                    android:textSize="@dimen/title"
-                    android:id="@+id/done_button"
-                    android:elevation="2dp" />
+                    android:background="@color/accent">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/ic_check_box_outline_blank_white_24dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:textAllCaps="true"
+                        android:textSize="@dimen/title"
+                        android:textColor="@color/white"
+                        android:text="@string/done"/>
+                </LinearLayout>
 
                 <LinearLayout
                     android:visibility="gone"
@@ -171,7 +185,7 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/ic_done_white_24dp"/>
+                        android:background="@drawable/ic_check_box_white_24dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
