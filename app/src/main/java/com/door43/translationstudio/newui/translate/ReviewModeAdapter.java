@@ -7,7 +7,6 @@ import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
@@ -18,12 +17,10 @@ import android.text.Editable;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -396,11 +393,33 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         });
 
         // remove old watcher
+        if(holder.mEditableTextWatcher != null) {
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
+        }
         if(holder.mTextWatcher != null) {
-            holder.mTargetEditableBody.removeTextChangedListener(holder.mTextWatcher);
+            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         }
         // create watcher
         holder.mTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // TRICKY: always re-load the text after a change just in case an invalid drag occured.
+                holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
+                holder.mTargetBody.setText(item.renderedTargetBody);
+                holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+        holder.mEditableTextWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -431,9 +450,9 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     int scrollY = holder.mTargetEditableBody.getScrollX();
                     int selection = holder.mTargetEditableBody.getSelectionStart();
 
-                    holder.mTargetEditableBody.removeTextChangedListener(holder.mTextWatcher);
+                    holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                     holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
-                    holder.mTargetEditableBody.addTextChangedListener(holder.mTextWatcher);
+                    holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
 
                     holder.mTargetEditableBody.scrollTo(scrollX, scrollY);
                     if (selection > holder.mTargetEditableBody.length()) {
@@ -449,7 +468,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             }
         };
-        holder.mTargetEditableBody.addTextChangedListener(holder.mTextWatcher);
+        holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
 
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
@@ -548,10 +568,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(item.renderedTargetBody == null) {
                 item.renderedTargetBody = chapterTranslation.reference;
             }
+            if(holder.mEditableTextWatcher != null) {
+                holder.mTargetBody.removeTextChangedListener(holder.mEditableTextWatcher);
+            }
+
             if(holder.mTextWatcher != null) {
                 holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
             }
             holder.mTargetBody.setText(item.renderedTargetBody);
+            if(holder.mTextWatcher != null) {
+                holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+            }
 
             // target title
             holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
@@ -587,10 +614,17 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             if(item.renderedTargetBody == null) {
                 item.renderedTargetBody = chapterTranslation.title;
             }
-            if(holder.mTextWatcher != null) {
+            if(holder.mEditableTextWatcher != null) {
+                holder.mTargetBody.removeTextChangedListener(holder.mEditableTextWatcher);
+            }
+
+            if (holder.mTextWatcher != null) {
                 holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
             }
             holder.mTargetBody.setText(item.renderedTargetBody);
+            if(holder.mTextWatcher != null) {
+                holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+            }
 
             // target title
             holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
@@ -633,14 +667,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 item.renderedTargetBody = renderTargetText(frameTranslation.body, frameTranslation.getFormat(), frame, frameTranslation, holder, item);
             }
         }
-        if(holder.mTextWatcher != null) {
-            holder.mTargetEditableBody.removeTextChangedListener(holder.mTextWatcher);
+        if(holder.mEditableTextWatcher != null) {
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
         }
         holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+        if(holder.mEditableTextWatcher != null) {
+            holder.mTargetEditableBody.addTextChangedListener(holder.mEditableTextWatcher);
+        }
+
         if(holder.mTextWatcher != null) {
-            holder.mTargetEditableBody.addTextChangedListener(holder.mTextWatcher);
+            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
         }
         holder.mTargetBody.setText(item.renderedTargetBody);
+        if(holder.mTextWatcher != null) {
+            holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+        }
 
         holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -902,7 +943,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 int[] spanRange = (int[])event.getLocalState();
                                 CharSequence in = editText.getText();
                                 CharSequence out = TextUtils.concat(in.subSequence(0, spanRange[0]), in.subSequence(spanRange[1], in.length()));
+                                if(holder.mTextWatcher != null) {
+                                    editText.removeTextChangedListener(holder.mTextWatcher);
+                                }
                                 editText.setText(out);
+                                if(holder.mTextWatcher != null) {
+                                    editText.addTextChangedListener(holder.mTextWatcher);
+                                }
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
                                 CharSequence text = editText.getText();
@@ -913,7 +960,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     // place the verse back at the beginning
                                     text = TextUtils.concat(pin.toCharSequence(), text);
                                 }
+                                if(holder.mTextWatcher != null) {
+                                    editText.removeTextChangedListener(holder.mTextWatcher);
+                                }
+                                item.renderedTargetBody = text;
                                 editText.setText(text);
+                                if(holder.mTextWatcher != null) {
+                                    editText.addTextChangedListener(holder.mTextWatcher);
+                                }
                                 String translation = Translator.compileTranslation((Editable)editText.getText());
                                 mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
@@ -925,7 +979,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     // place the verse back at the beginning
                                     CharSequence text = editText.getText();
                                     text = TextUtils.concat(pin.toCharSequence(), text);
+                                    if(holder.mTextWatcher != null) {
+                                        editText.removeTextChangedListener(holder.mTextWatcher);
+                                    }
+                                    item.renderedTargetBody = text;
                                     editText.setText(text);
+                                    if(holder.mTextWatcher != null) {
+                                        editText.addTextChangedListener(holder.mTextWatcher);
+                                    }
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
@@ -1015,6 +1076,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final LinearLayout mResourceList;
         public final EditText mTargetEditableBody;
         public int mLayoutBuildNumber = -1;
+        public TextWatcher mEditableTextWatcher;
         public TextWatcher mTextWatcher;
         public final TextView mTargetTitle;
         public final EditText mTargetBody;
