@@ -473,6 +473,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             public void onClick(View v) {
                 // TODO: display confirmation dialog
                 if(mTargetTranslation.finishFrame(frame)) {
+                    item.isEditing = false;
                     item.renderedTargetBody = null;
                     notifyDataSetChanged();
                 } else {
