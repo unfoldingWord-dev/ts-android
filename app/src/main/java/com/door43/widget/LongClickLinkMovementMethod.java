@@ -13,7 +13,7 @@ public class LongClickLinkMovementMethod extends LinkMovementMethod {
     private Long lastClickTime = 0l;
     private int lastX = 0;
     private int lastY = 0;
-    private final int LONG_CLICK_DELAY = 1000;
+    private final int LONG_CLICK_DELAY = 400;
     private Runnable mLongPressRunnable;
 
     @Override

@@ -288,8 +288,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             renderChapterTitle(holder, position, item.chapterSlug);
             translationIsFinished = chapterTranslation.isTitleFinished();
         } else {
-            renderFrame(holder, frame, frameTranslation, position);
+            renderFrame(holder, frame, position);
             translationIsFinished = frameTranslation.isFinished();
+        }
+
+        // display editing mode
+        if(item.isEditing) {
+            holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
+            holder.mTargetBody.setVisibility(View.GONE);
+            holder.mTargetEditableBody.setVisibility(View.VISIBLE);
+        } else {
+            holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
+            holder.mTargetBody.setVisibility(View.VISIBLE);
+            holder.mTargetEditableBody.setVisibility(View.GONE);
         }
 
         // load tabs
@@ -368,6 +379,14 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
                 }
+                item.renderedTargetBody = null;
+                if(item.isChapterReference) {
+                    renderChapterReference(holder, position, item.chapterSlug);
+                } else if (item.isChapterTitle) {
+                    renderChapterTitle(holder, position, item.chapterSlug);
+                } else {
+                    renderFrame(holder, frame, position);
+                }
                 return true;
             }
         });
@@ -378,6 +397,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             }
         });
 
+        // remove old watcher
+        if(holder.mTextWatcher != null) {
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mTextWatcher);
+        }
+        // create watcher
         holder.mTextWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -397,31 +421,28 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 } else {
                     mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
                 }
+                item.renderedTargetBody = renderSourceText(translation, translationFormat);
 
-                // TODO: we either need to force the translation to save when the view leaves the window (so we have it if they come back before it was saved)
-                // or just always save immediately
-
-                item.renderedTargetBody = renderTargetText(translation, translationFormat, frame, holder);
 
                 // update view
                 // TRICKY: anything worth updating will need to change by at least 7 characters
                 // <a></a> <-- at least 7 characters are required to create a tag for rendering.
                 int minDeviation = 7;
                 if(count - before > minDeviation) {
-                    int scrollX = holder.mTargetBody.getScrollX();
-                    int scrollY = holder.mTargetBody.getScrollX();
-                    int selection = holder.mTargetBody.getSelectionStart();
+                    int scrollX = holder.mTargetEditableBody.getScrollX();
+                    int scrollY = holder.mTargetEditableBody.getScrollX();
+                    int selection = holder.mTargetEditableBody.getSelectionStart();
 
-                    holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
-                    holder.mTargetBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
-                    holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+                    holder.mTargetEditableBody.removeTextChangedListener(holder.mTextWatcher);
+                    holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+                    holder.mTargetEditableBody.addTextChangedListener(holder.mTextWatcher);
 
-                    holder.mTargetBody.scrollTo(scrollX, scrollY);
-                    if(selection > holder.mTargetBody.length()) {
-                        selection = holder.mTargetBody.length();
+                    holder.mTargetEditableBody.scrollTo(scrollX, scrollY);
+                    if (selection > holder.mTargetEditableBody.length()) {
+                        selection = holder.mTargetEditableBody.length();
                     }
-                    holder.mTargetBody.setSelection(selection);
-                    holder.mTargetBody.clearFocus();
+                    holder.mTargetEditableBody.setSelection(selection);
+                    holder.mTargetEditableBody.clearFocus();
                 }
             }
 
@@ -430,7 +451,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
             }
         };
-        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+        holder.mTargetEditableBody.addTextChangedListener(holder.mTextWatcher);
 
         // set up fonts
         if(holder.mLayoutBuildNumber != mLayoutBuildNumber) {
@@ -459,6 +480,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if(mTargetTranslation.finishFrame(frame)) {
+                                    item.isEditing = false;
                                     item.renderedTargetBody = null;
                                     notifyDataSetChanged();
                                 } else {
@@ -552,31 +574,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 holder.mTargetBody.setEnabled(true);
                 holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
             }
-
-            // editing
-            holder.mTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    // save
-                    //                TODO: do this so we don't have to wait for compiling
-                    //                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
-
-                    String translation = Translator.compileTranslation((Editable)s);
-                    mTargetTranslation.applyChapterReferenceTranslation(chapterTranslation, translation);
-                    item.renderedTargetBody = translation;
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            };
-            holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
         }
     }
 
@@ -616,35 +613,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                 holder.mTargetBody.setEnabled(true);
                 holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
             }
-
-            // editing
-            holder.mTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    // save
-                    //                TODO: do this so we don't have to wait for compiling
-                    //                Translator.applyFrameTranslation(frameTranslation, (Editable)s);
-
-                    String translation = Translator.compileTranslation((Editable)s);
-                    mTargetTranslation.applyChapterTitleTranslation(chapterTranslation, translation);
-                    item.renderedTargetBody = translation;
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-
-                }
-            };
-            holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
         }
     }
 
-    private void renderFrame(ViewHolder holder, Frame frame, FrameTranslation frameTranslation, int position) {
+    private void renderFrame(ViewHolder holder, Frame frame, int position) {
+        FrameTranslation frameTranslation = mTargetTranslation.getFrameTranslation(frame);
         final ListItem item = mListItems[position];
 
         // render the source frame body
@@ -664,17 +637,21 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         // render the target frame body
         if(item.renderedTargetBody == null) {
-            if(frameTranslation.isFinished()) {
+            if(frameTranslation.isFinished() || item.isEditing) {
                 item.renderedTargetBody = renderSourceText(frameTranslation.body, frameTranslation.getFormat());
             } else {
-                item.renderedTargetBody = renderTargetText(frameTranslation.body, frameTranslation.getFormat(), frame, holder);
+                item.renderedTargetBody = renderTargetText(frameTranslation.body, frameTranslation.getFormat(), frame, frameTranslation, holder, item);
             }
         }
         if(holder.mTextWatcher != null) {
-            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
+            holder.mTargetEditableBody.removeTextChangedListener(holder.mTextWatcher);
+        }
+        holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+        if(holder.mTextWatcher != null) {
+            holder.mTargetEditableBody.addTextChangedListener(holder.mTextWatcher);
         }
         holder.mTargetBody.setText(item.renderedTargetBody);
-        holder.mTargetEditableBody.setText(TextUtils.concat(item.renderedTargetBody, "\n"));
+
         holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -889,7 +866,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
     }
 
-    private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final ViewHolder holder) {
+    private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
         if(format == TranslationFormat.USX) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
@@ -935,9 +912,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                 int[] spanRange = (int[])event.getLocalState();
                                 CharSequence in = editText.getText();
                                 CharSequence out = TextUtils.concat(in.subSequence(0, spanRange[0]), in.subSequence(spanRange[1], in.length()));
-                                editText.removeTextChangedListener(holder.mTextWatcher);
                                 editText.setText(out);
-                                editText.addTextChangedListener(holder.mTextWatcher);
                             } else if(event.getAction() == DragEvent.ACTION_DROP) {
                                 int offset = editText.getOffsetForPosition(event.getX(), event.getY());
                                 CharSequence text = editText.getText();
@@ -949,6 +924,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     text = TextUtils.concat(pin.toCharSequence(), text);
                                 }
                                 editText.setText(text);
+                                String translation = Translator.compileTranslation((Editable)editText.getText());
+                                mTargetTranslation.applyFrameTranslation(frameTranslation, translation);
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENDED) {
                                 view.setOnDragListener(null);
                                 editText.setSelection(editText.getSelectionEnd());
@@ -958,9 +935,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     // place the verse back at the beginning
                                     CharSequence text = editText.getText();
                                     text = TextUtils.concat(pin.toCharSequence(), text);
-                                    editText.removeTextChangedListener(holder.mTextWatcher);
                                     editText.setText(text);
-                                    editText.addTextChangedListener(holder.mTextWatcher);
                                 }
                             } else if(event.getAction() == DragEvent.ACTION_DRAG_ENTERED) {
                                 hasEntered = true;
