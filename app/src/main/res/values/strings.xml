@@ -342,6 +342,11 @@
     <string name="translate_first">Please provide a translation first</string>
     <string name="title_activity_publish">Publish Translation</string>
 
+    <!-- The title of the dialog asking the user to verify completion of everything required to mark a chunk complete -->
+    <string name="chunk_checklist_title">Chunk Checklist</string>
+    <!-- The text asking the user to verify that all required steps have been taken prior to marking a chunk complete -->
+    <string name="chunk_checklist_body">Are you sure you\'re Done with this chunk?\n\nI have placed the verses correctly\nI have reviewed the words and meaning\nI have reviewed the translationQuestions</string>
+
     <string name="hello_world">Hello world!</string>
     <string name="next_step">Next step</string>
     <string name="your_name">Your Name or Pseudonym</string>

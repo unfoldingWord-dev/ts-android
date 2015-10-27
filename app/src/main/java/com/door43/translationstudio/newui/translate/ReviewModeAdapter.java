@@ -3,9 +3,11 @@ package com.door43.translationstudio.newui.translate;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
@@ -491,23 +493,31 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: display confirmation dialog
-                if(mTargetTranslation.finishFrame(frame)) {
-                    item.isEditing = false;
-                    item.renderedTargetBody = null;
-                    notifyDataSetChanged();
-                } else {
-                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                    snack.show();
-                }
+                new AlertDialog.Builder(mContext)
+                        .setTitle(R.string.chunk_checklist_title)
+                        .setMessage(R.string.chunk_checklist_body)
+                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if(mTargetTranslation.finishFrame(frame)) {
+                                    item.isEditing = false;
+                                    item.renderedTargetBody = null;
+                                    notifyDataSetChanged();
+                                } else {
+                                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
+                                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                                    snack.show();
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.title_cancel, null)
+                        .show();
             }
         });
         holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(mTargetTranslation.reopenFrame(frame)) {
-                    // TODO: display confirmation dialog
                     item.renderedTargetBody = null;
                     notifyDataSetChanged();
                 }
