@@ -55,6 +55,7 @@ public class ChooseSourceTranslationDialog extends DialogFragment {
 
         EditText searchView = (EditText) v.findViewById(R.id.search_text);
         searchView.setHint(R.string.choose_source_translations);
+        searchView.setEnabled(false);
         ImageButton searchBackButton = (ImageButton) v.findViewById(R.id.search_back_button);
         searchBackButton.setVisibility(View.GONE);
         ImageView searchIcon = (ImageView) v.findViewById(R.id.search_mag_icon);

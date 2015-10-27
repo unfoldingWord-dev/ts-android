@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
@@ -30,6 +33,16 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
 
         mLibrary = AppContext.getLibrary();
 
+        EditText searchView = (EditText) rootView.findViewById(R.id.search_text);
+        searchView.setHint(R.string.choose_a_project);
+        searchView.setEnabled(false);
+        ImageButton searchBackButton = (ImageButton) rootView.findViewById(R.id.search_back_button);
+        searchBackButton.setVisibility(View.GONE);
+
+        final ImageView updateIcon = (ImageView) rootView.findViewById(R.id.search_mag_icon);
+        updateIcon.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
+        // TODO: set up update button
+
         ListView list = (ListView) rootView.findViewById(R.id.list);
         mAdapter = new ProjectCategoryAdapter(mLibrary.getProjectCategories(Locale.getDefault().getLanguage()));
         list.setAdapter(mAdapter);
@@ -37,16 +50,16 @@ public class ProjectListFragment extends BaseFragment implements Searchable {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ProjectCategory category = mAdapter.getItem(position);
-                if(category.isProject()) {
+                if (category.isProject()) {
                     mListener.onItemClick(category.projectId);
                 } else {
                     // TODO: we need to display another back arrow to back up a level in the categories
                     mAdapter.changeData(mLibrary.getProjectCategories(category));
+
+                    updateIcon.setVisibility(View.GONE);
                 }
             }
         });
-
-        // TODO: set up update button
 
         return rootView;
     }
