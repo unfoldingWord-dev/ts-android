@@ -424,7 +424,7 @@ public class USXRenderer extends RenderingEngine {
             if(in.subSequence(0, matcher.start()) != null) {
                 String previous = in.subSequence(0, matcher.start()).toString().replace(" ", "");
                 int lastLineBreak = previous.lastIndexOf("\n");
-                if (lastLineBreak < previous.length()) {
+                if (lastLineBreak < previous.length() - 1) {
                     leadingLineBreak = "\n";
                 }
             }
@@ -433,7 +433,8 @@ public class USXRenderer extends RenderingEngine {
             if(in.subSequence(matcher.end(), in.length()) != null) {
                 String next = in.subSequence(matcher.end(), in.length()).toString().replace(" ", "");
                 int nextLineBreak = next.indexOf("\n");
-                if (nextLineBreak > 0) {
+                int nextParagraph = next.indexOf("<para");
+                if (nextLineBreak > 0 && nextParagraph > 0) {
                     trailingLineBreak = "\n";
                 }
             }
