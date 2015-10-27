@@ -168,7 +168,7 @@ public class TargetTranslation {
         if(complexId.length == 3) {
             return complexId[1];
         } else {
-            throw new StringIndexOutOfBoundsException("malformed target translation id" + targetTranslationId);
+            throw new StringIndexOutOfBoundsException("malformed target translation id " + targetTranslationId);
         }
     }
 
