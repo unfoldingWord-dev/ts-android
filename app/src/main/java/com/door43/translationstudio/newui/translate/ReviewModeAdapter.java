@@ -489,6 +489,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mTargetBody.setVisibility(View.GONE);
                     holder.mTargetEditableBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.requestFocus();
+                    holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
                     InputMethodManager mgr = (InputMethodManager)mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
@@ -503,6 +504,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
                     holder.mTargetBody.setVisibility(View.VISIBLE);
                     holder.mTargetEditableBody.setVisibility(View.GONE);
+                    holder.mTargetInnerCard.setBackgroundResource(R.color.white);
                     if(holder.mEditableTextWatcher != null) {
                         holder.mTargetEditableBody.removeTextChangedListener(holder.mEditableTextWatcher);
                     }
@@ -530,10 +532,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mEditButton.setImageResource(R.drawable.ic_done_black_24dp);
             holder.mTargetBody.setVisibility(View.GONE);
             holder.mTargetEditableBody.setVisibility(View.VISIBLE);
+            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
         } else {
             holder.mEditButton.setImageResource(R.drawable.ic_mode_edit_black_24dp);
             holder.mTargetBody.setVisibility(View.VISIBLE);
             holder.mTargetEditableBody.setVisibility(View.GONE);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
         }
 
         // display as finished
@@ -546,7 +550,6 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             holder.mEditButton.setVisibility(View.VISIBLE);
             holder.mDoneButton.setVisibility(View.VISIBLE);
             holder.mDoneFlag.setVisibility(View.GONE);
-            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
         }
 
         // display source language tabs

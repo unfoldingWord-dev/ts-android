@@ -40,14 +40,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="44dp"
-                    android:layout_gravity="center_vertical"
+                    android:layout_gravity="top"
                     app:layout_scrollFlags="scroll|enterAlways"/>
                 <ImageButton
                     android:id="@+id/new_tab_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="10dp"
-                    android:layout_gravity="right|center_vertical"
+                    android:layout_gravity="right|top"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/icon_tabedit_normal"/>
             </FrameLayout>
@@ -100,7 +100,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/title"
-                        android:layout_gravity="center_vertical"
+                        android:layout_gravity="top"
                         android:layout_marginRight="44dp"
                         android:textColor="@color/dark_secondary_text"
                         android:text="John 1:1-3 - Afaraf"
@@ -111,7 +111,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:padding="10dp"
-                        android:layout_gravity="right|center_vertical"
+                        android:layout_gravity="right|top"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_mode_edit_black_24dp"/>
                 </FrameLayout>
@@ -155,6 +155,7 @@
                     android:layout_height="wrap_content"
                     android:padding="10dp"
                     android:layout_gravity="center_horizontal"
+                    android:gravity="center"
                     android:background="@color/accent">
 
                     <ImageView
