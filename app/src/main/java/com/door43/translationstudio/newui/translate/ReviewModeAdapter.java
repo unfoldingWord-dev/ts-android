@@ -407,22 +407,22 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // render title
-        ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(mChapters.get(item.chapterSlug));
-        String targetChapterTitle = chapterTranslation.title;
-        if(!targetChapterTitle.isEmpty()) {
-            targetChapterTitle += ":" + frame.getTitle();
+        String targetChapterTitle;
+        if(item.isChapterTitle || item.isChapterReference) {
+            targetChapterTitle = mSourceTranslation.getProjectTitle()
+                    + " " + Integer.parseInt(chapter.getId());
         } else {
-            if(item.isChapterTitle || item.isChapterReference) {
-                targetChapterTitle = mSourceTranslation.getProjectTitle()
-                            + " " + Integer.parseInt(chapter.getId());
-            } else {
+            ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(mChapters.get(item.chapterSlug));
+            targetChapterTitle = chapterTranslation.title;
+            if(targetChapterTitle.isEmpty()) {
                 targetChapterTitle = chapter.title;
                 if (targetChapterTitle.isEmpty()) {
                     targetChapterTitle = mSourceTranslation.getProjectTitle()
                             + " " + Integer.parseInt(chapter.getId());
                 }
-                targetChapterTitle += ":" + frame.getTitle();
+
             }
+            targetChapterTitle += ":" + frame.getTitle();
         }
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
@@ -565,7 +565,15 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                         .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                if(mTargetTranslation.finishFrame(frame)) {
+                                boolean finished;
+                                if (item.isChapterReference) {
+                                    finished = mTargetTranslation.finishChapterReference(chapter);
+                                } else if (item.isChapterTitle) {
+                                    finished = mTargetTranslation.finishChapterTitle(chapter);
+                                } else {
+                                    finished = mTargetTranslation.finishFrame(frame);
+                                }
+                                if (finished) {
                                     item.isEditing = false;
                                     item.renderedTargetBody = null;
                                     notifyDataSetChanged();
@@ -583,9 +591,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mTargetTranslation.reopenFrame(frame)) {
+                boolean opened;
+                if (item.isChapterReference) {
+                    opened = mTargetTranslation.reopenChapterReference(chapter);
+                } else if (item.isChapterTitle) {
+                    opened = mTargetTranslation.reopenChapterTitle(chapter);
+                } else {
+                    opened = mTargetTranslation.reopenFrame(frame);
+                }
+                if (opened) {
                     item.renderedTargetBody = null;
                     notifyDataSetChanged();
+                } else {
+                    // TODO: 10/27/2015 notify user the frame could not be completed.
                 }
             }
         });

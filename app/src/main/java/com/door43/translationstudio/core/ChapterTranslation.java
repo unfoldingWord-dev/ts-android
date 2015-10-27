@@ -8,11 +8,15 @@ public class ChapterTranslation {
     public final String reference;
     public final String title;
     private final String mId;
+    private final boolean titleFinished;
+    private final boolean referenceFinished;
 
-    public ChapterTranslation(String title, String reference, String chapterId) {
+    public ChapterTranslation(String title, String reference, String chapterId, boolean titleFinished, boolean referenceFinished) {
         this.title = title;
         this.reference = reference;
         mId = chapterId;
+        this.titleFinished = titleFinished;
+        this.referenceFinished = referenceFinished;
     }
 
     /**
@@ -28,7 +32,7 @@ public class ChapterTranslation {
      * @return
      */
     public boolean isReferenceFinished() {
-        return reference != null && !reference.isEmpty();
+        return this.referenceFinished;
     }
 
     /**
@@ -36,7 +40,7 @@ public class ChapterTranslation {
      * @return
      */
     public boolean isTitleFinished() {
-        return title != null && !title.isEmpty();
+        return this.titleFinished;
     }
 
     /**

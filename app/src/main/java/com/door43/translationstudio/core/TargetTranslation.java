@@ -18,6 +18,7 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -291,7 +292,7 @@ public class TargetTranslation {
                 e.printStackTrace();
             }
         }
-        return new ChapterTranslation(title, reference, chapterSlug);
+        return new ChapterTranslation(title, reference, chapterSlug, isChapterTitleFinished(chapterSlug), isChapterReferenceFinished(chapterSlug));
     }
 
     /**
@@ -398,9 +399,157 @@ public class TargetTranslation {
     }
 
     /**
+     * Marks the translation of a chapter title as complete
+     * @param chapter
+     * @return returns true if the translation actually exists and the update was successful
+     */
+    public boolean finishChapterTitle(Chapter chapter) {
+        File file = getChapterTitleFile(chapter.getId());
+        if(file.exists()) {
+            JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+            try {
+                if (!chaptersJson.has(chapter.getId())) {
+                    chaptersJson.put(chapter.getId(), new JSONObject());
+                }
+                JSONObject chapterJson = chaptersJson.getJSONObject(chapter.getId());
+                chapterJson.put("title_finished", true);
+                mManifest.put("chapters", chaptersJson);
+                return true;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Marks the translation of a chapter title as not complete
+     * @param chapter
+     * @return
+     */
+    public boolean reopenChapterTitle(Chapter chapter) {
+        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+        try {
+            if (!chaptersJson.has(chapter.getId())) {
+                chaptersJson.put(chapter.getId(), new JSONObject());
+            }
+            JSONObject frameJson = chaptersJson.getJSONObject(chapter.getId());
+            frameJson.put("title_finished", false);
+            mManifest.put("chapters", chaptersJson);
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Check if the translation of a chapter title is complete
+     * @param chapter
+     * @return
+     */
+    private boolean isChapterTitleFinished(Chapter chapter) {
+        return isChapterTitleFinished(chapter.getId());
+    }
+
+    /**
+     * Checks if the translation of a chapter title is complete
+     * @param frameComplexId
+     * @return
+     */
+    private boolean isChapterTitleFinished(String frameComplexId) {
+        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+        if(chaptersJson.has(frameComplexId)) {
+            try {
+                JSONObject chapterJson = chaptersJson.getJSONObject(frameComplexId);
+                if(chapterJson.has("title_finished")) {
+                    return chapterJson.getBoolean("title_finished");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Marks the translation of a chapter title as complete
+     * @param chapter
+     * @return returns true if the translation actually exists and the update was successful
+     */
+    public boolean finishChapterReference(Chapter chapter) {
+        File file = getChapterTitleFile(chapter.getId());
+        if(file.exists()) {
+            JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+            try {
+                if (!chaptersJson.has(chapter.getId())) {
+                    chaptersJson.put(chapter.getId(), new JSONObject());
+                }
+                JSONObject chapterJson = chaptersJson.getJSONObject(chapter.getId());
+                chapterJson.put("reference_finished", true);
+                mManifest.put("chapters", chaptersJson);
+                return true;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Marks the translation of a chapter title as not complete
+     * @param chapter
+     * @return
+     */
+    public boolean reopenChapterReference(Chapter chapter) {
+        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+        try {
+            if (!chaptersJson.has(chapter.getId())) {
+                chaptersJson.put(chapter.getId(), new JSONObject());
+            }
+            JSONObject frameJson = chaptersJson.getJSONObject(chapter.getId());
+            frameJson.put("reference_finished", false);
+            mManifest.put("chapters", chaptersJson);
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Check if the translation of a chapter title is complete
+     * @param chapter
+     * @return
+     */
+    private boolean isChapterReferenceFinished(Chapter chapter) {
+        return isChapterReferenceFinished(chapter.getId());
+    }
+
+    /**
+     * Checks if the translation of a chapter title is complete
+     * @param frameComplexId
+     * @return
+     */
+    private boolean isChapterReferenceFinished(String frameComplexId) {
+        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+        if(chaptersJson.has(frameComplexId)) {
+            try {
+                JSONObject chapterJson = chaptersJson.getJSONObject(frameComplexId);
+                if(chapterJson.has("reference_finished")) {
+                    return chapterJson.getBoolean("reference_finished");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    /**
      * Marks the translation of a frame as complete
      * @param frame
-     * @return returns true if the translation actually exists and the updated was successful
+     * @return returns true if the translation actually exists and the update was successful
      */
     public boolean finishFrame(Frame frame) {
         // TODO: we may want to change this to just have a list of "finished_frames"
