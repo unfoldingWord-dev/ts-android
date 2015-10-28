@@ -410,10 +410,15 @@ public class USXRenderer extends RenderingEngine {
             if(isStopped()) return in;
             int level = Integer.parseInt(matcher.group(1));
             SpannableString span = new SpannableString(in.subSequence(matcher.start(2), matcher.end(2)));
-            span.setSpan(new StyleSpan(Typeface.ITALIC), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new StyleSpan(Typeface.NORMAL), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             String padding = "";
             for(int i = 0; i < level; i ++) {
                 padding += "    ";
+            }
+
+            // outdent for verse markers
+            if (level > 0 && span.toString().indexOf("<verse number") == 0) {
+                padding = padding.substring(0, padding.length() - 2);
             }
 
             // don't stack new lines
