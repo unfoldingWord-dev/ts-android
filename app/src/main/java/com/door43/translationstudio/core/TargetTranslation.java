@@ -803,18 +803,21 @@ public class TargetTranslation {
      * @return
      */
     public FrameTranslation[] getFrameTranslations(String chapterSlug, TranslationFormat frameTranslationformat) {
-        String[] frameSlugs = new File(mTargetTranslationDirectory, chapterSlug).list(new FilenameFilter() {
+        String[] frameFileNames = new File(mTargetTranslationDirectory, chapterSlug).list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
             }
         });
         List<FrameTranslation> frameTranslations = new ArrayList<>();
-        if(frameSlugs != null) {
-            for (String slug : frameSlugs) {
-                FrameTranslation f = getFrameTranslation(chapterSlug, slug, frameTranslationformat);
-                if (f != null) {
-                    frameTranslations.add(f);
+        if(frameFileNames != null) {
+            for (String fileName : frameFileNames) {
+                String[] slug = fileName.split("\\.txt");
+                if(slug.length == 1) {
+                    FrameTranslation f = getFrameTranslation(chapterSlug, slug[0], frameTranslationformat);
+                    if (f != null) {
+                        frameTranslations.add(f);
+                    }
                 }
             }
         }

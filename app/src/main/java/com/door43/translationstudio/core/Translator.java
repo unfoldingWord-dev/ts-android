@@ -415,7 +415,8 @@ public class Translator {
         String[] name = archive.getName().split("\\.");
         Boolean success = true;
         if(archive.exists() && archive.isFile() && name[name.length - 1].equals("zip")) {
-            File tempDir = new File(mContext.getCacheDir() + "/" + System.currentTimeMillis());
+            File tempDir = new File(getLocalCacheDir() + "/" + System.currentTimeMillis());
+            tempDir.mkdirs();
             Zip.unzip(archive, tempDir);
 
             File[] files = tempDir.listFiles();

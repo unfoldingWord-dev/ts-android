@@ -62,7 +62,7 @@ public class ExportTest extends InstrumentationTestCase {
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
         assertNotNull(targetTranslation);
         assertTrue(targetTranslation.getChapterTranslations().length > 0);
 
