@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
@@ -763,7 +764,7 @@ public class TargetTranslation {
         File[] chapterDirs = mTargetTranslationDirectory.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return pathname.isDirectory();
+                return pathname.isDirectory() && !pathname.getName().equals(".git");
             }
         });
         for(File dir:chapterDirs) {
