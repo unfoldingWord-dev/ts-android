@@ -1,5 +1,7 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
@@ -10,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.newui.library.ServerLibraryActivity;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.widget.ViewUtil;
@@ -74,8 +77,19 @@ public class ProfileFragment extends PublishStepFragment {
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                     snack.show();
                 } else {
-                    ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
-                    getListener().nextStep();
+                    new android.support.v7.app.AlertDialog.Builder(getActivity())
+                            .setTitle("Privacy Notice")
+                            .setIcon(R.drawable.ic_report_black_24dp)
+                            .setMessage(R.string.publishing_privacy_notice)
+                            .setPositiveButton(R.string.license_accept, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
+                                    getListener().nextStep();
+                                }
+                            })
+                            .setNegativeButton(R.string.license_deny, null)
+                            .show();
                 }
             }
         });
