@@ -1,16 +1,21 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import android.text.Layout;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
@@ -35,6 +40,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
+
+    private static final String TAG = TargetTranslationActivity.class.getSimpleName();
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
@@ -119,6 +126,11 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 if (mFragment instanceof ViewModeFragment) {
                     ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
                 }
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) seekBar.getContext();
+                if(activity != null) {
+                    activity.closeKeyboard();
+                }
             }
 
             @Override
@@ -195,6 +207,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 openTranslationMode(TranslationViewMode.READ, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
@@ -202,6 +216,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 openTranslationMode(TranslationViewMode.CHUNK, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
@@ -209,6 +225,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             @Override
             public void onClick(View v) {
                 openTranslationMode(TranslationViewMode.REVIEW, null);
+
+                TargetTranslationActivity activity = (TargetTranslationActivity) v.getContext();
             }
         });
 
@@ -225,15 +243,84 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }, COMMIT_INTERVAL, COMMIT_INTERVAL);
     }
 
+    public void closeKeyboard() {
+        if(mFragment instanceof ViewModeFragment) {
+            ((ViewModeFragment) mFragment).closeKeyboard();
+        }
+    }
+
+    public void checkIfCursorStillOnScreen() {
+
+        Rect cursorPos = getCursorPositionOnScreen();
+        if(cursorPos != null) {
+
+            View scrollView = findViewById(R.id.fragment_container);
+            if(scrollView != null) {
+
+                Boolean visible = true;
+
+                Rect scrollBounds = new Rect();
+                scrollView.getHitRect(scrollBounds);
+
+                if (cursorPos.top < scrollBounds.top) {
+                    visible = false;
+                }
+                else if (cursorPos.bottom > scrollBounds.bottom) {
+                    visible = false;
+                }
+
+                if (!visible) {
+                    closeKeyboard();
+                }
+            }
+        }
+    }
+
+    public Rect getCursorPositionOnScreen() {
+
+        View focusedView = (View) getCurrentFocus();
+        if (focusedView != null) {
+
+            // get view position on screen
+            int[] l = new int[2];
+            focusedView.getLocationOnScreen(l);
+            int focusedViewX = l[0];
+            int focusedViewY = l[1];
+
+            if(focusedView instanceof  EditText) {
+
+                // getting relative cursor position
+                EditText editText = (EditText) focusedView;
+                int pos = editText.getSelectionStart();
+                Layout layout = editText.getLayout();
+                int line = layout.getLineForOffset(pos);
+                int baseline = layout.getLineBaseline(line);
+                int ascent = layout.getLineAscent(line);
+
+                // convert relative positions to absolute position
+                int x = focusedViewX + (int) layout.getPrimaryHorizontal(pos);
+                int bottomY = focusedViewY + baseline;
+                int y = bottomY + ascent;
+
+                return new Rect(x, y, x, bottomY); // ignore width of cursor for now
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public void onScrollProgress(int progress) {
         mSeekBar.setProgress(mSeekBar.getMax() - progress);
+        Log.d(TAG, "onScrollProgress: " + progress);
+        checkIfCursorStillOnScreen();
     }
 
     @Override
     public void onItemCountChanged(int itemCount, int progress) {
         mSeekBar.setMax(itemCount);
         mSeekBar.setProgress(itemCount - progress);
+        closeKeyboard();
     }
 
     @Override

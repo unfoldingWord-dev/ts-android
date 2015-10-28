@@ -255,11 +255,15 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
      * Forces the software keyboard to close
      */
     public void closeKeyboard() {
-        if(getActivity().getCurrentFocus() != null) {
-            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+        if (getActivity().getCurrentFocus() != null) {
+            try {
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+            } catch (Exception e) {}
         } else {
-            getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            try {
+                getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            } catch (Exception e) {}
         }
     }
 
