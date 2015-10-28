@@ -5,10 +5,13 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +33,7 @@ import com.door43.widget.ViewUtil;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 
 
@@ -125,23 +129,52 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             // TODO: display progress dialog
         }
 
+        final String filename = targetTranslation.getId() + ".zip";
+
         // export buttons
         Button exportToApp = (Button)rootView.findViewById(R.id.export_to_app);
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                File exportFile = new File(AppContext.getSharingDir(), filename);
+                try {
+                    AppContext.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                } catch (Exception e) {
+                    Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
+                }
+                if(exportFile.exists()) {
+                    Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("application/zip");
+                    i.putExtra(Intent.EXTRA_STREAM, u);
+                    startActivity(Intent.createChooser(i, "Email:"));
+                } else {
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         });
         Button exportToSD = (Button)rootView.findViewById(R.id.export_to_sdcard);
         exportToSD.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), "Coming soon", Snackbar.LENGTH_SHORT);
-                ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                snack.show();
+                // TODO: 10/27/2015 have the user choose where to save the file
+                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
+                try {
+                    AppContext.getTranslator().exportDokuWiki(targetTranslation, exportFile);
+                } catch (Exception e) {
+                    Logger.e(PublishFragment.class.getName(), "Failed to export the target translation " + targetTranslation.getId(), e);
+                }
+                if(exportFile.exists()) {
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                } else {
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         });
         Button exportToDevice = (Button)rootView.findViewById(R.id.export_to_device);

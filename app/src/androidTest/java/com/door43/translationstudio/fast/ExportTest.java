@@ -32,12 +32,13 @@ public class ExportTest extends InstrumentationTestCase {
 
     public void test01ExportArchive() throws Exception {
         // load content for exporting
-        File file = new File(this.testsDir, "2.0.3_uw-obs-de.tstudio");
+        File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
         file.getParentFile().mkdirs();
-        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/2.0.3_uw-obs-de.tstudio"), file);
+        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
         this.translator.importArchive(file);
-        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
         assertNotNull(targetTranslation);
+        assertTrue(targetTranslation.getChapterTranslations().length > 0);
 
         // export
         File output = new File(testsDir, "archive." + Translator.ARCHIVE_EXTENSION);
@@ -50,10 +51,34 @@ public class ExportTest extends InstrumentationTestCase {
         this.translator.deleteTargetTranslation(targetTranslation.getId());
         assertNull(this.translator.getTargetTranslation(targetTranslation.getId()));
         this.translator.importArchive(output);
-        assertNotNull(this.translator.getTargetTranslation(targetTranslation.getId()));
+        targetTranslation = this.translator.getTargetTranslation(targetTranslation.getId());
+        assertNotNull(targetTranslation);
+        assertTrue(targetTranslation.getChapterTranslations().length > 0);
     }
 
     public void test02ExportDokuWiki() throws Exception {
+        // load content for exporting
+        File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
+        file.getParentFile().mkdirs();
+        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
+        this.translator.importArchive(file);
+        TargetTranslation targetTranslation = this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        assertNotNull(targetTranslation);
+        assertTrue(targetTranslation.getChapterTranslations().length > 0);
 
+        // export
+        File output = new File(testsDir, "archive.zip");
+        if(output.exists()) output.delete();
+        assertTrue(!output.exists());
+        this.translator.exportDokuWiki(targetTranslation, output);
+        assertTrue(output.exists());
+
+        // test importability
+        this.translator.deleteTargetTranslation(targetTranslation.getId());
+        assertNull(this.translator.getTargetTranslation(targetTranslation.getId()));
+        this.translator.importDokuWikiArchive(this.library, output);
+        targetTranslation  = this.translator.getTargetTranslation(targetTranslation.getId());
+        assertNotNull(targetTranslation);
+        assertTrue(targetTranslation.getChapterTranslations().length > 0);
     }
 }

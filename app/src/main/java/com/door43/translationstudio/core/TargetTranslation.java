@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 
 /**
@@ -777,8 +779,22 @@ public class TargetTranslation {
      * @return
      */
     public ChapterTranslation[] getChapterTranslations() {
-        // TODO: 10/23/2015 implement this
-        return new ChapterTranslation[0];
+        String[] chapterSlugs = mTargetTranslationDirectory.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return !filename.equals(".git") && !filename.equals("manifest.json");
+            }
+        });
+        List<ChapterTranslation> chapterTranslations = new ArrayList<>();
+        if(chapterSlugs != null) {
+            for (String slug : chapterSlugs) {
+                ChapterTranslation c = getChapterTranslation(slug);
+                if (c != null) {
+                    chapterTranslations.add(c);
+                }
+            }
+        }
+        return chapterTranslations.toArray(new ChapterTranslation[chapterTranslations.size()]);
     }
 
     /**
@@ -786,8 +802,22 @@ public class TargetTranslation {
      * @param chapterSlug
      * @return
      */
-    public FrameTranslation[] getFrameTranslations(String chapterSlug) {
-        // TODO: 10/23/2015 implement this
-        return new FrameTranslation[0];
+    public FrameTranslation[] getFrameTranslations(String chapterSlug, TranslationFormat frameTranslationformat) {
+        String[] frameSlugs = new File(mTargetTranslationDirectory, chapterSlug).list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+                return !filename.equals("reference.txt") && !filename.equals("title.txt");
+            }
+        });
+        List<FrameTranslation> frameTranslations = new ArrayList<>();
+        if(frameSlugs != null) {
+            for (String slug : frameSlugs) {
+                FrameTranslation f = getFrameTranslation(chapterSlug, slug, frameTranslationformat);
+                if (f != null) {
+                    frameTranslations.add(f);
+                }
+            }
+        }
+        return frameTranslations.toArray(new FrameTranslation[frameTranslations.size()]);
     }
 }

@@ -126,7 +126,6 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:visibility="gone"
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_marginTop="@dimen/card_margin"
@@ -146,13 +145,15 @@
                 </LinearLayout>
 
                 <Button
-                    android:visibility="gone"
                     android:id="@+id/export_to_sdcard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/export_to_sd"
+                    android:drawableLeft="@drawable/icon_export_sd_dark"
+                    android:drawableStart="@drawable/icon_export_sd_dark"
+                    android:drawablePadding="10dp"
                     android:textColor="?attr/colorAccent"
-                    android:gravity="left"
+                    android:gravity="left|center_vertical"
                     android:padding="@dimen/card_margin"
                     android:textSize="@dimen/button"
                     android:background="?attr/selectableItemBackground"/>
@@ -170,12 +171,14 @@
                     android:background="?attr/selectableItemBackground"/>
 
                 <Button
-                    android:visibility="gone"
                     android:id="@+id/export_to_app"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/export_to_app"
-                    android:gravity="left"
+                    android:drawableLeft="@drawable/ic_share_secondary_24dp"
+                    android:drawableStart="@drawable/ic_share_secondary_24dp"
+                    android:gravity="left|center_vertical"
+                    android:drawablePadding="10dp"
                     android:textColor="?attr/colorAccent"
                     android:padding="@dimen/card_margin"
                     android:textSize="@dimen/button"

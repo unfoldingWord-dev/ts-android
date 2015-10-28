@@ -77,6 +77,7 @@ public class BackupDialog extends DialogFragment {
         exportToSDButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // TODO: 10/27/2015 have the user choose the file location
                 File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
                 try {
                     AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);

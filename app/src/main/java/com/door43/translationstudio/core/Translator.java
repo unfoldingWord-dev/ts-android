@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.text.Editable;
 import android.text.SpannedString;
 
+import com.door43.translationstudio.filebrowser.FileItem;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -243,11 +244,13 @@ public class Translator {
      * @param targetTranslation
      * @return
      */
-    public String exportDokuWiki(TargetTranslation targetTranslation) throws IOException {
-        File tempDir = new File(mContext.getCacheDir(), System.currentTimeMillis() + "");
+    public void exportDokuWiki(TargetTranslation targetTranslation, File outputFile) throws IOException {
+        File tempDir = new File(getLocalCacheDir(), System.currentTimeMillis() + "");
+        tempDir.mkdirs();
         ChapterTranslation[] chapters = targetTranslation.getChapterTranslations();
         for(ChapterTranslation chapter:chapters) {
-            FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId());
+            // TRICKY: the translation format doesn't matter for exporting
+            FrameTranslation[] frames = targetTranslation.getFrameTranslations(chapter.getId(), TranslationFormat.DEFAULT);
             if(frames.length == 0) continue;
 
             // compile translation
@@ -301,8 +304,16 @@ public class Translator {
             ps.println("//");
             ps.close();
         }
-        // TODO: 10/23/2015 zip up the exported files and return the file path
-        return "";
+        File[] chapterFiles = tempDir.listFiles();
+        if(chapterFiles != null && chapterFiles.length > 0) {
+            try {
+                Zip.zip(chapterFiles, outputFile);
+            } catch (IOException e) {
+                FileUtils.deleteQuietly(tempDir);
+                throw (e);
+            }
+        }
+        FileUtils.deleteQuietly(tempDir);
     }
 
     /**
