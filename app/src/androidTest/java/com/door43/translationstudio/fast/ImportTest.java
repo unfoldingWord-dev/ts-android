@@ -87,6 +87,13 @@ public class ImportTest extends InstrumentationTestCase {
     }
 
     public void test07ImportV2Archive() throws Exception {
-
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
+        File file = new File(this.testsDir, "3.0.1_uw-obs-aa.tstudio");
+        file.getParentFile().mkdirs();
+        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/3.0.1_uw-obs-aa.tstudio"), file);
+        this.translator.importArchive(file);
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
     }
 }

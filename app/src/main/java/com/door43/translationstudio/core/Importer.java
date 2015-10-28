@@ -43,7 +43,6 @@ public class Importer {
                         return new File[0];
                 }
             } else {
-                // version 1 manifest change significantly
                 return v1(manifestJson, expandedArchiveDir);
             }
         }

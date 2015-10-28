@@ -163,10 +163,10 @@ public class Translator {
 
     /**
      * Exports a single target translation in .tstudio format
-     * @param t
+     * @param targetTranslation
      * @param outputFile
      */
-    public void exportArchive(TargetTranslation t, File outputFile) throws Exception {
+    public void exportArchive(TargetTranslation targetTranslation, File outputFile) throws Exception {
         if(!FilenameUtils.getExtension(outputFile.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
             throw new Exception("Not a translationStudio archive");
         }
@@ -182,11 +182,11 @@ public class Translator {
         manifestJson.put("timestamp", System.currentTimeMillis() / 1000L);
         JSONArray translationsJson = new JSONArray();
         JSONObject translationJson = new JSONObject();
-        translationJson.put("path", t.getId());
-        translationJson.put("id", t.getId());
-        translationJson.put("commit_hash", t.commitHash());
-        translationJson.put("direction", t.getTargetLanguageDirection());
-        translationJson.put("target_language_name", t.getTargetLanguageName());
+        translationJson.put("path", targetTranslation.getId());
+        translationJson.put("id", targetTranslation.getId());
+        translationJson.put("commit_hash", targetTranslation.commitHash());
+        translationJson.put("direction", targetTranslation.getTargetLanguageDirection());
+        translationJson.put("target_language_name", targetTranslation.getTargetLanguageName());
         translationsJson.put(translationJson);
         manifestJson.put("target_translations", translationsJson);
 
@@ -196,7 +196,7 @@ public class Translator {
             File manifestFile = new File(tempCache, "manifest.json");
             manifestFile.createNewFile();
             FileUtils.write(manifestFile, manifestJson.toString());
-            Zip.zip(new File[]{manifestFile, t.getPath()}, outputFile);
+            Zip.zip(new File[]{manifestFile, targetTranslation.getPath()}, outputFile);
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
             FileUtils.deleteQuietly(outputFile);
