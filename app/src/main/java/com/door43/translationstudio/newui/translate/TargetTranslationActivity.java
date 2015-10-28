@@ -251,51 +251,62 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
 
     public void checkIfCursorStillOnScreen() {
 
-        View focusedView = (View) getCurrentFocus();
-        if(focusedView != null) {
-
-            int[] l = new int[2];
-            focusedView.getLocationOnScreen(l);
-            int focusedViewY = l[1];
-//            int focusedViewX = l[0];
-//            Log.d(TAG, "got view at: " + focusedViewX + "," + focusedViewY);
+        Rect cursorPos = getCursorPositionOnScreen();
+        if(cursorPos != null) {
 
             View scrollView = findViewById(R.id.fragment_container);
-
             if(scrollView != null) {
+
+                Boolean visible = true;
 
                 Rect scrollBounds = new Rect();
                 scrollView.getHitRect(scrollBounds);
-//                Log.d(TAG, "visible area rectangle: " + scrollBounds.left + "," + scrollBounds.top + " - " + scrollBounds.right + "," + scrollBounds.bottom);
 
-                 if(focusedView instanceof  EditText) {
-                    Boolean visible = true;
+                if (cursorPos.top < scrollBounds.top) {
+                    visible = false;
+                }
+                else if (cursorPos.bottom > scrollBounds.bottom) {
+                    visible = false;
+                }
 
-                    EditText editText = (EditText) focusedView;
-                    int pos = editText.getSelectionStart();
-                    Layout layout = editText.getLayout();
-                    int line = layout.getLineForOffset(pos);
-                    int baseline = layout.getLineBaseline(line);
-                    int ascent = layout.getLineAscent(line);
-                    float cursorTop = baseline + ascent;
-                    float cursorBottom = baseline;
-//                    Log.d(TAG, "focused view cursor top/bottom: " + cursorTop + "," + cursorBottom);
-
-                    if (focusedViewY + cursorTop < scrollBounds.top) {
-                        visible = false;
-                    }
-                    else if (focusedViewY + cursorBottom > scrollBounds.bottom) {
-                        visible = false;
-                    }
-
-                    if (!visible) {
-                        closeKeyboard();
-                    }
+                if (!visible) {
+                    closeKeyboard();
                 }
             }
-        } else {
-//            Log.d(TAG, "no view");
         }
+    }
+
+    public Rect getCursorPositionOnScreen() {
+
+        View focusedView = (View) getCurrentFocus();
+        if (focusedView != null) {
+
+            // get view position on screen
+            int[] l = new int[2];
+            focusedView.getLocationOnScreen(l);
+            int focusedViewX = l[0];
+            int focusedViewY = l[1];
+
+            if(focusedView instanceof  EditText) {
+
+                // getting relative cursor position
+                EditText editText = (EditText) focusedView;
+                int pos = editText.getSelectionStart();
+                Layout layout = editText.getLayout();
+                int line = layout.getLineForOffset(pos);
+                int baseline = layout.getLineBaseline(line);
+                int ascent = layout.getLineAscent(line);
+
+                // convert relative positions to absolute position
+                int x = focusedViewX + (int) layout.getPrimaryHorizontal(pos);
+                int bottomY = focusedViewY + baseline;
+                int y = bottomY + ascent;
+
+                return new Rect(x, y, x, bottomY); // ignore width of cursor for now
+            }
+        }
+
+        return null;
     }
 
     @Override
