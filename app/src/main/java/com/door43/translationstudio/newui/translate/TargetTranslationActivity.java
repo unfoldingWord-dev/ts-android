@@ -270,23 +270,34 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
             case READ:
                 if(mFragment instanceof ReadModeFragment == false) {
                     mFragment = new ReadModeFragment();
+                    mFragment.setArguments(fragmentExtras);
+
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                    // TODO: update menu
                 }
                 break;
             case CHUNK:
                 if(mFragment instanceof  ChunkModeFragment == false) {
                     mFragment = new ChunkModeFragment();
+                    mFragment.setArguments(fragmentExtras);
+
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                    // TODO: update menu
                 }
                 break;
             case REVIEW:
                 if(mFragment instanceof  ReviewModeFragment == false) {
                     mFragment = new ReviewModeFragment();
+                    mFragment.setArguments(fragmentExtras);
+
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
+                    // TODO: animate
+                    // TODO: update menu
                 }
                 break;
         }
-        mFragment.setArguments(fragmentExtras);
-        getFragmentManager().beginTransaction().replace(R.id.fragment_container, mFragment).commit();
-        // TODO: animate
-        // TODO: udpate menu
 
     }
 
