@@ -356,6 +356,8 @@
     <string name="your_phone">Your Phone Number</string>
     <string name="profile">Profile</string>
     <string name="project_title_complex">Project: <xliff:g id="project" example="Genesis">%1$s</xliff:g></string>
+    <!-- A warning shown, when publishing, indicating that names/pseudonyms (but not email or phone number) are published in the catealog -->
+    <string name="publishing_privacy_notice">Your name or pseudonym will be published along with your translation in the unfoldingWord catalog. We do not publish your email address or phone number.</string>
     <string name="publish_to_unfoldingword">Publish your project directly to unfoldingWord</string>
     <string name="checking_for_updates">Checking for updates</string>
     <string name="download">Download</string>
