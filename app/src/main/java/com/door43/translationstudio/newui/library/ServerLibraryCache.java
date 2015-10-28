@@ -13,7 +13,7 @@ import com.door43.util.Security;
  */
 public class ServerLibraryCache {
     // TODO: this should be a setting in the user preferences
-    private static final int CACHE_TTL = 10 * 60 * 1000; // the cache will expire every 10 minutes.
+    private static final int CACHE_TTL = 60 * 60 * 1000; // the cache will expire every hour.
     private static LibraryUpdates mAvailableLibraryUpdates;
     private static int mCacheTimestamp = 0;
     private static String mToken;

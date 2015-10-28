@@ -1189,7 +1189,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " )", null);
         List<SourceTranslation> sourceTranslations = new ArrayList<>();
         cursor.moveToFirst();
-        while(cursor.isAfterLast()) {
+        while(!cursor.isAfterLast()) {
             String projectSlug = cursor.getString(0);
             String sourceLanguageSlug = cursor.getString(1);
             String projectName = cursor.getString(2);
