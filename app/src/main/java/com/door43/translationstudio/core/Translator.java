@@ -166,7 +166,7 @@ public class Translator {
      * @param t
      * @param outputFile
      */
-    public void export(TargetTranslation t, File outputFile) throws Exception {
+    public void exportArchive(TargetTranslation t, File outputFile) throws Exception {
         if(!FilenameUtils.getExtension(outputFile.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
             throw new Exception("Not a translationStudio archive");
         }
@@ -311,6 +311,7 @@ public class Translator {
      * @return
      */
     public TargetTranslation importDokuWiki(Library library, File file) throws IOException {
+        List<TargetTranslation> targetTranslations = new ArrayList<>();
         TargetTranslation targetTranslation = null;
         if(file.exists() && file.isFile()) {
             StringBuilder frameBuffer = new StringBuilder();
@@ -350,6 +351,8 @@ public class Translator {
                         chapterId = "";
                         frameId = "";
                         frameBuffer.setLength(0);
+
+                        targetTranslations.add(targetTranslation);
                     } else {
                         // start loading a new translation
                         project = null;
@@ -357,6 +360,7 @@ public class Translator {
                         frameId = "";
                         chapterTitle = "";
                         frameBuffer.setLength(0);
+                        targetTranslation = null;
 
                         // retrieve the translation language
                         targetLanguage = library.findTargetLanguageByName(line);

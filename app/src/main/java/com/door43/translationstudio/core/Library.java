@@ -813,8 +813,7 @@ public class Library {
      * @return
      */
     public TargetLanguage findTargetLanguageByName(String name) {
-        // TODO: 10/23/2015 implement
-        return null;
+        return getActiveIndex().getTargetLanguageByName(name);
     }
 
     public interface OnProgressListener {

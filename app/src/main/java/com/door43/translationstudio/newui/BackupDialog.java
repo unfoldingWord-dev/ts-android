@@ -79,7 +79,7 @@ public class BackupDialog extends DialogFragment {
             public void onClick(View v) {
                 File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + filename);
                 try {
-                    AppContext.getTranslator().export(mTargetTranslation, exportFile);
+                    AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
                 } catch (Exception e) {
                     Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
                 }
@@ -108,7 +108,7 @@ public class BackupDialog extends DialogFragment {
             public void onClick(View v) {
                 File exportFile = new File(AppContext.getSharingDir(), filename);
                 try {
-                    AppContext.getTranslator().export(mTargetTranslation, exportFile);
+                    AppContext.getTranslator().exportArchive(mTargetTranslation, exportFile);
                 } catch (Exception e) {
                     Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
                 }

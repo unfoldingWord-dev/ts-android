@@ -839,6 +839,15 @@ public class Indexer {
     }
 
     /**
+     * Returns a target language
+     * @param targetLanguageName
+     * @return
+     */
+    public TargetLanguage getTargetLanguageByName(String targetLanguageName) {
+        return mDatabaseHelper.getTargetLanguageByName(mDatabase, targetLanguageName);
+    }
+
+    /**
      * Returns the number of target languages
      * @return
      */

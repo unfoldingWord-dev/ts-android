@@ -1238,6 +1238,29 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
+     * Returns a target language
+     * @param db
+     * @param targetLanguageName
+     * @return
+     */
+    public TargetLanguage getTargetLanguageByName(SQLiteDatabase db, String targetLanguageName) {
+        Cursor cursor = db.rawQuery("SELECT `name`, `direction`, `region`, `slug` FROM `target_language` WHERE LOWER(`name`)=? LIMIT 1", new String[]{targetLanguageName.toLowerCase()});
+        TargetLanguage targetLanguage = null;
+        if(cursor.moveToFirst()) {
+            String name = cursor.getString(0);
+            LanguageDirection direction = LanguageDirection.get(cursor.getString(1));
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+            String region = cursor.getString(2);
+            String slug = cursor.getString(3);
+            targetLanguage = new TargetLanguage(slug, name, region, direction);
+        }
+        cursor.close();
+        return targetLanguage;
+    }
+
+    /**
      * Updates the local date modified to match the server date modified for catalogs
      * @param db
      * @param resourceId
