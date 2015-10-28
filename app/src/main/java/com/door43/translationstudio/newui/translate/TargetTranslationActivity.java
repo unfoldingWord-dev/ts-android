@@ -1,15 +1,21 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.text.Layout;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
@@ -34,6 +40,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class TargetTranslationActivity extends BaseActivity implements ViewModeFragment.OnEventListener, FirstTabFragment.OnEventListener {
+
+    private static final String TAG = TargetTranslationActivity.class.getSimpleName();
 
     public static final String EXTRA_TARGET_TRANSLATION_ID = "extra_target_translation_id";
     private static final long COMMIT_INTERVAL = 2 * 60 * 1000; // commit changes every 2 minutes
@@ -241,10 +249,60 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
     }
 
+    public void checkIfCursorStillOnScreen() {
+
+        View focusedView = (View) getCurrentFocus();
+        if(focusedView != null) {
+
+            int[] l = new int[2];
+            focusedView.getLocationOnScreen(l);
+            int focusedViewY = l[1];
+//            int focusedViewX = l[0];
+//            Log.d(TAG, "got view at: " + focusedViewX + "," + focusedViewY);
+
+            View scrollView = findViewById(R.id.fragment_container);
+
+            if(scrollView != null) {
+
+                Rect scrollBounds = new Rect();
+                scrollView.getHitRect(scrollBounds);
+//                Log.d(TAG, "visible area rectangle: " + scrollBounds.left + "," + scrollBounds.top + " - " + scrollBounds.right + "," + scrollBounds.bottom);
+
+                 if(focusedView instanceof  EditText) {
+                    Boolean visible = true;
+
+                    EditText editText = (EditText) focusedView;
+                    int pos = editText.getSelectionStart();
+                    Layout layout = editText.getLayout();
+                    int line = layout.getLineForOffset(pos);
+                    int baseline = layout.getLineBaseline(line);
+                    int ascent = layout.getLineAscent(line);
+                    float cursorTop = baseline + ascent;
+                    float cursorBottom = baseline;
+//                    Log.d(TAG, "focused view cursor top/bottom: " + cursorTop + "," + cursorBottom);
+
+                    if (focusedViewY + cursorTop < scrollBounds.top) {
+                        visible = false;
+                    }
+                    else if (focusedViewY + cursorBottom > scrollBounds.bottom) {
+                        visible = false;
+                    }
+
+                    if (!visible) {
+                        closeKeyboard();
+                    }
+                }
+            }
+        } else {
+//            Log.d(TAG, "no view");
+        }
+    }
+
     @Override
     public void onScrollProgress(int progress) {
         mSeekBar.setProgress(mSeekBar.getMax() - progress);
-        closeKeyboard();
+        Log.d(TAG, "onScrollProgress: " + progress);
+        checkIfCursorStillOnScreen();
     }
 
     @Override
