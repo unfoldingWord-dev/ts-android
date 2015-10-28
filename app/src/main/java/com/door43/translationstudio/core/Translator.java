@@ -213,10 +213,6 @@ public class Translator {
      * @param file
      */
     public void importArchive(File file) throws Exception {
-        if(!FilenameUtils.getExtension(file.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
-            throw new Exception("Not a translationStudio archive");
-        }
-
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
         try {
             tempCache.mkdirs();
@@ -231,7 +227,11 @@ public class Translator {
             }
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
-            throw e;
+            if(!FilenameUtils.getExtension(file.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
+                throw new Exception("Not a translationStudio archive");
+            } else {
+                throw e;
+            }
         }
 
         // clean

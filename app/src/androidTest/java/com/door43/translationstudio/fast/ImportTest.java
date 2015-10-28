@@ -31,31 +31,62 @@ public class ImportTest extends InstrumentationTestCase {
     }
 
     public void test01ImportMultiLanguageDokuWikiFile() throws Exception {
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
         File file = new File(this.testsDir, "multilanguage.txt");
         file.getParentFile().mkdirs();
         Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/1.0_afaraf_deutsch.txt"), file);
         this.translator.importDokuWiki(this.library, file);
         assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
         assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs")));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("aa", "obs"));
     }
 
     public void test02ImportDokuWikiFile() throws Exception {
-
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+        File file = new File(this.testsDir, "singlelanguage.txt");
+        file.getParentFile().mkdirs();
+        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/1.0_deutsch.txt"), file);
+        this.translator.importDokuWiki(this.library, file);
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
     }
 
     public void test03ImportLegacyArchive() throws Exception {
-
+//        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+//        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+//        File file = new File(this.testsDir, "2.0.0_uw-obs-de.zip");
+//        file.getParentFile().mkdirs();
+//        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/2.0.0_uw-obs-de.zip"), file);
+//        this.translator.importArchive(file);
+//        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+//        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
     }
 
-    public void test04ImportDokuwikiArchive() throws Exception {
-
+    public void test04ImportLegacyDokuWikiArchive() throws Exception {
+        // this is when we exported a single project into a zip
     }
 
-    public void test05ImportV1Archive() throws Exception {
-
+    public void test05ImportDokuWikiArchive() throws Exception {
+        // multiple projects each as a single text file within a zip.
     }
 
-    public void test06ImportV2Archive() throws Exception {
+    public void test06ImportV1Archive() throws Exception {
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+        assertNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+        File file = new File(this.testsDir, "2.0.3_uw-obs-de.tstudio");
+        file.getParentFile().mkdirs();
+        Util.copyStreamToCache(this.context, this.context.getAssets().open("exports/2.0.3_uw-obs-de.tstudio"), file);
+        this.translator.importArchive(file);
+        assertNotNull(this.translator.getTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs")));
+        this.translator.deleteTargetTranslation(TargetTranslation.generateTargetTranslationId("de", "obs"));
+    }
+
+    public void test07ImportV2Archive() throws Exception {
 
     }
 }

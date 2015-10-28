@@ -1,6 +1,7 @@
 package com.door43.translationstudio.core;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.util.StringUtilities;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
@@ -35,7 +36,7 @@ public class Importer {
                 int packageVersion = manifestJson.getInt("package_version");
                 switch (packageVersion) {
                     case 1:
-                        return v1(expandedArchiveDir); // just to keep the switch pretty
+                        return v1(manifestJson, expandedArchiveDir); // just to keep the switch pretty
                     case 2:
                         return v2(manifestJson, expandedArchiveDir);
                     default:
@@ -43,10 +44,10 @@ public class Importer {
                 }
             } else {
                 // version 1 manifest change significantly
-                return v1(expandedArchiveDir);
+                return v1(manifestJson, expandedArchiveDir);
             }
         }
-        return legacy();
+        return legacy(expandedArchiveDir);
     }
 
     /**
@@ -69,19 +70,37 @@ public class Importer {
 
     /**
      * targetTranslations are in directories labled by id
+     * @param manifest
      * @param dir
      * @return
+     * @throws JSONException
      */
-    private static File[] v1(File dir) {
-        // TODO: 10/5/2015 need to provide support for v1 archives
-        return new File[0];
+    private static File[] v1(JSONObject manifest, File dir) throws JSONException {
+        List<File> files = new ArrayList<>();
+        JSONArray translationsJson = manifest.getJSONArray("projects");
+        for(int i = 0; i < translationsJson.length(); i ++) {
+            JSONObject translation = translationsJson.getJSONObject(i);
+            files.add(new File(dir, translation.getString("path")));
+        }
+        return files.toArray(new File[files.size()]);
     }
 
     /**
-     * todo: provide support for legacy archives
+     * todo: provide support for legacy archives.. if needed
      * @return
      */
-    private static File[] legacy() {
+    private static File[] legacy(File dir) {
+//        String[] translationDirs = dir.list();
+//        for(String targetTranslationId:translationDirs) {
+//            targetTranslationId = StringUtilities.ltrim(targetTranslationId, '\\');
+//            try {
+//                String projectSlug = TargetTranslation.getProjectIdFromId(targetTranslationId);
+//                String targetLanguageSlug = TargetTranslation.getTargetLanguageIdFromId(targetTranslationId);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                continue;
+//            }
+//        }
         return new File[0];
     }
 }
