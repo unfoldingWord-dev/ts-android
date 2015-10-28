@@ -410,10 +410,15 @@ public class USXRenderer extends RenderingEngine {
             if(isStopped()) return in;
             int level = Integer.parseInt(matcher.group(1));
             SpannableString span = new SpannableString(in.subSequence(matcher.start(2), matcher.end(2)));
-            span.setSpan(new StyleSpan(Typeface.ITALIC), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            span.setSpan(new StyleSpan(Typeface.NORMAL), 0, span.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             String padding = "";
             for(int i = 0; i < level; i ++) {
                 padding += "    ";
+            }
+
+            // outdent for verse markers
+            if (level > 0 && span.toString().indexOf("<verse number") == 0) {
+                padding = padding.substring(0, padding.length() - 2);
             }
 
             // don't stack new lines
@@ -424,7 +429,7 @@ public class USXRenderer extends RenderingEngine {
             if(in.subSequence(0, matcher.start()) != null) {
                 String previous = in.subSequence(0, matcher.start()).toString().replace(" ", "");
                 int lastLineBreak = previous.lastIndexOf("\n");
-                if (lastLineBreak < previous.length()) {
+                if (lastLineBreak < previous.length() - 1) {
                     leadingLineBreak = "\n";
                 }
             }
@@ -433,7 +438,8 @@ public class USXRenderer extends RenderingEngine {
             if(in.subSequence(matcher.end(), in.length()) != null) {
                 String next = in.subSequence(matcher.end(), in.length()).toString().replace(" ", "");
                 int nextLineBreak = next.indexOf("\n");
-                if (nextLineBreak > 0) {
+                int nextParagraph = next.indexOf("<para");
+                if (nextLineBreak > 0 && nextParagraph > 0) {
                     trailingLineBreak = "\n";
                 }
             }
