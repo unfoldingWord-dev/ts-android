@@ -19,7 +19,7 @@ import android.widget.ListView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.ProjectCategory;
+import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
@@ -77,14 +77,14 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             } else {
                 // load the cached data
                 Library serverLibrary = AppContext.getLibrary();
-                ProjectCategory[] categories = serverLibrary.getProjectCategoriesFlat(Locale.getDefault().getLanguage());
-                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
+                Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
             }
         } else {
             // populated cached data
             Library serverLibrary = AppContext.getLibrary();
-            ProjectCategory[] categories = serverLibrary.getProjectCategoriesFlat(Locale.getDefault().getLanguage());
-            mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
+            Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+            mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
 
             // connect to tasks
             DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
@@ -106,14 +106,14 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
      * indicating that the item with the given ID was selected.
      */
     @Override
-    public void onProjectCategorySelected(String projectCategoryId) {
-        if(projectCategoryId != null) {
+    public void onProjectSelected(String projectId) {
+        if(projectId != null) {
             if (mTwoPane) {
                 Bundle arguments = getIntent().getExtras();
                 if(arguments == null) {
                     arguments = new Bundle();
                 }
-                arguments.putString(ServerLibraryDetailFragment.ARG_PROJECT_ID, projectCategoryId);
+                arguments.putString(ServerLibraryDetailFragment.ARG_PROJECT_ID, projectId);
                 // TODO: animate the card fading in and out.
                 ServerLibraryDetailFragment fragment = (ServerLibraryDetailFragment)getFragmentManager().findFragmentById(R.id.detail_container);
                 if(fragment == null) {
@@ -121,7 +121,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                     fragment.setArguments(arguments);
                     getFragmentManager().beginTransaction().replace(R.id.detail_container, fragment).commit();
                 } else {
-                    fragment.setProjectCategoryId(projectCategoryId);
+                    fragment.setProjectId(projectId);
                 }
             } else {
                 // In single-pane mode, simply start the detail activity
@@ -134,7 +134,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 if (arguments != null) {
                     detailIntent.putExtras(arguments);
                 }
-                detailIntent.putExtra(ServerLibraryDetailFragment.ARG_PROJECT_ID, projectCategoryId);
+                detailIntent.putExtra(ServerLibraryDetailFragment.ARG_PROJECT_ID, projectId);
                 startActivity(detailIntent);
             }
         } else {
@@ -287,8 +287,8 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             @Override
             public void run() {
                 Library serverLibrary = AppContext.getLibrary();
-                ProjectCategory[] categories = serverLibrary.getProjectCategoriesFlat(Locale.getDefault().getLanguage());
-                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), categories);
+                Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
 
                 if(mProgressDialog != null && mProgressDialog.isShowing()) {
                     mProgressDialog.dismiss();

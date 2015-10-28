@@ -34,9 +34,9 @@ public class ServerLibraryAdapter extends BaseAdapter {
     private boolean mSearching = false;
     private boolean[] mHasSource;
     private boolean[] mIsProcessed; // used to determine if we've already pulled the necessary info from the index
-    private ProjectCategory[] mCategories;
-    private ProjectCategory[] mFilteredCategories;
-    private ProjectCategoryFilter mProjectFilter;
+    private Project[] mProjects;
+    private Project[] mFilteredProjects;
+    private ProjectFilter mProjectFilter;
     private LibraryUpdates mUpdates;
 
     public ServerLibraryAdapter(Activity context) {
@@ -46,16 +46,16 @@ public class ServerLibraryAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        if(mFilteredCategories != null) {
-            return mFilteredCategories.length;
+        if(mFilteredProjects != null) {
+            return mFilteredProjects.length;
         } else {
             return 0;
         }
     }
 
     @Override
-    public ProjectCategory getItem(int position) {
-        return mFilteredCategories[position];
+    public Project getItem(int position) {
+        return mFilteredProjects[position];
     }
 
     @Override
@@ -75,7 +75,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        holder.mProjectView.setText(getItem(position).title);
+        holder.mProjectView.setText(getItem(position).name);
 
         // selection
         if(mSelectedIndex == position) {
@@ -89,7 +89,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         // indicate downloaded
         if(!mIsProcessed[position]) {
             mIsProcessed[position] = true;
-            mHasSource[position] = mLibrary.projectHasSource(getItem(position).projectId);
+            mHasSource[position] = mLibrary.projectHasSource(getItem(position).getId());
         }
         if(mHasSource[position]) {
             if(mSelectedIndex == position) {
@@ -102,7 +102,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
         }
 
         // indicate updates
-        if(mHasSource[position] && mUpdates.hasProjectUpdate(getItem(position).projectId)) {
+        if(mHasSource[position] && mUpdates.hasProjectUpdate(getItem(position).getId())) {
             if(mSelectedIndex == position) {
                 holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_white_24dp);
             } else {
@@ -123,14 +123,14 @@ public class ServerLibraryAdapter extends BaseAdapter {
     /**
      * Sets the new list data
      * @param availableUpdates
-     * @param categories
+     * @param projects
      */
-    public void setData(LibraryUpdates availableUpdates, ProjectCategory[] categories) {
+    public void setData(LibraryUpdates availableUpdates, Project[] projects) {
         mUpdates = availableUpdates;
-        mCategories = categories;
-        mFilteredCategories = categories;
-        mHasSource = new boolean[categories.length];
-        mIsProcessed = new boolean[categories.length];
+        mProjects = projects;
+        mFilteredProjects = projects;
+        mHasSource = new boolean[projects.length];
+        mIsProcessed = new boolean[projects.length];
         notifyDataSetChanged();
     }
 
@@ -158,7 +158,7 @@ public class ServerLibraryAdapter extends BaseAdapter {
      */
     public Filter getFilter() {
         if(mProjectFilter == null) {
-            mProjectFilter = new ProjectCategoryFilter();
+            mProjectFilter = new ProjectFilter();
         }
         return mProjectFilter;
     }
@@ -166,76 +166,50 @@ public class ServerLibraryAdapter extends BaseAdapter {
     /**
      * A filter for projects
      */
-    private class ProjectCategoryFilter extends Filter {
+    private class ProjectFilter extends Filter {
 
         @Override
         protected FilterResults performFiltering(CharSequence charSequence) {
             FilterResults results = new FilterResults();
             if(charSequence == null || charSequence.length() == 0) {
                 // no filter
-                results.values = Arrays.asList(mCategories);
-                results.count = mCategories.length;
+                results.values = Arrays.asList(mProjects);
+                results.count = mProjects.length;
             } else {
                 // perform filter
-                List<ProjectCategory> filteredCategories = new ArrayList<>();
-                for(ProjectCategory category:mCategories) {
+                List<Project> filteredProjects = new ArrayList<>();
+                for(Project project: mProjects) {
                     // match the project id
-                    boolean match = category.projectId.toLowerCase().startsWith(charSequence.toString().toLowerCase());
+                    boolean match = project.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase());
                     if(!match) {
-                        if (category.title.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        if (project.name.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the project title in any language
                             match = true;
                         }
 //                        TODO: search the source language title as well. This requires an update to the project category.
-                        else if (category.sourcelanguageId.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        else if (project.sourceLanguageId.toLowerCase().startsWith(charSequence.toString().toLowerCase())) {// || l.getName().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match the language id or name
                             match = true;
-                        } else if (category.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
+                        } else if (project.getId().toLowerCase().startsWith(charSequence.toString().toLowerCase())) {
                             // match category id
                             match = true;
                         }
                     }
                     if(match) {
-                        filteredCategories.add(category);
+                        filteredProjects.add(project);
                     }
                 }
-                results.values = filteredCategories;
-                results.count = filteredCategories.size();
+                results.values = filteredProjects;
+                results.count = filteredProjects.size();
             }
             return results;
         }
 
         @Override
         protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-            List<ProjectCategory> filteredProjects = ((List<ProjectCategory>) filterResults.values);
-            if(charSequence != null && charSequence.length() > 0) {
-                sortProjectCategories(filteredProjects, charSequence);
-            }
-            mFilteredCategories = filteredProjects.toArray(new ProjectCategory[filterResults.count]);
+            List<Project> filteredProjects = ((List<Project>) filterResults.values);
+            mFilteredProjects = filteredProjects.toArray(new Project[filterResults.count]);
             notifyDataSetChanged();
         }
-    }
-
-    /**
-     * Sorts project categories by id
-     * @param categories
-     * @param referenceId categories are sorted according to the reference id
-     */
-    private static void sortProjectCategories(List<ProjectCategory> categories, final CharSequence referenceId) {
-        Collections.sort(categories, new Comparator<ProjectCategory>() {
-            @Override
-            public int compare(ProjectCategory lhs, ProjectCategory rhs) {
-                String lhId = lhs.projectId;
-                String rhId = rhs.projectId;
-                // give priority to matches with the reference
-                if (lhId.startsWith(referenceId.toString().toLowerCase())) {
-                    lhId = "!" + lhId;
-                }
-                if (rhId.startsWith(referenceId.toString().toLowerCase())) {
-                    rhId = "!" + rhId;
-                }
-                return lhId.compareToIgnoreCase(rhId);
-            }
-        });
     }
 }

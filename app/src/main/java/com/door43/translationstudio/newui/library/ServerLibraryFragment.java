@@ -9,7 +9,6 @@ import android.widget.ListView;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.Project;
-import com.door43.translationstudio.core.ProjectCategory;
 
 import java.util.List;
 
@@ -37,7 +36,7 @@ public class ServerLibraryFragment extends ListFragment {
     private int mActivatedPosition = ListView.INVALID_POSITION;
     private static OnClickListener sDummyOnClickListener = new OnClickListener() {
         @Override
-        public void onProjectCategorySelected(String id) {
+        public void onProjectSelected(String id) {
         }
     };
 
@@ -72,11 +71,11 @@ public class ServerLibraryFragment extends ListFragment {
     /**
      * Sets the data used to populate the list
      * @param availableUpdates
-     * @param projectCategories
+     * @param projects
      */
-    public void setData(LibraryUpdates availableUpdates, ProjectCategory[] projectCategories) {
+    public void setData(LibraryUpdates availableUpdates, Project[] projects) {
         if(mAdapter != null) {
-            mAdapter.setData(availableUpdates, projectCategories);
+            mAdapter.setData(availableUpdates, projects);
         } else {
             Logger.w(this.getClass().getName(), "The adapter was not initialized");
         }
@@ -151,7 +150,7 @@ public class ServerLibraryFragment extends ListFragment {
             mAdapter.setSelected(ListView.INVALID_POSITION);
         }
         mActivatedPosition = position;
-        mOnClickListener.onProjectCategorySelected(mAdapter.getItem(position).projectId);
+        mOnClickListener.onProjectSelected(mAdapter.getItem(position).getId());
     }
 
     @Override
@@ -193,6 +192,6 @@ public class ServerLibraryFragment extends ListFragment {
     }
 
     public interface OnClickListener {
-        void onProjectCategorySelected(String projectCategoryId);
+        void onProjectSelected(String projectCategoryId);
     }
 }

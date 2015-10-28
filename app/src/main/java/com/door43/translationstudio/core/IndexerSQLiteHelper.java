@@ -1035,7 +1035,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     /**
      * Returns a project
-     * If the source language does not exist the first available source language will be used
+     * The source language will default to english then the first available language
      * @param db
      * @param projectSlug
      * @param sourceLanguageSlug
@@ -1044,27 +1044,23 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     public Project getProject(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug) {
         Project project = null;
         Cursor cursor = db.rawQuery("SELECT `p`.`sort`, `p`.`modified_at`, `p`.`source_language_catalog_url`,"
-                + " CASE WHEN `sl`.`project_name` IS NOT NULL THEN `sl`.`project_name` ELSE `sl`.`project_name` END,"
-                + " CASE WHEN `sl`.`project_description` IS NOT NULL THEN `sl`.`project_description` ELSE `sl2`.`project_description` END"
+                + " COALESCE(`sl1`.`slug`, `sl2`.`slug`, `sl3`.`slug`),"
+                + " COALESCE(`sl1`.`project_name`, `sl2`.`project_name`, `sl3`.`project_name`),"
+                + " COALESCE(`sl1`.`project_description`, `sl2`.`project_description`, `sl3`.`project_description`)"
                 + " FROM `project` AS `p`"
-                + " LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
-                + " LEFT JOIN ("
-                + " SELECT * FROM `source_language` LIMIT 1"
-                + ") AS `sl2` ON `sl2`.`project_id`=`p`.`id`"
-                + " WHERE `p`.`slug`=? AND `sl`.`slug`=?", new String[]{projectSlug, sourceLanguageSlug});
-        if(!cursor.moveToFirst()) {
-            // try to select project without language
-            cursor.close();
-            cursor = db.rawQuery("SELECT `sort`, `modified_at`, `source_language_catalog_url`, `slug` AS `project_name`, '' AS `project_description` FROM `project`"
-                    + " WHERE `slug`=?", new String[]{projectSlug});
-        }
+                + " LEFT JOIN `source_language` AS `sl1` ON `sl1`.`project_id`=`p`.`id`AND `sl1`.`slug`=?"
+                + " LEFT JOIN `source_language` AS `sl2` ON `sl2`.`project_id`=`p`.`id` AND `sl2`.`slug`='en'"
+                + " LEFT JOIN `source_language` AS `sl3` ON `sl3`.`project_id`=`p`.`id`"
+                + " WHERE `p`.`slug`=?"
+                + " GROUP BY `p`.`id`", new String[]{sourceLanguageSlug, projectSlug});
         if(cursor.moveToFirst()) {
             int sort = cursor.getInt(0);
             int dateModified = cursor.getInt(1);
             String sourceLanguageCatalog = cursor.getString(2);
-            String projectName = cursor.getString(3);
-            String projectDescription = cursor.getString(4);
-            project = new Project(projectSlug, sourceLanguageSlug, projectName, projectDescription, dateModified, sort, sourceLanguageCatalog);
+            String actualSsourceLanguageSlug = cursor.getString(3);
+            String projectName = cursor.getString(4);
+            String projectDescription = cursor.getString(5);
+            project = new Project(projectSlug, actualSsourceLanguageSlug, projectName, projectDescription, dateModified, sort, sourceLanguageCatalog);
         }
         cursor.close();
         return project;
@@ -1564,5 +1560,39 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return count;
+    }
+
+    /**
+     * Returns an array of projects
+     * The source language will default to english then the first available language
+     * @param db
+     * @param sourceLanguageSlug the preferred language for project titles and descriptions
+     * @return
+     */
+    public Project[] getProjects(SQLiteDatabase db, String sourceLanguageSlug) {
+        Cursor cursor = db.rawQuery("SELECT `p`.`slug`, `p`.`sort`, `p`.`modified_at`, `p`.`source_language_catalog_url`,"
+                + " COALESCE(`sl1`.`slug`, `sl2`.`slug`, `sl3`.`slug`),"
+                + " COALESCE(`sl1`.`project_name`, `sl2`.`project_name`, `sl3`.`project_name`),"
+                + " COALESCE(`sl1`.`project_description`, `sl2`.`project_description`, `sl3`.`project_description`)"
+                + " FROM `project` AS `p`"
+                + " LEFT JOIN `source_language` AS `sl1` ON `sl1`.`project_id`=`p`.`id`AND `sl1`.`slug`=?"
+                + " LEFT JOIN `source_language` AS `sl2` ON `sl2`.`project_id`=`p`.`id` AND `sl2`.`slug`='en'"
+                + " LEFT JOIN `source_language` AS `sl3` ON `sl3`.`project_id`=`p`.`id`"
+                + " GROUP BY `p`.`id`", new String[]{sourceLanguageSlug});
+        cursor.moveToFirst();
+        List<Project> projects = new ArrayList<>();
+        while(!cursor.isAfterLast()) {
+            String projectSlug = cursor.getString(0);
+            int sort = cursor.getInt(1);
+            int dateModified = cursor.getInt(2);
+            String sourceLanguageCatalog = cursor.getString(3);
+            String actualSsourceLanguageSlug = cursor.getString(4);
+            String projectName = cursor.getString(5);
+            String projectDescription = cursor.getString(6);
+            projects.add(new Project(projectSlug, actualSsourceLanguageSlug, projectName, projectDescription, dateModified, sort, sourceLanguageCatalog));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return projects.toArray(new Project[projects.size()]);
     }
 }

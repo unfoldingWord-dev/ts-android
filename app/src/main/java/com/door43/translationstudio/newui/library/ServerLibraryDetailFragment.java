@@ -354,7 +354,7 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
      * Sets the id of the project to be displayed
      * @param projectId
      */
-    public void setProjectCategoryId(String projectId) {
+    public void setProjectId(String projectId) {
         mProject = mServerLibrary.getProject(projectId, Locale.getDefault().getLanguage());
         // TODO: handle null project
         rebuildLayout();

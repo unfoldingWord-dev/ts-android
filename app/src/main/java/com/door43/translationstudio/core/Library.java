@@ -317,16 +317,13 @@ public class Library {
     }
 
     /**
-     * Returns a list of all projects without nested categorization.
-     * This also includes project without any local source
+     * Returns an array of projects
      *
-     * @param languageId the preferred language in which the category names will be returned. The default is english
+     * @param sourceLanguageSlug the preferred language in which the project names will be returned. The default is english
      * @return
      */
-    public ProjectCategory[] getProjectCategoriesFlat(String languageId) {
-        List<ProjectCategory> categories = new ArrayList<>();
-        // TODO: 10/19/2015 build queries for this
-        return categories.toArray(new ProjectCategory[categories.size()]);
+    public Project[] getProjects(String sourceLanguageSlug) {
+        return mAppIndex.getProjects(sourceLanguageSlug);
     }
 
     /**
@@ -427,7 +424,7 @@ public class Library {
     }
 
     /**
-     * Returns the project withh the information provided in the preferred source language
+     * Returns the project with the information provided in the preferred source language
      * If the source language does not exist it will use the default language
      *
      * @param projectId

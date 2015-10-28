@@ -1104,4 +1104,13 @@ public class Indexer {
     public int numTranslatable(SourceTranslation sourceTranslation) {
         return mDatabaseHelper.countTranslatableItems(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
     }
+
+    /**
+     * Returns an array of projects
+     * @param sourceLanguageSlug
+     * @return
+     */
+    public Project[] getProjects(String sourceLanguageSlug) {
+        return mDatabaseHelper.getProjects(mDatabase, sourceLanguageSlug);
+    }
 }
