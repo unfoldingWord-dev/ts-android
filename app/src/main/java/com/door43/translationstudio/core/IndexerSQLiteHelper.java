@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
@@ -1115,15 +1116,22 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " `r`.`translation_words_catalog_url`, `r`.`translation_words_catalog_local_modified_at`, `r`.`translation_words_catalog_server_modified_at`,"
                 + " `r`.`translation_word_assignments_catalog_url`, `r`.`translation_word_assignments_catalog_local_modified_at`, `r`.`translation_word_assignments_catalog_server_modified_at`,"
                 + " `r`.`checking_questions_catalog_url`, `r`.`checking_questions_catalog_local_modified_at`, `r`.`checking_questions_catalog_server_modified_at`,"
-                + " `r`.`id` FROM `resource` AS `r`"
+                + " `r`.`id`, CASE WHEN `content`.`count` > 0 THEN 1 ELSE 0 END AS `is_downloaded` FROM `resource` AS `r`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
-                + " WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+                + " LEFT JOIN ("
+                + "   SELECT `r`.`id` AS `resource_id`, COUNT(*) AS `count` FROM `chapter` AS `c`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "   WHERE `r`.`slug`=?"
+                + "   GROUP BY `r`.`id`"
+                + " ) AS `content` ON `content`.`resource_id`=`r`.`id`"
+                + " WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?", new String[]{resourceSlug, projectSlug, sourceLanguageSlug, resourceSlug});
 
         if(cursor.moveToFirst()) {
             String resourceName = cursor.getString(0);
             int checkingLevel = cursor.getInt(1);
             String version = cursor.getString(2);
+
             int dateModified = cursor.getInt(3);
 
             String sourceCatalog = cursor.getString(4);
@@ -1147,7 +1155,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int questionsCatalogServerModified = cursor.getInt(18);
 
             long resourceId = cursor.getLong(19);
-            resource = new Resource(resourceName, resourceSlug, checkingLevel, version, dateModified,
+
+            boolean isDownloaded = cursor.getInt(20) > 0;
+            resource = new Resource(resourceName, resourceSlug, checkingLevel, version, isDownloaded, dateModified,
                     sourceCatalog, sourceCatalogModified, sourceCatalogServerModified,
                     notesCatalog, notesCatalogModified, notesCatalogServerModified,
                     termsCatalog, termsCatalogModified, termsCatalogServerModified,
@@ -1157,6 +1167,47 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return resource;
+    }
+
+    /**
+     * Returns an array of source translations that have updates available online.
+     * This only includes source translations that have been previously downloaded.
+     * @param db
+     * @return
+     */
+    public SourceTranslation[] getSourceTranslationsWithUpdates(SQLiteDatabase db) {
+        Cursor cursor = db.rawQuery("SELECT `p`.`slug` AS `project_slug`, `sl`.`slug` AS `source_language_slug`, `sl`.`project_name`, `sl`.`name`, `r`.`slug` AS `resource_slug`, `r`.`name`, `r`.`checking_level`, `r`.`modified_at`, `r`.`version` FROM `resource` AS `r`"
+                + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
+                + " LEFT JOIN ("
+                + "   SELECT `r`.`id` AS `resource_id`,  COUNT(*)  AS `count` FROM `chapter` AS `c`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "   GROUP BY `r`.`id`"
+                + " ) AS `content` ON `content`.`resource_id`=`r`.`id`"
+                + " WHERE `content`.`count` > 0 AND ("
+                + "   `r`.`source_catalog_server_modified_at`>`r`.`source_catalog_local_modified_at`"
+                + "   OR `r`.`translation_notes_catalog_server_modified_at`>`r`.`translation_notes_catalog_local_modified_at`"
+                + "   OR `r`.`translation_words_catalog_server_modified_at`>`r`.`translation_words_catalog_local_modified_at`"
+                + "   OR `r`.`translation_word_assignments_catalog_server_modified_at`>`r`.`translation_word_assignments_catalog_local_modified_at`"
+                + "   OR `r`.`checking_questions_catalog_server_modified_at`>`r`.`checking_questions_catalog_local_modified_at`"
+                + " )", null);
+        List<SourceTranslation> sourceTranslations = new ArrayList<>();
+        cursor.moveToFirst();
+        while(cursor.isAfterLast()) {
+            String projectSlug = cursor.getString(0);
+            String sourceLanguageSlug = cursor.getString(1);
+            String projectName = cursor.getString(2);
+            String sourceLanguageName = cursor.getString(3);
+            String resourceSlug = cursor.getString(4);
+            String resourceName = cursor.getString(5);
+            int checkingLevel = cursor.getInt(3);
+            int dateModified = cursor.getInt(4);
+            String version = cursor.getString(5);
+            sourceTranslations.add(new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return sourceTranslations.toArray(new SourceTranslation[sourceTranslations.size()]);
     }
 
     /**

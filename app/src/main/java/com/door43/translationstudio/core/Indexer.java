@@ -974,6 +974,14 @@ public class Indexer {
     }
 
     /**
+     * Returns an array of source translations that have updates available on the server.
+     * @return
+     */
+    public SourceTranslation[] getSourceTranslationsWithUpdates() {
+        return mDatabaseHelper.getSourceTranslationsWithUpdates(mDatabase);
+    }
+
+    /**
      * Returns a resource
      * @param translation
      * @return

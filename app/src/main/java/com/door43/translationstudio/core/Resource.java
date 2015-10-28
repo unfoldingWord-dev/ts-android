@@ -28,8 +28,9 @@ public class Resource {
     private final int termAssignmentsServerDateModified;
     private final int questionsServerDateModified;
     private long DBId = -1;
+    private boolean isDownloaded;
 
-    public Resource(String name, String slug, int checkingLevel, String version, int dateModified,
+    public Resource(String name, String slug, int checkingLevel, String version, boolean isDownloaded, int dateModified,
                     String sourceCatalogUrl, int sourceDateModified, int sourceServerDateModified,
                     String notesCatalogUrl, int notesDateModified, int notesServerDateModified,
                     String termsCatalogUrl, int termsDateModified, int termsServerDateModified,
@@ -40,6 +41,7 @@ public class Resource {
         mCheckingLevel = checkingLevel;
         mVersion = version;
         mDateModified = dateModified;
+        this.isDownloaded = isDownloaded;
 
         this.sourceCatalogUrl = sourceCatalogUrl;
         this.sourceDateModified = sourceDateModified;
@@ -109,6 +111,7 @@ public class Resource {
                 json.getString("slug"),
                 statusJson.getInt("checking_level"),
                 statusJson.getString("version"),
+                false,
                 json.getInt("date_modified"),
                 sourceCatalog,
                 sourceModified,
@@ -272,6 +275,14 @@ public class Resource {
             hasUpdates = termAssignmentsDateModified < termAssignmentsServerDateModified ? true : hasUpdates;
         }
         return hasUpdates;
+    }
+
+    /**
+     * Checks if the content for this resource has been downloaded
+     * @return
+     */
+    public boolean isDownloaded() {
+        return this.isDownloaded;
     }
 
     public void setDBId(long DBId) {

@@ -128,21 +128,10 @@ public class Library {
      * @return
      */
     private LibraryUpdates generateLibraryUpdates() {
-        // TODO: 10/19/2015 write queries to make this faster
         LibraryUpdates updates = new LibraryUpdates();
-        for(String projectId:mAppIndex.getProjectSlugs()) {
-            for(String sourceLanguageId:mAppIndex.getSourceLanguageSlugs(projectId)) {
-                for(String resourceId:mAppIndex.getResourceSlugs(projectId, sourceLanguageId)) {
-                    SourceTranslation sourceTranslation = SourceTranslation.simple(projectId, sourceLanguageId, resourceId);
-                    Resource resource = mAppIndex.getResource(sourceTranslation);
-                    // TODO: 10/20/2015 resource needs to have a method that returns true or false if any source has been downloaded.
-                    // then when querying for a resource we can perform a quick count, or better yet use triggers and procedures to auto
-                    // populate a field in the resource row.
-                    if(resource != null && resource.hasUpdates()) {
-                        updates.addUpdate(sourceTranslation);
-                    }
-                }
-            }
+        SourceTranslation[] sourceTranslations = mAppIndex.getSourceTranslationsWithUpdates();
+        for(SourceTranslation sourceTranslation:sourceTranslations) {
+            updates.addUpdate(sourceTranslation);
         }
         return updates;
     }
