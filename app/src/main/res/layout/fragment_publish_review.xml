@@ -86,6 +86,12 @@
                         android:textColor="@color/dark_secondary_text"
                         android:text="@string/view_license_agreement"/>
 
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/review"
+                        android:id="@+id/license_review_button" />
+
                     <ImageView
                         android:id="@+id/license_icon"
                         android:layout_width="wrap_content"
@@ -108,6 +114,12 @@
                         android:layout_weight="1"
                         android:textColor="@color/dark_secondary_text"
                         android:text="@string/view_translation_guidelines"/>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/review"
+                        android:id="@+id/guidelines_review_button" />
 
                     <ImageView
                         android:id="@+id/guidelines_icon"
@@ -132,6 +144,12 @@
                         android:layout_weight="1"
                         android:textColor="@color/dark_secondary_text"
                         android:text="@string/view_statement_of_faith"/>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/review"
+                        android:id="@+id/faith_review_button" />
 
                     <ImageView
                         android:id="@+id/faith_icon"

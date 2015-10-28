@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.publish;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.newui.legal.LegalDocumentActivity;
 import com.door43.widget.ViewUtil;
 
 import java.security.InvalidParameterException;
@@ -59,6 +61,10 @@ public class ReviewFragment extends PublishStepFragment {
         ImageView faithIcon = (ImageView)rootView.findViewById(R.id.faith_icon);
         ViewUtil.tintViewDrawable(faithIcon, getResources().getColor(R.color.green));
 
+        populateReviewButton(rootView, R.id.license_review_button, R.string.license);
+        populateReviewButton(rootView, R.id.guidelines_review_button, R.string.translation_guidlines);
+        populateReviewButton(rootView, R.id.faith_review_button, R.string.statement_of_faith);
+
         // next button
         Button nextButton = (Button)rootView.findViewById(R.id.next_button);
         nextButton.setOnClickListener(new View.OnClickListener() {
@@ -69,5 +75,24 @@ public class ReviewFragment extends PublishStepFragment {
         });
 
         return rootView;
+    }
+
+    /**
+     * Make a button respond to presses by popping up a legal notice.
+     *
+     * @param rootView The view from which to look up the button ID
+     * @param buttonId The ID of the button to set up as a listener
+     * @param stringResource The string to display in the dialog popped up
+     */
+    private void populateReviewButton(View rootView, final int buttonId, final int stringResource) {
+        Button button = (Button)rootView.findViewById(buttonId);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), LegalDocumentActivity.class);
+                intent.putExtra(LegalDocumentActivity.ARG_RESOURCE, stringResource);
+                startActivity(intent);
+            }
+        });
     }
 }
