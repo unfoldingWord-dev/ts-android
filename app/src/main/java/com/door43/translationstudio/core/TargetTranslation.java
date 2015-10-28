@@ -766,7 +766,7 @@ public class TargetTranslation {
         File[] chapterDirs = mTargetTranslationDirectory.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return pathname.isDirectory() && !pathname.getName().equals(".git");
+                return pathname.isDirectory() && !pathname.getName().equals(".git") && !pathname.getName().equals("manifest.json");
             }
         });
         for(File dir:chapterDirs) {
