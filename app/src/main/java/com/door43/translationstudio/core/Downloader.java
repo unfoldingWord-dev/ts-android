@@ -75,7 +75,9 @@ public class Downloader {
      */
     public boolean downloadSourceLanguageList(String projectId, Indexer targetIndex) {
         Project project = targetIndex.getProject(projectId);
-        if(project != null && project.sourceLanguageCatalog != null) {
+        if(project != null && project.sourceLanguageCatalog != null
+                && (project.sourceLanguageCatalogLocalDateModified < project.sourceLanguageCatalogServerDateModified
+                || project.sourceLanguageCatalogServerDateModified == 0)) {
             String catalog = request(project.sourceLanguageCatalog);
             if(catalog != null) {
                 return targetIndex.indexSourceLanguages(projectId, catalog);
@@ -92,7 +94,9 @@ public class Downloader {
      */
     public boolean downloadResourceList(String projectId, String sourceLanguageId, Indexer targetIndex) {
         SourceLanguage sourceLanguage = targetIndex.getSourceLanguage(projectId, sourceLanguageId);
-        if(sourceLanguage != null && sourceLanguage.resourceCatalog != null) {
+        if(sourceLanguage != null && sourceLanguage.resourceCatalog != null
+                && (sourceLanguage.resourceCatalogLocalDateModified < sourceLanguage.resourceCatalogServerDateModified
+                | sourceLanguage.resourceCatalogServerDateModified == 0)) {
             String catalog = request(sourceLanguage.resourceCatalog);
             if(catalog != null) {
                 return targetIndex.indexResources(projectId, sourceLanguageId, catalog);

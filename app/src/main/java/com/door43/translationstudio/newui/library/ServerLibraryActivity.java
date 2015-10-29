@@ -424,7 +424,6 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     @Override
     public void onCancel(DialogInterface dialogInterface) {
         // the dialog was canceled
-        // TODO: 10/3/2015 we need to hook this up once the library correctly supports interrupted threads.
         mProgressDialog = null;
         DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask) TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
         if(downloadAllProjectsTask != null) {

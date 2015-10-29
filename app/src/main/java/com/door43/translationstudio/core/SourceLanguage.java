@@ -14,8 +14,10 @@ public class SourceLanguage implements Comparable {
     public final String projectTitle;
     public final String projectDescription;
     public final String resourceCatalog;
+    public final int resourceCatalogLocalDateModified;
+    public final int resourceCatalogServerDateModified;
 
-    public SourceLanguage(String code, String name, int dateModified, LanguageDirection direction, String projectTitle, String projectDescription, String resourceCatalog) {
+    public SourceLanguage(String code, String name, int dateModified, LanguageDirection direction, String projectTitle, String projectDescription, String resourceCatalog, int resourceCatalogLocalDateModified, int resourceCatalogServerDateModified) {
         this.code = code;
         this.name = name;
         this.dateModified = dateModified;
@@ -23,6 +25,8 @@ public class SourceLanguage implements Comparable {
         this.projectTitle = projectTitle;
         this.projectDescription = projectDescription;
         this.resourceCatalog = resourceCatalog;
+        this.resourceCatalogLocalDateModified = resourceCatalogLocalDateModified;
+        this.resourceCatalogServerDateModified = resourceCatalogServerDateModified;
     }
 
     public String getId() {
@@ -48,6 +52,8 @@ public class SourceLanguage implements Comparable {
         if(projectJson.has("desc")) {
             projectDescription = projectJson.getString("desc");
         }
+        String resourceCatalog = json.getString("res_catalog");
+        int resourceModified = Util.getDateFromUrl(resourceCatalog);
         return new SourceLanguage(
                 json.getString("slug"),
                 json.getString("name"),
@@ -55,7 +61,9 @@ public class SourceLanguage implements Comparable {
                 LanguageDirection.get(json.getString("direction")),
                 projectJson.getString("name"),
                 projectDescription,
-                json.getString("res_catalog"));
+                resourceCatalog,
+                resourceModified,
+                0);
     }
 
     @Override

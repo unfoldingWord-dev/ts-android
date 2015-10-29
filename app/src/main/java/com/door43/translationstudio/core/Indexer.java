@@ -156,7 +156,7 @@ public class Indexer {
                     for(int j = 0; j < categoriesJson.length(); j ++) {
                         categorySlugs.add(categoriesJson.getString(j));
                     }
-                    mDatabaseHelper.addProject(mDatabase, project.getId(), project.sort, project.dateModified, project.sourceLanguageCatalog, categorySlugs.toArray(new String[categorySlugs.size()]));
+                    mDatabaseHelper.addProject(mDatabase, project.getId(), project.sort, project.dateModified, project.sourceLanguageCatalog, project.sourceLanguageCatalogServerDateModified, categorySlugs.toArray(new String[categorySlugs.size()]));
                     mDatabase.yieldIfContendedSafely();
                 }
             } catch (JSONException e) {

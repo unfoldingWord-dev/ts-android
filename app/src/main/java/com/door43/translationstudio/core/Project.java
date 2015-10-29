@@ -14,16 +14,19 @@ public class Project {
     public final int sort;
     public final String sourceLanguageCatalog;
     private String mId;
+    public final int sourceLanguageCatalogLocalDateModified;
+    public final int sourceLanguageCatalogServerDateModified;
 
     /**
-     *
      * @param projectId The id of the project
      * @param sourceLanguageId The id of the source language used for the name and description
      * @param name the name of the project
      * @param description the description of the project
      * @param dateModified the date the project was last modified
+     * @param sourceLanguageCatalogLocalDateModified
+     * @param sourceLanguageCatalogServerDateModified
      */
-    public Project(String projectId, String sourceLanguageId, String name, String description, int dateModified, int sort, String sourceLanguageCatalog) {
+    public Project(String projectId, String sourceLanguageId, String name, String description, int dateModified, int sort, String sourceLanguageCatalog, int sourceLanguageCatalogLocalDateModified, int sourceLanguageCatalogServerDateModified) {
         mId = projectId;
         this.name = name;
         this.description = description;
@@ -31,6 +34,8 @@ public class Project {
         this.sourceLanguageId = sourceLanguageId;
         this.sourceLanguageCatalog = sourceLanguageCatalog;
         this.sort = sort;
+        this.sourceLanguageCatalogLocalDateModified = sourceLanguageCatalogLocalDateModified;
+        this.sourceLanguageCatalogServerDateModified = sourceLanguageCatalogServerDateModified;
     }
 
     /**
@@ -55,12 +60,14 @@ public class Project {
             String name = projectLanguageJson.getString("name");
             String description = projectLanguageJson.getString("desc");
             String sourceLanguageCatalog = json.getString("lang_catalog");
+            int sourceLanguageModified = Util.getDateFromUrl(sourceLanguageCatalog);
             int sort = json.getInt("sort");
 
-            return new Project(projectId, sourceLanguageId, name, description, dateModified, sort, sourceLanguageCatalog);
+            return new Project(projectId, sourceLanguageId, name, description, dateModified, sort, sourceLanguageCatalog, sourceLanguageModified, 0);
         }
         return null;
     }
+
 
     /**
      * Generates a simple form of the project, that is, with out any source translation
@@ -73,8 +80,9 @@ public class Project {
             int dateModified = json.getInt("date_modified");
             int sort = json.getInt("sort");
             String sourceLanguageCatalog = json.getString("lang_catalog");
+            int sourceLanguageModified = Util.getDateFromUrl(sourceLanguageCatalog);
 
-            return new Project(projectId, null, null, null, dateModified, sort, sourceLanguageCatalog);
+            return new Project(projectId, null, null, null, dateModified, sort, sourceLanguageCatalog, sourceLanguageModified, 0);
         }
         return null;
     }

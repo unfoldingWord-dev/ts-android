@@ -73,4 +73,27 @@ public class Util {
         }
         return values;
     }
+
+    /**
+     * Returns the date_modified from a url
+     * @param url
+     * @return returns 0 if the date could not be parsed
+     */
+    public static int getDateFromUrl(String url) {
+        String[] pieces = url.split("\\?");
+        if(pieces.length > 1) {
+            // date_modified=123456
+            String attribute = pieces[1];
+            pieces = attribute.split("=");
+            if(pieces.length > 1) {
+                try {
+                    return Integer.parseInt(pieces[1]);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+            }
+        }
+        return 0;
+    }
 }

@@ -76,34 +76,34 @@ public class Resource {
         }
         JSONObject statusJson = json.getJSONObject("status");
         String sourceCatalog = json.getString("source");
-        int sourceModified = getDateFromUrl(sourceCatalog);
+        int sourceModified = Util.getDateFromUrl(sourceCatalog);
 
         String notesCatalog = "";
         int notesModified = 0;
         if(json.has("notes")) {
             notesCatalog = json.getString("notes");
-            notesModified = getDateFromUrl(notesCatalog);
+            notesModified = Util.getDateFromUrl(notesCatalog);
         }
 
         String wordsCatalog = "";
         int wordsModified = 0;
         if(json.has("terms")) {
             wordsCatalog = json.getString("terms");
-            wordsModified = getDateFromUrl(wordsCatalog);
+            wordsModified = Util.getDateFromUrl(wordsCatalog);
         }
 
         String questionsCatalog = "";
         int questionsDateModified = 0;
         if(json.has("checking_questions")) {
             questionsCatalog = json.getString("checking_questions");
-            questionsDateModified = getDateFromUrl(questionsCatalog);
+            questionsDateModified = Util.getDateFromUrl(questionsCatalog);
         }
 
         String termAssignmentsCatalog = "";
         int termAssignmentsModified = 0;
         if(json.has("tw_cat")) {
             termAssignmentsCatalog = json.getString("tw_cat");
-            termAssignmentsModified = getDateFromUrl(termAssignmentsCatalog);
+            termAssignmentsModified = Util.getDateFromUrl(termAssignmentsCatalog);
         }
 
         return new Resource(
@@ -129,29 +129,6 @@ public class Resource {
                 questionsDateModified,
                 0
         );
-    }
-
-    /**
-     * Returns the date_modified from a url
-     * @param url
-     * @return returns 0 if the date could not be parsed
-     */
-    private static int getDateFromUrl(String url) {
-        String[] pieces = url.split("\\?");
-        if(pieces.length > 1) {
-            // date_modified=123456
-            String attribute = pieces[1];
-            pieces = attribute.split("=");
-            if(pieces.length > 1) {
-                try {
-                    return Integer.parseInt(pieces[1]);
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                    return 0;
-                }
-            }
-        }
-        return 0;
     }
 
     /**

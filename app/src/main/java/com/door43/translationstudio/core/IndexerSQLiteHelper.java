@@ -3,18 +3,9 @@ package com.door43.translationstudio.core;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
 import android.os.Build;
-import android.util.Log;
-
-import com.door43.util.Security;
-import com.door43.util.StringUtilities;
-
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +19,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
 
     // TRICKY: when you bump the db version you should run the library tests to generate a new index.
     // Note that the extract test will fail.
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private final String mDatabaseName;
     private final String mSchema;
 
@@ -83,6 +74,12 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             db.execSQL("DROP TABLE IF EXISTS `file`");
             db.execSQL("DROP TABLE IF EXISTS `link`");
             onCreate(db);
+        } else if(oldVersion < 3) {
+            // add columns
+            db.execSQL("ALTER TABLE `project` ADD COLUMN `source_language_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0;");
+            db.execSQL("ALTER TABLE `project` ADD COLUMN `source_language_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0;");
+            db.execSQL("ALTER TABLE `source_language` ADD COLUMN `resource_catalog_local_modified_at` INTEGER NOT NULL DEFAULT 0;");
+            db.execSQL("ALTER TABLE `source_language` ADD COLUMN `resource_catalog_server_modified_at` INTEGER NOT NULL DEFAULT 0;");
         } else {
             onCreate(db);
         }
@@ -117,11 +114,12 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param dateModified
      * @param sourceLanguageCatalogUrl
      */
-    public long addProject(SQLiteDatabase db, String slug, int sort, int dateModified, String sourceLanguageCatalogUrl, String[] categorySlugs) {
+    public long addProject(SQLiteDatabase db, String slug, int sort, int dateModified, String sourceLanguageCatalogUrl, int sourceLanguageCatalogModifiedAt, String[] categorySlugs) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("sort", sort);
         values.put("modified_at", dateModified);
+        values.put("source_language_catalog_server_modified_at", sourceLanguageCatalogModifiedAt);
         values.put("source_language_catalog_url", sourceLanguageCatalogUrl);
 
         // add project
@@ -1046,7 +1044,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         Cursor cursor = db.rawQuery("SELECT `p`.`sort`, `p`.`modified_at`, `p`.`source_language_catalog_url`,"
                 + " COALESCE(`sl1`.`slug`, `sl2`.`slug`, `sl3`.`slug`),"
                 + " COALESCE(`sl1`.`project_name`, `sl2`.`project_name`, `sl3`.`project_name`),"
-                + " COALESCE(`sl1`.`project_description`, `sl2`.`project_description`, `sl3`.`project_description`)"
+                + " COALESCE(`sl1`.`project_description`, `sl2`.`project_description`, `sl3`.`project_description`),"
+                + " `p`.`source_language_catalog_local_modified_at`, `p`.`source_language_catalog_server_modified_at`"
                 + " FROM `project` AS `p`"
                 + " LEFT JOIN `source_language` AS `sl1` ON `sl1`.`project_id`=`p`.`id`AND `sl1`.`slug`=?"
                 + " LEFT JOIN `source_language` AS `sl2` ON `sl2`.`project_id`=`p`.`id` AND `sl2`.`slug`='en'"
@@ -1060,7 +1059,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String actualSsourceLanguageSlug = cursor.getString(3);
             String projectName = cursor.getString(4);
             String projectDescription = cursor.getString(5);
-            project = new Project(projectSlug, actualSsourceLanguageSlug, projectName, projectDescription, dateModified, sort, sourceLanguageCatalog);
+            int sourceLanguageCatalogLocalModified = cursor.getInt(6);
+            int sourceLanguageCatalogServerModified = cursor.getInt(7);
+            project = new Project(projectSlug, actualSsourceLanguageSlug, projectName, projectDescription, dateModified, sort, sourceLanguageCatalog, sourceLanguageCatalogLocalModified, sourceLanguageCatalogServerModified);
         }
         cursor.close();
         return project;
@@ -1075,7 +1076,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public SourceLanguage getSourceLanguage(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug) {
         SourceLanguage sourceLanguage = null;
-        Cursor cursor = db.rawQuery("SELECT `sl`.`name`, `sl`.`project_name`, `sl`.`project_description`, `sl`.`direction`, `sl`.`modified_at`, `sl`.`resource_catalog_url` FROM `source_language` AS `sl`"
+        Cursor cursor = db.rawQuery("SELECT `sl`.`name`, `sl`.`project_name`, `sl`.`project_description`, `sl`.`direction`, `sl`.`modified_at`, `sl`.`resource_catalog_url`, `sl`.`resource_catalog_local_modified_at`, `sl`.`resource_catalog_server_modified_at` FROM `source_language` AS `sl`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
                 + " WHERE `p`.`slug`=? AND `sl`.`slug`=?", new String[]{projectSlug, sourceLanguageSlug});
 
@@ -1086,11 +1087,13 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String rawDirection = cursor.getString(3);
             int dateModified = cursor.getInt(4);
             String resourceCatalog = cursor.getString(5);
+            int catalogLocalModified = cursor.getInt(6);
+            int catalogServerModified = cursor.getInt(7);
             LanguageDirection direction = LanguageDirection.get(rawDirection);
             if(direction == null) {
                 direction = LanguageDirection.LeftToRight;
             }
-            sourceLanguage = new SourceLanguage(sourceLanguageSlug, sourceLanguageName, dateModified, direction, projectName, projectDescription, resourceCatalog);
+            sourceLanguage = new SourceLanguage(sourceLanguageSlug, sourceLanguageName, dateModified, direction, projectName, projectDescription, resourceCatalog, catalogLocalModified, catalogServerModified);
         }
         cursor.close();
         return sourceLanguage;
@@ -1573,7 +1576,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         Cursor cursor = db.rawQuery("SELECT `p`.`slug`, `p`.`sort`, `p`.`modified_at`, `p`.`source_language_catalog_url`,"
                 + " COALESCE(`sl1`.`slug`, `sl2`.`slug`, `sl3`.`slug`),"
                 + " COALESCE(`sl1`.`project_name`, `sl2`.`project_name`, `sl3`.`project_name`),"
-                + " COALESCE(`sl1`.`project_description`, `sl2`.`project_description`, `sl3`.`project_description`)"
+                + " COALESCE(`sl1`.`project_description`, `sl2`.`project_description`, `sl3`.`project_description`),"
+                + " `p`.`source_language_catalog_local_modified_at`, `p`.`source_language_catalog_server_modified_at`"
                 + " FROM `project` AS `p`"
                 + " LEFT JOIN `source_language` AS `sl1` ON `sl1`.`project_id`=`p`.`id`AND `sl1`.`slug`=?"
                 + " LEFT JOIN `source_language` AS `sl2` ON `sl2`.`project_id`=`p`.`id` AND `sl2`.`slug`='en'"
@@ -1590,7 +1594,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             String actualSsourceLanguageSlug = cursor.getString(4);
             String projectName = cursor.getString(5);
             String projectDescription = cursor.getString(6);
-            projects.add(new Project(projectSlug, actualSsourceLanguageSlug, projectName, projectDescription, dateModified, sort, sourceLanguageCatalog));
+            int sourceLanguageCatalogLocalModified = cursor.getInt(7);
+            int sourceLanguageCatalogServerModified = cursor.getInt(8);
+            projects.add(new Project(projectSlug, actualSsourceLanguageSlug, projectName, projectDescription, dateModified, sort, sourceLanguageCatalog, sourceLanguageCatalogLocalModified, sourceLanguageCatalogServerModified));
             cursor.moveToNext();
         }
         cursor.close();
