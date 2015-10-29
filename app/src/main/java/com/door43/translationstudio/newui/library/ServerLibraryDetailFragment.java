@@ -218,15 +218,16 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
             mHolder.mLanguageList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    final SourceLanguage sourceLanguage = mHolder.mAdapter.getItem(position);
-                    boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProject.getId(), sourceLanguage.getId());
+                    final ServerLibraryLanguageAdapter.ListItem item = mHolder.mAdapter.getItem(position);
+                    boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProject.getId(), item.sourceLanguage.getId());
                     if(!isDownloaded) {
                         // just download the update
-                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), sourceLanguage.getId());
+                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
                         task.addOnFinishedListener(ServerLibraryDetailFragment.this);
-                        TaskManager.addTask(task);
+                        TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
                         TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-                        mHolder.mAdapter.notifyDataSetChanged();
+                        task.addOnFinishedListener(item.onFinishedListener);
+                        task.addOnProgressListener(item.onProgressListener);
                     } else {
                         // confirm with the user
                         new android.support.v7.app.AlertDialog.Builder(getActivity())
@@ -236,11 +237,12 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), sourceLanguage.getId());
+                                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
                                         task.addOnFinishedListener(ServerLibraryDetailFragment.this);
-                                        TaskManager.addTask(task);
+                                        TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
                                         TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-                                        mHolder.mAdapter.notifyDataSetChanged();
+                                        task.addOnFinishedListener(item.onFinishedListener);
+                                        task.addOnProgressListener(item.onProgressListener);
                                     }
                                 })
                                 .setNegativeButton(R.string.no, null)

@@ -157,6 +157,7 @@ public class Indexer {
                         categorySlugs.add(categoriesJson.getString(j));
                     }
                     mDatabaseHelper.addProject(mDatabase, project.getId(), project.sort, project.dateModified, project.sourceLanguageCatalog, categorySlugs.toArray(new String[categorySlugs.size()]));
+                    mDatabase.yieldIfContendedSafely();
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -212,6 +213,7 @@ public class Indexer {
                                 sourceLanguage.projectDescription,
                                 sourceLanguage.getDirection().toString(), sourceLanguage.dateModified,
                                 sourceLanguage.resourceCatalog, categoryNames.toArray(new String[categoryNames.size()]));
+                        mDatabase.yieldIfContendedSafely();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -254,6 +256,7 @@ public class Indexer {
                             resource.getWordsCatalogUrl(), resource.getWordsDateModified(),
                             resource.getWordAssignmentsCatalogUrl(), resource.getWordAssignmentsDateModified(),
                             resource.getQuestionsCatalogUrl(), resource.getQuestionsDateModified());
+                    mDatabase.yieldIfContendedSafely();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -337,6 +340,7 @@ public class Indexer {
                             if(frame != null) {
                                 mDatabaseHelper.addFrame(mDatabase, frame.getId(), chapterId, frame.body, frame.getFormat().toString(), frame.imageUrl);
                             }
+                            mDatabase.yieldIfContendedSafely();
                         } catch (JSONException e) {
                             Logger.e(this.getClass().getName(), "Failed to parse the frame in chapter " + chapter.getId() + " at index " + chapterIndex + " for source translation " + sourceTranslation.getId(), e);
                         }
@@ -370,6 +374,7 @@ public class Indexer {
                 if(targetLanguage != null) {
                     mDatabaseHelper.addTargetLanguage(mDatabase, targetLanguage.getId(), targetLanguage.getDirection().toString(), targetLanguage.name, targetLanguage.region);
                 }
+                mDatabase.yieldIfContendedSafely();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -466,6 +471,7 @@ public class Indexer {
                                             if (note != null) {
                                                 mDatabaseHelper.addTranslationNote(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug, note.getId(), frameId, note.getTitle(), note.getBody());
                                             }
+                                            mDatabase.yieldIfContendedSafely();
                                         } catch (JSONException e) {
                                             e.printStackTrace();
                                         }
@@ -509,6 +515,7 @@ public class Indexer {
                     if (word != null) {
                         mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getTerm(), word.getDefinitionTitle(), word.getDefinition(), word.getExamples(), word.getAliases(), word.getSeeAlso());
                     }
+                    mDatabase.yieldIfContendedSafely();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -695,6 +702,7 @@ public class Indexer {
                                             if (question != null) {
                                                 mDatabaseHelper.addCheckingQuestion(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug, frameSlug, question.getId(), frameId, chapterId, question.getQuestion(), question.getAnswer());
                                             }
+                                            mDatabase.yieldIfContendedSafely();
                                         } catch (JSONException e) {
                                             e.printStackTrace();
                                         }
@@ -720,16 +728,6 @@ public class Indexer {
     public String[] getProjectSlugs() {
         // // TODO: 10/16/2015 see if we can avoid using this method
         return mDatabaseHelper.getProjectSlugs(mDatabase);
-    }
-
-    /**
-     * Returns a list of project contents
-     * @return
-     */
-    @Deprecated
-    public String[] getProjectsContents() {
-        return new String[0];
-//        return getContentsArray(getRootCatalog(), "proj_catalog", null);
     }
 
     /**

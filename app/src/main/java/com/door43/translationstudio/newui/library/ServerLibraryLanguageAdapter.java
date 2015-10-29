@@ -30,7 +30,7 @@ import java.util.List;
 public class ServerLibraryLanguageAdapter extends BaseAdapter {
     private final Context mContext;
     private String mProjectId = null;
-    private SourceLanguage[] mLanguages;
+    private ListItem[] items;
     private LibraryUpdates mUpdates;
 
     public ServerLibraryLanguageAdapter(Context context) {
@@ -39,16 +39,16 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        if(mLanguages == null) {
+        if(items == null) {
             return 0;
         } else {
-            return mLanguages.length;
+            return items.length;
         }
     }
 
     @Override
-    public SourceLanguage getItem(int i) {
-        return mLanguages[i];
+    public ListItem getItem(int i) {
+        return items[i];
     }
 
     @Override
@@ -69,10 +69,17 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
             holder = (ViewHolder)v.getTag();
         }
 
-        SourceLanguage sourceLanguage = getItem(position);
+        ListItem item = getItem(position);
+
+        // disconnect from task
+        DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProjectId + "-" + item.sourceLanguage.getId());
+        if(task != null) {
+            task.removeOnFinishedListener(item.onFinishedListener);
+            task.removeOnProgressListener(item.onProgressListener);
+        }
 
         // icon
-        boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProjectId, sourceLanguage.getId());
+        boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProjectId, item.sourceLanguage.getId());
         if(isDownloaded) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_bookmark_black_24dp);
         } else {
@@ -80,14 +87,14 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         }
 
         // identify updates
-        if(isDownloaded && mUpdates.hasSourceLanguageUpdate(mProjectId, sourceLanguage.getId())) {
+        if(isDownloaded && mUpdates.hasSourceLanguageUpdate(mProjectId, item.sourceLanguage.getId())) {
             holder.mStatus.setBackgroundResource(R.drawable.ic_refresh_black_24dp);
         }
 
         // name
-        holder.mName.setText(getItem(position).name);
-        holder.mCode.setText(getItem(position).code);
-        Typography.format(mContext, holder.mName, getItem(position).getId(), getItem(position).direction);
+        holder.mName.setText(getItem(position).sourceLanguage.name);
+        holder.mCode.setText(getItem(position).sourceLanguage.code);
+        Typography.format(mContext, holder.mName, getItem(position).sourceLanguage.getId(), getItem(position).sourceLanguage.direction);
 
         // progress
         holder.mProgressBar.setVisibility(View.GONE);
@@ -95,7 +102,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         final ViewHolder staticHolder = holder;
 
         // progress listener
-        ManagedTask.OnProgressListener progressListener = new ManagedTask.OnProgressListener() {
+        item.onProgressListener = new ManagedTask.OnProgressListener() {
             @Override
             public void onProgress(final ManagedTask task, final double progress, String message, boolean secondary) {
                 Handler hand = new Handler(Looper.getMainLooper());
@@ -118,7 +125,7 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         };
 
         // finish listener
-        ManagedTask.OnFinishedListener finishedListener = new ManagedTask.OnFinishedListener() {
+        item.onFinishedListener = new ManagedTask.OnFinishedListener() {
             @Override
             public void onFinished(final ManagedTask task) {
                 TaskManager.clearTask(task);
@@ -138,16 +145,10 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
             }
         };
 
-        // connect to tasks
-        List<ManagedTask> tasks = TaskManager.getGroupedTasks(ServerLibraryDetailFragment.DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-        for(ManagedTask task:tasks) {
-            DownloadSourceLanguageTask t = (DownloadSourceLanguageTask)task;
-            if(t.getProjectId().equals(mProjectId) && t.getSourceLanguageId().equals(sourceLanguage.getId())) {
-                holder.mProgressBar.setVisibility(View.VISIBLE);
-                holder.mProgressBar.setIndeterminate(true);
-                t.addOnProgressListener(progressListener);
-                t.addOnFinishedListener(finishedListener);
-            }
+        // connect to task
+        if(task != null) {
+            task.addOnProgressListener(item.onProgressListener);
+            task.addOnFinishedListener(item.onFinishedListener);
         }
         return v;
     }
@@ -160,7 +161,10 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
         mProjectId = projectId;
         sortSourceLanguages(languages, "");
         mUpdates = updates;
-        mLanguages = languages.toArray(new SourceLanguage[languages.size()]);
+        items = new ListItem[languages.size()];
+        for(int i = 0; i < languages.size(); i ++) {
+            items[i] = new ListItem(languages.get(i));
+        }
         notifyDataSetChanged();
     }
 
@@ -200,6 +204,16 @@ public class ServerLibraryLanguageAdapter extends BaseAdapter {
             mProgressBar = (ProgressBar)v.findViewById(R.id.progress_bar);
             mProgressBar.setMax(100);
             v.setTag(this);
+        }
+    }
+
+    public class ListItem {
+        public SourceLanguage sourceLanguage;
+        public ManagedTask.OnProgressListener onProgressListener;
+        public ManagedTask.OnFinishedListener onFinishedListener;
+
+        public ListItem(SourceLanguage sourceLanguage) {
+            this.sourceLanguage = sourceLanguage;
         }
     }
 }

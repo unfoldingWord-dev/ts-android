@@ -258,7 +258,9 @@ public abstract class ManagedTask implements Runnable {
      * @param listener
      */
     public final void removeOnProgressListener(OnProgressListener listener) {
-        mProgressListeners.remove(listener);
+        if(listener != null) {
+            mProgressListeners.remove(listener);
+        }
     }
 
     /**
@@ -290,7 +292,9 @@ public abstract class ManagedTask implements Runnable {
      * @param listener
      */
     public final void removeOnFinishedListener(OnFinishedListener listener) {
-        mFinishListeners.remove(listener);
+        if(listener != null) {
+            mFinishListeners.remove(listener);
+        }
     }
 
     /**
