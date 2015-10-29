@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -27,6 +28,7 @@ import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
+import com.door43.widget.ViewUtil;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -193,6 +195,12 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             }
         });
         searchViewAction.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        // display download updates
+        if(ServerLibraryCache.getAvailableUpdates() != null && ServerLibraryCache.getAvailableUpdates().numSourceTranslationUpdates() > 0) {
+            menu.findItem(R.id.action_download_updates).setVisible(true);
+        } else {
+            menu.findItem(R.id.action_download_updates).setVisible(false);
+        }
         return true;
     }
 
@@ -233,7 +241,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                                 DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
                                 if(task == null) {
                                     // start new task
-                                    task = new DownloadUpdatesTask();
+                                    task = new DownloadUpdatesTask(ServerLibraryCache.getAvailableUpdates());
                                     task.addOnProgressListener(ServerLibraryActivity.this);
                                     task.addOnFinishedListener(ServerLibraryActivity.this);
                                     TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
@@ -319,12 +327,16 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
         if(task instanceof GetLibraryUpdatesTask) {
             ServerLibraryCache.setAvailableUpdates(((GetLibraryUpdatesTask) task).getUpdates());
+            if(task.isCanceled()) {
+                ServerLibraryCache.setExpired();
+            }
         }
 
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
             public void run() {
+                invalidateOptionsMenu();
                 Library serverLibrary = AppContext.getLibrary();
                 Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
                 mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
@@ -366,10 +378,10 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
                     if (mProgressDialog == null) {
                         mProgressDialog = new ProgressDialog(ServerLibraryActivity.this);
-                        mProgressDialog.setCancelable(false); // TODO: need to update the download method to support cancelling
+                        mProgressDialog.setCancelable(true);
                         mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                         mProgressDialog.setCanceledOnTouchOutside(false);
-//                        mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
+                        mProgressDialog.setOnCancelListener(ServerLibraryActivity.this);
                         mProgressDialog.setIcon(R.drawable.ic_cloud_download_black_24dp);
                         if(task instanceof GetLibraryUpdatesTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
@@ -413,16 +425,23 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     public void onCancel(DialogInterface dialogInterface) {
         // the dialog was canceled
         // TODO: 10/3/2015 we need to hook this up once the library correctly supports interrupted threads.
-//        mProgressDialog = null;
-//        DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask) TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
-//        if(downloadAllProjectsTask != null) {
-//            TaskManager.cancelTask(downloadAllProjectsTask);
-//        }
-//        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask) TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
-//        if(getLibraryUpdatesTask != null) {
-//            TaskManager.cancelTask(getLibraryUpdatesTask);
-//            finish();
-//        }
+        mProgressDialog = null;
+        DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask) TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+        if(downloadAllProjectsTask != null) {
+            TaskManager.cancelTask(downloadAllProjectsTask);
+        }
+        DownloadUpdatesTask downloadUpdatesTask = (DownloadUpdatesTask) TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
+        if(downloadUpdatesTask != null) {
+            TaskManager.cancelTask(downloadUpdatesTask);
+        }
+        GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask) TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
+        if(getLibraryUpdatesTask != null) {
+            TaskManager.cancelTask(getLibraryUpdatesTask);
+            // warn user they may not see all the available updates
+            Snackbar snack = Snackbar.make(findViewById(android.R.id.content), R.string.list_may_be_outdated, Snackbar.LENGTH_LONG);
+            ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+            snack.show();
+        }
     }
 
     @Override

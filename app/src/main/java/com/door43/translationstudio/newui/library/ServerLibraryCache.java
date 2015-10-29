@@ -59,6 +59,13 @@ public class ServerLibraryCache {
      */
     public static void clear() {
         mAvailableLibraryUpdates = null;
+        setExpired();
+    }
+
+    /**
+     * marks the cache as expired.
+     */
+    public static void setExpired() {
         mCacheTimestamp = 0;
     }
 }

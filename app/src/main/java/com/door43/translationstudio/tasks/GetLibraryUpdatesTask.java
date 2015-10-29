@@ -33,22 +33,28 @@ public class GetLibraryUpdatesTask extends ManagedTask {
         publishProgress(-1, "");
 
         Library library = AppContext.getLibrary();
-        if(ignoreCache || System.currentTimeMillis() - AppContext.getLastCheckedForUpdates() > CACHE_TTL) {
-            mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
-                @Override
-                public void onProgress(int progress, int max) {
-                    mMaxProgress = max;
-                    publishProgress(progress, "");
-                }
+        if(library != null) {
+            if (ignoreCache || System.currentTimeMillis() - AppContext.getLastCheckedForUpdates() > CACHE_TTL) {
+                mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
+                    @Override
+                    public boolean onProgress(int progress, int max) {
+                        mMaxProgress = max;
+                        publishProgress(progress, "");
+                        return !isCanceled();
+                    }
 
-                @Override
-                public void onIndeterminate() {
-                    publishProgress(-1, "");
+                    @Override
+                    public boolean onIndeterminate() {
+                        publishProgress(-1, "");
+                        return !isCanceled();
+                    }
+                });
+                if(!isCanceled()) {
+                    AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
                 }
-            });
-            AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
-        } else {
-            mUpdates = library.getAvailableUpdates();
+            } else {
+                mUpdates = library.getAvailableUpdates();
+            }
         }
     }
 

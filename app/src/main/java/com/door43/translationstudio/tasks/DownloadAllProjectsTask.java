@@ -21,29 +21,32 @@ public class DownloadAllProjectsTask extends ManagedTask {
         // download projects
         publishProgress(-1, "");
 
-        // new download code
         Library library = AppContext.getLibrary();
         try {
             library.downloadAllProjects(new Library.OnProgressListener() {
                 @Override
-                public void onProgress(int progress, int max) {
+                public boolean onProgress(int progress, int max) {
                     mMaxProgress = max;
                     publishProgress(progress, "");
+                    return !isCanceled();
                 }
 
                 @Override
-                public void onIndeterminate() {
+                public boolean onIndeterminate() {
                     publishProgress(-1, "");
+                    return !isCanceled();
                 }
             }, new Library.OnProgressListener() {
                 @Override
-                public void onProgress(int progress, int max) {
+                public boolean onProgress(int progress, int max) {
                     float relativeProgress = (float)progress / (float)max * (float)mMaxProgress;
                     publishProgress(relativeProgress, "", true);
+                    return !isCanceled();
                 }
 
                 @Override
-                public void onIndeterminate() {
+                public boolean onIndeterminate() {
+                    return !isCanceled();
                 }
             });
         } catch (Exception e) {

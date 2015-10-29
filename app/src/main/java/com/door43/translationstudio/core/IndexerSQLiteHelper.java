@@ -1578,7 +1578,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " LEFT JOIN `source_language` AS `sl1` ON `sl1`.`project_id`=`p`.`id`AND `sl1`.`slug`=?"
                 + " LEFT JOIN `source_language` AS `sl2` ON `sl2`.`project_id`=`p`.`id` AND `sl2`.`slug`='en'"
                 + " LEFT JOIN `source_language` AS `sl3` ON `sl3`.`project_id`=`p`.`id`"
-                + " GROUP BY `p`.`id`", new String[]{sourceLanguageSlug});
+                + " GROUP BY `p`.`id`"
+                + " ORDER BY `p`.`sort` ASC", new String[]{sourceLanguageSlug});
         cursor.moveToFirst();
         List<Project> projects = new ArrayList<>();
         while(!cursor.isAfterLast()) {

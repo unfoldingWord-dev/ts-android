@@ -111,7 +111,9 @@ public class Library {
                 String projectId = projectIds[i];
                 downloadSourceLanguageList(projectId);
                 if(listener != null) {
-                    listener.onProgress((i + 1), projectIds.length);
+                    if(!listener.onProgress((i + 1), projectIds.length)) {
+                        break;
+                    }
                 }
             }
         }
@@ -180,7 +182,9 @@ public class Library {
                 }
             }
             if(projectProgressListener != null) {
-                projectProgressListener.onProgress(currentProject, numProjects);
+                if(!projectProgressListener.onProgress(currentProject, numProjects)) {
+                    break;
+                }
                 currentProject ++;
             }
         }
@@ -204,6 +208,7 @@ public class Library {
     /**
      * begins downloading a source translation.
      * This will not start any transactions so it is safe to place in a transaction along with other queries
+     * This method cannot be interrupted by the thread in order to maintain data integrity
      * @param sourceTranslation
      * @return
      */
@@ -757,13 +762,21 @@ public class Library {
     public boolean downloadUpdates(LibraryUpdates updates, OnProgressListener listener) {
         mAppIndex.beginTransaction();
         int progress = 0;
-        for(String projectSlug:updates.getUpdatedProjects()) {
-            for(String sourceLanguageSlug:updates.getUpdatedSourceLanguages(projectSlug)) {
-                for(String resourceSlug:updates.getUpdatedResources(projectSlug, sourceLanguageSlug)) {
-                    startSourceTranslationDownload(SourceTranslation.simple(projectSlug, sourceLanguageSlug, resourceSlug), null);
+        String[] projectSlugs = updates.getUpdatedProjects();
+        outerloop:
+        for(String projectSlug:projectSlugs) {
+            String[] sourceLanguageSlugs = updates.getUpdatedSourceLanguages(projectSlug);
+            for(String sourceLanguageSlug:sourceLanguageSlugs) {
+                String[] resourceSlugs = updates.getUpdatedResources(projectSlug, sourceLanguageSlug);
+                for(String resourceSlug:resourceSlugs) {
+                    if(startSourceTranslationDownload(SourceTranslation.simple(projectSlug, sourceLanguageSlug, resourceSlug), null)) {
+                        updates.removeSourceLanguageUpdate(projectSlug, sourceLanguageSlug);
+                    }
                     if(listener != null) {
                         progress ++;
-                        listener.onProgress(progress, updates.numSourceTranslationUpdates());
+                        if(!listener.onProgress(progress, updates.numSourceTranslationUpdates())) {
+                            break outerloop;
+                        }
                     }
                 }
             }
@@ -807,12 +820,14 @@ public class Library {
          * Progress the progress on an operation between 0 and max
          * @param progress
          * @param max
+         * @return the process should stop if returns false
          */
-        void onProgress(int progress, int max);
+        boolean onProgress(int progress, int max);
 
         /**
          * Identifes the current task as not quantifiable
+         * @return the process should stop if returns false
          */
-        void onIndeterminate();
+        boolean onIndeterminate();
     }
 }

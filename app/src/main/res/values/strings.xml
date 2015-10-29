@@ -519,4 +519,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]>
     </string>
     <string name="action_download_updates">Download updates</string>
+    <string name="list_may_be_outdated">The list may be out of date</string>
 </resources>
