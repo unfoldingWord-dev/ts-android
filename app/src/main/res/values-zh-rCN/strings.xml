@@ -129,7 +129,7 @@
   <string name="action_download_all">所有下载</string>
   <string name="title_activity_project_updates">项目更新</string>
   <string name="action_edit_projects">编辑项目</string>
-  <string name="download_all_confirmation">您将要下载一个潜在的大量的数据，是否继续？</string>
+  <string name="download_confirmation">您将要下载一个潜在的大量的数据，是否继续？</string>
   <string name="action_cancel_edit_projects">停止编辑项目</string>
   <string name="import_draft">进口草案</string>
   <string name="import_draft_confirmation">这将替换该目标语言你现有的翻译，是否继续？</string>

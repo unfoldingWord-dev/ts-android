@@ -129,7 +129,7 @@
   <string name="action_download_all">تمام ڈاؤن لوڈ، اتارنا</string>
   <string name="title_activity_project_updates">پروجیکٹ کی تازہ ترین معلومات</string>
   <string name="action_edit_projects">تصیح پروجیکٹس</string>
-  <string name="download_all_confirmation">آپ کو ڈیٹا کے ممکنہ طور پر بڑی مقدار اتارنا کرنے کے لئے کے بارے میں ہیں، جاری رہے؟</string>
+  <string name="download_confirmation">آپ کو ڈیٹا کے ممکنہ طور پر بڑی مقدار اتارنا کرنے کے لئے کے بارے میں ہیں، جاری رہے؟</string>
   <string name="action_cancel_edit_projects">سٹاپ ترمیم پروجیکٹس</string>
   <string name="import_draft">درآمدی ڈرافٹ</string>
   <string name="import_draft_confirmation">یہ اس ھدف کردہ زبان میں اپنے موجودہ ترجمہ جگہ لے لے گا، جاری رہے؟</string>

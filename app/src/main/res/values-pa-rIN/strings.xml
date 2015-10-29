@@ -122,7 +122,7 @@
   <string name="action_download_all">ਸਭ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰੋ</string>
   <string name="title_activity_project_updates">ਪ੍ਰੋਜੈਕਟ ਅੱਪਡੇਟ</string>
   <string name="action_edit_projects">ਸੋਧ ਪ੍ਰਾਜੈਕਟ</string>
-  <string name="download_all_confirmation">ਤੁਹਾਨੂੰ ਡਾਟਾ ਦੀ ਇੱਕ ਸੰਭਾਵੀ ਵੱਡੀ ਰਕਮ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਦੇ ਬਾਰੇ ਹਨ, ਜਾਰੀ ਰੱਖਣਾ ਹੈ?</string>
+  <string name="download_confirmation">ਤੁਹਾਨੂੰ ਡਾਟਾ ਦੀ ਇੱਕ ਸੰਭਾਵੀ ਵੱਡੀ ਰਕਮ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਦੇ ਬਾਰੇ ਹਨ, ਜਾਰੀ ਰੱਖਣਾ ਹੈ?</string>
   <string name="action_cancel_edit_projects">ਰੋਕੋ ਸੋਧ ਪ੍ਰਾਜੈਕਟ</string>
   <string name="import_draft">ਅਯਾਤ ਡਰਾਫਟ</string>
   <string name="import_draft_confirmation">ਇਹ ਇਸ ਟੀਚੇ ਨੂੰ ਭਾਸ਼ਾ ਵਿੱਚ ਆਪਣੇ ਮੌਜੂਦਾ ਅਨੁਵਾਦ ਦੀ ਤਬਦੀਲ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ, ਜਾਰੀ ਰੱਖਣਾ ਹੈ?</string>

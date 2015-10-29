@@ -171,7 +171,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
             public void run() {
                 new AlertDialog.Builder(DeveloperToolsActivity.this)
                         .setTitle(R.string.action_download_all)
-                        .setMessage(R.string.download_all_confirmation)
+                        .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.icon_update_cloud_dark)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override

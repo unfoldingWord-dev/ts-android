@@ -122,7 +122,7 @@
   <string name="action_download_all">تحميل جميع</string>
   <string name="title_activity_project_updates">تحديثات المشروع</string>
   <string name="action_edit_projects">مشاريع تحرير</string>
-  <string name="download_all_confirmation">أنت على وشك تحميل كمية محتملة كبيرة من البيانات، هل تستمر؟</string>
+  <string name="download_confirmation">أنت على وشك تحميل كمية محتملة كبيرة من البيانات، هل تستمر؟</string>
   <string name="action_cancel_edit_projects">توقف مشاريع التحرير</string>
   <string name="import_draft">استيراد مشروع</string>
   <string name="import_draft_confirmation">سيؤدي ذلك إلى استبدال الترجمة الموجودة في هذه اللغة الهدف، هل تستمر؟</string>

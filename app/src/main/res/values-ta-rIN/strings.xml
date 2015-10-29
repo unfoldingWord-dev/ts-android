@@ -122,7 +122,7 @@
   <string name="action_download_all">பதிவிறக்கவும்</string>
   <string name="title_activity_project_updates">திட்ட மேம்படுத்தல்கள்</string>
   <string name="action_edit_projects">திருத்த திட்டங்கள்</string>
-  <string name="download_all_confirmation">நீங்கள் தரவு சக்திமிக்க பெரும் அளவு பதிவிறக்க பற்றி, தொடர்ந்து?</string>
+  <string name="download_confirmation">நீங்கள் தரவு சக்திமிக்க பெரும் அளவு பதிவிறக்க பற்றி, தொடர்ந்து?</string>
   <string name="action_cancel_edit_projects">நிறுத்து எடிட்டிங் திட்டங்களை</string>
   <string name="import_draft">இறக்குமதி வரைவு</string>
   <string name="import_draft_confirmation">இந்த இலக்கு மொழியில் உங்கள் ஏற்கனவே மொழிபெயர்ப்பு பதிலாக, தொடரலாமா?</string>

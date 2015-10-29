@@ -122,7 +122,7 @@
   <string name="action_download_all">બધા ડાઉનલોડ</string>
   <string name="title_activity_project_updates">પ્રોજેક્ટ સુધારાઓ</string>
   <string name="action_edit_projects">ફેરફાર કરો પ્રોજેક્ટ્સ</string>
-  <string name="download_all_confirmation">તમને માહિતી એક સંભવિત મોટી રકમ ડાઉનલોડ કરવા વિશે છે, ચાલુ?</string>
+  <string name="download_confirmation">તમને માહિતી એક સંભવિત મોટી રકમ ડાઉનલોડ કરવા વિશે છે, ચાલુ?</string>
   <string name="action_cancel_edit_projects">સ્ટોપ એડિટીંગ પ્રોજેક્ટ્સ</string>
   <string name="import_draft">આયાત ડ્રાફ્ટ</string>
   <string name="import_draft_confirmation">આ, આ લક્ષ્ય ભાષામાં તમારી હાલની અનુવાદ બદલશે, ચાલુ?</string>

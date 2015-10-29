@@ -122,7 +122,7 @@
   <string name="action_download_all">すべてのダウンロード</string>
   <string name="title_activity_project_updates">プロジェクトのアップデート</string>
   <string name="action_edit_projects">編集プロジェクト</string>
-  <string name="download_all_confirmation">あなたは、データの潜在的に大量のダウンロードを継続しようとしています？</string>
+  <string name="download_confirmation">あなたは、データの潜在的に大量のダウンロードを継続しようとしています？</string>
   <string name="action_cancel_edit_projects">編集の終了プロジェクト</string>
   <string name="import_draft">インポートドラフト</string>
   <string name="import_draft_confirmation">これは、このターゲット言語で、既存の翻訳を置き換える続けるのだろうか？</string>

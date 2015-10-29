@@ -16,4 +16,9 @@
         android:orderInCategory="600"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_download_updates"
+        android:title="@string/action_download_updates"
+        android:orderInCategory="500"
+        app:showAsAction="never" />
+
 </menu>

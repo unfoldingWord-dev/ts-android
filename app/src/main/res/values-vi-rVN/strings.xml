@@ -122,7 +122,7 @@
   <string name="action_download_all">Tải về tất cả</string>
   <string name="title_activity_project_updates">Dự án cập nhật</string>
   <string name="action_edit_projects">Chỉnh sửa dự án</string>
-  <string name="download_all_confirmation">Bạn muốn tải về một số lượng lớn dữ liệu có khả năng, tiếp tục không?</string>
+  <string name="download_confirmation">Bạn muốn tải về một số lượng lớn dữ liệu có khả năng, tiếp tục không?</string>
   <string name="action_cancel_edit_projects">Dừng dự án Editing</string>
   <string name="import_draft">Nhập Draft</string>
   <string name="import_draft_confirmation">Điều này sẽ thay thế dịch hiện tại của bạn bằng ngôn ngữ mục tiêu này, tiếp tục không?</string>

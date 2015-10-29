@@ -122,7 +122,7 @@
   <string name="action_download_all">Скачать все</string>
   <string name="title_activity_project_updates">Обновления проекта</string>
   <string name="action_edit_projects">Редактировать проекты</string>
-  <string name="download_all_confirmation">Вы хотите загрузить потенциально большой объем данных, по-прежнему?</string>
+  <string name="download_confirmation">Вы хотите загрузить потенциально большой объем данных, по-прежнему?</string>
   <string name="action_cancel_edit_projects">Прекратить редактирование Проекты</string>
   <string name="import_draft">Импорт Проект</string>
   <string name="import_draft_confirmation">Это заменит ваш текущий перевод целевом языке, по-прежнему?</string>

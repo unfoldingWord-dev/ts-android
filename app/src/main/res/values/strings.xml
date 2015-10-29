@@ -278,7 +278,7 @@
     <string name="action_download_all">Download all</string>
     <string name="title_activity_project_updates">Project Updates</string>
     <string name="action_edit_projects">Edit Projects</string>
-    <string name="download_all_confirmation">You are about to download a potentially large amount of data, continue?</string>
+    <string name="download_confirmation">You are about to download a potentially large amount of data, continue?</string>
     <string name="action_cancel_edit_projects">Stop Editing Projects</string>
     <string name="import_draft">Import Draft</string>
     <string name="import_draft_confirmation">Replace existing translation in this target language?</string>
@@ -518,4 +518,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </p>
 ]]>
     </string>
+    <string name="action_download_updates">Download updates</string>
 </resources>

@@ -122,7 +122,7 @@
   <string name="action_download_all">Télécharger tous</string>
   <string name="title_activity_project_updates">Mises à jour de projet</string>
   <string name="action_edit_projects">Modifier Projets</string>
-  <string name="download_all_confirmation">Vous êtes sur le point de télécharger un potentiellement grande quantité de données, continuez?</string>
+  <string name="download_confirmation">Vous êtes sur le point de télécharger un potentiellement grande quantité de données, continuez?</string>
   <string name="action_cancel_edit_projects">Arrêt Edition de projets</string>
   <string name="import_draft">Importer Projet</string>
   <string name="import_draft_confirmation">Cela remplacera votre traduction existante dans cette langue cible, continuer?</string>

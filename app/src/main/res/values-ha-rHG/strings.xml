@@ -129,7 +129,7 @@
   <string name="action_download_all">Download duk</string>
   <string name="title_activity_project_updates">Aikin Updates</string>
   <string name="action_edit_projects">Shirya Projects</string>
-  <string name="download_all_confirmation">Kai ne game da saukewa yiwuwar babban adadin bayanai ba, ci gaba?</string>
+  <string name="download_confirmation">Kai ne game da saukewa yiwuwar babban adadin bayanai ba, ci gaba?</string>
   <string name="action_cancel_edit_projects">Tasha Shirya Projects</string>
   <string name="import_draft">Rubutun da baa aika shigo da</string>
   <string name="import_draft_confirmation">Wannan zai sauya data kasance translation a cikin wannan manufa da harshen, ci gaba?</string>

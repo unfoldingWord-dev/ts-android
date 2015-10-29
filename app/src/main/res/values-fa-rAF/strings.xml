@@ -129,7 +129,7 @@
   <string name="action_download_all">دانلود همه</string>
   <string name="title_activity_project_updates">پروژه به روز رسانی</string>
   <string name="action_edit_projects">پروژه ویرایش</string>
-  <string name="download_all_confirmation">شما در مورد دانلود یک مقدار به طور بالقوه زیادی از داده ها هستند، ادامه دهید؟</string>
+  <string name="download_confirmation">شما در مورد دانلود یک مقدار به طور بالقوه زیادی از داده ها هستند، ادامه دهید؟</string>
   <string name="action_cancel_edit_projects">توقف پروژه های در حال ویرایش</string>
   <string name="import_draft">واردات پیش نویس</string>
   <string name="import_draft_confirmation">این ترجمه های موجود خود را در این زبان مقصد جایگزین، ادامه دهید؟</string>

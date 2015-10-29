@@ -129,7 +129,7 @@
   <string name="action_download_all">ሁሉንም ያውርዱ</string>
   <string name="title_activity_project_updates">የፕሮጄክት ማሻሻያዎች</string>
   <string name="action_edit_projects">ፕሮጄክቶቹን ማረም</string>
-  <string name="download_all_confirmation">\?በጣም ትልቅ የሆነ መረጃ እያወረዱ ይገኛሉ፤ ይቀጥል</string>
+  <string name="download_confirmation">\?በጣም ትልቅ የሆነ መረጃ እያወረዱ ይገኛሉ፤ ይቀጥል</string>
   <string name="action_cancel_edit_projects">ፕሮጄክቶቹን ማረም ያቁሙ</string>
   <string name="import_draft">ንድፉን ያስገቡ</string>
   <string name="import_draft_confirmation">\?ነባሩን ትርጉም በዚህ በተቀባዩ ቋንቋ ይለወጥ</string>

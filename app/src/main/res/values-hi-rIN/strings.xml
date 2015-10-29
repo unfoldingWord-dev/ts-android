@@ -122,7 +122,7 @@
   <string name="action_download_all">सभी डाउनलोड</string>
   <string name="title_activity_project_updates">परियोजना अपडेट</string>
   <string name="action_edit_projects">संपादित परियोजनाएं</string>
-  <string name="download_all_confirmation">आप डेटा के एक संभावित बड़ी राशि को डाउनलोड करने के बारे में हैं, जारी रखें?</string>
+  <string name="download_confirmation">आप डेटा के एक संभावित बड़ी राशि को डाउनलोड करने के बारे में हैं, जारी रखें?</string>
   <string name="action_cancel_edit_projects">बंद करो संपादन परियोजनाओं</string>
   <string name="import_draft">आयात ड्राफ्ट</string>
   <string name="import_draft_confirmation">यह इस लक्ष्य भाषा में अपने मौजूदा अनुवाद का स्थान ले लेगा, जारी रखें?</string>

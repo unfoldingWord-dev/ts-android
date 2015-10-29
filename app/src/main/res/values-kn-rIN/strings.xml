@@ -122,7 +122,7 @@
   <string name="action_download_all">ಎಲ್ಲಾ ಡೌನ್ಲೋಡ್</string>
   <string name="title_activity_project_updates">ಪ್ರಾಜೆಕ್ಟ್ ಅಪ್ಡೇಟ್ಗಳು</string>
   <string name="action_edit_projects">ಸಂಪಾದಿಸಿ ಯೋಜನೆಗಳು</string>
-  <string name="download_all_confirmation">ನೀವು ದಶಮಾಂಶ ಅತೀ ಪ್ರಬಲ ಪ್ರಮಾಣದ ಡೌನ್ಲೋಡ್ ಬಗ್ಗೆ, ಮುಂದುವರೆಯಲು?</string>
+  <string name="download_confirmation">ನೀವು ದಶಮಾಂಶ ಅತೀ ಪ್ರಬಲ ಪ್ರಮಾಣದ ಡೌನ್ಲೋಡ್ ಬಗ್ಗೆ, ಮುಂದುವರೆಯಲು?</string>
   <string name="action_cancel_edit_projects">ನಿಲ್ಲಿಸಿ ಎಡಿಟಿಂಗ್ ಯೋಜನೆಗಳು</string>
   <string name="import_draft">ಆಮದು ಡ್ರಾಫ್ಟ್</string>
   <string name="import_draft_confirmation">ಈ ಗುರಿ ಭಾಷೆಯಲ್ಲಿ ನಿಮ್ಮ ಅಸ್ತಿತ್ವದಲ್ಲಿರುವ ಅನುವಾದ ಬದಲಾಯಿಸುತ್ತದೆ, ಮುಂದುವರೆಯಲು?</string>

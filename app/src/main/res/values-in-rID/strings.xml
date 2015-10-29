@@ -122,7 +122,7 @@
   <string name="action_download_all">Unduh semua</string>
   <string name="title_activity_project_updates">Proyek Pembaharuan</string>
   <string name="action_edit_projects">Sunting Proyek</string>
-  <string name="download_all_confirmation">Anda akan men-download jumlah yang berpotensi besar data, lanjutkan?</string>
+  <string name="download_confirmation">Anda akan men-download jumlah yang berpotensi besar data, lanjutkan?</string>
   <string name="action_cancel_edit_projects">Stop Editing Proyek</string>
   <string name="import_draft">Draft impor</string>
   <string name="import_draft_confirmation">Ini akan menggantikan terjemahan yang ada dalam bahasa target ini, lanjutkan?</string>

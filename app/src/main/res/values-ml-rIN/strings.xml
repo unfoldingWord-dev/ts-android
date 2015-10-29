@@ -132,7 +132,7 @@
   <string name="action_download_all">ഡൗൺലോഡുചെയ്യുക</string>
   <string name="title_activity_project_updates">പദ്ധതി പരിഷ്കരണങ്ങൾ</string>
   <string name="action_edit_projects">തിരുത്തുക പദ്ധതികൾ</string>
-  <string name="download_all_confirmation">നിങ്ങൾ ഡാറ്റ തീർത്തും വലിയ തുക ഡൌൺലോഡ് തുടരാൻ പോകുകയാണ്?</string>
+  <string name="download_confirmation">നിങ്ങൾ ഡാറ്റ തീർത്തും വലിയ തുക ഡൌൺലോഡ് തുടരാൻ പോകുകയാണ്?</string>
   <string name="action_cancel_edit_projects">എഡിറ്റിംഗ് പദ്ധതികളിൽ നിർത്തുക</string>
   <string name="import_draft">ഇറക്കുമതി ഡ്രാഫ്റ്റ്</string>
   <string name="import_draft_confirmation">ഇത്, ഈ ലക്ഷ്യം ഭാഷയിൽ നിങ്ങളുടെ നിലവിലുള്ള പരിഭാഷയെ പകരം തുടരും?</string>

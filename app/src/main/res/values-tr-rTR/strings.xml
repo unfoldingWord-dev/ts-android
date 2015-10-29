@@ -122,7 +122,7 @@
   <string name="action_download_all">Tüm İndir</string>
   <string name="title_activity_project_updates">Proje Güncellemeler</string>
   <string name="action_edit_projects">Düzenleme Projeleri</string>
-  <string name="download_all_confirmation">Verilerin bir potansiyel olarak büyük miktarda indirmek üzeresiniz, devam?</string>
+  <string name="download_confirmation">Verilerin bir potansiyel olarak büyük miktarda indirmek üzeresiniz, devam?</string>
   <string name="action_cancel_edit_projects">Dur Düzenleme Projeleri</string>
   <string name="import_draft">İthalat Taslak</string>
   <string name="import_draft_confirmation">Bu, hedef dilde mevcut çeviri yerini alacak, devam?</string>

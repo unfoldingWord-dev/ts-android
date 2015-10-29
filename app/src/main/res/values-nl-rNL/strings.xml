@@ -122,7 +122,7 @@
   <string name="action_download_all">Alle downloaden</string>
   <string name="title_activity_project_updates">Project Updates</string>
   <string name="action_edit_projects">Bewerk Projecten</string>
-  <string name="download_all_confirmation">U staat op het punt om een ​​potentieel grote hoeveelheid data te downloaden, ga dan verder?</string>
+  <string name="download_confirmation">U staat op het punt om een ​​potentieel grote hoeveelheid data te downloaden, ga dan verder?</string>
   <string name="action_cancel_edit_projects">Stop bewerken Projecten</string>
   <string name="import_draft">Import Draft</string>
   <string name="import_draft_confirmation">Dit zal uw bestaande vertalingen in deze doeltaal vervangen, doorgaan?</string>

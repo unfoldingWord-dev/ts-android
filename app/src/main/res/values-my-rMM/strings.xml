@@ -129,7 +129,7 @@
   <string name="action_download_all">အားလုံးကို Download လုပ်</string>
   <string name="title_activity_project_updates">Project က Updates ကို</string>
   <string name="action_edit_projects">Edit ကိုစီမံကိန်းများ</string>
-  <string name="download_all_confirmation">သင်, အချက်အလက်များ၏တစ်ဦးမည့်အလားအလာကြီးမားသောငွေပမာဏကို download လုပ်ကိုဆက်လက်လောက်ရှိပါသလဲ</string>
+  <string name="download_confirmation">သင်, အချက်အလက်များ၏တစ်ဦးမည့်အလားအလာကြီးမားသောငွေပမာဏကို download လုပ်ကိုဆက်လက်လောက်ရှိပါသလဲ</string>
   <string name="action_cancel_edit_projects">တည်းဖြတ်ခြင်းစီမံကိန်းများရပ်တန့်</string>
   <string name="import_draft">သွင်းကုန်မူကြမ်း</string>
   <string name="import_draft_confirmation">ဤရွေ့ကား, ဒီပစ်မှတ်ဘာသာစကား၌သင်တို့၏ရှိရင်းစွဲဘာသာပြန်ချက်အစားထိုးဖို့ဆက်လက်လိမ့်မည်လော</string>

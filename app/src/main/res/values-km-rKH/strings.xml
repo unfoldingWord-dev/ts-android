@@ -129,7 +129,7 @@
   <string name="action_download_all">ទាញ​យក​ទាំង​អស់</string>
   <string name="title_activity_project_updates">គម្រោង​ការ​ធ្វើ​ឱ្យ​ទាន់សម័យ</string>
   <string name="action_edit_projects">កែ​សម្រួល​គម្រោង</string>
-  <string name="download_all_confirmation">អ្នក​ដើម្បី​ទាញ​យក​សក្តា​នុ​ពល​មួយ​ចំនួន​ទឹកប្រាក់​ដ៏​ធំ​នៃ​ទិន្នន័យ​បន្ត​?</string>
+  <string name="download_confirmation">អ្នក​ដើម្បី​ទាញ​យក​សក្តា​នុ​ពល​មួយ​ចំនួន​ទឹកប្រាក់​ដ៏​ធំ​នៃ​ទិន្នន័យ​បន្ត​?</string>
   <string name="action_cancel_edit_projects">បញ្ឈប់​ការ​កែ​សម្រួល​គម្រោង</string>
   <string name="import_draft">សេចក្តី​ព្រាង​នាំចូល</string>
   <string name="import_draft_confirmation">នេះ​នឹង​ជំនួស​ការ​បកប្រែ​ដែល​មាន​ស្រាប់​របស់​អ្នក​ជា​ភាសា​គោលដៅ​នេះ​បាន​បន្ត​ឬ​?</string>

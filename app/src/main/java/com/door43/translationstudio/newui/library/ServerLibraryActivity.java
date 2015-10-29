@@ -22,6 +22,7 @@ import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.tasks.DownloadAllProjectsTask;
+import com.door43.translationstudio.tasks.DownloadUpdatesTask;
 import com.door43.translationstudio.tasks.GetLibraryUpdatesTask;
 import com.door43.translationstudio.AppContext;
 import com.door43.util.tasks.ManagedTask;
@@ -88,10 +89,15 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
             // connect to tasks
             DownloadAllProjectsTask downloadAllTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+            DownloadUpdatesTask downloadUpdatesTask = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
             GetLibraryUpdatesTask getUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
             if(downloadAllTask != null) {
                 downloadAllTask.addOnProgressListener(this);
                 downloadAllTask.addOnFinishedListener(this);
+            }
+            if(downloadUpdatesTask != null) {
+                downloadUpdatesTask.addOnProgressListener(this);
+                downloadUpdatesTask.addOnFinishedListener(this);
             }
             if(getUpdatesTask != null) {
                 getUpdatesTask.addOnProgressListener(this);
@@ -152,12 +158,17 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
     /**
      * Connects to an existing task
      */
-    public void connectDownloadAllTask() {
-        DownloadAllProjectsTask task = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
-        if(task != null) {
+    public void connectDownloadTasks() {
+        DownloadAllProjectsTask downloadAllProjectsTask = (DownloadAllProjectsTask)TaskManager.getTask(DownloadAllProjectsTask.TASK_ID);
+        DownloadUpdatesTask downloadUpdatesTask = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
+        if(downloadAllProjectsTask != null) {
             // connect to existing task
-            task.addOnProgressListener(this);
-            task.addOnFinishedListener(this);
+            downloadAllProjectsTask.addOnProgressListener(this);
+            downloadAllProjectsTask.addOnFinishedListener(this);
+        } else if(downloadUpdatesTask != null) {
+            // connect to existing task
+            downloadUpdatesTask.addOnProgressListener(this);
+            downloadUpdatesTask.addOnProgressListener(this);
         } else {
             onFinished(null);
         }
@@ -191,7 +202,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
             case R.id.action_download_all:
                 mConfirmDialog = new AlertDialog.Builder(this)
                         .setTitle(R.string.action_download_all)
-                        .setMessage(R.string.download_all_confirmation)
+                        .setMessage(R.string.download_confirmation)
                         .setIcon(R.drawable.ic_cloud_download_black_24dp)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                             @Override
@@ -204,7 +215,30 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                                     task.addOnFinishedListener(ServerLibraryActivity.this);
                                     TaskManager.addTask(task, DownloadAllProjectsTask.TASK_ID);
                                 } else {
-                                    connectDownloadAllTask();
+                                    connectDownloadTasks();
+                                }
+                            }
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
+                return true;
+            case R.id.action_download_updates:
+                mConfirmDialog = new AlertDialog.Builder(this)
+                        .setTitle(R.string.action_download_updates)
+                        .setMessage(R.string.download_confirmation)
+                        .setIcon(R.drawable.ic_cloud_download_black_24dp)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                DownloadUpdatesTask task = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
+                                if(task == null) {
+                                    // start new task
+                                    task = new DownloadUpdatesTask();
+                                    task.addOnProgressListener(ServerLibraryActivity.this);
+                                    task.addOnFinishedListener(ServerLibraryActivity.this);
+                                    TaskManager.addTask(task, DownloadUpdatesTask.TASK_ID);
+                                } else {
+                                    connectDownloadTasks();
                                 }
                             }
                         })
@@ -241,6 +275,11 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
         if(downloadAllProjectsTask != null) {
             downloadAllProjectsTask.removeOnFinishedListener(this);
             downloadAllProjectsTask.removeOnProgressListener(this);
+        }
+        DownloadUpdatesTask downloadUpdatesTask = (DownloadUpdatesTask)TaskManager.getTask(DownloadUpdatesTask.TASK_ID);
+        if(downloadUpdatesTask != null) {
+            downloadUpdatesTask.removeOnFinishedListener(this);
+            downloadUpdatesTask.removeOnProgressListener(this);
         }
         GetLibraryUpdatesTask getLibraryUpdatesTask = (GetLibraryUpdatesTask)TaskManager.getTask(GetLibraryUpdatesTask.TASK_ID);
         if(getLibraryUpdatesTask != null) {
@@ -295,7 +334,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                 }
                 mProgressDialog = null;
 
-                if(task instanceof DownloadAllProjectsTask) {
+                if(task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) {
                     if (!task.isCanceled()) {
                         new AlertDialog.Builder(ServerLibraryActivity.this)
                                 .setTitle(R.string.success)
@@ -336,6 +375,8 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                             mProgressDialog.setTitle(getResources().getString(R.string.checking_for_updates));
                         } else if(task instanceof DownloadAllProjectsTask) {
                             mProgressDialog.setTitle(getResources().getString(R.string.downloading));
+                        } else if(task instanceof DownloadUpdatesTask) {
+                            mProgressDialog.setTitle(getResources().getString(R.string.downloading));
                         }
                         mProgressDialog.setMessage("");
                     }
@@ -358,7 +399,7 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
                         mProgressDialog.setProgressNumberFormat("%1d/%2d");
                         mProgressDialog.setProgressPercentFormat(NumberFormat.getPercentInstance());
                     }
-                    if (task instanceof DownloadAllProjectsTask && !message.isEmpty()) {
+                    if ((task instanceof DownloadAllProjectsTask || task instanceof DownloadUpdatesTask) && !message.isEmpty()) {
                         mProgressDialog.setMessage(String.format(getResources().getString(R.string.downloading_project), message));
                     } else {
                         mProgressDialog.setMessage("");

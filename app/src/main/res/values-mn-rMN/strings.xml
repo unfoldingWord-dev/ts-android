@@ -129,7 +129,7 @@
   <string name="action_download_all">Бүх татаж авах</string>
   <string name="title_activity_project_updates">Төслийн Шинэчлэл</string>
   <string name="action_edit_projects">Засах төслүүд</string>
-  <string name="download_all_confirmation">Та өгөгдлийн болзошгүй их хэмжээний татаж авах гэж байна, үргэлжлүүлэн?</string>
+  <string name="download_confirmation">Та өгөгдлийн болзошгүй их хэмжээний татаж авах гэж байна, үргэлжлүүлэн?</string>
   <string name="action_cancel_edit_projects">Stop засварлах төсөл</string>
   <string name="import_draft">Импортын төсөл</string>
   <string name="import_draft_confirmation">Энэ нь зорилтот хэл нь танд байгаа орчуулах солих болно, үргэлжлүүлэн?</string>

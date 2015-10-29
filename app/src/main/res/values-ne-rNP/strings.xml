@@ -129,7 +129,7 @@
   <string name="action_download_all">सबै डाउनलोड</string>
   <string name="title_activity_project_updates">परियोजना अपडेट</string>
   <string name="action_edit_projects">सम्पादन परियोजनाहरु</string>
-  <string name="download_all_confirmation">तपाईं डेटा को एक संभावित ठूलो राशि डाउनलोड लागेका, जारी?</string>
+  <string name="download_confirmation">तपाईं डेटा को एक संभावित ठूलो राशि डाउनलोड लागेका, जारी?</string>
   <string name="action_cancel_edit_projects">बंद सम्पादन परियोजनाहरु</string>
   <string name="import_draft">आयात मस्यौदा</string>
   <string name="import_draft_confirmation">यो यस लक्ष्य भाषा आफ्नो अवस्थित अनुवाद प्रतिस्थापन गर्नेछ, जारी?</string>

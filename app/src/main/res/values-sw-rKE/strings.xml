@@ -122,7 +122,7 @@
   <string name="action_download_all">Download wote</string>
   <string name="title_activity_project_updates">Mradi Updates</string>
   <string name="action_edit_projects">Edit Miradi</string>
-  <string name="download_all_confirmation">Wewe ni kuhusu kushusha kiasi uwezekano mkubwa wa data, kuendelea?</string>
+  <string name="download_confirmation">Wewe ni kuhusu kushusha kiasi uwezekano mkubwa wa data, kuendelea?</string>
   <string name="action_cancel_edit_projects">Stop Editing Miradi</string>
   <string name="import_draft">Import Draft</string>
   <string name="import_draft_confirmation">Hii itakuwa nafasi tafsiri yako zilizopo katika hii lugha lengo, kuendelea?</string>
