@@ -1316,7 +1316,9 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param db
      * @param resourceId
      */
+    @Deprecated
     public void markResourceUpToDate(SQLiteDatabase db, long resourceId) {
+        // TODO: 10/29/2015 mark each individual catalog as up to date in it's own method
         db.execSQL("UPDATE `resource` SET"
                 + " `source_catalog_local_modified_at`=`source_catalog_server_modified_at`,"
                 + " `translation_notes_catalog_local_modified_at`=`translation_notes_catalog_server_modified_at`,"

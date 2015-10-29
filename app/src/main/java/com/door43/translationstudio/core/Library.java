@@ -762,6 +762,7 @@ public class Library {
     public boolean downloadUpdates(LibraryUpdates updates, OnProgressListener listener) {
         mAppIndex.beginTransaction();
         int progress = 0;
+        int numUpdates = updates.numSourceTranslationUpdates();
         String[] projectSlugs = updates.getUpdatedProjects();
         outerloop:
         for(String projectSlug:projectSlugs) {
@@ -774,7 +775,7 @@ public class Library {
                     }
                     if(listener != null) {
                         progress ++;
-                        if(!listener.onProgress(progress, updates.numSourceTranslationUpdates())) {
+                        if(!listener.onProgress(progress, numUpdates)) {
                             break outerloop;
                         }
                     }

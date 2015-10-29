@@ -98,7 +98,7 @@ public class Downloader {
         SourceLanguage sourceLanguage = targetIndex.getSourceLanguage(projectSlug, sourceLanguageSlug);
         if(sourceLanguage != null && sourceLanguage.resourceCatalog != null
                 && (sourceLanguage.resourceCatalogLocalDateModified < sourceLanguage.resourceCatalogServerDateModified
-                | sourceLanguage.resourceCatalogServerDateModified == 0)) {
+                || sourceLanguage.resourceCatalogServerDateModified == 0)) {
             String catalog = request(sourceLanguage.resourceCatalog);
             if(catalog != null) {
                 if(targetIndex.indexResources(projectSlug, sourceLanguageSlug, catalog)) {
@@ -117,7 +117,9 @@ public class Downloader {
      */
     public boolean downloadSource(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
-        if(resource != null && resource.getSourceCatalogUrl() != null) {
+        if(resource != null && resource.getSourceCatalogUrl() != null
+                && (resource.getSourceDateModified() < resource.getSourceServerDateModified()
+                || resource.getSourceServerDateModified() == 0)) {
             String catalog = request(resource.getSourceCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexSource(translation, catalog);
@@ -136,7 +138,9 @@ public class Downloader {
      */
     public boolean downloadWords(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
-        if(resource != null && resource.getWordsCatalogUrl() != null) {
+        if(resource != null && resource.getWordsCatalogUrl() != null
+                && (resource.getWordsDateModified() < resource.getWordsServerDateModified()
+                || resource.getWordsServerDateModified() == 0)) {
             String catalog = request(resource.getWordsCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexWords(translation, catalog);
@@ -153,7 +157,9 @@ public class Downloader {
      */
     public boolean downloadWordAssignments(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
-        if(resource != null && resource.getWordAssignmentsCatalogUrl() != null) {
+        if(resource != null && resource.getWordAssignmentsCatalogUrl() != null
+                && (resource.getWordAssignmentsDateModified() < resource.getWordAssignmentsServerDateModified()
+                || resource.getWordAssignmentsServerDateModified() == 0)) {
             String catalog = request(resource.getWordAssignmentsCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexTermAssignments(translation, catalog);
@@ -170,7 +176,9 @@ public class Downloader {
      */
     public boolean downloadNotes(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
-        if(resource != null && resource.getNotesCatalogUrl() != null) {
+        if(resource != null && resource.getNotesCatalogUrl() != null
+                && (resource.getNotesDateModified() < resource.getNotesServerDateModified()
+                || resource.getNotesServerDateModified() == 0)) {
             String catalog = request(resource.getNotesCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexNotes(translation, catalog);
@@ -187,7 +195,9 @@ public class Downloader {
      */
     public boolean downloadCheckingQuestions(SourceTranslation translation, Indexer targetIndex) {
         Resource resource = targetIndex.getResource(translation);
-        if(resource != null && resource.getQuestionsCatalogUrl() != null) {
+        if(resource != null && resource.getQuestionsCatalogUrl() != null
+                && (resource.getQuestionsDateModified() < resource.getQuestionsServerDateModified()
+                || resource.getQuestionsServerDateModified() == 0)) {
             String catalog = request(resource.getQuestionsCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexQuestions(translation, catalog);
