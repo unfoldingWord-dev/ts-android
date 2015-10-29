@@ -219,34 +219,39 @@ public class ServerLibraryDetailFragment extends BaseFragment implements Managed
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     final ServerLibraryLanguageAdapter.ListItem item = mHolder.mAdapter.getItem(position);
-                    boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProject.getId(), item.sourceLanguage.getId());
-                    if(!isDownloaded) {
-                        // just download the update
-                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
-                        task.addOnFinishedListener(ServerLibraryDetailFragment.this);
-                        TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
-                        TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-                        task.addOnFinishedListener(item.onFinishedListener);
-                        task.addOnProgressListener(item.onProgressListener);
-                    } else {
-                        // confirm with the user
-                        new android.support.v7.app.AlertDialog.Builder(getActivity())
-                                .setTitle(R.string.download)
-                                .setIcon(R.drawable.ic_refresh_black_24dp)
-                                .setMessage(R.string.source_language_already_downloaded)
-                                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
-                                        task.addOnFinishedListener(ServerLibraryDetailFragment.this);
-                                        TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
-                                        TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
-                                        task.addOnFinishedListener(item.onFinishedListener);
-                                        task.addOnProgressListener(item.onProgressListener);
-                                    }
-                                })
-                                .setNegativeButton(R.string.no, null)
-                                .show();
+
+                    // ignore clicks if a task is already running.
+                    DownloadSourceLanguageTask task = (DownloadSourceLanguageTask)TaskManager.getTask(mProject.getId() + "-" + item.sourceLanguage.getId());
+                    if(task == null || task.isFinished()) {
+                        boolean isDownloaded = AppContext.getLibrary().sourceLanguageHasSource(mProject.getId(), item.sourceLanguage.getId());
+                        if (!isDownloaded) {
+                            // just download the update
+                            task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
+                            task.addOnFinishedListener(ServerLibraryDetailFragment.this);
+                            TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
+                            TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+                            task.addOnFinishedListener(item.onFinishedListener);
+                            task.addOnProgressListener(item.onProgressListener);
+                        } else {
+                            // confirm with the user
+                            new android.support.v7.app.AlertDialog.Builder(getActivity())
+                                    .setTitle(R.string.download)
+                                    .setIcon(R.drawable.ic_refresh_black_24dp)
+                                    .setMessage(R.string.source_language_already_downloaded)
+                                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            DownloadSourceLanguageTask task = new DownloadSourceLanguageTask(mProject.getId(), item.sourceLanguage.getId());
+                                            task.addOnFinishedListener(ServerLibraryDetailFragment.this);
+                                            TaskManager.addTask(task, mProject.getId() + "-" + item.sourceLanguage.getId());
+                                            TaskManager.groupTask(task, DOWNLOAD_SOURCE_LANGUAGE_TASK_GROUP);
+                                            task.addOnFinishedListener(item.onFinishedListener);
+                                            task.addOnProgressListener(item.onProgressListener);
+                                        }
+                                    })
+                                    .setNegativeButton(R.string.no, null)
+                                    .show();
+                        }
                     }
                 }
             });

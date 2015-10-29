@@ -11,26 +11,45 @@ import com.door43.util.tasks.ManagedTask;
 public class GetLibraryUpdatesTask extends ManagedTask {
 
     public static final String TASK_ID  = "get_available_source_translations_task";
+    private static final long CACHE_TTL = 1000 * 60 * 60 * 5; // the cache will last 5 hours
+    private final boolean ignoreCache;
     private int mMaxProgress = 100;
     private LibraryUpdates mUpdates = null;
+
+    public GetLibraryUpdatesTask() {
+        this.ignoreCache = false;
+    }
+
+    /**
+     *
+     * @param ignoreCache if true we will always check again.
+     */
+    public GetLibraryUpdatesTask(boolean ignoreCache) {
+        this.ignoreCache = ignoreCache;
+    }
 
     @Override
     public void start() {
         publishProgress(-1, "");
 
         Library library = AppContext.getLibrary();
-        mUpdates = library.getAvailableLibraryUpdates(new Library.OnProgressListener() {
-            @Override
-            public void onProgress(int progress, int max) {
-                mMaxProgress = max;
-                publishProgress(progress, "");
-            }
+        if(ignoreCache || System.currentTimeMillis() - AppContext.getLastCheckedForUpdates() > CACHE_TTL) {
+            mUpdates = library.checkServerForUpdates(new Library.OnProgressListener() {
+                @Override
+                public void onProgress(int progress, int max) {
+                    mMaxProgress = max;
+                    publishProgress(progress, "");
+                }
 
-            @Override
-            public void onIndeterminate() {
-                publishProgress(-1, "");
-            }
-        });
+                @Override
+                public void onIndeterminate() {
+                    publishProgress(-1, "");
+                }
+            });
+            AppContext.setLastCheckedForUpdates(System.currentTimeMillis());
+        } else {
+            mUpdates = library.getAvailableUpdates();
+        }
     }
 
     @Override

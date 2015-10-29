@@ -103,7 +103,7 @@ public class Library {
      * @param listener an optional progress listener
      * @return
      */
-    public LibraryUpdates getAvailableLibraryUpdates(OnProgressListener listener) {
+    public LibraryUpdates checkServerForUpdates(OnProgressListener listener) {
         mAppIndex.beginTransaction();
         if(mDownloader.downloadProjectList(mAppIndex)) {
             String[] projectIds = mAppIndex.getProjectSlugs();
@@ -119,7 +119,7 @@ public class Library {
             listener.onIndeterminate();
         }
         mAppIndex.endTransaction(true);
-        return generateLibraryUpdates();
+        return getAvailableUpdates();
     }
 
     /**
@@ -127,7 +127,7 @@ public class Library {
      * The network is not used durring this operation.
      * @return
      */
-    private LibraryUpdates generateLibraryUpdates() {
+    public LibraryUpdates getAvailableUpdates() {
         LibraryUpdates updates = new LibraryUpdates();
         SourceTranslation[] sourceTranslations = mAppIndex.getSourceTranslationsWithUpdates();
         for(SourceTranslation sourceTranslation:sourceTranslations) {

@@ -384,4 +384,24 @@ public class AppContext {
         file.mkdirs();
         return file;
     }
+
+    /**
+     * Returns the last time we checked the server for updates
+     * @return
+     */
+    public static long getLastCheckedForUpdates() {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        return prefs.getLong("last_checked_server_for_updates", 0L);
+    }
+
+    /**
+     * Sets the last time we checked the server for updates to the library
+     * @param timeMillis
+     */
+    public static void setLastCheckedForUpdates(long timeMillis) {
+        SharedPreferences prefs = mContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putLong("last_checked_server_for_updates", timeMillis);
+        editor.apply();
+    }
 }

@@ -177,7 +177,7 @@ public class DeveloperToolsActivity extends BaseActivity implements ManagedTask.
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 // create new prep task
-                                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask();
+                                GetLibraryUpdatesTask task = new GetLibraryUpdatesTask(true);
                                 task.addOnProgressListener(DeveloperToolsActivity.this);
                                 task.addOnFinishedListener(DeveloperToolsActivity.this);
                                 TaskManager.addTask(task, GetLibraryUpdatesTask.TASK_ID);

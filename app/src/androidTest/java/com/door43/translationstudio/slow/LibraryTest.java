@@ -3,9 +3,6 @@ package com.door43.translationstudio.slow;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 
-import com.door43.translationstudio.MainApplication;
-import com.door43.translationstudio.R;
-import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.LibraryUpdates;
 import com.door43.translationstudio.core.Project;
@@ -15,9 +12,6 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.AppContext;
-import com.door43.translationstudio.core.TranslationWord;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,7 +49,7 @@ public class LibraryTest extends InstrumentationTestCase {
     }
 
     public void test04CheckForAvailableUpdates() throws Exception {
-        LibraryUpdates updates = mLibrary.getAvailableLibraryUpdates(null);
+        LibraryUpdates updates = mLibrary.checkServerForUpdates(null);
 
         // cache updates
         FileOutputStream fos = AppContext.context().openFileOutput("library_updates", Context.MODE_PRIVATE);
