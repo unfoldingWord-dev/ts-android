@@ -60,10 +60,10 @@ public class Project {
             String name = projectLanguageJson.getString("name");
             String description = projectLanguageJson.getString("desc");
             String sourceLanguageCatalog = json.getString("lang_catalog");
-            int sourceLanguageModified = Util.getDateFromUrl(sourceLanguageCatalog);
+            int sourceLanguageServerModified = Util.getDateFromUrl(sourceLanguageCatalog);
             int sort = json.getInt("sort");
 
-            return new Project(projectId, sourceLanguageId, name, description, dateModified, sort, sourceLanguageCatalog, sourceLanguageModified, 0);
+            return new Project(projectId, sourceLanguageId, name, description, dateModified, sort, sourceLanguageCatalog, 0, sourceLanguageServerModified);
         }
         return null;
     }
@@ -80,9 +80,9 @@ public class Project {
             int dateModified = json.getInt("date_modified");
             int sort = json.getInt("sort");
             String sourceLanguageCatalog = json.getString("lang_catalog");
-            int sourceLanguageModified = Util.getDateFromUrl(sourceLanguageCatalog);
+            int sourceLanguageServerModified = Util.getDateFromUrl(sourceLanguageCatalog);
 
-            return new Project(projectId, null, null, null, dateModified, sort, sourceLanguageCatalog, sourceLanguageModified, 0);
+            return new Project(projectId, null, null, null, dateModified, sort, sourceLanguageCatalog, 0, sourceLanguageServerModified);
         }
         return null;
     }

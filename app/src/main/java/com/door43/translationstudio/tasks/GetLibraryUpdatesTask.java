@@ -11,7 +11,7 @@ import com.door43.util.tasks.ManagedTask;
 public class GetLibraryUpdatesTask extends ManagedTask {
 
     public static final String TASK_ID  = "get_available_source_translations_task";
-    private static final long CACHE_TTL = 1000 * 60 * 60 * 5; // the cache will last 5 hours
+    private static final long CACHE_TTL = 1000 * 60 * 60; // the cache will last 1 hour
     private final boolean ignoreCache;
     private int mMaxProgress = 100;
     private LibraryUpdates mUpdates = null;

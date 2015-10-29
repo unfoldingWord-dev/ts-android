@@ -70,39 +70,43 @@ public class Downloader {
 
     /**
      * Downloads the source languages for a project from the server
-     * @param projectId
+     * @param projectSlug
      * @return
      */
-    public boolean downloadSourceLanguageList(String projectId, Indexer targetIndex) {
-        Project project = targetIndex.getProject(projectId);
+    public boolean downloadSourceLanguageList(String projectSlug, Indexer targetIndex) {
+        Project project = targetIndex.getProject(projectSlug);
         if(project != null && project.sourceLanguageCatalog != null
                 && (project.sourceLanguageCatalogLocalDateModified < project.sourceLanguageCatalogServerDateModified
                 || project.sourceLanguageCatalogServerDateModified == 0)) {
             String catalog = request(project.sourceLanguageCatalog);
             if(catalog != null) {
-                return targetIndex.indexSourceLanguages(projectId, catalog);
+                if(targetIndex.indexSourceLanguages(projectSlug, catalog)) {
+                    targetIndex.markSourceLanguageCatalogUpToDate(projectSlug);
+                }
             }
         }
-        return false;
+        return true;
     }
 
     /**
      * Downloads the resources for a source language from the server
-     * @param projectId
-     * @param sourceLanguageId
+     * @param projectSlug
+     * @param sourceLanguageSlug
      * @return
      */
-    public boolean downloadResourceList(String projectId, String sourceLanguageId, Indexer targetIndex) {
-        SourceLanguage sourceLanguage = targetIndex.getSourceLanguage(projectId, sourceLanguageId);
+    public boolean downloadResourceList(String projectSlug, String sourceLanguageSlug, Indexer targetIndex) {
+        SourceLanguage sourceLanguage = targetIndex.getSourceLanguage(projectSlug, sourceLanguageSlug);
         if(sourceLanguage != null && sourceLanguage.resourceCatalog != null
                 && (sourceLanguage.resourceCatalogLocalDateModified < sourceLanguage.resourceCatalogServerDateModified
                 | sourceLanguage.resourceCatalogServerDateModified == 0)) {
             String catalog = request(sourceLanguage.resourceCatalog);
             if(catalog != null) {
-                return targetIndex.indexResources(projectId, sourceLanguageId, catalog);
+                if(targetIndex.indexResources(projectSlug, sourceLanguageSlug, catalog)) {
+                    targetIndex.markResourceCatalogUpToDate(projectSlug, sourceLanguageSlug);
+                }
             }
         }
-        return false;
+        return true;
     }
 
     /**

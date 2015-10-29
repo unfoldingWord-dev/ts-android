@@ -114,12 +114,12 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param dateModified
      * @param sourceLanguageCatalogUrl
      */
-    public long addProject(SQLiteDatabase db, String slug, int sort, int dateModified, String sourceLanguageCatalogUrl, int sourceLanguageCatalogModifiedAt, String[] categorySlugs) {
+    public long addProject(SQLiteDatabase db, String slug, int sort, int dateModified, String sourceLanguageCatalogUrl, int sourceLanguageCatalogServerModifiedAt, String[] categorySlugs) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("sort", sort);
         values.put("modified_at", dateModified);
-        values.put("source_language_catalog_server_modified_at", sourceLanguageCatalogModifiedAt);
+        values.put("source_language_catalog_server_modified_at", sourceLanguageCatalogServerModifiedAt);
         values.put("source_language_catalog_url", sourceLanguageCatalogUrl);
 
         // add project
@@ -194,7 +194,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param dateModified
      * @param resourceCatalogUrl
      */
-    public long addSourceLanguage(SQLiteDatabase db, String slug, long projectId, String name, String projectName, String projectDescription, String direction, int dateModified, String resourceCatalogUrl, String[] categoryNames) {
+    public long addSourceLanguage(SQLiteDatabase db, String slug, long projectId, String name, String projectName, String projectDescription, String direction, int dateModified, String resourceCatalogUrl, int resourceCatalogServerModifiedAt, String[] categoryNames) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("project_id", projectId);
@@ -203,6 +203,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         values.put("project_description", projectDescription);
         values.put("direction", direction);
         values.put("modified_at", dateModified);
+        values.put("resource_catalog_server_modified_at", resourceCatalogServerModifiedAt);
         values.put("resource_catalog_url", resourceCatalogUrl);
 
         Cursor cursor = db.rawQuery("SELECT `id` FROM `source_language` WHERE `slug`=? AND `project_id`=" + projectId, new String[]{slug});
@@ -285,21 +286,21 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param version
      * @param dateModified
      * @param sourceCatalog
-     * @param sourceDateModified
+     * @param sourceServerDateModified
      * @param notesCatalog
-     * @param notesDateModified
+     * @param notesServerDateModified
      * @param wordsCatalog
-     * @param wordsDateModified
+     * @param wordsServerDateModified
      * @param wordAssignmentsCatalog
-     * @param wordAssignmentsDateModified
+     * @param wordAssignmentsServerDateModified
      * @param questionsCatalog
-     * @param questionsDateModified
+     * @param questionsServerDateModified
      */
     public long addResource(SQLiteDatabase db, String slug, long sourceLanguageId, String name,
                             int checkingLevel, String version, int dateModified, String sourceCatalog,
-                            int sourceDateModified, String notesCatalog, int notesDateModified,
-                            String wordsCatalog, int wordsDateModified, String wordAssignmentsCatalog,
-                            int wordAssignmentsDateModified, String questionsCatalog, int questionsDateModified) {
+                            int sourceServerDateModified, String notesCatalog, int notesServerDateModified,
+                            String wordsCatalog, int wordsServerDateModified, String wordAssignmentsCatalog,
+                            int wordAssignmentsServerDateModified, String questionsCatalog, int questionsServerDateModified) {
         ContentValues values = new ContentValues();
         values.put("slug", slug);
         values.put("source_language_id", sourceLanguageId);
@@ -308,15 +309,15 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         values.put("version", version);
         values.put("modified_at", dateModified);
         values.put("source_catalog_url", sourceCatalog);
-        values.put("source_catalog_server_modified_at", sourceDateModified);
+        values.put("source_catalog_server_modified_at", sourceServerDateModified);
         values.put("translation_notes_catalog_url", notesCatalog);
-        values.put("translation_notes_catalog_server_modified_at", notesDateModified);
+        values.put("translation_notes_catalog_server_modified_at", notesServerDateModified);
         values.put("translation_words_catalog_url", wordsCatalog);
-        values.put("translation_words_catalog_server_modified_at", wordsDateModified);
+        values.put("translation_words_catalog_server_modified_at", wordsServerDateModified);
         values.put("translation_word_assignments_catalog_url", wordAssignmentsCatalog);
-        values.put("translation_word_assignments_catalog_server_modified_at", wordAssignmentsDateModified);
+        values.put("translation_word_assignments_catalog_server_modified_at", wordAssignmentsServerDateModified);
         values.put("checking_questions_catalog_url", questionsCatalog);
-        values.put("checking_questions_catalog_server_modified_at", questionsDateModified);
+        values.put("checking_questions_catalog_server_modified_at", questionsServerDateModified);
 
         Cursor cursor = db.rawQuery("SELECT `id` FROM `resource` WHERE `slug`=? AND `source_language_id`=" + sourceLanguageId, new String[]{slug});
         long resourceId;
@@ -1601,5 +1602,30 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return projects.toArray(new Project[projects.size()]);
+    }
+
+    /**
+     * Updates the local source language catalog date modified to that of the server
+     * @param db
+     * @param projectSlug
+     */
+    public void markSourceLanguageCatalogUpToDate(SQLiteDatabase db, String projectSlug) {
+        db.execSQL("UPDATE `project` SET"
+                + " `source_language_catalog_local_modified_at`=`source_language_catalog_server_modified_at`"
+                + " WHERE `slug`=?", new String[]{projectSlug});
+    }
+
+    /**
+     * Updates the local resource catalog date modified to that of the server
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     */
+    public void markResourceCatalogUpToDate(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug) {
+        db.execSQL("UPDATE `source_language`"
+                + " SET `resource_catalog_local_modified_at`=`resource_catalog_server_modified_at`"
+                + " WHERE `project_id` IN ("
+                + "   SELECT `id` FROM `project` WHERE `slug`=?"
+                + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug});
     }
 }

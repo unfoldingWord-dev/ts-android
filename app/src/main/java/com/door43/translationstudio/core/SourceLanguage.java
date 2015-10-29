@@ -62,8 +62,8 @@ public class SourceLanguage implements Comparable {
                 projectJson.getString("name"),
                 projectDescription,
                 resourceCatalog,
-                resourceModified,
-                0);
+                0,
+                resourceModified);
     }
 
     @Override

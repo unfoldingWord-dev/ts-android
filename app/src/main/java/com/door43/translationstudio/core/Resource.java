@@ -114,20 +114,20 @@ public class Resource {
                 false,
                 json.getInt("date_modified"),
                 sourceCatalog,
+                0,
                 sourceModified,
-                0,
                 notesCatalog,
+                0,
                 notesModified,
-                0,
                 wordsCatalog,
+                0,
                 wordsModified,
-                0,
                 termAssignmentsCatalog,
-                termAssignmentsModified,
                 0,
+                termAssignmentsModified,
                 questionsCatalog,
-                questionsDateModified,
-                0
+                0,
+                questionsDateModified
         );
     }
 
@@ -220,11 +220,11 @@ public class Resource {
         return notesServerDateModified;
     }
 
-    public int getTermsServerDateModified() {
+    public int getWordsServerDateModified() {
         return termsServerDateModified;
     }
 
-    public int getTermAssignmentsServerDateModified() {
+    public int getWordAssignmentsServerDateModified() {
         return termAssignmentsServerDateModified;
     }
 

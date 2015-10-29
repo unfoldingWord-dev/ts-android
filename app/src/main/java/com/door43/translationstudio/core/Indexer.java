@@ -212,7 +212,7 @@ public class Indexer {
                                 projectId, sourceLanguage.name, sourceLanguage.projectTitle,
                                 sourceLanguage.projectDescription,
                                 sourceLanguage.getDirection().toString(), sourceLanguage.dateModified,
-                                sourceLanguage.resourceCatalog, categoryNames.toArray(new String[categoryNames.size()]));
+                                sourceLanguage.resourceCatalog, sourceLanguage.resourceCatalogServerDateModified, categoryNames.toArray(new String[categoryNames.size()]));
                         mDatabase.yieldIfContendedSafely();
                     }
                 } catch (JSONException e) {
@@ -251,11 +251,11 @@ public class Indexer {
                 if(resource != null) {
                     mDatabaseHelper.addResource(mDatabase, resource.getId(), sourceLanguageId,
                             resource.getTitle(), resource.getCheckingLevel(), resource.getVersion(),
-                            resource.getDateModified(), resource.getSourceCatalogUrl(), resource.getSourceDateModified(),
-                            resource.getNotesCatalogUrl(), resource.getNotesDateModified(),
-                            resource.getWordsCatalogUrl(), resource.getWordsDateModified(),
-                            resource.getWordAssignmentsCatalogUrl(), resource.getWordAssignmentsDateModified(),
-                            resource.getQuestionsCatalogUrl(), resource.getQuestionsDateModified());
+                            resource.getDateModified(), resource.getSourceCatalogUrl(), resource.getSourceServerDateModified(),
+                            resource.getNotesCatalogUrl(), resource.getNotesServerDateModified(),
+                            resource.getWordsCatalogUrl(), resource.getWordsServerDateModified(),
+                            resource.getWordAssignmentsCatalogUrl(), resource.getWordAssignmentsServerDateModified(),
+                            resource.getQuestionsCatalogUrl(), resource.getQuestionsServerDateModified());
                     mDatabase.yieldIfContendedSafely();
                 }
             } catch (Exception e) {
@@ -1110,5 +1110,23 @@ public class Indexer {
      */
     public Project[] getProjects(String sourceLanguageSlug) {
         return mDatabaseHelper.getProjects(mDatabase, sourceLanguageSlug);
+    }
+
+    /**
+     * Marks the source language catalog in the project as up to date
+     * @param projectSlug
+     */
+    public void markSourceLanguageCatalogUpToDate(String projectSlug) {
+        mDatabaseHelper.markSourceLanguageCatalogUpToDate(mDatabase, projectSlug);
+    }
+
+
+    /**
+     * Marks the resource catalog in source language has up to date
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     */
+    public void markResourceCatalogUpToDate(String projectSlug, String sourceLanguageSlug) {
+        mDatabaseHelper.markResourceCatalogUpToDate(mDatabase, projectSlug, sourceLanguageSlug);
     }
 }
