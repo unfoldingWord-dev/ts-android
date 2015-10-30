@@ -266,34 +266,24 @@ public class Indexer {
         return true;
     }
 
-//    /**
-//     * Updates the resources local date modiifed to match the server date modified
-//     * @param projectSlug
-//     * @param sourceLanguageSlug
-//     * @return
-//     */
-//    public synchronized boolean normalizeResourcesModifiedDate(String projectSlug, String sourceLanguageSlug) {
-//        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, projectSlug);
-//        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceLanguageSlug, projectId);
-//        if(sourceLanguageId > 0) {
-//            mDatabaseHelper.normalizeResourcesModifiedDate(mDatabase, sourceLanguageId);
-//        }
-//        return true;
-//    }
+    public synchronized void markSourceCatalogUpToDate(SourceTranslation sourceTranslation) {
+        mDatabaseHelper.markSourceCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
+    }
 
-    /**
-     * Updates the resource's local date modiifed to match the server date modified
-     * @param sourceTranslation
-     * @return
-     */
-    public synchronized boolean markResourceUpToDate(SourceTranslation sourceTranslation) {
-        long projectId = mDatabaseHelper.getProjectDBId(mDatabase, sourceTranslation.projectSlug);
-        long sourceLanguageId = mDatabaseHelper.getSourceLanguageDBId(mDatabase, sourceTranslation.sourceLanguageSlug, projectId);
-        long resourceId = mDatabaseHelper.getResourceDBId(mDatabase, sourceTranslation.resourceSlug, sourceLanguageId);
-        if(resourceId > 0) {
-            mDatabaseHelper.markResourceUpToDate(mDatabase, resourceId);
-        }
-        return true;
+    public synchronized void markNotesCatalogUpToDate(SourceTranslation sourceTranslation) {
+        mDatabaseHelper.markNotesCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
+    }
+
+    public synchronized void markQuestionsCatalogUpToDate(SourceTranslation sourceTranslation) {
+        mDatabaseHelper.markQuestionsCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
+    }
+
+    public synchronized void markWordsCatalogUpToDate(SourceTranslation sourceTranslation) {
+        mDatabaseHelper.markWordsCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
+    }
+
+    public synchronized void markWordAssignmentsCatalogUpToDate(SourceTranslation sourceTranslation) {
+        mDatabaseHelper.markWordAssignmentsCatalogUpToDate(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
     }
 
     /**

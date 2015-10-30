@@ -1312,23 +1312,6 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
-     * Updates the local date modified to match the server date modified for catalogs
-     * @param db
-     * @param resourceId
-     */
-    @Deprecated
-    public void markResourceUpToDate(SQLiteDatabase db, long resourceId) {
-        // TODO: 10/29/2015 mark each individual catalog as up to date in it's own method
-        db.execSQL("UPDATE `resource` SET"
-                + " `source_catalog_local_modified_at`=`source_catalog_server_modified_at`,"
-                + " `translation_notes_catalog_local_modified_at`=`translation_notes_catalog_server_modified_at`,"
-                + " `translation_words_catalog_local_modified_at`=`translation_words_catalog_server_modified_at`,"
-                + " `translation_word_assignments_catalog_local_modified_at`=`translation_word_assignments_catalog_server_modified_at`,"
-                + " `checking_questions_catalog_local_modified_at`=`checking_questions_catalog_server_modified_at`"
-                + " WHERE `id`=" + resourceId);
-    }
-
-    /**
      * Returns a source translation
      * @param db
      * @param projectSlug
@@ -1629,5 +1612,90 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " WHERE `project_id` IN ("
                 + "   SELECT `id` FROM `project` WHERE `slug`=?"
                 + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug});
+    }
+
+    /**
+     *
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     */
+    public void markSourceCatalogUpToDate(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        db.execSQL("UPDATE `resource`"
+                + " SET `source_catalog_local_modified_at`=`source_catalog_server_modified_at`"
+                + " WHERE `source_language_id` IN ("
+                + "   SELECT `sl`.`id` FROM `project` AS `p`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=?"
+                + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+    }
+
+    /**
+     *
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     */
+    public void markNotesCatalogUpToDate(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        db.execSQL("UPDATE `resource`"
+                + " SET `translation_notes_catalog_local_modified_at`=`translation_notes_catalog_server_modified_at`"
+                + " WHERE `source_language_id` IN ("
+                + "   SELECT `sl`.`id` FROM `project` AS `p`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=?"
+                + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+    }
+
+    /**
+     *
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     */
+    public void markWordsCatalogUpToDate(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        db.execSQL("UPDATE `resource`"
+                + " SET `translation_words_catalog_local_modified_at`=`translation_words_catalog_server_modified_at`"
+                + " WHERE `source_language_id` IN ("
+                + "   SELECT `sl`.`id` FROM `project` AS `p`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=?"
+                + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+    }
+
+    /**
+     *
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     */
+    public void markWordAssignmentsCatalogUpToDate(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        db.execSQL("UPDATE `resource`"
+                + " SET `translation_word_assignments_catalog_local_modified_at`=`translation_word_assignments_catalog_server_modified_at`"
+                + " WHERE `source_language_id` IN ("
+                + "   SELECT `sl`.`id` FROM `project` AS `p`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=?"
+                + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+    }
+
+    /**
+     *
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     */
+    public void markQuestionsCatalogUpToDate(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        db.execSQL("UPDATE `resource`"
+                + " SET `checking_questions_catalog_local_modified_at`=`checking_questions_catalog_server_modified_at`"
+                + " WHERE `source_language_id` IN ("
+                + "   SELECT `sl`.`id` FROM `project` AS `p`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`project_id`=`p`.`id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=?"
+                + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
     }
 }

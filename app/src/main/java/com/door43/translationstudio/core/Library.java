@@ -214,45 +214,49 @@ public class Library {
      */
     private Boolean startSourceTranslationDownload(SourceTranslation sourceTranslation, OnProgressListener listener) {
         boolean success = true;
-        success = mDownloader.downloadSource(sourceTranslation, mAppIndex) ? success : false;
+        // source
+        if(mDownloader.downloadSource(sourceTranslation, mAppIndex)) {
+            mAppIndex.markSourceCatalogUpToDate(sourceTranslation);
+        } else {
+            success = false;
+        }
         if(listener != null) {
             listener.onProgress(1, 5);
         }
-        if(Thread.currentThread().isInterrupted()) {
-            return false;
+
+        // words
+        if(mDownloader.downloadWords(sourceTranslation, mAppIndex)) {
+            mAppIndex.markWordsCatalogUpToDate(sourceTranslation);
         }
-        mDownloader.downloadWords(sourceTranslation, mAppIndex); // optional to success of download
         if(listener != null) {
             listener.onProgress(2, 5);
         }
-        if(Thread.currentThread().isInterrupted()) {
-            return false;
-        }
+
+        // word assignments
         // TODO: delete current term assignments
-        mDownloader.downloadWordAssignments(sourceTranslation, mAppIndex); // optional to success of download
+        if(mDownloader.downloadWordAssignments(sourceTranslation, mAppIndex)) {
+            mAppIndex.markWordAssignmentsCatalogUpToDate(sourceTranslation);
+        }
         if(listener != null) {
             listener.onProgress(3, 5);
         }
-        if(Thread.currentThread().isInterrupted()) {
-            return false;
+
+        // notes
+        if(mDownloader.downloadNotes(sourceTranslation, mAppIndex)) {
+            mAppIndex.markNotesCatalogUpToDate(sourceTranslation);
         }
-        mDownloader.downloadNotes(sourceTranslation, mAppIndex); // optional to success of download
         if(listener != null) {
             listener.onProgress(4, 5);
         }
-        if(Thread.currentThread().isInterrupted()) {
-            return false;
+
+        // questions
+        if(mDownloader.downloadCheckingQuestions(sourceTranslation, mAppIndex)) {
+            mAppIndex.markQuestionsCatalogUpToDate(sourceTranslation);
         }
-        mDownloader.downloadCheckingQuestions(sourceTranslation, mAppIndex); // optional to success of download
         if(listener != null) {
             listener.onProgress(5, 5);
         }
-        if(Thread.currentThread().isInterrupted()) {
-            return false;
-        }
-        if(success) {
-            mAppIndex.markResourceUpToDate(sourceTranslation);
-        }
+
         return success;
     }
 
