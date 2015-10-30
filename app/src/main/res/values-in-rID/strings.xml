@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Penyimpanan eksternal tidak tersedia</string>
   <string name="project_exported_to">Proyek disimpan ke </string>
   <string name="title_activity_file_explorer">File Explorer</string>
-  <string name="export_to_app">Ekspor ke app</string>
-  <string name="export_to_sd">Ekspor ke SD</string>
+  <string name="backup_to_app">Ekspor ke app</string>
+  <string name="backup_to_sd">Ekspor ke SD</string>
   <string name="translation_import_failed">Gagal untuk mengimpor terjemahan</string>
   <string name="internet_not_available">Anda tidak memiliki sambungan internet aktif.</string>
   <string name="backup_and_publish">Backup dan Publikasikan</string>

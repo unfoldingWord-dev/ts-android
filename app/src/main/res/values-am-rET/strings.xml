@@ -20,8 +20,8 @@
   <string name="missing_external_storage">ውጪአዊ የሆነ የመረጃ ማከማቻ የለም</string>
   <string name="project_exported_to">ፕሮጄክት ወደ ተከማችቶአል </string>
   <string name="title_activity_file_explorer">መረጃ ፍለጋ</string>
-  <string name="export_to_app">ወደ ሶፍት ዌሩ መላክ</string>
-  <string name="export_to_sd">ወደ መሞሪው መላክ</string>
+  <string name="backup_to_app">ወደ ሶፍት ዌሩ መላክ</string>
+  <string name="backup_to_sd">ወደ መሞሪው መላክ</string>
   <string name="translation_import_failed">ትርጉሙን ለማስገባት አልቻለም</string>
   <string name="internet_not_available">የሚሠራ ኢንተርኔት ሊኖርዎት አይጠበቅም።</string>
   <string name="backup_and_publish">መረጃውን መያዝ እና ማሳተም</string>

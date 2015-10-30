@@ -20,8 +20,8 @@
   <string name="missing_external_storage">എക്‍സ്‌റ്റേണല്‍ സ്റ്റോറേജ് ലഭ്യമല്ല</string>
   <string name="project_exported_to">പ്രൊജക്ട് ഇതിലേക്ക് സേവ് ചെയ്തു </string>
   <string name="title_activity_file_explorer">ഫയല്‍ എക്‍സ്പ്ലോറര്‍</string>
-  <string name="export_to_app">ആപ്പിലേക്ക് എക്‍സ്പോര്‍ട്ട് ചെയ്യുക</string>
-  <string name="export_to_sd">എസ് ഡിയിലേക്ക് എക്‍സ്പോര്‍ട്ട് ചെയ്യുക</string>
+  <string name="backup_to_app">ആപ്പിലേക്ക് എക്‍സ്പോര്‍ട്ട് ചെയ്യുക</string>
+  <string name="backup_to_sd">എസ് ഡിയിലേക്ക് എക്‍സ്പോര്‍ട്ട് ചെയ്യുക</string>
   <string name="translation_import_failed">പരിഭാഷ ഇംപോര്‍ട്ട് ചെയ്യുവാന്‍ സാധിച്ചില്ല</string>
   <string name="internet_not_available">നിങ്ങള്‍ക്ക് സജീവമായുള്ള ഇന്‍റര്‍നെറ്റ് കണക്ഷന്‍ ഇല്ല</string>
   <string name="backup_and_publish">ബാക്കപ്പ് പ്രസിദ്ധീകരിക്കുക</string>

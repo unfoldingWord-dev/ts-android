@@ -20,8 +20,8 @@
   <string name="missing_external_storage">బాహ్య నిల్వ అందుబాటులో లేదు</string>
   <string name="project_exported_to">ప్రాజెక్ట్ సేవ్</string>
   <string name="title_activity_file_explorer">ఫైలు Explorer</string>
-  <string name="export_to_app">అనువర్తనం ఎగుమతి</string>
-  <string name="export_to_sd">SD కు ఎగుమతి</string>
+  <string name="backup_to_app">అనువర్తనం ఎగుమతి</string>
+  <string name="backup_to_sd">SD కు ఎగుమతి</string>
   <string name="translation_import_failed">అనువాదం దిగుమతి విఫలమైంది</string>
   <string name="internet_not_available">మీరు ఆక్టివ్ ఇంటర్నెట్ కనెక్షన్ లేదు.</string>
   <string name="backup_and_publish">బ్యాకప్ మరియు ప్రచురించు</string>

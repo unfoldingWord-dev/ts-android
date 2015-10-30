@@ -18,8 +18,8 @@
   <string name="missing_external_storage">Panlabas na lalagyan ay hindi magagamit</string>
   <string name="project_exported_to">I-save ang proyekto sa</string>
   <string name="title_activity_file_explorer">Mananaliksik ng Kikil</string>
-  <string name="export_to_app">I-export sa app</string>
-  <string name="export_to_sd">I-export sa SD</string>
+  <string name="backup_to_app">I-export sa app</string>
+  <string name="backup_to_sd">I-export sa SD</string>
   <string name="translation_import_failed">Nabigong i-import ang pagsasalin</string>
   <string name="internet_not_available">Wala kang aktibong koneksyon sa internet.</string>
   <string name="upload_wizard_intro">Ikaw ay mag-upload ng iyong pagsasalin.</string>

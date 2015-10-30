@@ -20,8 +20,8 @@
   <string name="missing_external_storage">ਬਾਹਰੀ ਸਟੋਰੇਜ਼ ਉਪਲੱਬਧ ਨਹੀ ਹੈ</string>
   <string name="project_exported_to">ਪ੍ਰੋਜੈਕਟ ਨੂੰ ਬਚਾਇਆ <xliff:g id="file_path" example="/storage/sdcard1/"> %1$s </xliff:g></string>
   <string name="title_activity_file_explorer">ਫਾਇਲ Explorer</string>
-  <string name="export_to_app">ਅਨੁਪ੍ਰਯੋਗ ਨੂੰ ਐਕਸਪੋਰਟ</string>
-  <string name="export_to_sd">SD ਕਾਰਡ ਨੂੰ ਐਕਸਪੋਰਟ</string>
+  <string name="backup_to_app">ਅਨੁਪ੍ਰਯੋਗ ਨੂੰ ਐਕਸਪੋਰਟ</string>
+  <string name="backup_to_sd">SD ਕਾਰਡ ਨੂੰ ਐਕਸਪੋਰਟ</string>
   <string name="translation_import_failed">ਅਨੁਵਾਦ ਦੇ ਆਯਾਤ ਕਰਨ ਲਈ ਫੇਲ੍ਹ ਹੈ</string>
   <string name="internet_not_available">ਤੁਹਾਨੂੰ ਇੱਕ ਸਰਗਰਮ ਇੰਟਰਨੈੱਟ ਕੁਨੈਕਸ਼ਨ ਦੀ ਲੋੜ ਨਹ ਹੈ.</string>
   <string name="backup_and_publish">ਬੈਕਅੱਪ ਅਤੇ ਪਬਲਿਸ਼</string>

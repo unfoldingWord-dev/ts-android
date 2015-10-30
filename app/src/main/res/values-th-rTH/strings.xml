@@ -20,8 +20,8 @@
   <string name="missing_external_storage">ไม่มีการเก็บข้อมูลภายนอก</string>
   <string name="project_exported_to">โครงการที่บันทึกไว้ </string>
   <string name="title_activity_file_explorer">แฟ้ม Explorer</string>
-  <string name="export_to_app">ส่งออกไปยังโปรแกรมประยุกต์</string>
-  <string name="export_to_sd">ส่งออกไปยัง SD</string>
+  <string name="backup_to_app">ส่งออกไปยังโปรแกรมประยุกต์</string>
+  <string name="backup_to_sd">ส่งออกไปยัง SD</string>
   <string name="translation_import_failed">ล้มเหลวในการนำเข้าการแปล</string>
   <string name="internet_not_available">คุณไม่ได้เชื่อมต่ออินเทอร์เน็ตอยู่</string>
   <string name="backup_and_publish">สำรองข้อมูลและการเผยแพร่</string>

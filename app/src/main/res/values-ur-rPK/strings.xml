@@ -20,8 +20,8 @@
   <string name="missing_external_storage">بیرونی ذخیرہ دستیاب نہیں ہے</string>
   <string name="project_exported_to">پراجیکٹ محفوظ </string>
   <string name="title_activity_file_explorer">فائل ایکسپلورر</string>
-  <string name="export_to_app">اپلی کیشن کے لیے برآمد کریں</string>
-  <string name="export_to_sd">SD کو برآمد کریں</string>
+  <string name="backup_to_app">اپلی کیشن کے لیے برآمد کریں</string>
+  <string name="backup_to_sd">SD کو برآمد کریں</string>
   <string name="translation_import_failed">ترجمہ درآمد کرنے میں ناکام رہے</string>
   <string name="internet_not_available">آپ کو ایک فعال انٹرنیٹ کنکشن نہیں ہے ۔</string>
   <string name="backup_and_publish">بیک اپ اور شائع کریں</string>

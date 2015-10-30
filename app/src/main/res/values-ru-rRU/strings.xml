@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Внешний накопитель не доступен</string>
   <string name="project_exported_to">Проект, сохраненный на </string>
   <string name="title_activity_file_explorer">File Explorer</string>
-  <string name="export_to_app">Экспорт в app</string>
-  <string name="export_to_sd">Экспортировать на SD</string>
+  <string name="backup_to_app">Экспорт в app</string>
+  <string name="backup_to_sd">Экспортировать на SD</string>
   <string name="translation_import_failed">Не удалось импортировать перевод</string>
   <string name="internet_not_available">У вас нет активного интернет-соединения.</string>
   <string name="backup_and_publish">Резервное копирование и публикация</string>

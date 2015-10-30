@@ -20,8 +20,8 @@
   <string name="missing_external_storage">De almacenamiento externo no está disponible</string>
   <string name="project_exported_to">Proyecto guardado en </string>
   <string name="title_activity_file_explorer">El Explorador De Archivos</string>
-  <string name="export_to_app">De exportación para la aplicación</string>
-  <string name="export_to_sd">Exportar a tarjeta SD</string>
+  <string name="backup_to_app">De exportación para la aplicación</string>
+  <string name="backup_to_sd">Exportar a tarjeta SD</string>
   <string name="translation_import_failed">No se pudo importar la traducción</string>
   <string name="internet_not_available">Usted no tiene una conexión activa a internet.</string>
   <string name="backup_and_publish">Copia de seguridad y publicar</string>

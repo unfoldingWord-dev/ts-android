@@ -47,9 +47,9 @@
     <string name="title_activity_file_explorer">File Explorer</string>
     <string name="missing_file" translatable="false">The file does not exist</string>
     <!-- Export a project to another app on the device -->
-    <string name="export_to_app">Export to app</string>
+    <string name="backup_to_app">Send to another app</string>
     <!-- Export a project to the sd card -->
-    <string name="export_to_sd">Export to SD Card</string>
+    <string name="backup_to_sd">Backup to SD Card</string>
     <string name="export_as_project" translatable="false">@string/app_name</string>
     <string name="export_as_dokuwiki" translatable="false">DokuWiki</string>
     <!-- The translation could not be imported -->
@@ -385,7 +385,7 @@
     <string name="long_click_to_drag">Tap and hold to drag</string>
     <string name="feedback">Feedback</string>
     <string name="import_from_sd">Import from SD Card</string>
-    <string name="backup_to_cloud">Upload to cloud</string>
+    <string name="backup_online">Backup Online (requires internet)</string>
     <string name="translation_export_failed">Translation could not be exported</string>
     <string name="invalid_file">Not a valid file</string>
     <string name="software_licenses" translatable="false">
@@ -520,4 +520,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </string>
     <string name="action_download_updates">Download updates</string>
     <string name="list_may_be_outdated">The list may be out of date</string>
+    <string name="label_import">Import</string>
+    <string name="import_from_online">Import from Online (requires internet)</string>
 </resources>

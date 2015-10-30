@@ -20,8 +20,8 @@
   <string name="missing_external_storage">外部ストレージは使用できません。</string>
   <string name="project_exported_to">プロジェクトを保存するには</string>
   <string name="title_activity_file_explorer">ファイル エクスプ ローラー</string>
-  <string name="export_to_app">アプリケーションをエクスポートします。</string>
-  <string name="export_to_sd">SD へのエクスポートします。</string>
+  <string name="backup_to_app">アプリケーションをエクスポートします。</string>
+  <string name="backup_to_sd">SD へのエクスポートします。</string>
   <string name="translation_import_failed">翻訳のインポートに失敗しました</string>
   <string name="internet_not_available">アクティブなインターネット接続がありません。</string>
   <string name="backup_and_publish">バックアップとパブリッシュ</string>

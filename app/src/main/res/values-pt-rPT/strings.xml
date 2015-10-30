@@ -20,8 +20,8 @@
   <string name="missing_external_storage">O armazenamento externo não está disponível</string>
   <string name="project_exported_to">Projeto guardado em <xliff:g id="file_path" example="/storage/sdcard1/">%1$s</xliff:g></string>
   <string name="title_activity_file_explorer">Explorador de Ficheiro</string>
-  <string name="export_to_app">Exportar para a app</string>
-  <string name="export_to_sd">Exportar para o Cartão SD</string>
+  <string name="backup_to_app">Exportar para a app</string>
+  <string name="backup_to_sd">Exportar para o Cartão SD</string>
   <string name="translation_import_failed">Falha ao importar a tradução</string>
   <string name="internet_not_available">Não tem uma ligação ativa à Internet.</string>
   <string name="backup_and_publish">Backup e Publicar</string>

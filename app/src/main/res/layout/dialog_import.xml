@@ -9,7 +9,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/backup"
+        android:text="@string/label_import"
         android:padding="16dp"
         android:textColor="@color/dark_primary_text"
         android:textSize="@dimen/headline"
@@ -23,12 +23,12 @@
         android:layout_height="match_parent">
 
         <Button
-            android:id="@+id/export_to_sd"
+            android:id="@+id/import_from_sd"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/backup_to_sd"
-            android:drawableLeft="@drawable/icon_export_sd_dark"
-            android:drawableStart="@drawable/icon_export_sd_dark"
+            android:text="@string/import_from_sd"
+            android:drawableLeft="@drawable/icon_import_sd_dark"
+            android:drawableStart="@drawable/icon_import_sd_dark"
             android:gravity="left|center_vertical"
             android:drawablePadding="10dp"
             android:background="@drawable/dark_bottom_border"
@@ -36,29 +36,17 @@
             style="@style/Widget.Button.Secondary" />
 
         <Button
-            android:id="@+id/upload_to_cloud"
+            android:id="@+id/import_from_cloud"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/backup_online"
-            android:drawableLeft="@drawable/ic_backup_secondary_24dp"
-            android:drawableStart="@drawable/ic_backup_secondary_24dp"
+            android:text="@string/import_from_online"
+            android:drawableLeft="@drawable/ic_cloud_download_secondary_24dp"
+            android:drawableStart="@drawable/ic_cloud_download_secondary_24dp"
             android:gravity="left|center_vertical"
             android:drawablePadding="10dp"
             android:background="@drawable/dark_bottom_border"
             android:textAllCaps="false"
             style="@style/Widget.Button.Secondary" />
 
-        <Button
-            android:id="@+id/export_to_app"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/backup_to_app"
-            android:drawableLeft="@drawable/ic_share_secondary_24dp"
-            android:drawableStart="@drawable/ic_share_secondary_24dp"
-            android:gravity="left|center_vertical"
-            android:drawablePadding="10dp"
-            android:background="@drawable/dark_bottom_border"
-            android:textAllCaps="false"
-            style="@style/Widget.Button.Secondary" />
     </LinearLayout>
 </LinearLayout>

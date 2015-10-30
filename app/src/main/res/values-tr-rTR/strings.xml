@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Harici depolama mevcut değildir </string>
   <string name="project_exported_to">Proje için kaydedilen </string>
   <string name="title_activity_file_explorer">Dosya Gezgini</string>
-  <string name="export_to_app">İhracat uygulama için </string>
-  <string name="export_to_sd">İhracat SD </string>
+  <string name="backup_to_app">İhracat uygulama için </string>
+  <string name="backup_to_sd">İhracat SD </string>
   <string name="translation_import_failed">Çeviri almak için başarısız oldu </string>
   <string name="internet_not_available">Etkin bir internet bağlantısı gerekmez.</string>
   <string name="backup_and_publish">Yedekleme ve Yayınla</string>

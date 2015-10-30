@@ -1,4 +1,4 @@
-package com.door43.translationstudio.newui;
+package com.door43.translationstudio.newui.translate;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -18,11 +18,7 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
-import com.door43.translationstudio.filebrowser.FileBrowserActivity;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.widget.ViewUtil;
-
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.security.InvalidParameterException;
@@ -33,13 +29,12 @@ import java.security.InvalidParameterException;
 public class BackupDialog extends DialogFragment {
 
     public static final String ARG_TARGET_TRANSLATION_ID = "target_translation_id";
-    private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
     private TargetTranslation mTargetTranslation;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
-        dialog.setCanceledOnTouchOutside(false);
+        dialog.setCanceledOnTouchOutside(true);
         return dialog;
     }
 
@@ -60,10 +55,11 @@ public class BackupDialog extends DialogFragment {
         }
 
         Button uploadButton = (Button)v.findViewById(R.id.upload_to_cloud);
-        uploadButton.setVisibility(View.GONE);
         Button exportToSDButton = (Button)v.findViewById(R.id.export_to_sd);
-        Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
         Button exportToAppButton = (Button)v.findViewById(R.id.export_to_app);
+
+        // TODO: 10/30/2015 hook up backup to cloud
+        uploadButton.setVisibility(View.GONE);
 
         final String filename = mTargetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
@@ -95,15 +91,6 @@ public class BackupDialog extends DialogFragment {
                 }
             }
         });
-        importFromSDButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                File path = AppContext.getPublicDownloadsDirectory();
-                Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
-                intent.setDataAndType(Uri.fromFile(path), "file/*");
-                startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
-            }
-        });
         exportToAppButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,46 +114,6 @@ public class BackupDialog extends DialogFragment {
             }
         });
 
-
-        // dismiss button
-        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
-        dismissButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        });
-
         return v;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == IMPORT_PROJECT_FROM_SD_REQUEST) {
-            if(data != null) {
-                File file = new File(data.getData().getPath());
-                if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
-                    try {
-                        AppContext.getTranslator().importArchive(file);
-                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
-                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                        snack.show();
-
-                        // todo: terrible hack.
-                        ((TargetTranslationActivity)getActivity()).notifyDatasetChanged();
-
-                    } catch (Exception e) {
-                        Logger.e(this.getClass().getName(), "Failed to import the archive", e);
-                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
-                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                        snack.show();
-                    }
-                } else {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
-                }
-            }
-        }
     }
 }

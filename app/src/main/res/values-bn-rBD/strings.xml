@@ -20,8 +20,8 @@
   <string name="missing_external_storage">বাহ্যিক সংগ্রহস্থল উপলব্ধ নয়</string>
   <string name="project_exported_to">প্রকল্প সংরক্ষিত</string>
   <string name="title_activity_file_explorer">ফাইল এক্সপ্লোরার</string>
-  <string name="export_to_app">অ্যাপ্লিকেশন থেকে রপ্তানি</string>
-  <string name="export_to_sd">এসডি রপ্তানি</string>
+  <string name="backup_to_app">অ্যাপ্লিকেশন থেকে রপ্তানি</string>
+  <string name="backup_to_sd">এসডি রপ্তানি</string>
   <string name="translation_import_failed">অনুবাদ আমদানি করতে ব্যর্থ</string>
   <string name="internet_not_available">আপনি একটি সক্রিয় ইন্টারনেট সংযোগ না.</string>
   <string name="backup_and_publish">ব্যাকআপ এবং প্রকাশ করুন</string>

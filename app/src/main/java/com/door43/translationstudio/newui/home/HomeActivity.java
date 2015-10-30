@@ -82,6 +82,17 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                             case R.id.action_update:
                                 openLibrary();
                                 return true;
+                            case R.id.action_import:
+                                FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+                                Fragment backupPrev = getFragmentManager().findFragmentByTag("importDialog");
+                                if (backupPrev != null) {
+                                    backupFt.remove(backupPrev);
+                                }
+                                backupFt.addToBackStack(null);
+
+                                ImportDialog backupDialog = new ImportDialog();
+                                backupDialog.show(backupFt, "importDialog");
+                                return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                                 Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");

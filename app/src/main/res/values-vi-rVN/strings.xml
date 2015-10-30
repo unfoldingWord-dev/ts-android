@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Lưu trữ bên ngoài là không có sẵn</string>
   <string name="project_exported_to">Dự án lưu vào </string>
   <string name="title_activity_file_explorer">Hồ sơ Explorer</string>
-  <string name="export_to_app">Xuất chuyển sang ứng dụng</string>
-  <string name="export_to_sd">Xuất khẩu sang SD</string>
+  <string name="backup_to_app">Xuất chuyển sang ứng dụng</string>
+  <string name="backup_to_sd">Xuất khẩu sang SD</string>
   <string name="translation_import_failed">Thất bại trong việc nhập khẩu các bản dịch</string>
   <string name="internet_not_available">Bạn không có kết nối internet hoạt động.</string>
   <string name="backup_and_publish">Sao lưu và Xuất bản</string>

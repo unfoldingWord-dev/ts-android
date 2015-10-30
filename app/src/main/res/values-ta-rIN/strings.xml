@@ -20,8 +20,8 @@
   <string name="missing_external_storage">வெளி சேமிப்பு கிடைக்கவில்லை</string>
   <string name="project_exported_to">திட்ட சேமித்த</string>
   <string name="title_activity_file_explorer">கோப்பு எக்ஸ்ப்ளோரர்</string>
-  <string name="export_to_app">பயன்பாட்டை ஏற்றுமதி</string>
-  <string name="export_to_sd">எஸ்டி ஏற்றுமதி</string>
+  <string name="backup_to_app">பயன்பாட்டை ஏற்றுமதி</string>
+  <string name="backup_to_sd">எஸ்டி ஏற்றுமதி</string>
   <string name="translation_import_failed">மொழிபெயர்ப்பு இறக்குமதி செய்வதில் தோல்வி</string>
   <string name="internet_not_available">நீங்கள் ஒரு செயலில் இணைய இணைப்பு இல்லை.</string>
   <string name="backup_and_publish">காப்பு மற்றும் வெளியிடு</string>

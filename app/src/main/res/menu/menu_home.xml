@@ -10,6 +10,12 @@
         android:icon="@drawable/ic_local_library_black_24dp"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_import"
+        android:title="@string/label_import"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_file_download_black_24dp"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_feedback"
         android:title="@string/feedback"
         android:orderInCategory="100"

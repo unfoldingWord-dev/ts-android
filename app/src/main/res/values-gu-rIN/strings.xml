@@ -20,8 +20,8 @@
   <string name="missing_external_storage">બાહ્ય સ્ટોરેજ ઉપલબ્ધ નથી</string>
   <string name="project_exported_to">પ્રોજેક્ટ સાચવી</string>
   <string name="title_activity_file_explorer">ફાઇલ એક્સપ્લોરર</string>
-  <string name="export_to_app">એપ્લિકેશન નિકાસ</string>
-  <string name="export_to_sd">એસ.ડી. નિકાસ</string>
+  <string name="backup_to_app">એપ્લિકેશન નિકાસ</string>
+  <string name="backup_to_sd">એસ.ડી. નિકાસ</string>
   <string name="translation_import_failed">અનુવાદ આયાત કરવામાં નિષ્ફળ</string>
   <string name="internet_not_available">તમે સક્રિય ઇન્ટરનેટ કનેક્શન જરૂર નથી.</string>
   <string name="backup_and_publish">બેકઅપ અને પ્રકાશિત કરો</string>

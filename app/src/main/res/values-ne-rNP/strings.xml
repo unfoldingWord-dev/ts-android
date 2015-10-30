@@ -20,8 +20,8 @@
   <string name="missing_external_storage">बाह्य भण्डारण उपलब्ध छैन</string>
   <string name="project_exported_to">प्रोजेक्ट बचत गर्न </string>
   <string name="title_activity_file_explorer">फाइल एक्सप्लोरर</string>
-  <string name="export_to_app">एपमा पठाउनुहोस्</string>
-  <string name="export_to_sd">एसडीमा पठाउनुहोस्</string>
+  <string name="backup_to_app">एपमा पठाउनुहोस्</string>
+  <string name="backup_to_sd">एसडीमा पठाउनुहोस्</string>
   <string name="translation_import_failed">अनुवाद आयात गर्न असफल भयो</string>
   <string name="internet_not_available">तपाईंसँग सक्रिय इन्टरनेट जडान छैन।</string>
   <string name="backup_and_publish">जगेडा र प्रकाशित</string>

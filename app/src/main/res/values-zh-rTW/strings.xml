@@ -20,8 +20,8 @@
   <string name="missing_external_storage">外部存儲設備不可用</string>
   <string name="project_exported_to">項目保存到<xliff:g id="file_path" example="/storage/sdcard1/"> %1$s </xliff:g></string>
   <string name="title_activity_file_explorer">文件瀏覽器</string>
-  <string name="export_to_app">導出到應用程序</string>
-  <string name="export_to_sd">導出到SD卡</string>
+  <string name="backup_to_app">導出到應用程序</string>
+  <string name="backup_to_sd">導出到SD卡</string>
   <string name="translation_import_failed">未能導入翻譯</string>
   <string name="internet_not_available">您沒有激活的Internet連接。</string>
   <string name="backup_and_publish">備份和發布</string>

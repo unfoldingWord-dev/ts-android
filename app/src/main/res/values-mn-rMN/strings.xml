@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Гадаад санах ой байхгүй байна</string>
   <string name="project_exported_to">Төслийг хадгалах </string>
   <string name="title_activity_file_explorer">Файл хайгч</string>
-  <string name="export_to_app">Аппликэйшн рүү экспортлох</string>
-  <string name="export_to_sd">Мемори карт руу экспортлох</string>
+  <string name="backup_to_app">Аппликэйшн рүү экспортлох</string>
+  <string name="backup_to_sd">Мемори карт руу экспортлох</string>
   <string name="translation_import_failed">Орчуулгыг импортлож чадсангүй</string>
   <string name="internet_not_available">Таньд идэвхтэй интернэт холболт байхгүй байна.</string>
   <string name="backup_and_publish">Нөөцлөх болон нийтэл</string>

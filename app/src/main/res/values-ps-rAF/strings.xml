@@ -18,8 +18,8 @@
   <string name="missing_external_storage">بهرني ساتلو کې نه ده </string>
   <string name="project_exported_to">پروژه د خوندي و كوم  </string>
   <string name="title_activity_file_explorer">سوهان كولئ </string>
-  <string name="export_to_app">تردد له </string>
-  <string name="export_to_sd">د صادراتو sd</string>
+  <string name="backup_to_app">تردد له </string>
+  <string name="backup_to_sd">د صادراتو sd</string>
   <string name="translation_import_failed">قصو ور كړلو وارد کړي د ژباړې </string>
   <string name="internet_not_available">نه لري چې يوه فعاله انټرنېټ څخه دي.</string>
   <string name="upload_wizard_intro">چې تاسو ته ستاسو د ژباړې كړئ.</string>

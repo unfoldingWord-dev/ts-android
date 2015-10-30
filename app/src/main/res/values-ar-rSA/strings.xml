@@ -20,8 +20,8 @@
   <string name="missing_external_storage">تخزين خارجي غير متوفر</string>
   <string name="project_exported_to">حفظ المشروع ل </string>
   <string name="title_activity_file_explorer">مستكشف الملفات</string>
-  <string name="export_to_app">التصدير إلى التطبيق</string>
-  <string name="export_to_sd">التصدير إلى SD</string>
+  <string name="backup_to_app">التصدير إلى التطبيق</string>
+  <string name="backup_to_sd">التصدير إلى SD</string>
   <string name="translation_import_failed">فشل في استيراد الترجمة</string>
   <string name="internet_not_available">لم يكن لديك اتصال إنترنت نشط.</string>
   <string name="backup_and_publish">النسخ الاحتياطي ونشر</string>

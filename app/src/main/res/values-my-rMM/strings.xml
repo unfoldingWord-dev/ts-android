@@ -20,8 +20,8 @@
   <string name="missing_external_storage">ျပင္သိုေလွာင္မူမရႏိုင္ပါ</string>
   <string name="project_exported_to">စီမံကိန္းအား သို႔ သိမ္းဆည္းခဲ့သည္ </string>
   <string name="title_activity_file_explorer">ဖိုင္ရွာသူ</string>
-  <string name="export_to_app">အပ္စ္သို႔ တင္ပို႔သည္</string>
-  <string name="export_to_sd">SD သို႔တင္ပို႔သည္</string>
+  <string name="backup_to_app">အပ္စ္သို႔ တင္ပို႔သည္</string>
+  <string name="backup_to_sd">SD သို႔တင္ပို႔သည္</string>
   <string name="translation_import_failed">ဘာသာျပန္ျခင္းကို တင္သြင္းရန္ မေအာင္ျမင္ပါ</string>
   <string name="internet_not_available">သင့္တြင္ ဖြင့္ထားသည့္ အင္တာနက္ မရွိပါ။</string>
   <string name="backup_and_publish">Backup နဲ့ Publish</string>

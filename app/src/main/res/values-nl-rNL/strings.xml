@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Externe opslag is niet beschikbaar</string>
   <string name="project_exported_to">Project opgeslagen </string>
   <string name="title_activity_file_explorer">File Explorer</string>
-  <string name="export_to_app">Exporteren naar app</string>
-  <string name="export_to_sd">Exporteren naar SD</string>
+  <string name="backup_to_app">Exporteren naar app</string>
+  <string name="backup_to_sd">Exporteren naar SD</string>
   <string name="translation_import_failed">Mislukt het importeren van de vertaling</string>
   <string name="internet_not_available">U niet over een actieve internetverbinding.</string>
   <string name="backup_and_publish">Back-up en publiceren</string>

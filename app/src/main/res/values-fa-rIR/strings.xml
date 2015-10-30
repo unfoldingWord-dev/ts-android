@@ -20,8 +20,8 @@
   <string name="missing_external_storage">ذخیره سازی خارجی در دسترس نمی باشد.</string>
   <string name="project_exported_to">پروژه ذخیره </string>
   <string name="title_activity_file_explorer">فایل اکسپلورر</string>
-  <string name="export_to_app">صادرات به برنامه</string>
-  <string name="export_to_sd">صادرات به SD</string>
+  <string name="backup_to_app">صادرات به برنامه</string>
+  <string name="backup_to_sd">صادرات به SD</string>
   <string name="translation_import_failed">واردات ترجمه نشد</string>
   <string name="internet_not_available">یک اتصال اینترنتی فعال ندارند.</string>
   <string name="backup_and_publish">پشتیبان گیری و انتشار</string>

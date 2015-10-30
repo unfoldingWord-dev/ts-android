@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Hifadhi ya nje si inapatikana</string>
   <string name="project_exported_to">Mradi kuokolewa kwa</string>
   <string name="title_activity_file_explorer">Faili Explorer</string>
-  <string name="export_to_app">Nje ya programu</string>
-  <string name="export_to_sd">Nje ya SD</string>
+  <string name="backup_to_app">Nje ya programu</string>
+  <string name="backup_to_sd">Nje ya SD</string>
   <string name="translation_import_failed">Alishindwa kuagiza tafsiri</string>
   <string name="internet_not_available">Huna kazi internet connection.</string>
   <string name="backup_and_publish">Backup na Kuchapisha</string>

@@ -20,8 +20,8 @@
   <string name="missing_external_storage">ឥតមានឧបករណ៍ផ្ទុកនៅខាងក្រៅ</string>
   <string name="project_exported_to">បានរក្សាទុកគម្រោងទៅក្នុង </string>
   <string name="title_activity_file_explorer">កម្មវិធីរុករកឯកសារ</string>
-  <string name="export_to_app">នាំចេញទៅកាន់កូនកម្មវិធី</string>
-  <string name="export_to_sd">នាំចេញទៅកាន់ SD</string>
+  <string name="backup_to_app">នាំចេញទៅកាន់កូនកម្មវិធី</string>
+  <string name="backup_to_sd">នាំចេញទៅកាន់ SD</string>
   <string name="translation_import_failed">ការនាំចូលឯកសារបកប្រែមិនបានសម្រេច</string>
   <string name="internet_not_available">អ្នកមិនមានការភ្ជាប់ប្រព័ន្ធអ៊ីនធឺណិតដែលកំពុងដំណើរការ។</string>
   <string name="backup_and_publish">ការ​បម្រុង​ទុក​និង​ការ​បោះពុម្ព</string>

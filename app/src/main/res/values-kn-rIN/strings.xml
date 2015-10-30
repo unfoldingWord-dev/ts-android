@@ -20,8 +20,8 @@
   <string name="missing_external_storage">ಬಾಹ್ಯ ಶೇಖರಣೆ ಲಭ್ಯವಿಲ್ಲ</string>
   <string name="project_exported_to">ಯೋಜನೆಗೆ ಉಳಿಸಿದ</string>
   <string name="title_activity_file_explorer">ಫೈಲ್ ಎಕ್ಸ್ಪ್ಲೋರರ್</string>
-  <string name="export_to_app">ಅಪ್ಲಿಕೇಶನ್ ರಫ್ತು</string>
-  <string name="export_to_sd">ಎಸ್ಡಿ ರಫ್ತು</string>
+  <string name="backup_to_app">ಅಪ್ಲಿಕೇಶನ್ ರಫ್ತು</string>
+  <string name="backup_to_sd">ಎಸ್ಡಿ ರಫ್ತು</string>
   <string name="translation_import_failed">ಅನುವಾದ ಆಮದು ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</string>
   <string name="internet_not_available">ನೀವು ಸಕ್ರಿಯ ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವನ್ನು ಹೊಂದಿಲ್ಲ.</string>
   <string name="backup_and_publish">ಬ್ಯಾಕಪ್ ಮತ್ತು ಪ್ರಕಟಿಸಿ</string>

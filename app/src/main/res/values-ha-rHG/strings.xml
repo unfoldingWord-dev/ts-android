@@ -20,8 +20,8 @@
   <string name="missing_external_storage">Babu kundin ajiye aiki a waje</string>
   <string name="project_exported_to">An adana aiki a </string>
   <string name="title_activity_file_explorer">Mahangin kundin bayanai</string>
-  <string name="export_to_app">Tura zuwa ga mahaja</string>
-  <string name="export_to_sd">Tura zuwa ga katin rumbun adana bayanai</string>
+  <string name="backup_to_app">Tura zuwa ga mahaja</string>
+  <string name="backup_to_sd">Tura zuwa ga katin rumbun adana bayanai</string>
   <string name="translation_import_failed">An kasa dauko abun da aka fassara</string>
   <string name="internet_not_available">Layinka na sadarwar yanar gizo baya aiki</string>
   <string name="backup_and_publish">Ajiyayyen kuma Buga</string>
