@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
+    android:minWidth="500dp"
     android:layout_height="wrap_content"
     android:background="@color/white"
     android:animateLayoutChanges="true">
@@ -13,8 +14,12 @@
         android:padding="16dp"
         android:textColor="@color/dark_primary_text"
         android:textSize="@dimen/headline"
-        android:background="@drawable/dark_bottom_border"
         android:id="@+id/textView13" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"/>
 
     <LinearLayout
         android:orientation="vertical"
@@ -31,9 +36,13 @@
             android:drawableStart="@drawable/icon_import_sd_dark"
             android:gravity="left|center_vertical"
             android:drawablePadding="10dp"
-            android:background="@drawable/dark_bottom_border"
             android:textAllCaps="false"
             style="@style/Widget.Button.Secondary" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="@color/list_separator"/>
 
         <Button
             android:id="@+id/import_from_cloud"
@@ -44,7 +53,6 @@
             android:drawableStart="@drawable/ic_cloud_download_secondary_24dp"
             android:gravity="left|center_vertical"
             android:drawablePadding="10dp"
-            android:background="@drawable/dark_bottom_border"
             android:textAllCaps="false"
             style="@style/Widget.Button.Secondary" />
 
