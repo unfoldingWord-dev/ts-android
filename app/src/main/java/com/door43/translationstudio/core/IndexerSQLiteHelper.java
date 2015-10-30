@@ -1614,7 +1614,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " ) AND `slug`=?", new String[]{projectSlug, sourceLanguageSlug});
     }
 
-    /**
+    /**lkk
      *
      * @param db
      * @param projectSlug

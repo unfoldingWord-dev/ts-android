@@ -147,7 +147,6 @@ public class Downloader {
                 return targetIndex.indexWords(translation, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getWordsCatalogUrl());
-                return false;
             }
         }
         return true;
@@ -169,7 +168,6 @@ public class Downloader {
                 return targetIndex.indexTermAssignments(translation, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getWordAssignmentsCatalogUrl());
-                return false;
             }
         }
         return true;
@@ -191,7 +189,6 @@ public class Downloader {
                 return targetIndex.indexNotes(translation, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getNotesCatalogUrl());
-                return false;
             }
         }
         return true;
@@ -213,7 +210,6 @@ public class Downloader {
                 return targetIndex.indexQuestions(translation, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getQuestionsCatalogUrl());
-                return false;
             }
         }
         return true;
