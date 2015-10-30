@@ -72,17 +72,17 @@ public class ServerLibraryActivity extends BaseActivity implements ServerLibrary
 
         if(savedInstanceState == null) {
             // check for available updates
-            if(ServerLibraryCache.isExpired()) {
+//            if(ServerLibraryCache.isExpired()) {
                 GetLibraryUpdatesTask getUpdatesTask = new GetLibraryUpdatesTask();
                 getUpdatesTask.addOnFinishedListener(this);
                 getUpdatesTask.addOnProgressListener(this);
                 TaskManager.addTask(getUpdatesTask, GetLibraryUpdatesTask.TASK_ID);
-            } else {
-                // load the cached data
-                Library serverLibrary = AppContext.getLibrary();
-                Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
-                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
-            }
+//            } else {
+//                // load the cached data
+//                Library serverLibrary = AppContext.getLibrary();
+//                Project[] projects = serverLibrary.getProjects(Locale.getDefault().getLanguage());
+//                mListFragment.setData(ServerLibraryCache.getAvailableUpdates(), projects);
+//            }
         } else {
             // populated cached data
             Library serverLibrary = AppContext.getLibrary();

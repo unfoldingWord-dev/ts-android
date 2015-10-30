@@ -125,9 +125,10 @@ public class Downloader {
                 return targetIndex.indexSource(translation, catalog);
             } else {
                 Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getSourceCatalogUrl());
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -144,9 +145,12 @@ public class Downloader {
             String catalog = request(resource.getWordsCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexWords(translation, catalog);
+            } else {
+                Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getWordsCatalogUrl());
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -163,9 +167,12 @@ public class Downloader {
             String catalog = request(resource.getWordAssignmentsCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexTermAssignments(translation, catalog);
+            } else {
+                Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getWordAssignmentsCatalogUrl());
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -182,9 +189,12 @@ public class Downloader {
             String catalog = request(resource.getNotesCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexNotes(translation, catalog);
+            } else {
+                Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getNotesCatalogUrl());
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -201,9 +211,12 @@ public class Downloader {
             String catalog = request(resource.getQuestionsCatalogUrl());
             if(catalog != null) {
                 return targetIndex.indexQuestions(translation, catalog);
+            } else {
+                Logger.w(this.getClass().getName(), "Failed to fetch the catalog from " + resource.getQuestionsCatalogUrl());
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
