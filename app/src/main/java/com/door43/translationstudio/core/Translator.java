@@ -59,9 +59,11 @@ public class Translator {
         mRootDir.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                TargetTranslation translation = getTargetTranslation(filename);
-                if(translation != null) {
-                    translations.add(translation);
+                if(!filename.equalsIgnoreCase("cache")) {
+                    TargetTranslation translation = getTargetTranslation(filename);
+                    if (translation != null) {
+                        translations.add(translation);
+                    }
                 }
                 return false;
             }

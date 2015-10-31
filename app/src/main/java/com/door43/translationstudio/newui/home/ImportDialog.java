@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -75,19 +76,19 @@ public class ImportDialog extends DialogFragment {
                 if(FilenameUtils.getExtension(file.getName()).toLowerCase().equals(Translator.ARCHIVE_EXTENSION)) {
                     try {
                         AppContext.getTranslator().importArchive(file);
-                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
-                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                        snack.show();
-
-                        // todo: terrible hack.
-                        ((TargetTranslationActivity)getActivity()).notifyDatasetChanged();
-
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle(R.string.import_from_sd)
+                                .setMessage(R.string.success)
+                                .setNeutralButton(R.string.dismiss, null)
+                                .show();
                     } catch (Exception e) {
                         Logger.e(this.getClass().getName(), "Failed to import the archive", e);
                         Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_import_failed, Snackbar.LENGTH_LONG);
                         ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
                         snack.show();
                     }
+                    // todo: terrible hack.
+                    ((HomeActivity)getActivity()).notifyDatasetChanged();
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.invalid_file, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));

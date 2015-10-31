@@ -240,4 +240,8 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
             startActivity(intent);
         }
     }
+
+    public void notifyDatasetChanged() {
+        onResume();
+    }
 }
