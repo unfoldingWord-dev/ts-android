@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Date;
 
 /**
  * Created by joel on 9/2/2015.
@@ -95,5 +96,22 @@ public class Util {
             }
         }
         return 0;
+    }
+
+    /**
+     * Returns a unix timestamp
+     * @return
+     */
+    public static long unixTime() {
+        return System.currentTimeMillis() / 1000L;
+    }
+
+    /**
+     * Converts a unix time value to a date object
+     * @param unix
+     * @return
+     */
+    public static Date dateFromUnixTime(long unix) {
+        return new Date(unix * 1000L);
     }
 }

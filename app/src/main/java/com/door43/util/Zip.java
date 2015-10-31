@@ -1,13 +1,20 @@
 package com.door43.util;
 
+import com.door43.translationstudio.core.Util;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -318,5 +325,67 @@ public class Zip {
             zis.closeEntry();
         }
         zis.close();
+    }
+
+    /**
+     * Lists the contents of the zip file
+     * @param zipArchive
+     * @return
+     * @throws IOException
+     */
+    public static String[] list(File zipArchive) throws IOException {
+        InputStream is;
+        ZipInputStream zis;
+        ZipEntry ze;
+        is = new FileInputStream(zipArchive);
+        zis = new ZipInputStream(new BufferedInputStream(is));
+
+        List<String> files = new ArrayList<>();
+        while ((ze = zis.getNextEntry()) != null) {
+            files.add(ze.getName());
+            if (ze.isDirectory()) {
+                continue;
+            }
+            zis.closeEntry();
+        }
+        zis.close();
+        return files.toArray(new String[files.size()]);
+    }
+
+    /**
+     * Reads the contents of a file from the zip archive
+     * @param zipArchive
+     * @param path
+     * @return
+     */
+    public static String read(File zipArchive, String path) throws IOException {
+        InputStream is;
+        ZipInputStream zis;
+        String contents = null;
+        ZipEntry ze;
+        is = new FileInputStream(zipArchive);
+        zis = new ZipInputStream(new BufferedInputStream(is));
+
+        while ((ze = zis.getNextEntry()) != null) {
+            if (ze.isDirectory()) {
+                continue;
+            }
+            if(ze.getName().equalsIgnoreCase(path)) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(zis));
+                StringBuilder sb = new StringBuilder();
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+                contents = sb.toString();
+            }
+            zis.closeEntry();
+            if(contents != null) {
+                break;
+            }
+        }
+        zis.close();
+        return contents;
     }
 }

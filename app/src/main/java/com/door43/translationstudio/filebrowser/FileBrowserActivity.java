@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.newui.BaseActivity;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -23,7 +24,7 @@ import java.util.List;
  * In your intent pass the directory to open.
  * The file chosen by the user will be returned in the activity result.
  */
-public class FileBrowserActivity extends ActionBarActivity {
+public class FileBrowserActivity extends BaseActivity {
     private File mCurrentDir;
 	private static final int DIALOG_LOAD_FILE = 1000;
 	FileBrowserAdapter mAdapter;
@@ -45,7 +46,7 @@ public class FileBrowserActivity extends ActionBarActivity {
             setResult(RESULT_CANCELED, null);
         }
 
-        mAdapter = new FileBrowserAdapter(this);
+        mAdapter = new FileBrowserAdapter();
 		loadFileList(path);
 		showDialog(DIALOG_LOAD_FILE);
 	}
@@ -73,21 +74,21 @@ public class FileBrowserActivity extends ActionBarActivity {
             if(files != null) {
                 for (File f : files) {
                     if (f.isDirectory()) {
-                        fileList.add(new FileItem(f.getName(), R.drawable.ic_folder_open));
+                        fileList.add(FileItem.getInstance(f));
                     } else {
-                        fileList.add(new FileItem(f.getName(), R.drawable.file_icon));
+                        fileList.add(FileItem.getInstance(f));
                     }
                 }
 
                 // add up button
                 if (dir.getParentFile() != null && dir.getParentFile().exists() && dir.getParentFile().canRead()) {
-                    fileList.add(0, new FileItem(getResources().getString(R.string.up)));
+                    fileList.add(0, FileItem.getUpInstance());
                 }
             }
 		}
 
         if(fileList.size() > 0) {
-            mAdapter.loadFiles(fileList);
+            mAdapter.loadFiles(this, fileList);
         } else {
             Toast toast = Toast.makeText(this, R.string.empty_directory, Toast.LENGTH_SHORT);
             toast.setGravity(Gravity.TOP, 0, 0);
@@ -106,25 +107,24 @@ public class FileBrowserActivity extends ActionBarActivity {
                 builder.setAdapter(mAdapter, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
-                        File file = new File(mCurrentDir + "/" + mAdapter.getItem(i).getFile());
-                        if (file.isDirectory()) {
-                            // open directory
-                            loadFileList(file);
-                            removeDialog(DIALOG_LOAD_FILE);
-                            showDialog(DIALOG_LOAD_FILE);
-                        } else if (mAdapter.getItem(i).isUp()) {
+                        File file = mAdapter.getItem(i).file;
+                        if (mAdapter.getItem(i).isUpButton) {
                             // open parent directory
                             loadFileList(mCurrentDir.getParentFile());
                             removeDialog(DIALOG_LOAD_FILE);
                             showDialog(DIALOG_LOAD_FILE);
-                        } else {
+                        } else if (file.isDirectory()) {
+                            // open directory
+                            loadFileList(file);
+                            removeDialog(DIALOG_LOAD_FILE);
+                            showDialog(DIALOG_LOAD_FILE);
+                        } else  {
                             // return selected file
                             Intent intent = getIntent();
                             intent.setData(Uri.fromFile(file));
                             setResult(RESULT_OK, intent);
                             finish();
                         }
-
                     }
                 });
                 break;

@@ -522,4 +522,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="list_may_be_outdated">The list may be out of date</string>
     <string name="label_import">Import</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
+    <string name="automatic_backups">Automatic Backups</string>
 </resources>

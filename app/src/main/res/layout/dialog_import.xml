@@ -37,6 +37,7 @@
             android:gravity="left|center_vertical"
             android:drawablePadding="10dp"
             android:textAllCaps="false"
+            android:textColor="@color/dark_primary_text"
             style="@style/Widget.Button.Secondary" />
 
         <LinearLayout
@@ -53,6 +54,7 @@
             android:drawableStart="@drawable/ic_cloud_download_secondary_24dp"
             android:gravity="left|center_vertical"
             android:drawablePadding="10dp"
+            android:textColor="@color/dark_primary_text"
             android:textAllCaps="false"
             style="@style/Widget.Button.Secondary" />
 

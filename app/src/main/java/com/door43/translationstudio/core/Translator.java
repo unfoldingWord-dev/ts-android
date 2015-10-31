@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.text.Editable;
 import android.text.SpannedString;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.filebrowser.FileItem;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
@@ -111,7 +112,7 @@ public class Translator {
                     return null;
                 }
             } catch (StringIndexOutOfBoundsException e) {
-                e.printStackTrace();
+                Logger.e(this.getClass().getName(), "Failed to retrieve the target translation '" + targetTranslationId + "'", e);
             }
         }
         return null;
@@ -180,7 +181,7 @@ public class Translator {
         generatorJson.put("build", pInfo.versionCode);
         manifestJson.put("generator", generatorJson);
         manifestJson.put("package_version", TSTUDIO_PACKAGE_VERSION);
-        manifestJson.put("timestamp", System.currentTimeMillis() / 1000L);
+        manifestJson.put("timestamp", Util.unixTime());
         JSONArray translationsJson = new JSONArray();
         JSONObject translationJson = new JSONObject();
         translationJson.put("path", targetTranslation.getId());

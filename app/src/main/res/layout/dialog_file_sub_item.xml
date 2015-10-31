@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:textSize="@dimen/title"
+    android:textColor="@color/dark_primary_text"
+    android:layout_width="wrap_content"
+    android:paddingEnd="15dip"
+    android:paddingRight="15dip"
+    android:ellipsize="marquee"
+    android:layout_height="wrap_content"
+    android:text="alskdjlf"/>

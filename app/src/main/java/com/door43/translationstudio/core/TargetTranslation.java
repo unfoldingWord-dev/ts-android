@@ -168,7 +168,7 @@ public class TargetTranslation {
      * @param targetTranslationId the target translation id
      * @return
      */
-    public static String getProjectIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException{
+    public static String getProjectIdFromId(String targetTranslationId) throws StringIndexOutOfBoundsException {
         String[] complexId = targetTranslationId.split("-", 3);
         if(complexId.length == 3) {
             return complexId[1];
