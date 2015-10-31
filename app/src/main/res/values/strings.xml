@@ -523,4 +523,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="label_import">Import</string>
     <string name="import_from_online">Import from Online (requires internet)</string>
     <string name="automatic_backups">Automatic Backups</string>
+    <string name="export_to_sd">Export to SD Card</string>
 </resources>

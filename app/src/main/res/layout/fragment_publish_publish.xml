@@ -57,7 +57,6 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="@dimen/card_margin"
                     android:paddingBottom="@dimen/card_margin"
-                    android:background="@drawable/dark_bottom_border"
                     android:animateLayoutChanges="true"
                     android:paddingRight="@dimen/card_margin">
                     <TextView
@@ -129,6 +128,7 @@
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_marginTop="@dimen/card_margin"
+                    android:layout_marginBottom="@dimen/card_margin"
                     android:paddingLeft="@dimen/card_margin"
                     android:paddingRight="@dimen/card_margin"
                     android:layout_height="wrap_content">
@@ -140,23 +140,30 @@
                         android:textColor="@color/dark_secondary_text"
                         android:text="You may also share and distribute your project using these options."/>
 
-
-
                 </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
 
                 <Button
                     android:id="@+id/export_to_sdcard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/backup_to_sd"
+                    android:text="@string/export_to_sd"
                     android:drawableLeft="@drawable/icon_export_sd_dark"
                     android:drawableStart="@drawable/icon_export_sd_dark"
-                    android:drawablePadding="10dp"
-                    android:textColor="?attr/colorAccent"
                     android:gravity="left|center_vertical"
-                    android:padding="@dimen/card_margin"
-                    android:textSize="@dimen/button"
-                    android:background="?attr/selectableItemBackground"/>
+                    android:drawablePadding="10dp"
+                    android:textAllCaps="false"
+                    android:textColor="@color/dark_primary_text"
+                    style="@style/Widget.Button.Secondary"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
 
                 <Button
                     android:visibility="gone"
@@ -164,11 +171,16 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/export_to_device"
-                    android:textColor="?attr/colorAccent"
-                    android:padding="@dimen/card_margin"
-                    android:gravity="left"
-                    android:textSize="@dimen/button"
-                    android:background="?attr/selectableItemBackground"/>
+                    android:gravity="left|center_vertical"
+                    android:drawablePadding="10dp"
+                    android:textColor="@color/dark_primary_text"
+                    style="@style/Widget.Button.Secondary"/>
+
+                <LinearLayout
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
 
                 <Button
                     android:id="@+id/export_to_app"
@@ -179,10 +191,14 @@
                     android:drawableStart="@drawable/ic_share_secondary_24dp"
                     android:gravity="left|center_vertical"
                     android:drawablePadding="10dp"
-                    android:textColor="?attr/colorAccent"
-                    android:padding="@dimen/card_margin"
-                    android:textSize="@dimen/button"
-                    android:background="?attr/selectableItemBackground"/>
+                    android:textColor="@color/dark_primary_text"
+                    android:textAllCaps="false"
+                    style="@style/Widget.Button.Secondary"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
             </LinearLayout>
 
         </android.support.v7.widget.CardView>
