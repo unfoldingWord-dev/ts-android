@@ -1,5 +1,6 @@
 package com.door43.translationstudio.newui.translate;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -81,9 +82,11 @@ public class BackupDialog extends DialogFragment {
                     Logger.e(BackupDialog.class.getName(), "Failed to export the target translation " + mTargetTranslation.getId(), e);
                 }
                 if(exportFile.exists()) {
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.success, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle(R.string.backup_to_sd)
+                            .setMessage(R.string.success)
+                            .setNeutralButton(R.string.dismiss, null)
+                            .show();
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
