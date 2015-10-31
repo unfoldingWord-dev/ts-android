@@ -23,6 +23,7 @@ public class Library {
     private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
     private final Indexer mAppIndex;
+    public static String DATABASE_NAME = "app";
     private final Context mContext;
     private Downloader mDownloader;
     private static IndexerSQLiteHelper appIndexHelper;
@@ -30,7 +31,7 @@ public class Library {
     public Library(Context context, String rootApiUrl) throws IOException {
         initalizeHelpers(context);
         mContext = context;
-        mAppIndex = new Indexer(context, "app", appIndexHelper);
+        mAppIndex = new Indexer(context, DATABASE_NAME, appIndexHelper);
         mDownloader = new Downloader(rootApiUrl);
     }
 
@@ -40,7 +41,7 @@ public class Library {
      */
     private synchronized static void initalizeHelpers(Context context) throws IOException {
         if(appIndexHelper == null) {
-            appIndexHelper = new IndexerSQLiteHelper(context, "app");
+            appIndexHelper = new IndexerSQLiteHelper(context, DATABASE_NAME);
         }
     }
 
