@@ -21,15 +21,14 @@
                 style="@style/Widget.CardContent.Skinny"
                 android:orientation="vertical"
                 android:layout_width="match_parent"
+                android:paddingBottom="0dp"
+                android:paddingTop="0dp"
                 android:layout_height="wrap_content">
 
                 <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:paddingBottom="@dimen/card_margin"
-                    android:paddingRight="@dimen/card_margin"
-                    android:paddingLeft="@dimen/card_margin"
-                    android:background="@drawable/dark_bottom_border"
+                    android:padding="@dimen/card_margin"
                     android:layout_height="wrap_content">
                     <TextView
                         android:id="@+id/project_title"
@@ -37,7 +36,8 @@
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/title"
                         android:layout_weight="1"
-                        android:textColor="@color/dark_secondary_text"
+                        android:ellipsize="marquee"
+                        android:textColor="@color/dark_primary_text"
                         android:text="Project: John - Afaraf"/>
 
                     <ImageView
@@ -49,10 +49,14 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
+
+                <LinearLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:padding="@dimen/card_margin"
-                    android:background="@drawable/dark_bottom_border"
                     android:layout_height="wrap_content">
                     <TextView
                         android:id="@+id/profile_title"
@@ -60,7 +64,8 @@
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/title"
                         android:layout_weight="1"
-                        android:textColor="@color/dark_secondary_text"
+                        android:ellipsize="marquee"
+                        android:textColor="@color/dark_primary_text"
                         android:text="@string/profile"/>
 
                     <ImageView
@@ -72,10 +77,16 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
+
+                <LinearLayout
+                    android:id="@+id/license_review_button"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:padding="@dimen/card_margin"
-                    android:background="@drawable/dark_bottom_border"
+                    android:background="?attr/selectableItemBackground"
                     android:layout_height="wrap_content">
                     <TextView
                         android:id="@+id/license_title"
@@ -83,14 +94,15 @@
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/title"
                         android:layout_weight="1"
-                        android:textColor="@color/dark_secondary_text"
+                        android:ellipsize="marquee"
+                        android:textColor="@color/dark_primary_text"
                         android:text="@string/view_license_agreement"/>
 
-                    <Button
+                    <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/review"
-                        android:id="@+id/license_review_button" />
+                        android:layout_marginRight="@dimen/card_margin"
+                        android:background="@drawable/ic_visibility_black_24dp" />
 
                     <ImageView
                         android:id="@+id/license_icon"
@@ -101,10 +113,16 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
+
+                <LinearLayout
+                    android:id="@+id/guidelines_review_button"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:padding="@dimen/card_margin"
-                    android:background="@drawable/dark_bottom_border"
+                    android:background="?attr/selectableItemBackground"
                     android:layout_height="wrap_content">
                     <TextView
                         android:id="@+id/guidelines_title"
@@ -112,14 +130,15 @@
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/title"
                         android:layout_weight="1"
-                        android:textColor="@color/dark_secondary_text"
+                        android:ellipsize="marquee"
+                        android:textColor="@color/dark_primary_text"
                         android:text="@string/view_translation_guidelines"/>
 
-                    <Button
+                    <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/review"
-                        android:id="@+id/guidelines_review_button" />
+                        android:layout_marginRight="@dimen/card_margin"
+                        android:background="@drawable/ic_visibility_black_24dp" />
 
                     <ImageView
                         android:id="@+id/guidelines_icon"
@@ -130,11 +149,16 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="1px"
+                    android:background="@color/list_separator"/>
+
+                <LinearLayout
+                    android:id="@+id/faith_review_button"
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:paddingLeft="@dimen/card_margin"
-                    android:paddingRight="@dimen/card_margin"
-                    android:paddingTop="@dimen/card_margin"
+                    android:padding="@dimen/card_margin"
+                    android:background="?attr/selectableItemBackground"
                     android:layout_height="wrap_content">
                     <TextView
                         android:id="@+id/faith_title"
@@ -142,14 +166,15 @@
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/title"
                         android:layout_weight="1"
-                        android:textColor="@color/dark_secondary_text"
+                        android:ellipsize="marquee"
+                        android:textColor="@color/dark_primary_text"
                         android:text="@string/view_statement_of_faith"/>
 
-                    <Button
+                    <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/review"
-                        android:id="@+id/faith_review_button" />
+                        android:layout_marginRight="@dimen/card_margin"
+                        android:background="@drawable/ic_visibility_black_24dp" />
 
                     <ImageView
                         android:id="@+id/faith_icon"

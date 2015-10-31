@@ -27,16 +27,6 @@ public class ProfileFragment extends PublishStepFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_publish_profile, container, false);
 
-//        Bundle args = getArguments();
-//        String targetTranslationId = args.getString(PublishActivity.EXTRA_TARGET_TRANSLATION_ID);
-//        String sourceTranslationId = args.getString(ARG_SOURCE_TRANSLATION_ID);
-//        if (targetTranslationId == null) {
-//            throw new InvalidParameterException("a valid target translation id is required");
-//        }
-//        if (sourceTranslationId == null) {
-//            throw new InvalidParameterException("a valid source translation id is required");
-//        }
-
         final EditText nameText = (EditText)rootView.findViewById(R.id.name_edittext);
         final EditText emailText = (EditText)rootView.findViewById(R.id.email_edittext);
         final EditText phoneText = (EditText)rootView.findViewById(R.id.phone_edittext);
@@ -79,16 +69,16 @@ public class ProfileFragment extends PublishStepFragment {
                 } else {
                     new android.support.v7.app.AlertDialog.Builder(getActivity())
                             .setTitle("Privacy Notice")
-                            .setIcon(R.drawable.ic_report_black_24dp)
+                            .setIcon(R.drawable.ic_security_black_24dp)
                             .setMessage(R.string.publishing_privacy_notice)
-                            .setPositiveButton(R.string.license_accept, new DialogInterface.OnClickListener() {
+                            .setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     ProfileManager.setProfile(new Profile(nameText.getText().toString(), emailText.getText().toString(), phoneText.getText().toString()));
                                     getListener().nextStep();
                                 }
                             })
-                            .setNegativeButton(R.string.license_deny, null)
+                            .setNegativeButton(R.string.title_cancel, null)
                             .show();
                 }
             }

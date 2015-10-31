@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -85,7 +86,7 @@ public class ReviewFragment extends PublishStepFragment {
      * @param stringResource The string to display in the dialog popped up
      */
     private void populateReviewButton(View rootView, final int buttonId, final int stringResource) {
-        Button button = (Button)rootView.findViewById(buttonId);
+        LinearLayout button = (LinearLayout)rootView.findViewById(buttonId);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
