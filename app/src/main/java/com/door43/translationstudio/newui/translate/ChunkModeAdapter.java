@@ -3,10 +3,13 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -35,6 +38,8 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.newui.library.ServerLibraryActivity;
+import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
@@ -262,17 +267,34 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean actionTaken = openTargetTranslationCard(holder, position);
+                boolean targetCardOpened = openTargetTranslationCard(holder, position);
 
                 // Accept clicks anywhere on card as if they were on the text box --
                 // but only if the text is actually editable (i.e., not yet done).
-                if (!actionTaken && holder.mTargetBody.isEnabled()) {
-                    holder.mTargetBody.requestFocus();
 
-                    InputMethodManager mgr = (InputMethodManager)
-                            mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    mgr.showSoftInput(holder.mTargetBody, InputMethodManager.SHOW_IMPLICIT);
+                if(!targetCardOpened && holder.mTargetBody.isEnabled()) {
+
+                    ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
+
                 }
+
+                // if marked as done, give prompt asking if they want to reopen for edit
+
+                else if(!holder.mTargetBody.isEnabled()){
+                    new AlertDialog.Builder(holder.mTargetBody.getContext())
+                            .setTitle(R.string.chunk_done_title)
+//                                .setIcon(R.drawable.ic_local_library_black_24dp)
+                            .setMessage(R.string.chunk_done_prompt)
+                            .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
+                                }
+                            })
+                            .setNegativeButton(R.string.dismiss, null)
+                            .show();
+                }
+
             }
         });
         holder.mSourceCard.setOnClickListener(new View.OnClickListener() {
@@ -357,11 +379,25 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
-     * Renders the chapter title card
-     * @param holder
-     * @param position
-     * @param chapterId
+     * begin target of target card
+     * @param context
+     * @param target
      */
+    static public void editTarget(Context context, EditText target) {
+
+        target.requestFocus();
+
+        InputMethodManager mgr = (InputMethodManager)
+                context.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+        /**
+         * Renders the chapter title card
+         * @param holder
+         * @param position
+         * @param chapterId
+         */
     private void renderChapterTitle(final ViewHolder holder, final int position, String chapterId) {
         final ListItem item = mListItems[position];
         Chapter chapter = mChapters.get(chapterId);
