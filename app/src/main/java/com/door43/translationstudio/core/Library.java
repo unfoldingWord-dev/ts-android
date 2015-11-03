@@ -380,20 +380,11 @@ public class Library {
 
     /**
      * Returns an array of source languages for the project
-     * @param projectId the id of the project who's source languages will be returned
+     * @param projectSlug the id of the project who's source languages will be returned
      * @return
      */
-    public SourceLanguage[] getSourceLanguages(String projectId) {
-        List<SourceLanguage> sourceLanguages = new ArrayList<>();
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
-        for(String id:sourceLanguageIds) {
-            SourceLanguage lang = getSourceLanguage(projectId, id);
-            if(lang != null) {
-                sourceLanguages.add(lang);
-            }
-        }
-
-        return sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]);
+    public SourceLanguage[] getSourceLanguages(String projectSlug) {
+        return getActiveIndex().getSourceLanguages(projectSlug);
     }
 
     /**

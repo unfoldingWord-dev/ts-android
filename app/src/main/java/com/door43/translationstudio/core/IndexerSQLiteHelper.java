@@ -1101,6 +1101,40 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
+     * Returns an array of source languages in the project
+     * @param db
+     * @param projectSlug
+     * @return
+     */
+    public SourceLanguage[] getSourceLanguages(SQLiteDatabase db, String projectSlug) {
+        List<SourceLanguage> sourceLanguages = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT `sl`.`slug`, `sl`.`name`, `sl`.`project_name`, `sl`.`project_description`, `sl`.`direction`, `sl`.`modified_at`, `sl`.`resource_catalog_url`, `sl`.`resource_catalog_local_modified_at`, `sl`.`resource_catalog_server_modified_at` FROM `source_language` AS `sl`"
+                + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
+                + " WHERE `p`.`slug`=?"
+                + " ORDER BY `sl`.`slug`, `sl`.`name`", new String[]{projectSlug});
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            String sourceLanguageSlug = cursor.getString(0);
+            String sourceLanguageName = cursor.getString(1);
+            String projectName = cursor.getString(2);
+            String projectDescription = cursor.getString(3);
+            String rawDirection = cursor.getString(4);
+            int dateModified = cursor.getInt(5);
+            String resourceCatalog = cursor.getString(6);
+            int catalogLocalModified = cursor.getInt(7);
+            int catalogServerModified = cursor.getInt(8);
+            LanguageDirection direction = LanguageDirection.get(rawDirection);
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+            sourceLanguages.add(new SourceLanguage(sourceLanguageSlug, sourceLanguageName, dateModified, direction, projectName, projectDescription, resourceCatalog, catalogLocalModified, catalogServerModified));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]);
+    }
+
+    /**
      * Returns a resource
      * @param db
      * @param projectSlug

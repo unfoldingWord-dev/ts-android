@@ -951,6 +951,15 @@ public class Indexer {
     }
 
     /**
+     * Returns an array of source languages in the project
+     * @param projectSlug
+     * @return
+     */
+    public synchronized SourceLanguage[] getSourceLanguages(String projectSlug) {
+        return mDatabaseHelper.getSourceLanguages(mDatabase, projectSlug);
+    }
+
+    /**
      * Returns a source translation
      * @param projectSlug
      * @param sourceLanguageSlug
