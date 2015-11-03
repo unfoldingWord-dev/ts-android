@@ -372,7 +372,7 @@ public class Library {
         // preferred language
         SourceLanguage sourceLanguage = getActiveIndex().getSourceLanguage(projectId, sourceLanguageSlug);
         // try to use default (en)
-        if(sourceLanguage != null && !sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en")) {
+        if(sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
             sourceLanguage = getActiveIndex().getSourceLanguage(projectId, "en");
         }
         return sourceLanguage;
@@ -408,20 +408,12 @@ public class Library {
 
     /**
      * Returns an array of resources for the source language
-     * @param projectId
-     * @param sourceLanguageId
+     * @param projectSlug
+     * @param sourceLanguageSlug
      * @return
      */
-    public Resource[] getResources(String projectId, String sourceLanguageId) {
-        List<Resource> resources = new ArrayList<>();
-        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
-        for(String resourceId:resourceIds) {
-            Resource res = getResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
-            if(res != null) {
-                resources.add(res);
-            }
-        }
-        return resources.toArray(new Resource[resources.size()]);
+    public Resource[] getResources(String projectSlug, String sourceLanguageSlug) {
+        return getActiveIndex().getResources(projectSlug, sourceLanguageSlug);
     }
 
     /**

@@ -979,6 +979,16 @@ public class Indexer {
     }
 
     /**
+     * Returns an array of resources
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @return
+     */
+    public synchronized Resource[] getResources(String projectSlug, String sourceLanguageSlug) {
+        return mDatabaseHelper.getResources(mDatabase, projectSlug, sourceLanguageSlug);
+    }
+
+    /**
      * Returns a chapter
      * @param sourceTranslation
      * @param chapterSlug
