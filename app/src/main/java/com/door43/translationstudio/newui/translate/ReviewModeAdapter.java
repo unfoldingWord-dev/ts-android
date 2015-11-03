@@ -26,7 +26,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -814,7 +813,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // render words
             for(final TranslationWord word:words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                wordView.setText(word.getTerm());
+                wordView.setText(word.getWord());
                 wordView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

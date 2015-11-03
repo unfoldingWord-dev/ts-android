@@ -105,7 +105,7 @@ public class IndexerTest extends InstrumentationTestCase {
         SourceTranslation translation = SourceTranslation.simple("obs", "en", "obs");
         String catalog = Util.readStream(mContext.getAssets().open("indexer/obs/en/obs/notes.json"));
         mIndex.beginTransaction();
-        assertTrue(mIndex.indexNotes(translation, catalog));
+        assertTrue(mIndex.indexTranslationNotes(translation, catalog));
         mIndex.endTransaction(true);
         String[] noteIds = mIndex.getNoteSlugs(translation, "01", "01");
         assertTrue(noteIds.length > 0);

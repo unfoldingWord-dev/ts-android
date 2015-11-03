@@ -10,13 +10,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-
-import javax.xml.transform.Source;
 
 
 /**
@@ -379,7 +376,7 @@ public class Indexer {
      * @param catalog
      * @return
      */
-    public synchronized boolean indexNotes(SourceTranslation sourceTranslation, String catalog) {
+    public synchronized boolean indexTranslationNotes(SourceTranslation sourceTranslation, String catalog) {
         //KLUDGE: modify v2 notes catalogJson to match expected catalogJson format
         JSONArray items;
         try {
@@ -503,7 +500,7 @@ public class Indexer {
                     JSONObject item = items.getJSONObject(i);
                     TranslationWord word = TranslationWord.generate(item);
                     if (word != null) {
-                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getTerm(), word.getDefinitionTitle(), word.getDefinition(), word.getExamples(), word.getAliases(), word.getSeeAlso());
+                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getWord(), word.getDefinitionTitle(), word.getDefinition(), word.getExamples(), word.getAliases(), word.getSeeAlso());
                     }
                     mDatabase.yieldIfContendedSafely();
                 } catch (JSONException e) {
