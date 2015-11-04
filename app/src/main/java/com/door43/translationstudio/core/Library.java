@@ -435,12 +435,12 @@ public class Library {
      * @return
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
-        int numTranslatedItems = targetTranslation.numTranslated();
+        int numFinishedItems = targetTranslation.numFinished();
         SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
         int numAvailableTranslations = mAppIndex.numTranslatable(sourceTranslation);
         if(numAvailableTranslations > 0) {
-            return (float) numTranslatedItems / (float) numAvailableTranslations;
+            return (float) numFinishedItems / (float) numAvailableTranslations;
         } else {
             return 0;
         }

@@ -425,6 +425,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedTitles.put(chapter.getId());
+                mManifest.put("finished_titles", finishedTitles);
             }
             return true;
         }
@@ -505,6 +506,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedReferences.put(chapter.getId());
+                mManifest.put("finished_references", finishedReferences);
             }
             return true;
         }
@@ -585,6 +587,7 @@ public class TargetTranslation {
             }
             if(!isFinished) {
                 finishedFrames.put(frame.getComplexId());
+                mManifest.put("finished_frames", finishedFrames);
             }
             return true;
         }
@@ -789,6 +792,17 @@ public class TargetTranslation {
             numFiles += dir.list().length;
         }
         return numFiles;
+    }
+
+    /**
+     * Returns the number of items that have been marked as finished
+     * @return
+     */
+    public int numFinished() {
+        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        return finishedFrames.length() + finishedTitles.length() + finishedReferences.length();
     }
 
     /**

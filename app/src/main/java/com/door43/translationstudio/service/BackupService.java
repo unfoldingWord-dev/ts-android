@@ -111,6 +111,7 @@ public class BackupService extends Service {
                 continue;
             }
 
+            // run backup if there are translations
             if(t.numTranslated() > 0) {
 
                 // retreive commit hash
