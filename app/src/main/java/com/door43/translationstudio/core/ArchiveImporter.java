@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +17,8 @@ import java.util.List;
  * Handles the importing of tstudio archives.
  * The importing is placed here to keep the Translator clean and organized.
  */
-public class Importer {
-    private Importer() {
+public class ArchiveImporter {
+    private ArchiveImporter() {
 
     }
 
@@ -28,38 +29,51 @@ public class Importer {
      * @throws Exception
      */
     public static File[] importArchive(File expandedArchiveDir) throws Exception {
+        // retrieve target translations from archive
         File manifestFile = new File(expandedArchiveDir, "manifest.json");
+        File[] targetTranslationDirs;
         if(manifestFile.exists()) {
-
             JSONObject manifestJson = new JSONObject(FileUtils.readFileToString(manifestFile));
             if(manifestJson.has("package_version")) {
                 int packageVersion = manifestJson.getInt("package_version");
                 switch (packageVersion) {
                     case 1:
-                        return v1(manifestJson, expandedArchiveDir); // just to keep the switch pretty
+                        targetTranslationDirs = v1(manifestJson, expandedArchiveDir); // just to keep the switch pretty
+                        break;
                     case 2:
-                        return v2(manifestJson, expandedArchiveDir);
+                        targetTranslationDirs = v2(manifestJson, expandedArchiveDir);
+                        break;
                     default:
-                        return new File[0];
+                        targetTranslationDirs = new File[0];
                 }
             } else {
-                return v1(manifestJson, expandedArchiveDir);
+                targetTranslationDirs = v1(manifestJson, expandedArchiveDir);
+            }
+        } else {
+            targetTranslationDirs = legacy(expandedArchiveDir);
+        }
+
+        // migrate target translations
+        List<File> validTargetTranslations = new ArrayList<>();
+        for(File dir:targetTranslationDirs) {
+            if(TargetTranslationMigrator.migrate(dir)) {
+                validTargetTranslations.add(dir);
             }
         }
-        return legacy(expandedArchiveDir);
+        return validTargetTranslations.toArray(new File[validTargetTranslations.size()]);
     }
 
     /**
      * translation dirs in the archive are named after their id
      * so we only need to return the path.
-     * @param manifest
+     * @param packageManifest
      * @param dir
      * @return
      * @throws JSONException
      */
-    private static File[] v2(JSONObject manifest, File dir) throws JSONException {
+    private static File[] v2(JSONObject packageManifest, File dir) throws JSONException {
         List<File> files = new ArrayList<>();
-        JSONArray translationsJson = manifest.getJSONArray("target_translations");
+        JSONArray translationsJson = packageManifest.getJSONArray("target_translations");
         for(int i = 0; i < translationsJson.length(); i ++) {
             JSONObject translation = translationsJson.getJSONObject(i);
             files.add(new File(dir, translation.getString("path")));

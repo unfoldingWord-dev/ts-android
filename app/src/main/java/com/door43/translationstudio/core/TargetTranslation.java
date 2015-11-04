@@ -36,7 +36,7 @@ import java.util.Timer;
  */
 public class TargetTranslation {
     private static final long COMMIT_DELAY = 5000;
-    private static final int PACKAGE_VERSION = 2; // the version of the translation format
+    private static final int PACKAGE_VERSION = 3; // the version of the manifest
     private final String mTargetLanguageId;
     private final String mProjectId;
     private static final String GLOBAL_PROJECT_ID = "uw";
@@ -221,6 +221,7 @@ public class TargetTranslation {
         translationJson.put("date_modified", sourceTranslation.getDateModified());
         translationJson.put("version", sourceTranslation.getVersion());
         sourceTranslationsJson.put(sourceTranslation.getId(), translationJson);
+        mManifest.put("source_translations", sourceTranslationsJson);
     }
 
     /**
@@ -409,18 +410,23 @@ public class TargetTranslation {
     public boolean finishChapterTitle(Chapter chapter) {
         File file = getChapterTitleFile(chapter.getId());
         if(file.exists()) {
-            JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+            JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+            boolean isFinished = false;
             try {
-                if (!chaptersJson.has(chapter.getId())) {
-                    chaptersJson.put(chapter.getId(), new JSONObject());
+                for (int i = 0; i < finishedTitles.length(); i++) {
+                    String chapterSlug = finishedTitles.getString(i);
+                    if(chapterSlug.equals(chapter.getId())) {
+                        isFinished = true;
+                        break;
+                    }
                 }
-                JSONObject chapterJson = chaptersJson.getJSONObject(chapter.getId());
-                chapterJson.put("title_finished", true);
-                mManifest.put("chapters", chaptersJson);
-                return true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            if(!isFinished) {
+                finishedTitles.put(chapter.getId());
+            }
+            return true;
         }
         return false;
     }
@@ -431,14 +437,16 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterTitle(Chapter chapter) {
-        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+        JSONArray updatedTitles = new JSONArray();
         try {
-            if (!chaptersJson.has(chapter.getId())) {
-                chaptersJson.put(chapter.getId(), new JSONObject());
+            for (int i = 0; i < finishedTitles.length(); i++) {
+                String chapterSlug = finishedTitles.getString(i);
+                if(!chapterSlug.equals(chapter.getId())) {
+                    updatedTitles.put(finishedTitles.getString(i));
+                }
             }
-            JSONObject frameJson = chaptersJson.getJSONObject(chapter.getId());
-            frameJson.put("title_finished", false);
-            mManifest.put("chapters", chaptersJson);
+            mManifest.put("finished_titles", updatedTitles);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -457,20 +465,19 @@ public class TargetTranslation {
 
     /**
      * Checks if the translation of a chapter title is complete
-     * @param frameComplexId
+     * @param chapterSlug
      * @return
      */
-    private boolean isChapterTitleFinished(String frameComplexId) {
-        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
-        if(chaptersJson.has(frameComplexId)) {
-            try {
-                JSONObject chapterJson = chaptersJson.getJSONObject(frameComplexId);
-                if(chapterJson.has("title_finished")) {
-                    return chapterJson.getBoolean("title_finished");
+    private boolean isChapterTitleFinished(String chapterSlug) {
+        JSONArray finishedTitles = mManifest.getJSONArray("finished_titles");
+        try {
+            for (int i = 0; i < finishedTitles.length(); i++) {
+                if(finishedTitles.getString(i).equals(chapterSlug)) {
+                    return true;
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -481,20 +488,25 @@ public class TargetTranslation {
      * @return returns true if the translation actually exists and the update was successful
      */
     public boolean finishChapterReference(Chapter chapter) {
-        File file = getChapterTitleFile(chapter.getId());
+        File file = getChapterReferenceFile(chapter.getId());
         if(file.exists()) {
-            JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+            JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+            boolean isFinished = false;
             try {
-                if (!chaptersJson.has(chapter.getId())) {
-                    chaptersJson.put(chapter.getId(), new JSONObject());
+                for (int i = 0; i < finishedReferences.length(); i++) {
+                    String chapterSlug = finishedReferences.getString(i);
+                    if(chapterSlug.equals(chapter.getId())) {
+                        isFinished = true;
+                        break;
+                    }
                 }
-                JSONObject chapterJson = chaptersJson.getJSONObject(chapter.getId());
-                chapterJson.put("reference_finished", true);
-                mManifest.put("chapters", chaptersJson);
-                return true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            if(!isFinished) {
+                finishedReferences.put(chapter.getId());
+            }
+            return true;
         }
         return false;
     }
@@ -505,14 +517,16 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenChapterReference(Chapter chapter) {
-        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
+        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        JSONArray updatedReferences = new JSONArray();
         try {
-            if (!chaptersJson.has(chapter.getId())) {
-                chaptersJson.put(chapter.getId(), new JSONObject());
+            for (int i = 0; i < finishedReferences.length(); i++) {
+                String chapterSlug = finishedReferences.getString(i);
+                if(!chapterSlug.equals(chapter.getId())) {
+                    updatedReferences.put(finishedReferences.getString(i));
+                }
             }
-            JSONObject frameJson = chaptersJson.getJSONObject(chapter.getId());
-            frameJson.put("reference_finished", false);
-            mManifest.put("chapters", chaptersJson);
+            mManifest.put("finished_references", updatedReferences);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -531,20 +545,19 @@ public class TargetTranslation {
 
     /**
      * Checks if the translation of a chapter title is complete
-     * @param frameComplexId
+     * @param chapterSlug
      * @return
      */
-    private boolean isChapterReferenceFinished(String frameComplexId) {
-        JSONObject chaptersJson = mManifest.getJSONObject("chapters");
-        if(chaptersJson.has(frameComplexId)) {
-            try {
-                JSONObject chapterJson = chaptersJson.getJSONObject(frameComplexId);
-                if(chapterJson.has("reference_finished")) {
-                    return chapterJson.getBoolean("reference_finished");
+    private boolean isChapterReferenceFinished(String chapterSlug) {
+        JSONArray finishedReferences = mManifest.getJSONArray("finished_references");
+        try {
+            for (int i = 0; i < finishedReferences.length(); i++) {
+                if(finishedReferences.getString(i).equals(chapterSlug)) {
+                    return true;
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return false;
     }
@@ -555,23 +568,25 @@ public class TargetTranslation {
      * @return returns true if the translation actually exists and the update was successful
      */
     public boolean finishFrame(Frame frame) {
-        // TODO: we may want to change this to just have a list of "finished_frames"
-        // rather than having a multi level json object. Then we could just check to see if the
-        // frame id exist in the json array.
         File file = getFrameFile(frame.getChapterId(), frame.getId());
         if(file.exists()) {
-            JSONObject framesJson = mManifest.getJSONObject("frames");
+            JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+            boolean isFinished = false;
             try {
-                if (!framesJson.has(frame.getComplexId())) {
-                    framesJson.put(frame.getComplexId(), new JSONObject());
+                for (int i = 0; i < finishedFrames.length(); i++) {
+                    String complexSlug = finishedFrames.getString(i);
+                    if(complexSlug.equals(frame.getComplexId())) {
+                        isFinished = true;
+                        break;
+                    }
                 }
-                JSONObject frameJson = framesJson.getJSONObject(frame.getComplexId());
-                frameJson.put("finished", true);
-                mManifest.put("frames", framesJson);
-                return true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            if(!isFinished) {
+                finishedFrames.put(frame.getComplexId());
+            }
+            return true;
         }
         return false;
     }
@@ -582,14 +597,16 @@ public class TargetTranslation {
      * @return
      */
     public boolean reopenFrame(Frame frame) {
-        JSONObject framesJson = mManifest.getJSONObject("frames");
+        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+        JSONArray updatedFrames = new JSONArray();
         try {
-            if (!framesJson.has(frame.getComplexId())) {
-                framesJson.put(frame.getComplexId(), new JSONObject());
+            for (int i = 0; i < finishedFrames.length(); i++) {
+                String complexSlug = finishedFrames.getString(i);
+                if(!complexSlug.equals(frame.getComplexId())) {
+                    updatedFrames.put(finishedFrames.getString(i));
+                }
             }
-            JSONObject frameJson = framesJson.getJSONObject(frame.getComplexId());
-            frameJson.put("finished", false);
-            mManifest.put("frames", framesJson);
+            mManifest.put("finished_frames", updatedFrames);
             return true;
         } catch (JSONException e) {
             e.printStackTrace();
@@ -612,16 +629,15 @@ public class TargetTranslation {
      * @return
      */
     private boolean isFrameFinished(String frameComplexId) {
-        JSONObject framesJson = mManifest.getJSONObject("frames");
-        if(framesJson.has(frameComplexId)) {
-            try {
-                JSONObject frameJson = framesJson.getJSONObject(frameComplexId);
-                if(frameJson.has("finished")) {
-                    return frameJson.getBoolean("finished");
+        JSONArray finishedFrames = mManifest.getJSONArray("finished_frames");
+        try {
+            for (int i = 0; i < finishedFrames.length(); i++) {
+                if(finishedFrames.getString(i).equals(frameComplexId)) {
+                    return true;
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
         return false;
     }

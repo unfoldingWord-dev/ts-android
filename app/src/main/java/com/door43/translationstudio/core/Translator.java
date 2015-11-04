@@ -219,13 +219,16 @@ public class Translator {
         try {
             tempCache.mkdirs();
             Zip.unzip(file, tempCache);
-            File[] targetTranslationDirs = Importer.importArchive(tempCache);
+            File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
             for(File dir:targetTranslationDirs) {
                 File newDir = new File(mRootDir, dir.getName());
                 // delete existing translation
                 FileUtils.deleteQuietly(newDir);
                 // import new translation
                 FileUtils.moveDirectory(dir, newDir);
+            }
+            if(targetTranslationDirs.length == 0) {
+                throw new Exception("The archive does not contain any valid target translations");
             }
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
