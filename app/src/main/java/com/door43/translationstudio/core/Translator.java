@@ -6,7 +6,6 @@ import android.text.Editable;
 import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.filebrowser.FileItem;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -17,7 +16,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -89,7 +87,7 @@ public class Translator {
      */
     public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, String projectId) {
         try {
-            return TargetTranslation.generate(mContext, targetLanguage, projectId, mRootDir);
+            return TargetTranslation.create(mContext, targetLanguage, projectId, mRootDir);
         } catch (Exception e) {
             e.printStackTrace();
         }

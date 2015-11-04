@@ -125,12 +125,12 @@ public class TargetTranslation {
      *
      * @param targetLanguage the target language the project will be translated into
      * @param projectId the id of the project that will be translated
-     * @param mRootDir the parent directory in which the target translation directory will be created
+     * @param rootDir the parent directory in which the target translation directory will be created
      * @return
      */
-    public static TargetTranslation generate(Context context, TargetLanguage targetLanguage, String projectId, File mRootDir) throws Exception {
+    public static TargetTranslation create(Context context, TargetLanguage targetLanguage, String projectId, File rootDir) throws Exception {
         // generate new target translation if it does not exist
-        File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), mRootDir);
+        File translationDir = generateTargetTranslationDir(generateTargetTranslationId(targetLanguage.getId(), projectId), rootDir);
         if(!translationDir.exists()) {
             // build new manifest
             Manifest manifest = Manifest.generate(translationDir);
@@ -150,11 +150,11 @@ public class TargetTranslation {
             manifest.put("target_language", targetLangaugeJson);
         }
         // load the target translation (new or otherwise)
-        return new TargetTranslation(targetLanguage.getId(), projectId, mRootDir);
+        return new TargetTranslation(targetLanguage.getId(), projectId, rootDir);
     }
 
     /**
-     * Returns a properly formatted target language id
+     * Returns a properly formatted target translation id
      * @param targetLanguageId
      * @param projectId
      * @return

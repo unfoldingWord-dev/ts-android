@@ -54,6 +54,7 @@ public class ValidationItem {
         item.mFrameId = frameId;
         return item;
     }
+
     /**
      * Generates a new invalid item
      * For our purposes a group can be either a chapter or a project
