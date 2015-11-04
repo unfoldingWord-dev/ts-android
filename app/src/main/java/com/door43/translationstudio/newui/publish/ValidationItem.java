@@ -1,5 +1,9 @@
 package com.door43.translationstudio.newui.publish;
 
+import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.TargetLanguage;
+import com.door43.translationstudio.core.TranslationFormat;
+
 /**
  * A thin wrapper to represent a validation set on a translation
  */
@@ -12,13 +16,17 @@ public class ValidationItem {
     private String mTargetTranslationId;
     private String mChapterId;
     private String mFrameId;
+    private TargetLanguage bodyLanguage;
+    private SourceLanguage titleLanguage;
+    private TranslationFormat bodyFormat;
 
-    private ValidationItem(String title, String body, boolean range, boolean valid, boolean isFrame) {
+    private ValidationItem(String title, SourceLanguage titleLanguage, String body, boolean range, boolean valid, boolean isFrame) {
         mTitle = title;
         mBody = body;
         mRange = range;
         mValid = valid;
         mIsFrame = isFrame;
+        this.titleLanguage = titleLanguage;
     }
 
     /**
@@ -27,8 +35,8 @@ public class ValidationItem {
      * @param range
      * @return
      */
-    public static ValidationItem generateValidFrame(String title, boolean range) {
-        return new ValidationItem(title, "", range, true, true);
+    public static ValidationItem generateValidFrame(String title, SourceLanguage titleLanguage, boolean range) {
+        return new ValidationItem(title,titleLanguage,  "", range, true, true);
     }
 
     /**
@@ -37,21 +45,27 @@ public class ValidationItem {
      * @param range
      * @return
      */
-    public static ValidationItem generateValidGroup(String title, boolean range) {
-        return new ValidationItem(title, "", range, true, false);
+    public static ValidationItem generateValidGroup(String title, SourceLanguage titleLanguage, boolean range) {
+        return new ValidationItem(title, titleLanguage, "", range, true, false);
     }
 
     /**
      * Generates a new invalid item
      * @param title
      * @param body
+     * @param bodyLanguage
+     * @param targetTranslationId
+     * @param chapterId
+     * @param frameId
      * @return
      */
-    public static ValidationItem generateInvalidFrame(String title, String body, String targetTranslationId, String chapterId, String frameId) {
-        ValidationItem item = new ValidationItem(title, body, false, false, true);
+    public static ValidationItem generateInvalidFrame(String title, SourceLanguage titleLanguage, String body, TargetLanguage bodyLanguage, TranslationFormat bodyFormat, String targetTranslationId, String chapterId, String frameId) {
+        ValidationItem item = new ValidationItem(title, titleLanguage, body, false, false, true);
         item.mTargetTranslationId = targetTranslationId;
         item.mChapterId = chapterId;
         item.mFrameId = frameId;
+        item.bodyFormat = bodyFormat;
+        item.bodyLanguage = bodyLanguage;
         return item;
     }
 
@@ -61,8 +75,8 @@ public class ValidationItem {
      * @param title
      * @return
      */
-    public static ValidationItem generateInvalidGroup(String title) {
-        return new ValidationItem(title, "", false, false, false);
+    public static ValidationItem generateInvalidGroup(String title, SourceLanguage titleLanguage) {
+        return new ValidationItem(title, titleLanguage, "", false, false, false);
     }
 
     /**
@@ -128,5 +142,21 @@ public class ValidationItem {
      */
     public String getFrameId() {
         return mFrameId;
+    }
+
+    /**
+     * Returns the translation format of the body
+     * @return
+     */
+    public TargetLanguage getBodyLanguage() {
+        return bodyLanguage;
+    }
+
+    public TranslationFormat getBodyFormat() {
+        return bodyFormat;
+    }
+
+    public SourceLanguage getTitleLanguage() {
+        return titleLanguage;
     }
 }

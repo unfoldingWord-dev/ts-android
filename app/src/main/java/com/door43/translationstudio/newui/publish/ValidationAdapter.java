@@ -13,6 +13,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.TranslationFormat;
+import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.rendering.DefaultRenderer;
+import com.door43.translationstudio.rendering.RenderingGroup;
+import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.widget.ViewUtil;
 
 /**
@@ -21,6 +26,7 @@ import com.door43.widget.ViewUtil;
 public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.ViewHolder> {
     private final Activity mContext;
     private ValidationItem[] mValidations;
+    private CharSequence[] renderedText;
     private OnClickListener mListener;
 
     public ValidationAdapter(Activity context) {
@@ -69,6 +75,7 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
 
             // title
             holder.mTitle.setText(item.getTitle());
+            Typography.format(mContext, holder.mTitle, item.getTitleLanguage().getId(), item.getTitleLanguage().getDirection());
 
             // icon
             if (item.isValid()) {
@@ -95,7 +102,18 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
                 holder.mIcon.setVisibility(View.GONE);
                 holder.mReviewButton.setVisibility(View.VISIBLE);
                 holder.mBody.setVisibility(View.VISIBLE);
-                holder.mBody.setText(item.getBody());
+                if(renderedText[position] == null) {
+                    RenderingGroup renderingGroup = new RenderingGroup();
+                    if(item.getBodyFormat() == TranslationFormat.USX) {
+                        renderingGroup.addEngine(new USXRenderer());
+                    } else {
+                        renderingGroup.addEngine(new DefaultRenderer(null));
+                    }
+                    renderingGroup.init(item.getBody());
+                    renderedText[position] = renderingGroup.start();
+                }
+                holder.mBody.setText(renderedText[position]);
+                Typography.formatSub(mContext, holder.mBody, item.getBodyLanguage().getId(), item.getBodyLanguage().getDirection());
             } else {
                 holder.mBody.setVisibility(View.GONE);
                 holder.mReviewButton.setVisibility(View.GONE);
@@ -110,6 +128,7 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
                     }
                 }
             });
+
         }
     }
 
@@ -125,6 +144,7 @@ public class ValidationAdapter extends RecyclerView.Adapter<ValidationAdapter.Vi
 
     public void setValidations(ValidationItem[] validations) {
         mValidations = validations;
+        renderedText = new CharSequence[validations.length];
         notifyDataSetChanged();
     }
 
