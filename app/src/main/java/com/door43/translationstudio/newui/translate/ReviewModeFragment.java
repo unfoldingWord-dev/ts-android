@@ -282,7 +282,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             title.setText(note.getTitle());
             SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
-            Typography.formatTitle(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.format(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
             description.setText(renderer.render(Html.fromHtml(note.getBody())));
             Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
             ViewUtil.makeLinksClickable(description);
