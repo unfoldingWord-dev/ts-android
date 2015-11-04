@@ -58,11 +58,14 @@ public class TargetTranslationInfoDialog extends DialogFragment {
 
         final Library library = AppContext.getLibrary();
 
+        TextView title = (TextView)v.findViewById(R.id.title);
         TextView projectTitle = (TextView)v.findViewById(R.id.project_title);
         SourceLanguage sourceLanguage = library.getPreferredSourceLanguage(mTargetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         if(sourceLanguage != null) {
+            title.setText(sourceLanguage.projectTitle + " - " + mTargetTranslation.getTargetLanguageName());
             projectTitle.setText(sourceLanguage.projectTitle + " (" + mTargetTranslation.getProjectId() + ")");
         } else {
+            title.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
             projectTitle.setText(mTargetTranslation.getProjectId());
         }
 
