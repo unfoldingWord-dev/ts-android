@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<org.sufficientlysecure.htmltextview.HtmlTextView
+    android:id="@+id/text"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:textSize="@dimen/body"
+    android:textColor="@color/dark_primary_text"
+    android:padding="16dp"
+    android:layout_width="match_parent"/>
