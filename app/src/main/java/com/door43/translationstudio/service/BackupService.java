@@ -117,7 +117,7 @@ public class BackupService extends Service {
                 // retreive commit hash
                 String tag;
                 try {
-                    tag = t.commitHash();
+                    tag = t.getCommitHash();
                 } catch (Exception e) {
                     Logger.w(this.getClass().getName(), "Failed to read commit hash", e);
                     continue;

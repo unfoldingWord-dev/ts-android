@@ -186,7 +186,7 @@ public class Translator {
         JSONObject translationJson = new JSONObject();
         translationJson.put("path", targetTranslation.getId());
         translationJson.put("id", targetTranslation.getId());
-        translationJson.put("commit_hash", targetTranslation.commitHash());
+        translationJson.put("commit_hash", targetTranslation.getCommitHash());
         translationJson.put("direction", targetTranslation.getTargetLanguageDirection());
         translationJson.put("target_language_name", targetTranslation.getTargetLanguageName());
         translationsJson.put(translationJson);

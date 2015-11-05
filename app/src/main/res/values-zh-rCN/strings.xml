@@ -68,7 +68,7 @@
   <string name="label_note_phrase">选定的短语：</string>
   <string name="related_terms">请参见：</string>
   <string name="term_examples">示例：</string>
-  <string name="git_push_success">项目已经成功上载</string>
+  <string name="project_uploaded">项目已经成功上载</string>
   <string name="choose_frame_to_start">从左侧的选项卡，要开始选择一些源文本</string>
   <string name="return_to_important_terms">返回到重要条款</string>
   <string name="no_translation_notes">没有翻译笔记</string>

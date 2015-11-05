@@ -62,7 +62,7 @@
   <string name="label_note_phrase">انتخاب و كړو عبارت:</string>
   <string name="related_terms">هم ليدل:</string>
   <string name="term_examples">مخ بېلگو:</string>
-  <string name="git_push_success">و ورلېښه پروژې په بريالۍ توګه كولم</string>
+  <string name="project_uploaded">و ورلېښه پروژې په بريالۍ توګه كولم</string>
   <string name="choose_frame_to_start">يو شمېر غوره سرچينې له متن د ټکۍ ته پيل شوې ده</string>
   <string name="return_to_important_terms">په يوه مهمه برخه ده</string>
   <string name="no_translation_notes">نه شته، چې د ژباړې نوټونه دي</string>

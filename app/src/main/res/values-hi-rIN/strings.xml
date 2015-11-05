@@ -68,7 +68,7 @@
   <string name="label_note_phrase">चयनित वाक्यांश:</string>
   <string name="related_terms">इन्हें भी देखें:</string>
   <string name="term_examples">उदाहरण:</string>
-  <string name="git_push_success">प्रोजेक्ट सफलतापूर्वक अपलोड किया था</string>
+  <string name="project_uploaded">प्रोजेक्ट सफलतापूर्वक अपलोड किया था</string>
   <string name="choose_frame_to_start">बाएँ टैब से कुछ स्रोत पाठ चुनें आरंभ करने के लिए</string>
   <string name="return_to_important_terms">महत्वपूर्ण पदों पर लौटें</string>
   <string name="no_translation_notes">कोई अनुवाद नोट नहीं हैं</string>

@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Phrase:</string>
   <string name="related_terms">Voir Aussi:</string>
   <string name="term_examples">Exemples:</string>
-  <string name="git_push_success">Le projet a été téléchargée avec succès</string>
+  <string name="project_uploaded">Le projet a été téléchargée avec succès</string>
   <string name="choose_frame_to_start">Choisissez un texte source à partir de l\'onglet de gauche pour commencer</string>
   <string name="return_to_important_terms">Retour à Termes importants</string>
   <string name="no_translation_notes">Il n\'y a pas de notes de traduction</string>

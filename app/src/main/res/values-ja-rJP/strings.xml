@@ -68,7 +68,7 @@
   <string name="label_note_phrase">選択した語句:</string>
   <string name="related_terms">また見なさい。</string>
   <string name="term_examples">例:</string>
-  <string name="git_push_success">プロジェクトが正常にアップロードされました。</string>
+  <string name="project_uploaded">プロジェクトが正常にアップロードされました。</string>
   <string name="choose_frame_to_start">始めるために、左のタブからいくつかのソーステキストを選択してください</string>
   <string name="return_to_important_terms">重要な用語に戻る</string>
   <string name="no_translation_notes">全く翻訳ノートはありません</string>

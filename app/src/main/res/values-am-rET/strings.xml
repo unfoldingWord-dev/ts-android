@@ -68,7 +68,7 @@
   <string name="label_note_phrase">የተመረጠው ሀረግ፤</string>
   <string name="related_terms">ደግሞ ይመልከቱ፤</string>
   <string name="term_examples">ምሳሌዎች፤</string>
-  <string name="git_push_success">ፕሮጄክቱ በተሳካ ሁኔታ ተጭኖአል።</string>
+  <string name="project_uploaded">ፕሮጄክቱ በተሳካ ሁኔታ ተጭኖአል።</string>
   <string name="choose_frame_to_start">ለመጀመሪ ከምንጩ ምንባብ ከግራ ጠርዝ ላይ ይምረጡ</string>
   <string name="return_to_important_terms">አስፈላጊ ወደሆነው ደንቦች መመለስ</string>
   <string name="no_translation_notes">ምንም ዓይነት የትርጉም ማስታወሻዎች የሉም።</string>

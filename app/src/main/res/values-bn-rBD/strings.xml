@@ -68,7 +68,7 @@
   <string name="label_note_phrase">সিলেক্টেড ফ্রেজ:</string>
   <string name="related_terms">এছাড়াও দেখুন:</string>
   <string name="term_examples">উদাহরণ:</string>
-  <string name="git_push_success">প্রকল্প সফলভাবে আপলোড করা হয় নি</string>
+  <string name="project_uploaded">প্রকল্প সফলভাবে আপলোড করা হয় নি</string>
   <string name="choose_frame_to_start">বাম ট্যাব থেকে কিছু সোর্স টেক্সট চয়ন করুন শুরু</string>
   <string name="return_to_important_terms">গুরুত্বপূর্ণ শর্তাবলী ফিরে যান</string>
   <string name="no_translation_notes">কোন অনুবাদ নোট আছে</string>

@@ -68,7 +68,7 @@
   <string name="label_note_phrase">عبارت انتخاب شده:</string>
   <string name="related_terms">همچنين مراجعه کنید به:</string>
   <string name="term_examples">مثال ها:</string>
-  <string name="git_push_success">پروژه با موفقيت بارگذاری شد</string>
+  <string name="project_uploaded">پروژه با موفقيت بارگذاری شد</string>
   <string name="choose_frame_to_start">متن منبع را از بند چپ برای شروع را انتخاب کنید</string>
   <string name="return_to_important_terms">بازگشت به لحاظ مهم</string>
   <string name="no_translation_notes">یادداشت ترجمه بدون وجود دارد</string>

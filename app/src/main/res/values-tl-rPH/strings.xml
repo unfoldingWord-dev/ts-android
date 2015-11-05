@@ -62,7 +62,7 @@
   <string name="label_note_phrase">Napiling mga parirala:</string>
   <string name="related_terms">Tingnan din ang:</string>
   <string name="term_examples">Mga Halimbawa:</string>
-  <string name="git_push_success">Ang proyekto ay matagumpay na na-upload</string>
+  <string name="project_uploaded">Ang proyekto ay matagumpay na na-upload</string>
   <string name="choose_frame_to_start">Pumili ng ilang pinagmulang teksto mula sa kaliwang tab upang makapagsimula</string>
   <string name="return_to_important_terms">Bumalik sa Mahalagang Mga Tuntunin</string>
   <string name="no_translation_notes">Walang mga tala sa pagsasalin</string>

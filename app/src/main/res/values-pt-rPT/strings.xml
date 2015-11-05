@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Frase seleccionada:</string>
   <string name="related_terms">Veja Também:</string>
   <string name="term_examples">Exemplos:</string>
-  <string name="git_push_success">Projeto foi carregada com sucesso</string>
+  <string name="project_uploaded">Projeto foi carregada com sucesso</string>
   <string name="choose_frame_to_start">Escolha algum texto de origem a partir da guia esquerda para começar</string>
   <string name="return_to_important_terms">Retornar ao Termos importantes</string>
   <string name="no_translation_notes">Não há notas de tradução</string>

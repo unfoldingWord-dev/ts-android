@@ -68,7 +68,7 @@
   <string name="label_note_phrase">પસંદ શબ્દસમૂહ:</string>
   <string name="related_terms">આ પણ જુઓ:</string>
   <string name="term_examples">ઉદાહરણો:</string>
-  <string name="git_push_success">પ્રોજેક્ટ સફળતાપૂર્વક અપલોડ થઈ હતી</string>
+  <string name="project_uploaded">પ્રોજેક્ટ સફળતાપૂર્વક અપલોડ થઈ હતી</string>
   <string name="choose_frame_to_start">ડાબી ટેબમાંથી કેટલાક સ્ત્રોત લખાણ પસંદ પ્રારંભ કરવા માટે</string>
   <string name="return_to_important_terms">મહત્વનું શરતો પર પાછા</string>
   <string name="no_translation_notes">કોઈ અનુવાદ નોંધો ત્યાં</string>

@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Frasa yang dipilih:</string>
   <string name="related_terms">Lihat juga:</string>
   <string name="term_examples">Contoh:</string>
-  <string name="git_push_success">Proyek berhasil diupload</string>
+  <string name="project_uploaded">Proyek berhasil diupload</string>
   <string name="choose_frame_to_start">Pilih beberapa teks sumber dari tab kiri untuk memulai</string>
   <string name="return_to_important_terms">Kembali Syarat Penting</string>
   <string name="no_translation_notes">Tidak ada catatan terjemahan</string>

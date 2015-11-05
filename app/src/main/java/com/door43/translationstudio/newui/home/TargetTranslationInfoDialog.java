@@ -20,7 +20,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.newui.publish.PublishActivity;
-import com.door43.translationstudio.newui.translate.BackupDialog;
+import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.tasks.ThreadableUI;

@@ -17,6 +17,7 @@ import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
@@ -87,27 +88,21 @@ public class UploadTargetTranslationTask extends ManagedTask {
      * Uploads the target translation to the server
      */
     private void upload() {
-        publishProgress(-1, AppContext.context().getResources().getString(R.string.publishing_translation));
+        publishProgress(-1, AppContext.context().getResources().getString(R.string.uploading));
 
         String server = AppContext.context().getUserPreferences().getString(SettingsActivity.KEY_PREF_GIT_SERVER, AppContext.context().getResources().getString(R.string.pref_default_git_server));
         String targetTranslationRemoteRepository = server + ":tS/" + AppContext.udid() + "/uw-" + mTargetTranslation.getProjectId() + "-" + mTargetTranslation.getTargetLanguageId();
 
         // push the translation
         Repo translationRepo = mTargetTranslation.getRepo();
-        if(commitRepo(translationRepo)) {
-            Logger.i(this.getClass().getName(), "Pushing target translation " + mTargetTranslation.getId() + " to " + targetTranslationRemoteRepository);
-            mResponse = pushRepo(translationRepo, targetTranslationRemoteRepository);
-        }
-
-        // push the profile
-        // TODO: we need to update how profiles are managed
-        Repo profileRepo = new Repo(ProfileManager.getRepositoryPath());
-        if (commitRepo(profileRepo)) {
-            Logger.i(this.getClass().getName(), "Pushing profile to " + ProfileManager.getRemotePath());
-            String profileResponse = pushRepo(profileRepo, ProfileManager.getRemotePath());
-            if(profileResponse != null) {
-                mResponse += "\n" + profileResponse;
+        try {
+            if (commitRepo(translationRepo)) {
+                Logger.i(this.getClass().getName(), "Pushing target translation " + mTargetTranslation.getId() + " to " + targetTranslationRemoteRepository);
+                mResponse = pushRepo(translationRepo, targetTranslationRemoteRepository);
             }
+        } catch (JGitInternalException e) {
+            Logger.e(this.getClass().getName(), "Failed to push the target translation " + mTargetTranslation.getId() + " to " + targetTranslationRemoteRepository, e);
+            mUploadSucceeded = false;
         }
     }
 
@@ -116,7 +111,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
      * @param repo
      * @return
      */
-    private String pushRepo(Repo repo, String remote) {
+    private String pushRepo(Repo repo, String remote) throws JGitInternalException {
         Git git;
         try {
             git = repo.getGit();
@@ -209,7 +204,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
      * Commits any unstaged changes
      * @param repo
      */
-    private boolean commitRepo(Repo repo) {
+    private boolean commitRepo(Repo repo) throws JGitInternalException {
         try {
             Git git = repo.getGit();
             if(!git.status().call().isClean()) {

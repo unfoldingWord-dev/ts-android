@@ -129,7 +129,7 @@
     <string name="label_note_phrase">Selected phrase:</string>
     <string name="related_terms">See Also:</string>
     <string name="term_examples">Examples:</string>
-    <string name="git_push_success">Project successfully uploaded</string>
+    <string name="project_uploaded">Project successfully uploaded</string>
     <string name="choose_frame_to_start">Open a project to start translating</string>
     <string name="return_to_important_terms">Return to Words</string>
     <string name="no_translation_notes">No notes</string>

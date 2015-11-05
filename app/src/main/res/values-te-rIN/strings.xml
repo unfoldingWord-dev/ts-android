@@ -68,7 +68,7 @@
   <string name="label_note_phrase">ఎంపిక పదబంధం:</string>
   <string name="related_terms">కూడా చూడండి:</string>
   <string name="term_examples">ఉదాహరణలు:</string>
-  <string name="git_push_success">ప్రాజెక్ట్ విజయవంతంగా అప్లోడ్</string>
+  <string name="project_uploaded">ప్రాజెక్ట్ విజయవంతంగా అప్లోడ్</string>
   <string name="choose_frame_to_start">ఎడమ టాబ్ నుండి కొన్ని మూల వచనం ఎంచుకోండి ప్రారంభించడానికి</string>
   <string name="return_to_important_terms">ముఖ్యమైన నిబంధనల కు తిరిగి</string>
   <string name="no_translation_notes">ఏ అనువాద గమనికలు ఉన్నాయి</string>

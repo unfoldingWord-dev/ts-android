@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Geselecteerde uitdrukking:</string>
   <string name="related_terms">Zie Ook:</string>
   <string name="term_examples">Voorbeelden:</string>
-  <string name="git_push_success">Project is succesvol geüpload</string>
+  <string name="project_uploaded">Project is succesvol geüpload</string>
   <string name="choose_frame_to_start">Kies een aantal brontekst van het linker tabblad aan de slag</string>
   <string name="return_to_important_terms">Keer terug naar Belangrijke Voorwaarden</string>
   <string name="no_translation_notes">Er zijn geen vertaling notities</string>

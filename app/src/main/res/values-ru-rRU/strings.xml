@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Выбранные фразы:</string>
   <string name="related_terms">Смотрите Также:</string>
   <string name="term_examples">Примеры:</string>
-  <string name="git_push_success">Проект был успешно загружен</string>
+  <string name="project_uploaded">Проект был успешно загружен</string>
   <string name="choose_frame_to_start">Выберем некоторый исходный текст из левой вкладки, чтобы начать</string>
   <string name="return_to_important_terms">Вернуться в Важные Правила</string>
   <string name="no_translation_notes">Там нет заметок перевод</string>

@@ -650,19 +650,31 @@ public class TargetTranslation {
      * @throws Exception
      */
     public void commit() throws Exception {
-        commit(".");
+        commit(".", null);
+    }
+
+    /**
+     * Stages and commits changes to the repository
+     * @param listener
+     * @throws Exception
+     */
+    public void commit(OnCommitListener listener) throws Exception {
+        commit(".", listener);
     }
 
     /**
      * Stages and commits changes to the repository
      * @param filePattern the file pattern that will be used to match files for staging
      */
-    private void commit(String filePattern) throws Exception {
+    private void commit(String filePattern, final OnCommitListener listener) throws Exception {
         Git git = getRepo().getGit();
 
         // check if dirty
         try {
             if(git.status().call().isClean()) {
+                if(listener != null) {
+                    listener.onCommit(true);
+                }
                 return;
             }
         } catch (GitAPIException e) {
@@ -684,8 +696,14 @@ public class TargetTranslation {
             public void run() {
                 try {
                     commit.call();
-                } catch (GitAPIException e) {
+                    if(listener != null) {
+                        listener.onCommit(true);
+                    }
+                } catch (Exception e) {
                     Logger.e(TargetTranslation.class.getName(), "Failed to commit changes", e);
+                    if(listener != null) {
+                        listener.onCommit(false);
+                    }
                 }
             }
         };
@@ -705,7 +723,7 @@ public class TargetTranslation {
      * @return
      * @throws Exception
      */
-    public String commitHash() throws Exception {
+    public String getCommitHash() throws Exception {
         Repo repo = getRepo();
         String tag = null;
         Iterable<RevCommit> commits = repo.getGit().log().setMaxCount(1).call();
@@ -726,8 +744,19 @@ public class TargetTranslation {
     /**
      * Sets whether or not this target translation is publishable
      * @param publishable
+     * @throws Exception
      */
     public void setPublishable(boolean publishable) throws Exception {
+        setPublishable(publishable, null);
+    }
+
+    /**
+     * Sets whether or not this target translation is publishable
+     * @param publishable
+     * @param listener
+     * @throws Exception
+     */
+    public void setPublishable(boolean publishable, OnCommitListener listener) throws Exception {
         File readyFile = new File(mTargetTranslationDirectory, "READY");
         if(publishable) {
             try {
@@ -738,7 +767,7 @@ public class TargetTranslation {
         } else {
             readyFile.delete();
         }
-        commit();
+        commit(listener);
     }
 
     /**
@@ -853,5 +882,9 @@ public class TargetTranslation {
             }
         }
         return frameTranslations.toArray(new FrameTranslation[frameTranslations.size()]);
+    }
+
+    public interface OnCommitListener {
+        void onCommit(boolean success);
     }
 }
