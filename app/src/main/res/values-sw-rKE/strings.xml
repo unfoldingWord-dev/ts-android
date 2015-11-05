@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Sura Title:</string>
   <string name="chapter_reference_field">Sura Rejea:</string>
   <string name="source_language_field">Lugha Chanzo:</string>
-  <string name="target_language_field">Lengo lugha:</string>
+  <string name="target_language">Lengo lugha:</string>
   <string name="title_activity_chapter_setting">Sura ya Mazingira</string>
   <string name="title_activity_language_selector">Lugha</string>
   <string name="success">Mafanikio</string>

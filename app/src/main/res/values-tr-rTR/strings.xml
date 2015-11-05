@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Bölüm Title:</string>
   <string name="chapter_reference_field">Bölüm Başvuru:</string>
   <string name="source_language_field">Kaynak Dil:</string>
-  <string name="target_language_field">Hedef Dil:</string>
+  <string name="target_language">Hedef Dil:</string>
   <string name="title_activity_chapter_setting">Bölüm Ayarları</string>
   <string name="title_activity_language_selector">Dil</string>
   <string name="success">Başarı</string>

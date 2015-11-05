@@ -11,7 +11,7 @@
   <string name="chapter_title_field">عنوان فصل:</string>
   <string name="chapter_reference_field">مرجع فصل:</string>
   <string name="source_language_field">زبان مبداء:</string>
-  <string name="target_language_field">زبان مقصد:</string>
+  <string name="target_language">زبان مقصد:</string>
   <string name="title_activity_chapter_setting">تنظیمات فصل</string>
   <string name="title_activity_language_selector">زبان</string>
   <string name="success">موفقیت</string>

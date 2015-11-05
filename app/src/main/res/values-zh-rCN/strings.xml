@@ -11,7 +11,7 @@
   <string name="chapter_title_field">章标题</string>
   <string name="chapter_reference_field">章参考</string>
   <string name="source_language_field">源语言</string>
-  <string name="target_language_field">目标语言</string>
+  <string name="target_language">目标语言</string>
   <string name="title_activity_chapter_setting">章设置</string>
   <string name="title_activity_language_selector">语言</string>
   <string name="success">成功</string>

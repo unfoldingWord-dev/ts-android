@@ -11,7 +11,7 @@
   <string name="chapter_title_field">باب کا عنوان:</string>
   <string name="chapter_reference_field">باب کا حوالہ:</string>
   <string name="source_language_field">ماخذ زبان:</string>
-  <string name="target_language_field">زبان:</string>
+  <string name="target_language">زبان:</string>
   <string name="title_activity_chapter_setting">باب سیٹنگیں</string>
   <string name="title_activity_language_selector">زبان</string>
   <string name="success">کامیابی</string>

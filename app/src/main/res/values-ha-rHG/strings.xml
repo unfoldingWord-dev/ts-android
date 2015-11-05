@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Sunan babi</string>
   <string name="chapter_reference_field">Bayanin Babi</string>
   <string name="source_language_field">Harshen Asali</string>
-  <string name="target_language_field">Harshen Karba</string>
+  <string name="target_language">Harshen Karba</string>
   <string name="title_activity_chapter_setting">Saitin Babi</string>
   <string name="title_activity_language_selector">Harshe</string>
   <string name="success">Anyi nasara</string>

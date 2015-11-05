@@ -11,7 +11,7 @@
   <string name="chapter_title_field">章のタイトル:</string>
   <string name="chapter_reference_field">章の参照:</string>
   <string name="source_language_field">ソース言語：</string>
-  <string name="target_language_field">ターゲット言語:</string>
+  <string name="target_language">ターゲット言語:</string>
   <string name="title_activity_chapter_setting">章の設定</string>
   <string name="title_activity_language_selector">言語</string>
   <string name="success">成功</string>

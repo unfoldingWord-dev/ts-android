@@ -9,7 +9,7 @@
   <string name="chapter_title_field">خطاب فصل کې:</string>
   <string name="chapter_reference_field">څپركې اخځ:</string>
   <string name="source_language_field">مورينه ڎبه:</string>
-  <string name="target_language_field">ڎب هدف </string>
+  <string name="target_language">ڎب هدف </string>
   <string name="title_activity_chapter_setting">څپركې اېچ ټي اېم اېل </string>
   <string name="title_activity_language_selector">ڎب </string>
   <string name="success">بريالي توب</string>

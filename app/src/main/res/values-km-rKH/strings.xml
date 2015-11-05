@@ -11,7 +11,7 @@
   <string name="chapter_title_field">ចំណងជើងជំពូក:</string>
   <string name="chapter_reference_field">ឯកសារយោងនៃជំពូក:</string>
   <string name="source_language_field">ភាសាប្រភពដើម:</string>
-  <string name="target_language_field">ភាសាគោលដៅ:</string>
+  <string name="target_language">ភាសាគោលដៅ:</string>
   <string name="title_activity_chapter_setting">កំណត់នៃជំពូក</string>
   <string name="title_activity_language_selector">ភាសា</string>
   <string name="success">ជោគជ័យ</string>

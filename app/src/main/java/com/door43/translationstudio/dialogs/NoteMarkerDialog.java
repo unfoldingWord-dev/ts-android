@@ -27,7 +27,7 @@ public class NoteMarkerDialog extends DialogFragment {
         EditText passageText = (EditText)v.findViewById(R.id.passageText);
         EditText noteText = (EditText)v.findViewById(R.id.noteText);
         Button okButton = (Button)v.findViewById(R.id.okButton);
-        Button deleteButton = (Button)v.findViewById(R.id.deleteButton);
+        Button deleteButton = (Button)v.findViewById(R.id.delete_button);
         Button cancelButton = (Button)v.findViewById(R.id.cancelButton);
 
         // load parameters

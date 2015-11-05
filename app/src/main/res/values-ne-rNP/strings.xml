@@ -11,7 +11,7 @@
   <string name="chapter_title_field">अध्याय शीर्षक:</string>
   <string name="chapter_reference_field">अध्याय सन्दर्भ:</string>
   <string name="source_language_field">स्रोत भाषा:</string>
-  <string name="target_language_field">लक्ष्य भाषा:</string>
+  <string name="target_language">लक्ष्य भाषा:</string>
   <string name="title_activity_chapter_setting">अध्याय सेटिङ</string>
   <string name="title_activity_language_selector">भाषा</string>
   <string name="success">सफल</string>

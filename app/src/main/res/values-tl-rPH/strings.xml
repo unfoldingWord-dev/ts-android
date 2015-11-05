@@ -9,7 +9,7 @@
   <string name="chapter_title_field">Pamagat ng Kabanata</string>
   <string name="chapter_reference_field">Sanggunian ng Kabanata</string>
   <string name="source_language_field">Pinagmulan ng Wika:</string>
-  <string name="target_language_field">Target na Wika:</string>
+  <string name="target_language">Target na Wika:</string>
   <string name="title_activity_chapter_setting">Mga setting ng Kabanata</string>
   <string name="title_activity_language_selector">Wika</string>
   <string name="success">Tagumpay</string>

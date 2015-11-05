@@ -1,6 +1,5 @@
 package com.door43.translationstudio.newui.home;
 
-import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -13,7 +12,6 @@ import android.widget.TextView;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.Project;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -35,13 +33,6 @@ public class TargetTranslationInfoDialog extends DialogFragment {
     private OnDeleteListener mListener;
     private int mTranslationProgress = 0;
     private boolean mTranslationProgressWasCalculated = false;
-
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        dialog.setCanceledOnTouchOutside(false);
-        return dialog;
-    }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -110,7 +101,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         }
         // TODO: 10/1/2015 support displaying multiple translators
 
-        Button deleteButton = (Button)v.findViewById(R.id.deleteButton);
+        Button deleteButton = (Button)v.findViewById(R.id.delete_button);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

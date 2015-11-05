@@ -28,4 +28,7 @@
     <dimen name="stacked_card_margin">48dp</dimen>
     <dimen name="stacked_card_thin_margin">25dp</dimen>
     <dimen name="publish_backdrop_height">110dp</dimen>
+
+    <dimen name="dialog_content_margin">24dp</dimen>
+    <dimen name="dialog_controls_margin">8dp</dimen>
 </resources>

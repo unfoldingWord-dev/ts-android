@@ -11,7 +11,7 @@
   <string name="chapter_title_field">ಅಧ್ಯಾಯ ಶೀರ್ಷಿಕೆ:</string>
   <string name="chapter_reference_field">ಅಧ್ಯಾಯ ರೆಫರೆನ್ಸ್:</string>
   <string name="source_language_field">ಮೂಲ ಭಾಷೆ:</string>
-  <string name="target_language_field">ಟಾರ್ಗೆಟ್ ಭಾಷೆ:</string>
+  <string name="target_language">ಟಾರ್ಗೆಟ್ ಭಾಷೆ:</string>
   <string name="title_activity_chapter_setting">ಅಧ್ಯಾಯ ಸೆಟ್ಟಿಂಗ್ಗಳು</string>
   <string name="title_activity_language_selector">ಭಾಷೆ</string>
   <string name="success">ಯಶಸ್ಸು</string>

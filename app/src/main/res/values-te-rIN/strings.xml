@@ -11,7 +11,7 @@
   <string name="chapter_title_field">చాప్టర్ శీర్షిక:</string>
   <string name="chapter_reference_field">చాప్టర్ సూచన:</string>
   <string name="source_language_field">మూల భాష:</string>
-  <string name="target_language_field">టార్గెట్ భాష:</string>
+  <string name="target_language">టార్గెట్ భాష:</string>
   <string name="title_activity_chapter_setting">చాప్టర్ సెట్టింగులు</string>
   <string name="title_activity_language_selector">భాష</string>
   <string name="success">విజయం</string>

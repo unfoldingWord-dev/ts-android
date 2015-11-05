@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Название Главы:</string>
   <string name="chapter_reference_field">Глава Ссылкой:</string>
   <string name="source_language_field">Исходный Язык:</string>
-  <string name="target_language_field">Целевой Язык:</string>
+  <string name="target_language">Целевой Язык:</string>
   <string name="title_activity_chapter_setting">Глава Настройки</string>
   <string name="title_activity_language_selector">Язык</string>
   <string name="success">Успех</string>

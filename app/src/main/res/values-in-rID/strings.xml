@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Judul bab:</string>
   <string name="chapter_reference_field">Bab referensi:</string>
   <string name="source_language_field">Bahasa sumber:</string>
-  <string name="target_language_field">Bahasa target:</string>
+  <string name="target_language">Bahasa target:</string>
   <string name="title_activity_chapter_setting">Bab pengaturan</string>
   <string name="title_activity_language_selector">Bahasa</string>
   <string name="success">Sukses</string>

@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Tiêu đề chương:</string>
   <string name="chapter_reference_field">Tham khảo chương:</string>
   <string name="source_language_field">Ngôn ngữ nguồn:</string>
-  <string name="target_language_field">Ngôn ngữ mục tiêu:</string>
+  <string name="target_language">Ngôn ngữ mục tiêu:</string>
   <string name="title_activity_chapter_setting">Thiết đặt chương</string>
   <string name="title_activity_language_selector">Ngôn ngữ</string>
   <string name="success">Thành công</string>

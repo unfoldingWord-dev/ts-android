@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Título do capítulo</string>
   <string name="chapter_reference_field">Referência do Capítulo</string>
   <string name="source_language_field">Idioma Fonte</string>
-  <string name="target_language_field">Idioma de Destino</string>
+  <string name="target_language">Idioma de Destino</string>
   <string name="title_activity_chapter_setting">Capítulo Configurações</string>
   <string name="title_activity_language_selector">Idioma</string>
   <string name="success">Sucesso</string>

@@ -11,7 +11,7 @@
   <string name="chapter_title_field">അധ്യായത്തിന്‍റെ ശീര്‍ഷകം</string>
   <string name="chapter_reference_field">അധ്യായത്തിന്‍റെ പരാമര്‍ശം</string>
   <string name="source_language_field">സ്രോതസ്സ് ഭാഷ:</string>
-  <string name="target_language_field">ഉദ്ദിഷ്ട ഭാഷ</string>
+  <string name="target_language">ഉദ്ദിഷ്ട ഭാഷ</string>
   <string name="title_activity_chapter_setting">അധ്യായ ക്രമീകരണം</string>
   <string name="title_activity_language_selector">ഭാഷ</string>
   <string name="success">വിജയകരം</string>
