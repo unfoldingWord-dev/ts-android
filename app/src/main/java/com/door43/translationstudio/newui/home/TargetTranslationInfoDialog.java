@@ -1,7 +1,10 @@
 package com.door43.translationstudio.newui.home;
 
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +19,8 @@ import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.newui.publish.PublishActivity;
+import com.door43.translationstudio.newui.translate.BackupDialog;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.tasks.ThreadableUI;
@@ -128,14 +133,44 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             }
         });
 
-        final Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
-        dismissButton.setOnClickListener(new View.OnClickListener() {
+        Button backupButton = (Button)v.findViewById(R.id.backup_button);
+        backupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                task.stop();
-                dismiss();
+                FragmentTransaction backupFt = getFragmentManager().beginTransaction();
+                Fragment backupPrev = getFragmentManager().findFragmentByTag("backupDialog");
+                if (backupPrev != null) {
+                    backupFt.remove(backupPrev);
+                }
+                backupFt.addToBackStack(null);
+
+                BackupDialog backupDialog = new BackupDialog();
+                Bundle args = new Bundle();
+                args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                backupDialog.setArguments(args);
+                backupDialog.show(backupFt, "backupDialog");
             }
         });
+
+        Button publishButton = (Button)v.findViewById(R.id.publish_button);
+        publishButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent publishIntent = new Intent(getActivity(), PublishActivity.class);
+                publishIntent.putExtra(PublishActivity.EXTRA_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                publishIntent.putExtra(PublishActivity.EXTRA_CALLING_ACTIVITY, PublishActivity.ACTIVITY_HOME);
+                startActivity(publishIntent);
+            }
+        });
+
+//        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+//        dismissButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                task.stop();
+//                dismiss();
+//            }
+//        });
         return v;
     }
 
