@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,16 +17,26 @@ import android.widget.Button;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.git.SSHSession;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
 
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.net.InetAddress;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 10/5/2015.
@@ -41,7 +52,7 @@ public class ImportDialog extends DialogFragment {
         return dialog;
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import, container, false);
 
@@ -60,7 +71,36 @@ public class ImportDialog extends DialogFragment {
 
                     @Override
                     public void run() {
-                        // TODO: get list of repositories
+                        Channel channel = null;
+                        try {
+                            String[] userserver = AppContext.getUserString(SettingsActivity.KEY_PREF_GIT_SERVER, R.string.pref_default_git_server).split("@");
+                            int port = Integer.parseInt(AppContext.getUserString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, R.string.pref_default_git_server_port));
+                            channel = SSHSession.openSession(userserver[0], userserver[1], port);
+                            OutputStream os = channel.getOutputStream();
+                            InputStream is = channel.getInputStream();
+                            os.write(0);
+                            String response = Util.readStream(is);
+                            if(response != null) {
+                                String[] lines = response.split("\n");
+                                List<String> targetTranslationIds = new ArrayList<>();
+                                for(String line:lines) {
+                                    if(line.trim().indexOf("R") == 0 && line.contains(AppContext.udid())) {
+                                        String[] parts = line.split("/");
+                                        targetTranslationIds.add(parts[parts.length - 1]);
+                                    }
+                                }
+                                // todo return target translation ids
+                            }
+                        } catch (JSchException e) {
+                            e.printStackTrace();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        if(channel != null) {
+                            channel.disconnect();
+                        }
                     }
 
                     @Override
