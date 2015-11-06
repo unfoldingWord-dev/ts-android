@@ -264,61 +264,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             // re-enable new tab button
             holder.mNewTabButton.setEnabled(true);
         }
-
-//        holder.mTargetCard.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                if(MotionEvent.ACTION_UP == event.getAction())
-//                    // if marked as done, give prompt asking if they want to reopen for edit
-//
-//                    if (!holder.mTargetBody.isEnabled()) {
-//                        final ListItem item = mListItems[position];
-//                        if (item.isTargetCardOpen) { // if page is already in front and they are tapping on it, then see if they want to open for edit
-//                            new AlertDialog.Builder(holder.mTargetBody.getContext())
-//                                    .setTitle(R.string.chunk_done_title)
-//                                            //                                .setIcon(R.drawable.ic_local_library_black_24dp)
-//                                    .setMessage(R.string.chunk_done_prompt)
-//                                    .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
-//                                        @Override
-//                                        public void onClick(DialogInterface dialog, int which) {
-//                                            holder.mTargetBody.setEnabled(true);
-//                                            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-//                                            ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
-//                                        }
-//                                    })
-//                                    .setNegativeButton(R.string.dismiss, null)
-//                                    .show();
-//                        }
-//                    }
-//                return false;
-//            }
-//        });
-
-//        holder.mTargetCard.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View v, boolean hasFocus) {
-//                if(hasFocus)
-//                {
-//                    if(!holder.mTargetBody.isEnabled()){
-//                        new AlertDialog.Builder(holder.mTargetBody.getContext())
-//                                .setTitle(R.string.chunk_done_title)
-////                                .setIcon(R.drawable.ic_local_library_black_24dp)
-//                                .setMessage(R.string.chunk_done_prompt)
-//                                .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
-//                                    @Override
-//                                    public void onClick(DialogInterface dialog, int which) {
-//                                        holder.mTargetBody.setEnabled(true);
-//                                        holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-//                                        ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
-//                                    }
-//                                })
-//                                .setNegativeButton(R.string.dismiss, null)
-//                                .show();
-//                    }
-//                }
-//            }
-//        });
-
+        
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -331,23 +277,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
                 }
 
-                // if marked as done, give prompt asking if they want to reopen for edit
+                // if marked as done (disabled for edit), give prompt asking if they want to reopen for edit
 
-                else if(!holder.mTargetBody.isEnabled()){
-                    new AlertDialog.Builder(holder.mTargetBody.getContext())
-                            .setTitle(R.string.chunk_done_title)
-//                                .setIcon(R.drawable.ic_local_library_black_24dp)
-                            .setMessage(R.string.chunk_done_prompt)
-                            .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    holder.mTargetBody.setEnabled(true);
-                                    holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-                                    ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
-                                }
-                            })
-                            .setNegativeButton(R.string.dismiss, null)
-                            .show();
+                else if(!holder.mTargetBody.isEnabled()) {
+                    promptToEditDoneChunk(mContext, holder);
                 }
             }
         });
@@ -433,11 +366,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
-     * begin target of target card
+     * begin edit of target card
      * @param context
      * @param target
      */
-    static public void editTarget(Context context, EditText target) {
+    static public void editTarget(final Context context, final EditText target) {
 
         target.requestFocus();
 
@@ -446,7 +379,31 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);
     }
 
-        /**
+    /**
+     * prompt to edit chunk that is marked done
+     * @param context
+     * @param holder
+     */
+    static public void promptToEditDoneChunk(final Context context, final ViewHolder holder) {
+        new AlertDialog.Builder(context)
+                .setTitle(R.string.chunk_done_title)
+//                                .setIcon(R.drawable.ic_local_library_black_24dp)
+                .setMessage(R.string.chunk_done_prompt)
+                .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        holder.mTargetBody.setEnabled(true);
+                        holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+                        ChunkModeAdapter.editTarget(context, holder.mTargetBody);
+                    }
+                })
+                .setNegativeButton(R.string.dismiss, null)
+                .show();
+
+    }
+
+
+    /**
          * Renders the chapter title card
          * @param holder
          * @param position
