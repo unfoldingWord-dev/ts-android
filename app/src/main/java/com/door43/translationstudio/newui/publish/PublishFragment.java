@@ -3,7 +3,6 @@ package com.door43.translationstudio.newui.publish;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -47,7 +46,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private Button mUploadButton;
     private GenericTaskWatcher mTaskWatcher;
     private LinearLayout mUploadSuccess;
-    private ProgressDialog mProgressDialog;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_publish_publish, container, false);
@@ -65,7 +63,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             throw new InvalidParameterException("a valid target translation id is required");
         }
 
-        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.uploading);
+        mTaskWatcher = new GenericTaskWatcher(getActivity(), R.string.publish);
         mTaskWatcher.setOnFinishedListener(this);
 
         // receive uploaded status from activity (overrides save state from fragment)
@@ -101,17 +99,30 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             public void onClick(View v) {
                 if(AppContext.context().isNetworkAvailable()) {
                     try {
-                        targetTranslation.setPublishable(true);
+                        final Handler hand = new Handler(Looper.getMainLooper());
+                        targetTranslation.setPublishable(true, new TargetTranslation.OnCommitListener() {
+                            @Override
+                            public void onCommit(boolean success) {
+                                if(!success) {
+                                    hand.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            notifyPublishFailed(targetTranslation);
+                                        }
+                                    });
+                                } else {
+                                    // begin upload
+                                    UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
+                                    mTaskWatcher.watch(task);
+                                    TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
+                                }
+                            }
+                        });
                     } catch (Exception e) {
                         Logger.e(PublishFragment.class.getName(), "Failed to mark target translation " + targetTranslation.getId() + " as publishable", e);
                         notifyPublishFailed(targetTranslation);
                         return;
                     }
-                    // begin upload
-                    UploadTargetTranslationTask task = new UploadTargetTranslationTask(targetTranslation);
-                    mTaskWatcher.watch(task);
-                    TaskManager.addTask(task, UploadTargetTranslationTask.TASK_ID);
-                    // TODO: display progress dialog
                 } else {
                     Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
                     ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
@@ -126,7 +137,6 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         UploadTargetTranslationTask task = (UploadTargetTranslationTask)TaskManager.getTask(UploadTargetTranslationTask.TASK_ID);
         if(task != null) {
             mTaskWatcher.watch(task);
-            // TODO: display progress dialog
         }
 
         final String filename = targetTranslation.getId() + ".zip";
@@ -202,28 +212,15 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
             hand.post(new Runnable() {
                 @Override
                 public void run() {
-                    if(mProgressDialog != null && mProgressDialog.isShowing()) {
-                        mProgressDialog.dismiss();
-                    }
                     mUploadButton.setVisibility(View.GONE);
                     mUploadSuccess.setVisibility(View.VISIBLE);
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(R.string.success).setMessage(R.string.git_push_success).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //
-                        }
-                    }).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
+                    builder.setTitle(R.string.success).setMessage(R.string.project_uploaded).setPositiveButton(R.string.dismiss, null).setNeutralButton(R.string.label_details, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setTitle(R.string.git_push_success).setMessage(response).setPositiveButton(R.string.label_ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //
-                                }
-                            }).show();
+                            builder.setTitle(R.string.project_uploaded).setMessage(response).setPositiveButton(R.string.dismiss, null).show();
                         }
                     }).show();
                 }
@@ -242,9 +239,9 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
     private void notifyPublishFailed(final TargetTranslation targetTranslation) {
         final Project project = AppContext.getLibrary().getProject(targetTranslation.getProjectId(), "en");
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(R.string.success)
+        builder.setTitle(R.string.publish)
                 .setMessage(R.string.upload_failed)
-                .setPositiveButton(R.string.label_ok, null)
+                .setPositiveButton(R.string.dismiss, null)
                 .setNeutralButton(R.string.menu_bug, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -278,6 +275,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         super.onSaveInstanceState(out);
     }
 
+    @Override
     public void onDestroy() {
         mTaskWatcher.stop();
         super.onDestroy();

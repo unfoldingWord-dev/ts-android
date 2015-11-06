@@ -11,7 +11,7 @@
   <string name="chapter_title_field">ਅਧਿਆਇ ਟਾਈਟਲ</string>
   <string name="chapter_reference_field">ਅਧਿਆਇ ਹਵਾਲਾ</string>
   <string name="source_language_field">ਸਰੋਤ ਭਾਸ਼ਾ</string>
-  <string name="target_language_field">Target ਭਾਸ਼ਾ</string>
+  <string name="target_language">Target ਭਾਸ਼ਾ</string>
   <string name="title_activity_chapter_setting">ਅਧਿਆਇ ਸੈਟਿੰਗ</string>
   <string name="title_activity_language_selector">ਭਾਸ਼ਾ</string>
   <string name="success">ਸਫਲਤਾ</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">ਚੁਣੇ ਸ਼ਬਦ:</string>
   <string name="related_terms">ਇਹ ਵੀ ਵੇਖੋ:</string>
   <string name="term_examples">ਉਦਾਹਰਨ:</string>
-  <string name="git_push_success">ਪ੍ਰੋਜੈਕਟ ਸਫਲਤਾਪੂਰਕ ਅੱਪਲੋਡ ਕੀਤਾ ਗਿਆ ਸੀ</string>
+  <string name="project_uploaded">ਪ੍ਰੋਜੈਕਟ ਸਫਲਤਾਪੂਰਕ ਅੱਪਲੋਡ ਕੀਤਾ ਗਿਆ ਸੀ</string>
   <string name="choose_frame_to_start">ਖੱਬੇ ਟੈਬ ਤੱਕ ਕੁਝ ਸਰੋਤ ਪਾਠ ਨੂੰ ਚੁਣੋ ਸ਼ੁਰੂ ਕਰਨ ਲਈ</string>
   <string name="return_to_important_terms">ਖਾਸ ਨਿਯਮ ਨੂੰ ਵਾਪਸ</string>
   <string name="no_translation_notes">ਕੋਈ ਅਨੁਵਾਦ ਸੂਚਨਾ ਹਨ</string>

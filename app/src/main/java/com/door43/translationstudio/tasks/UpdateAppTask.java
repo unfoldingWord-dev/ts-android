@@ -11,6 +11,8 @@ import com.door43.translationstudio.SettingsActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.IndexerSQLiteHelper;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.TargetTranslationMigrator;
 import com.door43.util.tasks.ManagedTask;
 
 import org.apache.commons.io.FileUtils;
@@ -71,6 +73,26 @@ public class UpdateAppTask extends ManagedTask {
         }
         if(lastVersion < 106) {
             upgradePre106();
+        }
+        if(lastVersion < 107) {
+            upgradePre107();
+        }
+    }
+
+    /**
+     * We made some changes to the target translation manifest structure
+     */
+    private void upgradePre107() {
+        TargetTranslation[] targetTranslations = AppContext.getTranslator().getTargetTranslations();
+        for(TargetTranslation tt:targetTranslations) {
+            if(!TargetTranslationMigrator.migrate(tt.getPath())) {
+                Logger.w(this.getClass().getName(), "Failed to migrate the target translation " + tt.getId());
+            }
+            try {
+                tt.commit();
+            } catch (Exception e) {
+                Logger.e(this.getClass().getName(), "Failed to commit migration changes to target translation " + tt.getId());
+            }
         }
     }
 

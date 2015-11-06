@@ -11,7 +11,7 @@
   <string name="chapter_title_field">ចំណងជើងជំពូក:</string>
   <string name="chapter_reference_field">ឯកសារយោងនៃជំពូក:</string>
   <string name="source_language_field">ភាសាប្រភពដើម:</string>
-  <string name="target_language_field">ភាសាគោលដៅ:</string>
+  <string name="target_language">ភាសាគោលដៅ:</string>
   <string name="title_activity_chapter_setting">កំណត់នៃជំពូក</string>
   <string name="title_activity_language_selector">ភាសា</string>
   <string name="success">ជោគជ័យ</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">ឃ្លាដែលបានជ្រើសរើស:</string>
   <string name="related_terms">លើសពីនេះ មើល:</string>
   <string name="term_examples">ឧទាហរណ៍:</string>
-  <string name="git_push_success">បានអាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោងជាស្ថាពរហើយ</string>
+  <string name="project_uploaded">បានអាប់ឡូដ (បង្ហោះ) ឯកសារគម្រោងជាស្ថាពរហើយ</string>
   <string name="choose_frame_to_start">ជ្រើសយកអត្ថបទប្រភពដើមមួយចំនួយចេញពីថេបខាងឆ្វេងដើម្បីចាប់ផ្ដើម</string>
   <string name="return_to_important_terms">ត្រឡប់ទៅកម្រងពាក្យសំខាន់ៗ</string>
   <string name="no_translation_notes">មិនមានកំណត់សម្គាល់សម្រាប់ការបកប្រែនេះទេ</string>

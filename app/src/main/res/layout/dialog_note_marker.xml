@@ -67,7 +67,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/label_delete"
-            android:id="@+id/deleteButton"
+            android:id="@+id/delete_button"
             android:layout_weight="1"
             style="@style/Widget.Button.Secondary"/>
 

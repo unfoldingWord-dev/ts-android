@@ -11,7 +11,7 @@
   <string name="chapter_title_field">अध्याय शीर्षक:</string>
   <string name="chapter_reference_field">अध्याय सन्दर्भ:</string>
   <string name="source_language_field">स्रोत भाषा:</string>
-  <string name="target_language_field">लक्ष्य भाषा:</string>
+  <string name="target_language">लक्ष्य भाषा:</string>
   <string name="title_activity_chapter_setting">अध्याय सेटिङ</string>
   <string name="title_activity_language_selector">भाषा</string>
   <string name="success">सफल</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">चयन गरिएको वाक्यांश:</string>
   <string name="related_terms">साथै हेर्नुहोस्:</string>
   <string name="term_examples">उदाहरण:</string>
-  <string name="git_push_success">प्रोजेक्ट सफलतापूर्वक अपलोड भयो</string>
+  <string name="project_uploaded">प्रोजेक्ट सफलतापूर्वक अपलोड भयो</string>
   <string name="choose_frame_to_start">सुरू गर्न बायाँ ट्याबबाट केही स्रोत पाठ छान्नुहोस्</string>
   <string name="return_to_important_terms">महत्त्वपूर्ण शब्दहरूमा फर्कनुहोस्</string>
   <string name="no_translation_notes">कुनै अनुवाद नोटहरू छैनन्</string>

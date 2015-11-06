@@ -11,7 +11,7 @@
   <string name="chapter_title_field">પ્રકરણ શીર્ષક:</string>
   <string name="chapter_reference_field">પ્રકરણ સંદર્ભ:</string>
   <string name="source_language_field">સોર્સ ભાષા:</string>
-  <string name="target_language_field">લક્ષ્ય ભાષા:</string>
+  <string name="target_language">લક્ષ્ય ભાષા:</string>
   <string name="title_activity_chapter_setting">પ્રકરણ સેટિંગ્સ</string>
   <string name="title_activity_language_selector">ભાષા</string>
   <string name="success">સફળતા</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">પસંદ શબ્દસમૂહ:</string>
   <string name="related_terms">આ પણ જુઓ:</string>
   <string name="term_examples">ઉદાહરણો:</string>
-  <string name="git_push_success">પ્રોજેક્ટ સફળતાપૂર્વક અપલોડ થઈ હતી</string>
+  <string name="project_uploaded">પ્રોજેક્ટ સફળતાપૂર્વક અપલોડ થઈ હતી</string>
   <string name="choose_frame_to_start">ડાબી ટેબમાંથી કેટલાક સ્ત્રોત લખાણ પસંદ પ્રારંભ કરવા માટે</string>
   <string name="return_to_important_terms">મહત્વનું શરતો પર પાછા</string>
   <string name="no_translation_notes">કોઈ અનુવાદ નોંધો ત્યાં</string>

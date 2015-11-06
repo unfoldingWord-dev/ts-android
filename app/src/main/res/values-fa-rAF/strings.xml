@@ -11,7 +11,7 @@
   <string name="chapter_title_field">عنوان فصل:</string>
   <string name="chapter_reference_field">ارجاع فصل:</string>
   <string name="source_language_field">لسان مبدا:</string>
-  <string name="target_language_field">لسان مقصد:</string>
+  <string name="target_language">لسان مقصد:</string>
   <string name="title_activity_chapter_setting">تنظیمات فصل</string>
   <string name="title_activity_language_selector">لسان</string>
   <string name="success">موفقیت</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">عبارت انتخاب شده:</string>
   <string name="related_terms">همچنين مراجعه کنید به:</string>
   <string name="term_examples">مثال ها:</string>
-  <string name="git_push_success">پروژه با موفقيت بارگذاری شد</string>
+  <string name="project_uploaded">پروژه با موفقيت بارگذاری شد</string>
   <string name="choose_frame_to_start">متن منبع را از بند چپ برای شروع را انتخاب کنید</string>
   <string name="return_to_important_terms">بازگشت به لحاظ مهم</string>
   <string name="no_translation_notes">یادداشت ترجمه بدون وجود دارد</string>

@@ -170,7 +170,7 @@ public class ReviewModeFragment extends ViewModeFragment {
             mResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_word, null);
 
-            mCloseResourcesDrawerButton.setText(word.getTerm());
+            mCloseResourcesDrawerButton.setText(word.getWord());
 
             TextView descriptionTitle = (TextView)view.findViewById(R.id.description_title);
             HtmlTextView descriptionView = (HtmlTextView)view.findViewById(R.id.description);
@@ -189,7 +189,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 final TranslationWord relatedWord = getPreferredWord(sourceTranslation, word.getSeeAlso()[i]);
                 if(relatedWord != null) {
                     Button button = new Button(new ContextThemeWrapper(getActivity(), R.style.Widget_Button_Tag), null, R.style.Widget_Button_Tag);
-                    button.setText(relatedWord.getTerm());
+                    button.setText(relatedWord.getWord());
                     button.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -282,7 +282,7 @@ public class ReviewModeFragment extends ViewModeFragment {
 
             title.setText(note.getTitle());
             SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
-            Typography.formatTitle(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
+            Typography.format(getActivity(), title, sourceLanguage.getId(), sourceLanguage.getDirection());
             description.setText(renderer.render(Html.fromHtml(note.getBody())));
             Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
             ViewUtil.makeLinksClickable(description);

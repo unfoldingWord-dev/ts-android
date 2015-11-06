@@ -436,11 +436,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     /**
      * Returns the database id of a project
      * @param db
-     * @param slug
+     * @param projectSlug
      * @return returns 0 if no record was found
      */
-    public long getProjectDBId(SQLiteDatabase db, String slug) {
-        Cursor cursor = db.rawQuery("SELECT `id` FROM `project` WHERE `slug`=?", new String[]{slug});
+    public long getProjectDBId(SQLiteDatabase db, String projectSlug) {
+        Cursor cursor = db.rawQuery("SELECT `id` FROM `project` WHERE `slug`=?", new String[]{projectSlug});
         long projectId = 0;
         if(cursor.moveToFirst()) {
             projectId = cursor.getLong(0);
@@ -1101,6 +1101,40 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
+     * Returns an array of source languages in the project
+     * @param db
+     * @param projectSlug
+     * @return
+     */
+    public SourceLanguage[] getSourceLanguages(SQLiteDatabase db, String projectSlug) {
+        List<SourceLanguage> sourceLanguages = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT `sl`.`slug`, `sl`.`name`, `sl`.`project_name`, `sl`.`project_description`, `sl`.`direction`, `sl`.`modified_at`, `sl`.`resource_catalog_url`, `sl`.`resource_catalog_local_modified_at`, `sl`.`resource_catalog_server_modified_at` FROM `source_language` AS `sl`"
+                + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
+                + " WHERE `p`.`slug`=?"
+                + " ORDER BY `sl`.`slug`, `sl`.`name`", new String[]{projectSlug});
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            String sourceLanguageSlug = cursor.getString(0);
+            String sourceLanguageName = cursor.getString(1);
+            String projectName = cursor.getString(2);
+            String projectDescription = cursor.getString(3);
+            String rawDirection = cursor.getString(4);
+            int dateModified = cursor.getInt(5);
+            String resourceCatalog = cursor.getString(6);
+            int catalogLocalModified = cursor.getInt(7);
+            int catalogServerModified = cursor.getInt(8);
+            LanguageDirection direction = LanguageDirection.get(rawDirection);
+            if(direction == null) {
+                direction = LanguageDirection.LeftToRight;
+            }
+            sourceLanguages.add(new SourceLanguage(sourceLanguageSlug, sourceLanguageName, dateModified, direction, projectName, projectDescription, resourceCatalog, catalogLocalModified, catalogServerModified));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]);
+    }
+
+    /**
      * Returns a resource
      * @param db
      * @param projectSlug
@@ -1167,6 +1201,78 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
         }
         cursor.close();
         return resource;
+    }
+
+    /**
+     * Returns an array of resources
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @return
+     */
+    public Resource[] getResources(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug) {
+        List<Resource> resources = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT `r`.`name`, `r`.`checking_level`, `r`.`version`, `r`.`modified_at`,"
+                + " `r`.`source_catalog_url`, `r`.`source_catalog_local_modified_at`, `r`.`source_catalog_server_modified_at`,"
+                + " `r`.`translation_notes_catalog_url`, `r`.`translation_notes_catalog_local_modified_at`, `r`.`translation_notes_catalog_server_modified_at`,"
+                + " `r`.`translation_words_catalog_url`, `r`.`translation_words_catalog_local_modified_at`, `r`.`translation_words_catalog_server_modified_at`,"
+                + " `r`.`translation_word_assignments_catalog_url`, `r`.`translation_word_assignments_catalog_local_modified_at`, `r`.`translation_word_assignments_catalog_server_modified_at`,"
+                + " `r`.`checking_questions_catalog_url`, `r`.`checking_questions_catalog_local_modified_at`, `r`.`checking_questions_catalog_server_modified_at`,"
+                + " `r`.`id`, CASE WHEN `content`.`count` > 0 THEN 1 ELSE 0 END AS `is_downloaded`, `r`.`slug` FROM `resource` AS `r`"
+                + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
+                + " LEFT JOIN ("
+                + "   SELECT `r`.`id` AS `resource_id`, COUNT(*) AS `count` FROM `chapter` AS `c`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "   GROUP BY `r`.`id`"
+                + " ) AS `content` ON `content`.`resource_id`=`r`.`id`"
+                + " WHERE `p`.`slug`=? AND `sl`.`slug`=?", new String[]{projectSlug, sourceLanguageSlug});
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            String resourceName = cursor.getString(0);
+            int checkingLevel = cursor.getInt(1);
+            String version = cursor.getString(2);
+
+            int dateModified = cursor.getInt(3);
+
+            String sourceCatalog = cursor.getString(4);
+            int sourceCatalogModified = cursor.getInt(5);
+            int sourceCatalogServerModified = cursor.getInt(6);
+
+            String notesCatalog = cursor.getString(7);
+            int notesCatalogModified = cursor.getInt(8);
+            int notesCatalogServerModified = cursor.getInt(9);
+
+            String termsCatalog = cursor.getString(10);
+            int termsCatalogModified = cursor.getInt(11);
+            int termsCatalogServerModified = cursor.getInt(12);
+
+            String termAssignmentsCatalog = cursor.getString(13);
+            int termAssignmentsCatalogModified = cursor.getInt(14);
+            int termAssignmentsCatalogServerModified = cursor.getInt(15);
+
+            String questionsCatalog = cursor.getString(16);
+            int questionsCatalogModified = cursor.getInt(17);
+            int questionsCatalogServerModified = cursor.getInt(18);
+
+            long resourceId = cursor.getLong(19);
+
+            boolean isDownloaded = cursor.getInt(20) > 0;
+
+            String resourceSlug = cursor.getString(21);
+
+            Resource resource = new Resource(resourceName, resourceSlug, checkingLevel, version, isDownloaded, dateModified,
+                    sourceCatalog, sourceCatalogModified, sourceCatalogServerModified,
+                    notesCatalog, notesCatalogModified, notesCatalogServerModified,
+                    termsCatalog, termsCatalogModified, termsCatalogServerModified,
+                    termAssignmentsCatalog, termAssignmentsCatalogModified, termAssignmentsCatalogServerModified,
+                    questionsCatalog, questionsCatalogModified, questionsCatalogServerModified);
+            resource.setDBId(resourceId);
+            resources.add(resource);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return resources.toArray(new Resource[resources.size()]);
     }
 
     /**
@@ -1381,6 +1487,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @return
      */
     public Chapter[] getChapters(SQLiteDatabase db, long resourceId) {
+        // TODO: 11/2/2015 this should take in the slugs rather than the resource id.
+        // we'll need to update the schema to include the slugs in the chapter table in order to do this
         List<Chapter> chapters = new ArrayList<>();
         Cursor cursor = db.rawQuery("SELECT `slug`, `reference`, `title` FROM `chapter` WHERE `resource_id`=" + resourceId + " ORDER BY `sort` ASC", null);
         cursor.moveToFirst();

@@ -84,7 +84,7 @@ public class TranslationWord {
      * Returns the title of the translationWord
      * @return
      */
-    public String getTerm() {
+    public String getWord() {
         return mWord;
     }
 

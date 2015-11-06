@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Bölüm Title:</string>
   <string name="chapter_reference_field">Bölüm Başvuru:</string>
   <string name="source_language_field">Kaynak Dil:</string>
-  <string name="target_language_field">Hedef Dil:</string>
+  <string name="target_language">Hedef Dil:</string>
   <string name="title_activity_chapter_setting">Bölüm Ayarları</string>
   <string name="title_activity_language_selector">Dil</string>
   <string name="success">Başarı</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Seçilen ifade:</string>
   <string name="related_terms">Ayrıca Bkz:</string>
   <string name="term_examples">Örnekler:</string>
-  <string name="git_push_success">Proje başarılı şekilde gönderildi </string>
+  <string name="project_uploaded">Proje başarılı şekilde gönderildi </string>
   <string name="choose_frame_to_start">Sol sekmesinden bazı kaynak metni seçin Başlamak için</string>
   <string name="return_to_important_terms">Önemli Şartlar dön</string>
   <string name="no_translation_notes">Hiçbir çeviri notları vardır</string>

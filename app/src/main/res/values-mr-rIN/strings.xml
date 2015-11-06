@@ -11,7 +11,7 @@
   <string name="chapter_title_field">चॅप्टर शीर्षक:</string>
   <string name="chapter_reference_field">चॅप्टर संदर्भ:</string>
   <string name="source_language_field">स्त्रोत भाषा:</string>
-  <string name="target_language_field">लक्ष्य भाषा:</string>
+  <string name="target_language">लक्ष्य भाषा:</string>
   <string name="title_activity_chapter_setting">चॅप्टर सेटिंग्ज</string>
   <string name="title_activity_language_selector">भाषा</string>
   <string name="success">सफलता</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">निवडलेली फ्रेज:</string>
   <string name="related_terms">हे सुद्धा पाहा:</string>
   <string name="term_examples">उदाहरणे:</string>
-  <string name="git_push_success">प्रोजेक्ट यशस्वीपणे अपलोड झाला</string>
+  <string name="project_uploaded">प्रोजेक्ट यशस्वीपणे अपलोड झाला</string>
   <string name="choose_frame_to_start">सुरुवात करण्यासाठी डावीकडील टॅबमधून काही स्त्रोत मजकूर निवडा</string>
   <string name="return_to_important_terms">महत्वाच्या संज्ञांकडे परता</string>
   <string name="no_translation_notes">कोणत्याही भाषांतर नोंदी नाहीत</string>

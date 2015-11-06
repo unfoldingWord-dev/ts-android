@@ -16,6 +16,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.Html;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -26,7 +27,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -56,6 +56,8 @@ import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.spannables.VersePinSpan;
 import com.door43.widget.ViewUtil;
+
+import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -559,33 +561,38 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mDoneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                LayoutInflater inflater = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                View layout = inflater.inflate(R.layout.dialog_html_alert, null);
+                HtmlTextView text = (HtmlTextView)layout.findViewById(R.id.text);
+                text.setHtmlFromString(mContext.getResources().getString(R.string.chunk_checklist_body), true);
+
                 new AlertDialog.Builder(mContext)
                         .setTitle(R.string.chunk_checklist_title)
-                        .setMessage(R.string.chunk_checklist_body)
-                        .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                boolean finished;
-                                if (item.isChapterReference) {
-                                    finished = mTargetTranslation.finishChapterReference(chapter);
-                                } else if (item.isChapterTitle) {
-                                    finished = mTargetTranslation.finishChapterTitle(chapter);
-                                } else {
-                                    finished = mTargetTranslation.finishFrame(frame);
+                        .setView(layout)
+                            .setPositiveButton(R.string.confirm, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    boolean finished;
+                                    if (item.isChapterReference) {
+                                        finished = mTargetTranslation.finishChapterReference(chapter);
+                                    } else if (item.isChapterTitle) {
+                                        finished = mTargetTranslation.finishChapterTitle(chapter);
+                                    } else {
+                                        finished = mTargetTranslation.finishFrame(frame);
+                                    }
+                                    if (finished) {
+                                        item.isEditing = false;
+                                        item.renderedTargetBody = null;
+                                        notifyDataSetChanged();
+                                    } else {
+                                        Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
+                                        ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
+                                        snack.show();
+                                    }
                                 }
-                                if (finished) {
-                                    item.isEditing = false;
-                                    item.renderedTargetBody = null;
-                                    notifyDataSetChanged();
-                                } else {
-                                    Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);
-                                    ViewUtil.setSnackBarTextColor(snack, mContext.getResources().getColor(R.color.light_primary_text));
-                                    snack.show();
-                                }
-                            }
-                        })
-                        .setNegativeButton(R.string.title_cancel, null)
-                        .show();
+                            })
+                            .setNegativeButton(R.string.title_cancel, null)
+                            .show();
             }
         });
         holder.mDoneFlag.setOnClickListener(new View.OnClickListener() {
@@ -814,7 +821,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // render words
             for(final TranslationWord word:words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                wordView.setText(word.getTerm());
+                wordView.setText(word.getWord());
                 wordView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

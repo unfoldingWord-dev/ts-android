@@ -110,6 +110,8 @@
                 android:gravity="center"
                 android:textSize="@dimen/headline"
                 android:layout_marginBottom="@dimen/stacked_card_margin"
+                android:layout_marginLeft="@dimen/stacked_card_margin"
+                android:layout_marginRight="@dimen/stacked_card_margin"
                 android:textColor="@color/dark_primary_text"
                 android:textStyle="bold"
                 android:text="John 1"

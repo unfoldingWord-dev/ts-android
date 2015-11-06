@@ -372,7 +372,7 @@ public class Library {
         // preferred language
         SourceLanguage sourceLanguage = getActiveIndex().getSourceLanguage(projectId, sourceLanguageSlug);
         // try to use default (en)
-        if(sourceLanguage != null && !sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en")) {
+        if(sourceLanguage == null || (!sourceLanguage.code.equals(sourceLanguageSlug) && !sourceLanguageSlug.equals("en"))) {
             sourceLanguage = getActiveIndex().getSourceLanguage(projectId, "en");
         }
         return sourceLanguage;
@@ -380,20 +380,11 @@ public class Library {
 
     /**
      * Returns an array of source languages for the project
-     * @param projectId the id of the project who's source languages will be returned
+     * @param projectSlug the id of the project who's source languages will be returned
      * @return
      */
-    public SourceLanguage[] getSourceLanguages(String projectId) {
-        List<SourceLanguage> sourceLanguages = new ArrayList<>();
-        String[] sourceLanguageIds = getActiveIndex().getSourceLanguageSlugs(projectId);
-        for(String id:sourceLanguageIds) {
-            SourceLanguage lang = getSourceLanguage(projectId, id);
-            if(lang != null) {
-                sourceLanguages.add(lang);
-            }
-        }
-
-        return sourceLanguages.toArray(new SourceLanguage[sourceLanguages.size()]);
+    public SourceLanguage[] getSourceLanguages(String projectSlug) {
+        return getActiveIndex().getSourceLanguages(projectSlug);
     }
 
     /**
@@ -408,20 +399,12 @@ public class Library {
 
     /**
      * Returns an array of resources for the source language
-     * @param projectId
-     * @param sourceLanguageId
+     * @param projectSlug
+     * @param sourceLanguageSlug
      * @return
      */
-    public Resource[] getResources(String projectId, String sourceLanguageId) {
-        List<Resource> resources = new ArrayList<>();
-        String[] resourceIds = getActiveIndex().getResourceSlugs(projectId, sourceLanguageId);
-        for(String resourceId:resourceIds) {
-            Resource res = getResource(SourceTranslation.simple(projectId, sourceLanguageId, resourceId));
-            if(res != null) {
-                resources.add(res);
-            }
-        }
-        return resources.toArray(new Resource[resources.size()]);
+    public Resource[] getResources(String projectSlug, String sourceLanguageSlug) {
+        return getActiveIndex().getResources(projectSlug, sourceLanguageSlug);
     }
 
     /**
@@ -452,12 +435,12 @@ public class Library {
      * @return
      */
     public float getTranslationProgress(TargetTranslation targetTranslation) {
-        int numTranslatedItems = targetTranslation.numTranslated();
+        int numFinishedItems = targetTranslation.numFinished();
         SourceLanguage sourceLanguage = getPreferredSourceLanguage(targetTranslation.getProjectId(), Locale.getDefault().getLanguage());
         SourceTranslation sourceTranslation = getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
         int numAvailableTranslations = mAppIndex.numTranslatable(sourceTranslation);
         if(numAvailableTranslations > 0) {
-            return (float) numTranslatedItems / (float) numAvailableTranslations;
+            return (float) numFinishedItems / (float) numAvailableTranslations;
         } else {
             return 0;
         }

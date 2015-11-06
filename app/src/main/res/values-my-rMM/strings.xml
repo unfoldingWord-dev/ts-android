@@ -11,7 +11,7 @@
   <string name="chapter_title_field">အခဏ္း ေခါင္းစဥ္:</string>
   <string name="chapter_reference_field">အခဏ္း ကိုးကားခ်က္:</string>
   <string name="source_language_field">ရင္းျမစ္ ဘာသာစကား:</string>
-  <string name="target_language_field">ရည္ရြယ္သည့္ ဘာသာစကား:</string>
+  <string name="target_language">ရည္ရြယ္သည့္ ဘာသာစကား:</string>
   <string name="title_activity_chapter_setting">အခဏ္း ဆက္တင္မ်ား</string>
   <string name="title_activity_language_selector">ဘာသာစကား</string>
   <string name="success">ေအာင္ျမင္သည္</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">ေရြးထားသည့္ စကားစု:</string>
   <string name="related_terms">လည္းပဲ ၾကည့္ပါ:</string>
   <string name="term_examples">ဥပမာ:</string>
-  <string name="git_push_success">စီမံကိန္းအား ေအာင္ျမင္စြာ တင္ျပီးသည္</string>
+  <string name="project_uploaded">စီမံကိန္းအား ေအာင္ျမင္စြာ တင္ျပီးသည္</string>
   <string name="choose_frame_to_start">စတင္ရန္ ဘယ္ဘက္အျပားမွ ရင္းျမစ္စာသားအခ်ိဳ႔ကို ေရြးပါ</string>
   <string name="return_to_important_terms">အေရးၾကီးသည့္ အသံုးအႏူန္းမ်ားသို႔ ျပန္သြားပါ</string>
   <string name="no_translation_notes">ဘာသာျပန္ဆိုမူ မွတ္စုမ်ားမရွိပါ</string>

@@ -32,7 +32,7 @@
     <!-- The language from which a project is being translated -->
     <string name="source_language_field">Source</string>
     <!-- The langage to which a project is being translated -->
-    <string name="target_language_field">Target</string>
+    <string name="target_language">Target Language</string>
     <string name="title_activity_chapter_setting">Chapter Translation</string>
     <string name="title_activity_language_selector">Language</string>
     <string name="loading_project_chapters" translatable="false">@string/loading</string>
@@ -129,7 +129,7 @@
     <string name="label_note_phrase">Selected phrase:</string>
     <string name="related_terms">See Also:</string>
     <string name="term_examples">Examples:</string>
-    <string name="git_push_success">Project successfully uploaded</string>
+    <string name="project_uploaded">Project successfully uploaded</string>
     <string name="choose_frame_to_start">Open a project to start translating</string>
     <string name="return_to_important_terms">Return to Words</string>
     <string name="no_translation_notes">No notes</string>
@@ -347,7 +347,16 @@
     <!-- The title of the dialog asking the user to verify completion of everything required to mark a chunk complete -->
     <string name="chunk_checklist_title">Chunk Checklist</string>
     <!-- The text asking the user to verify that all required steps have been taken prior to marking a chunk complete -->
-    <string name="chunk_checklist_body">Are you sure you\'re Done with this chunk?\n\nI have placed the verses correctly\nI have reviewed the words and meaning\nI have reviewed the translationQuestions</string>
+    <string name="chunk_checklist_body">
+<![CDATA[
+<p>Are you sure you are done with this chunk?<p>
+<ul>
+  <li>I have placed the verses correctly</li>
+  <li>I have reviewed the words and meaning</li>
+  <li>I have reviewed the translation questions</li>
+</ul>
+]]>
+    </string>
 
     <string name="hello_world">Hello world!</string>
     <string name="next_step">Next step</string>
@@ -527,4 +536,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="chunk_done_prompt">"This chunk is done. Continue editing?"</string>
     <string name="chunk_done_title">"Edit Chunk"</string>
     <string name="edit">"Edit"</string>
+    <string name="share_apk">Share this app</string>
+    <string name="send_to">Send To</string>
+    <string name="translators">Translators</string>
 </resources>

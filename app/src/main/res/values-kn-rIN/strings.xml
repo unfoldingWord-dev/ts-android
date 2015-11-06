@@ -11,7 +11,7 @@
   <string name="chapter_title_field">ಅಧ್ಯಾಯ ಶೀರ್ಷಿಕೆ:</string>
   <string name="chapter_reference_field">ಅಧ್ಯಾಯ ರೆಫರೆನ್ಸ್:</string>
   <string name="source_language_field">ಮೂಲ ಭಾಷೆ:</string>
-  <string name="target_language_field">ಟಾರ್ಗೆಟ್ ಭಾಷೆ:</string>
+  <string name="target_language">ಟಾರ್ಗೆಟ್ ಭಾಷೆ:</string>
   <string name="title_activity_chapter_setting">ಅಧ್ಯಾಯ ಸೆಟ್ಟಿಂಗ್ಗಳು</string>
   <string name="title_activity_language_selector">ಭಾಷೆ</string>
   <string name="success">ಯಶಸ್ಸು</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">ಆಯ್ದ ನುಡಿಗಟ್ಟು:</string>
   <string name="related_terms">ಇದನ್ನೂ ನೋಡಿ:</string>
   <string name="term_examples">ಉದಾಹರಣೆಗಳು:</string>
-  <string name="git_push_success">ಪ್ರಾಜೆಕ್ಟ್ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಲೋಡ್</string>
+  <string name="project_uploaded">ಪ್ರಾಜೆಕ್ಟ್ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಲೋಡ್</string>
   <string name="choose_frame_to_start">ಎಡ ಟ್ಯಾಬ್ ಕೆಲವು ಮೂಲ ಪಠ್ಯ ಆಯ್ಕೆ ಪ್ರಾರಂಭಿಸಲು</string>
   <string name="return_to_important_terms">ಪ್ರಮುಖ ನಿಯಮಗಳ ಹಿಂತಿರುಗಿ</string>
   <string name="no_translation_notes">ಯಾವುದೇ ಅನುವಾದ ಟಿಪ್ಪಣಿಗಳು ಇವೆ</string>

@@ -6,7 +6,6 @@ import android.text.Editable;
 import android.text.SpannedString;
 
 import com.door43.tools.reporting.Logger;
-import com.door43.translationstudio.filebrowser.FileItem;
 import com.door43.util.FileUtilities;
 import com.door43.util.Zip;
 
@@ -17,7 +16,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -89,7 +87,7 @@ public class Translator {
      */
     public TargetTranslation createTargetTranslation(TargetLanguage targetLanguage, String projectId) {
         try {
-            return TargetTranslation.generate(mContext, targetLanguage, projectId, mRootDir);
+            return TargetTranslation.create(mContext, targetLanguage, projectId, mRootDir);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,7 +186,7 @@ public class Translator {
         JSONObject translationJson = new JSONObject();
         translationJson.put("path", targetTranslation.getId());
         translationJson.put("id", targetTranslation.getId());
-        translationJson.put("commit_hash", targetTranslation.commitHash());
+        translationJson.put("commit_hash", targetTranslation.getCommitHash());
         translationJson.put("direction", targetTranslation.getTargetLanguageDirection());
         translationJson.put("target_language_name", targetTranslation.getTargetLanguageName());
         translationsJson.put(translationJson);
@@ -221,13 +219,16 @@ public class Translator {
         try {
             tempCache.mkdirs();
             Zip.unzip(file, tempCache);
-            File[] targetTranslationDirs = Importer.importArchive(tempCache);
+            File[] targetTranslationDirs = ArchiveImporter.importArchive(tempCache);
             for(File dir:targetTranslationDirs) {
                 File newDir = new File(mRootDir, dir.getName());
                 // delete existing translation
                 FileUtils.deleteQuietly(newDir);
                 // import new translation
                 FileUtils.moveDirectory(dir, newDir);
+            }
+            if(targetTranslationDirs.length == 0) {
+                throw new Exception("The archive does not contain any valid target translations");
             }
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);

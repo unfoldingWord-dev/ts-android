@@ -4,7 +4,9 @@ import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
+import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.newui.publish.ValidationItem;
@@ -36,7 +38,9 @@ public class ValidationTask extends ManagedTask {
         Translator translator = AppContext.getTranslator();
 
         TargetTranslation targetTranslation = translator.getTargetTranslation(mTargetTranslationId);
+        TargetLanguage targetLanguage = library.getTargetLanguage(targetTranslation.getTargetLanguageId());
         SourceTranslation sourceTranslation = library.getSourceTranslation(mSourceTranslationId);
+        SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         Chapter[] chapters = library.getChapters(sourceTranslation);
 
         // validate chapters
@@ -71,7 +75,7 @@ public class ValidationTask extends ManagedTask {
                             Frame lastValidFrame = frames[lastValidFrameIndex];
                             String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
                             frameTitle += ":" + lastValidFrame.getStartVerse() + "-" + previousFrame.getEndVerse();
-                            frameValidations.add(ValidationItem.generateValidFrame(frameTitle, true));
+                            frameValidations.add(ValidationItem.generateValidFrame(frameTitle, sourceLanguage, true));
                         } else {
                             Frame lastValidFrame = frames[lastValidFrameIndex];
                             String frameTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
@@ -79,7 +83,7 @@ public class ValidationTask extends ManagedTask {
                             if(!lastValidFrame.getStartVerse().equals(lastValidFrame.getEndVerse())) {
                                 frameTitle += "-" + lastValidFrame.getEndVerse();
                             }
-                            frameValidations.add(ValidationItem.generateValidFrame(frameTitle, false));
+                            frameValidations.add(ValidationItem.generateValidFrame(frameTitle, sourceLanguage, false));
                         }
                         lastValidFrameIndex = -1;
                     }
@@ -92,7 +96,7 @@ public class ValidationTask extends ManagedTask {
                         if (!frame.getStartVerse().equals(frame.getEndVerse())) {
                             frameTitle += "-" + frame.getEndVerse();
                         }
-                        frameValidations.add(ValidationItem.generateInvalidFrame(frameTitle, frameTranslation.body, mTargetTranslationId, chapter.getId(), frame.getId()));
+                        frameValidations.add(ValidationItem.generateInvalidFrame(frameTitle, sourceLanguage, frameTranslation.body, targetLanguage, frameTranslation.getFormat(), mTargetTranslationId, chapter.getId(), frame.getId()));
                     }
                 }
 
@@ -112,11 +116,11 @@ public class ValidationTask extends ManagedTask {
                         Chapter previousChapter = chapters[previousChapterIndex];
                         Chapter lastValidChapter = chapters[lastValidChapterIndex];
                         String chapterTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(lastValidChapter.getId()) + "-" + Integer.parseInt(previousChapter.getId());
-                        chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, true));
+                        chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, true));
                     } else {
                         Chapter lastValidChapter = chapters[lastValidChapterIndex];
                         String chapterTitle  = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(lastValidChapter.getId());
-                        chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, false));
+                        chapterValidations.add(ValidationItem.generateValidGroup(chapterTitle, sourceLanguage, false));
                     }
                     lastValidChapterIndex = -1;
                 }
@@ -127,7 +131,7 @@ public class ValidationTask extends ManagedTask {
                     if (chapterTitle.isEmpty()) {
                         chapterTitle = sourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
                     }
-                    chapterValidations.add(ValidationItem.generateInvalidGroup(chapterTitle));
+                    chapterValidations.add(ValidationItem.generateInvalidGroup(chapterTitle, sourceLanguage));
 
                     // add frame validations
                     chapterValidations.addAll(frameValidations);
@@ -139,7 +143,7 @@ public class ValidationTask extends ManagedTask {
         if(chapterValidations.size() > 1) {
             mValidations.addAll(chapterValidations);
         } else {
-            mValidations.add(ValidationItem.generateValidGroup(sourceTranslation.getProjectTitle(), true));
+            mValidations.add(ValidationItem.generateValidGroup(sourceTranslation.getProjectTitle(), sourceLanguage, true));
         }
     }
 

@@ -120,7 +120,15 @@
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">@dimen/button</item>
         <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:textColor">?attr/colorAccent</item>
+    </style>
+
+    <style name="Widget.Alert.Button" parent="Widget.Button">
+        <item name="android:padding">8dp</item>
+        <item name="android:minWidth">64dp</item>
+        <item name="android:layout_height">36dp</item>
     </style>
 
     <style name="Widget.Button.Tag">
@@ -131,6 +139,10 @@
     </style>
 
     <style name="Widget.Button.Secondary">
+        <item name="android:textColor">@color/dark_secondary_text</item>
+    </style>
+
+    <style name="Widget.Alert.Button.Secondary">
         <item name="android:textColor">@color/dark_secondary_text</item>
     </style>
 

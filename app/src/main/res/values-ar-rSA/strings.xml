@@ -11,7 +11,7 @@
   <string name="chapter_title_field">الفصل العنوان:</string>
   <string name="chapter_reference_field">الفصل المرجعي:</string>
   <string name="source_language_field">لغة مصدر:</string>
-  <string name="target_language_field">الهدف اللغة:</string>
+  <string name="target_language">الهدف اللغة:</string>
   <string name="title_activity_chapter_setting">ضبط الفصل</string>
   <string name="title_activity_language_selector">لغة</string>
   <string name="success">نجاح</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">العبارة المختارة:</string>
   <string name="related_terms">انظر أيضا:</string>
   <string name="term_examples">أمثلة:</string>
-  <string name="git_push_success">تم تحميل المشروع بنجاح</string>
+  <string name="project_uploaded">تم تحميل المشروع بنجاح</string>
   <string name="choose_frame_to_start">اختيار بعض النص المصدر من علامة التبويب الأيسر للبدء</string>
   <string name="return_to_important_terms">العودة إلى شروط هامة</string>
   <string name="no_translation_notes">لا توجد ملاحظات الترجمة</string>

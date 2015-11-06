@@ -11,7 +11,7 @@
   <string name="chapter_title_field">章のタイトル:</string>
   <string name="chapter_reference_field">章の参照:</string>
   <string name="source_language_field">ソース言語：</string>
-  <string name="target_language_field">ターゲット言語:</string>
+  <string name="target_language">ターゲット言語:</string>
   <string name="title_activity_chapter_setting">章の設定</string>
   <string name="title_activity_language_selector">言語</string>
   <string name="success">成功</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">選択した語句:</string>
   <string name="related_terms">また見なさい。</string>
   <string name="term_examples">例:</string>
-  <string name="git_push_success">プロジェクトが正常にアップロードされました。</string>
+  <string name="project_uploaded">プロジェクトが正常にアップロードされました。</string>
   <string name="choose_frame_to_start">始めるために、左のタブからいくつかのソーステキストを選択してください</string>
   <string name="return_to_important_terms">重要な用語に戻る</string>
   <string name="no_translation_notes">全く翻訳ノートはありません</string>

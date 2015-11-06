@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Sura Title:</string>
   <string name="chapter_reference_field">Sura Rejea:</string>
   <string name="source_language_field">Lugha Chanzo:</string>
-  <string name="target_language_field">Lengo lugha:</string>
+  <string name="target_language">Lengo lugha:</string>
   <string name="title_activity_chapter_setting">Sura ya Mazingira</string>
   <string name="title_activity_language_selector">Lugha</string>
   <string name="success">Mafanikio</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Baadhi ya maneno:</string>
   <string name="related_terms">Tazama pia:</string>
   <string name="term_examples">Mifano:</string>
-  <string name="git_push_success">Mradi mara kwa mafanikio uploaded</string>
+  <string name="project_uploaded">Mradi mara kwa mafanikio uploaded</string>
   <string name="choose_frame_to_start">Kuchagua baadhi chanzo maandishi kutoka tab kushoto na kupata kuanza</string>
   <string name="return_to_important_terms">Kurudi na Masharti Muhimu</string>
   <string name="no_translation_notes">Kuna maelezo hakuna tafsiri</string>

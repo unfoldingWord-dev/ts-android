@@ -11,7 +11,7 @@
   <string name="chapter_title_field">ชื่อบท:</string>
   <string name="chapter_reference_field">บทอ้างอิง:</string>
   <string name="source_language_field">ภาษาต้นฉบับ:</string>
-  <string name="target_language_field">ภาษาเป้าหมาย:</string>
+  <string name="target_language">ภาษาเป้าหมาย:</string>
   <string name="title_activity_chapter_setting">ตั้งค่าบท</string>
   <string name="title_activity_language_selector">ภาษา</string>
   <string name="success">ประสบความสำเร็จ</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">เลือกวลี:</string>
   <string name="related_terms">ดู:</string>
   <string name="term_examples">ตัวอย่าง:</string>
-  <string name="git_push_success">อัพโหลดโครงการเรียบร้อย</string>
+  <string name="project_uploaded">อัพโหลดโครงการเรียบร้อย</string>
   <string name="choose_frame_to_start">เลือกข้อความที่มาจากแท็บด้านซ้ายเพื่อเริ่มต้น</string>
   <string name="return_to_important_terms">ย้อนกลับไปยังข้อตกลงและเงื่อนไขที่สำคัญ</string>
   <string name="no_translation_notes">มีบันทึกการแปลไม่มี</string>

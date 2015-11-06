@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Título De Capítulo:</string>
   <string name="chapter_reference_field">El Capítulo De Referencia:</string>
   <string name="source_language_field">Idioma De Origen:</string>
-  <string name="target_language_field">Idioma De Destino:</string>
+  <string name="target_language">Idioma De Destino:</string>
   <string name="title_activity_chapter_setting">Capítulo Configuración</string>
   <string name="title_activity_language_selector">Idioma</string>
   <string name="success">Éxito</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Seleccionado frase:</string>
   <string name="related_terms">Ver También:</string>
   <string name="term_examples">Ejemplos:</string>
-  <string name="git_push_success">El proyecto se ha cargado correctamente</string>
+  <string name="project_uploaded">El proyecto se ha cargado correctamente</string>
   <string name="choose_frame_to_start">Elegir un texto de origen en la ficha de la izquierda para empezar</string>
   <string name="return_to_important_terms">Regreso a términos importantes</string>
   <string name="no_translation_notes">No hay notas de traducción</string>

@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Название Главы:</string>
   <string name="chapter_reference_field">Глава Ссылкой:</string>
   <string name="source_language_field">Исходный Язык:</string>
-  <string name="target_language_field">Целевой Язык:</string>
+  <string name="target_language">Целевой Язык:</string>
   <string name="title_activity_chapter_setting">Глава Настройки</string>
   <string name="title_activity_language_selector">Язык</string>
   <string name="success">Успех</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Выбранные фразы:</string>
   <string name="related_terms">Смотрите Также:</string>
   <string name="term_examples">Примеры:</string>
-  <string name="git_push_success">Проект был успешно загружен</string>
+  <string name="project_uploaded">Проект был успешно загружен</string>
   <string name="choose_frame_to_start">Выберем некоторый исходный текст из левой вкладки, чтобы начать</string>
   <string name="return_to_important_terms">Вернуться в Важные Правила</string>
   <string name="no_translation_notes">Там нет заметок перевод</string>

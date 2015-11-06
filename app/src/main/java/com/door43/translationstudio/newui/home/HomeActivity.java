@@ -5,9 +5,14 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.os.Bundle;
+import android.support.v4.content.FileProvider;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -27,6 +32,10 @@ import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.util.List;
 import java.util.Locale;
 
 public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCreateNewTargetTranslation, TargetTranslationListFragment.OnItemClickListener {
@@ -78,7 +87,7 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                 moreMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        switch(item.getItemId()) {
+                        switch (item.getItemId()) {
                             case R.id.action_update:
                                 openLibrary();
                                 return true;
@@ -103,6 +112,24 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
 
                                 FeedbackDialog dialog = new FeedbackDialog();
                                 dialog.show(ft, "bugDialog");
+                                return true;
+                            case R.id.action_share_apk:
+                                try {
+                                    PackageInfo pinfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+                                    File apkFile = new File(pinfo.applicationInfo.publicSourceDir);
+                                    File exportFile = new File(AppContext.getSharingDir(), pinfo.applicationInfo.loadLabel(getPackageManager()) + "_" + pinfo.versionName + ".apk");
+                                    FileUtils.copyFile(apkFile, exportFile);
+                                    if (exportFile.exists()) {
+                                        Uri u = FileProvider.getUriForFile(HomeActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
+                                        Intent i = new Intent(Intent.ACTION_SEND);
+                                        i.setType("application/zip");
+                                        i.putExtra(Intent.EXTRA_STREAM, u);
+                                        startActivity(Intent.createChooser(i, getResources().getString(R.string.send_to)));
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    // todo notify user app could not be shared
+                                }
                                 return true;
                             case R.id.action_settings:
                                 Intent intent = new Intent(HomeActivity.this, SettingsActivity.class);

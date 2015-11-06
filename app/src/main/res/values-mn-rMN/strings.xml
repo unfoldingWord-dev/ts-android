@@ -11,7 +11,7 @@
   <string name="chapter_title_field">Бүлгийн нэр:</string>
   <string name="chapter_reference_field">Бүлгийн Эх сурвалж:</string>
   <string name="source_language_field">Эх хэл:</string>
-  <string name="target_language_field">Орчуулах хэл:</string>
+  <string name="target_language">Орчуулах хэл:</string>
   <string name="title_activity_chapter_setting">Бүлгийн Тохиргоо</string>
   <string name="title_activity_language_selector">Хэл</string>
   <string name="success">Амжилттай</string>
@@ -68,7 +68,7 @@
   <string name="label_note_phrase">Сонгосон өгүүлбэр:</string>
   <string name="related_terms">Үүнийг бас харна уу:</string>
   <string name="term_examples">Жишээ нь:</string>
-  <string name="git_push_success">Төслийг амжилттай байршуулсан байна</string>
+  <string name="project_uploaded">Төслийг амжилттай байршуулсан байна</string>
   <string name="choose_frame_to_start">Эхлэхийн тулд зүүн табнаас эх бичвэрийг сонгох</string>
   <string name="return_to_important_terms">Чухал нөхцөл рүү буцах</string>
   <string name="no_translation_notes">Ямар ч орчуулгын тэмдэглэл байхгүй байна</string>
