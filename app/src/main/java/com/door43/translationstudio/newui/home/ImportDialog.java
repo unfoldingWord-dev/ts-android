@@ -19,11 +19,13 @@ import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.net.InetAddress;
 
 /**
  * Created by joel on 10/5/2015.
@@ -46,13 +48,26 @@ public class ImportDialog extends DialogFragment {
         Button importCloudButton = (Button)v.findViewById(R.id.import_from_cloud);
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
 
-        // todo: provide support for restoring from cloud
-        importCloudButton.setVisibility(View.GONE);
-
         importCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                new ThreadableUI(getActivity()) {
 
+                    @Override
+                    public void onStop() {
+
+                    }
+
+                    @Override
+                    public void run() {
+                        // TODO: get list of repositories
+                    }
+
+                    @Override
+                    public void onPostExecute() {
+
+                    }
+                }.start();
             }
         });
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
