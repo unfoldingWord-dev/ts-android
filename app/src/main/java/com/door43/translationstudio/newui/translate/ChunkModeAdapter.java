@@ -264,7 +264,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             // re-enable new tab button
             holder.mNewTabButton.setEnabled(true);
         }
-        
+
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -280,7 +280,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 // if marked as done (disabled for edit), give prompt asking if they want to reopen for edit
 
                 else if(!holder.mTargetBody.isEnabled()) {
-                    promptToEditDoneChunk(mContext, holder);
+                    ChunkModeAdapter.promptToEditDoneChunk(mContext, holder);
                 }
             }
         });
