@@ -3,6 +3,8 @@ package com.door43.translationstudio.newui.home;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -62,8 +64,9 @@ public class ImportDialog extends DialogFragment {
         importCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // TODO: display loading dialog
                 new ThreadableUI(getActivity()) {
-
+                    private List<String> targetTranslationIds = new ArrayList<>();
                     @Override
                     public void onStop() {
 
@@ -82,14 +85,12 @@ public class ImportDialog extends DialogFragment {
                             String response = Util.readStream(is);
                             if(response != null) {
                                 String[] lines = response.split("\n");
-                                List<String> targetTranslationIds = new ArrayList<>();
                                 for(String line:lines) {
                                     if(line.trim().indexOf("R") == 0 && line.contains(AppContext.udid())) {
                                         String[] parts = line.split("/");
                                         targetTranslationIds.add(parts[parts.length - 1]);
                                     }
                                 }
-                                // todo return target translation ids
                             }
                         } catch (JSchException e) {
                             e.printStackTrace();
@@ -105,7 +106,26 @@ public class ImportDialog extends DialogFragment {
 
                     @Override
                     public void onPostExecute() {
+                        if(targetTranslationIds.size() > 0) {
+                            FragmentTransaction ft = getFragmentManager().beginTransaction();
+                            Fragment prev = getFragmentManager().findFragmentByTag("restoreDialog");
+                            if (prev != null) {
+                                ft.remove(prev);
+                            }
+                            ft.addToBackStack(null);
 
+                            RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
+                            Bundle args = new Bundle();
+                            args.putStringArray(RestoreFromCloudDialog.ARG_TARGET_TRANSLATIONS, targetTranslationIds.toArray(new String[targetTranslationIds.size()]));
+                            dialog.setArguments(args);
+                            dialog.show(ft, "restoreDialog");
+                        } else {
+                            new AlertDialog.Builder(getActivity())
+                                    .setTitle(R.string.import_from_online)
+                                    .setMessage(R.string.no_backups_online)
+                                    .setNeutralButton(R.string.dismiss, null)
+                                    .show();
+                        }
                     }
                 }.start();
             }
@@ -117,6 +137,14 @@ public class ImportDialog extends DialogFragment {
                 Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
                 intent.setDataAndType(Uri.fromFile(path), "file/*");
                 startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
+            }
+        });
+
+        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
             }
         });
 

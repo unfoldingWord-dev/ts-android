@@ -25,8 +25,9 @@
             android:layout_height="wrap_content"
             android:text="Info"
             android:layout_marginLeft="16dp"
-            android:textColor="@color/dark_primary_text"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+            android:textStyle="bold"
+            android:textSize="@dimen/title"
+            android:textColor="@color/dark_primary_text" />
     </LinearLayout>
 
     <LinearLayout

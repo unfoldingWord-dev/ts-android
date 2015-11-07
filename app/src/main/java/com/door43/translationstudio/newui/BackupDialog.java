@@ -81,6 +81,14 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             mTaskWatcher.watch(task);
         }
 
+        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
+
         // backup buttons
         backupToCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override

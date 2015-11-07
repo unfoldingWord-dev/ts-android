@@ -536,4 +536,5 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="share_apk">Share this app</string>
     <string name="send_to">Send To</string>
     <string name="translators">Translators</string>
+    <string name="no_backups_online">There are no backups online</string>
 </resources>
