@@ -22,11 +22,10 @@ import java.util.Locale;
  */
 public class RestoreFromCloudAdapter extends BaseAdapter {
 
-    private final String[] targetTranslationSlugs;
+    private String[] targetTranslationSlugs = new String[0];
     private final Library library;
 
-    public RestoreFromCloudAdapter(String[] targetTranslationSlugs) {
-        this.targetTranslationSlugs = targetTranslationSlugs;
+    public RestoreFromCloudAdapter() {
         this.library = AppContext.getLibrary();
     }
 
@@ -76,6 +75,15 @@ public class RestoreFromCloudAdapter extends BaseAdapter {
         }
 
         return v;
+    }
+
+    /**
+     * Sets the data to display
+     * @param targetTranslationSlugs
+     */
+    public void setTargetTranslations(String[] targetTranslationSlugs) {
+        this.targetTranslationSlugs = targetTranslationSlugs;
+        notifyDataSetChanged();
     }
 
     private class ViewHolder {

@@ -64,70 +64,15 @@ public class ImportDialog extends DialogFragment {
         importCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: display loading dialog
-                new ThreadableUI(getActivity()) {
-                    private List<String> targetTranslationIds = new ArrayList<>();
-                    @Override
-                    public void onStop() {
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag("restoreDialog");
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
 
-                    }
-
-                    @Override
-                    public void run() {
-                        Channel channel = null;
-                        try {
-                            String[] userserver = AppContext.getUserString(SettingsActivity.KEY_PREF_GIT_SERVER, R.string.pref_default_git_server).split("@");
-                            int port = Integer.parseInt(AppContext.getUserString(SettingsActivity.KEY_PREF_GIT_SERVER_PORT, R.string.pref_default_git_server_port));
-                            channel = SSHSession.openSession(userserver[0], userserver[1], port);
-                            OutputStream os = channel.getOutputStream();
-                            InputStream is = channel.getInputStream();
-                            os.write(0);
-                            String response = Util.readStream(is);
-                            if(response != null) {
-                                String[] lines = response.split("\n");
-                                for(String line:lines) {
-                                    if(line.trim().indexOf("R") == 0 && line.contains(AppContext.udid())) {
-                                        String[] parts = line.split("/");
-                                        targetTranslationIds.add(parts[parts.length - 1]);
-                                    }
-                                }
-                            }
-                        } catch (JSchException e) {
-                            e.printStackTrace();
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        if(channel != null) {
-                            channel.disconnect();
-                        }
-                    }
-
-                    @Override
-                    public void onPostExecute() {
-                        if(targetTranslationIds.size() > 0) {
-                            FragmentTransaction ft = getFragmentManager().beginTransaction();
-                            Fragment prev = getFragmentManager().findFragmentByTag("restoreDialog");
-                            if (prev != null) {
-                                ft.remove(prev);
-                            }
-                            ft.addToBackStack(null);
-
-                            RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
-                            Bundle args = new Bundle();
-                            args.putStringArray(RestoreFromCloudDialog.ARG_TARGET_TRANSLATIONS, targetTranslationIds.toArray(new String[targetTranslationIds.size()]));
-                            dialog.setArguments(args);
-                            dialog.show(ft, "restoreDialog");
-                        } else {
-                            new AlertDialog.Builder(getActivity())
-                                    .setTitle(R.string.import_from_online)
-                                    .setMessage(R.string.no_backups_online)
-                                    .setNeutralButton(R.string.dismiss, null)
-                                    .show();
-                        }
-                    }
-                }.start();
+                RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
+                dialog.show(ft, "restoreDialog");
             }
         });
         importFromSDButton.setOnClickListener(new View.OnClickListener() {

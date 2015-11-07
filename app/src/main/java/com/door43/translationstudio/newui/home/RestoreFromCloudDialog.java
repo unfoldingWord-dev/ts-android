@@ -1,7 +1,11 @@
 package com.door43.translationstudio.newui.home;
 
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,46 +15,106 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.tasks.GetCloudBackupsTask;
+import com.door43.util.tasks.GenericTaskWatcher;
+import com.door43.util.tasks.ManagedTask;
+import com.door43.util.tasks.TaskManager;
 
 /**
  * Created by joel on 11/6/2015.
  */
-public class RestoreFromCloudDialog extends DialogFragment {
-
-    public static final String ARG_TARGET_TRANSLATIONS = "arg_target_translation_slugs";
+public class RestoreFromCloudDialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
+    private static final String STATE_TARGET_TRANSLATIONS = "state_target_translations";
+    private GenericTaskWatcher taskWatcher;
+    private RestoreFromCloudAdapter adapter;
+    private String[] targetTranslationSlugs = new String[0];
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_restore_from_cloud, container, false);
 
-        Bundle args = getArguments();
-        String[] targetTranslationSlugs = new String[0];
-        if(args != null) {
-            targetTranslationSlugs = args.getStringArray(ARG_TARGET_TRANSLATIONS);
-        }
+        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        taskWatcher.setOnFinishedListener(this);
 
         Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                taskWatcher.stop();
+                GetCloudBackupsTask task = (GetCloudBackupsTask)TaskManager.getTask(GetCloudBackupsTask.TASK_ID);
+                if(task != null) {
+                    task.stop();
+                    TaskManager.cancelTask(task);
+                    TaskManager.clearTask(task);
+                }
                 dismiss();
             }
         });
 
-        if(targetTranslationSlugs.length > 0) {
-            ListView list = (ListView) v.findViewById(R.id.list);
-            RestoreFromCloudAdapter adapter = new RestoreFromCloudAdapter(targetTranslationSlugs);
-            list.setAdapter(adapter);
-            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    // todo download backup
-                }
-            });
-        } else {
-            dismiss();
+        ListView list = (ListView) v.findViewById(R.id.list);
+        adapter = new RestoreFromCloudAdapter();
+        list.setAdapter(adapter);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // todo download backup
+                Log.d("test", "downloading backup...");
+            }
+        });
+
+        // connect to existing task
+        GetCloudBackupsTask task = (GetCloudBackupsTask)TaskManager.getTask(GetCloudBackupsTask.TASK_ID);
+        if(task != null) {
+            taskWatcher.watch(task);
+            // display loading icon
+        }
+
+        if(savedInstanceState == null) {
+            // start task
+            task = new GetCloudBackupsTask();
+            taskWatcher.watch(task);
+            TaskManager.addTask(task, GetCloudBackupsTask.TASK_ID);
+        } else if (task == null) {
+            // load existing data
+            targetTranslationSlugs = savedInstanceState.getStringArray(STATE_TARGET_TRANSLATIONS);
+            adapter.setTargetTranslations(targetTranslationSlugs);
         }
 
         return v;
+    }
+
+    @Override
+    public void onFinished(ManagedTask task) {
+        taskWatcher.stop();
+        TaskManager.clearTask(task);
+        targetTranslationSlugs = ((GetCloudBackupsTask)task).getTargetTranslationSlugs();
+        Handler hand = new Handler(Looper.getMainLooper());
+        hand.post(new Runnable() {
+            @Override
+            public void run() {
+                if(targetTranslationSlugs.length > 0) {
+                    adapter.setTargetTranslations(targetTranslationSlugs);
+                } else {
+                    new AlertDialog.Builder(getActivity())
+                            .setTitle(R.string.import_from_online)
+                            .setMessage(R.string.no_backups_online)
+                            .setNeutralButton(R.string.dismiss, null)
+                            .show();
+                    dismiss();
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle out) {
+        out.putStringArray(STATE_TARGET_TRANSLATIONS, targetTranslationSlugs);
+        super.onSaveInstanceState(out);
+    }
+
+    @Override
+    public void onDestroy() {
+        taskWatcher.stop();
+        super.onDestroy();
     }
 }

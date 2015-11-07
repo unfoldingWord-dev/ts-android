@@ -218,6 +218,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
     @Override
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
+        TaskManager.clearTask(task);
         if(((UploadTargetTranslationTask)task).uploadSucceeded()) {
             final String response = ((UploadTargetTranslationTask)task).getResponse();
             Handler hand = new Handler(Looper.getMainLooper());
