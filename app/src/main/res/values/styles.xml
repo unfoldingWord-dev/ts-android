@@ -81,6 +81,18 @@
         <item name="android:textColor">@color/light_primary_text</item>
     </style>
 
+    <style name="CustomDialog" >
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="CustomDialog.Content" >
+        <item name="android:padding">24dp</item>
+    </style>
+
+    <style name="CustomDialog.Buttons" >
+        <item name="android:padding">8dp</item>
+    </style>
+
     <style name="Widget.CardContent" parent="android:Widget">
         <item name="android:background">@color/white</item>
         <item name="android:paddingLeft">16dp</item>
