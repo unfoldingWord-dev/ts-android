@@ -46,7 +46,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     public static final String EXTRA_FRAME_ID = "extra_frame_id";
     public static final String EXTRA_VIEW_MODE = "extra_view_mode_id";
     private Fragment mFragment;
-    private VerticalSeekBar mSeekBar;
+    private SeekBar mSeekBar;
     private Translator mTranslator;
     private TargetTranslation mTargetTranslation;
     private Timer mCommitTimer = new Timer();
@@ -106,7 +106,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         }
 
         // set up menu items
-        mSeekBar = (VerticalSeekBar)findViewById(R.id.action_seek);
+        mSeekBar = (SeekBar)findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
         mSeekBar.setProgress(mSeekBar.getMax());
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
