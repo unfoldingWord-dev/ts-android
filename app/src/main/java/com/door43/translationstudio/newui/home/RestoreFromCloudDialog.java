@@ -14,7 +14,9 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.GetCloudBackupsTask;
 import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
@@ -28,13 +30,16 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
     private GenericTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private String[] targetTranslationSlugs = new String[0];
+    private Translator translator;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_restore_from_cloud, container, false);
 
-        taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
-        taskWatcher.setOnFinishedListener(this);
+        this.taskWatcher = new GenericTaskWatcher(getActivity(), R.string.loading);
+        this.taskWatcher.setOnFinishedListener(this);
+
+        this.translator = AppContext.getTranslator();
 
         Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
@@ -57,8 +62,13 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // todo download backup
-                Log.d("test", "downloading backup...");
+                String targetTranslationSlug = adapter.getItem(position);
+                // check if the user already has this target translation
+                if(translator.getTargetTranslation(targetTranslationSlug) != null) {
+                    // TODO: confirm restore then just clone to a temporary location and just replace the current state. or do we want the entire history to be overwritten?
+                } else {
+                    // TODO: clone backup
+                }
             }
         });
 
