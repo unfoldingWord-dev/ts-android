@@ -108,19 +108,22 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         // set up menu items
         mSeekBar = (SeekBar)findViewById(R.id.action_seek);
         mSeekBar.setMax(100);
-        mSeekBar.setProgress(mSeekBar.getMax());
+        mSeekBar.setProgress(computePositionFromProgress(0));
         mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 int position;
                 if (progress < 0) {
-                    position = seekBar.getMax();
+                    position = computePositionFromProgress(0);
                 } else if (progress <= seekBar.getMax()) {
-                    position = Math.abs(progress - seekBar.getMax());
+                    position = computePositionFromProgress(progress);
                 } else {
                     position = 0;
                 }
-                if (mFragment instanceof ViewModeFragment) {
+
+                // If this change was initiated by a click on a UI element (rather than as a result
+                // of updates within the program), then update the view accordingly.
+                if (mFragment instanceof ViewModeFragment && fromUser) {
                     ((ViewModeFragment) mFragment).onScrollProgressUpdate(position);
                 }
 
@@ -307,9 +310,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
     }
 
     @Override
-    public void onScrollProgress(int progress) {
-        mSeekBar.setProgress(mSeekBar.getMax() - progress);
-        Log.d(TAG, "onScrollProgress: " + progress);
+    public void onScrollProgress(int position) {
+        mSeekBar.setProgress(computeProgressFromPosition(position));
         checkIfCursorStillOnScreen();
     }
 
@@ -318,6 +320,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
         mSeekBar.setMax(itemCount);
         mSeekBar.setProgress(itemCount - progress);
         closeKeyboard();
+    }
+
+    private boolean displaySeekBarAsInverted() {
+        return mSeekBar instanceof VerticalSeekBar;
+    }
+
+    private int computeProgressFromPosition(int position) {
+        return displaySeekBarAsInverted() ? mSeekBar.getMax() - position : position;
+    }
+
+    private int computePositionFromProgress(int progress) {
+        return displaySeekBarAsInverted() ? Math.abs(mSeekBar.getMax() - progress) : progress;
     }
 
     @Override
