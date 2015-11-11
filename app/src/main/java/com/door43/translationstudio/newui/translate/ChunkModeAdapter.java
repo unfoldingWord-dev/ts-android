@@ -265,6 +265,29 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mNewTabButton.setEnabled(true);
         }
 
+        holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(MotionEvent.ACTION_UP == event.getAction()) {
+
+                    // if marked as done, give prompt asking if they want to reopen for edit
+
+                    final ListItem item = mListItems[position];
+                    if (item.isTargetCardOpen) { // if page is already in front and they are tapping on it, then see if they want to open for edit
+
+                        boolean enabled =  holder.mTargetBody.isEnabled();
+                        boolean focusable =  holder.mTargetBody.isFocusable();
+
+                        if(enabled && !focusable) { //if we have enabled for touch events but not focusable for edit then prompt to enable editing
+                            ChunkModeAdapter.promptToEditDoneChunk(mContext, holder);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        });
+
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -277,10 +300,11 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
                 }
 
-                // if marked as done (disabled for edit), give prompt asking if they want to reopen for edit
+                // if marked as done (disabled for edit), enable to allow capture of click events, but do not make it focusable so they can't edit
 
                 else if(!holder.mTargetBody.isEnabled()) {
-                    ChunkModeAdapter.promptToEditDoneChunk(mContext, holder);
+                    holder.mTargetBody.setEnabled(true);
+                    holder.mTargetBody.setFocusable(false);
                 }
             }
         });
@@ -372,8 +396,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      */
     static public void editTarget(final Context context, final EditText target) {
 
-        target.requestFocus();
-
+        boolean gotFocus = target.requestFocus();
         InputMethodManager mgr = (InputMethodManager)
                 context.getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);
@@ -393,13 +416,15 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         holder.mTargetBody.setEnabled(true);
+                        holder.mTargetBody.setFocusable(true);
+                        holder.mTargetBody.setFocusableInTouchMode(true);
                         holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+                        ChunkModeAdapter.editTarget(context, holder.mTargetBody);
                     }
                 })
                 .setNegativeButton(R.string.dismiss, null)
                 .show();
     }
-
 
     /**
          * Renders the chapter title card
