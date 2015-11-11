@@ -5,7 +5,6 @@ import android.app.DialogFragment;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +17,6 @@ import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
-import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.tasks.CloneTargetTranslationTask;
@@ -27,7 +25,11 @@ import com.door43.util.tasks.GenericTaskWatcher;
 import com.door43.util.tasks.ManagedTask;
 import com.door43.util.tasks.TaskManager;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 
 /**
@@ -35,11 +37,13 @@ import java.io.IOException;
  */
 public class RestoreFromCloudDialog extends DialogFragment implements GenericTaskWatcher.OnFinishedListener {
     private static final String STATE_TARGET_TRANSLATIONS = "state_target_translations";
+    private static final String STATE_RESTORE_HEAD = "state_restore_head";
     private GenericTaskWatcher taskWatcher;
     private RestoreFromCloudAdapter adapter;
     private String[] targetTranslationSlugs = new String[0];
     private Translator translator;
     private Library library;
+    private boolean restoreHEAD;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -50,6 +54,10 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
 
         this.translator = AppContext.getTranslator();
         this.library = AppContext.getLibrary();
+
+        if(savedInstanceState != null) {
+            restoreHEAD = savedInstanceState.getBoolean(STATE_RESTORE_HEAD, false);
+        }
 
         Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
         dismissButton.setOnClickListener(new View.OnClickListener() {
@@ -76,6 +84,7 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                 // check if the user already has this target translation
                 if(translator.getTargetTranslation(targetTranslationSlug) != null) {
                     // clone target translation
+                    restoreHEAD = true;
                     File destDir;
                     try {
                         destDir = File.createTempFile(targetTranslationSlug, "");
@@ -86,9 +95,9 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                     CloneTargetTranslationTask task = new CloneTargetTranslationTask(targetTranslationSlug, destDir);
                     taskWatcher.watch(task);
                     TaskManager.addTask(task, CloneTargetTranslationTask.TASK_ID);
-                    // TODO: 11/11/2015 set flag so we know we need to copy the HEAD of the temp clone onto the existing repo
                 } else {
                     // clone target translation
+                    restoreHEAD = false;
                     File destDir = TargetTranslation.generateTargetTranslationDir(targetTranslationSlug, translator.getPath());
                     CloneTargetTranslationTask task = new CloneTargetTranslationTask(targetTranslationSlug, destDir);
                     taskWatcher.watch(task);
@@ -147,14 +156,72 @@ public class RestoreFromCloudDialog extends DialogFragment implements GenericTas
                 }
             });
         } else if(task instanceof CloneTargetTranslationTask) {
-            // TODO: 11/11/2015 copy HEAD if this repo already exists.
-            // TODO: 11/11/2015 reload the parent activity
+            final String targetTranslationSlug = ((CloneTargetTranslationTask)task).getTargetTranslationSlug();
+            if(restoreHEAD) {
+                // copy HEAD of the temp repo onto the existing one
+                File sourcePath = ((CloneTargetTranslationTask)task).getLocalPath();
+                TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
+                if(targetTranslation != null) {
+                    Logger.i(this.getClass().getName(), "Restoring HEAD in " + targetTranslationSlug + " from the cloud");
+                    final File targetPath = targetTranslation.getPath();
+                    // delete HEAD of target
+                    targetPath.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String filename) {
+                            if(!filename.equals(".git")) {
+                                FileUtils.deleteQuietly(new File(dir, filename));
+                            }
+                            return false;
+                        }
+                    });
+                    // copy new HEAD to target
+                    sourcePath.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File dir, String filename) {
+                            if(!filename.equals(".git")) {
+                                File sourceFile = new File(dir, filename);
+                                File targetFile = new File(targetPath, filename);
+                                try {
+                                    if (sourceFile.isDirectory()) {
+                                        FileUtils.copyDirectory(sourceFile, targetFile);
+                                    } else {
+                                        FileUtils.copyFile(sourceFile, targetFile);
+                                    }
+                                } catch (IOException e) {
+                                    Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to copy the restored file into HEAD at " + targetFile.getAbsolutePath(), e);
+                                }
+                            }
+                            return false;
+                        }
+                    });
+                    // commit changes
+                    try {
+                        targetTranslation.commit();
+                    } catch (Exception e) {
+                        Logger.e(RestoreFromCloudDialog.class.getName(), "Failed to commit changes after restoring backup", e);
+                    }
+                }
+
+                FileUtils.deleteQuietly(sourcePath);
+            } else {
+                Logger.i(this.getClass().getName(), "Cloned " + targetTranslationSlug + " from the cloud");
+            }
+
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    // todo: terrible hack.
+                    ((HomeActivity) getActivity()).notifyDatasetChanged();
+                }
+            });
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle out) {
-        out.putStringArray(STATE_TARGET_TRANSLATIONS, targetTranslationSlugs);
+        out.putStringArray(STATE_TARGET_TRANSLATIONS, this.targetTranslationSlugs);
+        out.putBoolean(STATE_RESTORE_HEAD, this.restoreHEAD );
         super.onSaveInstanceState(out);
     }
 

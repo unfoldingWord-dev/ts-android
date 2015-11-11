@@ -46,6 +46,7 @@ import java.util.List;
 public class ImportDialog extends DialogFragment {
 
     private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
+    public static final String TAG = "importDialog";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -65,14 +66,14 @@ public class ImportDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
-                Fragment prev = getFragmentManager().findFragmentByTag("restoreDialog");
+                Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
                 if (prev != null) {
                     ft.remove(prev);
                 }
                 ft.addToBackStack(null);
 
                 RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
-                dialog.show(ft, "restoreDialog");
+                dialog.show(ft, ImportDialog.TAG);
             }
         });
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
