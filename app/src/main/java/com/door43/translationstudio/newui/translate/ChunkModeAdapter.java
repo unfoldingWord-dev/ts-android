@@ -394,12 +394,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                     public void onClick(DialogInterface dialog, int which) {
                         holder.mTargetBody.setEnabled(true);
                         holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-                        ChunkModeAdapter.editTarget(context, holder.mTargetBody);
                     }
                 })
                 .setNegativeButton(R.string.dismiss, null)
                 .show();
-
     }
 
 
