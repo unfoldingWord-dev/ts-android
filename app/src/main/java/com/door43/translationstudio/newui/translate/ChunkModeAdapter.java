@@ -265,24 +265,23 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mNewTabButton.setEnabled(true);
         }
 
-        holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() {
+        holder.mTargetCard.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) { // for touches on card other than edit area
+                if(MotionEvent.ACTION_UP == event.getAction()) {
+
+                    return ChunkModeAdapter.checkForPromptToEditDoneTargetCard(mContext, holder, mListItems[position]);
+                }
+                return false;
+            }
+        });
+
+        holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() { //for touches on edit area
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if(MotionEvent.ACTION_UP == event.getAction()) {
 
-                    // if marked as done, give prompt asking if they want to reopen for edit
-
-                    final ListItem item = mListItems[position];
-                    if (item.isTargetCardOpen) { // if page is already in front and they are tapping on it, then see if they want to open for edit
-
-                        boolean enabled =  holder.mTargetBody.isEnabled();
-                        boolean focusable =  holder.mTargetBody.isFocusable();
-
-                        if(enabled && !focusable) { //if we have enabled for touch events but not focusable for edit then prompt to enable editing
-                            ChunkModeAdapter.promptToEditDoneChunk(mContext, holder);
-                            return true;
-                        }
-                    }
+                    return ChunkModeAdapter.checkForPromptToEditDoneTargetCard(mContext, holder, mListItems[position]);
                 }
                 return false;
             }
@@ -400,6 +399,28 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         InputMethodManager mgr = (InputMethodManager)
                 context.getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    /**
+     * prompt to edit chunk that is marked done
+     * @param context
+     * @param holder
+     * @param item
+     */
+    static public boolean checkForPromptToEditDoneTargetCard(final Context context, final ViewHolder holder, final ListItem item) {
+
+        if (item.isTargetCardOpen) { // if page is already in front and they are tapping on it, then see if they want to open for edit
+
+            boolean enabled = holder.mTargetBody.isEnabled();
+            boolean focusable = holder.mTargetBody.isFocusable();
+
+            if (enabled && !focusable) { //if we have enabled for touch events but not focusable for edit then prompt to enable editing
+                ChunkModeAdapter.promptToEditDoneChunk(context, holder);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
