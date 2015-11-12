@@ -66,6 +66,9 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             throw new InvalidParameterException("The target translation id was not specified");
         }
 
+        // TODO: 11/11/2015 check if at least one translator has been recorded on this target translation
+        // if there are no translators the user must be presented with a form to enter a translator.
+
         Button backupToCloudButton = (Button)v.findViewById(R.id.upload_to_cloud);
         Button backupToSDButton = (Button)v.findViewById(R.id.export_to_sd);
         Button backupToAppButton = (Button)v.findViewById(R.id.export_to_app);
@@ -80,6 +83,14 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         if(task != null) {
             mTaskWatcher.watch(task);
         }
+
+        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
 
         // backup buttons
         backupToCloudButton.setOnClickListener(new View.OnClickListener() {
@@ -210,6 +221,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
     @Override
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
+        TaskManager.clearTask(task);
         if(((UploadTargetTranslationTask)task).uploadSucceeded()) {
             final String response = ((UploadTargetTranslationTask)task).getResponse();
             Handler hand = new Handler(Looper.getMainLooper());

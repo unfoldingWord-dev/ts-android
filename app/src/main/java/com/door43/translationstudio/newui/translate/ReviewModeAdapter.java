@@ -16,7 +16,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.Html;
 import android.text.Selection;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -821,7 +820,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
             // render words
             for(final TranslationWord word:words) {
                 TextView wordView = (TextView) mContext.getLayoutInflater().inflate(R.layout.fragment_resources_list_item, null);
-                wordView.setText(word.getWord());
+                wordView.setText(word.getTerm());
                 wordView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

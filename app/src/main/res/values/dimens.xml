@@ -31,4 +31,5 @@
 
     <dimen name="dialog_content_margin">24dp</dimen>
     <dimen name="dialog_controls_margin">8dp</dimen>
+    <dimen name="dialog_min_width">500dp</dimen>
 </resources>

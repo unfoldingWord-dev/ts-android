@@ -644,6 +644,15 @@ public class Library {
     }
 
     /**
+     * Returns an array of translation words in the source translation
+     * @param sourceTranslation
+     * @return
+     */
+    public TranslationWord[] getTranslationWords(SourceTranslation sourceTranslation) {
+        return getActiveIndex().getWords(sourceTranslation);
+    }
+
+    /**
      * Returns an array of translation words in the frame
      * @param sourceTranslation
      * @param chapterId

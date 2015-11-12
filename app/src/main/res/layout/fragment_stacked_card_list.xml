@@ -40,8 +40,19 @@
                 android:textSize="@dimen/headline"
                 android:background="?attr/selectableItemBackground"/>
 
-            <ScrollView
+            <LinearLayout
+                android:orientation="vertical"
                 android:id="@+id/resources_drawer_content"
+                android:visibility="gone"
+                android:layout_marginTop="@dimen/card_margin"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true"
+                android:paddingLeft="@dimen/card_margin"
+                android:paddingRight="@dimen/card_margin"/>
+
+            <ScrollView
+                android:id="@+id/scrolling_resources_drawer_content"
                 android:layout_marginTop="@dimen/card_margin"
                 android:layout_width="match_parent"
                 android:animateLayoutChanges="true"

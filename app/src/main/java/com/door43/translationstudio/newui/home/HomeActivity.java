@@ -93,14 +93,14 @@ public class HomeActivity extends BaseActivity implements WelcomeFragment.OnCrea
                                 return true;
                             case R.id.action_import:
                                 FragmentTransaction backupFt = getFragmentManager().beginTransaction();
-                                Fragment backupPrev = getFragmentManager().findFragmentByTag("importDialog");
+                                Fragment backupPrev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
                                 if (backupPrev != null) {
                                     backupFt.remove(backupPrev);
                                 }
                                 backupFt.addToBackStack(null);
 
                                 ImportDialog backupDialog = new ImportDialog();
-                                backupDialog.show(backupFt, "importDialog");
+                                backupDialog.show(backupFt, ImportDialog.TAG);
                                 return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
