@@ -319,7 +319,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         Library library = AppContext.getLibrary();
         TranslationNote[] notes = library.getTranslationNotes(sourceTranslation, frame.getChapterId(), frame.getId());
         if(notes.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            notes = library.getTranslationNotes(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), frame.getChapterId(), frame.getId());
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            notes = library.getTranslationNotes(defaultSourceTranslation, frame.getChapterId(), frame.getId());
         }
         return notes;
     }
@@ -335,7 +336,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         Library library = AppContext.getLibrary();
         TranslationWord[] words = library.getTranslationWords(sourceTranslation, frame.getChapterId(), frame.getId());
         if(words.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            words = library.getTranslationWords(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), frame.getChapterId(), frame.getId());
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            words = library.getTranslationWords(defaultSourceTranslation, frame.getChapterId(), frame.getId());
         }
         return words;
     }
@@ -352,7 +354,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         Library library = AppContext.getLibrary();
         CheckingQuestion[] questions = library.getCheckingQuestions(sourceTranslation, chapterId, frameId);
         if(questions.length == 0 && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            questions = library.getCheckingQuestions(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId);
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            questions = library.getCheckingQuestions(defaultSourceTranslation, chapterId, frameId);
         }
         return questions;
     }
