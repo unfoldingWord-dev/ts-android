@@ -500,7 +500,7 @@ public class Indexer {
                     JSONObject item = items.getJSONObject(i);
                     TranslationWord word = TranslationWord.generate(item);
                     if (word != null) {
-                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getWord(), word.getDefinitionTitle(), word.getDefinition(), word.getExamples(), word.getAliases(), word.getSeeAlso());
+                        mDatabaseHelper.addTranslationWord(mDatabase, word.getId(), resource.getDBId(), Security.md5(resource.getWordsCatalogUrl()), word.getTerm(), word.getDefinitionTitle(), word.getDefinition(), word.getExamples(), word.getAliases(), word.getSeeAlso());
                     }
                     mDatabase.yieldIfContendedSafely();
                 } catch (JSONException e) {
@@ -874,6 +874,15 @@ public class Indexer {
             return mDatabaseHelper.getTranslationWordSlugs(mDatabase, resourceId);
         }
         return new String[0];
+    }
+
+    /**
+     * Returns an array of translationWords for a source translation
+     * @param sourceTranslation
+     * @return
+     */
+    public TranslationWord[] getWords(SourceTranslation sourceTranslation) {
+        return mDatabaseHelper.getTranslationWords(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug);
     }
 
     /**

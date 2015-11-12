@@ -10,9 +10,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -28,6 +30,7 @@ import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.AppContext;
+import com.door43.widget.LockableScrollView;
 import com.door43.widget.ViewUtil;
 
 import org.apmem.tools.layouts.FlowLayout;
@@ -48,13 +51,14 @@ public class ReviewModeFragment extends ViewModeFragment {
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
-    private ScrollView mResourcesDrawerContent;
+    private LockableScrollView mScrollingResourcesDrawerContent;
     private Button mCloseResourcesDrawerButton;
     private String mTranslationWordId;
     private String mTranslationNoteId;
     private String mFrameId;
     private String mChapterId;
     private String mCheckingQuestionId;
+    private LinearLayout mResourcesDrawerContent;
 
     @Override
     ViewModeAdapter generateAdapter(Activity activity, String targetTranslationId, String sourceTranslationId, String chapterId, String frameId, Bundle extras) {
@@ -64,7 +68,8 @@ public class ReviewModeFragment extends ViewModeFragment {
     @Override
     protected void onPrepareView(final View rootView) {
         mResourcesDrawer = (CardView)rootView.findViewById(R.id.resources_drawer_card);
-        mResourcesDrawerContent = (ScrollView)rootView.findViewById(R.id.resources_drawer_content);
+        mScrollingResourcesDrawerContent = (LockableScrollView)rootView.findViewById(R.id.scrolling_resources_drawer_content);
+        mResourcesDrawerContent = (LinearLayout)rootView.findViewById(R.id.resources_drawer_content);
         mCloseResourcesDrawerButton = (Button)rootView.findViewById(R.id.close_resources_drawer_btn);
         mCloseResourcesDrawerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,7 +85,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                             rootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                         } else {
                             rootView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
@@ -91,7 +96,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                                 onTranslationNoteClick(mChapterId, mFrameId, mTranslationNoteId, sample.getResourceCardWidth());
                             } else if (mTranslationWordId != null) {
                                 onTranslationWordClick(mTranslationWordId, sample.getResourceCardWidth());
-                            } else if(mCheckingQuestionId != null) {
+                            } else if (mCheckingQuestionId != null) {
                                 onCheckingQuestionClick(mChapterId, mFrameId, mCheckingQuestionId, sample.getResourceCardWidth());
                             }
                         }
@@ -155,7 +160,38 @@ public class ReviewModeFragment extends ViewModeFragment {
     }
 
     /**
-     * Prepares the resoruces drawer with the translation word
+     * Prepares the resources drawer with the translation words index
+     */
+    private void renderTranslationWordsIndex() {
+        if(mScrollingResourcesDrawerContent != null) {
+            mScrollingResourcesDrawerContent.setVisibility(View.GONE);
+        }
+        if(mResourcesDrawerContent != null) {
+            mResourcesDrawerContent.setVisibility(View.VISIBLE);
+            Library library = AppContext.getLibrary();
+            ListView list = (ListView) getActivity().getLayoutInflater().inflate(R.layout.fragment_words_index_list, null);
+            mResourcesDrawerContent.removeAllViews();
+            mResourcesDrawerContent.addView(list);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_clickable_text);
+            final TranslationWord[] words = library.getTranslationWords(getSourceTranslation());
+            for(TranslationWord word:words) {
+                adapter.add(word.getTerm());
+            }
+            list.setAdapter(adapter);
+            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    TranslationWord word = words[position];
+                    renderTranslationWord(word.getId());
+                }
+            });
+
+            // TODO: 11/12/2015 update button text
+        }
+    }
+
+    /**
+     * Prepares the resources drawer with the translation word
      * @param translationWordId
      */
     private void renderTranslationWord(String translationWordId) {
@@ -167,10 +203,15 @@ public class ReviewModeFragment extends ViewModeFragment {
         SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         TranslationWord word = getPreferredWord(sourceTranslation, translationWordId);
         if(mResourcesDrawerContent != null) {
-            mResourcesDrawerContent.scrollTo(0, 0);
+            mResourcesDrawerContent.setVisibility(View.GONE);
+        }
+        if(mScrollingResourcesDrawerContent != null) {
+            mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
+            mScrollingResourcesDrawerContent.setScrollingEnabled(true);
+            mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_word, null);
 
-            mCloseResourcesDrawerButton.setText(word.getWord());
+            mCloseResourcesDrawerButton.setText(word.getTerm());
 
             TextView descriptionTitle = (TextView)view.findViewById(R.id.description_title);
             HtmlTextView descriptionView = (HtmlTextView)view.findViewById(R.id.description);
@@ -178,6 +219,14 @@ public class ReviewModeFragment extends ViewModeFragment {
             FlowLayout seeAlsoView = (FlowLayout)view.findViewById(R.id.see_also);
             LinearLayout examplesView = (LinearLayout)view.findViewById(R.id.examples);
             TextView examplesTitle = (TextView)view.findViewById(R.id.examples_title);
+            Button indexButton = (Button)view.findViewById(R.id.wordsIndex);
+
+            indexButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    renderTranslationWordsIndex();
+                }
+            });
 
             descriptionTitle.setText(word.getDefinitionTitle());
             Typography.formatTitle(getActivity(), descriptionTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
@@ -189,7 +238,7 @@ public class ReviewModeFragment extends ViewModeFragment {
                 final TranslationWord relatedWord = getPreferredWord(sourceTranslation, word.getSeeAlso()[i]);
                 if(relatedWord != null) {
                     Button button = new Button(new ContextThemeWrapper(getActivity(), R.style.Widget_Button_Tag), null, R.style.Widget_Button_Tag);
-                    button.setText(relatedWord.getWord());
+                    button.setText(relatedWord.getTerm());
                     button.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -232,8 +281,8 @@ public class ReviewModeFragment extends ViewModeFragment {
             }
             Typography.formatTitle(getActivity(), examplesTitle, sourceLanguage.getId(), sourceLanguage.getDirection());
 
-            mResourcesDrawerContent.removeAllViews();
-            mResourcesDrawerContent.addView(view);
+            mScrollingResourcesDrawerContent.removeAllViews();
+            mScrollingResourcesDrawerContent.addView(view);
         }
     }
 
@@ -251,7 +300,12 @@ public class ReviewModeFragment extends ViewModeFragment {
         final SourceTranslation sourceTranslation = getSourceTranslation();
         TranslationNote note = getPreferredNote(sourceTranslation, chapterId, frameId, noteId);
         if(mResourcesDrawerContent != null) {
-            mResourcesDrawerContent.scrollTo(0, 0);
+            mResourcesDrawerContent.setVisibility(View.GONE);
+        }
+        if(mScrollingResourcesDrawerContent != null) {
+            mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
+            mScrollingResourcesDrawerContent.setScrollingEnabled(true);
+            mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_note, null);
 
             mCloseResourcesDrawerButton.setText(note.getTitle());
@@ -287,8 +341,8 @@ public class ReviewModeFragment extends ViewModeFragment {
             Typography.formatSub(getActivity(), description, sourceLanguage.getId(), sourceLanguage.getDirection());
             ViewUtil.makeLinksClickable(description);
 
-            mResourcesDrawerContent.removeAllViews();
-            mResourcesDrawerContent.addView(view);
+            mScrollingResourcesDrawerContent.removeAllViews();
+            mScrollingResourcesDrawerContent.addView(view);
         }
     }
 
@@ -308,7 +362,12 @@ public class ReviewModeFragment extends ViewModeFragment {
         CheckingQuestion question = getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
         SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
         if(mResourcesDrawerContent != null) {
-            mResourcesDrawerContent.scrollTo(0, 0);
+            mResourcesDrawerContent.setVisibility(View.GONE);
+        }
+        if(mScrollingResourcesDrawerContent != null) {
+            mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
+            mScrollingResourcesDrawerContent.setScrollingEnabled(true);
+            mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_question, null);
 
             mCloseResourcesDrawerButton.setText(question.getQuestion());
@@ -343,8 +402,8 @@ public class ReviewModeFragment extends ViewModeFragment {
             answerView.setText(question.getAnswer());
             Typography.formatSub(getActivity(), answerView, sourceLanguage.getId(), sourceLanguage.getDirection());
 
-            mResourcesDrawerContent.removeAllViews();
-            mResourcesDrawerContent.addView(view);
+            mScrollingResourcesDrawerContent.removeAllViews();
+            mScrollingResourcesDrawerContent.addView(view);
         }
     }
 
