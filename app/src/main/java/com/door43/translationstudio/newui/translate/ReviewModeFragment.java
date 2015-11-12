@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.door43.translationstudio.R;
@@ -30,7 +31,6 @@ import com.door43.translationstudio.rendering.LinkRenderer;
 import com.door43.translationstudio.spannables.PassageLinkSpan;
 import com.door43.translationstudio.spannables.Span;
 import com.door43.translationstudio.AppContext;
-import com.door43.widget.LockableScrollView;
 import com.door43.widget.ViewUtil;
 
 import org.apmem.tools.layouts.FlowLayout;
@@ -51,7 +51,7 @@ public class ReviewModeFragment extends ViewModeFragment {
     private boolean mResourcesOpen = false;
     private boolean mResourcesDrawerOpen = false;
     private CardView mResourcesDrawer;
-    private LockableScrollView mScrollingResourcesDrawerContent;
+    private ScrollView mScrollingResourcesDrawerContent;
     private Button mCloseResourcesDrawerButton;
     private String mTranslationWordId;
     private String mTranslationNoteId;
@@ -68,7 +68,7 @@ public class ReviewModeFragment extends ViewModeFragment {
     @Override
     protected void onPrepareView(final View rootView) {
         mResourcesDrawer = (CardView)rootView.findViewById(R.id.resources_drawer_card);
-        mScrollingResourcesDrawerContent = (LockableScrollView)rootView.findViewById(R.id.scrolling_resources_drawer_content);
+        mScrollingResourcesDrawerContent = (ScrollView)rootView.findViewById(R.id.scrolling_resources_drawer_content);
         mResourcesDrawerContent = (LinearLayout)rootView.findViewById(R.id.resources_drawer_content);
         mCloseResourcesDrawerButton = (Button)rootView.findViewById(R.id.close_resources_drawer_btn);
         mCloseResourcesDrawerButton.setOnClickListener(new View.OnClickListener() {
@@ -168,6 +168,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.VISIBLE);
+            mCloseResourcesDrawerButton.setText(getActivity().getResources().getString(R.string.translation_words_index));
             Library library = AppContext.getLibrary();
             ListView list = (ListView) getActivity().getLayoutInflater().inflate(R.layout.fragment_words_index_list, null);
             mResourcesDrawerContent.removeAllViews();
@@ -185,8 +186,6 @@ public class ReviewModeFragment extends ViewModeFragment {
                     renderTranslationWord(word.getId());
                 }
             });
-
-            // TODO: 11/12/2015 update button text
         }
     }
 
@@ -207,7 +206,6 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
         if(mScrollingResourcesDrawerContent != null) {
             mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
-            mScrollingResourcesDrawerContent.setScrollingEnabled(true);
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_word, null);
 
@@ -304,7 +302,6 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
         if(mScrollingResourcesDrawerContent != null) {
             mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
-            mScrollingResourcesDrawerContent.setScrollingEnabled(true);
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_note, null);
 
@@ -366,7 +363,6 @@ public class ReviewModeFragment extends ViewModeFragment {
         }
         if(mScrollingResourcesDrawerContent != null) {
             mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
-            mScrollingResourcesDrawerContent.setScrollingEnabled(true);
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_question, null);
 

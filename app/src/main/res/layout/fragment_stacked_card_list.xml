@@ -51,7 +51,7 @@
                 android:paddingLeft="@dimen/card_margin"
                 android:paddingRight="@dimen/card_margin"/>
 
-            <com.door43.widget.LockableScrollView
+            <ScrollView
                 android:id="@+id/scrolling_resources_drawer_content"
                 android:layout_marginTop="@dimen/card_margin"
                 android:layout_width="match_parent"
