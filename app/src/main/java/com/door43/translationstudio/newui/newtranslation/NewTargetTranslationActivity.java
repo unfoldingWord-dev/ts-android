@@ -123,7 +123,7 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
 //            if(sourceTranslation != null) {
 //                AppContext.addOpenSourceTranslation(mNewTargetTranslationId, sourceTranslation.getId());
 //                try {
-//                    targetTranslation.useSourceTranslation(sourceTranslation);
+//                    targetTranslation.addSourceTranslation(sourceTranslation);
 //                } catch (JSONException e) {
 //                    Logger.w(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
 //                }

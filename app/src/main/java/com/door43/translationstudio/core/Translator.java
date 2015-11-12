@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.text.Editable;
 import android.text.SpannedString;
 
@@ -241,6 +242,25 @@ public class Translator {
 
         // clean
         FileUtils.deleteQuietly(tempCache);
+    }
+
+    /**
+     * Exports a target translation as a pdf file
+     * @param targetTranslation
+     * @param outputFile
+     */
+    public void exportPdf(TargetTranslation targetTranslation, File outputFile) throws Exception {
+        PdfPrinter printer = new PdfPrinter(mContext, targetTranslation);
+        File pdf = printer.print();
+        if(pdf.exists()) {
+            FileUtils.moveFile(pdf, outputFile);
+        }
+
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            // use PrintedPdf
+//        } else {
+//            // legacy pdf export
+//        }
     }
 
     /**

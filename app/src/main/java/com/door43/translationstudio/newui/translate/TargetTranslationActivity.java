@@ -5,7 +5,10 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.text.Layout;
 import android.util.Log;
 import android.view.MenuItem;
@@ -32,6 +35,7 @@ import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -176,6 +180,28 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 args.putString(BackupDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
                                 backupDialog.setArguments(args);
                                 backupDialog.show(backupFt, "backupDialog");
+                                return true;
+                            case R.id.action_print:
+                                File exportFile = new File(AppContext.getSharingDir(), targetTranslationId + ".pdf");
+                                try {
+                                    mTranslator.exportPdf(mTargetTranslation, exportFile);
+                                    if (exportFile.exists()) {
+                                        Uri u = FileProvider.getUriForFile(TargetTranslationActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
+                                        Intent i = new Intent(Intent.ACTION_SEND);
+                                        i.setType("application/pdf");
+                                        i.putExtra(Intent.EXTRA_STREAM, u);
+                                        startActivity(Intent.createChooser(i, "Print:"));
+                                    } else {
+                                        Snackbar snack = Snackbar.make(TargetTranslationActivity.this.findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+                                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                                        snack.show();
+                                    }
+                                } catch (Exception e) {
+                                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to export as pdf " + targetTranslationId, e);
+                                    Snackbar snack = Snackbar.make(TargetTranslationActivity.this.findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+                                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                                    snack.show();
+                                }
                                 return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();

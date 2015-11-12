@@ -214,7 +214,7 @@ public class TargetTranslation {
      * @param sourceTranslation
      * @throws JSONException
      */
-    public void useSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
+    public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
         JSONObject sourceTranslationsJson = mManifest.getJSONObject("source_translations");
         JSONObject translationJson = new JSONObject();
         translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
@@ -222,6 +222,22 @@ public class TargetTranslation {
         translationJson.put("version", sourceTranslation.getVersion());
         sourceTranslationsJson.put(sourceTranslation.getId(), translationJson);
         mManifest.put("source_translations", sourceTranslationsJson);
+    }
+
+    /**
+     * Adds a native speaker as a translator
+     * @param translator
+     */
+    public void addTranslator(NativeSpeaker translator) {
+
+    }
+
+    /**
+     * Returns an array of native speakers who have worked on this translation
+     * @return
+     */
+    public NativeSpeaker[] getTranslators() {
+        return new NativeSpeaker[0];
     }
 
     /**
@@ -306,8 +322,8 @@ public class TargetTranslation {
      * @return
      */
     public ProjectTranslation getProjectTranslation() {
-        // TODO: this is not supported yet but we need to be able to provide the translation of the project title
-        return null;
+        // TODO: this is not supported yet but we need to be able to provide the translation of the project title and description
+        return new ProjectTranslation();
     }
 
     /**
