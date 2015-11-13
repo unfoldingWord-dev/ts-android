@@ -32,6 +32,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
@@ -39,6 +40,7 @@ import com.door43.translationstudio.core.CheckingQuestion;
 import com.door43.translationstudio.core.Frame;
 import com.door43.translationstudio.core.FrameTranslation;
 import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.TranslationNote;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.SourceTranslation;
@@ -58,6 +60,7 @@ import com.door43.widget.ViewUtil;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -100,6 +103,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         mFrames = new HashMap<>();
         mChapters = new HashMap<>();
         List<ListItem> listItems = new ArrayList<>();
+
+        // add project title card
+        ListItem projectTitleItem = new ListItem(null, null);
+        projectTitleItem.isProjectTitle = true;
+        listItems.add(projectTitleItem);
+
         for(Chapter c:chapters) {
             // add title and reference cards for chapter
             if(!c.title.isEmpty()) {
@@ -170,6 +179,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<ListItem> listItems = new ArrayList<>();
+
+        // add project title card
+        ListItem projectTitleItem = new ListItem(null, null);
+        projectTitleItem.isProjectTitle = true;
+        listItems.add(projectTitleItem);
+
         mFrames = new HashMap<>();
         mChapters = new HashMap<>();
         for(Chapter c:chapters) {
@@ -292,7 +307,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // fetch translation from disk
-        item.loadTranslations(mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
+        item.loadTranslations(mSourceTranslation, mTargetTranslation, mChapters.get(item.chapterSlug), loadFrame(item.chapterSlug, item.frameSlug));
 
         // render the cards
         renderSourceCard(position, item, holder);
@@ -369,8 +384,18 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
     }
 
     private void renderTargetCard(int position, final ListItem item, final ViewHolder holder) {
-        final Frame frame = loadFrame(item.chapterSlug, item.frameSlug);
-        final Chapter chapter = mChapters.get(item.chapterSlug);
+        final Frame frame;
+        if(item.isFrame()) {
+            frame  = loadFrame(item.chapterSlug, item.frameSlug);
+        } else {
+            frame = null;
+        }
+        final Chapter chapter;
+        if(item.isFrame() || item.isChapter()) {
+            chapter = mChapters.get(item.chapterSlug);
+        } else {
+            chapter = null;
+        }
 
         // disable text watcher
         if(holder.mEditableTextWatcher != null) {
@@ -411,24 +436,27 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         }
 
         // render title
-        String targetChapterTitle;
-        if(item.isChapterTitle || item.isChapterReference) {
-            targetChapterTitle = mSourceTranslation.getProjectTitle()
-                    + " " + Integer.parseInt(chapter.getId());
-        } else {
+        String targetTitle = "";
+        if(item.isChapter()) {
+            targetTitle = mSourceTranslation.getProjectTitle()
+                    + " " + Integer.parseInt(chapter.getId())
+                    + " - " + mTargetLanguage.name;
+        } else if(item.isFrame()) {
             ChapterTranslation chapterTranslation = mTargetTranslation.getChapterTranslation(mChapters.get(item.chapterSlug));
-            targetChapterTitle = chapterTranslation.title;
-            if(targetChapterTitle.isEmpty()) {
-                targetChapterTitle = chapter.title;
-                if (targetChapterTitle.isEmpty()) {
-                    targetChapterTitle = mSourceTranslation.getProjectTitle()
+            targetTitle = chapterTranslation.title;
+            if(targetTitle.isEmpty()) {
+                targetTitle = chapter.title;
+                if (targetTitle.isEmpty()) {
+                    targetTitle = mSourceTranslation.getProjectTitle()
                             + " " + Integer.parseInt(chapter.getId());
                 }
 
             }
-            targetChapterTitle += ":" + frame.getTitle();
+            targetTitle += ":" + frame.getTitle() + " - " + mTargetLanguage.name;
+        } else if(item.isProjectTitle) {
+            targetTitle = mTargetTranslation.getTargetLanguageName();
         }
-        holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
+        holder.mTargetTitle.setText(targetTitle);
 
         // set up text watcher
         holder.mEditableTextWatcher = new TextWatcher() {
@@ -445,7 +473,13 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     mTargetTranslation.applyChapterReferenceTranslation(item.chapterTranslation, translation);
                 } else if(item.isChapterTitle) {
                     mTargetTranslation.applyChapterTitleTranslation(item.chapterTranslation, translation);
-                } else {
+                } else if(item.isProjectTitle) {
+                    try {
+                        mTargetTranslation.applyProjectTitleTranslation(s.toString());
+                    } catch (IOException e) {
+                        Logger.e(ReviewModeAdapter.class.getName(), "Failed to save the project title translation", e);
+                    }
+                } else if(item.isFrame()) {
                     mTargetTranslation.applyFrameTranslation(item.frameTranslation, translation);
                 }
                 item.renderedTargetBody = renderSourceText(translation, item.translationFormat);
@@ -498,7 +532,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     mgr.showSoftInput(holder.mTargetEditableBody, InputMethodManager.SHOW_IMPLICIT);
 
                     // TRICKY: there may be changes to translation
-                    item.loadTranslations(mTargetTranslation, chapter, frame);
+                    item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
                     // re-render for editing mode
                     item.renderedTargetBody = renderSourceText(item.bodyTranslation, item.translationFormat);
                     holder.mTargetEditableBody.setText(item.renderedTargetBody);
@@ -516,7 +550,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     getListener().closeKeyboard();
 
                     // TRICKY: there may be changes to translation
-                    item.loadTranslations(mTargetTranslation, chapter, frame);
+                    item.loadTranslations(mSourceTranslation, mTargetTranslation, chapter, frame);
                     // re-render for verse mode
                     item.renderedTargetBody = renderTargetText(item.bodyTranslation, item.translationFormat, frame, item.frameTranslation, holder, item);
                     holder.mTargetBody.setText(item.renderedTargetBody);
@@ -579,6 +613,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                         finished = mTargetTranslation.finishChapterReference(chapter);
                                     } else if (item.isChapterTitle) {
                                         finished = mTargetTranslation.finishChapterTitle(chapter);
+                                    } else if(item.isProjectTitle) {
+                                        finished = mTargetTranslation.finishProjectTitle();
                                     } else {
                                         finished = mTargetTranslation.finishFrame(frame);
                                     }
@@ -605,6 +641,8 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     opened = mTargetTranslation.reopenChapterReference(chapter);
                 } else if (item.isChapterTitle) {
                     opened = mTargetTranslation.reopenChapterTitle(chapter);
+                } else if(item.isProjectTitle) {
+                    opened = mTargetTranslation.reopenProjectTitle();
                 } else {
                     opened = mTargetTranslation.reopenFrame(frame);
                 }
@@ -687,7 +725,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         holder.mResourceTabs.removeAllTabs();
 
         // skip if chapter title/reference
-        if(item.isChapterReference || item.isChapterTitle) {
+        if(!item.isFrame()) {
             return;
         }
 
@@ -856,7 +894,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
 
     private CharSequence renderTargetText(String text, TranslationFormat format, final Frame frame, final FrameTranslation frameTranslation, final ViewHolder holder, final ListItem item) {
         RenderingGroup renderingGroup = new RenderingGroup();
-        if(format == TranslationFormat.USX) {
+        if(format == TranslationFormat.USX && frame != null) {
             Span.OnClickListener verseClickListener = new Span.OnClickListener() {
                 @Override
                 public void onClick(View view, Span span, int start, int end) {
@@ -1068,6 +1106,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private final String chapterSlug;
         private boolean isChapterReference = false;
         private boolean isChapterTitle = false;
+        public boolean isProjectTitle = false;
         private boolean isEditing = false;
         private CharSequence renderedSourceBody;
         private CharSequence renderedTargetBody;
@@ -1077,10 +1116,19 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
         private String bodySource;
         private FrameTranslation frameTranslation;
         public ChapterTranslation chapterTranslation;
+        private ProjectTranslation projectTranslation;
 
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
             this.chapterSlug = chapterSlug;
+        }
+
+        public boolean isFrame() {
+            return this.frameSlug != null;
+        }
+
+        public boolean isChapter() {
+            return this.frameSlug == null && this.chapterSlug != null;
         }
 
         /**
@@ -1089,12 +1137,12 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
          * @param chapter
          * @param frame
          */
-        public void loadTranslations(TargetTranslation targetTranslation, Chapter chapter, Frame frame) {
+        public void loadTranslations(SourceTranslation sourceTranslation, TargetTranslation targetTranslation, Chapter chapter, Frame frame) {
             if(isChapterReference || isChapterTitle) {
                 frameTranslation = null;
                 chapterTranslation = targetTranslation.getChapterTranslation(chapter);
                 translationFormat = chapterTranslation.getFormat();
-                if(isChapterTitle) {
+                if (isChapterTitle) {
                     bodyTranslation = chapterTranslation.title;
                     bodySource = chapter.title;
                     isTranslationFinished = chapterTranslation.isTitleFinished();
@@ -1103,6 +1151,11 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                     bodySource = chapter.reference;
                     isTranslationFinished = chapterTranslation.isReferenceFinished();
                 }
+            } else if(isProjectTitle) {
+                projectTranslation = targetTranslation.getProjectTranslation();
+                bodyTranslation = projectTranslation.getTitle();
+                bodySource = sourceTranslation.getProjectTitle();
+                isTranslationFinished = projectTranslation.isTitleFinished();
             } else {
                 chapterTranslation = null;
                 frameTranslation = targetTranslation.getFrameTranslation(frame);

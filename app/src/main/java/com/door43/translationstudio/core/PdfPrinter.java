@@ -23,10 +23,28 @@ public class PdfPrinter {
     private static Font redFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.NORMAL, BaseColor.RED);
     private static Font subFont = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD);
     private static Font smallBold = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD);
+    private boolean includeMedia = true;
+    private boolean includeIncomplete = true;
 
     public PdfPrinter(Context context, TargetTranslation targetTranslation) {
         this.targetTranslation = targetTranslation;
         this.context = context;
+    }
+
+    /**
+     * Include media (images) in the pdf
+     * @param include
+     */
+    public void includeMedia(boolean include) {
+        this.includeMedia = include;
+    }
+
+    /**
+     * Include incomplete translations
+     * @param include
+     */
+    public void includeIncomplete(boolean include) {
+        this.includeIncomplete = include;
     }
 
     public File print() throws Exception {
@@ -87,6 +105,10 @@ public class PdfPrinter {
      */
     private void addContent(Document document) throws DocumentException {
         for(ChapterTranslation c:targetTranslation.getChapterTranslations()) {
+            if(!includeIncomplete && !c.isTitleFinished()) {
+                continue;
+            }
+
             // chapter title
             Anchor anchor = new Anchor(c.title, catFont);
             anchor.setName(c.title);
@@ -95,7 +117,17 @@ public class PdfPrinter {
             // chapter body
             // TODO: 11/12/2015 the translation format should be stored in the target translation
             for(FrameTranslation f:targetTranslation.getFrameTranslations(c.getId(), c.getFormat())) {
-                catPart.add(new Paragraph(f.body));
+                if(includeIncomplete || f.isFinished()) {
+                    if(includeMedia) {
+                        // TODO: 11/13/2015 insert frame images
+                    }
+                    catPart.add(new Paragraph(f.body));
+                }
+            }
+
+            // chapter reference
+            if(includeIncomplete || c.isReferenceFinished()) {
+                catPart.add(new Paragraph(c.reference));
             }
 
             document.add(catPart);

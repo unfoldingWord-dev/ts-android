@@ -22,10 +22,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.ChapterTranslation;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -35,12 +37,14 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.newui.library.ServerLibraryLanguageAdapter;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
 import com.door43.translationstudio.AppContext;
 import com.door43.widget.ViewUtil;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +79,12 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<ListItem> listItems = new ArrayList<>();
+
+        // add project title card
+        ListItem projectTitleItem = new ListItem(null, null);
+        projectTitleItem.isProjectTitle = true;
+        listItems.add(projectTitleItem);
+
         for(Chapter c:chapters) {
             // add title and reference cards for chapter
             if(!c.title.isEmpty()) {
@@ -143,6 +153,12 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
         Chapter[] chapters = mLibrary.getChapters(mSourceTranslation);
         List<ListItem> listItems = new ArrayList<>();
+
+        // add project title card
+        ListItem projectTitleItem = new ListItem(null, null);
+        projectTitleItem.isProjectTitle = true;
+        listItems.add(projectTitleItem);
+
         for(Chapter c:chapters) {
             // add title and reference cards for chapter
             if(!c.title.isEmpty()) {
@@ -351,9 +367,52 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             renderChapterReference(holder, position, item.chapterSlug);
         } else if(item.isChapterTitle) {
             renderChapterTitle(holder, position, item.chapterSlug);
+        } else if(item.isProjectTitle) {
+            renderProjectTitle(holder, position);
         } else {
             renderFrame(holder, position);
         }
+    }
+
+    /**
+     * Renders the project title card
+     * @param holder
+     * @param position
+     */
+    private void renderProjectTitle(final ViewHolder holder, final int position) {
+        holder.mSourceTitle.setText("");
+        holder.mSourceBody.setText(mSourceTranslation.getProjectTitle());
+        holder.mTargetTitle.setText(mTargetTranslation.getTargetLanguageName());
+        if(holder.mTextWatcher != null) {
+            holder.mTargetBody.removeTextChangedListener(holder.mTextWatcher);
+        }
+        final ProjectTranslation projectTranslation = mTargetTranslation.getProjectTranslation();
+        holder.mTargetBody.setText(projectTranslation.getTitle());
+
+        indicateCardCompleted(projectTranslation.isTitleFinished(), holder);
+
+        // editing
+        holder.mTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                try {
+                    mTargetTranslation.applyProjectTitleTranslation(s.toString());
+                } catch (IOException e) {
+                    Logger.e(ChunkModeFragment.class.getName(), "Failed to save the project title translation", e);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        };
+        holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
     }
 
     /**
@@ -390,13 +449,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
 
             // indicate completed frame translations
-            if(chapterTranslation.isTitleFinished()) {
-                holder.mTargetBody.setEnabled(false);
-                holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-            } else {
-                holder.mTargetBody.setEnabled(true);
-                holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-            }
+            indicateCardCompleted(chapterTranslation.isTitleFinished(), holder);
 
             // editing
             holder.mTextWatcher = new TextWatcher() {
@@ -459,13 +512,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mTargetTitle.setText(sourceChapterTitle + " - " + mTargetLanguage.name);
 
             // indicate completed frame translations
-            if(chapterTranslation.isReferenceFinished()) {
-                holder.mTargetBody.setEnabled(false);
-                holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-            } else {
-                holder.mTargetBody.setEnabled(true);
-                holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-            }
+            indicateCardCompleted(chapterTranslation.isReferenceFinished(), holder);
 
             // editing
             holder.mTextWatcher = new TextWatcher() {
@@ -540,13 +587,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
         // indicate completed frame translations
-        if(frameTranslation.isFinished()) {
-            holder.mTargetBody.setEnabled(false);
-            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
-        } else {
-            holder.mTargetBody.setEnabled(true);
-            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-        }
+        indicateCardCompleted(frameTranslation.isFinished(), holder);
 
         holder.mTextWatcher = new TextWatcher() {
             @Override
@@ -592,6 +633,16 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             }
         };
         holder.mTargetBody.addTextChangedListener(holder.mTextWatcher);
+    }
+
+    private void indicateCardCompleted(boolean finished, ViewHolder holder) {
+        if(finished) {
+            holder.mTargetBody.setEnabled(false);
+            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
+        } else {
+            holder.mTargetBody.setEnabled(true);
+            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+        }
     }
 
     /**
@@ -751,6 +802,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         private final String chapterSlug;
         private boolean isChapterReference = false;
         private boolean isChapterTitle = false;
+        public boolean isProjectTitle = false;
         private boolean isTargetCardOpen = false;
         private CharSequence renderedSourceBody;
         private CharSequence renderedTargetBody;
@@ -758,6 +810,22 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         public ListItem(String frameSlug, String chapterSlug) {
             this.frameSlug = frameSlug;
             this.chapterSlug = chapterSlug;
+        }
+
+        /**
+         * Checks if this item is a frame
+         * @return
+         */
+        public boolean isFrame() {
+            return this.frameSlug != null;
+        }
+
+        /**
+         * Checks if this item is a chapter (either title or reference)
+         * @return
+         */
+        public boolean isChapter() {
+            return this.frameSlug == null && this.chapterSlug != null;
         }
     }
 }
