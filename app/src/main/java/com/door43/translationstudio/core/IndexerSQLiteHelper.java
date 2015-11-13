@@ -1316,7 +1316,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @return
      */
     public SourceTranslation[] getSourceTranslationsWithUpdates(SQLiteDatabase db) {
-        Cursor cursor = db.rawQuery("SELECT `p`.`slug` AS `project_slug`, `sl`.`slug` AS `source_language_slug`, `sl`.`project_name`, `sl`.`name`, `r`.`slug` AS `resource_slug`, `r`.`name`, `r`.`checking_level`, `r`.`modified_at`, `r`.`version` FROM `resource` AS `r`"
+        Cursor cursor = db.rawQuery("SELECT `p`.`slug` AS `project_slug`, `sl`.`slug` AS `source_language_slug`, `sl`.`project_name`, `sl`.`name`, `r`.`slug` AS `resource_slug`, `r`.`name`, `r`.`checking_level`, `r`.`modified_at`, `r`.`version`, `f`.`format` FROM `resource` AS `r`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
                 + " LEFT JOIN ("
@@ -1324,6 +1324,12 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
                 + "   GROUP BY `r`.`id`"
                 + " ) AS `content` ON `content`.`resource_id`=`r`.`id`"
+                + " LEFT JOIN ("
+                + "    SELECT `c`.`resource_id` AS `resource_id`, `f`.`format` AS `format` FROM `frame` AS `f`"
+                + "    LEFT JOIN `chapter` AS `c` ON `c`.`id`=`f`.`chapter_id`"
+                + "    WHERE `f`.`format` IS NOT NULL"
+                + "    GROUP BY `c`.`resource_id`"
+                + " ) AS `f` ON `f`.`resource_id`=`r`.`id`"
                 + " WHERE `content`.`count` > 0 AND ("
                 + "   `r`.`source_catalog_server_modified_at`>`r`.`source_catalog_local_modified_at`"
                 + "   OR `r`.`translation_notes_catalog_server_modified_at`>`r`.`translation_notes_catalog_local_modified_at`"
@@ -1343,7 +1349,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int checkingLevel = cursor.getInt(3);
             int dateModified = cursor.getInt(4);
             String version = cursor.getString(5);
-            sourceTranslations.add(new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version));
+            TranslationFormat format = TranslationFormat.get(cursor.getString(6));
+            if(format == null) {
+                format = TranslationFormat.DEFAULT;
+            }
+            sourceTranslations.add(new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version, format));
             cursor.moveToNext();
         }
         cursor.close();
@@ -1461,10 +1471,16 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      */
     public SourceTranslation getSourceTranslation(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
         SourceTranslation sourceTranslation = null;
-        Cursor cursor = db.rawQuery("SELECT `sl`.`project_name`, `sl`.`name`, `r`.`name`, `r`.`checking_level`, `r`.`modified_at`, `r`.`version`"
+        Cursor cursor = db.rawQuery("SELECT `sl`.`project_name`, `sl`.`name`, `r`.`name`, `r`.`checking_level`, `r`.`modified_at`, `r`.`version`, `f`.`format`"
                 + " FROM `resource` AS `r`"
                 + " LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
                 + " LEFT JOIN `project` AS `p` ON `p`.`id` = `sl`.`project_id`"
+                + " LEFT JOIN ("
+                + "    SELECT `c`.`resource_id` AS `resource_id`, `f`.`format` AS `format` FROM `frame` AS `f`"
+                + "    LEFT JOIN `chapter` AS `c` ON `c`.`id`=`f`.`chapter_id`"
+                + "    WHERE `f`.`format` IS NOT NULL"
+                + "    GROUP BY `c`.`resource_id`"
+                + " ) AS `f` ON `f`.`resource_id`=`r`.`id`"
                 + " WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
         if(cursor.moveToFirst()) {
             String projectName = cursor.getString(0);
@@ -1473,7 +1489,11 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int checkingLevel = cursor.getInt(3);
             int dateModified = cursor.getInt(4);
             String version = cursor.getString(5);
-            sourceTranslation = new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version);
+            TranslationFormat format = TranslationFormat.get(cursor.getString(6));
+            if(format == null) {
+                format = TranslationFormat.DEFAULT;
+            }
+            sourceTranslation = new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version, format);
         }
         cursor.close();
         return sourceTranslation;
