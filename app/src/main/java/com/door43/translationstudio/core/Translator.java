@@ -249,8 +249,8 @@ public class Translator {
      * @param targetTranslation
      * @param outputFile
      */
-    public void exportPdf(TargetTranslation targetTranslation, File outputFile) throws Exception {
-        PdfPrinter printer = new PdfPrinter(mContext, targetTranslation);
+    public void exportPdf(TargetTranslation targetTranslation, TranslationFormat format, File outputFile) throws Exception {
+        PdfPrinter printer = new PdfPrinter(mContext, targetTranslation, format);
         printer.includeMedia(false);
         printer.includeIncomplete(true);
         File pdf = printer.print();

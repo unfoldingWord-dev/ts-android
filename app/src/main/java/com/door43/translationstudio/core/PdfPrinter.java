@@ -23,12 +23,14 @@ public class PdfPrinter {
     private static Font redFont = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.NORMAL, BaseColor.RED);
     private static Font subFont = new Font(Font.FontFamily.TIMES_ROMAN, 16, Font.BOLD);
     private static Font smallBold = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD);
+    private final TranslationFormat format;
     private boolean includeMedia = true;
     private boolean includeIncomplete = true;
 
-    public PdfPrinter(Context context, TargetTranslation targetTranslation) {
+    public PdfPrinter(Context context, TargetTranslation targetTranslation, TranslationFormat format) {
         this.targetTranslation = targetTranslation;
         this.context = context;
+        this.format = format;
     }
 
     /**
@@ -75,6 +77,7 @@ public class PdfPrinter {
         }
         document.addCreationDate();
         document.addLanguage(targetTranslation.getTargetLanguageName());
+        document.addKeywords("format=" + format.getName());
     }
 
     /**
@@ -121,6 +124,7 @@ public class PdfPrinter {
                     if(includeMedia) {
                         // TODO: 11/13/2015 insert frame images
                     }
+                    // TODO: 11/13/2015 render body according to the format
                     catPart.add(new Paragraph(f.body));
                 }
             }

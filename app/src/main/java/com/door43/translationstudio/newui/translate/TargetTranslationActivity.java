@@ -24,6 +24,7 @@ import android.widget.SeekBar;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
@@ -184,7 +185,8 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                             case R.id.action_print:
                                 File exportFile = new File(AppContext.getSharingDir(), targetTranslationId + ".pdf");
                                 try {
-                                    mTranslator.exportPdf(mTargetTranslation, exportFile);
+                                    SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
+                                    mTranslator.exportPdf(mTargetTranslation, sourceTranslation.getFormat(), exportFile);
                                     if (exportFile.exists()) {
                                         Uri u = FileProvider.getUriForFile(TargetTranslationActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
                                         Intent i = new Intent(Intent.ACTION_SEND);
