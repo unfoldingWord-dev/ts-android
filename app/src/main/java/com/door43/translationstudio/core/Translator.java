@@ -251,7 +251,7 @@ public class Translator {
      */
     public void exportPdf(TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File outputFile) throws Exception {
         PdfPrinter printer = new PdfPrinter(mContext, targetTranslation, format, fontPath);
-        printer.includeMedia(false);
+        printer.includeMedia(true);
         printer.includeIncomplete(true);
         File pdf = printer.print();
         if(pdf.exists()) {

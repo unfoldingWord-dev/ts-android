@@ -129,7 +129,7 @@ public class PdfPrinter {
         table.setWidthPercentage(100);
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.NO_BORDER);
-        cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2 );
+        cell.setMinimumHeight(document.getPageSize().getHeight() - VERTICAL_PADDING * 2);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.addElement(preface);
         table.addCell(cell);
@@ -180,7 +180,15 @@ public class PdfPrinter {
                 if(includeIncomplete || f.isFinished()) {
                     if(includeMedia && this.format == TranslationFormat.DEFAULT) {
                         // TODO: 11/13/2015 insert frame images if we have them.
-                        addImage(document, context.getAssets().open("project_images/obs/01-00.jpg"));
+                        // TODO: 11/13/2015 eventually we need to provide the directory where to find these images which will be downloaded not in assets
+                        try {
+                            InputStream is = context.getAssets().open("project_images/obs/" + f.getComplexId() + ".jpg");
+                            addImage(document, is);
+                            // add padding
+                            document.add(new Paragraph(" "));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     // TODO: 11/13/2015 render body according to the format
                     document.add(new Paragraph(f.body, bodyFont));
