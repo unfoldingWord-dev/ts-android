@@ -38,7 +38,7 @@ public class TaskManager {
         mWorkQueue = new LinkedBlockingQueue<>();
         mThreadPool = new ThreadPoolExecutor(
                 NUMBER_OF_CORES,       // Initial pool size
-                NUMBER_OF_CORES * 4,       // Max pool size
+                NUMBER_OF_CORES * 2,       // Max pool size
                 KEEP_ALIVE_TIME,
                 KEEP_ALIVE_TIME_UNIT,
                 mWorkQueue);

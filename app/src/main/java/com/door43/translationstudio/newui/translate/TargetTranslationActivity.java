@@ -28,6 +28,7 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
@@ -186,7 +187,7 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 File exportFile = new File(AppContext.getSharingDir(), targetTranslationId + ".pdf");
                                 try {
                                     SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-                                    mTranslator.exportPdf(mTargetTranslation, sourceTranslation.getFormat(), exportFile);
+                                    mTranslator.exportPdf(mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(TargetTranslationActivity.this), exportFile);
                                     if (exportFile.exists()) {
                                         Uri u = FileProvider.getUriForFile(TargetTranslationActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
                                         Intent i = new Intent(Intent.ACTION_SEND);
