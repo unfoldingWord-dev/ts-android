@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="@dimen/card_half_margin"
                 android:layout_marginLeft="@dimen/card_margin"
                 android:layout_marginRight="@dimen/card_margin"
                 android:padding="0dp" >
@@ -63,7 +63,10 @@
 
             <TextView
                 android:id="@+id/source_translation_body"
-                android:layout_margin="@dimen/card_margin"
+                android:layout_marginLeft="@dimen/card_margin"
+                android:layout_marginRight="@dimen/card_margin"
+                android:layout_marginTop="@dimen/card_margin"
+                android:layout_marginBottom="24dp"
                 android:padding="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -185,12 +188,16 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/card_half_margin"
+                        android:layout_gravity="center"
                         android:background="@drawable/ic_check_box_outline_blank_white_24dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginLeft="@dimen/card_half_margin"
+                        android:layout_marginRight="@dimen/card_half_margin"
+                        android:layout_gravity="center"
                         android:textAllCaps="true"
                         android:textSize="@dimen/title"
                         android:textColor="@color/white"
@@ -203,19 +210,23 @@
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="10dp"
-                    android:gravity="center"
+                    android:padding="@dimen/card_half_margin"
+                    android:gravity="right"
                     android:background="@color/green">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginLeft="@dimen/card_half_margin"
+                        android:layout_gravity="center"
                         android:background="@drawable/ic_check_box_white_24dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="10dp"
+                        android:layout_marginLeft="@dimen/card_half_margin"
+                        android:layout_marginRight="@dimen/card_half_margin"
+                        android:layout_gravity="top"
                         android:textAllCaps="true"
                         android:textSize="@dimen/title"
                         android:textColor="@color/white"
@@ -231,8 +242,8 @@
         android:id="@+id/resources_card"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight=".255"
         card_view:cardElevation="2dp"
+        android:layout_weight=".255"
         android:clickable="true"
         android:layout_marginTop="@dimen/card_margin"
         android:layout_marginBottom="@dimen/card_margin"
@@ -244,26 +255,35 @@
             style="@style/Widget.CardContent"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center_vertical">
+            android:layout_margin="0dp"
+            android:padding="0dp"
+            android:gravity="top">
 
             <LinearLayout
                 android:visibility="visible"
                 android:orientation="vertical"
                 android:id="@+id/resources_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:layout_margin="0dp"
+                android:padding="0dp" >
 
                 <android.support.design.widget.TabLayout
                     android:id="@+id/resource_tabs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
+                    android:layout_marginTop="0dp"
                     android:layout_marginBottom="@dimen/card_margin"
                     app:layout_scrollFlags="scroll|enterAlways"/>
 
                 <LinearLayout
                     android:orientation="vertical"
                     android:id="@+id/resources_list"
+                    android:layout_marginLeft="@dimen/card_margin"
+                    android:layout_marginRight="@dimen/card_margin"
+                    android:layout_marginTop="@dimen/card_half_margin"
+                    android:layout_marginBottom="24dp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
