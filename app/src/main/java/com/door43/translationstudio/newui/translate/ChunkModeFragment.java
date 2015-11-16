@@ -43,8 +43,9 @@ public class ChunkModeFragment extends ViewModeFragment {
                 position = findViewHolderAdapterPosition(e2.getX(), e2.getY());
             }
             if(position != -1) {
-                RecyclerView.ViewHolder holder = getViewHolderForAdapterPosition(position);
-                ((ChunkModeAdapter) getAdapter()).openTargetTranslationCard((ChunkModeAdapter.ViewHolder)holder, position);
+                ChunkModeAdapter.ViewHolder holder = (ChunkModeAdapter.ViewHolder) getViewHolderForAdapterPosition(position);
+                ((ChunkModeAdapter) getAdapter()).openTargetTranslationCard(holder, position);
+                ChunkModeAdapter.enableClicksIfChunkIsDone(holder);
             }
         }
     }

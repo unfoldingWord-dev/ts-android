@@ -301,9 +301,8 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
                 // if marked as done (disabled for edit), enable to allow capture of click events, but do not make it focusable so they can't edit
 
-                else if(!holder.mTargetBody.isEnabled()) {
-                    holder.mTargetBody.setEnabled(true);
-                    holder.mTargetBody.setFocusable(false);
+                else  {
+                    ChunkModeAdapter.enableClicksIfChunkIsDone(holder);
                 }
             }
         });
@@ -399,6 +398,18 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         InputMethodManager mgr = (InputMethodManager)
                 context.getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    /**
+     * if chunk that is marked done, then enable click event
+     * @param holder
+     */
+    static public void enableClicksIfChunkIsDone(final ViewHolder holder) {
+
+        if (!holder.mTargetBody.isEnabled()) {
+            holder.mTargetBody.setEnabled(true);
+            holder.mTargetBody.setFocusable(false);
+        }
     }
 
     /**
