@@ -29,13 +29,10 @@ import java.io.InputStream;
  * Created by joel on 11/12/2015.
  */
 public class PdfPrinter {
-    private static final float MAX_IMAGE_WIDTH = 500f;
-    private static final float MAX_IMAGE_HEIGHT = 500f;
-    private static final float VERTICAL_PADDING = 36.0f;
-    private static final float HORIZONTAL_PADDING = 36.0f;
+    private static final float VERTICAL_PADDING = 72.0f; // 1 inch
+    private static final float HORIZONTAL_PADDING = 72.0f; // 1 inch
     private final TargetTranslation targetTranslation;
     private final Context context;
-    // TODO: 11/13/2015 get better fonts
     private final Font titleFont;
     private final Font chapterFont;
     private final Font bodyFont;
@@ -210,8 +207,8 @@ public class PdfPrinter {
 
     public static void addImage(Document document, String path) throws DocumentException, IOException {
         Image image = Image.getInstance(path);
-        if(image.getScaledWidth() > MAX_IMAGE_WIDTH || image.getScaledHeight() > MAX_IMAGE_HEIGHT) {
-            image.scaleToFit(MAX_IMAGE_WIDTH, MAX_IMAGE_HEIGHT);
+        if(image.getScaledWidth() > document.getPageSize().getHeight() + VERTICAL_PADDING * 2 || image.getScaledHeight() > document.getPageSize().getWidth() + HORIZONTAL_PADDING * 2) {
+            image.scaleToFit(document.getPageSize().getWidth() + HORIZONTAL_PADDING * 2, document.getPageSize().getHeight() + VERTICAL_PADDING * 2);
         }
         document.add(image);
     }

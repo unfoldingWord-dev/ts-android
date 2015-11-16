@@ -5,26 +5,35 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Library;
 import com.door43.translationstudio.core.SourceLanguage;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.user.Profile;
 import com.door43.translationstudio.user.ProfileManager;
 import com.door43.util.tasks.ThreadableUI;
+import com.door43.widget.ViewUtil;
 
+import java.io.File;
 import java.util.Locale;
 
 /**
@@ -106,7 +115,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         }
         // TODO: 10/1/2015 support displaying multiple translators
 
-        Button deleteButton = (Button)v.findViewById(R.id.delete_button);
+        ImageButton deleteButton = (ImageButton)v.findViewById(R.id.delete_button);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +142,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             }
         });
 
-        Button backupButton = (Button)v.findViewById(R.id.backup_button);
+        ImageButton backupButton = (ImageButton)v.findViewById(R.id.backup_button);
         backupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -152,7 +161,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             }
         });
 
-        Button publishButton = (Button)v.findViewById(R.id.publish_button);
+        ImageButton publishButton = (ImageButton)v.findViewById(R.id.publish_button);
         publishButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -163,12 +172,31 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             }
         });
 
-        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
-        dismissButton.setOnClickListener(new View.OnClickListener() {
+        ImageButton printButton = (ImageButton)v.findViewById(R.id.print_button);
+        printButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                task.stop();
-                dismiss();
+                File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
+                try {
+                    SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
+                    mTranslator.exportPdf(mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), exportFile);
+                    if (exportFile.exists()) {
+                        Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
+                        Intent i = new Intent(Intent.ACTION_SEND);
+                        i.setType("application/pdf");
+                        i.putExtra(Intent.EXTRA_STREAM, u);
+                        startActivity(Intent.createChooser(i, "Print:"));
+                    } else {
+                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                        snack.show();
+                    }
+                } catch (Exception e) {
+                    Logger.e(TargetTranslationInfoDialog.class.getName(), "Failed to export as pdf " + mTargetTranslation.getId(), e);
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         });
         return v;
