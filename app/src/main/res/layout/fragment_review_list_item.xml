@@ -19,7 +19,7 @@
         card_view:cardElevation="2dp"
         android:layout_weight="0.255"
         android:layout_marginLeft="@dimen/card_margin"
-        android:layout_marginRight="@dimen/card_half_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
         android:layout_marginTop="@dimen/card_margin"
         android:layout_marginBottom="@dimen/card_margin"
         android:padding="0dp"
@@ -39,7 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="0dp"
-                android:layout_marginBottom="@dimen/card_half_margin"
+                android:layout_marginBottom="@dimen/dialog_controls_margin"
                 android:layout_marginLeft="@dimen/card_margin"
                 android:layout_marginRight="@dimen/card_margin"
                 android:padding="0dp" >
@@ -66,7 +66,7 @@
                 android:layout_marginLeft="@dimen/card_margin"
                 android:layout_marginRight="@dimen/card_margin"
                 android:layout_marginTop="@dimen/card_margin"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="@dimen/dialog_content_margin"
                 android:padding="0dp"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -84,8 +84,8 @@
         android:layout_height="match_parent"
         android:layout_weight="0.255"
         card_view:cardElevation="2dp"
-        android:layout_marginLeft="@dimen/card_half_margin"
-        android:layout_marginRight="@dimen/card_half_margin"
+        android:layout_marginLeft="@dimen/dialog_controls_margin"
+        android:layout_marginRight="@dimen/dialog_controls_margin"
         android:layout_marginTop="@dimen/card_margin"
         android:layout_marginBottom="@dimen/card_margin"
         android:padding="0dp"
@@ -133,7 +133,10 @@
                         android:id="@+id/edit_translation_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="10dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:paddingLeft="10dp"
+                        android:paddingRight="0dp"
                         android:layout_gravity="right|center"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_mode_edit_black_24dp"/>
@@ -180,7 +183,7 @@
                     android:orientation="horizontal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/card_half_margin"
+                    android:padding="@dimen/dialog_controls_margin"
                     android:layout_gravity="right"
                     android:gravity="center"
                     android:background="@color/accent">
@@ -188,15 +191,15 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/card_half_margin"
+                        android:layout_marginLeft="@dimen/dialog_controls_margin"
                         android:layout_gravity="center"
                         android:background="@drawable/ic_check_box_outline_blank_white_24dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/card_half_margin"
-                        android:layout_marginRight="@dimen/card_half_margin"
+                        android:layout_marginLeft="@dimen/dialog_controls_margin"
+                        android:layout_marginRight="@dimen/dialog_controls_margin"
                         android:layout_gravity="center"
                         android:textAllCaps="true"
                         android:textSize="@dimen/title"
@@ -210,22 +213,22 @@
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/card_half_margin"
+                    android:padding="@dimen/dialog_controls_margin"
                     android:gravity="right"
                     android:background="@color/green">
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/card_half_margin"
+                        android:layout_marginLeft="@dimen/dialog_controls_margin"
                         android:layout_gravity="center"
                         android:background="@drawable/ic_check_box_white_24dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/card_half_margin"
-                        android:layout_marginRight="@dimen/card_half_margin"
+                        android:layout_marginLeft="@dimen/dialog_controls_margin"
+                        android:layout_marginRight="@dimen/dialog_controls_margin"
                         android:layout_gravity="top"
                         android:textAllCaps="true"
                         android:textSize="@dimen/title"
@@ -247,7 +250,7 @@
         android:clickable="true"
         android:layout_marginTop="@dimen/card_margin"
         android:layout_marginBottom="@dimen/card_margin"
-        android:layout_marginLeft="@dimen/card_half_margin"
+        android:layout_marginLeft="@dimen/dialog_controls_margin"
         android:layout_marginRight="@dimen/card_margin">
 
         <LinearLayout
@@ -282,8 +285,8 @@
                     android:id="@+id/resources_list"
                     android:layout_marginLeft="@dimen/card_margin"
                     android:layout_marginRight="@dimen/card_margin"
-                    android:layout_marginTop="@dimen/card_half_margin"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
+                    android:layout_marginBottom="@dimen/dialog_content_margin"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
 
