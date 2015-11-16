@@ -48,7 +48,7 @@
                     android:id="@+id/source_translation_tabs"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginRight="40dp"
+                    android:layout_marginRight="@dimen/card_tab_icon_width"
                     android:layout_gravity="top"
                     app:layout_scrollFlags="scroll|enterAlways"/>
                 <ImageButton
@@ -112,9 +112,9 @@
                 <FrameLayout
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="@dimen/card_tab_height"
                     android:layout_marginTop="0dp"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginBottom="@dimen/dialog_controls_margin"
                     android:layout_marginLeft="@dimen/card_margin"
                     android:layout_marginRight="@dimen/card_margin"
                     android:padding="0dp" >
@@ -124,7 +124,7 @@
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/title"
                         android:layout_gravity="center"
-                        android:layout_marginRight="40dp"
+                        android:layout_marginRight="@dimen/dialog_content_margin"
                         android:textColor="@color/dark_secondary_text"
                         android:text="John 1:1-3 - Afaraf"
                         android:id="@+id/target_translation_title" />
@@ -133,10 +133,6 @@
                         android:id="@+id/edit_translation_button"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingTop="10dp"
-                        android:paddingBottom="10dp"
-                        android:paddingLeft="10dp"
-                        android:paddingRight="0dp"
                         android:layout_gravity="right|center"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_mode_edit_black_24dp"/>
@@ -165,7 +161,7 @@
                     android:inputType="textMultiLine"
                     android:gravity="top"
                     android:background="@null"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/dialog_controls_margin"
                     android:layout_marginBottom="0dp"
                     android:layout_marginLeft="@dimen/card_margin"
                     android:layout_marginRight="@dimen/card_margin"
