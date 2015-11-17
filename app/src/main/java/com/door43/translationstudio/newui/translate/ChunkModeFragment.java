@@ -44,8 +44,9 @@ public class ChunkModeFragment extends ViewModeFragment {
             }
             if(position != -1) {
                 ChunkModeAdapter.ViewHolder holder = (ChunkModeAdapter.ViewHolder) getViewHolderForAdapterPosition(position);
-                ((ChunkModeAdapter) getAdapter()).openTargetTranslationCard(holder, position);
-                ChunkModeAdapter.enableClicksIfChunkIsDone(holder);
+                ChunkModeAdapter chunkModeAdapter = (ChunkModeAdapter) getAdapter();
+                chunkModeAdapter.openTargetTranslationCard(holder, position);
+                chunkModeAdapter.enableClicksIfChunkIsDone(holder);
             }
         }
     }

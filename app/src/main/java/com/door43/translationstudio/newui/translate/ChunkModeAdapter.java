@@ -270,7 +270,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             public boolean onTouch(View v, MotionEvent event) { // for touches on card other than edit area
                 if(MotionEvent.ACTION_UP == event.getAction()) {
 
-                    return ChunkModeAdapter.checkForPromptToEditDoneTargetCard(mContext, holder, mListItems[position]);
+                    return checkForPromptToEditDoneTargetCard( holder, mListItems[position]);
                 }
                 return false;
             }
@@ -281,7 +281,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             public boolean onTouch(View v, MotionEvent event) {
                 if(MotionEvent.ACTION_UP == event.getAction()) {
 
-                    return ChunkModeAdapter.checkForPromptToEditDoneTargetCard(mContext, holder, mListItems[position]);
+                    return checkForPromptToEditDoneTargetCard( holder, mListItems[position]);
                 }
                 return false;
             }
@@ -296,13 +296,14 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                 // but only if the text is actually editable (i.e., not yet done).
 
                 if(!targetCardOpened && holder.mTargetBody.isEnabled()) {
-                    ChunkModeAdapter.editTarget(mContext, holder.mTargetBody);
+                    editTarget( holder.mTargetBody, mListItems[position]);
                 }
 
                 // if marked as done (disabled for edit), enable to allow capture of click events, but do not make it focusable so they can't edit
 
                 else  {
-                    ChunkModeAdapter.enableClicksIfChunkIsDone(holder);
+                    enableClicksIfChunkIsDone(holder);
+
                 }
             }
         });
@@ -389,14 +390,20 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     /**
      * begin edit of target card
-     * @param context
      * @param target
      */
-    static public void editTarget(final Context context, final EditText target) {
+    public void editTarget(final EditText target, final ListItem item) {
 
+        // flag that chunk is open for edit
+        Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
+        if(null != frame) {
+            mTargetTranslation.reopenFrame(frame);
+        }
+
+        // set focus on edit text
         boolean gotFocus = target.requestFocus();
         InputMethodManager mgr = (InputMethodManager)
-                context.getSystemService(Context.INPUT_METHOD_SERVICE);
+                mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);
     }
 
@@ -404,7 +411,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * if chunk that is marked done, then enable click event
      * @param holder
      */
-    static public void enableClicksIfChunkIsDone(final ViewHolder holder) {
+    public void enableClicksIfChunkIsDone(final ViewHolder holder) {
 
         if (!holder.mTargetBody.isEnabled()) {
             holder.mTargetBody.setEnabled(true);
@@ -414,11 +421,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     /**
      * prompt to edit chunk that is marked done
-     * @param context
      * @param holder
      * @param item
      */
-    static public boolean checkForPromptToEditDoneTargetCard(final Context context, final ViewHolder holder, final ListItem item) {
+    public boolean checkForPromptToEditDoneTargetCard(final ViewHolder holder, final ListItem item) {
 
         if (item.isTargetCardOpen) { // if page is already in front and they are tapping on it, then see if they want to open for edit
 
@@ -426,7 +432,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             boolean focusable = holder.mTargetBody.isFocusable();
 
             if (enabled && !focusable) { //if we have enabled for touch events but not focusable for edit then prompt to enable editing
-                ChunkModeAdapter.promptToEditDoneChunk(context, holder);
+                promptToEditDoneChunk( holder, item);
                 return true;
             }
         }
@@ -436,11 +442,10 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     /**
      * prompt to edit chunk that is marked done
-     * @param context
      * @param holder
      */
-    static public void promptToEditDoneChunk(final Context context, final ViewHolder holder) {
-        new AlertDialog.Builder(context)
+    public void promptToEditDoneChunk(final ViewHolder holder, final ListItem item) {
+        new AlertDialog.Builder(mContext)
                 .setTitle(R.string.chunk_done_title)
 //                                .setIcon(R.drawable.ic_local_library_black_24dp)
                 .setMessage(R.string.chunk_done_prompt)
@@ -451,7 +456,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
                         holder.mTargetBody.setFocusable(true);
                         holder.mTargetBody.setFocusableInTouchMode(true);
                         holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
-                        ChunkModeAdapter.editTarget(context, holder.mTargetBody);
+                        editTarget(holder.mTargetBody, item);
                     }
                 })
                 .setNegativeButton(R.string.dismiss, null)
