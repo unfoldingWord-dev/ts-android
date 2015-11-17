@@ -28,6 +28,7 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 
@@ -974,6 +975,7 @@ public class TargetTranslation {
                 return new File(dir, filename).isDirectory() && !filename.equals(".git");
             }
         });
+        Arrays.sort(chapterSlugs);
         List<ChapterTranslation> chapterTranslations = new ArrayList<>();
         if(chapterSlugs != null) {
             for (String slug : chapterSlugs) {
@@ -998,6 +1000,7 @@ public class TargetTranslation {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
             }
         });
+        Arrays.sort(frameFileNames);
         List<FrameTranslation> frameTranslations = new ArrayList<>();
         if(frameFileNames != null) {
             for (String fileName : frameFileNames) {

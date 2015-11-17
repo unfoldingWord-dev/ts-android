@@ -539,4 +539,6 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="no_backups_online">There are no backups online</string>
     <string name="translation_words_index">Words Index</string>
     <string name="print">Print</string>
+    <string name="include_images">Include images</string>
+    <string name="include_incomplete_frames">Include incomplete chunks</string>
 </resources>

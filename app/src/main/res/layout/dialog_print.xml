@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/white"
+    android:orientation="vertical"
+    android:minWidth="@dimen/dialog_min_width"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/dialog_content_margin">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/print"
+            android:layout_marginBottom="@dimen/dialog_content_margin"
+            android:textColor="@color/dark_primary_text"
+            android:textSize="@dimen/headline" />
+
+        <TextView
+            android:id="@+id/project_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/title"
+            android:layout_marginBottom="@dimen/dialog_content_margin"
+            android:textColor="@color/dark_primary_text"
+            android:text="Open Bible Stories - Afaraf"/>
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/include_images"
+            android:textSize="@dimen/body"
+            android:checked="true"
+            android:id="@+id/print_images" />
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/include_incomplete_frames"
+            android:textSize="@dimen/body"
+            android:checked="true"
+            android:id="@+id/print_incomplete_frames" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"/>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right|end"
+        android:padding="@dimen/dialog_controls_margin">
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:text="@string/menu_cancel"
+            style="@style/Widget.Alert.Button"/>
+
+        <Button
+            android:id="@+id/print_button"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:text="@string/print"
+            style="@style/Widget.Alert.Button"/>
+    </LinearLayout>
+</LinearLayout>

@@ -249,10 +249,10 @@ public class Translator {
      * @param targetTranslation
      * @param outputFile
      */
-    public void exportPdf(TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File outputFile) throws Exception {
+    public void exportPdf(TargetTranslation targetTranslation, TranslationFormat format, String fontPath, boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
         PdfPrinter printer = new PdfPrinter(mContext, targetTranslation, format, fontPath);
-        printer.includeMedia(true);
-        printer.includeIncomplete(true);
+        printer.includeMedia(includeImages);
+        printer.includeIncomplete(includeIncompleteFrames);
         File pdf = printer.print();
         if(pdf.exists()) {
             outputFile.delete();

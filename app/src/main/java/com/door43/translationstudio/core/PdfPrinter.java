@@ -4,16 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.itextpdf.text.Anchor;
-import com.itextpdf.text.BadElementException;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.PageSize;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.*;
+import com.itextpdf.text.Chapter;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -47,9 +39,9 @@ public class PdfPrinter {
         this.format = format;
 
         BaseFont baseFont = BaseFont.createFont(fontPath, "UTF-8", BaseFont.EMBEDDED);
-        titleFont = new Font(baseFont, 35, Font.BOLD);
-        chapterFont = new Font(baseFont, 30);
-        bodyFont = new Font(baseFont, 14);
+        titleFont = new Font(baseFont, 25, Font.BOLD);
+        chapterFont = new Font(baseFont, 20);
+        bodyFont = new Font(baseFont, 10);
         subFont = new Font(baseFont, 10, Font.ITALIC);
     }
 
@@ -179,16 +171,15 @@ public class PdfPrinter {
                         // TODO: 11/13/2015 insert frame images if we have them.
                         // TODO: 11/13/2015 eventually we need to provide the directory where to find these images which will be downloaded not in assets
                         try {
-                            InputStream is = context.getAssets().open("project_images/obs/" + f.getComplexId() + ".jpg");
+                            InputStream is = context.getAssets().open("project_images/obs/obs-en-" + f.getComplexId() + ".jpg");
                             addImage(document, is);
-                            // add padding
-                            document.add(new Paragraph(" "));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
                     // TODO: 11/13/2015 render body according to the format
                     document.add(new Paragraph(f.body, bodyFont));
+                    document.add(new Paragraph(" "));
                 }
             }
 
@@ -207,10 +198,10 @@ public class PdfPrinter {
 
     public static void addImage(Document document, String path) throws DocumentException, IOException {
         Image image = Image.getInstance(path);
-        if(image.getScaledWidth() > document.getPageSize().getHeight() + VERTICAL_PADDING * 2 || image.getScaledHeight() > document.getPageSize().getWidth() + HORIZONTAL_PADDING * 2) {
-            image.scaleToFit(document.getPageSize().getWidth() + HORIZONTAL_PADDING * 2, document.getPageSize().getHeight() + VERTICAL_PADDING * 2);
+        if(image.getScaledWidth() > pageWidth(document) || image.getScaledHeight() > pageHeight(document)) {
+            image.scaleToFit(pageWidth(document), pageHeight(document));
         }
-        document.add(image);
+        document.add(new Chunk(image, 0, 0, true));
     }
 
     public static void addImage(Document document, InputStream is) throws DocumentException, IOException {
@@ -218,9 +209,28 @@ public class PdfPrinter {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
         Image image = Image.getInstance(stream.toByteArray());
-        if(image.getScaledWidth() > document.getPageSize().getHeight() + VERTICAL_PADDING * 2 || image.getScaledHeight() > document.getPageSize().getWidth() + HORIZONTAL_PADDING * 2) {
-            image.scaleToFit(document.getPageSize().getWidth() + HORIZONTAL_PADDING * 2, document.getPageSize().getHeight() + VERTICAL_PADDING * 2);
+        image.setAlignment(Element.ALIGN_CENTER);
+        if(image.getScaledWidth() > pageWidth(document) || image.getScaledHeight() > pageHeight(document)) {
+            image.scaleToFit(pageWidth(document), pageHeight(document));
         }
-        document.add(image);
+        document.add(new Chunk(image, 0, 0, true));
+    }
+
+    /**
+     * Returns the height of the printable area of the page
+     * @param document
+     * @return
+     */
+    private static float pageHeight(Document document) {
+        return document.getPageSize().getHeight() - VERTICAL_PADDING * 2;
+    }
+
+    /**
+     * Returns the width of the printable area of the page
+     * @param document
+     * @return
+     */
+    private static float pageWidth(Document document) {
+        return document.getPageSize().getWidth() - HORIZONTAL_PADDING * 2;
     }
 }

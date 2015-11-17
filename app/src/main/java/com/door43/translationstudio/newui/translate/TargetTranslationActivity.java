@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.print.PrintDocumentInfo;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.text.Layout;
@@ -31,6 +32,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.widget.VerticalSeekBar;
@@ -184,27 +186,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 backupDialog.show(backupFt, "backupDialog");
                                 return true;
                             case R.id.action_print:
-                                File exportFile = new File(AppContext.getSharingDir(), targetTranslationId + ".pdf");
-                                try {
-                                    SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-                                    mTranslator.exportPdf(mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(TargetTranslationActivity.this), exportFile);
-                                    if (exportFile.exists()) {
-                                        Uri u = FileProvider.getUriForFile(TargetTranslationActivity.this, "com.door43.translationstudio.fileprovider", exportFile);
-                                        Intent i = new Intent(Intent.ACTION_SEND);
-                                        i.setType("application/pdf");
-                                        i.putExtra(Intent.EXTRA_STREAM, u);
-                                        startActivity(Intent.createChooser(i, "Print:"));
-                                    } else {
-                                        Snackbar snack = Snackbar.make(TargetTranslationActivity.this.findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-                                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                                        snack.show();
-                                    }
-                                } catch (Exception e) {
-                                    Logger.e(TargetTranslationActivity.class.getName(), "Failed to export as pdf " + targetTranslationId, e);
-                                    Snackbar snack = Snackbar.make(TargetTranslationActivity.this.findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-                                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                                    snack.show();
+                                FragmentTransaction printFt = getFragmentManager().beginTransaction();
+                                Fragment printPrev = getFragmentManager().findFragmentByTag("printDialog");
+                                if (printPrev != null) {
+                                    printFt.remove(printPrev);
                                 }
+                                printFt.addToBackStack(null);
+
+                                PrintDialog printDialog = new PrintDialog();
+                                Bundle printArgs = new Bundle();
+                                printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                printDialog.setArguments(printArgs);
+                                printDialog.show(printFt, "printDialog");
                                 return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();

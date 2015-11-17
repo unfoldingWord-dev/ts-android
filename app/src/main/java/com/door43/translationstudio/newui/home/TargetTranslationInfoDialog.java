@@ -26,6 +26,7 @@ import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.core.Typography;
+import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.user.Profile;
@@ -54,7 +55,7 @@ public class TargetTranslationInfoDialog extends DialogFragment {
 
         mTranslator = AppContext.getTranslator();
         Bundle args = getArguments();
-        if(args == null) {
+        if(args == null || !args.containsKey(ARG_TARGET_TRANSLATION_ID)) {
             dismiss();
         } else {
             String targetTranslationId = args.getString(ARG_TARGET_TRANSLATION_ID, null);
@@ -176,27 +177,18 @@ public class TargetTranslationInfoDialog extends DialogFragment {
         printButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
-                try {
-                    SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-                    mTranslator.exportPdf(mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), exportFile);
-                    if (exportFile.exists()) {
-                        Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
-                        Intent i = new Intent(Intent.ACTION_SEND);
-                        i.setType("application/pdf");
-                        i.putExtra(Intent.EXTRA_STREAM, u);
-                        startActivity(Intent.createChooser(i, "Print:"));
-                    } else {
-                        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-                        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                        snack.show();
-                    }
-                } catch (Exception e) {
-                    Logger.e(TargetTranslationInfoDialog.class.getName(), "Failed to export as pdf " + mTargetTranslation.getId(), e);
-                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.translation_export_failed, Snackbar.LENGTH_LONG);
-                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
-                    snack.show();
+                FragmentTransaction printFt = getFragmentManager().beginTransaction();
+                Fragment printPrev = getFragmentManager().findFragmentByTag("printDialog");
+                if (printPrev != null) {
+                    printFt.remove(printPrev);
                 }
+                printFt.addToBackStack(null);
+
+                PrintDialog printDialog = new PrintDialog();
+                Bundle printArgs = new Bundle();
+                printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                printDialog.setArguments(printArgs);
+                printDialog.show(printFt, "printDialog");
             }
         });
         return v;
