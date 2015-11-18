@@ -1093,7 +1093,7 @@ public class Indexer {
      * @return
      */
     public TranslationFormat getChapterBodyFormat(SourceTranslation sourceTranslation, String chapterSlug) {
-        return mDatabaseHelper.getChapterBodyFromat(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug);
+        return mDatabaseHelper.getChapterBodyFormat(mDatabase, sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug, sourceTranslation.resourceSlug, chapterSlug);
     }
 
     /**

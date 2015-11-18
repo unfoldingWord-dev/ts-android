@@ -174,15 +174,19 @@ public class ReviewModeFragment extends ViewModeFragment {
             mResourcesDrawerContent.removeAllViews();
             mResourcesDrawerContent.addView(list);
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_clickable_text);
-            final TranslationWord[] words = library.getTranslationWords(getSourceTranslation());
+            TranslationWord[] words = library.getTranslationWords(getSourceTranslation());
+            if(words.length == 0) {
+                words = library.getTranslationWords(library.getDefaultSourceTranslation(getSourceTranslation().projectSlug, "en"));
+            }
             for(TranslationWord word:words) {
                 adapter.add(word.getTerm());
             }
+            final TranslationWord[] staticWords = words;
             list.setAdapter(adapter);
             list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    TranslationWord word = words[position];
+                    TranslationWord word = staticWords[position];
                     renderTranslationWord(word.getId());
                 }
             });
@@ -204,7 +208,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
-        if(mScrollingResourcesDrawerContent != null) {
+        if(mScrollingResourcesDrawerContent != null && word != null) {
             mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_word, null);
@@ -300,7 +304,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         if(mResourcesDrawerContent != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
-        if(mScrollingResourcesDrawerContent != null) {
+        if(mScrollingResourcesDrawerContent != null && note != null) {
             mScrollingResourcesDrawerContent.setVisibility(View.VISIBLE);
             mScrollingResourcesDrawerContent.scrollTo(0, 0);
             LinearLayout view = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.fragment_resources_note, null);
@@ -358,7 +362,7 @@ public class ReviewModeFragment extends ViewModeFragment {
         SourceTranslation sourceTranslation = getSourceTranslation();
         CheckingQuestion question = getPreferredQuestion(sourceTranslation, chapterId, frameId, questionId);
         SourceLanguage sourceLanguage = library.getSourceLanguage(sourceTranslation.projectSlug, sourceTranslation.sourceLanguageSlug);
-        if(mResourcesDrawerContent != null) {
+        if(mResourcesDrawerContent != null && question != null) {
             mResourcesDrawerContent.setVisibility(View.GONE);
         }
         if(mScrollingResourcesDrawerContent != null) {
@@ -461,7 +465,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         Library library = AppContext.getLibrary();
         TranslationNote note = library.getTranslationNote(sourceTranslation, chapterId, frameId, noteId);
         if(note == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            note = library.getTranslationNote(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId, noteId);
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            note = library.getTranslationNote(defaultSourceTranslation, chapterId, frameId, noteId);
         }
         return note;
     }
@@ -476,7 +481,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         Library library = AppContext.getLibrary();
         TranslationWord word = library.getTranslationWord(sourceTranslation, wordId);
         if(word == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            word = library.getTranslationWord(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), wordId);
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            word = library.getTranslationWord(defaultSourceTranslation, wordId);
         }
         return word;
     }
@@ -493,7 +499,8 @@ public class ReviewModeFragment extends ViewModeFragment {
         Library library = AppContext.getLibrary();
         CheckingQuestion question = library.getCheckingQuestion(sourceTranslation, chapterId, frameId, questionId);
         if(question == null && !sourceTranslation.sourceLanguageSlug.equals("en")) {
-            question = library.getCheckingQuestion(SourceTranslation.simple(sourceTranslation.projectSlug, "en", sourceTranslation.resourceSlug), chapterId, frameId, questionId);
+            SourceTranslation defaultSourceTranslation = library.getDefaultSourceTranslation(sourceTranslation.projectSlug, "en");
+            question = library.getCheckingQuestion(defaultSourceTranslation, chapterId, frameId, questionId);
         }
         return question;
     }

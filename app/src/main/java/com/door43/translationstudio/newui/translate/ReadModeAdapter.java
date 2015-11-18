@@ -308,7 +308,7 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
         }
 
         // TODO: indicate completed chapter translations
-//        if(frameTranslation.isFinished()) {
+//        if(frameTranslation.isTitleFinished()) {
 //            holder.mTargetInnerCard.setBackgroundResource(R.color.white);
 //        } else {
 //            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);

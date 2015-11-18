@@ -105,6 +105,14 @@ public abstract class Span {
     }
 
     /**
+     * Returns the human readable title of this span
+     * @return
+     */
+    public CharSequence getHumanReadable() {
+        return mHumanReadable;
+    }
+
+    /**
      * Returns the span as a CharSequence
      * @return
      */

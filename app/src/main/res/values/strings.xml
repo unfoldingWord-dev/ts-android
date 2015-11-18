@@ -525,6 +525,26 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 </p>
+
+<h3>iText</h3>
+<p>Copyright (c) 2010-2015, iText Group NV, iText Software Corp., iText Software BVBA
+</p>
+<p>
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+</p>
+<p>
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+</p>
+<p>
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+</p>
 ]]>
     </string>
     <string name="action_download_updates">Download updates</string>
@@ -538,4 +558,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <string name="translators">Translators</string>
     <string name="no_backups_online">There are no backups online</string>
     <string name="translation_words_index">Words Index</string>
+    <string name="print">Print</string>
+    <string name="include_images">Include images</string>
+    <string name="include_incomplete_frames">Include incomplete chunks</string>
 </resources>

@@ -1343,7 +1343,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int checkingLevel = cursor.getInt(3);
             int dateModified = cursor.getInt(4);
             String version = cursor.getString(5);
-            sourceTranslations.add(new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version));
+            TranslationFormat format = getSourceTranslationFormat(db, projectSlug, sourceLanguageSlug, resourceSlug);
+            sourceTranslations.add(new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version, format));
             cursor.moveToNext();
         }
         cursor.close();
@@ -1452,6 +1453,34 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
+     * Returns the format of the source translation
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     * @return
+     */
+    public TranslationFormat getSourceTranslationFormat(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        Cursor cursor = db.rawQuery("SELECT `f`.`format` FROM `frame` AS `f`"
+                + " WHERE `f`.`chapter_id` IN ("
+                + "   SELECT `c`.`id` FROM `chapter` AS `c`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + "   LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?"
+                + " ) AND `f`.`format` IS NOT NULL LIMIT 1", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+        TranslationFormat format = TranslationFormat.DEFAULT;
+        if(cursor.moveToFirst()) {
+            format = TranslationFormat.get(cursor.getString(0));
+            if(format == null) {
+                format = TranslationFormat.DEFAULT;
+            }
+        }
+        cursor.close();
+        return format;
+    }
+
+    /**
      * Returns a source translation
      * @param db
      * @param projectSlug
@@ -1473,7 +1502,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int checkingLevel = cursor.getInt(3);
             int dateModified = cursor.getInt(4);
             String version = cursor.getString(5);
-            sourceTranslation = new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version);
+            TranslationFormat format = getSourceTranslationFormat(db, projectSlug, sourceLanguageSlug, resourceSlug);
+            sourceTranslation = new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version, format);
         }
         cursor.close();
         return sourceTranslation;
@@ -1609,7 +1639,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param chapterSlug
      * @return
      */
-    public TranslationFormat getChapterBodyFromat(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug, String chapterSlug) {
+    public TranslationFormat getChapterBodyFormat(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug, String chapterSlug) {
         Cursor cursor = db.rawQuery("SELECT `f`.`format` FROM `frame` AS `f`"
                 + " WHERE `f`.`chapter_id` IN ("
                 + "   SELECT `c`.`id` FROM `chapter` AS `c`"
