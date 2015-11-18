@@ -469,6 +469,11 @@ public class TargetTranslation {
         return reopenProjectComponent("title");
     }
 
+    /**
+     * Checks if the translation of a component of a project has been marked as done
+     * @param component
+     * @return
+     */
     private boolean isProjectComponentFinished(String component) {
         JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
         try {
@@ -586,7 +591,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Check if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapter
      * @return
      */
@@ -595,7 +600,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Checks if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapterSlug
      * @return
      */
@@ -667,7 +672,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Check if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapter
      * @return
      */
@@ -676,7 +681,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Checks if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapterSlug
      * @return
      */
@@ -748,7 +753,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Check if the translation of a frame is complete
+     * Checks if the translation of a frame has been marked as done
      * @param frame
      * @return
      */
@@ -757,7 +762,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Checks if the translation of a frame is complete
+     * Checks if the translation of a frame has been marked as done
      * @param frameComplexId
      * @return
      */

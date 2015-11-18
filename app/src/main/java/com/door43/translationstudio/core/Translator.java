@@ -249,8 +249,8 @@ public class Translator {
      * @param targetTranslation
      * @param outputFile
      */
-    public void exportPdf(TargetTranslation targetTranslation, TranslationFormat format, String fontPath, boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
-        PdfPrinter printer = new PdfPrinter(mContext, targetTranslation, format, fontPath);
+    public void exportPdf(Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
+        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, fontPath);
         printer.includeMedia(includeImages);
         printer.includeIncomplete(includeIncompleteFrames);
         File pdf = printer.print();
@@ -376,7 +376,7 @@ public class Translator {
                         targetTranslation = new TargetTranslation(targetLanguage.getId(), project.getId(), mRootDir);
                     } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
                         // retrieve chapter reference (end of chapter) and write chapter
-                        ChapterTranslation chapterTranslation =targetTranslation.getChapterTranslation(chapterId);
+                        ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterId);
                         targetTranslation.applyChapterTitleTranslation(chapterTranslation, chapterTitle);
                         targetTranslation.applyChapterReferenceTranslation(chapterTranslation, line);
 

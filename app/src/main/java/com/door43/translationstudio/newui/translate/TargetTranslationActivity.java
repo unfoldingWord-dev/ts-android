@@ -312,16 +312,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 EditText editText = (EditText) focusedView;
                 int pos = editText.getSelectionStart();
                 Layout layout = editText.getLayout();
-                int line = layout.getLineForOffset(pos);
-                int baseline = layout.getLineBaseline(line);
-                int ascent = layout.getLineAscent(line);
+                if(layout != null) {
+                    int line = layout.getLineForOffset(pos);
+                    int baseline = layout.getLineBaseline(line);
+                    int ascent = layout.getLineAscent(line);
 
-                // convert relative positions to absolute position
-                int x = focusedViewX + (int) layout.getPrimaryHorizontal(pos);
-                int bottomY = focusedViewY + baseline;
-                int y = bottomY + ascent;
+                    // convert relative positions to absolute position
+                    int x = focusedViewX + (int) layout.getPrimaryHorizontal(pos);
+                    int bottomY = focusedViewY + baseline;
+                    int y = bottomY + ascent;
 
-                return new Rect(x, y, x, bottomY); // ignore width of cursor for now
+                    return new Rect(x, y, x, bottomY); // ignore width of cursor for now
+                }
             }
         }
 

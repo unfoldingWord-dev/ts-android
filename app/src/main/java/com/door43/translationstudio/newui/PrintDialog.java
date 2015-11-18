@@ -43,6 +43,9 @@ public class PrintDialog extends DialogFragment {
     private Library library;
     private boolean includeImages = true;
     private boolean includeIncompleteFrames = true;
+    private Button printButton;
+    private CheckBox includeImagesCheckBox;
+    private CheckBox includeIncompleteCheckBox;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -75,8 +78,8 @@ public class PrintDialog extends DialogFragment {
             projectTitle.setText(mTargetTranslation.getProjectId() + " - " + mTargetTranslation.getTargetLanguageName());
         }
 
-        final CheckBox includeImagesCheckBox = (CheckBox)v.findViewById(R.id.print_images);
-        final CheckBox includeIncompleteCheckBox = (CheckBox)v.findViewById(R.id.print_incomplete_frames);
+        this.includeImagesCheckBox = (CheckBox)v.findViewById(R.id.print_images);
+        this.includeIncompleteCheckBox = (CheckBox)v.findViewById(R.id.print_incomplete_frames);
         includeImagesCheckBox.setEnabled(true);
         includeIncompleteCheckBox.setEnabled(true);
         includeImagesCheckBox.setChecked(includeImages);
@@ -89,7 +92,7 @@ public class PrintDialog extends DialogFragment {
                 dismiss();
             }
         });
-        Button printButton  = (Button)v.findViewById(R.id.print_button);
+        printButton  = (Button)v.findViewById(R.id.print_button);
         printButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,6 +100,7 @@ public class PrintDialog extends DialogFragment {
                 includeIncompleteFrames = includeIncompleteCheckBox.isChecked();
                 includeImagesCheckBox.setEnabled(false);
                 includeIncompleteCheckBox.setEnabled(false);
+                printButton.setEnabled(false);
                 if(includeImages) {
                     // TODO: 11/16/2015 check if all the images have been downloaded for this project
                     print();
@@ -121,7 +125,7 @@ public class PrintDialog extends DialogFragment {
         File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
         try {
             SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-            this.translator.exportPdf(mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), includeImages, includeIncompleteFrames, exportFile);
+            this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), includeImages, includeIncompleteFrames, exportFile);
             if (exportFile.exists()) {
                 Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
                 Intent i = new Intent(Intent.ACTION_SEND);
@@ -140,6 +144,9 @@ public class PrintDialog extends DialogFragment {
             snack.show();
         }
         // TODO: 11/16/2015 enable form controls again
+        includeImagesCheckBox.setEnabled(true);
+        includeIncompleteCheckBox.setEnabled(true);
+        printButton.setEnabled(true);
     }
 
     @Override
