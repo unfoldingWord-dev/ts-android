@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@color/white"
     android:orientation="vertical"
+    android:minWidth="@dimen/dialog_min_width"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true">
@@ -17,6 +18,7 @@
             android:layout_height="wrap_content"
             android:text="Open Bible Stories - Afaraf"
             android:layout_marginBottom="@dimen/dialog_content_margin"
+            android:textColor="@color/dark_primary_text"
             android:textSize="@dimen/headline"
             android:id="@+id/title" />
 
@@ -133,10 +135,10 @@
             android:text="@string/publish"
             style="@style/Widget.Alert.Button"/>
 
-        <!--<Button-->
-            <!--android:id="@+id/dismiss_button"-->
-            <!--android:layout_marginLeft="@dimen/dialog_controls_margin"-->
-            <!--android:text="@string/dismiss"-->
-            <!--style="@style/Widget.Alert.Button"/>-->
+        <Button
+            android:id="@+id/dismiss_button"
+            android:layout_marginLeft="@dimen/dialog_controls_margin"
+            android:text="@string/dismiss"
+            style="@style/Widget.Alert.Button"/>
     </LinearLayout>
 </LinearLayout>

@@ -163,14 +163,14 @@ public class TargetTranslationInfoDialog extends DialogFragment {
             }
         });
 
-//        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
-//        dismissButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                task.stop();
-//                dismiss();
-//            }
-//        });
+        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                task.stop();
+                dismiss();
+            }
+        });
         return v;
     }
 

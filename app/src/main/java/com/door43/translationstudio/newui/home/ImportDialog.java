@@ -3,10 +3,13 @@ package com.door43.translationstudio.newui.home;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,16 +19,26 @@ import android.widget.Button;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
-import com.door43.translationstudio.newui.translate.TargetTranslationActivity;
+import com.door43.translationstudio.git.SSHSession;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
 
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.net.InetAddress;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by joel on 10/5/2015.
@@ -33,6 +46,7 @@ import java.net.InetAddress;
 public class ImportDialog extends DialogFragment {
 
     private static final int IMPORT_PROJECT_FROM_SD_REQUEST = 0;
+    public static final String TAG = "importDialog";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -41,7 +55,7 @@ public class ImportDialog extends DialogFragment {
         return dialog;
     }
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         View v = inflater.inflate(R.layout.dialog_import, container, false);
 
@@ -51,23 +65,15 @@ public class ImportDialog extends DialogFragment {
         importCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new ThreadableUI(getActivity()) {
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+                if (prev != null) {
+                    ft.remove(prev);
+                }
+                ft.addToBackStack(null);
 
-                    @Override
-                    public void onStop() {
-
-                    }
-
-                    @Override
-                    public void run() {
-                        // TODO: get list of repositories
-                    }
-
-                    @Override
-                    public void onPostExecute() {
-
-                    }
-                }.start();
+                RestoreFromCloudDialog dialog = new RestoreFromCloudDialog();
+                dialog.show(ft, ImportDialog.TAG);
             }
         });
         importFromSDButton.setOnClickListener(new View.OnClickListener() {
@@ -77,6 +83,14 @@ public class ImportDialog extends DialogFragment {
                 Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
                 intent.setDataAndType(Uri.fromFile(path), "file/*");
                 startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
+            }
+        });
+
+        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
             }
         });
 

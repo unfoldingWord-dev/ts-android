@@ -404,4 +404,14 @@ public class AppContext {
         editor.putLong("last_checked_server_for_updates", timeMillis);
         editor.apply();
     }
+
+    /**
+     * Returns the string value of a user preference or the default value
+     * @param preferenceKey
+     * @param defaultResource
+     * @return
+     */
+    public static String getUserString(String preferenceKey, int defaultResource) {
+        return mContext.getUserPreferences().getString(preferenceKey, mContext.getResources().getString(defaultResource));
+    }
 }

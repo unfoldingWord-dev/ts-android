@@ -16,7 +16,7 @@ import java.util.List;
 public class TranslationWord {
 
     private final String mId;
-    private final String mWord;
+    private final String mTerm;
     private final String mDef;
     private final Example[] mExamples;
     private final String[] mAliases;
@@ -35,7 +35,7 @@ public class TranslationWord {
      */
     public TranslationWord(String id, String word, String def, String defTitle, String[] seeAlso, String[] aliases, Example[] examples) {
         mId = id;
-        mWord = word;
+        mTerm = word;
         mDef = def;
         mDefTitle = defTitle;
         mSeeAlso = seeAlso;
@@ -84,8 +84,8 @@ public class TranslationWord {
      * Returns the title of the translationWord
      * @return
      */
-    public String getWord() {
-        return mWord;
+    public String getTerm() {
+        return mTerm;
     }
 
     /**
