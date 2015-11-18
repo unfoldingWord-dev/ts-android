@@ -249,8 +249,8 @@ public class Translator {
      * @param targetTranslation
      * @param outputFile
      */
-    public void exportPdf(Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
-        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, fontPath);
+    public void exportPdf(Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir, boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
+        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, fontPath, imagesDir);
         printer.includeMedia(includeImages);
         printer.includeIncomplete(includeIncompleteFrames);
         File pdf = printer.print();

@@ -41,7 +41,7 @@ public class PrintDialog extends DialogFragment {
     private Translator translator;
     private TargetTranslation mTargetTranslation;
     private Library library;
-    private boolean includeImages = true;
+    private boolean includeImages = false;
     private boolean includeIncompleteFrames = true;
     private Button printButton;
     private CheckBox includeImagesCheckBox;
@@ -125,7 +125,9 @@ public class PrintDialog extends DialogFragment {
         File exportFile = new File(AppContext.getSharingDir(), mTargetTranslation.getId() + ".pdf");
         try {
             SourceTranslation sourceTranslation = AppContext.getLibrary().getDefaultSourceTranslation(mTargetTranslation.getProjectId(), "en");
-            this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), includeImages, includeIncompleteFrames, exportFile);
+            // TODO: 11/18/2015 provide path to images dir
+            File imagesDir = library.getImagesDir();
+            this.translator.exportPdf(library, mTargetTranslation, sourceTranslation.getFormat(), Typography.getAssetPath(getActivity()), imagesDir, includeImages, includeIncompleteFrames, exportFile);
             if (exportFile.exists()) {
                 Uri u = FileProvider.getUriForFile(getActivity(), "com.door43.translationstudio.fileprovider", exportFile);
                 Intent i = new Intent(Intent.ACTION_SEND);

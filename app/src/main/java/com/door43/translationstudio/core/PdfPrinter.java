@@ -44,6 +44,7 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final SourceTranslation sourceTranslation;
     private final Font superScriptFont;
     private final BaseFont baseFont;
+    private final File imagesDir;
     private boolean includeMedia = true;
     private boolean includeIncomplete = true;
     private final Map<String, PdfTemplate> tocPlaceholder = new HashMap<>();
@@ -51,11 +52,12 @@ public class PdfPrinter extends PdfPageEventHelper {
     private final float PAGE_NUMBER_FONT_SIZE = 10;
     private PdfWriter writer;
 
-    public PdfPrinter(Context context, Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath) throws IOException, DocumentException {
+    public PdfPrinter(Context context, Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir) throws IOException, DocumentException {
         this.targetTranslation = targetTranslation;
         this.context = context;
         this.format = format;
         this.library = library;
+        this.imagesDir = imagesDir;
         this.sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), "en");
 
         baseFont = BaseFont.createFont(fontPath, "UTF-8", BaseFont.EMBEDDED);
@@ -243,8 +245,11 @@ public class PdfPrinter extends PdfPageEventHelper {
                         // TODO: 11/13/2015 insert frame images if we have them.
                         // TODO: 11/13/2015 eventually we need to provide the directory where to find these images which will be downloaded not in assets
                         try {
-                            InputStream is = context.getAssets().open("project_images/" + targetTranslation.getProjectId() + "/obs-en-" + f.getComplexId() + ".jpg");
-                            addImage(document, is);
+//                            InputStream is = context.getAssets().open("project_images/" + targetTranslation.getProjectId() + "/obs-en-" + f.getComplexId() + ".jpg");
+                            File imageFile = new File(imagesDir, targetTranslation.getProjectId() + "/" + f.getComplexId() + ".jpg");
+                            if(imageFile.exists()) {
+                                addImage(document, imageFile.getAbsolutePath());
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -301,14 +306,30 @@ public class PdfPrinter extends PdfPageEventHelper {
         }
     }
 
+    /**
+     * Add image from a file path
+     *
+     * @param document
+     * @param path
+     * @throws DocumentException
+     * @throws IOException
+     */
     public static void addImage(Document document, String path) throws DocumentException, IOException {
         Image image = Image.getInstance(path);
+        image.setAlignment(Element.ALIGN_CENTER);
         if(image.getScaledWidth() > pageWidth(document) || image.getScaledHeight() > pageHeight(document)) {
             image.scaleToFit(pageWidth(document), pageHeight(document));
         }
         document.add(new Chunk(image, 0, 0, true));
     }
 
+    /**
+     * Add Image from an input stream
+     * @param document
+     * @param is
+     * @throws DocumentException
+     * @throws IOException
+     */
     public static void addImage(Document document, InputStream is) throws DocumentException, IOException {
         Bitmap bmp = BitmapFactory.decodeStream(is);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
