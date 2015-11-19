@@ -12,6 +12,11 @@
     <!-- Description of highlight key terms settings menu entry -->
     <!--<string name="pref_description_highlight_key_terms">Make key terms clickable in the source text</string>-->
 
+    <!-- flag to always share when app is open -->
+    <string name="pref_title_always_share">Always Share</string>
+    <!-- description of always share entry -->
+    <string name="pref_description_always_share">Allow nearby translators to import my translations while the app is open</string>
+
     <!-- Title for the typefaced used in the app -->
     <string name="pref_title_translation_typeface">Font</string>
     <string-array name="pref_translation_typeface_titles" translatable="false">
