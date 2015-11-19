@@ -561,4 +561,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <string name="print">Print</string>
     <string name="include_images">Include images</string>
     <string name="include_incomplete_frames">Include incomplete chunks</string>
+    <string name="backup_to_friend">Send to Friend</string>
 </resources>
