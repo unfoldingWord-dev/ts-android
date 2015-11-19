@@ -16,8 +16,9 @@ public class SourceTranslation {
     private final String mSourceLanguageTitle;
     private final int mDateModified;
     private final String mVersion;
+    private final TranslationFormat format;
 
-    public SourceTranslation(String projectId, String sourceLanguageSlug, String resourceSlug, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel, int dateModified, String version) {
+    public SourceTranslation(String projectId, String sourceLanguageSlug, String resourceSlug, String projectTitle, String sourceLanguageTitle, String resourceTitle, int checkingLevel, int dateModified, String version, TranslationFormat format) {
         this.projectSlug = projectId;
         this.sourceLanguageSlug = sourceLanguageSlug;
         this.resourceSlug = resourceSlug;
@@ -27,72 +28,7 @@ public class SourceTranslation {
         mCheckingLevel = checkingLevel;
         mDateModified = dateModified;
         mVersion = version;
-    }
-
-    /**
-     * Generates a new source translation from json
-     *
-     * @param projectId
-     * @param sourceLanguageJson
-     * @param resourceJson
-     * @return
-     * @throws JSONException
-     */
-    public static SourceTranslation generate(String projectId, JSONObject sourceLanguageJson, JSONObject resourceJson) throws JSONException {
-        String sourceLanguageTitle = sourceLanguageJson.getString("name");
-        String sourceLanguageId = sourceLanguageJson.getString("slug");
-        JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
-        String projectTitle = projectLanguageJson.getString("name");
-        String resourceTitle = resourceJson.getString("name");
-        String resourceId = resourceJson.getString("slug");
-        JSONObject statusJson = resourceJson.getJSONObject("status");
-        int checkingLevel = statusJson.getInt("checking_level");
-        int dateModified = sourceLanguageJson.getInt("date_modified");
-        String version = statusJson.getString("version");
-        return new SourceTranslation(projectId, sourceLanguageId, resourceId, projectTitle, sourceLanguageTitle, resourceTitle, checkingLevel, dateModified, version);
-    }
-
-    /**
-     * Generates a new source translation from json
-     *
-     * @param projectId
-     * @param sourceLanguageJson
-     * @param resource
-     * @return
-     * @throws JSONException
-     */
-    public static SourceTranslation generate(String projectId, JSONObject sourceLanguageJson, Resource resource) throws JSONException {
-        String sourceLanguageTitle = sourceLanguageJson.getString("name");
-        String sourceLanguageId = sourceLanguageJson.getString("slug");
-        JSONObject projectLanguageJson = sourceLanguageJson.getJSONObject("project");
-        String projectTitle = projectLanguageJson.getString("name");
-        String resourceTitle = resource.getTitle();
-        String resourceId = resource.getId();
-        int checkingLevel = resource.getCheckingLevel();
-        int dateModified = sourceLanguageJson.getInt("date_modified");
-        String version = resource.getVersion();
-        return new SourceTranslation(projectId, sourceLanguageId, resourceId, projectTitle, sourceLanguageTitle, resourceTitle, checkingLevel, dateModified, version);
-    }
-
-    /**
-     * Creates a new simple source translation
-     *
-     * This object will not contain any extra information about the translation other than the ids
-     *
-     * @param projectId
-     * @param sourceLanguageSlug
-     * @param resourceSlug
-     */
-    private SourceTranslation(String projectId, String sourceLanguageSlug, String resourceSlug) {
-        this.projectSlug = projectId;
-        this.sourceLanguageSlug = sourceLanguageSlug;
-        this.resourceSlug = resourceSlug;
-        mProjectTitle = "";
-        mSourceLanguageTitle = "";
-        mResourceTitle = "";
-        mCheckingLevel = 0;
-        mDateModified = 0;
-        mVersion = "0.0.0";
+        this.format = format;
     }
 
     /**
@@ -106,7 +42,15 @@ public class SourceTranslation {
      * @return
      */
     public static SourceTranslation simple(String projectId, String sourceLanguageId, String resourceId) {
-        return new SourceTranslation(projectId, sourceLanguageId, resourceId);
+        return new SourceTranslation(projectId, sourceLanguageId, resourceId, "", "", "", 0, 0, "0.0.0", TranslationFormat.DEFAULT);
+    }
+
+    /**
+     * Returns the translation format of this source translation.
+     * @return
+     */
+    public TranslationFormat getFormat() {
+        return format;
     }
 
     /**

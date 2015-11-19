@@ -28,6 +28,7 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 
@@ -214,7 +215,7 @@ public class TargetTranslation {
      * @param sourceTranslation
      * @throws JSONException
      */
-    public void useSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
+    public void addSourceTranslation(SourceTranslation sourceTranslation) throws JSONException {
         JSONObject sourceTranslationsJson = mManifest.getJSONObject("source_translations");
         JSONObject translationJson = new JSONObject();
         translationJson.put("checking_level", sourceTranslation.getCheckingLevel());
@@ -222,6 +223,22 @@ public class TargetTranslation {
         translationJson.put("version", sourceTranslation.getVersion());
         sourceTranslationsJson.put(sourceTranslation.getId(), translationJson);
         mManifest.put("source_translations", sourceTranslationsJson);
+    }
+
+    /**
+     * Adds a native speaker as a translator
+     * @param translator
+     */
+    public void addTranslator(NativeSpeaker translator) {
+
+    }
+
+    /**
+     * Returns an array of native speakers who have worked on this translation
+     * @return
+     */
+    public NativeSpeaker[] getTranslators() {
+        return new NativeSpeaker[0];
     }
 
     /**
@@ -306,8 +323,16 @@ public class TargetTranslation {
      * @return
      */
     public ProjectTranslation getProjectTranslation() {
-        // TODO: this is not supported yet but we need to be able to provide the translation of the project title
-        return null;
+        File titleFile = getProjectTitleFile();
+        String title = "";
+        if(titleFile.exists()) {
+            try {
+                title = FileUtils.readFileToString(titleFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return new ProjectTranslation(title, isProjectComponentFinished("title"));
     }
 
     /**
@@ -321,6 +346,20 @@ public class TargetTranslation {
             saveFrameTranslation(frameTranslation, translatedText);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Saves the project title translation
+     * @param translatedText
+     */
+    public void applyProjectTitleTranslation(String translatedText) throws IOException {
+        File titleFile = getProjectTitleFile();
+        if(translatedText.isEmpty()) {
+            titleFile.delete();
+        } else {
+            titleFile.getParentFile().mkdirs();
+            FileUtils.write(titleFile, translatedText);
         }
     }
 
@@ -385,7 +424,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Returns the reference file
+     * Returns the chapter reference file
      * @param chapterId
      * @return
      */
@@ -394,12 +433,108 @@ public class TargetTranslation {
     }
 
     /**
-     * Returns the title file
+     * Returns the chapter title file
      * @param chapterId
      * @return
      */
     private File getChapterTitleFile(String chapterId) {
         return new File(mTargetTranslationDirectory, chapterId + "/title.txt");
+    }
+
+    /**
+     * Returns the project title file
+     * @return
+     */
+    private File getProjectTitleFile() {
+        return new File(mTargetTranslationDirectory, "title.txt");
+    }
+
+    /**
+     * Marks the project title as finished
+     * @return
+     */
+    public boolean finishProjectTitle() {
+        File file = getProjectTitleFile();
+        if(file.exists()) {
+            return finishProjectComponent("title");
+        }
+        return false;
+    }
+
+    /**
+     * Marks the project title as not finished
+     * @return
+     */
+    public boolean reopenProjectTitle() {
+        return reopenProjectComponent("title");
+    }
+
+    /**
+     * Checks if the translation of a component of a project has been marked as done
+     * @param component
+     * @return
+     */
+    private boolean isProjectComponentFinished(String component) {
+        JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
+        try {
+            for (int i = 0; i < finishedProjectComponents.length(); i++) {
+                if(finishedProjectComponents.getString(i).equals(component)) {
+                    return true;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Reopens a project component
+     * @param component
+     * @return
+     */
+    private boolean reopenProjectComponent(String component) {
+        JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
+        JSONArray updatedComponents = new JSONArray();
+        try {
+            for (int i = 0; i < finishedProjectComponents.length(); i++) {
+                String finishedComponent = finishedProjectComponents.getString(i);
+                if(!finishedComponent.equals(component)) {
+                    updatedComponents.put(finishedProjectComponents.getString(i));
+                }
+            }
+            mManifest.put("finished_project_components", updatedComponents);
+            return true;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * Marks a component of the project as finished
+     * @param component
+     * @return
+     */
+    private boolean finishProjectComponent(String component) {
+        JSONArray finishedProjectComponents = mManifest.getJSONArray("finished_project_components");
+        boolean isFinished = false;
+        try {
+            for (int i = 0; i < finishedProjectComponents.length(); i++) {
+                String completedComponent = finishedProjectComponents.getString(i);
+                if(completedComponent.equals(component)) {
+                    isFinished = true;
+                    break;
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        if(!isFinished) {
+            finishedProjectComponents.put(component);
+            mManifest.put("finished_project_components", finishedProjectComponents);
+        }
+        return true;
     }
 
     /**
@@ -456,7 +591,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Check if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapter
      * @return
      */
@@ -465,7 +600,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Checks if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapterSlug
      * @return
      */
@@ -537,7 +672,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Check if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapter
      * @return
      */
@@ -546,7 +681,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Checks if the translation of a chapter title is complete
+     * Checks if the translation of a chapter title has been marked as done
      * @param chapterSlug
      * @return
      */
@@ -618,7 +753,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Check if the translation of a frame is complete
+     * Checks if the translation of a frame has been marked as done
      * @param frame
      * @return
      */
@@ -627,7 +762,7 @@ public class TargetTranslation {
     }
 
     /**
-     * Checks if the translation of a frame is complete
+     * Checks if the translation of a frame has been marked as done
      * @param frameComplexId
      * @return
      */
@@ -842,9 +977,10 @@ public class TargetTranslation {
         String[] chapterSlugs = mTargetTranslationDirectory.list(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
-                return !filename.equals(".git") && !filename.equals("manifest.json");
+                return new File(dir, filename).isDirectory() && !filename.equals(".git");
             }
         });
+        Arrays.sort(chapterSlugs);
         List<ChapterTranslation> chapterTranslations = new ArrayList<>();
         if(chapterSlugs != null) {
             for (String slug : chapterSlugs) {
@@ -869,6 +1005,7 @@ public class TargetTranslation {
                 return !filename.equals("reference.txt") && !filename.equals("title.txt");
             }
         });
+        Arrays.sort(frameFileNames);
         List<FrameTranslation> frameTranslations = new ArrayList<>();
         if(frameFileNames != null) {
             for (String fileName : frameFileNames) {

@@ -65,6 +65,7 @@ dependencies {
     compile 'com.jpardogo.materialtabstrip:library:1.0.8'
     compile 'com.github.filippudak.progresspieview:library:1.0.4'
     compile 'org.apmem.tools:layouts:1.10'
+    compile 'com.itextpdf:itextpdf:5.5.7'
     compile project(':html-textview')
     compile project(':com.door43.tools.reporting')
     compile project(':com.door43.tools.security')

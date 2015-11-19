@@ -1,3 +1,4 @@
 /build
 src/main/res/values/strings_private_app_pref.xml
 !gen/
+/src/main/assets/project_images/obs

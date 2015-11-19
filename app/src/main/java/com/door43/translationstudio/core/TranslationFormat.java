@@ -28,9 +28,11 @@ public enum TranslationFormat {
      * @return
      */
     public static TranslationFormat get(String name) {
-        for(TranslationFormat f : TranslationFormat.values()) {
-            if(f.getName().equals(name.toLowerCase())) {
-                return f;
+        if(name != null) {
+            for (TranslationFormat f : TranslationFormat.values()) {
+                if (f.getName().equals(name.toLowerCase())) {
+                    return f;
+                }
             }
         }
         return null;

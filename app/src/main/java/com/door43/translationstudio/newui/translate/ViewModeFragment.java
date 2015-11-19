@@ -348,7 +348,7 @@ public abstract class ViewModeFragment extends BaseFragment implements ViewModeA
                 TargetTranslation targetTranslation = mTranslator.getTargetTranslation(targetTranslationId);
                 if(targetTranslation != null) {
                     try {
-                        targetTranslation.useSourceTranslation(sourceTranslation);
+                        targetTranslation.addSourceTranslation(sourceTranslation);
                     } catch (JSONException e) {
                         Logger.e(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
                     }
