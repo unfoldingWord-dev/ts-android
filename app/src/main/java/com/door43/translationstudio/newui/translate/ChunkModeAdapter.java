@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -452,9 +453,24 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     public void editTarget(final EditText target, final ListItem item) {
 
         // flag that chunk is open for edit
-        Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
-        if(null != frame) {
-            mTargetTranslation.reopenFrame(frame);
+
+        if (item.isChapterReference) {
+            Chapter chapter = mLibrary.getChapter(mSourceTranslation, item.chapterSlug);
+            if (null != chapter) {
+                mTargetTranslation.reopenChapterReference(chapter);
+            }
+        } else if (item.isChapterTitle) {
+            Chapter chapter = mLibrary.getChapter(mSourceTranslation, item.chapterSlug);
+            if (null != chapter) {
+                mTargetTranslation.reopenChapterTitle(chapter);
+            }
+        } else if(item.isProjectTitle) {
+            mTargetTranslation.reopenProjectTitle();
+        } else {
+            Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
+            if(null != frame) {
+                mTargetTranslation.reopenFrame(frame);
+            }
         }
 
         // set focus on edit text
