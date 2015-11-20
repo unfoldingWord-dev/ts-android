@@ -11,8 +11,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/dialog_content_margin"
-        style="@style/CustomDialog.Content">
+        android:layout_margin="@dimen/dialog_content_margin">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,9 +118,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/dialog_controls_margin"
-        android:gravity="right|end"
-        style="@style/CustomDialog.Buttons">
+        android:padding="@dimen/dialog_controls_margin">
 
         <LinearLayout
             android:layout_width="wrap_content"
