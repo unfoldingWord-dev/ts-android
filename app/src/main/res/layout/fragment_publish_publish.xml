@@ -167,7 +167,7 @@
 
                 <Button
                     android:visibility="gone"
-                    android:id="@+id/export_to_device"
+                    android:id="@+id/backup_to_device"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/export_to_device"
@@ -183,7 +183,7 @@
                     android:background="@color/list_separator"/>
 
                 <Button
-                    android:id="@+id/export_to_app"
+                    android:id="@+id/backup_to_app"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/backup_to_app"

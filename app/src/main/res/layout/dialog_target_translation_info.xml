@@ -111,6 +111,11 @@
     </LinearLayout>
 
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="@color/list_separator"/>
+
+    <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -118,27 +123,35 @@
         android:gravity="right|end"
         style="@style/CustomDialog.Buttons">
 
-        <Button
-            android:id="@+id/delete_button"
-            android:text="@string/label_delete"
-            style="@style/Widget.Alert.Button"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <ImageButton
+                android:id="@+id/delete_button"
+                android:src="@drawable/ic_delete_black_24dp"
+                style="@style/Widget.Alert.Button"/>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right|end">
+            <ImageButton
+                android:id="@+id/print_button"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:src="@drawable/ic_print_black_24dp"
+                style="@style/Widget.Alert.Button"/>
 
-        <Button
-            android:id="@+id/backup_button"
-            android:layout_marginLeft="@dimen/dialog_controls_margin"
-            android:text="@string/backup"
-            style="@style/Widget.Alert.Button"/>
+            <ImageButton
+                android:id="@+id/publish_button"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:src="@drawable/ic_cloud_done_black_24dp"
+                style="@style/Widget.Alert.Button"/>
 
-        <Button
-            android:id="@+id/publish_button"
-            android:layout_marginLeft="@dimen/dialog_controls_margin"
-            android:text="@string/publish"
-            style="@style/Widget.Alert.Button"/>
-
-        <Button
-            android:id="@+id/dismiss_button"
-            android:layout_marginLeft="@dimen/dialog_controls_margin"
-            android:text="@string/dismiss"
-            style="@style/Widget.Alert.Button"/>
+            <ImageButton
+                android:id="@+id/backup_button"
+                android:layout_marginLeft="@dimen/dialog_controls_margin"
+                android:src="@drawable/ic_file_upload_black_24dp"
+                style="@style/Widget.Alert.Button"/>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

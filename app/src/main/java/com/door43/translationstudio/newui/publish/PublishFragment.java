@@ -142,7 +142,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
         final String filename = targetTranslation.getId() + ".zip";
 
         // export buttons
-        Button exportToApp = (Button)rootView.findViewById(R.id.export_to_app);
+        Button exportToApp = (Button)rootView.findViewById(R.id.backup_to_app);
         exportToApp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -187,7 +187,7 @@ public class PublishFragment extends PublishStepFragment implements GenericTaskW
                 }
             }
         });
-        Button exportToDevice = (Button)rootView.findViewById(R.id.export_to_device);
+        Button exportToDevice = (Button)rootView.findViewById(R.id.backup_to_device);
         exportToDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

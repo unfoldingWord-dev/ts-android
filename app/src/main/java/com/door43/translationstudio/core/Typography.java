@@ -77,6 +77,17 @@ public class Typography {
     }
 
     /**
+     * Returns the path to the font asset
+     * @param context
+     * @return
+     */
+    public static String getAssetPath(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String fontName = prefs.getString(SettingsActivity.KEY_PREF_TRANSLATION_TYPEFACE, context.getResources().getString(R.string.pref_default_translation_typeface));
+        return "assets/fonts/" + fontName;
+    }
+
+    /**
      * Returns the typeface chosen by the user
      * @param context
      * @param languageCode the spoken language
