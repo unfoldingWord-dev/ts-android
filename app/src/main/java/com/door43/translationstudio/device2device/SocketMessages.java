@@ -12,4 +12,5 @@ public class SocketMessages {
     public static final String MSG_SERVER_ERROR = "se";
     public static final String MSG_PUBLIC_KEY = "pk";
     public static final String MSG_EXCEPTION = "ex";
+    public static final String MSG_TARGET_TRANSLATION = "tt";
 }

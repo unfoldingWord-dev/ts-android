@@ -1,9 +1,6 @@
 package com.door43.translationstudio.device2device;
 
-import android.app.AlertDialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -23,9 +20,9 @@ import com.door43.translationstudio.network.Peer;
 import com.door43.translationstudio.newui.BaseActivity;
 import com.door43.translationstudio.service.BroadcastListenerService;
 import com.door43.translationstudio.service.BroadcastService;
-import com.door43.translationstudio.service.ExportingService;
-import com.door43.translationstudio.service.ImportingService;
-import com.door43.translationstudio.AppContext;
+import com.door43.translationstudio.service.PeerStatusKeys;
+import com.door43.translationstudio.service.ServerService;
+import com.door43.translationstudio.service.ClientService;
 import com.door43.util.RSAEncryption;
 
 import java.io.File;
@@ -34,25 +31,25 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class DeviceToDeviceActivity extends BaseActivity implements ExportingService.Callbacks, ImportingService.Callbacks, BroadcastListenerService.Callbacks {
+public class DeviceToDeviceActivity extends BaseActivity implements ServerService.Callbacks, ClientService.OnClientEventListener, BroadcastListenerService.Callbacks {
     private static final int REFRESH_FREQUENCY = 5000;
     private static final int SERVER_TTL = 5000; // time before a slient server is considered lost
     private boolean mStartAsServer = false;
-    private DevicePeerAdapter mAdapter;
+    private PeerAdapter mAdapter;
     private File mPublicKeyFile;
     private File mPrivateKeyFile;
     private static Map<String, DialogFragment> mPeerDialogs = new HashMap<>();
     private static final String SERVICE_NAME = "tS";
     private static final int PORT_CLIENT_UDP = 9939;
-    private ExportingService mExportService;
-    private ImportingService mImportService;
+    private ServerService mExportService;
+    private ClientService mImportService;
     private BroadcastService mBroadcastService;
     private BroadcastListenerService mBroadcastListenerService;
 
     private ServiceConnection mExportConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            ExportingService.LocalBinder binder = (ExportingService.LocalBinder) service;
+            ServerService.LocalBinder binder = (ServerService.LocalBinder) service;
             mExportService = binder.getServiceInstance();
             mExportService.registerCallback(DeviceToDeviceActivity.this);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to export service");
@@ -82,15 +79,15 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     private ServiceConnection mImportConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            ImportingService.LocalBinder binder = (ImportingService.LocalBinder) service;
+            ClientService.LocalBinder binder = (ClientService.LocalBinder) service;
             mImportService = binder.getServiceInstance();
-            mImportService.registerCallback(DeviceToDeviceActivity.this);
+            mImportService.setOnClientEventListener(DeviceToDeviceActivity.this);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Connected to import service");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mImportService.registerCallback(null);
+            mImportService.setOnClientEventListener(null);
             Logger.i(DeviceToDeviceActivity.class.getName(), "Disconnected from import service");
             // TODO: notify activity that service was dropped.
         }
@@ -143,14 +140,14 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
         final Handler handler = new Handler(getMainLooper());
         mLoadingLayout = (LinearLayout)findViewById(R.id.loadingLayout);
         ListView peerListView = (ListView)findViewById(R.id.peerListView);
-        mAdapter = new DevicePeerAdapter(mStartAsServer, this);
+        mAdapter = new PeerAdapter(mStartAsServer, this);
         peerListView.setAdapter(mAdapter);
         peerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(mStartAsServer) {
                     Peer client = mAdapter.getItem(i);
-                    if(!client.isConnected()) {
+                    if(!client.isSecure()) {
                         mExportService.acceptConnection(client);
                         handler.post(new Runnable() {
                             @Override
@@ -163,7 +160,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
                     }
                 } else {
                     Peer server = mAdapter.getItem(i);
-                    if(!server.isConnected()) {
+                    if(!server.isSecure()) {
                         // TRICKY: we don't let the client connect again otherwise it may get an encryption exception due to miss-matched keys
                         if(!server.keyStore.getBool(PeerStatusKeys.WAITING)) {
                             // connect to the server, implicitly requesting permission to access it
@@ -198,11 +195,11 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
         // start and/or connect to services
         if(mStartAsServer) {
             setTitle(R.string.export_to_device);
-            exportServiceIntent = new Intent(this, ExportingService.class);
+            exportServiceIntent = new Intent(this, ServerService.class);
             broadcastServiceIntent = new Intent(this, BroadcastService.class);
 
             // begin export service
-            if(!ExportingService.isRunning()) {
+            if(!ServerService.isRunning()) {
                 try {
                     generateSessionKeys();
                 } catch (Exception e) {
@@ -210,8 +207,8 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
                     finish();
                 }
                 try {
-                    exportServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile));
-                    exportServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile)));
+                    exportServiceIntent.putExtra(ServerService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile));
+                    exportServiceIntent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile)));
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
                     finish();
@@ -222,11 +219,11 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
             bindService(exportServiceIntent, mExportConnection, Context.BIND_AUTO_CREATE);
         } else {
             setTitle(R.string.import_from_device);
-            importServiceIntent = new Intent(this, ImportingService.class);
+            importServiceIntent = new Intent(this, ClientService.class);
             broadcastListenerServiceIntent = new Intent(this, BroadcastListenerService.class);
 
             // begin import service
-            if(!ImportingService.isRunning()) {
+            if(!ClientService.isRunning()) {
                 try {
                     generateSessionKeys();
                 } catch (Exception e) {
@@ -234,8 +231,8 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
                     finish();
                 }
                 try {
-                    importServiceIntent.putExtra(ExportingService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile));
-                    importServiceIntent.putExtra(ExportingService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile)));
+                    importServiceIntent.putExtra(ServerService.PARAM_PRIVATE_KEY, RSAEncryption.readPrivateKeyFromFile(mPrivateKeyFile));
+                    importServiceIntent.putExtra(ServerService.PARAM_PUBLIC_KEY, RSAEncryption.getPublicKeyAsString(RSAEncryption.readPublicKeyFromFile(mPublicKeyFile)));
                 } catch (Exception e) {
                     Logger.e(this.getClass().getName(), "Failed to retreive the encryption keys", e);
                     finish();
@@ -260,7 +257,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
             }
         }
         if(mImportService != null) {
-            mImportService.registerCallback(null);
+            mImportService.setOnClientEventListener(null);
             try {
                 unbindService(mImportConnection);
                 Logger.i(this.getClass().getName(), "Disconnected from import service");
@@ -289,9 +286,9 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
                     Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastService.class.getName());
                 }
             }
-            if (ExportingService.isRunning() && exportServiceIntent != null) {
+            if (ServerService.isRunning() && exportServiceIntent != null) {
                 if(!stopService(exportServiceIntent)) {
-                    Logger.w(this.getClass().getName(), "Failed to stop service " + ExportingService.class.getName());
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + ServerService.class.getName());
                 }
             }
             if (BroadcastListenerService.isRunning() && broadcastListenerServiceIntent != null) {
@@ -299,9 +296,9 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
                     Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastListenerService.class.getName());
                 }
             }
-            if (ImportingService.isRunning() && importServiceIntent != null) {
+            if (ClientService.isRunning() && importServiceIntent != null) {
                 if(!stopService(importServiceIntent)) {
-                    Logger.w(this.getClass().getName(), "Failed to stop service " + ImportingService.class.getName());
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + ClientService.class.getName());
                 }
             }
 //            mProgressDialog = null;
@@ -454,7 +451,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     }
 
     @Override
-    public void onExportServiceReady(int port) {
+    public void onServerServiceReady(int port) {
         // begin broadcasting services
         if(!BroadcastService.isRunning()) {
             broadcastServiceIntent.putExtra(BroadcastService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
@@ -474,7 +471,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     }
 
     @Override
-    public void onClientConnectionRequest(Peer peer) {
+    public void onClientConnected(Peer peer) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -485,7 +482,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     }
 
     @Override
-    public void onClientConnectionLost(Peer peer) {
+    public void onClientLost(Peer peer) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -496,7 +493,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     }
 
     @Override
-    public void onClientConnectionChanged(Peer peer) {
+    public void onClientChanged(Peer peer) {
         Handler hand = new Handler(Looper.getMainLooper());
         hand.post(new Runnable() {
             @Override
@@ -507,12 +504,12 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     }
 
     @Override
-    public void onExportServiceError(Throwable e) {
+    public void onServerServiceError(Throwable e) {
         Logger.e(this.getClass().getName(), "Export service encountered an exception: " + e.getMessage(), e);
     }
 
     @Override
-    public void onImportServiceReady() {
+    public void onClientServiceReady() {
         // begin listening for service broadcasts
         if(!BroadcastListenerService.isRunning()) {
             broadcastListenerServiceIntent.putExtra(BroadcastListenerService.PARAM_BROADCAST_PORT, PORT_CLIENT_UDP);
@@ -547,7 +544,7 @@ public class DeviceToDeviceActivity extends BaseActivity implements ExportingSer
     }
 
     @Override
-    public void onImportServiceError(Throwable e) {
+    public void onClientServiceError(Throwable e) {
         Logger.e(this.getClass().getName(), "Import service encountered an exception: " + e.getMessage(), e);
     }
 

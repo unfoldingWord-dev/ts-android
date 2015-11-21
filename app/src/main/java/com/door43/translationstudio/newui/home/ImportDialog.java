@@ -25,6 +25,7 @@ import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Util;
 import com.door43.translationstudio.filebrowser.FileBrowserActivity;
 import com.door43.translationstudio.git.SSHSession;
+import com.door43.translationstudio.newui.ShareWithPeerDialog;
 import com.door43.util.tasks.ThreadableUI;
 import com.door43.widget.ViewUtil;
 import com.jcraft.jsch.Channel;
@@ -61,6 +62,7 @@ public class ImportDialog extends DialogFragment {
 
         Button importCloudButton = (Button)v.findViewById(R.id.import_from_cloud);
         Button importFromSDButton = (Button)v.findViewById(R.id.import_from_sd);
+        Button importFromFriend = (Button)v.findViewById(R.id.import_from_friend);
 
         importCloudButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,6 +85,30 @@ public class ImportDialog extends DialogFragment {
                 Intent intent = new Intent(getActivity(), FileBrowserActivity.class);
                 intent.setDataAndType(Uri.fromFile(path), "file/*");
                 startActivityForResult(intent, IMPORT_PROJECT_FROM_SD_REQUEST);
+            }
+        });
+        importFromFriend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
+                if(AppContext.context().isNetworkAvailable()) {
+                    FragmentTransaction ft = getFragmentManager().beginTransaction();
+                    Fragment prev = getFragmentManager().findFragmentByTag(ImportDialog.TAG);
+                    if (prev != null) {
+                        ft.remove(prev);
+                    }
+                    ft.addToBackStack(null);
+
+                    ShareWithPeerDialog dialog = new ShareWithPeerDialog();
+                    Bundle args = new Bundle();
+                    args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_CLIENT);
+                    dialog.setArguments(args);
+                    dialog.show(ft, ImportDialog.TAG);
+                } else {
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
             }
         });
 

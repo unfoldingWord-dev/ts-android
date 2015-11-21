@@ -140,6 +140,9 @@ public class BroadcastService extends NetworkService {
             mTimer.cancel();
         }
         if(mSocket != null) {
+            // TODO: 11/20/2015 notify network that we are shutting down
+
+            // close
             mSocket.close();
         }
         setRunning(false);

@@ -12,7 +12,7 @@ public class Peer {
     private String mServiceName = "";
     private int mVersion = 0;
     private long mLastSeenAt = 0;
-    private boolean mIsConnected = false;
+    private boolean isSecure = false;
     public final KeyValueStore keyStore = new KeyValueStore();
     private boolean mIsAuthorized = false;
 
@@ -92,11 +92,11 @@ public class Peer {
     }
 
     /**
-     * Checks if the peer is connected.
+     * Checks if the connection to this peer is secured by an encryption key
      * @return
      */
-    public boolean isConnected() {
-        return mIsConnected;
+    public boolean isSecure() {
+        return isSecure;
     }
 
     /**
@@ -116,10 +116,11 @@ public class Peer {
     }
 
     /**
-     * Sets the connection status of the peer
-     * @param isConnected
+     * Indicates whether or not the connection to this peer is secured
+     * with an encryption key.
+     * @param secure
      */
-    public void setIsConnected(Boolean isConnected) {
-        mIsConnected = isConnected;
+    public void setIsSecure(Boolean secure) {
+        isSecure = secure;
     }
 }
