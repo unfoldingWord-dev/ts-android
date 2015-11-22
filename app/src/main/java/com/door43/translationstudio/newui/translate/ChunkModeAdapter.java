@@ -685,6 +685,21 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
+     * Toggle the target translation card between front and back
+     * @param holder
+     * @param position
+     * @return true if action was taken, else false
+     */
+    public boolean toggleTargetTranslationCard(final ViewHolder holder, final int position) {
+        final ListItem item = mListItems[position];
+        if (item.isTargetCardOpen) {
+            return closeTargetTranslationCard( holder, position);
+        }
+
+        return openTargetTranslationCard( holder, position);
+    }
+
+    /**
      * Moves the target translation card to the back
      * @param holder
      * @param position
