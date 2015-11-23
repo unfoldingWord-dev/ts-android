@@ -2,6 +2,7 @@ package com.door43.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.SeekBar;
@@ -78,5 +79,25 @@ public class VerticalSeekBar extends SeekBar {
     public synchronized void setProgress(int progress) {
         super.setProgress(progress);
         onSizeChanged(getWidth(), getHeight(), 0, 0);
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        // Store the actual progress (not the internal inverted progress), to allow restoring as
+        // HorizontalScrollBar, which is not inverted. Do this by temporarily removing the inversion
+        // prior to saving the instance state.
+        super.setProgress(getMax() - getProgress());
+        Parcelable result = super.onSaveInstanceState();
+        super.setProgress(getMax() - getProgress());
+        return result;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable instanceState) {
+        super.onRestoreInstanceState(instanceState);
+
+        // Since the instance state is saved without being inverted, restore the inverted internal
+        // format on restore.
+        super.setProgress(getMax() - getProgress());
     }
 }
