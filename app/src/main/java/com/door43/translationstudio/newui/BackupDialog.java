@@ -109,6 +109,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
                     ShareWithPeerDialog dialog = new ShareWithPeerDialog();
                     Bundle args = new Bundle();
                     args.putInt(ShareWithPeerDialog.ARG_OPERATION_MODE, ShareWithPeerDialog.MODE_SERVER);
+                    args.putString(ShareWithPeerDialog.ARG_TARGET_TRANSLATION, mTargetTranslation.getId());
                     dialog.setArguments(args);
                     dialog.show(ft, BackupDialog.TAG);
                 } else {

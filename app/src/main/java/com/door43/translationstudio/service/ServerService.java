@@ -19,7 +19,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -201,23 +205,46 @@ public class ServerService extends NetworkService {
                 String targetTranslationSlug = data[0];
                 // send target translation to the client
                 Logger.i(this.getClass().getName(), "received target translation request from " + client.getIpAddress());
-                // TODO: 11/20/2015 get instance of translator and export the target translation if we have it.
-                File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + targetTranslationSlug + Translator.ARCHIVE_EXTENSION);
+                final File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + targetTranslationSlug + Translator.ARCHIVE_EXTENSION);
                 Translator translator = AppContext.getTranslator();
                 TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
                 if(targetTranslation != null) {
                     try {
                         translator.exportArchive(targetTranslation, exportFile);
-                        // TODO: 11/20/2015 send file to client
+                        if(exportFile.exists()) {
+                            ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
+                                @Override
+                                public void onOpen(Connection connection) {
+                                    try {
+                                        DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
+                                        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(exportFile)));
+                                        byte[] buffer = new byte[8*1024];
+                                        int count;
+                                        while((count = in.read(buffer)) > 0) {
+                                            out.write(buffer, 0, count);
+                                        }
+                                        out.close();
+                                        in.close();
+                                    } catch (IOException e) {
+                                        Logger.e(ServerService.class.getName(), "Failed to send the target translation", e);
+                                    }
+                                }
+                            });
+                            // send file details
+                            JSONObject json = new JSONObject();
+                            json.put("port", fileSocket.getLocalPort());
+                            json.put("name", exportFile.getName());
+                            json.put("size", exportFile.length());
+                            sendMessage(client, PeerCommand.TargetTranslation + ":" + json.toString());
+                        }
                     } catch (Exception e) {
                         // export failed
-                        // TODO: 11/20/2015 log error
-                        // TODO: 11/20/2015 notify client 
+                        Logger.e(this.getClass().getName(), "Failed to export the archive", e);
+                        sendMessage(client, SocketMessages.MSG_SERVER_ERROR);
                     }
                 } else {
                     // we don't have it
-                    // TODO: 11/20/2015 notify client
-
+                    sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
                 }
                 break;
             case ProjectList:
@@ -357,6 +384,53 @@ public class ServerService extends NetworkService {
             default:
                 Logger.i(this.getClass().getName(), "received invalid request from " + client.getIpAddress() + ": " + command);
                 sendMessage(client, SocketMessages.MSG_INVALID_REQUEST);
+        }
+    }
+
+    /**
+     * Sends a target translation to the peer
+     * @param client
+     * @param targetTranslationSlug
+     */
+    public void sendTargetTranslation(Peer client, String targetTranslationSlug) {
+        final File exportFile = new File(AppContext.getPublicDownloadsDirectory(), System.currentTimeMillis() / 1000L + "_" + targetTranslationSlug + "." + Translator.ARCHIVE_EXTENSION);
+        Translator translator = AppContext.getTranslator();
+        TargetTranslation targetTranslation = translator.getTargetTranslation(targetTranslationSlug);
+        if(targetTranslation != null) {
+            try {
+                translator.exportArchive(targetTranslation, exportFile);
+                if(exportFile.exists()) {
+                    ServerSocket fileSocket = openWriteSocket(new OnSocketEventListener() {
+                        @Override
+                        public void onOpen(Connection connection) {
+                            try {
+                                DataOutputStream out = new DataOutputStream(connection.getSocket().getOutputStream());
+                                DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(exportFile)));
+                                byte[] buffer = new byte[8*1024];
+                                int count;
+                                while((count = in.read(buffer)) > 0) {
+                                    out.write(buffer, 0, count);
+                                }
+                                out.close();
+                                in.close();
+                            } catch (IOException e) {
+                                Logger.e(ServerService.class.getName(), "Failed to send the target translation", e);
+                            }
+                        }
+                    });
+                    // send file details
+                    JSONObject json = new JSONObject();
+                    json.put("port", fileSocket.getLocalPort());
+                    json.put("name", exportFile.getName());
+                    json.put("size", exportFile.length());
+                    sendMessage(client, PeerCommand.TargetTranslation + ":" + json.toString());
+                }
+            } catch (Exception e) {
+                // TODO: 11/23/2015 we could not export the target translation
+                e.printStackTrace();
+            }
+        } else {
+            // TODO: 11/23/2015 we don't have this target translation
         }
     }
 

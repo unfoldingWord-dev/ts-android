@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import com.door43.translationstudio.service.BroadcastService;
 import com.door43.translationstudio.service.ClientService;
 import com.door43.translationstudio.service.ServerService;
 import com.door43.util.RSAEncryption;
+import com.door43.widget.ViewUtil;
 
 import org.json.JSONObject;
 
@@ -142,9 +144,12 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         View v = inflater.inflate(R.layout.dialog_share_with_peer, container, false);
 
         Bundle args = getArguments();
-        if(args != null && args.containsKey(ARG_OPERATION_MODE) && args.containsKey(ARG_TARGET_TRANSLATION)) {
+        if(args != null && args.containsKey(ARG_OPERATION_MODE)) {
             operationMode = args.getInt(ARG_OPERATION_MODE, MODE_CLIENT);
             targetTranslationSlug = args.getString(ARG_TARGET_TRANSLATION, null);
+            if(operationMode == MODE_SERVER && targetTranslationSlug == null) {
+                throw new InvalidParameterException("Server mode requires a target translation slug");
+            }
         } else {
             throw new InvalidParameterException("Missing intent arguments");
         }
@@ -176,6 +181,8 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                                 updatePeerList(serverService.getPeers());
                             }
                         });
+                    } else {
+                        serverService.sendTargetTranslation(peer, targetTranslationSlug);
                     }
                 } else if(operationMode == MODE_CLIENT) {
                     if(!peer.isSecure()) {
@@ -188,8 +195,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
                         }
                     } else {
                         // TODO: 11/20/2015 display options for interacting with this user
-                        // for now we are just requesting a single project
-                        clientService.requestTargetTranslation(peer, targetTranslationSlug);
+
                     }
                 }
             }
@@ -420,5 +426,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     @Override
     public void onClientServiceError(Throwable e) {
         Logger.e(this.getClass().getName(), "Client service encountered an exception: " + e.getMessage(), e);
+    }
+
+    @Override
+    public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
+        // TODO: 11/23/2015 notify user that download is complete.
+        Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), "Target translation successfully imported", Snackbar.LENGTH_LONG);
+        ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+        snack.show();
     }
 }

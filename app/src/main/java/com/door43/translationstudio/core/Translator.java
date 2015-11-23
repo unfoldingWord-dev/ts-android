@@ -214,9 +214,11 @@ public class Translator {
      * Imports target translations from an archive
      * todo: we should have another method that will inspect the archive and return the details to the user so they can decide if they want to import it
      * @param file
+     * @return an array of target translation slugs
      */
-    public void importArchive(File file) throws Exception {
+    public String[] importArchive(File file) throws Exception {
         File tempCache = new File(getLocalCacheDir(), System.currentTimeMillis()+"");
+        List<String> importedTargetTranslationSlugs = new ArrayList<>();
         try {
             tempCache.mkdirs();
             Zip.unzip(file, tempCache);
@@ -227,10 +229,12 @@ public class Translator {
                 FileUtils.deleteQuietly(newDir);
                 // import new translation
                 FileUtils.moveDirectory(dir, newDir);
+                importedTargetTranslationSlugs.add(dir.getName());
             }
             if(targetTranslationDirs.length == 0) {
                 throw new Exception("The archive does not contain any valid target translations");
             }
+
         } catch (Exception e) {
             FileUtils.deleteQuietly(tempCache);
             if(!FilenameUtils.getExtension(file.getName()).toLowerCase().equals(ARCHIVE_EXTENSION)) {
@@ -242,6 +246,7 @@ public class Translator {
 
         // clean
         FileUtils.deleteQuietly(tempCache);
+        return importedTargetTranslationSlugs.toArray(new String[importedTargetTranslationSlugs.size()]);
     }
 
     /**

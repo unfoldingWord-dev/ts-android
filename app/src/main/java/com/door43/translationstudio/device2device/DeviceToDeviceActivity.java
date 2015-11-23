@@ -548,6 +548,11 @@ public class DeviceToDeviceActivity extends BaseActivity implements ServerServic
         Logger.e(this.getClass().getName(), "Import service encountered an exception: " + e.getMessage(), e);
     }
 
+    @Override
+    public void onReceivedTargetTranslations(Peer server, String[] targetTranslations) {
+
+    }
+
 //    @Override
 //    public void onReceivedProjectList(final Peer server, Model[] models) {
 //        if(models.length > 0) {

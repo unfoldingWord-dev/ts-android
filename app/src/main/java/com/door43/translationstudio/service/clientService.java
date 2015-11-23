@@ -6,7 +6,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import com.door43.tools.reporting.Logger;
+import com.door43.translationstudio.AppContext;
 import com.door43.translationstudio.R;
+import com.door43.translationstudio.core.TargetTranslation;
+import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.device2device.SocketMessages;
 import com.door43.translationstudio.network.Connection;
 import com.door43.translationstudio.network.Peer;
@@ -173,7 +176,7 @@ public class ClientService extends NetworkService {
             message = decryptMessage(privateKey, message);
             if(message != null) {
                 String[] data = StringUtilities.chunk(message, ":");
-                onCommandReceived(server, data[0], Arrays.copyOfRange(data, 1, data.length));
+                onCommandReceived(server, PeerCommand.get(data[0]), Arrays.copyOfRange(data, 1, data.length));
             } else if(listener != null) {
                 listener.onClientServiceError(new Exception("Message descryption failed"));
             }
@@ -219,9 +222,135 @@ public class ClientService extends NetworkService {
      * @param command
      * @param data
      */
-    private void onCommandReceived(final Peer server, String command, String[] data) {
+    private void onCommandReceived(final Peer server, PeerCommand command, String[] data) {
         switch(command) {
-            case SocketMessages.MSG_PROJECT_ARCHIVE:
+            case TargetTranslation:
+                Logger.i(this.getClass().getName(), "Received target translation archive from " + server.getIpAddress());
+
+                // receive project archive from server
+                JSONObject importJson;
+                try {
+                    importJson = new JSONObject(data[0]);
+                } catch (JSONException e) {
+                    if(listener != null) {
+                        listener.onClientServiceError(e);
+                    }
+                    break;
+                }
+
+                if(importJson.has("port") && importJson.has("size") && importJson.has("name")) {
+                    int port;
+                    final long size;
+                    final String name;
+                    try {
+                        port = importJson.getInt("port");
+                        size = importJson.getLong("size");
+                        name = importJson.getString("name");
+                    } catch (JSONException e) {
+                        if(listener != null) {
+                            listener.onClientServiceError(e);
+                        }
+                        break;
+                    }
+                    // the server is sending a project archive
+                    openReadSocket(server, port, new OnSocketEventListener() {
+                        @Override
+                        public void onOpen(Connection connection) {
+                            connection.setOnCloseListener(new Connection.OnCloseListener() {
+                                @Override
+                                public void onClose() {
+                                    if (listener != null) {
+                                        listener.onClientServiceError(new Exception("Socket was closed before download completed"));
+                                    }
+                                }
+                            });
+
+                            File file = null;
+                            try {
+                                file = File.createTempFile("p2p", name);
+                                // download archive
+                                DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
+                                file.getParentFile().mkdirs();
+                                file.createNewFile();
+                                OutputStream out = new FileOutputStream(file.getAbsolutePath());
+                                byte[] buffer = new byte[8 * 1024];
+                                int totalCount = 0;
+                                int count;
+                                while ((count = in.read(buffer)) > 0) {
+                                    totalCount += count;
+                                    server.keyStore.add(PeerStatusKeys.PROGRESS, totalCount / ((int) size) * 100);
+                                    if (listener != null) {
+                                        listener.onServerConnectionChanged(server);
+                                    }
+                                    out.write(buffer, 0, count);
+                                }
+                                server.keyStore.add(PeerStatusKeys.PROGRESS, 0);
+                                if (listener != null) {
+                                    listener.onServerConnectionChanged(server);
+                                }
+                                out.close();
+                                in.close();
+
+                                // import the target translation
+                                Translator translator = AppContext.getTranslator();
+                                // TODO: 11/23/2015 perform a diff first
+                                try {
+                                    String[] targetTranslationSlugs = translator.importArchive(file);
+                                    if(listener != null) {
+                                        listener.onReceivedTargetTranslations(server, targetTranslationSlugs);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                file.delete();
+//                                ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
+//                                if (importStatuses.length > 0) {
+//                                    boolean importWarnings = false;
+//                                    for (ProjectImport s : importStatuses) {
+//                                        if (!s.isApproved()) {
+//                                            importWarnings = true;
+//                                        }
+//                                    }
+//                                    if (importWarnings) {
+//                                        if(listener != null) {
+//                                            listener.onReceivedProject(server, importStatuses);
+//                                        }
+//                                    } else {
+//                                        for (ProjectImport r : importStatuses) {
+//                                            Sharing.importProject(r);
+//                                        }
+//                                        Sharing.cleanImport(importStatuses);
+//                                        file.delete();
+//                                        if(listener != null) {
+//                                            listener.onReceivedProject(server, new ProjectImport[0]);
+//                                        }
+//                                    }
+//                                } else {
+//                                    file.delete();
+//                                    Logger.w(this.getClass().getName(), "failed to import the project archive");
+//                                    if (listener != null) {
+//                                        listener.onClientServiceError(new Exception("failed to import the project archive"));
+//                                    }
+//                                }
+                            } catch (IOException e) {
+                                Logger.e(this.getClass().getName(), "Failed to download the file", e);
+                                if(file != null) {
+                                    file.delete();
+                                }
+                                if (listener != null) {
+                                    listener.onClientServiceError(e);
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    Logger.w(this.getClass().getName(), "Invalid response from server: " + data.toString());
+                    if(listener != null) {
+                        listener.onClientServiceError(new Exception("Invalid response from server"));
+                    }
+                }
+                break;
+            case ProjectArchive:
                 Logger.i(this.getClass().getName(), "received project archive from " + server.getIpAddress());
                 // receive project archive from server
                 JSONObject infoJson;
@@ -333,7 +462,7 @@ public class ClientService extends NetworkService {
                     }
                 }
                 break;
-            case SocketMessages.MSG_PROJECT_LIST:
+            case ProjectList:
                 Logger.i(this.getClass().getName(), "received project list from " + server.getIpAddress());
                 // the sever gave us the list of available projects for import
                 String library = data[0];
@@ -445,7 +574,7 @@ public class ClientService extends NetworkService {
 //                    listener.onReceivedProjectList(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
                 }
                 break;
-            case SocketMessages.MSG_INVALID_REQUEST:
+            case InvalidRequest:
                 // TODO: do something about this.
                 if(listener != null) {
                     listener.onClientServiceError(new Throwable("Invalid request"));
@@ -467,6 +596,7 @@ public class ClientService extends NetworkService {
         void onClientServiceError(Throwable e);
 //        void onReceivedProjectList(Peer server, Model[] models);
 //        void onReceivedProject(Peer server, ProjectImport[] importStatuses);
+        void onReceivedTargetTranslations(Peer server, String[] targetTranslations);
     }
 
     /**
