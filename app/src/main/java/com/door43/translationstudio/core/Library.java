@@ -1,6 +1,7 @@
 package com.door43.translationstudio.core;
 
 import android.content.Context;
+import android.os.Environment;
 
 import com.door43.tools.reporting.Logger;
 import com.door43.util.Zip;
@@ -22,6 +23,7 @@ import java.util.Locale;
 public class Library {
     private static final int MIN_CHECKING_LEVEL = 3; // the minimum level to be considered a source translation
     private static final String DEFAULT_RESOURCE_SLUG = "ulb";
+    private static final String IMAGES_DIR = "images";
     private final Indexer mAppIndex;
     public static String DATABASE_NAME = "app";
     private final Context mContext;
@@ -52,6 +54,19 @@ public class Library {
     public void delete() {
         mAppIndex.delete();
         mAppIndex.rebuild();
+    }
+
+    /**
+     * Returns the directory where project images are stored.
+     * Images are stored within project directories and named with the complex frame id
+     * examples:
+     * "obs/01-01.jpg" frame image
+     * "obs/01.jpg" chapter image
+     * "obs/icon.jpg" project icon
+     * @return
+     */
+    public File getImagesDir() {
+        return new File(mContext.getFilesDir(), IMAGES_DIR);
     }
 
     /**
@@ -641,6 +656,15 @@ public class Library {
      */
     public TranslationNote getTranslationNote(SourceTranslation sourceTranslation, String chapterId, String frameId, String translationNoteId) {
         return getActiveIndex().getNote(sourceTranslation, chapterId, frameId, translationNoteId);
+    }
+
+    /**
+     * Returns an array of translation words in the source translation
+     * @param sourceTranslation
+     * @return
+     */
+    public TranslationWord[] getTranslationWords(SourceTranslation sourceTranslation) {
+        return getActiveIndex().getWords(sourceTranslation);
     }
 
     /**

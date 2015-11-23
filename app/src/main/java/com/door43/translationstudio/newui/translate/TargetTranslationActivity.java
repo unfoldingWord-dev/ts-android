@@ -5,7 +5,11 @@ import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
+import android.print.PrintDocumentInfo;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.text.Layout;
 import android.util.Log;
 import android.view.MenuItem;
@@ -21,17 +25,21 @@ import android.widget.SeekBar;
 import com.door43.tools.reporting.Logger;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.TranslationViewMode;
 import com.door43.translationstudio.core.Translator;
+import com.door43.translationstudio.core.Typography;
 import com.door43.translationstudio.newui.BackupDialog;
 import com.door43.translationstudio.newui.FeedbackDialog;
+import com.door43.translationstudio.newui.PrintDialog;
 import com.door43.translationstudio.newui.publish.PublishActivity;
 import com.door43.translationstudio.AppContext;
 import com.door43.widget.VerticalSeekBar;
 import com.door43.widget.ViewUtil;
 import com.door43.translationstudio.newui.BaseActivity;
 
+import java.io.File;
 import java.security.InvalidParameterException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -180,6 +188,20 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                                 backupDialog.setArguments(args);
                                 backupDialog.show(backupFt, "backupDialog");
                                 return true;
+                            case R.id.action_print:
+                                FragmentTransaction printFt = getFragmentManager().beginTransaction();
+                                Fragment printPrev = getFragmentManager().findFragmentByTag("printDialog");
+                                if (printPrev != null) {
+                                    printFt.remove(printPrev);
+                                }
+                                printFt.addToBackStack(null);
+
+                                PrintDialog printDialog = new PrintDialog();
+                                Bundle printArgs = new Bundle();
+                                printArgs.putString(PrintDialog.ARG_TARGET_TRANSLATION_ID, mTargetTranslation.getId());
+                                printDialog.setArguments(printArgs);
+                                printDialog.show(printFt, "printDialog");
+                                return true;
                             case R.id.action_feedback:
                                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                                 Fragment prev = getFragmentManager().findFragmentByTag("bugDialog");
@@ -293,16 +315,18 @@ public class TargetTranslationActivity extends BaseActivity implements ViewModeF
                 EditText editText = (EditText) focusedView;
                 int pos = editText.getSelectionStart();
                 Layout layout = editText.getLayout();
-                int line = layout.getLineForOffset(pos);
-                int baseline = layout.getLineBaseline(line);
-                int ascent = layout.getLineAscent(line);
+                if(layout != null) {
+                    int line = layout.getLineForOffset(pos);
+                    int baseline = layout.getLineBaseline(line);
+                    int ascent = layout.getLineAscent(line);
 
-                // convert relative positions to absolute position
-                int x = focusedViewX + (int) layout.getPrimaryHorizontal(pos);
-                int bottomY = focusedViewY + baseline;
-                int y = bottomY + ascent;
+                    // convert relative positions to absolute position
+                    int x = focusedViewX + (int) layout.getPrimaryHorizontal(pos);
+                    int bottomY = focusedViewY + baseline;
+                    int y = bottomY + ascent;
 
-                return new Rect(x, y, x, bottomY); // ignore width of cursor for now
+                    return new Rect(x, y, x, bottomY); // ignore width of cursor for now
+                }
             }
         }
 

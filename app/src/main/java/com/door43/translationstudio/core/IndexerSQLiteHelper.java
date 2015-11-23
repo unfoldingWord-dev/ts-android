@@ -865,6 +865,40 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
+     * Returns an array of translationWords in a source translation
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     * @return
+     */
+    public TranslationWord[] getTranslationWords(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        List<TranslationWord> words = new ArrayList<>();
+        Cursor cursor = db.rawQuery("SELECT `id`, `slug`, `term`, `definition`, `definition_title` FROM `translation_word`"
+                + " WHERE `id` IN ("
+                + "   SELECT `translation_word_id` FROM `resource__translation_word` AS `rtw`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`rtw`.`resource_id`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + "   LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?"
+                + " ) ORDER BY `slug` ASC", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            long wordId = cursor.getLong(0);
+            String wordSlug = cursor.getString(1);
+            String term = cursor.getString(2);
+            String definition = cursor.getString(3);
+            String definitionTitle = cursor.getString(4);
+
+            // NOTE: we purposely do not retrieve the related terms, aliases and example passages for better performance
+            words.add(new TranslationWord(wordSlug, term, definition, definitionTitle, new String[0],  new String[0],  new TranslationWord.Example[0]));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return words.toArray(new TranslationWord[words.size()]);
+    }
+
+    /**
      * Returns an array of translation words that are linked to the frame
      * @param db
      * @param projectSlug
@@ -880,7 +914,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
                 + " WHERE `id` IN ("
                 + "   SELECT `translation_word_id` FROM `frame__translation_word`"
                 + "   WHERE `project_slug`=? AND `source_language_slug`=? AND `resource_slug`=? AND `chapter_slug`=? AND `frame_slug`=?"
-                + " ) ORDER BY `slug` DESC", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug, frameSlug});
+                + " ) ORDER BY `slug` ASC", new String[]{projectSlug, sourceLanguageSlug, resourceSlug, chapterSlug, frameSlug});
         cursor.moveToFirst();
         while(!cursor.isAfterLast()) {
             long wordId = cursor.getLong(0);
@@ -1309,7 +1343,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int checkingLevel = cursor.getInt(3);
             int dateModified = cursor.getInt(4);
             String version = cursor.getString(5);
-            sourceTranslations.add(new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version));
+            TranslationFormat format = getSourceTranslationFormat(db, projectSlug, sourceLanguageSlug, resourceSlug);
+            sourceTranslations.add(new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version, format));
             cursor.moveToNext();
         }
         cursor.close();
@@ -1418,6 +1453,34 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
     }
 
     /**
+     * Returns the format of the source translation
+     * @param db
+     * @param projectSlug
+     * @param sourceLanguageSlug
+     * @param resourceSlug
+     * @return
+     */
+    public TranslationFormat getSourceTranslationFormat(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug) {
+        Cursor cursor = db.rawQuery("SELECT `f`.`format` FROM `frame` AS `f`"
+                + " WHERE `f`.`chapter_id` IN ("
+                + "   SELECT `c`.`id` FROM `chapter` AS `c`"
+                + "   LEFT JOIN `resource` AS `r` ON `r`.`id`=`c`.`resource_id`"
+                + "   LEFT JOIN `source_language` AS `sl` ON `sl`.`id`=`r`.`source_language_id`"
+                + "   LEFT JOIN `project` AS `p` ON `p`.`id`=`sl`.`project_id`"
+                + "   WHERE `p`.`slug`=? AND `sl`.`slug`=? AND `r`.`slug`=?"
+                + " ) AND `f`.`format` IS NOT NULL LIMIT 1", new String[]{projectSlug, sourceLanguageSlug, resourceSlug});
+        TranslationFormat format = TranslationFormat.DEFAULT;
+        if(cursor.moveToFirst()) {
+            format = TranslationFormat.get(cursor.getString(0));
+            if(format == null) {
+                format = TranslationFormat.DEFAULT;
+            }
+        }
+        cursor.close();
+        return format;
+    }
+
+    /**
      * Returns a source translation
      * @param db
      * @param projectSlug
@@ -1439,7 +1502,8 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
             int checkingLevel = cursor.getInt(3);
             int dateModified = cursor.getInt(4);
             String version = cursor.getString(5);
-            sourceTranslation = new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version);
+            TranslationFormat format = getSourceTranslationFormat(db, projectSlug, sourceLanguageSlug, resourceSlug);
+            sourceTranslation = new SourceTranslation(projectSlug, sourceLanguageSlug, resourceSlug, projectName, sourceLanguageName, resourceName, checkingLevel, dateModified, version, format);
         }
         cursor.close();
         return sourceTranslation;
@@ -1575,7 +1639,7 @@ public class IndexerSQLiteHelper extends SQLiteOpenHelper{
      * @param chapterSlug
      * @return
      */
-    public TranslationFormat getChapterBodyFromat(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug, String chapterSlug) {
+    public TranslationFormat getChapterBodyFormat(SQLiteDatabase db, String projectSlug, String sourceLanguageSlug, String resourceSlug, String chapterSlug) {
         Cursor cursor = db.rawQuery("SELECT `f`.`format` FROM `frame` AS `f`"
                 + " WHERE `f`.`chapter_id` IN ("
                 + "   SELECT `c`.`id` FROM `chapter` AS `c`"

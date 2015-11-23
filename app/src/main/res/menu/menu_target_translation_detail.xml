@@ -21,6 +21,12 @@
         android:icon="@drawable/ic_file_upload_black_24dp"
         app:showAsAction="never" />
 
+    <item android:id="@+id/action_print"
+        android:title="@string/print"
+        android:orderInCategory="150"
+        android:icon="@drawable/ic_print_black_24dp"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_feedback"
         android:title="@string/feedback"
         android:orderInCategory="200"

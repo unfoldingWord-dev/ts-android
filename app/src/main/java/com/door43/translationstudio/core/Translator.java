@@ -2,6 +2,7 @@ package com.door43.translationstudio.core;
 
 import android.content.Context;
 import android.content.pm.PackageInfo;
+import android.os.Build;
 import android.text.Editable;
 import android.text.SpannedString;
 
@@ -244,6 +245,28 @@ public class Translator {
     }
 
     /**
+     * Exports a target translation as a pdf file
+     * @param targetTranslation
+     * @param outputFile
+     */
+    public void exportPdf(Library library, TargetTranslation targetTranslation, TranslationFormat format, String fontPath, File imagesDir, boolean includeImages, boolean includeIncompleteFrames, File outputFile) throws Exception {
+        PdfPrinter printer = new PdfPrinter(mContext, library, targetTranslation, format, fontPath, imagesDir);
+        printer.includeMedia(includeImages);
+        printer.includeIncomplete(includeIncompleteFrames);
+        File pdf = printer.print();
+        if(pdf.exists()) {
+            outputFile.delete();
+            FileUtils.moveFile(pdf, outputFile);
+        }
+
+//        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            // use PrintedPdf
+//        } else {
+//            // legacy pdf export
+//        }
+    }
+
+    /**
      * Exports a target translation as a single DokuWiki file
      * @param targetTranslation
      * @return
@@ -353,7 +376,7 @@ public class Translator {
                         targetTranslation = new TargetTranslation(targetLanguage.getId(), project.getId(), mRootDir);
                     } else if (!chapterId.isEmpty() && !frameId.isEmpty()) {
                         // retrieve chapter reference (end of chapter) and write chapter
-                        ChapterTranslation chapterTranslation =targetTranslation.getChapterTranslation(chapterId);
+                        ChapterTranslation chapterTranslation = targetTranslation.getChapterTranslation(chapterId);
                         targetTranslation.applyChapterTitleTranslation(chapterTranslation, chapterTitle);
                         targetTranslation.applyChapterReferenceTranslation(chapterTranslation, line);
 

@@ -100,6 +100,7 @@ public class UploadTargetTranslationTask extends ManagedTask {
                 Logger.i(this.getClass().getName(), "Pushing target translation " + mTargetTranslation.getId() + " to " + targetTranslationRemoteRepository);
                 mResponse = pushRepo(translationRepo, targetTranslationRemoteRepository);
             }
+            // todo push profile
         } catch (JGitInternalException e) {
             Logger.e(this.getClass().getName(), "Failed to push the target translation " + mTargetTranslation.getId() + " to " + targetTranslationRemoteRepository, e);
             mUploadSucceeded = false;

@@ -89,9 +89,9 @@ public class TranslatorTest extends InstrumentationTestCase {
         SourceTranslation[] sourceTranslations = library.getSourceTranslations(targetTranslation.getProjectId());
 
         AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslations[0].getId());
-        targetTranslation.useSourceTranslation(sourceTranslations[0]);
+        targetTranslation.addSourceTranslation(sourceTranslations[0]);
         AppContext.addOpenSourceTranslation(targetTranslation.getId(), sourceTranslations[1].getId());
-        targetTranslation.useSourceTranslation(sourceTranslations[1]);
+        targetTranslation.addSourceTranslation(sourceTranslations[1]);
 
         String[] sourceTranslationIds = AppContext.getOpenSourceTranslationIds(targetTranslation.getId());
         assertEquals(2, sourceTranslationIds.length);

@@ -13,6 +13,8 @@ import android.view.MenuItem;
 
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.SettingsActivity;
+import com.door43.translationstudio.core.Library;
+import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
@@ -91,18 +93,6 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
             setResult(RESULT_OK, data);
             finish();
-
-            // display source language list (for first tab)
-//            mFragment = new SourceLanguageListFragment();
-//            Bundle extras = getIntent().getExtras();
-//            if(extras == null) {
-//                extras = new Bundle();
-//            }
-//            extras.putString(SourceLanguageListFragment.ARG_PROJECT_ID, projectSlug);
-//                    ((SourceLanguageListFragment) mFragment).setArguments(extras);
-//            getFragmentManager().beginTransaction().replace(R.id.fragment_container, (SourceLanguageListFragment) mFragment).commit();
-//            // TODO: animate
-//            invalidateOptionsMenu();
         } else {
             // that translation already exists
             Intent data = new Intent();
@@ -111,29 +101,6 @@ public class NewTargetTranslationActivity extends BaseActivity implements Target
             finish();
         }
     }
-
-//    @Override
-//    public void onItemClick(SourceLanguage sourceLanguage) {
-//        Library library = AppContext.getLibrary();
-//        Translator translator = AppContext.getTranslator();
-//
-//        TargetTranslation targetTranslation = translator.getTargetTranslation(mNewTargetTranslationId);
-//        if(targetTranslation != null) {
-//            SourceTranslation sourceTranslation = library.getDefaultSourceTranslation(targetTranslation.getProjectId(), sourceLanguage.getId());
-//            if(sourceTranslation != null) {
-//                AppContext.addOpenSourceTranslation(mNewTargetTranslationId, sourceTranslation.getId());
-//                try {
-//                    targetTranslation.useSourceTranslation(sourceTranslation);
-//                } catch (JSONException e) {
-//                    Logger.w(this.getClass().getName(), "Failed to record source translation (" + sourceTranslation.getId() + ") usage in the target translation " + targetTranslation.getId(), e);
-//                }
-//            }
-//            Intent data = new Intent();
-//            data.putExtra(EXTRA_TARGET_TRANSLATION_ID, mNewTargetTranslationId);
-//            setResult(RESULT_OK, data);
-//        }
-//        finish();
-//    }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {

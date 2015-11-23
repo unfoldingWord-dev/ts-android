@@ -96,6 +96,14 @@ public class MainApplication extends Application {
     }
 
     /**
+     * Checks if the app should always share resources.
+     * @return
+     */
+    public boolean alwaysShare() {
+        return getUserPreferences().getBoolean(SettingsActivity.KEY_PREF_ALWAYS_SHARE, Boolean.parseBoolean(getResources().getString(R.string.pref_default_always_share)));
+    }
+
+    /**
      * Moves an asset into the cache directory and returns a file reference to it
      * @param path
      * @return

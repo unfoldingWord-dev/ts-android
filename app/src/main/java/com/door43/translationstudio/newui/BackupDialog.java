@@ -66,9 +66,13 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
             throw new InvalidParameterException("The target translation id was not specified");
         }
 
-        Button backupToCloudButton = (Button)v.findViewById(R.id.upload_to_cloud);
-        Button backupToSDButton = (Button)v.findViewById(R.id.export_to_sd);
-        Button backupToAppButton = (Button)v.findViewById(R.id.export_to_app);
+        // TODO: 11/11/2015 check if at least one translator has been recorded on this target translation
+        // if there are no translators the user must be presented with a form to enter a translator.
+
+        Button backupToCloudButton = (Button)v.findViewById(R.id.backup_to_cloud);
+        Button backupToSDButton = (Button)v.findViewById(R.id.backup_to_sd);
+        Button backupToAppButton = (Button)v.findViewById(R.id.backup_to_app);
+        Button backupToDeviceButton = (Button)v.findViewById(R.id.backup_to_device);
 
         final String filename = mTargetTranslation.getId() + "." + Translator.ARCHIVE_EXTENSION;
 
@@ -80,6 +84,28 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
         if(task != null) {
             mTaskWatcher.watch(task);
         }
+
+        Button dismissButton = (Button)v.findViewById(R.id.dismiss_button);
+        dismissButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
+
+        backupToDeviceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO: 11/18/2015 eventually we need to support bluetooth as well as an adhoc network
+                if(AppContext.context().isNetworkAvailable()) {
+                    // TODO: 11/18/2015 open sharing dialog
+                } else {
+                    Snackbar snack = Snackbar.make(getActivity().findViewById(android.R.id.content), R.string.internet_not_available, Snackbar.LENGTH_LONG);
+                    ViewUtil.setSnackBarTextColor(snack, getResources().getColor(R.color.light_primary_text));
+                    snack.show();
+                }
+            }
+        });
 
         // backup buttons
         backupToCloudButton.setOnClickListener(new View.OnClickListener() {
@@ -210,6 +236,7 @@ public class BackupDialog extends DialogFragment implements GenericTaskWatcher.O
     @Override
     public void onFinished(ManagedTask task) {
         mTaskWatcher.stop();
+        TaskManager.clearTask(task);
         if(((UploadTargetTranslationTask)task).uploadSucceeded()) {
             final String response = ((UploadTargetTranslationTask)task).getResponse();
             Handler hand = new Handler(Looper.getMainLooper());
