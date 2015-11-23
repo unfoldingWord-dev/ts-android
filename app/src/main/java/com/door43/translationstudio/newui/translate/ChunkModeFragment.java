@@ -21,8 +21,7 @@ public class ChunkModeFragment extends ViewModeFragment {
         return new ChunkModeAdapter(activity, targetTranslationId, sourceTranslationId, chapterId, frameId, openTarget);
     }
 
-    @Override
-    protected void onRightSwipe(MotionEvent e1, MotionEvent e2) {
+    protected void doTranslationCardToggle(MotionEvent e1, MotionEvent e2) {
         if(getAdapter() != null) {
             int position = findViewHolderAdapterPosition(e1.getX(), e1.getY());
             if(position == -1) {
@@ -30,24 +29,18 @@ public class ChunkModeFragment extends ViewModeFragment {
             }
             if(position != -1) {
                 RecyclerView.ViewHolder holder = getViewHolderForAdapterPosition(position);
-                ((ChunkModeAdapter) getAdapter()).closeTargetTranslationCard((ChunkModeAdapter.ViewHolder)holder, position);
+                ((ChunkModeAdapter) getAdapter()).toggleTargetTranslationCard((ChunkModeAdapter.ViewHolder) holder, position);
             }
         }
     }
 
     @Override
+    protected void onRightSwipe(MotionEvent e1, MotionEvent e2) {
+        doTranslationCardToggle(e1, e2);
+    }
+
+    @Override
     protected void onLeftSwipe(MotionEvent e1, MotionEvent e2) {
-        if(getAdapter() != null) {
-            int position = findViewHolderAdapterPosition(e1.getX(), e1.getY());
-            if(position == -1) {
-                position = findViewHolderAdapterPosition(e2.getX(), e2.getY());
-            }
-            if(position != -1) {
-                ChunkModeAdapter.ViewHolder holder = (ChunkModeAdapter.ViewHolder) getViewHolderForAdapterPosition(position);
-                ChunkModeAdapter chunkModeAdapter = (ChunkModeAdapter) getAdapter();
-                chunkModeAdapter.openTargetTranslationCard(holder, position);
-                chunkModeAdapter.enableClicksIfChunkIsDone(holder);
-            }
-        }
+        doTranslationCardToggle(e1, e2);
     }
 }
