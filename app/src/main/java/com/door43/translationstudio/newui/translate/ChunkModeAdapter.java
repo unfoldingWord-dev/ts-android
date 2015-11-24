@@ -809,15 +809,16 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * Toggle the target translation card between front and back
      * @param holder
      * @param position
+     * @param swipeLeft
      * @return true if action was taken, else false
      */
-    public boolean toggleTargetTranslationCard(final ViewHolder holder, final int position) {
+    public boolean toggleTargetTranslationCard(final ViewHolder holder, final int position, final boolean swipeLeft) {
         final ListItem item = mListItems[position];
         if (item.isTargetCardOpen) {
-            return closeTargetTranslationCard( holder, position);
+            return closeTargetTranslationCard( holder, position, !swipeLeft);
         }
 
-        boolean success = openTargetTranslationCard( holder, position);
+        boolean success = openTargetTranslationCard( holder, position, !swipeLeft);
         enableClicksIfChunkIsDone(holder);
         return success;
     }
@@ -826,15 +827,16 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * Moves the target translation card to the back
      * @param holder
      * @param position
+     * @param leftToRight
      * @return true if action was taken, else false
      */
-    public boolean closeTargetTranslationCard(final ViewHolder holder, final int position) {
+    public boolean closeTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
         final ListItem item = mListItems[position];
         if(item.isTargetCardOpen) {
 
             clearSelectionFromTarget(holder);
 
-            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, true, new Animation.AnimationListener() {
+            ViewUtil.animateSwapCards(holder.mTargetCard, holder.mSourceCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
                 }
@@ -865,15 +867,26 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
     }
 
     /**
-     * Moves the target translation to the top
+     * Moves the target translation card to the back - left to right
      * @param holder
      * @param position
      * @return true if action was taken, else false
      */
-    public boolean openTargetTranslationCard(ViewHolder holder, final int position) {
+    public boolean closeTargetTranslationCard(final ViewHolder holder, final int position) {
+        return closeTargetTranslationCard ( holder, position, true);
+    }
+
+    /**
+     * Moves the target translation to the top
+     * @param holder
+     * @param position
+     * @param leftToRight
+     * @return true if action was taken, else false
+     */
+    public boolean openTargetTranslationCard(ViewHolder holder, final int position, final boolean leftToRight) {
         final ListItem item = mListItems[position];
         if(!item.isTargetCardOpen) {
-            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, false, new Animation.AnimationListener() {
+            ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
 
@@ -902,6 +915,16 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
         } else {
             return false;
         }
+    }
+
+    /**
+     * Moves the target translation to the top
+     * @param holder
+     * @param position
+     * @return true if action was taken, else false
+     */
+    public boolean openTargetTranslationCard(ViewHolder holder, final int position) {
+        return openTargetTranslationCard( holder, position, false);
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
