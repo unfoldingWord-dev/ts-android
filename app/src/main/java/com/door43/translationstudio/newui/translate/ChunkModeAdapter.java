@@ -883,7 +883,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param leftToRight
      * @return true if action was taken, else false
      */
-    public boolean openTargetTranslationCard(ViewHolder holder, final int position, final boolean leftToRight) {
+    public boolean openTargetTranslationCard(final ViewHolder holder, final int position, final boolean leftToRight) {
         final ListItem item = mListItems[position];
         if(!item.isTargetCardOpen) {
             ViewUtil.animateSwapCards(holder.mSourceCard, holder.mTargetCard, TOP_ELEVATION, BOTTOM_ELEVATION, leftToRight, new Animation.AnimationListener() {
@@ -923,7 +923,7 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
      * @param position
      * @return true if action was taken, else false
      */
-    public boolean openTargetTranslationCard(ViewHolder holder, final int position) {
+    public boolean openTargetTranslationCard(final ViewHolder holder, final int position) {
         return openTargetTranslationCard( holder, position, false);
     }
 
