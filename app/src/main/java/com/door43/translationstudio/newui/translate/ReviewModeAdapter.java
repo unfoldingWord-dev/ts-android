@@ -621,6 +621,7 @@ public class ReviewModeAdapter extends ViewModeAdapter<ReviewModeAdapter.ViewHol
                                     if (finished) {
                                         item.isEditing = false;
                                         item.renderedTargetBody = null;
+                                        getListener().closeKeyboard();
                                         notifyDataSetChanged();
                                     } else {
                                         Snackbar snack = Snackbar.make(mContext.findViewById(android.R.id.content), R.string.translate_first, Snackbar.LENGTH_LONG);

@@ -3,16 +3,19 @@ package com.door43.translationstudio.newui.translate;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -37,7 +40,8 @@ import com.door43.translationstudio.core.SourceTranslation;
 import com.door43.translationstudio.core.TargetTranslation;
 import com.door43.translationstudio.core.Translator;
 import com.door43.translationstudio.core.Typography;
-import com.door43.translationstudio.newui.library.ServerLibraryLanguageAdapter;
+import com.door43.translationstudio.newui.library.ServerLibraryActivity;
+import com.door43.translationstudio.newui.newtranslation.NewTargetTranslationActivity;
 import com.door43.translationstudio.rendering.DefaultRenderer;
 import com.door43.translationstudio.rendering.RenderingGroup;
 import com.door43.translationstudio.rendering.USXRenderer;
@@ -275,19 +279,45 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             holder.mNewTabButton.setEnabled(true);
         }
 
+        holder.mTargetCard.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) { // for touches on card other than edit area
+                if(MotionEvent.ACTION_UP == event.getAction()) {
+
+                    return checkForPromptToEditDoneTargetCard( holder, mListItems[position]);
+                }
+                return false;
+            }
+        });
+
+        holder.mTargetBody.setOnTouchListener(new View.OnTouchListener() { //for touches on edit area
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(MotionEvent.ACTION_UP == event.getAction()) {
+
+                    return checkForPromptToEditDoneTargetCard( holder, mListItems[position]);
+                }
+                return false;
+            }
+        });
+
         holder.mTargetCard.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                boolean actionTaken = openTargetTranslationCard(holder, position);
+                boolean targetCardOpened = openTargetTranslationCard(holder, position);
 
                 // Accept clicks anywhere on card as if they were on the text box --
                 // but only if the text is actually editable (i.e., not yet done).
-                if (!actionTaken && holder.mTargetBody.isEnabled()) {
-                    holder.mTargetBody.requestFocus();
 
-                    InputMethodManager mgr = (InputMethodManager)
-                            mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    mgr.showSoftInput(holder.mTargetBody, InputMethodManager.SHOW_IMPLICIT);
+                if(!targetCardOpened && holder.mTargetBody.isEnabled()) {
+                    editTarget( holder.mTargetBody, mListItems[position]);
+                }
+
+                // if marked as done (disabled for edit), enable to allow capture of click events, but do not make it focusable so they can't edit
+
+                else  {
+                    enableClicksIfChunkIsDone(holder);
+
                 }
             }
         });
@@ -417,10 +447,101 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
 
     /**
      * Renders the chapter title card
-     * @param holder
-     * @param position
-     * @param chapterId
+     * begin edit of target card
+     * @param target
      */
+    public void editTarget(final EditText target, final ListItem item) {
+
+        // flag that chunk is open for edit
+
+        if (item.isChapterReference) {
+            Chapter chapter = mLibrary.getChapter(mSourceTranslation, item.chapterSlug);
+            if (null != chapter) {
+                mTargetTranslation.reopenChapterReference(chapter);
+            }
+        } else if (item.isChapterTitle) {
+            Chapter chapter = mLibrary.getChapter(mSourceTranslation, item.chapterSlug);
+            if (null != chapter) {
+                mTargetTranslation.reopenChapterTitle(chapter);
+            }
+        } else if(item.isProjectTitle) {
+            mTargetTranslation.reopenProjectTitle();
+        } else {
+            Frame frame = mLibrary.getFrame(mSourceTranslation, item.chapterSlug, item.frameSlug);
+            if(null != frame) {
+                mTargetTranslation.reopenFrame(frame);
+            }
+        }
+
+        // set focus on edit text
+        boolean gotFocus = target.requestFocus();
+        InputMethodManager mgr = (InputMethodManager)
+                mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr.showSoftInput(target, InputMethodManager.SHOW_IMPLICIT);
+    }
+
+    /**
+     * if chunk that is marked done, then enable click event
+     * @param holder
+     */
+    public void enableClicksIfChunkIsDone(final ViewHolder holder) {
+
+        if (!holder.mTargetBody.isEnabled()) {
+            holder.mTargetBody.setEnabled(true);
+            holder.mTargetBody.setFocusable(false);
+        }
+    }
+
+    /**
+     * prompt to edit chunk that is marked done
+     * @param holder
+     * @param item
+     */
+    public boolean checkForPromptToEditDoneTargetCard(final ViewHolder holder, final ListItem item) {
+
+        if (item.isTargetCardOpen) { // if page is already in front and they are tapping on it, then see if they want to open for edit
+
+            boolean enabled = holder.mTargetBody.isEnabled();
+            boolean focusable = holder.mTargetBody.isFocusable();
+
+            if (enabled && !focusable) { //if we have enabled for touch events but not focusable for edit then prompt to enable editing
+                promptToEditDoneChunk( holder, item);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * prompt to edit chunk that is marked done
+     * @param holder
+     */
+    public void promptToEditDoneChunk(final ViewHolder holder, final ListItem item) {
+        new AlertDialog.Builder(mContext)
+                .setTitle(R.string.chunk_done_title)
+//                                .setIcon(R.drawable.ic_local_library_black_24dp)
+                .setMessage(R.string.chunk_done_prompt)
+                .setPositiveButton(R.string.edit, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        holder.mTargetBody.setEnabled(true);
+                        holder.mTargetBody.setFocusable(true);
+                        holder.mTargetBody.setFocusableInTouchMode(true);
+                        holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
+                        editTarget(holder.mTargetBody, item);
+                    }
+                })
+                .setNegativeButton(R.string.dismiss, null)
+                .show();
+    }
+
+    /**
+         * Renders the chapter title card
+         * @param holder
+         * @param position
+         * @param chapterId
+         */
     private void renderChapterTitle(final ViewHolder holder, final int position, String chapterId) {
         final ListItem item = mListItems[position];
         Chapter chapter = mChapters.get(chapterId);
@@ -696,7 +817,9 @@ public class ChunkModeAdapter extends ViewModeAdapter<ChunkModeAdapter.ViewHolde
             return closeTargetTranslationCard( holder, position);
         }
 
-        return openTargetTranslationCard( holder, position);
+        boolean success = openTargetTranslationCard( holder, position);
+        enableClicksIfChunkIsDone(holder);
+        return success;
     }
 
     /**
