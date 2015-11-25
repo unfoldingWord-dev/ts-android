@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.door43.translationstudio.R;
 import com.door43.translationstudio.core.Chapter;
 import com.door43.translationstudio.core.FrameTranslation;
+import com.door43.translationstudio.core.ProjectTranslation;
 import com.door43.translationstudio.core.SourceLanguage;
 import com.door43.translationstudio.core.TargetLanguage;
 import com.door43.translationstudio.core.TranslationFormat;
@@ -314,12 +315,20 @@ public class ReadModeAdapter extends ViewModeAdapter<ReadModeAdapter.ViewHolder>
 //            holder.mTargetInnerCard.setBackgroundResource(R.drawable.paper_repeating);
 //        }
 
-        // TODO: get the translations of the title
         holder.mTargetBody.setText(mRenderedTargetBody[position]);
-        String targetChapterTitle = chapter.title;
-        if(chapter.title.isEmpty()) {
-            targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+        ProjectTranslation projTrans = mTargetTranslation.getProjectTranslation();
+        String targetChapterTitle = projTrans.getTitle();
+
+        if (targetChapterTitle.isEmpty()) { // if no target translation, fall back to source title
+            targetChapterTitle = chapter.title;
+
+            if (targetChapterTitle.isEmpty()) {
+                targetChapterTitle = mSourceTranslation.getProjectTitle() + " " + Integer.parseInt(chapter.getId());
+            }
         }
+
+        targetChapterTitle += " " + Integer.parseInt(chapter.getId());
+
         holder.mTargetTitle.setText(targetChapterTitle + " - " + mTargetLanguage.name);
 
         // load tabs
