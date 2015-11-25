@@ -77,25 +77,29 @@ public class LibraryTest extends InstrumentationTestCase {
         assertTrue(mLibrary.downloadUpdates(updates, null));
     }
 
-    public void test06Export() throws Exception {
+    public void test06DownloadEverything() throws Exception {
+        assertTrue(mLibrary.downloadAllProjects(null, null));
+    }
+
+    public void test07Export() throws Exception {
         File archive = mLibrary.export(AppContext.getPublicDownloadsDirectory());
         assertNotNull(archive);
         assertTrue(archive.exists());
     }
 
-    public void test07LoadTargetLanguages() throws Exception {
+    public void test08LoadTargetLanguages() throws Exception {
         TargetLanguage[] languages = mLibrary.getTargetLanguages();
         assertNotNull(languages);
         assertTrue(languages.length > 0);
     }
 
-    public void test08DownloadSourceTranslation() throws Exception {
+    public void test09DownloadSourceTranslation() throws Exception {
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslations("obs")[0];
 
         assertTrue(mLibrary.downloadSourceTranslation(sourceTranslation, null));
     }
 
-    public void test09GetProjectCategories() throws Exception {
+    public void test10GetProjectCategories() throws Exception {
         ProjectCategory[] projectCategories = mLibrary.getProjectCategories("en");
         // for now we just have obs, nt, and ot
         assertEquals(3, projectCategories.length);
@@ -112,7 +116,7 @@ public class LibraryTest extends InstrumentationTestCase {
 
     }
 
-    public void test10GetSourceLanguages() throws Exception {
+    public void test11GetSourceLanguages() throws Exception {
         SourceLanguage[] sourceLanguages = mLibrary.getSourceLanguages("obs");
         assertTrue(sourceLanguages.length > 0);
 
@@ -121,23 +125,23 @@ public class LibraryTest extends InstrumentationTestCase {
         assertEquals("en", sourceLanguage.getId());
     }
 
-    public void test11GetResources() throws Exception {
+    public void test12GetResources() throws Exception {
         Resource[] resources = mLibrary.getResources("obs", "en");
         assertTrue(resources.length > 0);
     }
 
-    public void test12GetProject() throws Exception {
+    public void test13GetProject() throws Exception {
         Project p = mLibrary.getProject("obs", "en");
         assertNotNull(p);
         assertEquals("obs", p.getId());
     }
 
-    public void test13GetTargetLanguage() throws Exception {
+    public void test14GetTargetLanguage() throws Exception {
         TargetLanguage targetLanguage = mLibrary.getTargetLanguage("en");
         assertEquals("en", targetLanguage.getId());
     }
 
-    public void test14GetSourceTranslation() throws Exception {
+    public void test15GetSourceTranslation() throws Exception {
         SourceTranslation[] sourceTranslations = mLibrary.getSourceTranslations("obs");
         SourceTranslation sourceTranslation = mLibrary.getSourceTranslation(sourceTranslations[0].getId());
         assertNotNull(sourceTranslation);
