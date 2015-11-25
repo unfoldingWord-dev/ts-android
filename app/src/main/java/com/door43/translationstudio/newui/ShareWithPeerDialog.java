@@ -364,13 +364,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
 //        }
 
         // reload the list
-        Handler hand = new Handler(Looper.getMainLooper());
-        hand.post(new Runnable() {
-            @Override
-            public void run() {
-                updatePeerList(listenerService.getPeers());
-            }
-        });
+//        Handler hand = new Handler(Looper.getMainLooper());
+//        hand.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                updatePeerList(listenerService.getPeers());
+//            }
+//        });
     }
 
     @Override

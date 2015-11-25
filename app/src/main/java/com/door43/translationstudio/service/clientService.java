@@ -245,41 +245,9 @@ public class ClientService extends NetworkService {
                 }
             } catch (JSONException e) {
                 Logger.w(this.getClass().getName(), "Invalid request: " + message, e);
-//                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
             }
         }
     }
-
-//    /**
-//     * Performs the handshake with the server
-//     * @param server
-//     * @param message
-//     */
-//    private void handshake(Peer server, String message) {
-//        String[] data = StringUtilities.chunk(message, ":");
-//        switch(data[0]) {
-//            case SocketMessages.MSG_PUBLIC_KEY:
-//                Logger.i(this.getClass().getName(), "connected to server " + server.getIpAddress());
-//                // receive the server's public key
-//                server.keyStore.add(PeerStatusKeys.PUBLIC_KEY, data[1]);
-//                server.keyStore.add(PeerStatusKeys.WAITING, false);
-//                server.keyStore.add(PeerStatusKeys.CONTROL_TEXT, getResources().getString(R.string.browse));
-//                server.setIsSecure(true);
-//                if(listener != null) {
-//                    listener.onServerConnectionChanged(server);
-//                }
-//                break;
-////            case SocketMessages.MSG_OK:
-////                Logger.i(this.getClass().getName(), "accepted by server " + server.getIpAddress());
-////                // we are authorized to access the server
-////                // send public key to server
-////                sendMessage(server, SocketMessages.MSG_PUBLIC_KEY + ":" + publicKey);
-////                break;
-//            default:
-//                Logger.w(this.getClass().getName(), "Invalid request: " + message);
-//                sendMessage(server, SocketMessages.MSG_INVALID_REQUEST);
-//        }
-//    }
 
     /**
      * Handles commands sent from the server
@@ -368,35 +336,6 @@ public class ClientService extends NetworkService {
                                     e.printStackTrace();
                                 }
                                 file.delete();
-//                                ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
-//                                if (importStatuses.length > 0) {
-//                                    boolean importWarnings = false;
-//                                    for (ProjectImport s : importStatuses) {
-//                                        if (!s.isApproved()) {
-//                                            importWarnings = true;
-//                                        }
-//                                    }
-//                                    if (importWarnings) {
-//                                        if(listener != null) {
-//                                            listener.onReceivedProject(server, importStatuses);
-//                                        }
-//                                    } else {
-//                                        for (ProjectImport r : importStatuses) {
-//                                            Sharing.importProject(r);
-//                                        }
-//                                        Sharing.cleanImport(importStatuses);
-//                                        file.delete();
-//                                        if(listener != null) {
-//                                            listener.onReceivedProject(server, new ProjectImport[0]);
-//                                        }
-//                                    }
-//                                } else {
-//                                    file.delete();
-//                                    Logger.w(this.getClass().getName(), "failed to import the project archive");
-//                                    if (listener != null) {
-//                                        listener.onClientServiceError(new Exception("failed to import the project archive"));
-//                                    }
-//                                }
                             } catch (IOException e) {
                                 Logger.e(this.getClass().getName(), "Failed to download the file", e);
                                 if(file != null) {
@@ -413,230 +352,6 @@ public class ClientService extends NetworkService {
                     if(listener != null) {
                         listener.onClientServiceError(new Exception("Invalid response from server"));
                     }
-                }
-                break;
-            case ProjectArchive:
-                Logger.i(this.getClass().getName(), "received project archive from " + server.getIpAddress());
-                // receive project archive from server
-                JSONObject infoJson;
-                try {
-                    infoJson = new JSONObject(data[0]);
-                } catch (JSONException e) {
-                    if(listener != null) {
-                        listener.onClientServiceError(e);
-                    }
-                    break;
-                }
-
-                if(infoJson.has("port") && infoJson.has("size") && infoJson.has("name")) {
-                    int port;
-                    final long size;
-                    final String name;
-                    try {
-                        port = infoJson.getInt("port");
-                        size = infoJson.getLong("size");
-                        name = infoJson.getString("name");
-                    } catch (JSONException e) {
-                        if(listener != null) {
-                            listener.onClientServiceError(e);
-                        }
-                        break;
-                    }
-                    // the server is sending a project archive
-                    openReadSocket(server, port, new OnSocketEventListener() {
-                        @Override
-                        public void onOpen(Connection connection) {
-                            connection.setOnCloseListener(new Connection.OnCloseListener() {
-                                @Override
-                                public void onClose() {
-                                    if (listener != null) {
-                                        listener.onClientServiceError(new Exception("Socket was closed before download completed"));
-                                    }
-                                }
-                            });
-
-//                            showProgress(getResourceSlugs().getString(R.string.downloading));
-                            final File file = new File(getExternalCacheDir() + "/transferred/" + name);
-                            try {
-                                // download archive
-                                DataInputStream in = new DataInputStream(connection.getSocket().getInputStream());
-                                file.getParentFile().mkdirs();
-                                file.createNewFile();
-                                OutputStream out = new FileOutputStream(file.getAbsolutePath());
-                                byte[] buffer = new byte[8 * 1024];
-                                int totalCount = 0;
-                                int count;
-                                while ((count = in.read(buffer)) > 0) {
-                                    totalCount += count;
-                                    server.keyStore.add(PeerStatusKeys.PROGRESS, totalCount / ((int) size) * 100);
-                                    if (listener != null) {
-                                        listener.onServerConnectionChanged(server);
-                                    }
-                                    out.write(buffer, 0, count);
-                                }
-                                server.keyStore.add(PeerStatusKeys.PROGRESS, 0);
-                                if (listener != null) {
-                                    listener.onServerConnectionChanged(server);
-                                }
-                                out.close();
-                                in.close();
-
-                                // import the project
-//                                ProjectImport[] importStatuses = Sharing.prepareArchiveImport(file);
-//                                if (importStatuses.length > 0) {
-//                                    boolean importWarnings = false;
-//                                    for (ProjectImport s : importStatuses) {
-//                                        if (!s.isApproved()) {
-//                                            importWarnings = true;
-//                                        }
-//                                    }
-//                                    if (importWarnings) {
-//                                        if(listener != null) {
-//                                            listener.onReceivedProject(server, importStatuses);
-//                                        }
-//                                    } else {
-//                                        for (ProjectImport r : importStatuses) {
-//                                            Sharing.importProject(r);
-//                                        }
-//                                        Sharing.cleanImport(importStatuses);
-//                                        file.delete();
-//                                        if(listener != null) {
-//                                            listener.onReceivedProject(server, new ProjectImport[0]);
-//                                        }
-//                                    }
-//                                } else {
-//                                    file.delete();
-//                                    Logger.w(this.getClass().getName(), "failed to import the project archive");
-//                                    if (listener != null) {
-//                                        listener.onClientServiceError(new Exception("failed to import the project archive"));
-//                                    }
-//                                }
-                            } catch (IOException e) {
-                                Logger.e(this.getClass().getName(), "Failed to download the file", e);
-                                file.delete();
-                                if (listener != null) {
-                                    listener.onClientServiceError(e);
-                                }
-                            }
-                        }
-                    });
-                } else {
-                    Logger.w(this.getClass().getName(), "Invalid response from server: " + data.toString());
-                    if(listener != null) {
-                        listener.onClientServiceError(new Exception("Invalid response from server"));
-                    }
-                }
-                break;
-            case ProjectList:
-                Logger.i(this.getClass().getName(), "received project list from " + server.getIpAddress());
-                // the sever gave us the list of available projects for import
-                String library = data[0];
-//                final ListMap<Model> listableProjects = new ListMap<>();
-
-                JSONArray json;
-                try {
-                    json = new JSONArray(library);
-                } catch (final JSONException e) {
-                    if(listener != null) {
-                        listener.onClientServiceError(e);
-                    }
-                    break;
-                }
-
-//                ListMap<PseudoProject> pseudoProjects = new ListMap<>();
-
-                // load the data
-                for(int i=0; i<json.length(); i++) {
-                    try {
-                        JSONObject projectJson = json.getJSONObject(i);
-                        if (projectJson.has("id") && projectJson.has("project") && projectJson.has("language") && projectJson.has("target_languages")) {
-//                            Project p = new Project(projectJson.getString("id"));
-
-                            // source language (just for project info)
-                            JSONObject sourceLangJson = projectJson.getJSONObject("language");
-                            String sourceLangDirection = sourceLangJson.getString("direction");
-//                            Language.Direction langDirection;
-//                            if(sourceLangDirection.toLowerCase().equals("ltr")) {
-//                                langDirection = Language.Direction.LeftToRight;
-//                            } else {
-//                                langDirection = Language.Direction.RightToLeft;
-//                            }
-//                            SourceLanguage sourceLanguage = new SourceLanguage(sourceLangJson.getString("slug"), sourceLangJson.getString("name"), langDirection, 0);
-//                            p.addSourceLanguage(sourceLanguage);
-//                            p.setSelectedSourceLanguage(sourceLanguage.getId());
-
-                            // project info
-                            JSONObject projectInfoJson = projectJson.getJSONObject("project");
-//                            p.setDefaultTitle(projectInfoJson.getString("name"));
-//                            if(projectInfoJson.has("description")) {
-//                                p.setDefaultDescription(projectInfoJson.getString("description"));
-//                            }
-
-                            // load meta
-                            // TRICKY: we are actually getting the meta names instead of the id's since we only receive one translation of the project info
-//                            PseudoProject rootPseudoProject = null;
-                            if (projectInfoJson.has("meta")) {
-                                JSONArray jsonMeta = projectInfoJson.getJSONArray("meta");
-                                if(jsonMeta.length() > 0) {
-                                    // get the root meta
-                                    String metaSlug = jsonMeta.getString(0); // this is actually the meta name in this case
-//                                    rootPseudoProject = pseudoProjects.get(metaSlug);
-//                                    if(rootPseudoProject == null) {
-//                                        rootPseudoProject = new PseudoProject(metaSlug);
-//                                        pseudoProjects.add(rootPseudoProject.getId(), rootPseudoProject);
-//                                    }
-//                                    // load children meta
-//                                    PseudoProject currentPseudoProject = rootPseudoProject;
-//                                    for (int j = 1; j < jsonMeta.length(); j++) {
-//                                        PseudoProject sp = new PseudoProject(jsonMeta.getString(j));
-//                                        if(currentPseudoProject.getMetaChild(sp.getId()) != null) {
-//                                            // load already created meta
-//                                            currentPseudoProject = currentPseudoProject.getMetaChild(sp.getId());
-//                                        } else {
-//                                            // create new meta
-//                                            currentPseudoProject.addChild(sp);
-//                                            currentPseudoProject = sp;
-//                                        }
-//                                        // add to project
-//                                        p.addSudoProject(sp);
-//                                    }
-//                                    currentPseudoProject.addChild(p);
-                                }
-                            }
-
-                            // available translation languages
-                            JSONArray languagesJson = projectJson.getJSONArray("target_languages");
-                            for(int j=0; j<languagesJson.length(); j++) {
-                                JSONObject langJson = languagesJson.getJSONObject(j);
-                                String languageId = langJson.getString("slug");
-                                String languageName = langJson.getString("name");
-                                String direction  = langJson.getString("direction");
-//                                Language.Direction langDir;
-//                                if(direction.toLowerCase().equals("ltr")) {
-//                                    langDir = Language.Direction.LeftToRight;
-//                                } else {
-//                                    langDir = Language.Direction.RightToLeft;
-//                                }
-//                                Language l = new Language(languageId, languageName, langDir);
-//                                p.addTargetLanguage(l);
-                            }
-                            // add project or meta to the project list
-//                            if(rootPseudoProject == null) {
-//                                listableProjects.add(p.getId(), p);
-//                            } else {
-//                                listableProjects.add(rootPseudoProject.getId(), rootPseudoProject);
-//                            }
-                        } else {
-                            Logger.w(this.getClass().getName(), "An invalid response was received from the server");
-                        }
-                    } catch(final JSONException e) {
-                        if(listener != null) {
-                            listener.onClientServiceError(e);
-                        }
-                    }
-                }
-                if(listener != null) {
-//                    listener.onReceivedProjectList(server, listableProjects.getAll().toArray(new Model[listableProjects.size()]));
                 }
                 break;
             case InvalidRequest:
@@ -697,12 +412,21 @@ public class ClientService extends NetworkService {
                     }
                 });
                 // we store references to all connections so we can access them later
-                serverConnections.put(mConnection.getIpAddress(), mConnection);
+                if(!serverConnections.containsKey(mConnection.getIpAddress())) {
+                    serverConnections.put(mConnection.getIpAddress(), mConnection);
+                } else {
+                    // we already have a connection to this server
+                    mConnection.close();
+                    return;
+                }
             } catch (Exception e) {
+                // the connection could not be established
+                if(mConnection != null) {
+                    mConnection.close();
+                }
                 if(listener != null) {
                     listener.onClientServiceError(e);
                 }
-                Thread.currentThread().interrupt();
                 return;
             }
 

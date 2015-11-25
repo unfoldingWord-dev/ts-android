@@ -148,6 +148,7 @@ public class BroadcastListenerService extends NetworkService {
 
     public interface Callbacks {
         void onFoundServer(Peer server);
+        @Deprecated
         void onLostServer(Peer server);
     }
 
