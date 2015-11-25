@@ -3,6 +3,7 @@ package com.door43.translationstudio.newui;
 import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -60,6 +61,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             clientService = binder.getServiceInstance();
             clientService.setOnClientEventListener(ShareWithPeerDialog.this);
             Logger.i(ShareWithPeerDialog.class.getName(), "Connected to import service");
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    updatePeerList(clientService.getPeers());
+                }
+            });
         }
 
         @Override
@@ -78,6 +86,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             serverService = binder.getServiceInstance();
             serverService.registerCallback(ShareWithPeerDialog.this);
             Logger.i(ShareWithPeerDialog.class.getName(), "Connected to export service");
+            Handler hand = new Handler(Looper.getMainLooper());
+            hand.post(new Runnable() {
+                @Override
+                public void run() {
+                    updatePeerList(serverService.getPeers());
+                }
+            });
         }
 
         @Override
@@ -113,14 +128,6 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             listenerService = binder.getServiceInstance();
             listenerService.registerCallback(ShareWithPeerDialog.this);
             Logger.i(ShareWithPeerDialog.class.getName(), "Connected to broadcast listener service");
-            Handler hand = new Handler(Looper.getMainLooper());
-            hand.post(new Runnable() {
-                @Override
-                public void run() {
-                    // TODO: 11/19/2015 set initial peer list
-                    updatePeerList(listenerService.getPeers());
-                }
-            });
         }
 
         @Override
@@ -132,12 +139,13 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     };
     private File publicKeyFile;
     private File privateKeyFile;
-    private Intent serverIntent;
-    private Intent clientIntent;
-    private Intent broadcastIntent;
-    private Intent listenerIntent;
+    private static Intent serverIntent;
+    private static Intent clientIntent;
+    private static Intent broadcastIntent;
+    private static Intent listenerIntent;
     private int operationMode;
     private String targetTranslationSlug;
+    private boolean shutDownServices = true;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -162,7 +170,6 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         // TODO: 11/19/2015 set target translation title
         // TODO: 11/19/2015 set up ui
 
-        final Handler hand = new Handler(Looper.getMainLooper());
         ListView list = (ListView)v.findViewById(R.id.list);
         adapter = new PeerAdapter(operationMode == MODE_SERVER, getActivity());
         list.setAdapter(adapter);
@@ -171,32 +178,9 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Peer peer = adapter.getItem(position);
                 if(operationMode == MODE_SERVER) {
-                    // TODO: 11/20/2015 we need to display options for this peer.
-                    // if they are also a server we need to have options for interacting with them as well
-                    if(!peer.isSecure()) {
-                        serverService.acceptConnection(peer);
-                        hand.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                updatePeerList(serverService.getPeers());
-                            }
-                        });
-                    } else {
-                        serverService.sendTargetTranslation(peer, targetTranslationSlug);
-                    }
+                    // TODO: 11/25/2015 do something
                 } else if(operationMode == MODE_CLIENT) {
-                    if(!peer.isSecure()) {
-                        // TRICKY: we don't let the client connect again otherwise it may get an encryption exception due to miss-matched keys
-                        if(!peer.keyStore.getBool(PeerStatusKeys.WAITING)) {
-                            // connect to the server, implicitly requesting permission to access it
-                            peer.keyStore.add(PeerStatusKeys.WAITING, true);
-                            updatePeerList(listenerService.getPeers());
-                            clientService.connectToServer(peer);
-                        }
-                    } else {
-                        // TODO: 11/20/2015 display options for interacting with this user
-
-                    }
+                    // TODO: 11/25/2015 do something
                 }
             }
         });
@@ -215,6 +199,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
     @Override
     public void onStart() {
         super.onStart();
+        shutDownServices = true;
 
         if(operationMode == MODE_SERVER) {
             serverIntent = new Intent(getActivity(), ServerService.class);
@@ -268,27 +253,62 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         }
     }
 
+    public void onSaveInstanceState(Bundle out) {
+        shutDownServices = false;
+        super.onSaveInstanceState(out);
+    }
+
+    @Override
+    public void onStop() {
+
+        super.onStop();
+    }
+
     @Override
     public void onDestroy(){
-        // TODO: 11/19/2015 stop services if view is being completely destroyed
-        if (BroadcastService.isRunning() && broadcastIntent != null) {
-            if(!getActivity().stopService(broadcastIntent)) {
-                Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastService.class.getName());
-            }
+        // unbind services
+        try {
+            getActivity().unbindService(broadcastConnection);
+        } catch (Exception e) {
+
         }
-        if (BroadcastListenerService.isRunning() && listenerIntent != null) {
-            if(!getActivity().stopService(listenerIntent)) {
-                Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastListenerService.class.getName());
-            }
+        try {
+            getActivity().unbindService(listenerConnection);
+        } catch (Exception e) {
+
         }
-        if (ServerService.isRunning() && serverIntent != null) {
-            if(!getActivity().stopService(serverIntent)) {
-                Logger.w(this.getClass().getName(), "Failed to stop service " + ServerService.class.getName());
-            }
+        try {
+            getActivity().unbindService(serverConnection);
+        } catch (Exception e) {
+
         }
-        if (ClientService.isRunning() && clientIntent != null) {
-            if(!getActivity().stopService(clientIntent)) {
-                Logger.w(this.getClass().getName(), "Failed to stop service " + ClientService.class.getName());
+        try {
+            getActivity().unbindService(clientConnection);
+        } catch (Exception e) {
+
+        }
+
+        // shut down services
+        if(shutDownServices) {
+            if (BroadcastService.isRunning() && broadcastIntent != null) {
+                if (!getActivity().stopService(broadcastIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastService.class.getName());
+                }
+            }
+            if (BroadcastListenerService.isRunning() && listenerIntent != null) {
+                if (!getActivity().stopService(listenerIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + BroadcastListenerService.class.getName());
+                }
+            }
+            if (ServerService.isRunning() && serverIntent != null) {
+                if (!getActivity().stopService(serverIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + ServerService.class.getName());
+                }
+            }
+            if (ClientService.isRunning() && clientIntent != null) {
+                if (!getActivity().stopService(clientIntent)) {
+                    Logger.w(this.getClass().getName(), "Failed to stop service " + ClientService.class.getName());
+                }
             }
         }
         super.onDestroy();
@@ -392,7 +412,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         hand.post(new Runnable() {
             @Override
             public void run() {
-                updatePeerList(listenerService.getPeers());
+                updatePeerList(clientService.getPeers());
             }
         });
     }
@@ -403,7 +423,7 @@ public class ShareWithPeerDialog extends DialogFragment implements ServerService
         hand.post(new Runnable() {
             @Override
             public void run() {
-                updatePeerList(listenerService.getPeers());
+                updatePeerList(clientService.getPeers());
             }
         });
     }

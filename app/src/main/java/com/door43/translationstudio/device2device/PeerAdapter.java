@@ -79,7 +79,8 @@ public class PeerAdapter extends BaseAdapter {
         ImageView peerIcon = (ImageView)v.findViewById(R.id.peerIcon);
 
         // ip address
-        ipAddressView.setText(p.getIpAddress());
+        ipAddressView.setText(p.getName());
+        instructionsText.setText(p.getIpAddress());
 
         // button
 //        Button button = (Button)v.findViewById(R.id.button);

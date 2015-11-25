@@ -413,6 +413,7 @@ public class ClientService extends NetworkService {
                 });
                 // we store references to all connections so we can access them later
                 if(!serverConnections.containsKey(mConnection.getIpAddress())) {
+                    addPeer(mServer);
                     serverConnections.put(mConnection.getIpAddress(), mConnection);
                 } else {
                     // we already have a connection to this server
